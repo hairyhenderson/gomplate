@@ -1,6 +1,6 @@
-# templater
+# gomplate
 
 ```console
-$ echo "Hello, {{.Env.USER}}" | templater
+$ echo "Hello, {{.Env.USER}}" | gomplate
 Hello, hairyhenderson
 ```

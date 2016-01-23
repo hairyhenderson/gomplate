@@ -1,6 +1,6 @@
 extension = $(patsubst windows,.exe,$(filter windows,$(1)))
 GO := go
-PKG_NAME := templater
+PKG_NAME := gomplate
 PREFIX := .
 
 define gocross
