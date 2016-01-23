@@ -2,12 +2,26 @@ package main
 
 import (
 	"bufio"
+	"flag"
+	"fmt"
 	"log"
 	"os"
 	"strings"
 
 	"text/template"
 )
+
+// version
+const Version = "0.0.1"
+
+func init() {
+	ver := flag.Bool("v", false, "Print version and exit")
+	flag.Parse()
+	if *ver {
+		fmt.Println(Version)
+		os.Exit(0)
+	}
+}
 
 // Context for templates
 type Context struct {
