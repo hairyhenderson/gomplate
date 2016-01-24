@@ -23,15 +23,21 @@ func init() {
 	}
 }
 
+func createTemplate() *template.Template {
+	return template.New("template").Option("missingkey=error")
+}
+
+// RunTemplate -
 func RunTemplate(in io.Reader, out io.Writer) {
 	s := bufio.NewScanner(in)
+	context := &Context{}
 	for s.Scan() {
-		tmpl, err := template.New("template").Option("missingkey=error").Parse(s.Text())
+		tmpl, err := createTemplate().Parse(s.Text())
 		if err != nil {
 			log.Fatalf("Line %q: %v\n", s.Text(), err)
 		}
 
-		if err := tmpl.Execute(out, &Context{}); err != nil {
+		if err := tmpl.Execute(out, context); err != nil {
 			panic(err)
 		}
 		out.Write([]byte("\n"))
