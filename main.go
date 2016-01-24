@@ -12,7 +12,7 @@ import (
 )
 
 // version
-const Version = "0.0.1"
+const Version = "0.0.2"
 
 func init() {
 	ver := flag.Bool("v", false, "Print version and exit")
