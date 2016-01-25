@@ -42,7 +42,7 @@ func (g *Gomplate) RunTemplate(in io.Reader, out io.Writer) {
 }
 
 // NewGomplate -
-func NewGomplate() *Gomplate {
+func NewGomplate(data *Data) *Gomplate {
 	env := &Env{}
 	typeconv := &TypeConv{}
 	ec2meta := &aws.Ec2Meta{}
@@ -62,12 +62,15 @@ func NewGomplate() *Gomplate {
 			"title":      strings.Title,
 			"toUpper":    strings.ToUpper,
 			"toLower":    strings.ToLower,
+			"datasource": data.Datasource,
 		},
 	}
 }
 
 func runTemplate(c *cli.Context) error {
-	g := NewGomplate()
+	data := NewData(c.StringSlice("datasource"))
+
+	g := NewGomplate(data)
 	g.RunTemplate(os.Stdin, os.Stdout)
 	return nil
 }
@@ -78,6 +81,13 @@ func main() {
 	app.Usage = "Process text files with Go templates"
 	app.Version = version.Version
 	app.Action = runTemplate
+
+	app.Flags = []cli.Flag{
+		cli.StringSliceFlag{
+			Name:  "datasource, d",
+			Usage: "Data source in alias=URL form. Specify multiple times to add multiple sources.",
+		},
+	}
 
 	app.Run(os.Args)
 }
