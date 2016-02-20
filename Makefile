@@ -24,3 +24,8 @@ $(PREFIX)/bin/$(PKG_NAME)$(call extension,$(GOOS)): $(shell find . -type f -name
 	$(GO) build -o $@
 
 build: $(PREFIX)/bin/$(PKG_NAME)$(call extension,$(GOOS))
+
+gen-changelog:
+	github_changelog_generator --exclude-labels duplicate,question,invalid,wontfix,admin
+
+.PHONY: gen-changelog
