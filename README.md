@@ -21,6 +21,72 @@ $ echo "Hello, {{.Env.USER}}" | gomplate
 Hello, hairyhenderson
 ```
 
+#### About `.Env`
+
+You can easily access environment variables with `.Env`, but there's a catch:
+if you try to reference an environment variable that doesn't exist, parsing
+will fail and `gomplate` will exit with an error condition.
+
+Sometimes, this behaviour is desired; if the output is unusable without certain strings, this is a sure way to know that variables are missing!
+
+If you want different behaviour, try `getenv` (below).
+
+### Built-in functions
+
+In addition to all of the functions and operators that the [Go template](https://golang.org/pkg/text/template/)
+language provides (`if`, `else`, `eq`, `and`, `or`, `range`, etc...), there are
+some additional functions baked in to `gomplate`:
+
+#### `getenv`
+
+Exposes the [os.Getenv](https://golang.org/pkg/os/#Getenv) function.
+
+This is a more forgiving alternative to using `.Env`, since missing keys will
+return an empty string.
+
+##### Example
+
+```console
+$ echo 'Hello, {{getenv "USER"}}' | gomplate
+Hello, hairyhenderson
+```
+#### `bool`
+
+Converts a true-ish string to a boolean. Can be used to simplify conditional statements based on environment variables or other text input.
+
+##### Example
+
+_`input.tmpl`:_
+```
+{{if bool (getenv "FOO")}}foo{{else}}bar{{end}}
+```
+
+```console
+$ gomplate < input.tmpl
+bar
+$ FOO=true gomplate < input.tmpl
+foo
+```
+
+### Some more complex examples
+
+##### Variable assignment and `if`/`else`
+
+_`input.tmpl`:_
+```
+{{ $u := getenv "USER" }}
+{{ if eq $u "root" }}You are root!{{else}}You are not root :({{end}}
+```
+
+```console
+$ gomplate < input.tmpl
+You are not root :(
+$ sudo gomplate < input.tmpl
+You are root!
+```
+
+_Note:_ it's important for the `if`/`else`/`end` keywords to appear on the same line, or else `gomplate` will not be able to parse the pipeline properly
+
 ## License
 
 [The MIT License](http://opensource.org/licenses/MIT)
