@@ -25,9 +25,15 @@ func init() {
 }
 
 // Getenv retrieves the value of the environment variable named by the key.
-// It returns the value, which will be empty if the variable is not present.
-func Getenv(key string) string {
-	return os.Getenv(key)
+// It returns the value, or the default (or an emptry string) if the variable is
+// not set.
+func Getenv(key string, def ...string) string {
+	val := os.Getenv(key)
+	if val == "" && len(def) > 0{
+		return def[0]
+	} else {
+		return os.Getenv(key)
+	}
 }
 
 // Bool converts a string to a boolean value, using strconv.ParseBool under the covers.

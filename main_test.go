@@ -21,6 +21,7 @@ func TestGetenv(t *testing.T) {
 	assert.Empty(t, testTemplate(`{{getenv "BLAHBLAHBLAH"}}`))
 	assert.Equal(t, Getenv("USER"), os.Getenv("USER"))
 	assert.Equal(t, os.Getenv("USER"), testTemplate(`{{getenv "USER"}}`))
+	assert.Equal(t, "default value", testTemplate(`{{getenv "BLAHBLAHBLAH" "default value"}}`))
 }
 
 func TestBool(t *testing.T) {
