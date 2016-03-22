@@ -44,12 +44,17 @@ Exposes the [os.Getenv](https://golang.org/pkg/os/#Getenv) function.
 This is a more forgiving alternative to using `.Env`, since missing keys will
 return an empty string.
 
+An optional default value can be given as well.
+
 ##### Example
 
 ```console
 $ echo 'Hello, {{getenv "USER"}}' | gomplate
 Hello, hairyhenderson
+$ echo 'Hey, {{getenv "FIRSTNAME" "you"}}!' | gomplate
+Hey, you!
 ```
+
 #### `bool`
 
 Converts a true-ish string to a boolean. Can be used to simplify conditional statements based on environment variables or other text input.
