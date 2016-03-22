@@ -1,5 +1,17 @@
 # Change Log
 
+## [v0.1.1](https://github.com/hairyhenderson/gomplate/tree/v0.1.1) (2016-03-22)
+[Full Changelog](https://github.com/hairyhenderson/gomplate/compare/v0.1.0...v0.1.1)
+
+**Implemented enhancements:**
+
+- Should support default values for environment variables [\#14](https://github.com/hairyhenderson/gomplate/issues/14)
+
+**Merged pull requests:**
+
+- Updating README with docs for getenv with default [\#17](https://github.com/hairyhenderson/gomplate/pull/17) ([hairyhenderson](https://github.com/hairyhenderson))
+- Adding support to getenv for a default value [\#16](https://github.com/hairyhenderson/gomplate/pull/16) ([hairyhenderson](https://github.com/hairyhenderson))
+
 ## [v0.1.0](https://github.com/hairyhenderson/gomplate/tree/v0.1.0) (2016-02-20)
 [Full Changelog](https://github.com/hairyhenderson/gomplate/compare/v0.0.2...v0.1.0)
 
