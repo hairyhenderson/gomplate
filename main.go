@@ -7,7 +7,6 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
-	"strconv"
 
 	"text/template"
 )
@@ -24,47 +23,23 @@ func init() {
 	}
 }
 
-// Getenv retrieves the value of the environment variable named by the key.
-// It returns the value, or the default (or an emptry string) if the variable is
-// not set.
-func Getenv(key string, def ...string) string {
-	val := os.Getenv(key)
-	if val == "" && len(def) > 0{
-		return def[0]
-	} else {
-		return os.Getenv(key)
-	}
+func (g *Gomplate) createTemplate() *template.Template {
+	return template.New("template").Funcs(g.funcMap).Option("missingkey=error")
 }
 
-// Bool converts a string to a boolean value, using strconv.ParseBool under the covers.
-// Possible true values are: 1, t, T, TRUE, true, True
-// All other values are considered false.
-func Bool(in string) bool {
-	if b, err := strconv.ParseBool(in); err == nil {
-		return b
-	}
-	return false
-}
-
-var funcMap = template.FuncMap{
-	"Getenv": Getenv,
-	"getenv": Getenv,
-	"Bool":   Bool,
-	"bool":   Bool,
-}
-
-func createTemplate() *template.Template {
-	return template.New("template").Funcs(funcMap).Option("missingkey=error")
+// Gomplate -
+type Gomplate struct {
+	funcMap template.FuncMap
 }
 
 // RunTemplate -
-func RunTemplate(in io.Reader, out io.Writer) {
+func (g *Gomplate) RunTemplate(in io.Reader, out io.Writer) {
 	context := &Context{}
 	text, err := ioutil.ReadAll(in)
 	if err != nil {
 		log.Fatalf("Read failed!\n%v\n", err)
 	}
-	tmpl, err := createTemplate().Parse(string(text))
+	tmpl, err := g.createTemplate().Parse(string(text))
 	if err != nil {
 		log.Fatalf("Line %q: %v\n", string(text), err)
 	}
@@ -75,6 +50,21 @@ func RunTemplate(in io.Reader, out io.Writer) {
 	out.Write([]byte("\n"))
 }
 
+// NewGomplate -
+func NewGomplate() *Gomplate {
+	env := &Env{}
+	typeconv := &TypeConv{}
+	return &Gomplate{
+		funcMap: template.FuncMap{
+			"Getenv": env.Getenv,
+			"getenv": env.Getenv,
+			"Bool":   typeconv.Bool,
+			"bool":   typeconv.Bool,
+		},
+	}
+}
+
 func main() {
-	RunTemplate(os.Stdin, os.Stdout)
+	g := NewGomplate()
+	g.RunTemplate(os.Stdin, os.Stdout)
 }
