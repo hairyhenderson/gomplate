@@ -16,16 +16,10 @@ type Ec2Meta struct {
 	Client   *http.Client
 }
 
-// Ec2meta -
-func (e *Ec2Meta) Ec2meta(key string, def ...string) string {
-	if e.Endpoint == "" {
-		e.Endpoint = DefaultEndpoint
-	}
+func (e *Ec2Meta) retrieveMetadata(url string, key string, def ...string) string {
 	if e.Client == nil {
 		e.Client = &http.Client{}
 	}
-
-	url := e.Endpoint + "/latest/meta-data/" + key
 	resp, err := e.Client.Get(url)
 	if err != nil {
 		log.Fatalf("Failed to GET from %s: %v", url, err)
@@ -45,4 +39,24 @@ func (e *Ec2Meta) Ec2meta(key string, def ...string) string {
 	value := strings.TrimSpace(string(body))
 
 	return value
+}
+
+// Ec2meta -
+func (e *Ec2Meta) Ec2meta(key string, def ...string) string {
+	if e.Endpoint == "" {
+		e.Endpoint = DefaultEndpoint
+	}
+
+	url := e.Endpoint + "/latest/meta-data/" + key
+	return e.retrieveMetadata(url, key, def...)
+}
+
+// Ec2dynamic -
+func (e *Ec2Meta) Ec2dynamic(key string, def ...string) string {
+	if e.Endpoint == "" {
+		e.Endpoint = DefaultEndpoint
+	}
+
+	url := e.Endpoint + "/latest/dynamic/" + key
+	return e.retrieveMetadata(url, key, def...)
 }

@@ -66,10 +66,12 @@ func TestEc2MetaTemplates_WithJSON(t *testing.T) {
 	ty := new(TypeConv)
 	g := &Gomplate{
 		funcMap: template.FuncMap{
-			"ec2meta": ec2meta.Ec2meta,
-			"json":    ty.JSON,
+			"ec2meta":    ec2meta.Ec2meta,
+			"ec2dynamic": ec2meta.Ec2dynamic,
+			"json":       ty.JSON,
 		},
 	}
 
 	assert.Equal(t, "bar", testTemplate(g, `{{ (ec2meta "obj" | json).foo }}`))
+	assert.Equal(t, "bar", testTemplate(g, `{{ (ec2dynamic "obj" | json).foo }}`))
 }
