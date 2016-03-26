@@ -103,6 +103,19 @@ $ echo '{{ec2meta "instance-id"}}' | gomplate
 i-12345678
 ```
 
+#### `ec2dynamic`
+
+Queries AWS [EC2 Instance Dynamic Metadata](http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-metadata.html) for information. This only retrieves data in the `dynamic` path -- for data in the `meta-data` path use `ec2meta`.
+
+This only works when running `gomplate` on an EC2 instance. If the EC2 instance metadata API isn't available, the tool will timeout and fail.
+
+##### Example
+
+```console
+$ echo '{{ (ec2dynamic "instance-identity/document" | json).region }}' | ./gomplate
+us-east-1
+```
+
 ### Some more complex examples
 
 ##### Variable assignment and `if`/`else`
