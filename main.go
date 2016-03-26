@@ -63,6 +63,8 @@ func NewGomplate() *Gomplate {
 			"getenv":  env.Getenv,
 			"Bool":    typeconv.Bool,
 			"bool":    typeconv.Bool,
+			"JSON":    typeconv.JSON,
+			"json":    typeconv.JSON,
 			"Ec2meta": ec2meta.Ec2meta,
 			"ec2meta": ec2meta.Ec2meta,
 		},

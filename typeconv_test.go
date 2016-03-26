@@ -22,3 +22,16 @@ func TestBool(t *testing.T) {
 	assert.True(t, ty.Bool("T"))
 	assert.True(t, ty.Bool("1"))
 }
+
+func TestJSON(t *testing.T) {
+	ty := new(TypeConv)
+	expected := make(map[string]interface{})
+	expected["foo"] = "bar"
+	expected["one"] = 1.0
+	expected["true"] = true
+
+	actual := ty.JSON(`{"foo":"bar","one":1.0,"true":true}`)
+	assert.Equal(t, expected["foo"], actual["foo"])
+	assert.Equal(t, expected["one"], actual["one"])
+	assert.Equal(t, expected["true"], actual["true"])
+}
