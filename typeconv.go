@@ -1,6 +1,10 @@
 package main
 
-import "strconv"
+import (
+	"encoding/json"
+	"log"
+	"strconv"
+)
 
 // TypeConv - type conversion function
 type TypeConv struct {
@@ -14,4 +18,14 @@ func (t *TypeConv) Bool(in string) bool {
 		return b
 	}
 	return false
+}
+
+// JSON - Unmarshal a JSON string
+func (t *TypeConv) JSON(in string) map[string]interface{} {
+	obj := make(map[string]interface{})
+	err := json.Unmarshal([]byte(in), &obj)
+	if err != nil {
+		log.Fatalf("Unable to unmarshal JSON object %s: %v", in, err)
+	}
+	return obj
 }

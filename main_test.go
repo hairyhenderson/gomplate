@@ -59,3 +59,17 @@ func TestEc2MetaTemplates_ValidKey(t *testing.T) {
 	assert.Equal(t, "i-1234", testTemplate(g, `{{ec2meta "instance-id"}}`))
 	assert.Equal(t, "i-1234", testTemplate(g, `{{ec2meta "instance-id" "default"}}`))
 }
+
+func TestEc2MetaTemplates_WithJSON(t *testing.T) {
+	server, ec2meta := aws.MockServer(200, `{"foo":"bar"}`)
+	defer server.Close()
+	ty := new(TypeConv)
+	g := &Gomplate{
+		funcMap: template.FuncMap{
+			"ec2meta": ec2meta.Ec2meta,
+			"json":    ty.JSON,
+		},
+	}
+
+	assert.Equal(t, "bar", testTemplate(g, `{{ (ec2meta "obj" | json).foo }}`))
+}

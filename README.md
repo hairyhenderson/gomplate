@@ -73,6 +73,23 @@ $ FOO=true gomplate < input.tmpl
 foo
 ```
 
+#### `json`
+
+Converts a JSON string into an object. Only works for JSON Objects. This can be used to access properties of JSON objects.
+
+##### Example
+
+_`input.tmpl`:_
+```
+Hello {{ (getenv "FOO" | json).hello }}
+```
+
+```console
+$ export FOO='{"hello":"world"}'
+$ gomplate < input.tmpl
+Hello world
+```
+
 ### Some more complex examples
 
 ##### Variable assignment and `if`/`else`
