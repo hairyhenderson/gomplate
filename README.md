@@ -90,6 +90,19 @@ $ gomplate < input.tmpl
 Hello world
 ```
 
+#### `ec2meta`
+
+Queries AWS [EC2 Instance Metadata](http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-metadata.html) for information. This only retrieves data in the `meta-data` path -- for data in the `dynamic` path use `ec2dynamic`.
+
+This only works when running `gomplate` on an EC2 instance. If the EC2 instance metadata API isn't available, the tool will timeout and fail.
+
+##### Example
+
+```console
+$ echo '{{ec2meta "instance-id"}}' | gomplate
+i-12345678
+```
+
 ### Some more complex examples
 
 ##### Variable assignment and `if`/`else`
