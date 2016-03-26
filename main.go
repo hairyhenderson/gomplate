@@ -8,6 +8,8 @@ import (
 	"log"
 	"os"
 
+	"github.com/hairyhenderson/gomplate/aws"
+
 	"text/template"
 )
 
@@ -54,12 +56,15 @@ func (g *Gomplate) RunTemplate(in io.Reader, out io.Writer) {
 func NewGomplate() *Gomplate {
 	env := &Env{}
 	typeconv := &TypeConv{}
+	ec2meta := &aws.Ec2Meta{}
 	return &Gomplate{
 		funcMap: template.FuncMap{
-			"Getenv": env.Getenv,
-			"getenv": env.Getenv,
-			"Bool":   typeconv.Bool,
-			"bool":   typeconv.Bool,
+			"Getenv":  env.Getenv,
+			"getenv":  env.Getenv,
+			"Bool":    typeconv.Bool,
+			"bool":    typeconv.Bool,
+			"Ec2meta": ec2meta.Ec2meta,
+			"ec2meta": ec2meta.Ec2meta,
 		},
 	}
 }
