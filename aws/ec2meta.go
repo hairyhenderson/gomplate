@@ -1,6 +1,7 @@
 package aws
 
 import (
+	"encoding/json"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -41,8 +42,8 @@ func (e *Ec2Meta) retrieveMetadata(url string, key string, def ...string) string
 	return value
 }
 
-// Ec2meta -
-func (e *Ec2Meta) Ec2meta(key string, def ...string) string {
+// Meta -
+func (e *Ec2Meta) Meta(key string, def ...string) string {
 	if e.Endpoint == "" {
 		e.Endpoint = DefaultEndpoint
 	}
@@ -51,12 +52,37 @@ func (e *Ec2Meta) Ec2meta(key string, def ...string) string {
 	return e.retrieveMetadata(url, key, def...)
 }
 
-// Ec2dynamic -
-func (e *Ec2Meta) Ec2dynamic(key string, def ...string) string {
+// Dynamic -
+func (e *Ec2Meta) Dynamic(key string, def ...string) string {
 	if e.Endpoint == "" {
 		e.Endpoint = DefaultEndpoint
 	}
 
 	url := e.Endpoint + "/latest/dynamic/" + key
 	return e.retrieveMetadata(url, key, def...)
+}
+
+// Region -
+func (e *Ec2Meta) Region() string {
+	doc := e.Dynamic("instance-identity/document", `{"region":"unknown"}`)
+	obj := &InstanceDocument{
+		Region: "unknown",
+	}
+	err := json.Unmarshal([]byte(doc), &obj)
+	if err != nil {
+		log.Fatalf("Unable to unmarshal JSON object %s: %v", doc, err)
+	}
+	return obj.Region
+}
+
+// InstanceDocument -
+type InstanceDocument struct {
+	PrivateIP        string `json:"privateIp"`
+	AvailabilityZone string `json:"availabilityZone"`
+	InstanceID       string `json:"InstanceId"`
+	InstanceType     string `json:"InstanceType"`
+	AccountID        string `json:"AccountId"`
+	ImageID          string `json:"imageId"`
+	Architecture     string `json:"architecture"`
+	Region           string `json:"region"`
 }
