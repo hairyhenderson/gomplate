@@ -2,15 +2,15 @@
 
 # gomplate
 
-A simple [Go template](https://golang.org/pkg/text/template/)-based alternative to [`envsubst`](https://www.gnu.org/software/gettext/manual/html_node/envsubst-Invocation.html).
+A [Go template](https://golang.org/pkg/text/template/)-based alternative to [`envsubst`](https://www.gnu.org/software/gettext/manual/html_node/envsubst-Invocation.html).
 
 I really like `envsubst` for use as a super-minimalist template processor. But its simplicity is also its biggest flaw: it's all-or-nothing with shell-like variables.
 
-Gomplate is an alternative that will let you process templates which also include shell-like variables.
+Gomplate is an alternative that will let you process templates which also include shell-like variables. Also there are some useful built-in functions that can be used to make templates even more expressive.
 
 ## Usage
 
-At the moment, `gomplate` just replaces environment variables. All environment variables are available by referencing `.Env` in the template.
+The usual and most basic usage of `gomplate` is to just replace environment variables. All environment variables are available by referencing `.Env` (or `getenv`) in the template.
 
 The template is read from standard in, and written to standard out.
 
@@ -75,7 +75,7 @@ foo
 
 #### `json`
 
-Converts a JSON string into an object. Only works for JSON Objects. This can be used to access properties of JSON objects.
+Converts a JSON string into an object. Only works for JSON Objects (not Arrays or other valid JSON types). This can be used to access properties of JSON objects.
 
 ##### Example
 
