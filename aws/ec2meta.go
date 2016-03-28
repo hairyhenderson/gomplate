@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"strings"
+	"time"
 )
 
 // DefaultEndpoint -
@@ -17,20 +18,27 @@ type Ec2Meta struct {
 	Client   *http.Client
 }
 
+// returnDefault -
+func returnDefault(def []string) string {
+	if len(def) > 0 {
+		return def[0]
+	}
+	return ""
+}
+
 func (e *Ec2Meta) retrieveMetadata(url string, key string, def ...string) string {
 	if e.Client == nil {
-		e.Client = &http.Client{}
+		e.Client = &http.Client{
+			Timeout: 5 * time.Second,
+		}
 	}
 	resp, err := e.Client.Get(url)
 	if err != nil {
-		log.Fatalf("Failed to GET from %s: %v", url, err)
+		return returnDefault(def)
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode > 399 {
-		if len(def) > 0 {
-			return def[0]
-		}
-		return ""
+		return returnDefault(def)
 	}
 
 	body, err := ioutil.ReadAll(resp.Body)
