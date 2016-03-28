@@ -1,15 +1,12 @@
 # Change Log
 
-## [Unreleased](https://github.com/hairyhenderson/gomplate/tree/HEAD)
-
-[Full Changelog](https://github.com/hairyhenderson/gomplate/compare/v0.2.0...HEAD)
+## [v0.2.1](https://github.com/hairyhenderson/gomplate/tree/v0.2.1) (2016-03-28)
+[Full Changelog](https://github.com/hairyhenderson/gomplate/compare/v0.2.0...v0.2.1)
 
 **Fixed bugs:**
 
 - AWS-dependent functions should fail gracefully when not running in AWS [\#26](https://github.com/hairyhenderson/gomplate/issues/26)
-
-**Merged pull requests:**
-
+- It's 'ec2region', not 'region' [\#29](https://github.com/hairyhenderson/gomplate/pull/29) ([hairyhenderson](https://github.com/hairyhenderson))
 - Using defaults on network errors and timeouts [\#27](https://github.com/hairyhenderson/gomplate/pull/27) ([hairyhenderson](https://github.com/hairyhenderson))
 
 ## [v0.2.0](https://github.com/hairyhenderson/gomplate/tree/v0.2.0) (2016-03-28)
