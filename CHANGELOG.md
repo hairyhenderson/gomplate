@@ -1,5 +1,33 @@
 # Change Log
 
+## [Unreleased](https://github.com/hairyhenderson/gomplate/tree/HEAD)
+
+[Full Changelog](https://github.com/hairyhenderson/gomplate/compare/v0.2.0...HEAD)
+
+**Fixed bugs:**
+
+- AWS-dependent functions should fail gracefully when not running in AWS [\#26](https://github.com/hairyhenderson/gomplate/issues/26)
+
+**Merged pull requests:**
+
+- Using defaults on network errors and timeouts [\#27](https://github.com/hairyhenderson/gomplate/pull/27) ([hairyhenderson](https://github.com/hairyhenderson))
+
+## [v0.2.0](https://github.com/hairyhenderson/gomplate/tree/v0.2.0) (2016-03-28)
+[Full Changelog](https://github.com/hairyhenderson/gomplate/compare/v0.1.1...v0.2.0)
+
+**Implemented enhancements:**
+
+- Would be nifty to be able to resolve EC2 metadata [\#15](https://github.com/hairyhenderson/gomplate/issues/15)
+- Adding ec2tag and ec2region functions [\#24](https://github.com/hairyhenderson/gomplate/pull/24) ([hairyhenderson](https://github.com/hairyhenderson))
+- Adding new ec2dynamic function [\#23](https://github.com/hairyhenderson/gomplate/pull/23) ([hairyhenderson](https://github.com/hairyhenderson))
+- Adding json filter function [\#21](https://github.com/hairyhenderson/gomplate/pull/21) ([hairyhenderson](https://github.com/hairyhenderson))
+- Adding ec2meta function [\#20](https://github.com/hairyhenderson/gomplate/pull/20) ([hairyhenderson](https://github.com/hairyhenderson))
+
+**Merged pull requests:**
+
+- 📖 Documenting the ec2meta function [\#22](https://github.com/hairyhenderson/gomplate/pull/22) ([hairyhenderson](https://github.com/hairyhenderson))
+- 💄 Refactoring to split functions [\#19](https://github.com/hairyhenderson/gomplate/pull/19) ([hairyhenderson](https://github.com/hairyhenderson))
+
 ## [v0.1.1](https://github.com/hairyhenderson/gomplate/tree/v0.1.1) (2016-03-22)
 [Full Changelog](https://github.com/hairyhenderson/gomplate/compare/v0.1.0...v0.1.1)
 
