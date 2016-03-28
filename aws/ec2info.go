@@ -1,8 +1,6 @@
 package aws
 
 import (
-	"log"
-
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ec2"
@@ -46,7 +44,7 @@ func (e *Ec2Info) Tag(tag string, def ...string) string {
 	}
 	output, err := e.describer.DescribeInstances(input)
 	if err != nil {
-		log.Fatalf("Failed to list tag %s: %v", tag, err)
+		return returnDefault(def)
 	}
 	if output != nil && len(output.Reservations) > 0 &&
 		len(output.Reservations[0].Instances) > 0 &&
@@ -58,8 +56,5 @@ func (e *Ec2Info) Tag(tag string, def ...string) string {
 		}
 	}
 
-	if len(def) > 0 {
-		return def[0]
-	}
-	return ""
+	return returnDefault(def)
 }
