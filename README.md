@@ -116,6 +116,31 @@ $ echo '{{ (ec2dynamic "instance-identity/document" | json).region }}' | ./gompl
 us-east-1
 ```
 
+#### `ec2region`
+
+Queries AWS to get the region. Returns `unknown` if it can't be determined for some reason.
+
+##### Example
+
+```console
+$ echo '{{ ec2region }}' | ./gomplate
+us-east-1
+```
+
+#### `ec2tag`
+
+Queries the AWS EC2 API to find the value of the given [user-defined tag](http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/Using_Tags.html). An optional default
+can be provided.
+
+#### Example
+
+```console
+$ echo 'This server is in the {{ ec2tag "Account" }} account.' | ./gomplate
+foo
+$ echo 'I am a {{ ec2tag "classification" "meat popsicle" }}.' | ./gomplate
+I am a meat popsicle.
+```
+
 ### Some more complex examples
 
 ##### Variable assignment and `if`/`else`
@@ -134,6 +159,15 @@ You are root!
 ```
 
 _Note:_ it's important for the `if`/`else`/`end` keywords to appear on the same line, or else `gomplate` will not be able to parse the pipeline properly
+
+## Releasing
+
+Right now the release process is semi-automatic.
+
+1. Create a release tag: `git tag -a v0.0.9 -m "Releasing v0.9.9"`
+2. Build binaries: `make build-x`
+3. _(optional)_ compress the binaries with `upx` (may not work for all architectures)
+4. Create a release in [github](https://github.com/hairyhenderson/gomplate/releases)!
 
 ## License
 
