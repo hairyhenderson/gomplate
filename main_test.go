@@ -20,14 +20,28 @@ func testTemplate(g *Gomplate, template string) string {
 }
 
 func TestGetenvTemplates(t *testing.T) {
-	g := NewGomplate()
+	env := &Env{}
+	typeconv := &TypeConv{}
+	g := &Gomplate{
+		funcMap: template.FuncMap{
+			"getenv": env.Getenv,
+			"bool":   typeconv.Bool,
+		},
+	}
 	assert.Empty(t, testTemplate(g, `{{getenv "BLAHBLAHBLAH"}}`))
 	assert.Equal(t, os.Getenv("USER"), testTemplate(g, `{{getenv "USER"}}`))
 	assert.Equal(t, "default value", testTemplate(g, `{{getenv "BLAHBLAHBLAH" "default value"}}`))
 }
 
 func TestBoolTemplates(t *testing.T) {
-	g := NewGomplate()
+	env := &Env{}
+	typeconv := &TypeConv{}
+	g := &Gomplate{
+		funcMap: template.FuncMap{
+			"getenv": env.Getenv,
+			"bool":   typeconv.Bool,
+		},
+	}
 	assert.Equal(t, "true", testTemplate(g, `{{bool "true"}}`))
 	assert.Equal(t, "false", testTemplate(g, `{{bool "false"}}`))
 	assert.Equal(t, "false", testTemplate(g, `{{bool "foo"}}`))
@@ -39,7 +53,7 @@ func TestEc2MetaTemplates_MissingKey(t *testing.T) {
 	defer server.Close()
 	g := &Gomplate{
 		funcMap: template.FuncMap{
-			"ec2meta": ec2meta.Ec2meta,
+			"ec2meta": ec2meta.Meta,
 		},
 	}
 
@@ -52,7 +66,7 @@ func TestEc2MetaTemplates_ValidKey(t *testing.T) {
 	defer server.Close()
 	g := &Gomplate{
 		funcMap: template.FuncMap{
-			"ec2meta": ec2meta.Ec2meta,
+			"ec2meta": ec2meta.Meta,
 		},
 	}
 
@@ -66,8 +80,8 @@ func TestEc2MetaTemplates_WithJSON(t *testing.T) {
 	ty := new(TypeConv)
 	g := &Gomplate{
 		funcMap: template.FuncMap{
-			"ec2meta":    ec2meta.Ec2meta,
-			"ec2dynamic": ec2meta.Ec2dynamic,
+			"ec2meta":    ec2meta.Meta,
+			"ec2dynamic": ec2meta.Dynamic,
 			"json":       ty.JSON,
 		},
 	}

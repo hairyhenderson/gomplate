@@ -57,18 +57,16 @@ func NewGomplate() *Gomplate {
 	env := &Env{}
 	typeconv := &TypeConv{}
 	ec2meta := &aws.Ec2Meta{}
+	ec2info := aws.NewEc2Info()
 	return &Gomplate{
 		funcMap: template.FuncMap{
-			"Getenv":     env.Getenv,
 			"getenv":     env.Getenv,
-			"Bool":       typeconv.Bool,
 			"bool":       typeconv.Bool,
-			"JSON":       typeconv.JSON,
 			"json":       typeconv.JSON,
-			"Ec2meta":    ec2meta.Ec2meta,
-			"ec2meta":    ec2meta.Ec2meta,
-			"Ec2dynamic": ec2meta.Ec2dynamic,
-			"ec2dynamic": ec2meta.Ec2dynamic,
+			"ec2meta":    ec2meta.Meta,
+			"ec2dynamic": ec2meta.Dynamic,
+			"ec2tag":     ec2info.Tag,
+			"region":     ec2meta.Region,
 		},
 	}
 }
