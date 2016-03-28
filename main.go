@@ -66,7 +66,7 @@ func NewGomplate() *Gomplate {
 			"ec2meta":    ec2meta.Meta,
 			"ec2dynamic": ec2meta.Dynamic,
 			"ec2tag":     ec2info.Tag,
-			"region":     ec2meta.Region,
+			"ec2region":  ec2meta.Region,
 		},
 	}
 }
