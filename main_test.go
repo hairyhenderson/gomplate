@@ -34,12 +34,10 @@ func TestGetenvTemplates(t *testing.T) {
 }
 
 func TestBoolTemplates(t *testing.T) {
-	env := &Env{}
 	typeconv := &TypeConv{}
 	g := &Gomplate{
 		funcMap: template.FuncMap{
-			"getenv": env.Getenv,
-			"bool":   typeconv.Bool,
+			"bool": typeconv.Bool,
 		},
 	}
 	assert.Equal(t, "true", testTemplate(g, `{{bool "true"}}`))
@@ -88,4 +86,28 @@ func TestEc2MetaTemplates_WithJSON(t *testing.T) {
 
 	assert.Equal(t, "bar", testTemplate(g, `{{ (ec2meta "obj" | json).foo }}`))
 	assert.Equal(t, "bar", testTemplate(g, `{{ (ec2dynamic "obj" | json).foo }}`))
+}
+
+func TestJSONArrayTemplates(t *testing.T) {
+	ty := new(TypeConv)
+	g := &Gomplate{
+		funcMap: template.FuncMap{
+			"jsonArray": ty.JSONArray,
+		},
+	}
+
+	assert.Equal(t, "[foo bar]", testTemplate(g, `{{jsonArray "[\"foo\",\"bar\"]"}}`))
+	assert.Equal(t, "bar", testTemplate(g, `{{ index (jsonArray "[\"foo\",\"bar\"]") 1 }}`))
+}
+
+func TestSliceTemplates(t *testing.T) {
+	typeconv := &TypeConv{}
+	g := &Gomplate{
+		funcMap: template.FuncMap{
+			"slice": typeconv.Slice,
+		},
+	}
+	assert.Equal(t, "foo", testTemplate(g, `{{index (slice "foo") 0}}`))
+	assert.Equal(t, `[foo bar 42]`, testTemplate(g, `{{slice "foo" "bar" 42}}`))
+	assert.Equal(t, `helloworld`, testTemplate(g, `{{range slice "hello" "world"}}{{.}}{{end}}`))
 }

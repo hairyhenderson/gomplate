@@ -20,7 +20,7 @@ func (t *TypeConv) Bool(in string) bool {
 	return false
 }
 
-// JSON - Unmarshal a JSON string
+// JSON - Unmarshal a JSON Object
 func (t *TypeConv) JSON(in string) map[string]interface{} {
 	obj := make(map[string]interface{})
 	err := json.Unmarshal([]byte(in), &obj)
@@ -28,4 +28,19 @@ func (t *TypeConv) JSON(in string) map[string]interface{} {
 		log.Fatalf("Unable to unmarshal JSON object %s: %v", in, err)
 	}
 	return obj
+}
+
+// JSONArray - Unmarshal a JSON Array
+func (t *TypeConv) JSONArray(in string) []interface{} {
+	obj := make([]interface{}, 1)
+	err := json.Unmarshal([]byte(in), &obj)
+	if err != nil {
+		log.Fatalf("Unable to unmarshal JSON array %s: %v", in, err)
+	}
+	return obj
+}
+
+// Slice creates a slice from a bunch of arguments
+func (t *TypeConv) Slice(args ...interface{}) []interface{} {
+	return args
 }

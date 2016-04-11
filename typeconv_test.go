@@ -35,3 +35,20 @@ func TestJSON(t *testing.T) {
 	assert.Equal(t, expected["one"], actual["one"])
 	assert.Equal(t, expected["true"], actual["true"])
 }
+
+func TestJSONArray(t *testing.T) {
+	ty := new(TypeConv)
+
+	expected := []string{"foo", "bar"}
+	actual := ty.JSONArray(`["foo","bar"]`)
+	assert.Equal(t, expected[0], actual[0])
+	assert.Equal(t, expected[1], actual[1])
+}
+
+func TestSlice(t *testing.T) {
+	ty := new(TypeConv)
+	expected := []string{"foo", "bar"}
+	actual := ty.Slice("foo", "bar")
+	assert.Equal(t, expected[0], actual[0])
+	assert.Equal(t, expected[1], actual[1])
+}

@@ -73,6 +73,26 @@ $ FOO=true gomplate < input.tmpl
 foo
 ```
 
+#### `slice`
+
+Creates a slice. Useful when needing to `range` over a bunch of variables.
+
+##### Example
+
+_`input.tmpl`:_
+```
+{{range slice "Bart" "Lisa" "Maggie"}}
+Hello, {{.}}
+{{- end}}
+```
+
+```console
+$ gomplate < input.tmpl
+Hello, Bart
+Hello, Lisa
+Hello, Maggie
+```
+
 #### `json`
 
 Converts a JSON string into an object. Only works for JSON Objects (not Arrays or other valid JSON types). This can be used to access properties of JSON objects.
@@ -86,6 +106,23 @@ Hello {{ (getenv "FOO" | json).hello }}
 
 ```console
 $ export FOO='{"hello":"world"}'
+$ gomplate < input.tmpl
+Hello world
+```
+
+#### `jsonArray`
+
+Converts a JSON string into a slice. Only works for JSON Arrays.
+
+##### Example
+
+_`input.tmpl`:_
+```
+Hello {{ index (getenv "FOO" | jsonArray) 1 }}
+```
+
+```console
+$ export FOO='[ "you", "world" ]'
 $ gomplate < input.tmpl
 Hello world
 ```
