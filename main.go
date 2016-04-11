@@ -9,18 +9,16 @@ import (
 	"os"
 
 	"github.com/hairyhenderson/gomplate/aws"
+	"github.com/hairyhenderson/gomplate/version"
 
 	"text/template"
 )
-
-// version
-const Version = "0.2.2"
 
 func init() {
 	ver := flag.Bool("v", false, "Print version and exit")
 	flag.Parse()
 	if *ver {
-		fmt.Println(Version)
+		fmt.Println(version.Version)
 		os.Exit(0)
 	}
 }
