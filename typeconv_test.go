@@ -52,3 +52,15 @@ func TestSlice(t *testing.T) {
 	assert.Equal(t, expected[0], actual[0])
 	assert.Equal(t, expected[1], actual[1])
 }
+
+func TestJoin(t *testing.T) {
+	ty := new(TypeConv)
+
+	assert.Equal(t, "foo,bar", ty.Join([]interface{}{"foo", "bar"}, ","))
+	assert.Equal(t, "foo,\nbar", ty.Join([]interface{}{"foo", "bar"}, ",\n"))
+	// Join handles all kinds of scalar types too...
+	assert.Equal(t, "42-18446744073709551615", ty.Join([]interface{}{42, uint64(18446744073709551615)}, "-"))
+	assert.Equal(t, "1,,true,3.14,foo,nil", ty.Join([]interface{}{1, "", true, 3.14, "foo", nil}, ","))
+	// and best-effort with weird types
+	assert.Equal(t, "[foo],bar", ty.Join([]interface{}{[]string{"foo"}, "bar"}, ","))
+}

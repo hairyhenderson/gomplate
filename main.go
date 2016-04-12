@@ -10,7 +10,7 @@ import (
 
 	"github.com/hairyhenderson/gomplate/aws"
 	"github.com/hairyhenderson/gomplate/version"
-
+	"strings"
 	"text/template"
 )
 
@@ -63,10 +63,14 @@ func NewGomplate() *Gomplate {
 			"json":       typeconv.JSON,
 			"jsonArray":  typeconv.JSONArray,
 			"slice":      typeconv.Slice,
+			"join":       typeconv.Join,
 			"ec2meta":    ec2meta.Meta,
 			"ec2dynamic": ec2meta.Dynamic,
 			"ec2tag":     ec2info.Tag,
 			"ec2region":  ec2meta.Region,
+			"title":      strings.Title,
+			"toUpper":    strings.ToUpper,
+			"toLower":    strings.ToLower,
 		},
 	}
 }
