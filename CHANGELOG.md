@@ -1,5 +1,35 @@
 # Change Log
 
+## [Unreleased](https://github.com/hairyhenderson/gomplate/tree/HEAD)
+
+[Full Changelog](https://github.com/hairyhenderson/gomplate/compare/v0.3.0...HEAD)
+
+**Implemented enhancements:**
+
+- New functions join, title, toLower, and toUpper [\#36](https://github.com/hairyhenderson/gomplate/pull/36) ([hairyhenderson](https://github.com/hairyhenderson))
+
+## [v0.3.0](https://github.com/hairyhenderson/gomplate/tree/v0.3.0) (2016-04-11)
+[Full Changelog](https://github.com/hairyhenderson/gomplate/compare/v0.2.2...v0.3.0)
+
+**Implemented enhancements:**
+
+- Adding slice and jsonArray template functions [\#34](https://github.com/hairyhenderson/gomplate/pull/34) ([hairyhenderson](https://github.com/hairyhenderson))
+
+**Closed issues:**
+
+- gomplate -v returns 0.1.0 even for newer releases [\#33](https://github.com/hairyhenderson/gomplate/issues/33)
+
+**Merged pull requests:**
+
+- Setting the version at build time from the latest tag [\#35](https://github.com/hairyhenderson/gomplate/pull/35) ([hairyhenderson](https://github.com/hairyhenderson))
+
+## [v0.2.2](https://github.com/hairyhenderson/gomplate/tree/v0.2.2) (2016-03-28)
+[Full Changelog](https://github.com/hairyhenderson/gomplate/compare/v0.2.1...v0.2.2)
+
+**Fixed bugs:**
+
+- Fixing -v flag [\#32](https://github.com/hairyhenderson/gomplate/pull/32) ([hairyhenderson](https://github.com/hairyhenderson))
+
 ## [v0.2.1](https://github.com/hairyhenderson/gomplate/tree/v0.2.1) (2016-03-28)
 [Full Changelog](https://github.com/hairyhenderson/gomplate/compare/v0.2.0...v0.2.1)
 
