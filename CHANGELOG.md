@@ -2,7 +2,14 @@
 
 ## [Unreleased](https://github.com/hairyhenderson/gomplate/tree/HEAD)
 
-[Full Changelog](https://github.com/hairyhenderson/gomplate/compare/v0.3.0...HEAD)
+[Full Changelog](https://github.com/hairyhenderson/gomplate/compare/v0.4.0...HEAD)
+
+**Fixed bugs:**
+
+- Fixing broken versions in build-x target [\#38](https://github.com/hairyhenderson/gomplate/pull/38) ([hairyhenderson](https://github.com/hairyhenderson))
+
+## [v0.4.0](https://github.com/hairyhenderson/gomplate/tree/v0.4.0) (2016-04-12)
+[Full Changelog](https://github.com/hairyhenderson/gomplate/compare/v0.3.0...v0.4.0)
 
 **Implemented enhancements:**
 
