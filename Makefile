@@ -9,6 +9,7 @@ VERSION_FLAG := -X `go list ./version`.Version=`git describe --abbrev=0 --tags $
 define gocross
 	GOOS=$(1) GOARCH=$(2) \
 		$(GO) build \
+			-ldflags "$(COMMIT_FLAG) $(VERSION_FLAG)" \
 			-o $(PREFIX)/bin/$(PKG_NAME)_$(1)-$(2)$(call extension,$(1));
 endef
 
