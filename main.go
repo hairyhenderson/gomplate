@@ -1,27 +1,18 @@
 package main
 
 import (
-	"flag"
-	"fmt"
 	"io"
 	"io/ioutil"
 	"log"
 	"os"
 
-	"github.com/hairyhenderson/gomplate/aws"
-	"github.com/hairyhenderson/gomplate/version"
 	"strings"
 	"text/template"
-)
 
-func init() {
-	ver := flag.Bool("v", false, "Print version and exit")
-	flag.Parse()
-	if *ver {
-		fmt.Println(version.Version)
-		os.Exit(0)
-	}
-}
+	"github.com/codegangsta/cli"
+	"github.com/hairyhenderson/gomplate/aws"
+	"github.com/hairyhenderson/gomplate/version"
+)
 
 func (g *Gomplate) createTemplate() *template.Template {
 	return template.New("template").Funcs(g.funcMap).Option("missingkey=error")
@@ -75,7 +66,18 @@ func NewGomplate() *Gomplate {
 	}
 }
 
-func main() {
+func runTemplate(c *cli.Context) error {
 	g := NewGomplate()
 	g.RunTemplate(os.Stdin, os.Stdout)
+	return nil
+}
+
+func main() {
+	app := cli.NewApp()
+	app.Name = "gomplate"
+	app.Usage = "Process text files with Go templates"
+	app.Version = version.Version
+	app.Action = runTemplate
+
+	app.Run(os.Args)
 }
