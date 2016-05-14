@@ -1,5 +1,7 @@
 [![Build Status][circleci-image]][circleci-url]
 [![Go Report Card][reportcard-image]][reportcard-url]
+[![Codebeat Status][codebeat-image]][codebeat-url]
+[![Coverage][gocover-image]][gocover-url]
 
 # gomplate
 
@@ -217,3 +219,7 @@ Copyright (c) 2016 Dave Henderson
 [circleci-url]: https://circleci.com/gh/hairyhenderson/gomplate
 [reportcard-image]: https://goreportcard.com/badge/github.com/hairyhenderson/gomplate
 [reportcard-url]: https://goreportcard.com/report/github.com/hairyhenderson/gomplate
+[codebeat-image]: https://codebeat.co/badges/39ed2148-4b86-4d1e-8526-25f60e159ba1
+[codebeat-url]: https://codebeat.co/projects/github-com-hairyhenderson-gomplate
+[gocover-image]: https://gocover.io/_badge/github.com/hairyhenderson/gomplate
+[gocover-url]: https://gocover.io/github.com/hairyhenderson/gomplate
