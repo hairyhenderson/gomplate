@@ -1,4 +1,5 @@
 [![Build Status][circleci-image]][circleci-url]
+[![Go Report Card][reportcard-image]][reportcard-url]
 
 # gomplate
 
@@ -214,3 +215,5 @@ Copyright (c) 2016 Dave Henderson
 
 [circleci-image]: https://img.shields.io/circleci/project/hairyhenderson/gomplate.svg?style=flat
 [circleci-url]: https://circleci.com/gh/hairyhenderson/gomplate
+[reportcard-image]: https://goreportcard.com/badge/github.com/hairyhenderson/gomplate
+[reportcard-url]: https://goreportcard.com/report/github.com/hairyhenderson/gomplate
