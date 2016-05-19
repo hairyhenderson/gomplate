@@ -24,6 +24,22 @@ $ echo "Hello, {{.Env.USER}}" | gomplate
 Hello, hairyhenderson
 ```
 
+### Commandline Arguments
+
+#### `--datasource`/`-d`
+
+Add a data source in `name=URL` form. Specify multiple times to add multiple sources. The data can then be used by the [`datasource`](#datasource) function.
+
+A few different forms are valid:
+- `mydata=file:///tmp/my/file.json`
+  - Create a data source named `mydata` which is read from `/tmp/my/file.json`. This form is valid for any file in any path.
+- `mydata=file.json`
+  - Create a data source named `mydata` which is read from `file.json` (in the current working directory). This form is only valid for files in the current directory.
+- `mydata.json`
+  - This form infers the name from the file name (without extension). Only valid for files in the current directory.
+
+## Syntax
+
 #### About `.Env`
 
 You can easily access environment variables with `.Env`, but there's a catch:
@@ -128,6 +144,31 @@ Hello {{ index (getenv "FOO" | jsonArray) 1 }}
 $ export FOO='[ "you", "world" ]'
 $ gomplate < input.tmpl
 Hello world
+```
+
+#### `datasource`
+
+Parses a given datasource (provided by the [`--datasource/-d`](#--datasource-d) argument).
+
+Currently, only `file://` URLs are supported, and only the JSON format  can be parsed. More support is coming.
+
+##### Example
+
+_`person.json`:_
+```json
+{
+  "name": "Dave"
+}
+```
+
+_`input.tmpl`:_
+```
+Hello {{ (datasource "person").name }}
+```
+
+```console
+$ gomplate -d person.json < input.tmpl
+Hello Dave
 ```
 
 #### `ec2meta`
