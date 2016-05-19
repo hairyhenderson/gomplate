@@ -2,6 +2,7 @@
 [![Go Report Card][reportcard-image]][reportcard-url]
 [![Codebeat Status][codebeat-image]][codebeat-url]
 [![Coverage][gocover-image]][gocover-url]
+[![Total Downloads][gh-downloads-image]][gh-downloads-url]
 
 # gomplate
 
@@ -264,3 +265,5 @@ Copyright (c) 2016 Dave Henderson
 [codebeat-url]: https://codebeat.co/projects/github-com-hairyhenderson-gomplate
 [gocover-image]: https://gocover.io/_badge/github.com/hairyhenderson/gomplate
 [gocover-url]: https://gocover.io/github.com/hairyhenderson/gomplate
+[gh-downloads-image]: https://img.shields.io/github/downloads/hairyhenderson/gomplate/total.svg
+[gh-downloads-url]: https://github.com/hairyhenderson/gomplate/releases
