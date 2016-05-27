@@ -1,8 +1,13 @@
 # Change Log
 
-## [Unreleased](https://github.com/hairyhenderson/gomplate/tree/HEAD)
+## [v0.5.0](https://github.com/hairyhenderson/gomplate/tree/v0.5.0) (2016-05-22)
+[Full Changelog](https://github.com/hairyhenderson/gomplate/compare/v0.4.0...v0.5.0)
 
-[Full Changelog](https://github.com/hairyhenderson/gomplate/compare/v0.4.0...HEAD)
+**Implemented enhancements:**
+
+- It'd be nice to also resolve templates from files [\#8](https://github.com/hairyhenderson/gomplate/issues/8)
+- Switching argument parsing to codegangsta/cli [\#42](https://github.com/hairyhenderson/gomplate/pull/42) ([hairyhenderson](https://github.com/hairyhenderson))
+- New datasource function - allows use of JSON files as a data source for the template [\#9](https://github.com/hairyhenderson/gomplate/pull/9) ([hairyhenderson](https://github.com/hairyhenderson))
 
 **Fixed bugs:**
 
