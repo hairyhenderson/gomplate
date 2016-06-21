@@ -1,5 +1,13 @@
 # Change Log
 
+## [v0.5.1](https://github.com/hairyhenderson/gomplate/tree/v0.5.1) (2016-06-21)
+[Full Changelog](https://github.com/hairyhenderson/gomplate/compare/v0.5.0...v0.5.1)
+
+**Fixed bugs:**
+
+- Gomplate sometimes stalls for 5s [\#48](https://github.com/hairyhenderson/gomplate/issues/48)
+- Make things start faster [\#51](https://github.com/hairyhenderson/gomplate/pull/51) ([hairyhenderson](https://github.com/hairyhenderson))
+
 ## [v0.5.0](https://github.com/hairyhenderson/gomplate/tree/v0.5.0) (2016-05-22)
 [Full Changelog](https://github.com/hairyhenderson/gomplate/compare/v0.4.0...v0.5.0)
 
