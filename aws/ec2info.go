@@ -8,7 +8,7 @@ import (
 
 // Ec2Info -
 type Ec2Info struct {
-	describer  InstanceDescriber
+	describer  func() InstanceDescriber
 	metaClient *Ec2Meta
 }
 
@@ -17,14 +17,14 @@ type InstanceDescriber interface {
 	DescribeInstances(*ec2.DescribeInstancesInput) (*ec2.DescribeInstancesOutput, error)
 }
 
-// var _ InstanceDescriber = (*ec2.EC2)(nil)
-
 // NewEc2Info -
 func NewEc2Info() *Ec2Info {
 	metaClient := &Ec2Meta{}
-	region := metaClient.Region()
 	return &Ec2Info{
-		describer:  ec2Client(region),
+		describer: func() InstanceDescriber {
+			region := metaClient.Region()
+			return ec2Client(region)
+		},
 		metaClient: metaClient,
 	}
 }
@@ -42,7 +42,7 @@ func (e *Ec2Info) Tag(tag string, def ...string) string {
 	input := &ec2.DescribeInstancesInput{
 		InstanceIds: aws.StringSlice([]string{instanceID}),
 	}
-	output, err := e.describer.DescribeInstances(input)
+	output, err := e.describer().DescribeInstances(input)
 	if err != nil {
 		return returnDefault(def)
 	}
