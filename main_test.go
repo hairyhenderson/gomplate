@@ -100,6 +100,20 @@ func TestJSONArrayTemplates(t *testing.T) {
 	assert.Equal(t, "bar", testTemplate(g, `{{ index (jsonArray "[\"foo\",\"bar\"]") 1 }}`))
 }
 
+func TestYAMLTemplates(t *testing.T) {
+	ty := new(TypeConv)
+	g := &Gomplate{
+		funcMap: template.FuncMap{
+			"yaml":      ty.YAML,
+			"yamlArray": ty.YAMLArray,
+		},
+	}
+
+	assert.Equal(t, "bar", testTemplate(g, `{{(yaml "foo: bar").foo}}`))
+	assert.Equal(t, "[foo bar]", testTemplate(g, `{{yamlArray "- foo\n- bar\n"}}`))
+	assert.Equal(t, "bar", testTemplate(g, `{{ index (yamlArray "[\"foo\",\"bar\"]") 1 }}`))
+}
+
 func TestSliceTemplates(t *testing.T) {
 	typeconv := &TypeConv{}
 	g := &Gomplate{

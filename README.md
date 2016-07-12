@@ -147,11 +147,47 @@ $ gomplate < input.tmpl
 Hello world
 ```
 
+#### `yaml`
+
+Converts a YAML string into an object. Only works for YAML Objects (not Arrays or other valid YAML types). This can be used to access properties of YAML objects.
+
+##### Example
+
+_`input.tmpl`:_
+```
+Hello {{ (getenv "FOO" | yaml).hello }}
+```
+
+```console
+$ export FOO='hello: world'
+$ gomplate < input.tmpl
+Hello world
+```
+
+#### `yamlArray`
+
+Converts a YAML string into a slice. Only works for YAML Arrays.
+
+##### Example
+
+_`input.tmpl`:_
+```
+Hello {{ index (getenv "FOO" | yamlArray) 1 }}
+```
+
+```console
+$ export FOO='[ "you", "world" ]'
+$ gomplate < input.tmpl
+Hello world
+```
+
 #### `datasource`
 
 Parses a given datasource (provided by the [`--datasource/-d`](#--datasource-d) argument).
 
-Currently, only `file://` URLs are supported, and only the JSON format  can be parsed. More support is coming.
+Currently, only `file://` URLs are supported.
+
+Currently-supported formats are JSON and YAML.
 
 ##### Example
 

@@ -94,3 +94,29 @@ func TestDatasource(t *testing.T) {
 	actual := data.Datasource("foo")
 	assert.Equal(t, expected["hello"], actual["hello"])
 }
+
+func TestYAMLDatasource(t *testing.T) {
+	fs := memfs.Create()
+	fs.Mkdir("/tmp", 0777)
+	f, _ := vfs.Create(fs, "/tmp/foo.yml")
+	f.Write([]byte(`hello: world`))
+
+	sources := make(map[string]*Source)
+	sources["foo"] = &Source{
+		Alias: "foo",
+		URL: &url.URL{
+			Scheme: "file",
+			Path:   "/tmp/foo.yml",
+		},
+		Ext:  "yml",
+		Type: "application/yaml",
+		FS:   fs,
+	}
+	data := &Data{
+		Sources: sources,
+	}
+	expected := make(map[string]interface{})
+	expected["hello"] = "world"
+	actual := data.Datasource("foo")
+	assert.Equal(t, expected["hello"], actual["hello"])
+}

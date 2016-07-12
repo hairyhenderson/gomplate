@@ -134,6 +134,10 @@ func (d *Data) Datasource(alias string) map[string]interface{} {
 		ty := &TypeConv{}
 		return ty.JSON(string(b))
 	}
+	if source.Type == "application/yaml" {
+		ty := &TypeConv{}
+		return ty.YAML(string(b))
+	}
 	log.Fatalf("Datasources of type %s not yet supported", source.Type)
 	return nil
 }
