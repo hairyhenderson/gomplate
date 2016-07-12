@@ -6,6 +6,8 @@ import (
 	"log"
 	"strconv"
 	"strings"
+
+	yaml "gopkg.in/yaml.v2"
 )
 
 // TypeConv - type conversion function
@@ -38,6 +40,26 @@ func (t *TypeConv) JSONArray(in string) []interface{} {
 	err := json.Unmarshal([]byte(in), &obj)
 	if err != nil {
 		log.Fatalf("Unable to unmarshal JSON array %s: %v", in, err)
+	}
+	return obj
+}
+
+// YAML - Unmarshal a YAML Object
+func (t *TypeConv) YAML(in string) map[string]interface{} {
+	obj := make(map[string]interface{})
+	err := yaml.Unmarshal([]byte(in), &obj)
+	if err != nil {
+		log.Fatalf("Unable to unmarshal YAML object %s: %v", in, err)
+	}
+	return obj
+}
+
+// YAMLArray - Unmarshal a YAML Array
+func (t *TypeConv) YAMLArray(in string) []interface{} {
+	obj := make([]interface{}, 1)
+	err := yaml.Unmarshal([]byte(in), &obj)
+	if err != nil {
+		log.Fatalf("Unable to unmarshal YAML array %s: %v", in, err)
 	}
 	return obj
 }
