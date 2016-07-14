@@ -1,5 +1,22 @@
 # Change Log
 
+## [Unreleased](https://github.com/hairyhenderson/gomplate/tree/HEAD)
+
+[Full Changelog](https://github.com/hairyhenderson/gomplate/compare/v0.6.0...HEAD)
+
+**Implemented enhancements:**
+
+- Support HTTP/HTTPS datasources [\#45](https://github.com/hairyhenderson/gomplate/issues/45)
+- Adding support for HTTP/HTTPS datasources [\#53](https://github.com/hairyhenderson/gomplate/pull/53) ([hairyhenderson](https://github.com/hairyhenderson))
+
+## [v0.6.0](https://github.com/hairyhenderson/gomplate/tree/v0.6.0) (2016-07-12)
+[Full Changelog](https://github.com/hairyhenderson/gomplate/compare/v0.5.1...v0.6.0)
+
+**Implemented enhancements:**
+
+- Support YAML data sources [\#43](https://github.com/hairyhenderson/gomplate/issues/43)
+- Adding YAML support [\#52](https://github.com/hairyhenderson/gomplate/pull/52) ([hairyhenderson](https://github.com/hairyhenderson))
+
 ## [v0.5.1](https://github.com/hairyhenderson/gomplate/tree/v0.5.1) (2016-06-21)
 [Full Changelog](https://github.com/hairyhenderson/gomplate/compare/v0.5.0...v0.5.1)
 
