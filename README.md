@@ -185,11 +185,13 @@ Hello world
 
 Parses a given datasource (provided by the [`--datasource/-d`](#--datasource-d) argument).
 
-Currently, only `file://` URLs are supported.
+Currently, `file://`, `http://` and `https://` URLs are supported.
 
 Currently-supported formats are JSON and YAML.
 
-##### Example
+##### Examples
+
+###### Basic usage
 
 _`person.json`:_
 ```json
@@ -206,6 +208,13 @@ Hello {{ (datasource "person").name }}
 ```console
 $ gomplate -d person.json < input.tmpl
 Hello Dave
+```
+
+###### Usage with HTTP data
+
+```console
+$ echo 'Hello there, {{(datasource "foo").headers.Host}}...' | gomplate -d foo=https://httpbin.org/get
+Hello there, httpbin.org...
 ```
 
 #### `ec2meta`

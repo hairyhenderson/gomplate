@@ -1,6 +1,9 @@
 package main
 
 import (
+	"fmt"
+	"net/http"
+	"net/http/httptest"
 	"net/url"
 	"testing"
 
@@ -111,6 +114,47 @@ func TestYAMLDatasource(t *testing.T) {
 		Ext:  "yml",
 		Type: "application/yaml",
 		FS:   fs,
+	}
+	data := &Data{
+		Sources: sources,
+	}
+	expected := make(map[string]interface{})
+	expected["hello"] = "world"
+	actual := data.Datasource("foo")
+	assert.Equal(t, expected["hello"], actual["hello"])
+}
+
+func setupHTTP(code int, mimetype string, body string) (*httptest.Server, *http.Client) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", mimetype)
+		w.WriteHeader(code)
+		fmt.Fprintln(w, body)
+	}))
+
+	client := &http.Client{
+		Transport: &http.Transport{
+			Proxy: func(req *http.Request) (*url.URL, error) {
+				return url.Parse(server.URL)
+			},
+		},
+	}
+
+	return server, client
+}
+
+func TestHTTPFile(t *testing.T) {
+	server, client := setupHTTP(200, "application/json; charset=utf-8", `{"hello": "world"}`)
+	defer server.Close()
+
+	sources := make(map[string]*Source)
+	sources["foo"] = &Source{
+		Alias: "foo",
+		URL: &url.URL{
+			Scheme: "http",
+			Host:   "example.com",
+			Path:   "/foo",
+		},
+		HC: client,
 	}
 	data := &Data{
 		Sources: sources,
