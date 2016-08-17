@@ -312,3 +312,5 @@ Copyright (c) 2016 Dave Henderson
 [gocover-url]: https://gocover.io/github.com/hairyhenderson/gomplate
 [gh-downloads-image]: https://img.shields.io/github/downloads/hairyhenderson/gomplate/total.svg
 [gh-downloads-url]: https://github.com/hairyhenderson/gomplate/releases
+
+[![Analytics](https://ga-beacon.appspot.com/UA-82637990-1/gomplate/README.md?pixel)](https://github.com/igrigorik/ga-beacon)
