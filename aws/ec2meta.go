@@ -71,10 +71,15 @@ func (e *Ec2Meta) Dynamic(key string, def ...string) string {
 }
 
 // Region -
-func (e *Ec2Meta) Region() string {
-	doc := e.Dynamic("instance-identity/document", `{"region":"unknown"}`)
+func (e *Ec2Meta) Region(def ...string) string {
+	defaultRegion := returnDefault(def)
+	if defaultRegion == "" {
+		defaultRegion = "unknown"
+	}
+
+	doc := e.Dynamic("instance-identity/document", `{"region":"`+defaultRegion+`"}`)
 	obj := &InstanceDocument{
-		Region: "unknown",
+		Region: defaultRegion,
 	}
 	err := json.Unmarshal([]byte(doc), &obj)
 	if err != nil {
