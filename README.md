@@ -245,13 +245,22 @@ us-east-1
 
 #### `ec2region`
 
-Queries AWS to get the region. Returns `unknown` if it can't be determined for some reason.
+Queries AWS to get the region. An optional default can be provided, or returns
+`unknown` if it can't be determined for some reason.
 
 ##### Example
 
+_In EC2_
 ```console
 $ echo '{{ ec2region }}' | ./gomplate
 us-east-1
+```
+_Not in EC2_
+```console
+$ echo '{{ ec2region }}' | ./gomplate
+unknown
+$ echo '{{ ec2region "foo" }}' | ./gomplate
+foo
 ```
 
 #### `ec2tag`

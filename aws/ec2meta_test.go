@@ -45,6 +45,13 @@ func TestRegion_NoRegion(t *testing.T) {
 	assert.Equal(t, "unknown", ec2meta.Region())
 }
 
+func TestRegion_NoRegionWithDefault(t *testing.T) {
+	server, ec2meta := MockServer(200, "{}")
+	defer server.Close()
+
+	assert.Equal(t, "foo", ec2meta.Region("foo"))
+}
+
 func TestRegion_KnownRegion(t *testing.T) {
 	server, ec2meta := MockServer(200, `{"region":"us-east-1"}`)
 	defer server.Close()
