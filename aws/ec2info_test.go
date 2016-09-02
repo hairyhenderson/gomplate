@@ -11,7 +11,7 @@ import (
 func TestTag_MissingKey(t *testing.T) {
 	server, ec2meta := MockServer(200, `"i-1234"`)
 	defer server.Close()
-	client := &DummyInstanceDescriber{
+	client := DummyInstanceDescriber{
 		tags: []*ec2.Tag{
 			&ec2.Tag{
 				Key:   aws.String("foo"),
@@ -24,7 +24,9 @@ func TestTag_MissingKey(t *testing.T) {
 		},
 	}
 	e := &Ec2Info{
-		describer:  client,
+		describer: func() InstanceDescriber {
+			return client
+		},
 		metaClient: ec2meta,
 	}
 
@@ -35,7 +37,7 @@ func TestTag_MissingKey(t *testing.T) {
 func TestTag_ValidKey(t *testing.T) {
 	server, ec2meta := MockServer(200, `"i-1234"`)
 	defer server.Close()
-	client := &DummyInstanceDescriber{
+	client := DummyInstanceDescriber{
 		tags: []*ec2.Tag{
 			&ec2.Tag{
 				Key:   aws.String("foo"),
@@ -48,7 +50,9 @@ func TestTag_ValidKey(t *testing.T) {
 		},
 	}
 	e := &Ec2Info{
-		describer:  client,
+		describer: func() InstanceDescriber {
+			return client
+		},
 		metaClient: ec2meta,
 	}
 
@@ -61,7 +65,7 @@ type DummyInstanceDescriber struct {
 	tags []*ec2.Tag
 }
 
-func (d *DummyInstanceDescriber) DescribeInstances(*ec2.DescribeInstancesInput) (*ec2.DescribeInstancesOutput, error) {
+func (d DummyInstanceDescriber) DescribeInstances(*ec2.DescribeInstancesInput) (*ec2.DescribeInstancesOutput, error) {
 	output := &ec2.DescribeInstancesOutput{
 		Reservations: []*ec2.Reservation{
 			&ec2.Reservation{
