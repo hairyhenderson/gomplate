@@ -16,6 +16,7 @@ const DefaultEndpoint = "http://169.254.169.254"
 type Ec2Meta struct {
 	Endpoint string
 	Client   *http.Client
+	nonAWS   bool
 }
 
 // returnDefault -
@@ -26,16 +27,32 @@ func returnDefault(def []string) string {
 	return ""
 }
 
+func unreachable(err error) bool {
+	if strings.Contains(err.Error(), "request canceled") ||
+		strings.Contains(err.Error(), "no route to host") ||
+		strings.Contains(err.Error(), "host is down") {
+		return true
+	}
+
+	return false
+}
+
 func (e *Ec2Meta) retrieveMetadata(url string, key string, def ...string) string {
+	if e.nonAWS {
+		return returnDefault(def)
+	}
+
 	if e.Client == nil {
-		e.Client = &http.Client{
-			Timeout: 5 * time.Second,
-		}
+		e.Client = &http.Client{Timeout: 500 * time.Millisecond}
 	}
 	resp, err := e.Client.Get(url)
 	if err != nil {
+		if unreachable(err) {
+			e.nonAWS = true
+		}
 		return returnDefault(def)
 	}
+
 	defer resp.Body.Close()
 	if resp.StatusCode > 399 {
 		return returnDefault(def)
