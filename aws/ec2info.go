@@ -38,6 +38,10 @@ func ec2Client(region string) (client InstanceDescriber) {
 
 // Tag -
 func (e *Ec2Info) Tag(tag string, def ...string) string {
+	if e.metaClient.nonAWS {
+		returnDefault(def)
+	}
+
 	instanceID := e.metaClient.Meta("instance-id")
 	input := &ec2.DescribeInstancesInput{
 		InstanceIds: aws.StringSlice([]string{instanceID}),

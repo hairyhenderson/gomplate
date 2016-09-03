@@ -60,6 +60,21 @@ func TestTag_ValidKey(t *testing.T) {
 	assert.Equal(t, "bar", e.Tag("foo", "default"))
 }
 
+func TestTag_NonEC2(t *testing.T) {
+	server, ec2meta := MockServer(404, "")
+	defer server.Close()
+	client := DummyInstanceDescriber{}
+	e := &Ec2Info{
+		describer: func() InstanceDescriber {
+			return client
+		},
+		metaClient: ec2meta,
+	}
+
+	assert.Equal(t, "", e.Tag("foo"))
+	assert.Equal(t, "default", e.Tag("foo", "default"))
+}
+
 // test doubles
 type DummyInstanceDescriber struct {
 	tags []*ec2.Tag
