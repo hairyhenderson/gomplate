@@ -45,7 +45,7 @@ func (g *Gomplate) RunTemplate(in io.Reader, out io.Writer) {
 func NewGomplate(data *Data) *Gomplate {
 	env := &Env{}
 	typeconv := &TypeConv{}
-	ec2meta := &aws.Ec2Meta{}
+	ec2meta := aws.NewEc2Meta()
 	ec2info := aws.NewEc2Info()
 	return &Gomplate{
 		funcMap: template.FuncMap{

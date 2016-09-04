@@ -1,6 +1,7 @@
 package aws
 
 import (
+	"errors"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -57,4 +58,18 @@ func TestRegion_KnownRegion(t *testing.T) {
 	defer server.Close()
 
 	assert.Equal(t, "us-east-1", ec2meta.Region())
+}
+
+func TestUnreachable(t *testing.T) {
+	assert.False(t, unreachable(errors.New("foo")))
+	assert.True(t, unreachable(errors.New("host is down")))
+	assert.True(t, unreachable(errors.New("request canceled")))
+	assert.True(t, unreachable(errors.New("no route to host")))
+}
+
+func TestRetrieveMetadata_NonEC2(t *testing.T) {
+	ec2meta := NewEc2Meta()
+	ec2meta.nonAWS = true
+
+	assert.Equal(t, "foo", ec2meta.retrieveMetadata("", "foo"))
 }
