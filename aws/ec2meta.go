@@ -17,6 +17,12 @@ type Ec2Meta struct {
 	Endpoint string
 	Client   *http.Client
 	nonAWS   bool
+	cache    map[string]string
+}
+
+// NewEc2Meta -
+func NewEc2Meta() *Ec2Meta {
+	return &Ec2Meta{cache: make(map[string]string)}
 }
 
 // returnDefault -
@@ -37,7 +43,11 @@ func unreachable(err error) bool {
 	return false
 }
 
-func (e *Ec2Meta) retrieveMetadata(url string, key string, def ...string) string {
+func (e *Ec2Meta) retrieveMetadata(url string, def ...string) string {
+	if value, ok := e.cache[url]; ok {
+		return value
+	}
+
 	if e.nonAWS {
 		return returnDefault(def)
 	}
@@ -63,6 +73,7 @@ func (e *Ec2Meta) retrieveMetadata(url string, key string, def ...string) string
 		log.Fatalf("Failed to read response body from %s: %v", url, err)
 	}
 	value := strings.TrimSpace(string(body))
+	e.cache[url] = value
 
 	return value
 }
@@ -74,7 +85,7 @@ func (e *Ec2Meta) Meta(key string, def ...string) string {
 	}
 
 	url := e.Endpoint + "/latest/meta-data/" + key
-	return e.retrieveMetadata(url, key, def...)
+	return e.retrieveMetadata(url, def...)
 }
 
 // Dynamic -
@@ -84,7 +95,7 @@ func (e *Ec2Meta) Dynamic(key string, def ...string) string {
 	}
 
 	url := e.Endpoint + "/latest/dynamic/" + key
-	return e.retrieveMetadata(url, key, def...)
+	return e.retrieveMetadata(url, def...)
 }
 
 // Region -

@@ -10,6 +10,7 @@ import (
 type Ec2Info struct {
 	describer  func() InstanceDescriber
 	metaClient *Ec2Meta
+	cache      map[string]interface{}
 }
 
 // InstanceDescriber - A subset of ec2iface.EC2API that we can use to call EC2.DescribeInstances
@@ -26,6 +27,7 @@ func NewEc2Info() *Ec2Info {
 			return ec2Client(region)
 		},
 		metaClient: metaClient,
+		cache:      make(map[string]interface{}),
 	}
 }
 
@@ -38,19 +40,12 @@ func ec2Client(region string) (client InstanceDescriber) {
 
 // Tag -
 func (e *Ec2Info) Tag(tag string, def ...string) string {
-	if e.metaClient.nonAWS {
-		returnDefault(def)
-	}
-
-	instanceID := e.metaClient.Meta("instance-id")
-	input := &ec2.DescribeInstancesInput{
-		InstanceIds: aws.StringSlice([]string{instanceID}),
-	}
-	output, err := e.describer().DescribeInstances(input)
-	if err != nil {
+	output := e.describeInstance()
+	if output == nil {
 		return returnDefault(def)
 	}
-	if output != nil && len(output.Reservations) > 0 &&
+
+	if len(output.Reservations) > 0 &&
 		len(output.Reservations[0].Instances) > 0 &&
 		len(output.Reservations[0].Instances[0].Tags) > 0 {
 		for _, v := range output.Reservations[0].Instances[0].Tags {
@@ -61,4 +56,28 @@ func (e *Ec2Info) Tag(tag string, def ...string) string {
 	}
 
 	return returnDefault(def)
+}
+
+func (e *Ec2Info) describeInstance() (output *ec2.DescribeInstancesOutput) {
+	if e.metaClient.nonAWS {
+		return nil
+	}
+
+	if cached, ok := e.cache["DescribeInstances"]; ok {
+		output = cached.(*ec2.DescribeInstancesOutput)
+	} else {
+		instanceID := e.metaClient.Meta("instance-id")
+
+		input := &ec2.DescribeInstancesInput{
+			InstanceIds: aws.StringSlice([]string{instanceID}),
+		}
+
+		var err error
+		output, err = e.describer().DescribeInstances(input)
+		if err != nil {
+			return nil
+		}
+		e.cache["DescribeInstances"] = output
+	}
+	return
 }

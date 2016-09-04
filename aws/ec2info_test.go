@@ -8,6 +8,26 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+// test doubles
+type DummyInstanceDescriber struct {
+	tags []*ec2.Tag
+}
+
+func (d DummyInstanceDescriber) DescribeInstances(*ec2.DescribeInstancesInput) (*ec2.DescribeInstancesOutput, error) {
+	output := &ec2.DescribeInstancesOutput{
+		Reservations: []*ec2.Reservation{
+			&ec2.Reservation{
+				Instances: []*ec2.Instance{
+					&ec2.Instance{
+						Tags: d.tags,
+					},
+				},
+			},
+		},
+	}
+	return output, nil
+}
+
 func TestTag_MissingKey(t *testing.T) {
 	server, ec2meta := MockServer(200, `"i-1234"`)
 	defer server.Close()
@@ -28,6 +48,7 @@ func TestTag_MissingKey(t *testing.T) {
 			return client
 		},
 		metaClient: ec2meta,
+		cache:      make(map[string]interface{}),
 	}
 
 	assert.Empty(t, e.Tag("missing"))
@@ -54,6 +75,7 @@ func TestTag_ValidKey(t *testing.T) {
 			return client
 		},
 		metaClient: ec2meta,
+		cache:      make(map[string]interface{}),
 	}
 
 	assert.Equal(t, "bar", e.Tag("foo"))
@@ -62,6 +84,7 @@ func TestTag_ValidKey(t *testing.T) {
 
 func TestTag_NonEC2(t *testing.T) {
 	server, ec2meta := MockServer(404, "")
+	ec2meta.nonAWS = true
 	defer server.Close()
 	client := DummyInstanceDescriber{}
 	e := &Ec2Info{
@@ -69,28 +92,9 @@ func TestTag_NonEC2(t *testing.T) {
 			return client
 		},
 		metaClient: ec2meta,
+		cache:      make(map[string]interface{}),
 	}
 
 	assert.Equal(t, "", e.Tag("foo"))
 	assert.Equal(t, "default", e.Tag("foo", "default"))
-}
-
-// test doubles
-type DummyInstanceDescriber struct {
-	tags []*ec2.Tag
-}
-
-func (d DummyInstanceDescriber) DescribeInstances(*ec2.DescribeInstancesInput) (*ec2.DescribeInstancesOutput, error) {
-	output := &ec2.DescribeInstancesOutput{
-		Reservations: []*ec2.Reservation{
-			&ec2.Reservation{
-				Instances: []*ec2.Instance{
-					&ec2.Instance{
-						Tags: d.tags,
-					},
-				},
-			},
-		},
-	}
-	return output, nil
 }
