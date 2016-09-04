@@ -1,5 +1,17 @@
 # Change Log
 
+## [v1.1.1](https://github.com/hairyhenderson/gomplate/tree/v1.1.1) (2016-09-04)
+[Full Changelog](https://github.com/hairyhenderson/gomplate/compare/v1.1.0...v1.1.1)
+
+**Implemented enhancements:**
+
+- Caching responses from EC2 [\#61](https://github.com/hairyhenderson/gomplate/pull/61) ([hairyhenderson](https://github.com/hairyhenderson))
+- Short-circuit ec2 function defaults when not in AWS [\#60](https://github.com/hairyhenderson/gomplate/pull/60) ([hairyhenderson](https://github.com/hairyhenderson))
+
+**Fixed bugs:**
+
+- Slow and repeated network calls during ec2 functions [\#59](https://github.com/hairyhenderson/gomplate/issues/59)
+
 ## [v1.1.0](https://github.com/hairyhenderson/gomplate/tree/v1.1.0) (2016-09-02)
 [Full Changelog](https://github.com/hairyhenderson/gomplate/compare/v1.0.0...v1.1.0)
 
