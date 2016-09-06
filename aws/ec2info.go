@@ -20,7 +20,7 @@ type InstanceDescriber interface {
 
 // NewEc2Info -
 func NewEc2Info() *Ec2Info {
-	metaClient := &Ec2Meta{}
+	metaClient := NewEc2Meta()
 	return &Ec2Info{
 		describer: func() InstanceDescriber {
 			region := metaClient.Region()

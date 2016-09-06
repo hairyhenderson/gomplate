@@ -98,3 +98,28 @@ func TestTag_NonEC2(t *testing.T) {
 	assert.Equal(t, "", e.Tag("foo"))
 	assert.Equal(t, "default", e.Tag("foo", "default"))
 }
+
+func TestNewEc2Info(t *testing.T) {
+	server, ec2meta := MockServer(200, `"i-1234"`)
+	defer server.Close()
+	client := DummyInstanceDescriber{
+		tags: []*ec2.Tag{
+			&ec2.Tag{
+				Key:   aws.String("foo"),
+				Value: aws.String("bar"),
+			},
+			&ec2.Tag{
+				Key:   aws.String("baz"),
+				Value: aws.String("qux"),
+			},
+		},
+	}
+	e := NewEc2Info()
+	e.describer = func() InstanceDescriber {
+		return client
+	}
+	e.metaClient = ec2meta
+
+	assert.Equal(t, "bar", e.Tag("foo"))
+	assert.Equal(t, "bar", e.Tag("foo", "default"))
+}
