@@ -1,5 +1,12 @@
 # Change Log
 
+## [v1.1.2](https://github.com/hairyhenderson/gomplate/tree/v1.1.2) (2016-09-06)
+[Full Changelog](https://github.com/hairyhenderson/gomplate/compare/v1.1.1...v1.1.2)
+
+**Fixed bugs:**
+
+- Fixing a panic in Ec2Info.go [\#62](https://github.com/hairyhenderson/gomplate/pull/62) ([marcboudreau](https://github.com/marcboudreau))
+
 ## [v1.1.1](https://github.com/hairyhenderson/gomplate/tree/v1.1.1) (2016-09-04)
 [Full Changelog](https://github.com/hairyhenderson/gomplate/compare/v1.1.0...v1.1.1)
 
