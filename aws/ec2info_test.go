@@ -16,9 +16,9 @@ type DummyInstanceDescriber struct {
 func (d DummyInstanceDescriber) DescribeInstances(*ec2.DescribeInstancesInput) (*ec2.DescribeInstancesOutput, error) {
 	output := &ec2.DescribeInstancesOutput{
 		Reservations: []*ec2.Reservation{
-			&ec2.Reservation{
+			{
 				Instances: []*ec2.Instance{
-					&ec2.Instance{
+					{
 						Tags: d.tags,
 					},
 				},
@@ -33,11 +33,11 @@ func TestTag_MissingKey(t *testing.T) {
 	defer server.Close()
 	client := DummyInstanceDescriber{
 		tags: []*ec2.Tag{
-			&ec2.Tag{
+			{
 				Key:   aws.String("foo"),
 				Value: aws.String("bar"),
 			},
-			&ec2.Tag{
+			{
 				Key:   aws.String("baz"),
 				Value: aws.String("qux"),
 			},
@@ -60,11 +60,11 @@ func TestTag_ValidKey(t *testing.T) {
 	defer server.Close()
 	client := DummyInstanceDescriber{
 		tags: []*ec2.Tag{
-			&ec2.Tag{
+			{
 				Key:   aws.String("foo"),
 				Value: aws.String("bar"),
 			},
-			&ec2.Tag{
+			{
 				Key:   aws.String("baz"),
 				Value: aws.String("qux"),
 			},
@@ -104,11 +104,11 @@ func TestNewEc2Info(t *testing.T) {
 	defer server.Close()
 	client := DummyInstanceDescriber{
 		tags: []*ec2.Tag{
-			&ec2.Tag{
+			{
 				Key:   aws.String("foo"),
 				Value: aws.String("bar"),
 			},
-			&ec2.Tag{
+			{
 				Key:   aws.String("baz"),
 				Value: aws.String("qux"),
 			},
