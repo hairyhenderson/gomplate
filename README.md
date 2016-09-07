@@ -12,6 +12,25 @@ I really like `envsubst` for use as a super-minimalist template processor. But i
 
 Gomplate is an alternative that will let you process templates which also include shell-like variables. Also there are some useful built-in functions that can be used to make templates even more expressive.
 
+## Installing
+
+1. Get the latest `gomplate` for your platform from the [releases](https://github.com/hairyhenderson/gomplate/releases) page
+2. Store the downloaded binary somewhere in your path as `gomplate` (or `gomplate.exe`
+  on Windows)
+3. Make sure it's executable (on Linux/macOS)
+3. Test it out with `gomplate --help`!
+
+In other words:
+
+```console
+$ curl -o /usr/local/bin/gomplate https://github.com/hairyhenderson/gomplate/releases/download/<version>/gomplate_<os>-<arch>
+$ chmod 755 /usr/local/bin/gomplate
+$ gomplate --help
+...
+```
+
+_Please report any bugs found in the [issue tracker](https://github.com/hairyhenderson/gomplate/issues/)._
+
 ## Usage
 
 The usual and most basic usage of `gomplate` is to just replace environment variables. All environment variables are available by referencing `.Env` (or `getenv`) in the template.
