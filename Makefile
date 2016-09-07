@@ -13,6 +13,11 @@ define gocross
 			-o $(PREFIX)/bin/$(PKG_NAME)_$(1)-$(2)$(call extension,$(1));
 endef
 
+define compress
+	upx $(PREFIX)/bin/$(PKG_NAME)_$(1)-$(2)$(call extension,$(1)) \
+	 -o $(PREFIX)/bin/$(PKG_NAME)_$(1)-$(2)-slim$(call extension,$(1))
+endef
+
 clean:
 	rm -Rf $(PREFIX)/bin/*
 
@@ -23,6 +28,15 @@ build-x: $(shell find . -type f -name '*.go')
 	$(call gocross,darwin,amd64)
 	$(call gocross,windows,amd64)
 	$(call gocross,windows,386)
+
+compress-all:
+	$(call compress,linux,amd64)
+	$(call compress,linux,386)
+	$(call compress,linux,arm)
+	$(call compress,windows,amd64)
+	$(call compress,windows,386)
+
+build-release: clean build-x compress-all
 
 $(PREFIX)/bin/$(PKG_NAME)$(call extension,$(GOOS)): $(shell find . -type f -name '*.go')
 	$(GO) build -ldflags "$(COMMIT_FLAG) $(VERSION_FLAG)" -o $@

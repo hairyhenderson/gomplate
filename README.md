@@ -300,10 +300,9 @@ _Note:_ it's important for the `if`/`else`/`end` keywords to appear on the same 
 
 Right now the release process is semi-automatic.
 
-1. Create a release tag: `git tag -a v0.0.9 -m "Releasing v0.9.9"`
-2. Build binaries: `make build-x`
-3. _(optional)_ compress the binaries with `upx` (may not work for all architectures)
-4. Create a release in [github](https://github.com/hairyhenderson/gomplate/releases)!
+1. Create a release tag: `git tag -a v0.0.9 -m "Releasing v0.9.9" && git push --tags`
+2. Build binaries & compress most of them: `make build-release`
+3. Create a release in [github](https://github.com/hairyhenderson/gomplate/releases)!
 
 ## License
 
