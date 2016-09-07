@@ -3,6 +3,7 @@
 [![Codebeat Status][codebeat-image]][codebeat-url]
 [![Coverage][gocover-image]][gocover-url]
 [![Total Downloads][gh-downloads-image]][gh-downloads-url]
+[![CII Best Practices][cii-bp-image]][cii-bp-url]
 
 # gomplate
 
@@ -339,5 +340,8 @@ Copyright (c) 2016 Dave Henderson
 [gocover-url]: https://gocover.io/github.com/hairyhenderson/gomplate
 [gh-downloads-image]: https://img.shields.io/github/downloads/hairyhenderson/gomplate/total.svg
 [gh-downloads-url]: https://github.com/hairyhenderson/gomplate/releases
+
+[cii-bp-image]: https://bestpractices.coreinfrastructure.org/projects/337/badge
+[cii-bp-url]: https://bestpractices.coreinfrastructure.org/projects/337
 
 [![Analytics](https://ga-beacon.appspot.com/UA-82637990-1/gomplate/README.md?pixel)](https://github.com/igrigorik/ga-beacon)
