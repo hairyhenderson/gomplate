@@ -9,9 +9,9 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/codegangsta/cli"
 	"github.com/hairyhenderson/gomplate/aws"
 	"github.com/hairyhenderson/gomplate/version"
+	"github.com/urfave/cli"
 )
 
 func (g *Gomplate) createTemplate() *template.Template {
