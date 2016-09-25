@@ -7,6 +7,8 @@
 
 # gomplate
 
+[![Join the chat at https://gitter.im/gomplate/Lobby](https://badges.gitter.im/gomplate/Lobby.svg)](https://gitter.im/gomplate/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 A [Go template](https://golang.org/pkg/text/template/)-based alternative to [`envsubst`](https://www.gnu.org/software/gettext/manual/html_node/envsubst-Invocation.html).
 
 I really like `envsubst` for use as a super-minimalist template processor. But its simplicity is also its biggest flaw: it's all-or-nothing with shell-like variables.
