@@ -17,6 +17,18 @@ Gomplate is an alternative that will let you process templates which also includ
 
 ## Installing
 
+### macOS with homebrew
+
+The simplest method for macOS is to use homebrew:
+
+```console
+$ brew tap hairyhenderson/tap
+$ brew install gomplate
+...
+```
+
+### manual install
+
 1. Get the latest `gomplate` for your platform from the [releases](https://github.com/hairyhenderson/gomplate/releases) page
 2. Store the downloaded binary somewhere in your path as `gomplate` (or `gomplate.exe`
   on Windows)
