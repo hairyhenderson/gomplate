@@ -69,12 +69,11 @@ func NewGomplate(data *Data) *Gomplate {
 	}
 }
 
-func runTemplate(c *cli.Context) error {
+func runTemplate(c *cli.Context) {
 	data := NewData(c.StringSlice("datasource"))
 
 	g := NewGomplate(data)
 	g.RunTemplate(os.Stdin, os.Stdout)
-	return nil
 }
 
 func main() {
