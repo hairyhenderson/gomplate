@@ -329,11 +329,6 @@ You are not root :(
 $ sudo gomplate < input.tmpl
 You are root!
 ```
-_Note:_ You can use the `{{-` and `-}}` to trim whitespace before and after a multiple line `if`/`else`/`end` statement. See the [Text and spaces](https://golang.org/pkg/text/template/) section of the go template language. Alternatively, you can use a single line `if`/`else`/`end` statement:
-
-```
-{{ if eq $u "root" }}You are root!{{else}}You are not root :({{end}}
-```
 
 ## Releasing
 
