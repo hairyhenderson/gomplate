@@ -316,7 +316,11 @@ I am a meat popsicle.
 _`input.tmpl`:_
 ```
 {{ $u := getenv "USER" }}
-{{ if eq $u "root" }}You are root!{{else}}You are not root :({{end}}
+{{ if eq $u "root" -}}
+You are root!
+{{- else -}}
+You are not root :(
+{{- end}}
 ```
 
 ```console
@@ -325,8 +329,11 @@ You are not root :(
 $ sudo gomplate < input.tmpl
 You are root!
 ```
+_Note:_ You can use the `{{-` and `-}}` to trim whitespace before and after a multiple line `if`/`else`/`end` statement. See the [Text and spaces](https://golang.org/pkg/text/template/) section of the go template language. Alternatively, you can use a single line `if`/`else`/`end` statement:
 
-_Note:_ it's important for the `if`/`else`/`end` keywords to appear on the same line, or else `gomplate` will not be able to parse the pipeline properly
+```
+{{ if eq $u "root" }}You are root!{{else}}You are not root :({{end}}
+```
 
 ## Releasing
 
