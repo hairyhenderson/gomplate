@@ -217,7 +217,7 @@ Hello world
 
 Parses a given datasource (provided by the [`--datasource/-d`](#--datasource-d) argument).
 
-Currently, `file://`, `http://` and `https://` URLs are supported.
+Currently, `file://`, `http://`, `https://`, and `vault://` URLs are supported.
 
 Currently-supported formats are JSON and YAML.
 
@@ -247,6 +247,42 @@ Hello Dave
 ```console
 $ echo 'Hello there, {{(datasource "foo").headers.Host}}...' | gomplate -d foo=https://httpbin.org/get
 Hello there, httpbin.org...
+```
+
+###### Usage with Vault data
+
+The special `vault://` URL scheme can be used to retrieve data from [Hashicorp
+Vault](https://vaultproject.io). To use this, you must put the Vault server's
+URL in the `$VAULT_ADDR` environment variable.
+
+Currently, the [`app-id`](https://www.vaultproject.io/docs/auth/app-id.html)
+auth backend is supported, as well as Vault tokens obtained through external
+means.
+
+To use a Vault datasource with a single secret, just use a URL of
+`vault:///secret/mysecret`. Note the 3 `/`s - the host portion of the URL is left
+empty.
+
+```console
+$ echo 'My voice is my passport. {{(datasource "vault").value}}' \
+  | gomplate -d vault=vault:///secret/sneakers
+My voice is my passport. Verify me.
+```
+
+You can also specify the secret path in the template by using a URL of `vault://`
+(or `vault:///`, or `vault:`):
+```console
+$ echo 'My voice is my passport. {{(datasource "vault" "secret/sneakers").value}}' \
+  | gomplate -d vault=vault://
+My voice is my passport. Verify me.
+```
+
+And the two can be mixed to scope secrets to a specific namespace:
+
+```console
+$ echo 'db_password={{(datasource "vault" "db/pass").value}}' \
+  | gomplate -d vault=vault:///secret/production
+db_password=prodsecret
 ```
 
 #### `ec2meta`

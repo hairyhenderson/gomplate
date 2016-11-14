@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"github.com/blang/vfs"
+	"github.com/hairyhenderson/gomplate/vault"
 )
 
 func init() {
@@ -22,18 +23,19 @@ func init() {
 	mime.AddExtensionType(".yml", "application/yaml")
 	mime.AddExtensionType(".yaml", "application/yaml")
 
-	sourceReaders = make(map[string]func(*Source) ([]byte, error))
+	sourceReaders = make(map[string]func(*Source, ...string) ([]byte, error))
 
 	// Register our source-reader functions
 	addSourceReader("http", readHTTP)
 	addSourceReader("https", readHTTP)
 	addSourceReader("file", readFile)
+	addSourceReader("vault", readVault)
 }
 
-var sourceReaders map[string]func(*Source) ([]byte, error)
+var sourceReaders map[string]func(*Source, ...string) ([]byte, error)
 
 // addSourceReader -
-func addSourceReader(scheme string, readFunc func(*Source) ([]byte, error)) {
+func addSourceReader(scheme string, readFunc func(*Source, ...string) ([]byte, error)) {
 	sourceReaders[scheme] = readFunc
 }
 
@@ -67,6 +69,7 @@ type Source struct {
 	Type  string
 	FS    vfs.Filesystem // used for file: URLs, nil otherwise
 	HC    *http.Client   // used for http[s]: URLs, nil otherwise
+	VC    *vault.Client  //used for vault: URLs, nil otherwise
 }
 
 // NewSource - builds a &Source
@@ -141,9 +144,9 @@ func absURL(value string) *url.URL {
 }
 
 // Datasource -
-func (d *Data) Datasource(alias string) map[string]interface{} {
+func (d *Data) Datasource(alias string, args ...string) map[string]interface{} {
 	source := d.Sources[alias]
-	b, err := d.ReadSource(source.FS, source)
+	b, err := d.ReadSource(source.FS, source, args...)
 	if err != nil {
 		log.Fatalf("Couldn't read datasource '%s': %s", alias, err)
 	}
@@ -160,7 +163,7 @@ func (d *Data) Datasource(alias string) map[string]interface{} {
 }
 
 // ReadSource -
-func (d *Data) ReadSource(fs vfs.Filesystem, source *Source) ([]byte, error) {
+func (d *Data) ReadSource(fs vfs.Filesystem, source *Source, args ...string) ([]byte, error) {
 	if d.cache == nil {
 		d.cache = make(map[string][]byte)
 	}
@@ -169,7 +172,7 @@ func (d *Data) ReadSource(fs vfs.Filesystem, source *Source) ([]byte, error) {
 		return cached, nil
 	}
 	if r, ok := sourceReaders[source.URL.Scheme]; ok {
-		data, err := r(source)
+		data, err := r(source, args...)
 		if err != nil {
 			return nil, err
 		}
@@ -181,7 +184,7 @@ func (d *Data) ReadSource(fs vfs.Filesystem, source *Source) ([]byte, error) {
 	return nil, nil
 }
 
-func readFile(source *Source) ([]byte, error) {
+func readFile(source *Source, args ...string) ([]byte, error) {
 	if source.FS == nil {
 		source.FS = vfs.OS()
 	}
@@ -207,7 +210,7 @@ func readFile(source *Source) ([]byte, error) {
 	return b, nil
 }
 
-func readHTTP(source *Source) ([]byte, error) {
+func readHTTP(source *Source, args ...string) ([]byte, error) {
 	if source.HC == nil {
 		source.HC = &http.Client{Timeout: time.Second * 5}
 	}
@@ -233,4 +236,25 @@ func readHTTP(source *Source) ([]byte, error) {
 		source.Type = mediatype
 	}
 	return body, nil
+}
+
+func readVault(source *Source, args ...string) ([]byte, error) {
+	if source.VC == nil {
+		source.VC = vault.NewClient()
+		source.VC.Login()
+		addCleanupHook(source.VC.RevokeToken)
+	}
+
+	p := source.URL.Path
+	if len(args) == 1 {
+		p = p + "/" + args[0]
+	}
+
+	data, err := source.VC.Read(p)
+	if err != nil {
+		return nil, err
+	}
+	source.Type = "application/json"
+
+	return data, nil
 }
