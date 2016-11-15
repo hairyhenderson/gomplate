@@ -70,6 +70,7 @@ func NewGomplate(data *Data) *Gomplate {
 }
 
 func runTemplate(c *cli.Context) error {
+	defer runCleanupHooks()
 	data := NewData(c.StringSlice("datasource"))
 
 	g := NewGomplate(data)
