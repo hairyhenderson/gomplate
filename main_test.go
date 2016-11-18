@@ -16,7 +16,7 @@ func testTemplate(g *Gomplate, template string) string {
 	in := strings.NewReader(template)
 	var out bytes.Buffer
 	g.RunTemplate(in, &out)
-	return strings.TrimSpace(out.String())
+	return out.String()
 }
 
 func TestGetenvTemplates(t *testing.T) {
