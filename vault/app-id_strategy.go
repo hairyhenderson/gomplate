@@ -28,20 +28,34 @@ func NewAppIDAuthStrategy() *AppIDAuthStrategy {
 	return nil
 }
 
-// GetToken - log in to the app-id auth backend and return the client token
-func (a *AppIDAuthStrategy) GetToken(addr *url.URL) (string, error) {
+// GetHTTPClient configures the HTTP client with a timeout
+func (a *AppIDAuthStrategy) GetHTTPClient() *http.Client {
 	if a.hc == nil {
 		a.hc = &http.Client{Timeout: time.Second * 5}
 	}
-	client := a.hc
+	return a.hc
+}
 
+// SetToken is a no-op for AppIDAuthStrategy as a token hasn't been acquired yet
+func (a *AppIDAuthStrategy) SetToken(req *http.Request) {
+	// no-op
+}
+
+// Do wraps http.Client.Do
+func (a *AppIDAuthStrategy) Do(req *http.Request) (*http.Response, error) {
+	hc := a.GetHTTPClient()
+	return hc.Do(req)
+}
+
+// GetToken - log in to the app-id auth backend and return the client token
+func (a *AppIDAuthStrategy) GetToken(addr *url.URL) (string, error) {
 	buf := new(bytes.Buffer)
 	json.NewEncoder(buf).Encode(&a)
 
 	u := &url.URL{}
 	*u = *addr
 	u.Path = "/v1/auth/app-id/login"
-	res, err := client.Post(u.String(), "application/json; charset=utf-8", buf)
+	res, err := requestAndFollow(a, "POST", u, buf.Bytes())
 	if err != nil {
 		return "", err
 	}

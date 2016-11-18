@@ -54,6 +54,31 @@ func getAuthStrategy() AuthStrategy {
 	return nil
 }
 
+// GetHTTPClient returns a client configured w/X-Vault-Token header
+func (c *Client) GetHTTPClient() *http.Client {
+	if c.hc == nil {
+		c.hc = &http.Client{
+			Timeout: time.Second * 5,
+			CheckRedirect: func(req *http.Request, via []*http.Request) error {
+				c.SetToken(req)
+				return nil
+			},
+		}
+	}
+	return c.hc
+}
+
+// SetToken adds an X-Vault-Token header to the request
+func (c *Client) SetToken(req *http.Request) {
+	req.Header.Set("X-Vault-Token", c.token)
+}
+
+// Do wraps http.Client.Do
+func (c *Client) Do(req *http.Request) (*http.Response, error) {
+	hc := c.GetHTTPClient()
+	return hc.Do(req)
+}
+
 // Login - log in to Vault with the discovered auth backend and save the token
 func (c *Client) Login() error {
 	token, err := c.Auth.GetToken(c.Addr)
@@ -72,17 +97,12 @@ func (c *Client) RevokeToken() {
 		return
 	}
 
-	if c.hc == nil {
-		c.hc = &http.Client{Timeout: time.Second * 5}
-	}
-
 	u := &url.URL{}
 	*u = *c.Addr
 	u.Path = "/v1/auth/token/revoke-self"
-	req, _ := http.NewRequest("POST", u.String(), nil)
-	req.Header.Set("X-Vault-Token", c.token)
 
-	res, err := c.hc.Do(req)
+	res, err := requestAndFollow(c, "POST", u, nil)
+
 	if err != nil {
 		log.Println("Error while revoking Vault Token", err)
 	}
@@ -94,24 +114,15 @@ func (c *Client) RevokeToken() {
 
 func (c *Client) Read(path string) ([]byte, error) {
 	path = normalizeURLPath(path)
-	if c.hc == nil {
-		c.hc = &http.Client{Timeout: time.Second * 5}
-	}
 
 	u := &url.URL{}
 	*u = *c.Addr
 	u.Path = "/v1" + path
-	req, err := http.NewRequest("GET", u.String(), nil)
+
+	res, err := requestAndFollow(c, "GET", u, nil)
 	if err != nil {
 		return nil, err
 	}
-	req.Header.Set("X-Vault-Token", c.token)
-
-	res, err := c.hc.Do(req)
-	if err != nil {
-		return nil, err
-	}
-
 	body, err := ioutil.ReadAll(res.Body)
 	res.Body.Close()
 	if err != nil {
@@ -119,7 +130,7 @@ func (c *Client) Read(path string) ([]byte, error) {
 	}
 
 	if res.StatusCode != 200 {
-		err = fmt.Errorf("Unexpected HTTP status %d on Read from %s: %s", res.StatusCode, u, body)
+		err = fmt.Errorf("Unexpected HTTP status %d on Read from %s: %s", res.StatusCode, path, body)
 		return nil, err
 	}
 
@@ -131,7 +142,7 @@ func (c *Client) Read(path string) ([]byte, error) {
 	}
 
 	if _, ok := response["data"]; !ok {
-		return nil, fmt.Errorf("Unexpected HTTP body on Read for %s: %s", u, body)
+		return nil, fmt.Errorf("Unexpected HTTP body on Read for %s: %s", path, body)
 	}
 
 	return json.Marshal(response["data"])
