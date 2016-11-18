@@ -38,7 +38,6 @@ func (g *Gomplate) RunTemplate(in io.Reader, out io.Writer) {
 	if err := tmpl.Execute(out, context); err != nil {
 		panic(err)
 	}
-	out.Write([]byte("\n"))
 }
 
 // NewGomplate -
