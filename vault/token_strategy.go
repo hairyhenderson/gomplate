@@ -2,13 +2,13 @@ package vault
 
 import (
 	"fmt"
-	"github.com/blang/vfs"
 	"io/ioutil"
 	"log"
 	"net/url"
 	"os"
-	"os/user"
 	"path"
+
+	"github.com/blang/vfs"
 )
 
 // TokenAuthStrategy - a pass-through strategy for situations where we already
@@ -50,12 +50,20 @@ func (a *TokenAuthStrategy) Revokable() bool {
 	return false
 }
 
-func getTokenFromFile(fs vfs.Filesystem) string {
-	u, err := user.Current()
-	if err != nil {
-		log.Fatal(err)
+func homeDir() string {
+	if home := os.Getenv("HOME"); home != "" {
+		return home
 	}
-	f, err := fs.OpenFile(path.Join(u.HomeDir, ".vault-token"), os.O_RDONLY, 0)
+	if home := os.Getenv("USERPROFILE"); home != "" {
+		return home
+	}
+	log.Fatal(`Neither HOME nor USERPROFILE environment variables are set!
+		I can't figure out where the current user's home directory is!`)
+	return ""
+}
+
+func getTokenFromFile(fs vfs.Filesystem) string {
+	f, err := fs.OpenFile(path.Join(homeDir(), ".vault-token"), os.O_RDONLY, 0)
 	if err != nil {
 		return ""
 	}

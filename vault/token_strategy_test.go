@@ -2,7 +2,6 @@ package vault
 
 import (
 	"os"
-	"os/user"
 	"path"
 	"testing"
 
@@ -23,13 +22,11 @@ func TestNewTokenAuthStrategy_FromEnvVar(t *testing.T) {
 
 func TestNewTokenAuthStrategy_FromFileGivenNoEnvVar(t *testing.T) {
 	token := "deadbeef"
-	u, err := user.Current()
-	assert.NoError(t, err)
 
 	fs := memfs.Create()
-	err = vfs.MkdirAll(fs, u.HomeDir, 0777)
+	err := vfs.MkdirAll(fs, homeDir(), 0777)
 	assert.NoError(t, err)
-	f, err := vfs.Create(fs, path.Join(u.HomeDir, ".vault-token"))
+	f, err := vfs.Create(fs, path.Join(homeDir(), ".vault-token"))
 	assert.NoError(t, err)
 	f.Write([]byte(token))
 
