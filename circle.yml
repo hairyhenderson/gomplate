@@ -1,7 +1,11 @@
-test:
+dependencies:
   pre:
-    - go get -u github.com/jstemmer/go-junit-report
+    - hash go-junit-report || go get -u github.com/jstemmer/go-junit-report
+    - hash gometalinter || (go get -u github.com/alecthomas/gometalinter && gometalinter --install)
+
+test:
   override:
     - |
       set -e -o pipefail
       go test -v -race ./... | go-junit-report > $CIRCLE_TEST_REPORTS/report.xml
+    - gometalinter --deadline 20s --disable gotype --enable gofmt --enable goimports --enable misspell --enable unused

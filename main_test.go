@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"net/http/httptest"
 	"os"
 	"strings"
 	"testing"
@@ -46,28 +47,20 @@ func TestBoolTemplates(t *testing.T) {
 	assert.Equal(t, "false", testTemplate(g, `{{bool ""}}`))
 }
 
-func TestEc2MetaTemplates_MissingKey(t *testing.T) {
-	server, ec2meta := aws.MockServer(404, "")
-	defer server.Close()
-	g := &Gomplate{
-		funcMap: template.FuncMap{
-			"ec2meta": ec2meta.Meta,
-		},
+func TestEc2MetaTemplates(t *testing.T) {
+	createGomplate := func(status int, body string) (*Gomplate, *httptest.Server) {
+		server, ec2meta := aws.MockServer(status, body)
+		return &Gomplate{template.FuncMap{"ec2meta": ec2meta.Meta}}, server
 	}
 
+	g, s := createGomplate(404, "")
+	defer s.Close()
 	assert.Equal(t, "", testTemplate(g, `{{ec2meta "foo"}}`))
 	assert.Equal(t, "default", testTemplate(g, `{{ec2meta "foo" "default"}}`))
-}
 
-func TestEc2MetaTemplates_ValidKey(t *testing.T) {
-	server, ec2meta := aws.MockServer(200, "i-1234")
-	defer server.Close()
-	g := &Gomplate{
-		funcMap: template.FuncMap{
-			"ec2meta": ec2meta.Meta,
-		},
-	}
-
+	s.Close()
+	g, s = createGomplate(200, "i-1234")
+	defer s.Close()
 	assert.Equal(t, "i-1234", testTemplate(g, `{{ec2meta "instance-id"}}`))
 	assert.Equal(t, "i-1234", testTemplate(g, `{{ec2meta "instance-id" "default"}}`))
 }

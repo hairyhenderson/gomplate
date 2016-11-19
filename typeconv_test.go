@@ -23,54 +23,40 @@ func TestBool(t *testing.T) {
 	assert.True(t, ty.Bool("1"))
 }
 
-func TestJSON(t *testing.T) {
+func TestUnmarshalObj(t *testing.T) {
 	ty := new(TypeConv)
-	expected := make(map[string]interface{})
-	expected["foo"] = "bar"
-	expected["one"] = 1.0
-	expected["true"] = true
+	expected := map[string]interface{}{
+		"foo":  "bar",
+		"one":  1.0,
+		"true": true,
+	}
 
-	actual := ty.JSON(`{"foo":"bar","one":1.0,"true":true}`)
-	assert.Equal(t, expected["foo"], actual["foo"])
-	assert.Equal(t, expected["one"], actual["one"])
-	assert.Equal(t, expected["true"], actual["true"])
-}
-
-func TestJSONArray(t *testing.T) {
-	ty := new(TypeConv)
-
-	expected := []string{"foo", "bar"}
-	actual := ty.JSONArray(`["foo","bar"]`)
-	assert.Equal(t, expected[0], actual[0])
-	assert.Equal(t, expected[1], actual[1])
-}
-
-func TestYAML(t *testing.T) {
-	ty := new(TypeConv)
-	expected := make(map[string]interface{})
-	expected["foo"] = "bar"
-	expected["one"] = 1.0
-	expected["true"] = true
-
-	actual := ty.YAML(`foo: bar
+	test := func(actual map[string]interface{}) {
+		assert.Equal(t, expected["foo"], actual["foo"])
+		assert.Equal(t, expected["one"], actual["one"])
+		assert.Equal(t, expected["true"], actual["true"])
+	}
+	test(ty.JSON(`{"foo":"bar","one":1.0,"true":true}`))
+	test(ty.YAML(`foo: bar
 one: 1.0
 true: true
-`)
-	assert.Equal(t, expected["foo"], actual["foo"])
-	assert.Equal(t, expected["one"], actual["one"])
-	assert.Equal(t, expected["true"], actual["true"])
+`))
 }
 
-func TestYAMLArray(t *testing.T) {
+func TestUnmarshalArray(t *testing.T) {
 	ty := new(TypeConv)
 
 	expected := []string{"foo", "bar"}
-	actual := ty.YAMLArray(`
+
+	test := func(actual []interface{}) {
+		assert.Equal(t, expected[0], actual[0])
+		assert.Equal(t, expected[1], actual[1])
+	}
+	test(ty.JSONArray(`["foo","bar"]`))
+	test(ty.YAMLArray(`
 - foo
 - bar
-`)
-	assert.Equal(t, expected[0], actual[0])
-	assert.Equal(t, expected[1], actual[1])
+`))
 }
 
 func TestSlice(t *testing.T) {
