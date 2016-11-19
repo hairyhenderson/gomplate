@@ -73,55 +73,32 @@ func TestParseSourceWithAlias(t *testing.T) {
 }
 
 func TestDatasource(t *testing.T) {
-	fs := memfs.Create()
-	fs.Mkdir("/tmp", 0777)
-	f, _ := vfs.Create(fs, "/tmp/foo.json")
-	f.Write([]byte(`{"hello":"world"}`))
+	test := func(ext, mime, contents string) {
+		fname := "foo." + ext
+		fs := memfs.Create()
+		_ = fs.Mkdir("/tmp", 0777)
+		f, _ := vfs.Create(fs, "/tmp/"+fname)
+		_, _ = f.Write([]byte(contents))
 
-	sources := make(map[string]*Source)
-	sources["foo"] = &Source{
-		Alias: "foo",
-		URL: &url.URL{
-			Scheme: "file",
-			Path:   "/tmp/foo.json",
-		},
-		Ext:  "json",
-		Type: "application/json",
-		FS:   fs,
+		sources := map[string]*Source{
+			"foo": {
+				Alias: "foo",
+				URL:   &url.URL{Scheme: "file", Path: "/tmp/" + fname},
+				Ext:   ext,
+				Type:  mime,
+				FS:    fs,
+			},
+		}
+		data := &Data{
+			Sources: sources,
+		}
+		expected := map[string]interface{}{"hello": "world"}
+		actual := data.Datasource("foo")
+		assert.Equal(t, expected["hello"], actual["hello"])
 	}
-	data := &Data{
-		Sources: sources,
-	}
-	expected := make(map[string]interface{})
-	expected["hello"] = "world"
-	actual := data.Datasource("foo")
-	assert.Equal(t, expected["hello"], actual["hello"])
-}
 
-func TestYAMLDatasource(t *testing.T) {
-	fs := memfs.Create()
-	fs.Mkdir("/tmp", 0777)
-	f, _ := vfs.Create(fs, "/tmp/foo.yml")
-	f.Write([]byte(`hello: world`))
-
-	sources := make(map[string]*Source)
-	sources["foo"] = &Source{
-		Alias: "foo",
-		URL: &url.URL{
-			Scheme: "file",
-			Path:   "/tmp/foo.yml",
-		},
-		Ext:  "yml",
-		Type: "application/yaml",
-		FS:   fs,
-	}
-	data := &Data{
-		Sources: sources,
-	}
-	expected := make(map[string]interface{})
-	expected["hello"] = "world"
-	actual := data.Datasource("foo")
-	assert.Equal(t, expected["hello"], actual["hello"])
+	test("json", "application/json", `{"hello":"world"}`)
+	test("yml", "application/yaml", `hello: world`)
 }
 
 func setupHTTP(code int, mimetype string, body string) (*httptest.Server, *http.Client) {

@@ -16,6 +16,6 @@ func TestEnvMapifiesEnvironment(t *testing.T) {
 func TestEnvGetsUpdatedEnvironment(t *testing.T) {
 	c := &Context{}
 	assert.Empty(t, c.Env()["FOO"])
-	os.Setenv("FOO", "foo")
+	assert.NoError(t, os.Setenv("FOO", "foo"))
 	assert.Equal(t, c.Env()["FOO"], "foo")
 }

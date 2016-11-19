@@ -19,9 +19,18 @@ import (
 
 func init() {
 	// Add some types we want to be able to handle which can be missing by default
-	mime.AddExtensionType(".json", "application/json")
-	mime.AddExtensionType(".yml", "application/yaml")
-	mime.AddExtensionType(".yaml", "application/yaml")
+	err := mime.AddExtensionType(".json", "application/json")
+	if err != nil {
+		log.Fatal(err)
+	}
+	err = mime.AddExtensionType(".yml", "application/yaml")
+	if err != nil {
+		log.Fatal(err)
+	}
+	err = mime.AddExtensionType(".yaml", "application/yaml")
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	sourceReaders = make(map[string]func(*Source, ...string) ([]byte, error))
 
@@ -219,7 +228,10 @@ func readHTTP(source *Source, args ...string) ([]byte, error) {
 		return nil, err
 	}
 	body, err := ioutil.ReadAll(res.Body)
-	res.Body.Close()
+	if err != nil {
+		return nil, err
+	}
+	err = res.Body.Close()
 	if err != nil {
 		return nil, err
 	}
@@ -241,8 +253,11 @@ func readHTTP(source *Source, args ...string) ([]byte, error) {
 func readVault(source *Source, args ...string) ([]byte, error) {
 	if source.VC == nil {
 		source.VC = vault.NewClient()
-		source.VC.Login()
+		err := source.VC.Login()
 		addCleanupHook(source.VC.RevokeToken)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	p := source.URL.Path

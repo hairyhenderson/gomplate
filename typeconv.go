@@ -24,44 +24,44 @@ func (t *TypeConv) Bool(in string) bool {
 	return false
 }
 
+func unmarshalObj(obj map[string]interface{}, in string, f func([]byte, interface{}) error) map[string]interface{} {
+	err := f([]byte(in), &obj)
+	if err != nil {
+		log.Fatalf("Unable to unmarshal object %s: %v", in, err)
+	}
+	return obj
+}
+
+func unmarshalArray(obj []interface{}, in string, f func([]byte, interface{}) error) []interface{} {
+	err := f([]byte(in), &obj)
+	if err != nil {
+		log.Fatalf("Unable to unmarshal array %s: %v", in, err)
+	}
+	return obj
+}
+
 // JSON - Unmarshal a JSON Object
 func (t *TypeConv) JSON(in string) map[string]interface{} {
 	obj := make(map[string]interface{})
-	err := json.Unmarshal([]byte(in), &obj)
-	if err != nil {
-		log.Fatalf("Unable to unmarshal JSON object %s: %v", in, err)
-	}
-	return obj
+	return unmarshalObj(obj, in, json.Unmarshal)
 }
 
 // JSONArray - Unmarshal a JSON Array
 func (t *TypeConv) JSONArray(in string) []interface{} {
 	obj := make([]interface{}, 1)
-	err := json.Unmarshal([]byte(in), &obj)
-	if err != nil {
-		log.Fatalf("Unable to unmarshal JSON array %s: %v", in, err)
-	}
-	return obj
+	return unmarshalArray(obj, in, json.Unmarshal)
 }
 
 // YAML - Unmarshal a YAML Object
 func (t *TypeConv) YAML(in string) map[string]interface{} {
 	obj := make(map[string]interface{})
-	err := yaml.Unmarshal([]byte(in), &obj)
-	if err != nil {
-		log.Fatalf("Unable to unmarshal YAML object %s: %v", in, err)
-	}
-	return obj
+	return unmarshalObj(obj, in, yaml.Unmarshal)
 }
 
 // YAMLArray - Unmarshal a YAML Array
 func (t *TypeConv) YAMLArray(in string) []interface{} {
 	obj := make([]interface{}, 1)
-	err := yaml.Unmarshal([]byte(in), &obj)
-	if err != nil {
-		log.Fatalf("Unable to unmarshal YAML array %s: %v", in, err)
-	}
-	return obj
+	return unmarshalArray(obj, in, yaml.Unmarshal)
 }
 
 // Slice creates a slice from a bunch of arguments
