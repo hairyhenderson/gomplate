@@ -1,5 +1,17 @@
 # Change Log
 
+## [v1.2.1](https://github.com/hairyhenderson/gomplate/tree/v1.2.1) (2016-11-19)
+[Full Changelog](https://github.com/hairyhenderson/gomplate/compare/v1.2.0...v1.2.1)
+
+**Fixed bugs:**
+
+- Removing vestigial newline addition [\#77](https://github.com/hairyhenderson/gomplate/pull/77) ([hairyhenderson](https://github.com/hairyhenderson))
+- Handle redirects from vault server versions earlier than v0.6.2 [\#76](https://github.com/hairyhenderson/gomplate/pull/76) ([drmdrew](https://github.com/drmdrew))
+
+**Closed issues:**
+
+- Handle vault HTTP redirects [\#75](https://github.com/hairyhenderson/gomplate/issues/75)
+
 ## [v1.2.0](https://github.com/hairyhenderson/gomplate/tree/v1.2.0) (2016-11-15)
 [Full Changelog](https://github.com/hairyhenderson/gomplate/compare/v1.1.2...v1.2.0)
 
