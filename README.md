@@ -7,7 +7,9 @@
 
 # gomplate
 
-A [Go template](https://golang.org/pkg/text/template/)-based alternative to [`envsubst`](https://www.gnu.org/software/gettext/manual/html_node/envsubst-Invocation.html).
+A [Go template](https://golang.org/pkg/text/template/)-based CLI tool. `gomplate` can be used as an alternative to
+[`envsubst`](https://www.gnu.org/software/gettext/manual/html_node/envsubst-Invocation.html) but also supports
+additional template datasources such as JSON, YAML, AWS metadata, and vault secrets.
 
 I really like `envsubst` for use as a super-minimalist template processor. But its simplicity is also its biggest flaw: it's all-or-nothing with shell-like variables.
 
