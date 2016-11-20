@@ -1,5 +1,13 @@
 # Change Log
 
+## [v1.2.2](https://github.com/hairyhenderson/gomplate/tree/v1.2.2) (2016-11-20)
+[Full Changelog](https://github.com/hairyhenderson/gomplate/compare/v1.2.1...v1.2.2)
+
+**Fixed bugs:**
+
+- gomplate w/vault error: user: Current not implemented on linux/amd64  [\#79](https://github.com/hairyhenderson/gomplate/issues/79)
+- Avoiding CGO landmine [\#81](https://github.com/hairyhenderson/gomplate/pull/81) ([hairyhenderson](https://github.com/hairyhenderson))
+
 ## [v1.2.1](https://github.com/hairyhenderson/gomplate/tree/v1.2.1) (2016-11-19)
 [Full Changelog](https://github.com/hairyhenderson/gomplate/compare/v1.2.0...v1.2.1)
 
