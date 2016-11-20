@@ -17,6 +17,13 @@ func TestLogin_SavesToken(t *testing.T) {
 	assert.Equal(t, "foo", client.token)
 }
 
+func TestNewClient_FailsWithNoEnvVars(t *testing.T) {
+	_, err := NewClientUseGetenv(func(e string) string {
+		return ""
+	})
+	assert.Error(t, err)
+}
+
 func TestRead_ErrorsGivenNetworkError(t *testing.T) {
 	server, hc := setupErrorHTTP()
 	defer server.Close()

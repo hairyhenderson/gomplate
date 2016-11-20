@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
-	"os"
 	"time"
 )
 
@@ -19,13 +18,13 @@ type AppIDAuthStrategy struct {
 
 // NewAppIDAuthStrategy - create an AuthStrategy that uses Vault's app-id auth
 // backend.
-func NewAppIDAuthStrategy() *AppIDAuthStrategy {
-	appID := os.Getenv("VAULT_APP_ID")
-	userID := os.Getenv("VAULT_USER_ID")
+func NewAppIDAuthStrategy(getenv GetenvFunc) (*AppIDAuthStrategy, error) {
+	appID := getenv("VAULT_APP_ID")
+	userID := getenv("VAULT_USER_ID")
 	if appID != "" && userID != "" {
-		return &AppIDAuthStrategy{appID, userID, nil}
+		return &AppIDAuthStrategy{appID, userID, nil}, nil
 	}
-	return nil
+	return nil, fmt.Errorf("VAULT_APP_ID/VAULT_USER_ID unset")
 }
 
 // GetHTTPClient configures the HTTP client with a timeout
