@@ -13,6 +13,52 @@ I really like `envsubst` for use as a super-minimalist template processor. But i
 
 Gomplate is an alternative that will let you process templates which also include shell-like variables. Also there are some useful built-in functions that can be used to make templates even more expressive.
 
+<!-- TOC depthFrom:1 depthTo:6 withLinks:1 updateOnSave:1 orderedList:0 -->
+
+- [gomplate](#gomplate)
+	- [Installing](#installing)
+		- [macOS with homebrew](#macos-with-homebrew)
+		- [manual install](#manual-install)
+	- [Usage](#usage)
+		- [Commandline Arguments](#commandline-arguments)
+			- [`--datasource`/`-d`](#-datasource-d)
+	- [Syntax](#syntax)
+		- [About `.Env`](#about-env)
+		- [Built-in functions](#built-in-functions)
+			- [`getenv`](#getenv)
+				- [Example](#example)
+			- [`bool`](#bool)
+				- [Example](#example)
+			- [`slice`](#slice)
+				- [Example](#example)
+			- [`json`](#json)
+				- [Example](#example)
+			- [`jsonArray`](#jsonarray)
+				- [Example](#example)
+			- [`yaml`](#yaml)
+				- [Example](#example)
+			- [`yamlArray`](#yamlarray)
+				- [Example](#example)
+			- [`datasource`](#datasource)
+				- [Examples](#examples)
+					- [Basic usage](#basic-usage)
+					- [Usage with HTTP data](#usage-with-http-data)
+					- [Usage with Vault data](#usage-with-vault-data)
+			- [`ec2meta`](#ec2meta)
+				- [Example](#example)
+			- [`ec2dynamic`](#ec2dynamic)
+				- [Example](#example)
+			- [`ec2region`](#ec2region)
+				- [Example](#example)
+			- [`ec2tag`](#ec2tag)
+				- [Example](#example)
+		- [Some more complex examples](#some-more-complex-examples)
+			- [Variable assignment and `if`/`else`](#variable-assignment-and-ifelse)
+	- [Releasing](#releasing)
+	- [License](#license)
+
+<!-- /TOC -->
+
 ## Installing
 
 ### macOS with homebrew
@@ -73,7 +119,7 @@ A few different forms are valid:
 
 ## Syntax
 
-#### About `.Env`
+### About `.Env`
 
 You can easily access environment variables with `.Env`, but there's a catch:
 if you try to reference an environment variable that doesn't exist, parsing
@@ -336,7 +382,7 @@ foo
 Queries the AWS EC2 API to find the value of the given [user-defined tag](http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/Using_Tags.html). An optional default
 can be provided.
 
-#### Example
+##### Example
 
 ```console
 $ echo 'This server is in the {{ ec2tag "Account" }} account.' | ./gomplate
@@ -347,7 +393,7 @@ I am a meat popsicle.
 
 ### Some more complex examples
 
-##### Variable assignment and `if`/`else`
+#### Variable assignment and `if`/`else`
 
 _`input.tmpl`:_
 ```
