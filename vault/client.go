@@ -28,30 +28,51 @@ type AuthStrategy interface {
 	Revokable() bool
 }
 
+// GetenvFunc returns the supplied environment variable value
+type GetenvFunc func(string) string
+
 // NewClient - instantiate a new
 func NewClient() *Client {
-	u := getVaultAddr()
-	auth := getAuthStrategy()
-	return &Client{u, auth, "", nil}
-}
-
-func getVaultAddr() *url.URL {
-	vu := os.Getenv("VAULT_ADDR")
-	u, err := url.Parse(vu)
+	client, err := NewClientUseGetenv(os.Getenv)
 	if err != nil {
-		log.Fatal("VAULT_ADDR is an unparseable URL!", err)
+		log.Fatal(err)
 	}
-	return u
+	return client
 }
 
-func getAuthStrategy() AuthStrategy {
-	if auth := NewAppIDAuthStrategy(); auth != nil {
-		return auth
+// NewClientUseGetenv returns a new Client instance. Uses the supplied
+// GetenvFunc to resolve environment variables
+func NewClientUseGetenv(getenv GetenvFunc) (*Client, error) {
+	u, err := getVaultAddr(getenv)
+	if err != nil {
+		return nil, err
 	}
-	if auth := NewTokenAuthStrategy(); auth != nil {
-		return auth
+	auth, err := getAuthStrategy(getenv)
+	if err != nil {
+		return nil, err
 	}
-	return nil
+	return &Client{u, auth, "", nil}, nil
+}
+
+func getVaultAddr(getenv GetenvFunc) (*url.URL, error) {
+	vu := getenv("VAULT_ADDR")
+	u, err := url.Parse(vu)
+	if err != nil || u.String() == "" {
+		return nil, fmt.Errorf("VAULT_ADDR is not a valid URL: %v %v", vu, err)
+	}
+	return u, nil
+}
+
+func getAuthStrategy(getenv GetenvFunc) (AuthStrategy, error) {
+	authAppID, errAppID := NewAppIDAuthStrategy(getenv)
+	if authAppID != nil {
+		return authAppID, nil
+	}
+	authToken, errToken := NewTokenAuthStrategy(getenv)
+	if authToken != nil {
+		return authToken, nil
+	}
+	return nil, fmt.Errorf("No vault auth strategy detected: %v %v", errAppID, errToken)
 }
 
 // GetHTTPClient returns a client configured w/X-Vault-Token header

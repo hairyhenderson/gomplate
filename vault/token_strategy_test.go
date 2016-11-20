@@ -10,33 +10,40 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func getEnvStub(env string) string {
+	return ""
+}
+
 func TestNewTokenAuthStrategy_FromEnvVar(t *testing.T) {
 	token := "deadbeef"
-
-	os.Setenv("VAULT_TOKEN", token)
-	defer os.Unsetenv("VAULT_TOKEN")
-
-	auth := NewTokenAuthStrategy()
+	auth, err := NewTokenAuthStrategy(func(env string) string {
+		if env == "VAULT_TOKEN" {
+			return token
+		}
+		return ""
+	})
+	assert.Nil(t, err)
 	assert.Equal(t, token, auth.Token)
 }
 
 func TestNewTokenAuthStrategy_FromFileGivenNoEnvVar(t *testing.T) {
 	token := "deadbeef"
-
 	fs := memfs.Create()
-	err := vfs.MkdirAll(fs, homeDir(), 0777)
+	home, _ := homeDir(os.Getenv)
+	err := vfs.MkdirAll(fs, home, 0777)
 	assert.NoError(t, err)
-	f, err := vfs.Create(fs, path.Join(homeDir(), ".vault-token"))
+	f, err := vfs.Create(fs, path.Join(home, ".vault-token"))
 	assert.NoError(t, err)
 	f.Write([]byte(token))
 
-	auth := NewTokenAuthStrategy(fs)
+	auth, err := NewTokenAuthStrategy(os.Getenv, fs)
 	assert.Equal(t, token, auth.Token)
 }
 
 func TestNewTokenAuthStrategy_NilGivenNoVarOrFile(t *testing.T) {
-	os.Unsetenv("VAULT_TOKEN")
-	assert.Nil(t, NewTokenAuthStrategy(memfs.Create()))
+	auth, err := NewTokenAuthStrategy(getEnvStub, memfs.Create())
+	assert.Error(t, err)
+	assert.Nil(t, auth)
 }
 
 func TestGetToken_Token(t *testing.T) {

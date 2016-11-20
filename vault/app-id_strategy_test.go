@@ -5,27 +5,51 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"net/url"
-	"os"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
 
-func TestNewAppIDAuthStrategy(t *testing.T) {
-	os.Unsetenv("VAULT_APP_ID")
-	os.Unsetenv("VAULT_USER_ID")
-	assert.Nil(t, NewAppIDAuthStrategy())
+func TestNewAppIDAuthStrategy_NoEnvVars(t *testing.T) {
+	auth, err := NewAppIDAuthStrategy(func(env string) string {
+		return ""
+	})
+	assert.Error(t, err)
+	assert.Nil(t, auth)
+}
 
-	os.Setenv("VAULT_APP_ID", "foo")
-	assert.Nil(t, NewAppIDAuthStrategy())
+func TestNewAppIDAuthStrategy_NoVaultUserId(t *testing.T) {
+	_, err := NewAppIDAuthStrategy(func(env string) string {
+		if env == "VAULT_APP_ID" {
+			return "foo"
+		}
+		return ""
+	})
+	assert.Error(t, err)
+}
 
-	os.Unsetenv("VAULT_APP_ID")
-	os.Setenv("VAULT_USER_ID", "bar")
-	assert.Nil(t, NewAppIDAuthStrategy())
+func TestNewAppIDAuthStrategy_NoVaultAppId(t *testing.T) {
+	_, err := NewAppIDAuthStrategy(func(env string) string {
+		if env == "VAULT_USER_ID" {
+			return "bar"
+		}
+		return ""
+	})
+	assert.Error(t, err)
+}
 
-	os.Setenv("VAULT_APP_ID", "foo")
-	os.Setenv("VAULT_USER_ID", "bar")
-	auth := NewAppIDAuthStrategy()
+func TestNewAppIDAuthStrategy_Works(t *testing.T) {
+	auth, err := NewAppIDAuthStrategy(func(env string) string {
+		switch env {
+		case "VAULT_APP_ID":
+			return "foo"
+		case "VAULT_USER_ID":
+			return "bar"
+		default:
+			return ""
+		}
+	})
+	assert.Nil(t, err)
 	assert.Equal(t, "foo", auth.AppID)
 	assert.Equal(t, "bar", auth.UserID)
 }

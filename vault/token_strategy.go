@@ -3,7 +3,6 @@ package vault
 import (
 	"fmt"
 	"io/ioutil"
-	"log"
 	"net/url"
 	"os"
 	"path"
@@ -19,7 +18,7 @@ type TokenAuthStrategy struct {
 
 // NewTokenAuthStrategy - Try to create a new TokenAuthStrategy. If we can't
 // nil will be returned.
-func NewTokenAuthStrategy(fsOverrides ...vfs.Filesystem) *TokenAuthStrategy {
+func NewTokenAuthStrategy(getenv GetenvFunc, fsOverrides ...vfs.Filesystem) (*TokenAuthStrategy, error) {
 	var fs vfs.Filesystem
 	if len(fsOverrides) == 0 {
 		fs = vfs.OS()
@@ -27,13 +26,14 @@ func NewTokenAuthStrategy(fsOverrides ...vfs.Filesystem) *TokenAuthStrategy {
 		fs = fsOverrides[0]
 	}
 
-	if token := os.Getenv("VAULT_TOKEN"); token != "" {
-		return &TokenAuthStrategy{token}
+	if token := getenv("VAULT_TOKEN"); token != "" {
+		return &TokenAuthStrategy{token}, nil
 	}
-	if token := getTokenFromFile(fs); token != "" {
-		return &TokenAuthStrategy{token}
+	token, err := getTokenFromFile(getenv, fs)
+	if err != nil {
+		return nil, err
 	}
-	return nil
+	return &TokenAuthStrategy{token}, nil
 }
 
 // GetToken - return the token
@@ -50,26 +50,28 @@ func (a *TokenAuthStrategy) Revokable() bool {
 	return false
 }
 
-func homeDir() string {
-	if home := os.Getenv("HOME"); home != "" {
-		return home
+func homeDir(getenv GetenvFunc) (string, error) {
+	if home := getenv("HOME"); home != "" {
+		return home, nil
 	}
-	if home := os.Getenv("USERPROFILE"); home != "" {
-		return home
+	if home := getenv("USERPROFILE"); home != "" {
+		return home, nil
 	}
-	log.Fatal(`Neither HOME nor USERPROFILE environment variables are set!
-		I can't figure out where the current user's home directory is!`)
-	return ""
+	return "", fmt.Errorf("Cannot detect user home directory (HOME/USERPROFILE)!")
 }
 
-func getTokenFromFile(fs vfs.Filesystem) string {
-	f, err := fs.OpenFile(path.Join(homeDir(), ".vault-token"), os.O_RDONLY, 0)
+func getTokenFromFile(getenv GetenvFunc, fs vfs.Filesystem) (string, error) {
+	home, err := homeDir(getenv)
 	if err != nil {
-		return ""
+		return "", err
+	}
+	f, err := fs.OpenFile(path.Join(home, ".vault-token"), os.O_RDONLY, 0)
+	if err != nil {
+		return "", err
 	}
 	b, err := ioutil.ReadAll(f)
 	if err != nil {
-		return ""
+		return "", err
 	}
-	return string(b)
+	return string(b), nil
 }
