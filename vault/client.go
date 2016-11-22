@@ -12,6 +12,9 @@ import (
 	"time"
 )
 
+// logFatal is defined so log.Fatal calls can be overridden for testing
+var logFatal = log.Fatal
+
 // Client -
 type Client struct {
 	Addr *url.URL
@@ -37,9 +40,14 @@ func NewClient() *Client {
 
 func getVaultAddr() *url.URL {
 	vu := os.Getenv("VAULT_ADDR")
+	if vu == "" {
+		logFatal("VAULT_ADDR is an unparseable URL!")
+		return nil
+	}
 	u, err := url.Parse(vu)
 	if err != nil {
-		log.Fatal("VAULT_ADDR is an unparseable URL!", err)
+		logFatal("VAULT_ADDR is an unparseable URL!", err)
+		return nil
 	}
 	return u
 }
@@ -51,6 +59,7 @@ func getAuthStrategy() AuthStrategy {
 	if auth := NewTokenAuthStrategy(); auth != nil {
 		return auth
 	}
+	logFatal("No vault auth strategy configured")
 	return nil
 }
 
@@ -83,7 +92,7 @@ func (c *Client) Do(req *http.Request) (*http.Response, error) {
 func (c *Client) Login() error {
 	token, err := c.Auth.GetToken(c.Addr)
 	if err != nil {
-		log.Fatal(err)
+		logFatal(err)
 		return err
 	}
 	c.token = token
