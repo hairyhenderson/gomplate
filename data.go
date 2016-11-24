@@ -176,7 +176,11 @@ func (d *Data) ReadSource(fs vfs.Filesystem, source *Source, args ...string) ([]
 	if d.cache == nil {
 		d.cache = make(map[string][]byte)
 	}
-	cached, ok := d.cache[source.Alias]
+	cacheKey := source.Alias
+	for _, v := range args {
+		cacheKey += v
+	}
+	cached, ok := d.cache[cacheKey]
 	if ok {
 		return cached, nil
 	}
@@ -185,7 +189,7 @@ func (d *Data) ReadSource(fs vfs.Filesystem, source *Source, args ...string) ([]
 		if err != nil {
 			return nil, err
 		}
-		d.cache[source.Alias] = data
+		d.cache[cacheKey] = data
 		return data, nil
 	}
 
