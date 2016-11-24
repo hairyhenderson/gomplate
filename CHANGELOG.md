@@ -1,5 +1,18 @@
 # Change Log
 
+## [v1.2.3](https://github.com/hairyhenderson/gomplate/tree/v1.2.3) (2016-11-24)
+[Full Changelog](https://github.com/hairyhenderson/gomplate/compare/v1.2.2...v1.2.3)
+
+**Fixed bugs:**
+
+- gomplate with vault datasource panics when environment variables are unset [\#83](https://github.com/hairyhenderson/gomplate/issues/83)
+- Fixing bug where vault data is incorrectly cached [\#87](https://github.com/hairyhenderson/gomplate/pull/87) ([hairyhenderson](https://github.com/hairyhenderson))
+- No vault addr dont panic [\#85](https://github.com/hairyhenderson/gomplate/pull/85) ([drmdrew](https://github.com/drmdrew))
+
+**Merged pull requests:**
+
+- Mention CLI and datasources support in description [\#86](https://github.com/hairyhenderson/gomplate/pull/86) ([drmdrew](https://github.com/drmdrew))
+
 ## [v1.2.2](https://github.com/hairyhenderson/gomplate/tree/v1.2.2) (2016-11-20)
 [Full Changelog](https://github.com/hairyhenderson/gomplate/compare/v1.2.1...v1.2.2)
 
