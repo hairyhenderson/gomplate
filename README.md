@@ -85,7 +85,7 @@ $ brew install gomplate
 In other words:
 
 ```console
-$ curl -o /usr/local/bin/gomplate https://github.com/hairyhenderson/gomplate/releases/download/<version>/gomplate_<os>-<arch>
+$ curl -o /usr/local/bin/gomplate -sSL https://github.com/hairyhenderson/gomplate/releases/download/<version>/gomplate_<os>-<arch>
 $ chmod 755 /usr/local/bin/gomplate
 $ gomplate --help
 ...
