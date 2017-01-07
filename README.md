@@ -5,6 +5,13 @@
 [![Total Downloads][gh-downloads-image]][gh-downloads-url]
 [![CII Best Practices][cii-bp-image]][cii-bp-url]
 
+[![hairyhenderson/gomplate on DockerHub][dockerhub-image]][dockerhub-url]
+[![DockerHub Stars][dockerhub-stars-image]][dockerhub-url]
+[![DockerHub Pulls][dockerhub-pulls-image]][dockerhub-url]
+[![DockerHub Image Layers][microbadger-layers-image]][microbadger-url]
+[![DockerHub Latest Version ][microbadger-version-image]][microbadger-url]
+[![DockerHub Latest Commit][microbadger-commit-image]][microbadger-url]
+
 # gomplate
 
 A [Go template](https://golang.org/pkg/text/template/)-based CLI tool. `gomplate` can be used as an alternative to
@@ -21,6 +28,7 @@ Gomplate is an alternative that will let you process templates which also includ
 - [gomplate](#gomplate)
 	- [Installing](#installing)
 		- [macOS with homebrew](#macos-with-homebrew)
+		- [use with Docker](#use-with-docker)
 		- [manual install](#manual-install)
 	- [Usage](#usage)
 		- [Commandline Arguments](#commandline-arguments)
@@ -72,6 +80,32 @@ The simplest method for macOS is to use homebrew:
 $ brew tap hairyhenderson/tap
 $ brew install gomplate
 ...
+```
+
+### use with Docker
+
+A simple way to get started is with the Docker image.
+
+```console
+$ docker run hairyhenderson/gomplate --version
+```
+
+Of course, there are some drawbacks - any files to be used for [datasources][]
+must be mounted and any environment variables to be used must be passed through:
+
+```console
+$ echo 'My voice is my $THING. {{(datasource "vault").value}}' \
+  | docker run -e THING=passport -v /home/me/.vault-token:/root/.vault-token hairyhenderson/gomplate -d vault=vault:///secret/sneakers
+My voice is my passport. Verify me.
+```
+
+It can be pretty awkward to always type `docker run hairyhenderson/gomplate`,
+so this can be made simpler with a shell alias:
+
+```console
+$ alias gomplate=docker run hairyhenderson/gomplate
+$ gomplate --version
+gomplate version 1.2.3
 ```
 
 ### manual install
@@ -442,5 +476,15 @@ Copyright (c) 2016 Dave Henderson
 
 [cii-bp-image]: https://bestpractices.coreinfrastructure.org/projects/337/badge
 [cii-bp-url]: https://bestpractices.coreinfrastructure.org/projects/337
+
+[dockerhub-image]: https://img.shields.io/badge/docker-ready-blue.svg
+[dockerhub-url]: https://hub.docker.com/r/hairyhenderson/gomplate
+[dockerhub-stars-image]: https://img.shields.io/docker/stars/hairyhenderson/gomplate.svg
+[dockerhub-pulls-image]: https://img.shields.io/docker/pulls/hairyhenderson/gomplate.svg
+
+[microbadger-version-image]: https://images.microbadger.com/badges/version/hairyhenderson/gomplate.svg
+[microbadger-layers-image]: https://images.microbadger.com/badges/image/hairyhenderson/gomplate.svg
+[microbadger-commit-image]: https://images.microbadger.com/badges/commit/hairyhenderson/gomplate.svg
+[microbadger-url]: https://microbadger.com/image/hairyhenderson/gomplate
 
 [![Analytics](https://ga-beacon.appspot.com/UA-82637990-1/gomplate/README.md?pixel)](https://github.com/igrigorik/ga-beacon)
