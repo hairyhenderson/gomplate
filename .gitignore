@@ -1,3 +1,4 @@
 .git
 bin
 report.xml
+vendor/
