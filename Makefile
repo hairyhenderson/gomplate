@@ -44,7 +44,7 @@ $(PREFIX)/bin/$(PKG_NAME)$(call extension,$(GOOS)): $(shell find . -type f -name
 build: $(PREFIX)/bin/$(PKG_NAME)$(call extension,$(GOOS))
 
 test:
-	$(GO) test -v -race $(PREFIX)/...
+	$(GO) test -v -race `glide novendor`
 
 gen-changelog:
 	github_changelog_generator --no-filter-by-milestone --exclude-labels duplicate,question,invalid,wontfix,admin
