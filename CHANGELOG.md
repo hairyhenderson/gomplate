@@ -1,5 +1,14 @@
 # Change Log
 
+## [v1.2.4](https://github.com/hairyhenderson/gomplate/tree/v1.2.4) (2017-01-13)
+[Full Changelog](https://github.com/hairyhenderson/gomplate/compare/v1.2.3...v1.2.4)
+
+**Merged pull requests:**
+
+- Building a slim macOS binary too [\#92](https://github.com/hairyhenderson/gomplate/pull/92) ([hairyhenderson](https://github.com/hairyhenderson))
+- Vendoring dependencies with glide [\#91](https://github.com/hairyhenderson/gomplate/pull/91) ([hairyhenderson](https://github.com/hairyhenderson))
+- Updating README [\#88](https://github.com/hairyhenderson/gomplate/pull/88) ([rdbaron](https://github.com/rdbaron))
+
 ## [v1.2.3](https://github.com/hairyhenderson/gomplate/tree/v1.2.3) (2016-11-24)
 [Full Changelog](https://github.com/hairyhenderson/gomplate/compare/v1.2.2...v1.2.3)
 
