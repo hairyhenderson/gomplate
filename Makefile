@@ -33,6 +33,7 @@ compress-all:
 	$(call compress,linux,amd64)
 	$(call compress,linux,386)
 	$(call compress,linux,arm)
+	$(call compress,darwin,amd64)
 	$(call compress,windows,amd64)
 	$(call compress,windows,386)
 
