@@ -55,6 +55,7 @@ Gomplate is an alternative that will let you process templates which also includ
 					- [Basic usage](#basic-usage)
 					- [Usage with HTTP data](#usage-with-http-data)
 					- [Usage with Vault data](#usage-with-vault-data)
+			- [`datasourceExists`](#datasourceexists)
 			- [`ec2meta`](#ec2meta)
 				- [Example](#example)
 			- [`ec2dynamic`](#ec2dynamic)
@@ -366,6 +367,22 @@ And the two can be mixed to scope secrets to a specific namespace:
 $ echo 'db_password={{(datasource "vault" "db/pass").value}}' \
   | gomplate -d vault=vault:///secret/production
 db_password=prodsecret
+```
+
+#### `datasourceExists`
+
+Tests whether or not a given datasource was defined on the commandline (with the
+[`--datasource/-d`](#--datasource-d) argument). This is intended mainly to allow
+a template to be rendered differently whether or not a given datasource was
+defined.
+
+Note: this does _not_ verify if the datasource is reachable.
+
+Useful when used in an `if`/`else` block
+
+```console
+$ echo '{{if (datasourceExists "test")}}{{datasource "test"}}{{else}}no worries{{end}}' | gomplate
+no worries
 ```
 
 #### `ec2meta`
