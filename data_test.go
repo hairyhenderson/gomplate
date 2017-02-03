@@ -101,6 +101,15 @@ func TestDatasource(t *testing.T) {
 	test("yml", "application/yaml", `hello: world`)
 }
 
+func TestDatasourceExists(t *testing.T) {
+	sources := map[string]*Source{
+		"foo": {Alias: "foo"},
+	}
+	data := &Data{Sources: sources}
+	assert.True(t, data.DatasourceExists("foo"))
+	assert.False(t, data.DatasourceExists("bar"))
+}
+
 func setupHTTP(code int, mimetype string, body string) (*httptest.Server, *http.Client) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", mimetype)

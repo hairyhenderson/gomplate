@@ -152,9 +152,18 @@ func absURL(value string) *url.URL {
 	return baseURL.ResolveReference(relURL)
 }
 
+// DatasourceExists -
+func (d *Data) DatasourceExists(alias string) bool {
+	_, ok := d.Sources[alias]
+	return ok
+}
+
 // Datasource -
 func (d *Data) Datasource(alias string, args ...string) map[string]interface{} {
-	source := d.Sources[alias]
+	source, ok := d.Sources[alias]
+	if !ok {
+		log.Fatalf("Undefined datasource '%s'", alias)
+	}
 	b, err := d.ReadSource(source.FS, source, args...)
 	if err != nil {
 		log.Fatalf("Couldn't read datasource '%s': %s", alias, err)
