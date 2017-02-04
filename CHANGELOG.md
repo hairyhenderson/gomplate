@@ -1,5 +1,16 @@
 # Change Log
 
+## [v1.3.0](https://github.com/hairyhenderson/gomplate/tree/v1.3.0) (2017-02-03)
+[Full Changelog](https://github.com/hairyhenderson/gomplate/compare/v1.2.4...v1.3.0)
+
+**Implemented enhancements:**
+
+- Adding datasourceExists function [\#94](https://github.com/hairyhenderson/gomplate/pull/94) ([hairyhenderson](https://github.com/hairyhenderson))
+
+**Closed issues:**
+
+- Crash when datasource is not specified [\#93](https://github.com/hairyhenderson/gomplate/issues/93)
+
 ## [v1.2.4](https://github.com/hairyhenderson/gomplate/tree/v1.2.4) (2017-01-13)
 [Full Changelog](https://github.com/hairyhenderson/gomplate/compare/v1.2.3...v1.2.4)
 
