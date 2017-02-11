@@ -1,15 +1,18 @@
 package: github.com/hairyhenderson/gomplate
 import:
 - package: github.com/aws/aws-sdk-go
-  version: ^1.6.10
+  version: ^1.6.21
   subpackages:
   - aws
   - aws/session
   - service/ec2
 - package: github.com/blang/vfs
+  version: c14afca
 - package: github.com/urfave/cli
   version: ^1.19.1
 - package: gopkg.in/yaml.v2
+  repo: https://github.com/go-yaml/yaml.git
+  version: v2
 testImport:
 - package: github.com/stretchr/testify
   version: ^1.1.4

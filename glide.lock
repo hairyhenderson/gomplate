@@ -1,8 +1,8 @@
-hash: 77111267f1fbbbdebf329cdfb30e93baeffcc08eca239f950983c4258abcdcd3
-updated: 2017-01-11T23:06:54.090404801-05:00
+hash: 01c19d423d90e790bc9d99bb469f318dc4d04f66d4464ba1b3276d746c994901
+updated: 2017-02-11T13:38:09.099507894-05:00
 imports:
 - name: github.com/aws/aws-sdk-go
-  version: 63ce630574a5ec05ecd8e8de5cea16332a5a684d
+  version: f615b0905b52177eb0efa0fe59340c05c0ea0ed9
   subpackages:
   - aws
   - aws/awserr
@@ -30,7 +30,7 @@ imports:
   - service/ec2
   - service/sts
 - name: github.com/blang/vfs
-  version: 4e07db978eab35b3bf8c4a3e8a80f5f7b4eb6124
+  version: c14afcac17253ce7418da751ec6b1988790cdc8f
   subpackages:
   - memfs
 - name: github.com/go-ini/ini
@@ -40,7 +40,8 @@ imports:
 - name: github.com/urfave/cli
   version: 0bdeddeeb0f650497d603c4ad7b20cfe685682f6
 - name: gopkg.in/yaml.v2
-  version: a5b47d31c556af34a302ce5d659e6fea44d90de0
+  version: a3f3340b5840cee44f372bddb5880fcbc419b46a
+  repo: https://github.com/go-yaml/yaml.git
 testImports:
 - name: github.com/davecgh/go-spew
   version: 6d212800a42e8ab5c146b8ace3490ee17e5225f9
