@@ -3,8 +3,11 @@ GO := go
 PKG_NAME := gomplate
 PREFIX := .
 
-COMMIT_FLAG := -X `go list ./version`.GitCommit=`git rev-parse --short HEAD 2>/dev/null`
-VERSION_FLAG := -X `go list ./version`.Version=`git describe --abbrev=0 --tags $(git rev-list --tags --max-count=1) 2>/dev/null | sed 's/v\(.*\)/\1/'`
+COMMIT ?= `git rev-parse --short HEAD 2>/dev/null`
+VERSION ?= `git describe --abbrev=0 --tags $(git rev-list --tags --max-count=1) 2>/dev/null | sed 's/v\(.*\)/\1/'`
+
+COMMIT_FLAG := -X `go list ./version`.GitCommit=$(COMMIT)
+VERSION_FLAG := -X `go list ./version`.Version=$(VERSION)
 
 define gocross
 	GOOS=$(1) GOARCH=$(2) \
