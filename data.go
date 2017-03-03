@@ -116,7 +116,7 @@ func ParseSource(value string) (*Source, error) {
 		f := parts[0]
 		alias = strings.SplitN(value, ".", 2)[0]
 		if path.Base(f) != f {
-			err := fmt.Errorf("Invalid datasource (%s). Must provide an alias with files not in working directory.", value)
+			err := fmt.Errorf("Invalid datasource (%s). Must provide an alias with files not in working directory", value)
 			return nil, err
 		}
 		srcURL = absURL(f)
