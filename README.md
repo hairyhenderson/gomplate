@@ -28,6 +28,7 @@ Gomplate is an alternative that will let you process templates which also includ
 - [gomplate](#gomplate)
 	- [Installing](#installing)
 		- [macOS with homebrew](#macos-with-homebrew)
+		- [Alpine Linux](#alpine-linux)
 		- [use with Docker](#use-with-docker)
 		- [manual install](#manual-install)
 	- [Usage](#usage)
@@ -98,6 +99,19 @@ $ brew tap hairyhenderson/tap
 $ brew install gomplate
 ...
 ```
+
+### Alpine Linux
+
+Currently, `gomplate` is available in the `testing` repository.
+
+```console
+$ echo "http://dl-cdn.alpinelinux.org/alpine/edge/testing/" >> /etc/apk/repositories
+$ apk update
+$ apk add gomplate
+...
+```
+
+_Note: the Alpine version of gomplate may lag behind the latest release of gomplate._ 
 
 ### use with Docker
 
