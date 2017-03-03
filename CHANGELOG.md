@@ -1,5 +1,17 @@
 # Change Log
 
+## [v1.4.0](https://github.com/hairyhenderson/gomplate/tree/v1.4.0) (2017-03-03)
+[Full Changelog](https://github.com/hairyhenderson/gomplate/compare/v1.3.0...v1.4.0)
+
+**Implemented enhancements:**
+
+- Adding more functions from the strings package [\#96](https://github.com/hairyhenderson/gomplate/pull/96) ([hairyhenderson](https://github.com/hairyhenderson))
+
+**Merged pull requests:**
+
+- shutting up golint [\#97](https://github.com/hairyhenderson/gomplate/pull/97) ([hairyhenderson](https://github.com/hairyhenderson))
+- Putting vendor/ in repo [\#95](https://github.com/hairyhenderson/gomplate/pull/95) ([hairyhenderson](https://github.com/hairyhenderson))
+
 ## [v1.3.0](https://github.com/hairyhenderson/gomplate/tree/v1.3.0) (2017-02-03)
 [Full Changelog](https://github.com/hairyhenderson/gomplate/compare/v1.2.4...v1.3.0)
 
