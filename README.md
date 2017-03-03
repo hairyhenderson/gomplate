@@ -36,11 +36,27 @@ Gomplate is an alternative that will let you process templates which also includ
 	- [Syntax](#syntax)
 		- [About `.Env`](#about-env)
 		- [Built-in functions](#built-in-functions)
+			- [`contains`](#contains)
+				- [Example](#example)
 			- [`getenv`](#getenv)
+				- [Example](#example)
+			- [`hasPrefix`](#hasprefix)
+				- [Example](#example)
+			- [`hasSuffix`](#hassuffix)
 				- [Example](#example)
 			- [`bool`](#bool)
 				- [Example](#example)
 			- [`slice`](#slice)
+				- [Example](#example)
+			- [`split`](#split)
+				- [Example](#example)
+			- [`title`](#title)
+				- [Example](#example)
+			- [`toLower`](#tolower)
+				- [Example](#example)
+			- [`toUpper`](#toupper)
+				- [Example](#example)
+			- [`trim`](#trim)
 				- [Example](#example)
 			- [`json`](#json)
 				- [Example](#example)
@@ -173,6 +189,25 @@ In addition to all of the functions and operators that the [Go template](https:/
 language provides (`if`, `else`, `eq`, `and`, `or`, `range`, etc...), there are
 some additional functions baked in to `gomplate`:
 
+#### `contains`
+
+Contains reports whether the second string is contained within the first. Equivalent to
+[strings.Contains](https://golang.org/pkg/strings#Contains)
+
+##### Example
+
+_`input.tmpl`:_
+```
+{{if contains .Env.FOO "f"}}yes{{else}}no{{end}}
+```
+
+```console
+$ FOO=foo gomplate < input.tmpl
+yes
+$ FOO=bar gomplate < input.tmpl
+no
+```
+
 #### `getenv`
 
 Exposes the [os.Getenv](https://golang.org/pkg/os/#Getenv) function.
@@ -189,6 +224,42 @@ $ echo 'Hello, {{getenv "USER"}}' | gomplate
 Hello, hairyhenderson
 $ echo 'Hey, {{getenv "FIRSTNAME" "you"}}!' | gomplate
 Hey, you!
+```
+
+#### `hasPrefix`
+
+Tests whether the string begins with a certain substring. Equivalent to
+[strings.HasPrefix](https://golang.org/pkg/strings#HasPrefix)
+
+##### Example
+
+_`input.tmpl`:_
+```
+{{if hasPrefix .Env.URL "https"}}foo{{else}}bar{{end}}
+```
+
+```console
+$ URL=http://example.com gomplate < input.tmpl
+bar
+$ URL=https://example.com gomplate < input.tmpl
+foo
+```
+
+#### `hasSuffix`
+
+Tests whether the string ends with a certain substring. Equivalent to
+[strings.HasSuffix](https://golang.org/pkg/strings#HasSuffix)
+
+##### Example
+
+_`input.tmpl`:_
+```
+{{.Env.URL}}{{if not (hasSuffix .Env.URL ":80")}}:80{{end}}
+```
+
+```console
+$ URL=http://example.com gomplate < input.tmpl
+http://example.com:80
 ```
 
 #### `bool`
@@ -227,6 +298,77 @@ $ gomplate < input.tmpl
 Hello, Bart
 Hello, Lisa
 Hello, Maggie
+```
+
+#### `split`
+
+Creates a slice by splitting a string on a given delimiter. Equivalent to
+[strings.Split](https://golang.org/pkg/strings#Split)
+
+##### Example
+
+_`input.tmpl`:_
+```
+{{range split "Bart,Lisa,Maggie"}}
+Hello, {{.}}
+{{- end}}
+```
+
+```console
+$ gomplate < input.tmpl
+Hello, Bart
+Hello, Lisa
+Hello, Maggie
+```
+
+#### `title`
+
+Convert to title-case. Equivalent to [strings.Title](https://golang.org/pkg/strings/#Title)
+
+##### Example
+
+```console
+$ echo '{{title "hello, world!"}}' | gomplate
+Hello, World!
+```
+
+#### `toLower`
+
+Convert to lower-case. Equivalent to [strings.ToLower](https://golang.org/pkg/strings/#ToLower)
+
+##### Example
+
+```console
+$ echo '{{toLower "HELLO, WORLD!"}}' | gomplate
+hello, world!
+```
+
+#### `toUpper`
+
+Convert to upper-case. Equivalent to [strings.ToUpper](https://golang.org/pkg/strings/#ToUpper)
+
+##### Example
+
+```console
+$ echo '{{toUpper "hello, world!"}}' | gomplate
+HELLO, WORLD!
+```
+
+#### `trim`
+
+Trims a string by removing the given characters from the beginning and end of
+the string. Equivalent to [strings.Trim](https://golang.org/pkg/strings/#Trim)
+
+##### Example
+
+_`input.tmpl`:_
+```
+Hello, {{trim .Env.FOO " "}}!
+```
+
+```console
+$ FOO="  world " | gomplate < input.tmpl
+Hello, world!
 ```
 
 #### `json`
