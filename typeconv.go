@@ -64,6 +64,25 @@ func (t *TypeConv) YAMLArray(in string) []interface{} {
 	return unmarshalArray(obj, in, yaml.Unmarshal)
 }
 
+func marshalObj(obj interface{}, f func(interface{}) ([]byte, error)) string {
+	b, err := f(obj)
+	if err != nil {
+		log.Fatalf("Unable to marshal object %s: %v", obj, err)
+	}
+
+	return string(b)
+}
+
+// ToJSON - Stringify a struct as JSON
+func (t *TypeConv) ToJSON(in interface{}) string {
+	return marshalObj(in, json.Marshal)
+}
+
+// ToYAML - Stringify a struct as YAML
+func (t *TypeConv) ToYAML(in interface{}) string {
+	return marshalObj(in, yaml.Marshal)
+}
+
 // Slice creates a slice from a bunch of arguments
 func (t *TypeConv) Slice(args ...interface{}) []interface{} {
 	return args

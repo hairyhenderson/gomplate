@@ -67,6 +67,10 @@ Gomplate is an alternative that will let you process templates which also includ
 				- [Example](#example)
 			- [`yamlArray`](#yamlarray)
 				- [Example](#example)
+			- [`toJSON`](#tojson)
+				- [Example](#example)
+			- [`toYAML`](#toyaml)
+				- [Example](#example)
 			- [`datasource`](#datasource)
 				- [Examples](#examples)
 					- [Basic usage](#basic-usage)
@@ -111,7 +115,7 @@ $ apk add gomplate
 ...
 ```
 
-_Note: the Alpine version of gomplate may lag behind the latest release of gomplate._ 
+_Note: the Alpine version of gomplate may lag behind the latest release of gomplate._
 
 ### use with Docker
 
@@ -451,6 +455,43 @@ Hello {{ index (getenv "FOO" | yamlArray) 1 }}
 $ export FOO='[ "you", "world" ]'
 $ gomplate < input.tmpl
 Hello world
+```
+
+#### `toJSON`
+
+Converts an object to a JSON document. Input objects may be the result of `json`, `yaml`, `jsonArray`, or `yamlArray` functions, or they could be provided by a `datasource`.
+
+##### Example
+
+_This is obviously contrived - `json` is used to create an object._
+
+_`input.tmpl`:_
+```
+{{ (`{"foo":{"hello":"world"}}` | json).foo | toJSON }}
+```
+
+```console
+$ gomplate < input.tmpl
+{"hello":"world"}
+```
+
+#### `toYAML`
+
+Converts an object to a YAML document. Input objects may be the result of `json`, `yaml`, `jsonArray`, or `yamlArray` functions, or they could be provided by a `datasource`.
+
+##### Example
+
+_This is obviously contrived - `json` is used to create an object._
+
+_`input.tmpl`:_
+```
+{{ (`{"foo":{"hello":"world"}}` | json).foo | toYAML }}
+```
+
+```console
+$ gomplate < input.tmpl
+hello: world
+
 ```
 
 #### `datasource`

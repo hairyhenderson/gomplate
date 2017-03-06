@@ -2,6 +2,7 @@ package main
 
 import (
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -57,6 +58,51 @@ func TestUnmarshalArray(t *testing.T) {
 - foo
 - bar
 `))
+}
+
+func TestToJSON(t *testing.T) {
+	ty := new(TypeConv)
+	expected := `{"down":{"the":{"rabbit":{"hole":true}}},"foo":"bar","one":1,"true":true}`
+	in := map[string]interface{}{
+		"foo":  "bar",
+		"one":  1,
+		"true": true,
+		"down": map[string]interface{}{
+			"the": map[string]interface{}{
+				"rabbit": map[string]interface{}{
+					"hole": true,
+				},
+			},
+		},
+	}
+	assert.Equal(t, expected, ty.ToJSON(in))
+}
+
+func TestToYAML(t *testing.T) {
+	ty := new(TypeConv)
+	expected := `d: 2006-01-02T15:04:05.999999999-07:00
+foo: bar
+? |-
+  multi
+  line
+  key
+: hello: world
+one: 1
+"true": true
+`
+	mst, _ := time.LoadLocation("MST")
+	in := map[string]interface{}{
+		"foo":  "bar",
+		"one":  1,
+		"true": true,
+		`multi
+line
+key`: map[string]interface{}{
+			"hello": "world",
+		},
+		"d": time.Date(2006, time.January, 2, 15, 4, 5, 999999999, mst),
+	}
+	assert.Equal(t, expected, ty.ToYAML(in))
 }
 
 func TestSlice(t *testing.T) {
