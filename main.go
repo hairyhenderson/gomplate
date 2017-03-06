@@ -56,6 +56,8 @@ func NewGomplate(data *Data) *Gomplate {
 			"yamlArray":        typeconv.YAMLArray,
 			"slice":            typeconv.Slice,
 			"join":             typeconv.Join,
+			"toJSON":           typeconv.ToJSON,
+			"toYAML":           typeconv.ToYAML,
 			"ec2meta":          ec2meta.Meta,
 			"ec2dynamic":       ec2meta.Dynamic,
 			"ec2tag":           ec2info.Tag,
