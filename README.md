@@ -59,6 +59,8 @@ Gomplate is an alternative that will let you process templates which also includ
 				- [Example](#example)
 			- [`trim`](#trim)
 				- [Example](#example)
+			- [`has`](#has)
+				- [Example](#example)
 			- [`json`](#json)
 				- [Example](#example)
 			- [`jsonArray`](#jsonarray)
@@ -387,6 +389,39 @@ Hello, {{trim .Env.FOO " "}}!
 ```console
 $ FOO="  world " | gomplate < input.tmpl
 Hello, world!
+```
+
+#### `has`
+
+Has reports whether or not a given object has a property with the given key. Can be used with `if` to prevent the template from trying to access a non-existent property in an object.
+
+##### Example
+
+_Let's say we're using a Vault datasource..._
+
+_`input.tmpl`:_
+```go
+{{ $secret := datasource "vault" "mysecret" -}}
+The secret is '
+{{- if (has $secret "value") }}
+{{- $secret.value }}
+{{- else }}
+{{- $secret | toYAML }}
+{{- end }}'
+```
+
+If the `secret/foo/mysecret` secret in Vault has a property named `value` set to `supersecret`:
+
+```console
+$ gomplate -d vault:///secret/foo < input.tmpl
+The secret is 'supersecret'
+```
+
+On the other hand, if there is no `value` property:
+
+```console
+$ gomplate -d vault:///secret/foo < input.tmpl
+The secret is 'foo: bar'
 ```
 
 #### `json`

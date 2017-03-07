@@ -101,6 +101,12 @@ func (t *TypeConv) Join(a []interface{}, sep string) string {
 	return strings.Join(b, sep)
 }
 
+// Has determines whether or not a given object has a property with the given key
+func (t *TypeConv) Has(in map[string]interface{}, key string) bool {
+	_, ok := in[key]
+	return ok
+}
+
 func toString(in interface{}) string {
 	if s, ok := in.(string); ok {
 		return s

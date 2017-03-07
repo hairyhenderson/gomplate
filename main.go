@@ -50,6 +50,7 @@ func NewGomplate(data *Data) *Gomplate {
 		funcMap: template.FuncMap{
 			"getenv":           env.Getenv,
 			"bool":             typeconv.Bool,
+			"has":              typeconv.Has,
 			"json":             typeconv.JSON,
 			"jsonArray":        typeconv.JSONArray,
 			"yaml":             typeconv.YAML,
