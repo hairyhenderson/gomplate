@@ -50,7 +50,7 @@ func TestBoolTemplates(t *testing.T) {
 func TestEc2MetaTemplates(t *testing.T) {
 	createGomplate := func(status int, body string) (*Gomplate, *httptest.Server) {
 		server, ec2meta := aws.MockServer(status, body)
-		return &Gomplate{template.FuncMap{"ec2meta": ec2meta.Meta}}, server
+		return &Gomplate{funcMap: template.FuncMap{"ec2meta": ec2meta.Meta}}, server
 	}
 
 	g, s := createGomplate(404, "")
@@ -141,4 +141,13 @@ func TestHasTemplate(t *testing.T) {
 {{- $data.foo }}
 {{- end }}`
 	assert.Equal(t, "bar", testTemplate(g, tmpl))
+}
+
+func TestCustomDelim(t *testing.T) {
+	g := &Gomplate{
+		leftDelim:  "[",
+		rightDelim: "]",
+		funcMap:    template.FuncMap{},
+	}
+	assert.Equal(t, "hi", testTemplate(g, `[print "hi"]`))
 }
