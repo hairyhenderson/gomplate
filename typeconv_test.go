@@ -124,3 +124,14 @@ func TestJoin(t *testing.T) {
 	// and best-effort with weird types
 	assert.Equal(t, "[foo],bar", ty.Join([]interface{}{[]string{"foo"}, "bar"}, ","))
 }
+
+func TestHas(t *testing.T) {
+	ty := new(TypeConv)
+
+	in := map[string]interface{}{
+		"foo": "bar",
+	}
+
+	assert.True(t, ty.Has(in, "foo"))
+	assert.False(t, ty.Has(in, "bar"))
+}

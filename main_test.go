@@ -118,3 +118,27 @@ func TestSliceTemplates(t *testing.T) {
 	assert.Equal(t, `[foo bar 42]`, testTemplate(g, `{{slice "foo" "bar" 42}}`))
 	assert.Equal(t, `helloworld`, testTemplate(g, `{{range slice "hello" "world"}}{{.}}{{end}}`))
 }
+
+func TestHasTemplate(t *testing.T) {
+	ty := new(TypeConv)
+	g := &Gomplate{
+		funcMap: template.FuncMap{
+			"yaml": ty.YAML,
+			"has":  ty.Has,
+		},
+	}
+	assert.Equal(t, "true", testTemplate(g, `{{has ("foo: true" | yaml) "foo"}}`))
+	assert.Equal(t, "false", testTemplate(g, `{{has ("foo: true" | yaml) "bar"}}`))
+	tmpl := `{{- $data := yaml "foo: bar\nbaz: qux\n" }}
+{{- if (has $data "baz") }}
+{{- $data.baz }}
+{{- end }}`
+	assert.Equal(t, "qux", testTemplate(g, tmpl))
+	tmpl = `{{- $data := yaml "foo: bar\nbaz: qux\n" }}
+{{- if (has $data "quux") }}
+{{- $data.quux }}
+{{- else }}
+{{- $data.foo }}
+{{- end }}`
+	assert.Equal(t, "bar", testTemplate(g, tmpl))
+}
