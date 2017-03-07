@@ -406,7 +406,7 @@ Has reports whether or not a given object has a property with the given key. Can
 _Let's say we're using a Vault datasource..._
 
 _`input.tmpl`:_
-```go
+```
 {{ $secret := datasource "vault" "mysecret" -}}
 The secret is '
 {{- if (has $secret "value") }}
