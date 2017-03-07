@@ -12,7 +12,7 @@ VERSION_FLAG := -X `go list ./version`.Version=$(VERSION)
 define gocross
 	GOOS=$(1) GOARCH=$(2) \
 		$(GO) build \
-			-ldflags "$(COMMIT_FLAG) $(VERSION_FLAG)" \
+			-ldflags "-w -s $(COMMIT_FLAG) $(VERSION_FLAG)" \
 			-o $(PREFIX)/bin/$(PKG_NAME)_$(1)-$(2)$(call extension,$(1));
 endef
 
@@ -28,22 +28,20 @@ build-x: $(shell find . -type f -name '*.go')
 	$(call gocross,linux,amd64)
 	$(call gocross,linux,386)
 	$(call gocross,linux,arm)
+	$(call gocross,linux,arm64)
 	$(call gocross,darwin,amd64)
 	$(call gocross,windows,amd64)
 	$(call gocross,windows,386)
 
 compress-all:
 	$(call compress,linux,amd64)
-	$(call compress,linux,386)
 	$(call compress,linux,arm)
-	$(call compress,darwin,amd64)
 	$(call compress,windows,amd64)
-	$(call compress,windows,386)
 
 build-release: clean build-x compress-all
 
 $(PREFIX)/bin/$(PKG_NAME)$(call extension,$(GOOS)): $(shell find . -type f -name '*.go')
-	$(GO) build -ldflags "$(COMMIT_FLAG) $(VERSION_FLAG)" -o $@
+	$(GO) build -ldflags "-w -s $(COMMIT_FLAG) $(VERSION_FLAG)" -o $@
 
 build: $(PREFIX)/bin/$(PKG_NAME)$(call extension,$(GOOS))
 
