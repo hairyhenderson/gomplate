@@ -20,7 +20,9 @@ func (g *Gomplate) createTemplate() *template.Template {
 
 // Gomplate -
 type Gomplate struct {
-	funcMap template.FuncMap
+	funcMap    template.FuncMap
+	leftDelim  string
+	rightDelim string
 }
 
 // RunTemplate -
@@ -30,7 +32,7 @@ func (g *Gomplate) RunTemplate(in io.Reader, out io.Writer) {
 	if err != nil {
 		log.Fatalf("Read failed!\n%v\n", err)
 	}
-	tmpl, err := g.createTemplate().Parse(string(text))
+	tmpl, err := g.createTemplate().Delims(g.leftDelim, g.rightDelim).Parse(string(text))
 	if err != nil {
 		log.Fatalf("Line %q: %v\n", string(text), err)
 	}
@@ -41,12 +43,14 @@ func (g *Gomplate) RunTemplate(in io.Reader, out io.Writer) {
 }
 
 // NewGomplate -
-func NewGomplate(data *Data) *Gomplate {
+func NewGomplate(data *Data, leftDelim, rightDelim string) *Gomplate {
 	env := &Env{}
 	typeconv := &TypeConv{}
 	ec2meta := aws.NewEc2Meta()
 	ec2info := aws.NewEc2Info()
 	return &Gomplate{
+		leftDelim:  leftDelim,
+		rightDelim: rightDelim,
 		funcMap: template.FuncMap{
 			"getenv":           env.Getenv,
 			"bool":             typeconv.Bool,
@@ -81,8 +85,10 @@ func NewGomplate(data *Data) *Gomplate {
 func runTemplate(c *cli.Context) error {
 	defer runCleanupHooks()
 	data := NewData(c.StringSlice("datasource"))
+	lDelim := c.String("left-delim")
+	rDelim := c.String("right-delim")
 
-	g := NewGomplate(data)
+	g := NewGomplate(data, lDelim, rDelim)
 	g.RunTemplate(os.Stdin, os.Stdout)
 	return nil
 }
@@ -98,6 +104,18 @@ func main() {
 		cli.StringSliceFlag{
 			Name:  "datasource, d",
 			Usage: "Data source in alias=URL form. Specify multiple times to add multiple sources.",
+		},
+		cli.StringFlag{
+			Name:   "left-delim",
+			Usage:  "Override the default left-delimiter `{{`",
+			Value:  "{{",
+			EnvVar: "GOMPLATE_LEFT_DELIM",
+		},
+		cli.StringFlag{
+			Name:   "right-delim",
+			Usage:  "Override the default right-delimiter `}}`",
+			Value:  "}}",
+			EnvVar: "GOMPLATE_RIGHT_DELIM",
 		},
 	}
 

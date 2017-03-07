@@ -34,6 +34,7 @@ Gomplate is an alternative that will let you process templates which also includ
 	- [Usage](#usage)
 		- [Commandline Arguments](#commandline-arguments)
 			- [`--datasource`/`-d`](#-datasource-d)
+			- [Overriding the template delimiters](#overriding-the-template-delimiters)
 	- [Syntax](#syntax)
 		- [About `.Env`](#about-env)
 		- [Built-in functions](#built-in-functions)
@@ -190,6 +191,11 @@ A few different forms are valid:
   - Create a data source named `mydata` which is read from `file.json` (in the current working directory). This form is only valid for files in the current directory.
 - `mydata.json`
   - This form infers the name from the file name (without extension). Only valid for files in the current directory.
+
+#### Overriding the template delimiters
+
+Sometimes it's necessary to override the default template delimiters (`{{`/`}}`).
+Use `--left-delim`/`--right-delim` or set `$GOMPLATE_LEFT_DELIM`/`$GOMPLATE_RIGHT_DELIM`.
 
 ## Syntax
 
