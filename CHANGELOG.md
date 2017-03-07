@@ -1,5 +1,15 @@
 # Change Log
 
+## [v1.5.0](https://github.com/hairyhenderson/gomplate/tree/v1.5.0) (2017-03-07)
+[Full Changelog](https://github.com/hairyhenderson/gomplate/compare/v1.4.0...v1.5.0)
+
+**Implemented enhancements:**
+
+- Allow setting custom delimiters [\#100](https://github.com/hairyhenderson/gomplate/issues/100)
+- Allow overriding the template delimiters [\#102](https://github.com/hairyhenderson/gomplate/pull/102) ([hairyhenderson](https://github.com/hairyhenderson))
+- Adding 'has' func to determine if an object has a named key [\#101](https://github.com/hairyhenderson/gomplate/pull/101) ([hairyhenderson](https://github.com/hairyhenderson))
+- Adding toJSON and toYAML functions [\#99](https://github.com/hairyhenderson/gomplate/pull/99) ([hairyhenderson](https://github.com/hairyhenderson))
+
 ## [v1.4.0](https://github.com/hairyhenderson/gomplate/tree/v1.4.0) (2017-03-03)
 [Full Changelog](https://github.com/hairyhenderson/gomplate/compare/v1.3.0...v1.4.0)
 
