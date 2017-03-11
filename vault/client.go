@@ -59,6 +59,9 @@ func getAuthStrategy() AuthStrategy {
 	if auth := NewGitHubAuthStrategy(); auth != nil {
 		return auth
 	}
+	if auth := NewUserPassAuthStrategy(); auth != nil {
+		return auth
+	}
 	if auth := NewTokenAuthStrategy(); auth != nil {
 		return auth
 	}
