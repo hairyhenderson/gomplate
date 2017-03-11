@@ -14,6 +14,7 @@ import (
 type AppIDAuthStrategy struct {
 	AppID  string `json:"app_id"`
 	UserID string `json:"user_id"`
+	Mount  string `json:"-"`
 	hc     *http.Client
 }
 
@@ -22,8 +23,12 @@ type AppIDAuthStrategy struct {
 func NewAppIDAuthStrategy() *AppIDAuthStrategy {
 	appID := os.Getenv("VAULT_APP_ID")
 	userID := os.Getenv("VAULT_USER_ID")
+	mount := os.Getenv("VAULT_AUTH_APP_ID_MOUNT")
+	if mount == "" {
+		mount = "app-id"
+	}
 	if appID != "" && userID != "" {
-		return &AppIDAuthStrategy{appID, userID, nil}
+		return &AppIDAuthStrategy{appID, userID, mount, nil}
 	}
 	return nil
 }
@@ -54,12 +59,12 @@ func (a *AppIDAuthStrategy) GetToken(addr *url.URL) (string, error) {
 
 	u := &url.URL{}
 	*u = *addr
-	u.Path = "/v1/auth/app-id/login"
+	u.Path = "/v1/auth/" + a.Mount + "/login"
 	res, err := requestAndFollow(a, "POST", u, buf.Bytes())
 	if err != nil {
 		return "", err
 	}
-	response := &AuthResponse{}
+	response := &AppIDAuthResponse{}
 	err = json.NewDecoder(res.Body).Decode(response)
 	res.Body.Close()
 	if err != nil {
@@ -78,11 +83,11 @@ func (a *AppIDAuthStrategy) Revokable() bool {
 }
 
 func (a *AppIDAuthStrategy) String() string {
-	return fmt.Sprintf("app-id: %s, user-id: %s", a.AppID, a.UserID)
+	return fmt.Sprintf("app-id: %s, user-id: %s, mount: %s", a.AppID, a.UserID, a.Mount)
 }
 
-// AuthResponse - the Auth response from /v1/auth/app-id/login
-type AuthResponse struct {
+// AppIDAuthResponse - the Auth response from /v1/auth/app-id/login
+type AppIDAuthResponse struct {
 	Auth struct {
 		ClientToken   string `json:"client_token"`
 		LeaseDuration int64  `json:"lease_duration"`
@@ -95,7 +100,7 @@ type AuthResponse struct {
 	} `json:"auth"`
 }
 
-func (a *AuthResponse) String() string {
+func (a *AppIDAuthResponse) String() string {
 	buf := new(bytes.Buffer)
 	json.NewEncoder(buf).Encode(&a)
 	return string(buf.Bytes())

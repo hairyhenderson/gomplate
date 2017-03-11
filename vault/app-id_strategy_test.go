@@ -1,9 +1,6 @@
 package vault
 
 import (
-	"fmt"
-	"net/http"
-	"net/http/httptest"
 	"net/url"
 	"os"
 	"testing"
@@ -36,7 +33,7 @@ func TestGetToken_AppIDErrorsGivenNetworkError(t *testing.T) {
 
 	vaultURL, _ := url.Parse("http://vault:8200")
 
-	auth := &AppIDAuthStrategy{"foo", "bar", client}
+	auth := &AppIDAuthStrategy{"foo", "bar", "app-id", client}
 	_, err := auth.GetToken(vaultURL)
 	assert.Error(t, err)
 }
@@ -47,7 +44,7 @@ func TestGetToken_AppIDErrorsGivenHTTPErrorStatus(t *testing.T) {
 
 	vaultURL, _ := url.Parse("http://vault:8200")
 
-	auth := &AppIDAuthStrategy{"foo", "bar", client}
+	auth := &AppIDAuthStrategy{"foo", "bar", "app-id", client}
 	_, err := auth.GetToken(vaultURL)
 	assert.Error(t, err)
 }
@@ -58,7 +55,7 @@ func TestGetToken_AppIDErrorsGivenBadJSON(t *testing.T) {
 
 	vaultURL, _ := url.Parse("http://vault:8200")
 
-	auth := &AppIDAuthStrategy{"foo", "bar", client}
+	auth := &AppIDAuthStrategy{"foo", "bar", "app-id", client}
 	_, err := auth.GetToken(vaultURL)
 	assert.Error(t, err)
 }
@@ -69,43 +66,9 @@ func TestGetToken_AppID(t *testing.T) {
 
 	vaultURL, _ := url.Parse("http://vault:8200")
 
-	auth := &AppIDAuthStrategy{"foo", "bar", client}
+	auth := &AppIDAuthStrategy{"foo", "bar", "app-id", client}
 	token, err := auth.GetToken(vaultURL)
 	assert.NoError(t, err)
 
 	assert.Equal(t, "baz", token)
-}
-
-func setupHTTP(code int, mimetype string, body string) (*httptest.Server, *http.Client) {
-	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", mimetype)
-		w.WriteHeader(code)
-		fmt.Fprintln(w, body)
-	}))
-
-	client := &http.Client{
-		Transport: &http.Transport{
-			Proxy: func(req *http.Request) (*url.URL, error) {
-				return url.Parse(server.URL)
-			},
-		},
-	}
-
-	return server, client
-}
-
-func setupErrorHTTP() (*httptest.Server, *http.Client) {
-	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		panic("boo")
-	}))
-
-	client := &http.Client{
-		Transport: &http.Transport{
-			Proxy: func(req *http.Request) (*url.URL, error) {
-				return url.Parse(server.URL)
-			},
-		},
-	}
-
-	return server, client
 }
