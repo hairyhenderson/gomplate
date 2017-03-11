@@ -577,9 +577,12 @@ The special `vault://` URL scheme can be used to retrieve data from [Hashicorp
 Vault](https://vaultproject.io). To use this, you must put the Vault server's
 URL in the `$VAULT_ADDR` environment variable.
 
-Currently, the [`app-id`](https://www.vaultproject.io/docs/auth/app-id.html)
-auth backend is supported, as well as Vault tokens obtained through external
-means.
+This table describes the currently-supported authentication mechanisms and how to use them, in order of precedence:
+
+| auth backend | configuration |
+| ---: |--|
+| [`app-id`](https://www.vaultproject.io/docs/auth/app-id.html) | Environment variables `$VAULT_APP_ID` and `$VAULT_USER_ID` must be set to the appropriate values.<br/> If the backend is mounted to a different location, set `$VAULT_AUTH_APP_ID_MOUNT`. |
+| [`token`](https://www.vaultproject.io/docs/auth/token.html) | Determined from either the `$VAULT_TOKEN` environment variable, or read from the file `~/.vault-token` |
 
 To use a Vault datasource with a single secret, just use a URL of
 `vault:///secret/mysecret`. Note the 3 `/`s - the host portion of the URL is left
