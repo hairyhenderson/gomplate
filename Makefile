@@ -34,6 +34,7 @@ endef
 clean:
 	rm -Rf $(PREFIX)/bin/*
 	rm -f $(PREFIX)/test/integration/gomplate
+	rm -f $(PREFIX)/test/integration/mirror
 
 build-x: $(patsubst %,$(PREFIX)/bin/$(PKG_NAME)_%,$(platforms))
 
