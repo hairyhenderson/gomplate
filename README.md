@@ -622,6 +622,13 @@ This table describes the currently-supported authentication mechanisms and how t
 | [`userpass`](https://www.vaultproject.io/docs/auth/userpass.html) | Environment variables `$VAULT_AUTH_USERNAME` and `$VAULT_AUTH_PASSWORD` must be set to the appropriate values.<br/> If the backend is mounted to a different location, set `$VAULT_AUTH_USERPASS_MOUNT`. |
 | [`token`](https://www.vaultproject.io/docs/auth/token.html) | Determined from either the `$VAULT_TOKEN` environment variable, or read from the file `~/.vault-token` |
 
+_**Note:**_ The secret values listed in the above table can either be set in environment
+variables or provided in files. This can increase security when using
+[Docker Swarm Secrets](https://docs.docker.com/engine/swarm/secrets/), for example.
+To use files, specify the filename by appending `_FILE` to the environment variable,
+(i.e. `VAULT_USER_ID_FILE`). If the non-file variable is set, this will override
+any `_FILE` variable and the secret file will be ignored.
+
 To use a Vault datasource with a single secret, just use a URL of
 `vault:///secret/mysecret`. Note the 3 `/`s - the host portion of the URL is left
 empty.

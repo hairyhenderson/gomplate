@@ -7,6 +7,8 @@ import (
 	"net/http"
 	"net/url"
 	"time"
+
+	"github.com/blang/vfs"
 )
 
 // AuthStrategy -
@@ -15,20 +17,27 @@ type AuthStrategy interface {
 	Revokable() bool
 }
 
-func getAuthStrategy() AuthStrategy {
-	if auth := AppRoleStrategy(); auth != nil {
+func getAuthStrategy(fsOverrides ...vfs.Filesystem) AuthStrategy {
+	var fs vfs.Filesystem
+	if len(fsOverrides) == 0 {
+		fs = vfs.OS()
+	} else {
+		fs = fsOverrides[0]
+	}
+
+	if auth := AppRoleStrategy(fs); auth != nil {
 		return auth
 	}
-	if auth := AppIDStrategy(); auth != nil {
+	if auth := AppIDStrategy(fs); auth != nil {
 		return auth
 	}
-	if auth := GitHubStrategy(); auth != nil {
+	if auth := GitHubStrategy(fs); auth != nil {
 		return auth
 	}
-	if auth := UserPassStrategy(); auth != nil {
+	if auth := UserPassStrategy(fs); auth != nil {
 		return auth
 	}
-	if auth := NewTokenStrategy(); auth != nil {
+	if auth := NewTokenStrategy(fs); auth != nil {
 		return auth
 	}
 	logFatal("No vault auth strategy configured")

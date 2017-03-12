@@ -18,15 +18,8 @@ type TokenStrategy struct {
 
 // NewTokenStrategy - Try to create a new TokenStrategy. If we can't
 // nil will be returned.
-func NewTokenStrategy(fsOverrides ...vfs.Filesystem) *TokenStrategy {
-	var fs vfs.Filesystem
-	if len(fsOverrides) == 0 {
-		fs = vfs.OS()
-	} else {
-		fs = fsOverrides[0]
-	}
-
-	if token := os.Getenv("VAULT_TOKEN"); token != "" {
+func NewTokenStrategy(fs vfs.Filesystem) *TokenStrategy {
+	if token := getValue(fs, "VAULT_TOKEN", ""); token != "" {
 		return &TokenStrategy{token}
 	}
 	if token := getTokenFromFile(fs); token != "" {
