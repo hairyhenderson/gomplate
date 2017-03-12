@@ -53,6 +53,9 @@ func getVaultAddr() *url.URL {
 }
 
 func getAuthStrategy() AuthStrategy {
+	if auth := NewAppRoleAuthStrategy(); auth != nil {
+		return auth
+	}
 	if auth := NewAppIDAuthStrategy(); auth != nil {
 		return auth
 	}

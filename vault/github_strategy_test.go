@@ -9,6 +9,9 @@ import (
 )
 
 func TestNewGitHubAuthStrategy(t *testing.T) {
+	defer os.Unsetenv("VAULT_AUTH_GITHUB_TOKEN")
+	defer os.Unsetenv("VAULT_AUTH_GITHUB_MOUNT")
+
 	os.Unsetenv("VAULT_AUTH_GITHUB_TOKEN")
 	assert.Nil(t, NewGitHubAuthStrategy())
 
