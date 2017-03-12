@@ -17,6 +17,7 @@ func restoreLogFatal() {
 
 func mockLogFatal(args ...interface{}) {
 	spyLogFatalMsg = (args[0]).(string)
+	panic(spyLogFatalMsg)
 }
 
 func setupMockLogFatal() {
@@ -27,19 +28,21 @@ func TestNewClient_NoVaultAddr(t *testing.T) {
 	os.Unsetenv("VAULT_ADDR")
 	defer restoreLogFatal()
 	setupMockLogFatal()
-	c := NewClient()
-	assert.Nil(t, c.Addr)
+	assert.Panics(t, func() {
+		NewClient()
+	})
 	assert.Equal(t, "VAULT_ADDR is an unparseable URL!", spyLogFatalMsg)
 }
 
 func TestLogin_NoAuthStrategy(t *testing.T) {
 	os.Setenv("VAULT_ADDR", "https://localhost:8500")
-	os.Unsetenv("VAULT_APP_ID")
-	os.Unsetenv("VAULT_USER_ID")
+	defer os.Unsetenv("VAULT_ADDR")
 	os.Setenv("HOME", "/tmp")
 	defer restoreLogFatal()
 	setupMockLogFatal()
-	_ = NewClient()
+	assert.Panics(t, func() {
+		NewClient()
+	})
 	assert.Equal(t, "No vault auth strategy configured", spyLogFatalMsg)
 }
 

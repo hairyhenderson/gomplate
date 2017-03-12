@@ -9,8 +9,10 @@ import (
 )
 
 func TestNewUserPassAuthStrategy(t *testing.T) {
-	os.Unsetenv("VAULT_AUTH_USERNAME")
-	os.Unsetenv("VAULT_AUTH_PASSWORD")
+	defer os.Unsetenv("VAULT_AUTH_USERNAME")
+	defer os.Unsetenv("VAULT_AUTH_PASSWORD")
+	defer os.Unsetenv("VAULT_AUTH_USERPASS_MOUNT")
+
 	assert.Nil(t, NewUserPassAuthStrategy())
 
 	os.Setenv("VAULT_AUTH_USERNAME", "foo")
