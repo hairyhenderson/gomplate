@@ -24,13 +24,6 @@ type Client struct {
 	hc    *http.Client
 }
 
-// AuthStrategy -
-type AuthStrategy interface {
-	fmt.Stringer
-	GetToken(addr *url.URL) (string, error)
-	Revokable() bool
-}
-
 // NewClient - instantiate a new
 func NewClient() *Client {
 	u := getVaultAddr()
@@ -50,26 +43,6 @@ func getVaultAddr() *url.URL {
 		return nil
 	}
 	return u
-}
-
-func getAuthStrategy() AuthStrategy {
-	if auth := NewAppRoleAuthStrategy(); auth != nil {
-		return auth
-	}
-	if auth := NewAppIDAuthStrategy(); auth != nil {
-		return auth
-	}
-	if auth := NewGitHubAuthStrategy(); auth != nil {
-		return auth
-	}
-	if auth := NewUserPassAuthStrategy(); auth != nil {
-		return auth
-	}
-	if auth := NewTokenAuthStrategy(); auth != nil {
-		return auth
-	}
-	logFatal("No vault auth strategy configured")
-	return nil
 }
 
 // GetHTTPClient returns a client configured w/X-Vault-Token header
@@ -110,23 +83,9 @@ func (c *Client) Login() error {
 
 // RevokeToken - revoke the current auth token - effectively logging out
 func (c *Client) RevokeToken() {
-	// only do it if the auth strategy supports it!
-	if !c.Auth.Revokable() {
-		return
-	}
-
-	u := &url.URL{}
-	*u = *c.Addr
-	u.Path = "/v1/auth/token/revoke-self"
-
-	res, err := requestAndFollow(c, "POST", u, nil)
-
+	err := c.Auth.RevokeToken(c.Addr)
 	if err != nil {
 		log.Println("Error while revoking Vault Token", err)
-	}
-
-	if res.StatusCode != 204 {
-		log.Printf("Unexpected HTTP status %d on RevokeToken from %s (token was %s)", res.StatusCode, u, c.token)
 	}
 }
 
