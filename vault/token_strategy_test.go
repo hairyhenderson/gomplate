@@ -46,3 +46,8 @@ func TestGetToken_Token(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, expected, actual)
 }
+
+func TestRevokeToken_NoOp(t *testing.T) {
+	strat := &TokenAuthStrategy{}
+	assert.NoError(t, strat.RevokeToken(nil))
+}
