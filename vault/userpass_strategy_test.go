@@ -1,6 +1,7 @@
 package vault
 
 import (
+	"net/url"
 	"os"
 	"testing"
 
@@ -35,4 +36,50 @@ func TestNewUserPassAuthStrategy(t *testing.T) {
 	assert.Equal(t, "foo", auth.Username)
 	assert.Equal(t, "bar", auth.Password)
 	assert.Equal(t, "baz", auth.Mount)
+}
+
+func TestGetToken_UserPassErrorsGivenNetworkError(t *testing.T) {
+	server, client := setupErrorHTTP()
+	defer server.Close()
+
+	vaultURL, _ := url.Parse("http://vault:8200")
+
+	auth := &UserPassAuthStrategy{"foo", "bar", "userpass", client}
+	_, err := auth.GetToken(vaultURL)
+	assert.Error(t, err)
+}
+
+func TestGetToken_UserPassErrorsGivenHTTPErrorStatus(t *testing.T) {
+	server, client := setupHTTP(500, "application/json; charset=utf-8", `{}`)
+	defer server.Close()
+
+	vaultURL, _ := url.Parse("http://vault:8200")
+
+	auth := &UserPassAuthStrategy{"foo", "bar", "userpass", client}
+	_, err := auth.GetToken(vaultURL)
+	assert.Error(t, err)
+}
+
+func TestGetToken_UserPassErrorsGivenBadJSON(t *testing.T) {
+	server, client := setupHTTP(200, "application/json; charset=utf-8", `{`)
+	defer server.Close()
+
+	vaultURL, _ := url.Parse("http://vault:8200")
+
+	auth := &UserPassAuthStrategy{"foo", "bar", "userpass", client}
+	_, err := auth.GetToken(vaultURL)
+	assert.Error(t, err)
+}
+
+func TestGetToken_UserPass(t *testing.T) {
+	server, client := setupHTTP(200, "application/json; charset=utf-8", `{"auth": {"client_token": "baz"}}`)
+	defer server.Close()
+
+	vaultURL, _ := url.Parse("http://vault:8200")
+
+	auth := &UserPassAuthStrategy{"foo", "bar", "userpass", client}
+	token, err := auth.GetToken(vaultURL)
+	assert.NoError(t, err)
+
+	assert.Equal(t, "baz", token)
 }
