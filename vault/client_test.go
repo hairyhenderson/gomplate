@@ -136,3 +136,45 @@ func TestRead_ReturnsDataProp(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, []byte(`{"value":"hi"}`), value)
 }
+
+type fakeAuth struct {
+	revokable bool
+	token     string
+}
+
+func (a *fakeAuth) String() string {
+	return a.token
+}
+
+func (a *fakeAuth) GetToken(addr *url.URL) (string, error) {
+	return a.token, nil
+}
+
+func (a *fakeAuth) Revokable() bool {
+	return a.revokable
+}
+
+func TestRevokeToken_NoopGivenNonRevokableAuth(t *testing.T) {
+	auth := &fakeAuth{false, "foo"}
+	client := &Client{
+		Auth: auth,
+	}
+	client.Login()
+	client.RevokeToken()
+	assert.Equal(t, "foo", client.token)
+}
+
+func TestRevokeToken(t *testing.T) {
+	server, hc := setupHTTP(204, "application/json; charset=utf-8", ``)
+	defer server.Close()
+
+	auth := &fakeAuth{true, "foo"}
+	vaultURL, _ := url.Parse("http://vault:8200")
+	client := &Client{
+		Addr:  vaultURL,
+		Auth:  auth,
+		token: "foo",
+		hc:    hc,
+	}
+	client.RevokeToken()
+}

@@ -45,6 +45,11 @@ func (a *TokenAuthStrategy) String() string {
 	return fmt.Sprintf("token: %s", a.Token)
 }
 
+// Revokable -
+func (a *TokenAuthStrategy) Revokable() bool {
+	return false
+}
+
 func homeDir() string {
 	if home := os.Getenv("HOME"); home != "" {
 		return home
@@ -67,9 +72,4 @@ func getTokenFromFile(fs vfs.Filesystem) string {
 		return ""
 	}
 	return string(b)
-}
-
-// RevokeToken - no-op for this strategy since we didn't request this token in-band
-func (a *TokenAuthStrategy) RevokeToken(addr *url.URL) error {
-	return nil
 }

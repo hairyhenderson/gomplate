@@ -1,6 +1,7 @@
 package vault
 
 import (
+	"net/url"
 	"os"
 	"testing"
 
@@ -37,4 +38,50 @@ func TestNewAppRoleAuthStrategy(t *testing.T) {
 	assert.Equal(t, "baz", auth.RoleID)
 	assert.Equal(t, "qux", auth.SecretID)
 	assert.Equal(t, "quux", auth.Mount)
+}
+
+func TestGetToken_AppRoleErrorsGivenNetworkError(t *testing.T) {
+	server, client := setupErrorHTTP()
+	defer server.Close()
+
+	vaultURL, _ := url.Parse("http://vault:8200")
+
+	auth := &AppRoleAuthStrategy{"foo", "bar", "approle", client}
+	_, err := auth.GetToken(vaultURL)
+	assert.Error(t, err)
+}
+
+func TestGetToken_AppRoleErrorsGivenHTTPErrorStatus(t *testing.T) {
+	server, client := setupHTTP(500, "application/json; charset=utf-8", `{}`)
+	defer server.Close()
+
+	vaultURL, _ := url.Parse("http://vault:8200")
+
+	auth := &AppRoleAuthStrategy{"foo", "bar", "approle", client}
+	_, err := auth.GetToken(vaultURL)
+	assert.Error(t, err)
+}
+
+func TestGetToken_AppRoleErrorsGivenBadJSON(t *testing.T) {
+	server, client := setupHTTP(200, "application/json; charset=utf-8", `{`)
+	defer server.Close()
+
+	vaultURL, _ := url.Parse("http://vault:8200")
+
+	auth := &AppRoleAuthStrategy{"foo", "bar", "approle", client}
+	_, err := auth.GetToken(vaultURL)
+	assert.Error(t, err)
+}
+
+func TestGetToken_AppRole(t *testing.T) {
+	server, client := setupHTTP(200, "application/json; charset=utf-8", `{"auth": {"client_token": "baz"}}`)
+	defer server.Close()
+
+	vaultURL, _ := url.Parse("http://vault:8200")
+
+	auth := &AppRoleAuthStrategy{"foo", "bar", "approle", client}
+	token, err := auth.GetToken(vaultURL)
+	assert.NoError(t, err)
+
+	assert.Equal(t, "baz", token)
 }
