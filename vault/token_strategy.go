@@ -1,7 +1,6 @@
 package vault
 
 import (
-	"fmt"
 	"io/ioutil"
 	"log"
 	"net/url"
@@ -11,15 +10,15 @@ import (
 	"github.com/blang/vfs"
 )
 
-// TokenAuthStrategy - a pass-through strategy for situations where we already
+// TokenStrategy - a pass-through strategy for situations where we already
 // have a Vault token.
-type TokenAuthStrategy struct {
+type TokenStrategy struct {
 	Token string
 }
 
-// NewTokenAuthStrategy - Try to create a new TokenAuthStrategy. If we can't
+// NewTokenStrategy - Try to create a new TokenStrategy. If we can't
 // nil will be returned.
-func NewTokenAuthStrategy(fsOverrides ...vfs.Filesystem) *TokenAuthStrategy {
+func NewTokenStrategy(fsOverrides ...vfs.Filesystem) *TokenStrategy {
 	var fs vfs.Filesystem
 	if len(fsOverrides) == 0 {
 		fs = vfs.OS()
@@ -28,25 +27,21 @@ func NewTokenAuthStrategy(fsOverrides ...vfs.Filesystem) *TokenAuthStrategy {
 	}
 
 	if token := os.Getenv("VAULT_TOKEN"); token != "" {
-		return &TokenAuthStrategy{token}
+		return &TokenStrategy{token}
 	}
 	if token := getTokenFromFile(fs); token != "" {
-		return &TokenAuthStrategy{token}
+		return &TokenStrategy{token}
 	}
 	return nil
 }
 
 // GetToken - return the token
-func (a *TokenAuthStrategy) GetToken(addr *url.URL) (string, error) {
+func (a *TokenStrategy) GetToken(addr *url.URL) (string, error) {
 	return a.Token, nil
 }
 
-func (a *TokenAuthStrategy) String() string {
-	return fmt.Sprintf("token: %s", a.Token)
-}
-
 // Revokable -
-func (a *TokenAuthStrategy) Revokable() bool {
+func (a *TokenStrategy) Revokable() bool {
 	return false
 }
 

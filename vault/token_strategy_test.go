@@ -10,17 +10,17 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestNewTokenAuthStrategy_FromEnvVar(t *testing.T) {
+func TestNewTokenStrategy_FromEnvVar(t *testing.T) {
 	token := "deadbeef"
 
 	os.Setenv("VAULT_TOKEN", token)
 	defer os.Unsetenv("VAULT_TOKEN")
 
-	auth := NewTokenAuthStrategy()
+	auth := NewTokenStrategy()
 	assert.Equal(t, token, auth.Token)
 }
 
-func TestNewTokenAuthStrategy_FromFileGivenNoEnvVar(t *testing.T) {
+func TestNewTokenStrategy_FromFileGivenNoEnvVar(t *testing.T) {
 	token := "deadbeef"
 
 	fs := memfs.Create()
@@ -30,19 +30,24 @@ func TestNewTokenAuthStrategy_FromFileGivenNoEnvVar(t *testing.T) {
 	assert.NoError(t, err)
 	f.Write([]byte(token))
 
-	auth := NewTokenAuthStrategy(fs)
+	auth := NewTokenStrategy(fs)
 	assert.Equal(t, token, auth.Token)
 }
 
-func TestNewTokenAuthStrategy_NilGivenNoVarOrFile(t *testing.T) {
+func TestNewTokenStrategy_NilGivenNoVarOrFile(t *testing.T) {
 	os.Unsetenv("VAULT_TOKEN")
-	assert.Nil(t, NewTokenAuthStrategy(memfs.Create()))
+	assert.Nil(t, NewTokenStrategy(memfs.Create()))
 }
 
 func TestGetToken_Token(t *testing.T) {
 	expected := "foo"
-	auth := &TokenAuthStrategy{expected}
+	auth := &TokenStrategy{expected}
 	actual, err := auth.GetToken(nil)
 	assert.NoError(t, err)
 	assert.Equal(t, expected, actual)
+}
+
+func TestRevokable_TokenStrategy(t *testing.T) {
+	strat := &TokenStrategy{}
+	assert.False(t, strat.Revokable())
 }

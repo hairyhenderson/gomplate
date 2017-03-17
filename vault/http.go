@@ -15,7 +15,6 @@ type httpClient interface {
 
 func requestAndFollow(hc httpClient, method string, u *url.URL, body []byte) (*http.Response, error) {
 	var res *http.Response
-	var err error
 	for attempts := 0; attempts < 2; attempts++ {
 		reader := bytes.NewReader(body)
 		req, err := http.NewRequest(method, u.String(), reader)
@@ -43,5 +42,5 @@ func requestAndFollow(hc httpClient, method string, u *url.URL, body []byte) (*h
 			break
 		}
 	}
-	return res, err
+	return res, nil
 }
