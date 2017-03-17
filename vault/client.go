@@ -24,13 +24,6 @@ type Client struct {
 	hc    *http.Client
 }
 
-// AuthStrategy -
-type AuthStrategy interface {
-	fmt.Stringer
-	GetToken(addr *url.URL) (string, error)
-	Revokable() bool
-}
-
 // NewClient - instantiate a new
 func NewClient() *Client {
 	u := getVaultAddr()
@@ -50,26 +43,6 @@ func getVaultAddr() *url.URL {
 		return nil
 	}
 	return u
-}
-
-func getAuthStrategy() AuthStrategy {
-	if auth := NewAppRoleAuthStrategy(); auth != nil {
-		return auth
-	}
-	if auth := NewAppIDAuthStrategy(); auth != nil {
-		return auth
-	}
-	if auth := NewGitHubAuthStrategy(); auth != nil {
-		return auth
-	}
-	if auth := NewUserPassAuthStrategy(); auth != nil {
-		return auth
-	}
-	if auth := NewTokenAuthStrategy(); auth != nil {
-		return auth
-	}
-	logFatal("No vault auth strategy configured")
-	return nil
 }
 
 // GetHTTPClient returns a client configured w/X-Vault-Token header
@@ -173,11 +146,4 @@ func normalizeURLPath(path string) string {
 		path = rxDupSlashes.ReplaceAllString(path, "/")
 	}
 	return path
-}
-
-// ReadResponse -
-type ReadResponse struct {
-	Data struct {
-		Value string `json:"value"`
-	} `json:"data"`
 }
