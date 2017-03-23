@@ -1,10 +1,15 @@
 package aws
 
 import (
+	"net/http"
+	"time"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ec2"
 )
+
+var describerClient InstanceDescriber
 
 // Ec2Info -
 type Ec2Info struct {
@@ -23,8 +28,11 @@ func NewEc2Info() *Ec2Info {
 	metaClient := NewEc2Meta()
 	return &Ec2Info{
 		describer: func() InstanceDescriber {
-			region := metaClient.Region()
-			return ec2Client(region)
+			if describerClient == nil {
+				region := metaClient.Region()
+				describerClient = ec2Client(region)
+			}
+			return describerClient
 		},
 		metaClient: metaClient,
 		cache:      make(map[string]interface{}),
@@ -34,6 +42,7 @@ func NewEc2Info() *Ec2Info {
 func ec2Client(region string) (client InstanceDescriber) {
 	config := aws.NewConfig()
 	config = config.WithRegion(region)
+	config = config.WithHTTPClient(&http.Client{Timeout: 500 * time.Millisecond})
 	client = ec2.New(session.New(config))
 	return client
 }
@@ -59,6 +68,8 @@ func (e *Ec2Info) Tag(tag string, def ...string) string {
 }
 
 func (e *Ec2Info) describeInstance() (output *ec2.DescribeInstancesOutput) {
+	// cache the InstanceDescriber here
+	e.describer()
 	if e.metaClient.nonAWS {
 		return nil
 	}
