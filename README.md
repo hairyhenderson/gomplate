@@ -109,7 +109,7 @@ $ brew install gomplate
 
 ### Alpine Linux
 
-Currently, `gomplate` is available in the `testing` repository.
+Currently, `gomplate` is available in the `community` repository for the `edge` release.
 
 ```console
 $ echo "http://dl-cdn.alpinelinux.org/alpine/edge/testing/" >> /etc/apk/repositories
