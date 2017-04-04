@@ -1,13 +1,24 @@
-dependencies:
-  pre:
-    - hash glide || go get -u github.com/Masterminds/glide
-    - hash go-junit-report || go get -u github.com/jstemmer/go-junit-report
-    - hash gometalinter || (go get -u github.com/alecthomas/gometalinter && gometalinter --install)
-
-test:
-  override:
-    - |
-      set -e
-      set -o pipefail
-      make test | go-junit-report > $CIRCLE_TEST_REPORTS/report.xml
-    - gometalinter --deadline 20s --disable gotype --enable gofmt --enable goimports --enable misspell --enable unused
+version: 2
+jobs:
+  build:
+    docker:
+      - image: hairyhenderson/gomplate-ci-build:latest
+    environment:
+      - CIRCLE_TEST_REPORTS: /tmp/test-results
+    working_directory: /go/src/github.com/hairyhenderson/gomplate
+    steps:
+      - checkout
+      - run: make build
+      - run:
+          name: Unit Tests
+          command: |
+            set -e
+            set -o pipefail
+            make test | go-junit-report > $CIRCLE_TEST_REPORTS/report.xml
+      - run: gometalinter -j 1 --vendor --deadline 70s --disable gotype --enable gofmt --enable goimports --enable misspell --enable unused --disable gas
+      - run: make test-integration
+      - store_artifacts:
+          path: bin
+          destination: binaries
+      - store_test_results:
+          path: /tmp/test-results
