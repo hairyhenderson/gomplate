@@ -9,6 +9,8 @@ VERSION ?= `git describe --abbrev=0 --tags $(git rev-list --tags --max-count=1) 
 COMMIT_FLAG := -X `go list ./version`.GitCommit=$(COMMIT)
 VERSION_FLAG := -X `go list ./version`.Version=$(VERSION)
 
+platforms := linux-amd64 linux-386 linux-arm linux-arm64 darwin-amd64 windows-amd64.exe windows-386.exe
+
 define gocross
 	GOOS=$(1) GOARCH=$(2) \
 		$(GO) build \
@@ -24,14 +26,7 @@ endef
 clean:
 	rm -Rf $(PREFIX)/bin/*
 
-build-x: $(shell find . -type f -name '*.go')
-	$(call gocross,linux,amd64)
-	$(call gocross,linux,386)
-	$(call gocross,linux,arm)
-	$(call gocross,linux,arm64)
-	$(call gocross,darwin,amd64)
-	$(call gocross,windows,amd64)
-	$(call gocross,windows,386)
+build-x: $(patsubst %,$(PREFIX)/bin/$(PKG_NAME)_%,$(platforms))
 
 compress-all:
 	$(call compress,linux,amd64)
@@ -39,6 +34,9 @@ compress-all:
 	$(call compress,windows,amd64)
 
 build-release: clean build-x compress-all
+
+$(PREFIX)/bin/$(PKG_NAME)_%: $(shell find . -type f -name '*.go')
+	$(call gocross,$(shell echo $* | sed 's/\([^-]*\)-\([^.]*\).*/\1/'),$(shell echo $* | sed 's/\([^-]*\)-\([^.]*\).*/\2/'))
 
 $(PREFIX)/bin/$(PKG_NAME)$(call extension,$(GOOS)): $(shell find . -type f -name '*.go')
 	$(GO) build -ldflags "-w -s $(COMMIT_FLAG) $(VERSION_FLAG)" -o $@
