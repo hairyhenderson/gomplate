@@ -25,6 +25,7 @@ endef
 
 clean:
 	rm -Rf $(PREFIX)/bin/*
+	rm -f $(PREFIX)/test/integration/gomplate
 
 build-x: $(patsubst %,$(PREFIX)/bin/$(PKG_NAME)_%,$(platforms))
 
@@ -46,7 +47,17 @@ build: $(PREFIX)/bin/$(PKG_NAME)$(call extension,$(GOOS))
 test:
 	$(GO) test -v -race `glide novendor`
 
+build-integration-image: $(PREFIX)/bin/$(PKG_NAME)_linux-amd64$(call extension,$(GOOS))
+	cp $(PREFIX)/bin/$(PKG_NAME)_linux-amd64 test/integration/gomplate
+	docker build -f test/integration/Dockerfile -t gomplate-test test/integration/
+
+test-integration-docker: build-integration-image
+	docker run -it --rm gomplate-test
+
+test-integration: build
+	@test/integration/test.sh
+
 gen-changelog:
 	github_changelog_generator --no-filter-by-milestone --exclude-labels duplicate,question,invalid,wontfix,admin
 
-.PHONY: gen-changelog
+.PHONY: gen-changelog clean test build-x compress-all build-release build build-integration-image test-integration-docker
