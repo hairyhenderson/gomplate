@@ -33,6 +33,8 @@ Gomplate is an alternative that will let you process templates which also includ
 		- [manual install](#manual-install)
 	- [Usage](#usage)
 		- [Commandline Arguments](#commandline-arguments)
+			- [`--file`/`-f`, `--in`/`-i`, and `--out`/`-o`](#-file-f-in-i-and-out-o)
+				- [Multiple inputs](#multiple-inputs)
 			- [`--datasource`/`-d`](#-datasource-d)
 			- [Overriding the template delimiters](#overriding-the-template-delimiters)
 	- [Syntax](#syntax)
@@ -180,6 +182,18 @@ Hello, hairyhenderson
 
 ### Commandline Arguments
 
+#### `--file`/`-f`, `--in`/`-i`, and `--out`/`-o`
+
+By default, `gomplate` will read from `Stdin` and write to `Stdout`. This behaviour can be changed.
+
+- Use `--file`/`-f` to use a specific input template file. The special value `-` means `Stdin`.
+- Use `--out`/`-o` to save output to file. The special value `-` means `Stdout`.
+- Use `--in`/`-i` if you want to set the input template right on the commandline. This overrides `--file`. Because of shell command line lengths, it's probably not a good idea to use a very long value with this argument.
+
+##### Multiple inputs
+
+You can specify multiple `--file` and `--out` arguments. The same number of each much be given. This allows `gomplate` to process multiple templates _slightly_ faster than invoking `gomplate` multiple times in a row.
+
 #### `--datasource`/`-d`
 
 Add a data source in `name=URL` form. Specify multiple times to add multiple sources. The data can then be used by the [`datasource`](#datasource) function.
@@ -246,9 +260,9 @@ An optional default value can be given as well.
 ##### Example
 
 ```console
-$ echo 'Hello, {{getenv "USER"}}' | gomplate
+$ gomplate -i 'Hello, {{getenv "USER"}}'
 Hello, hairyhenderson
-$ echo 'Hey, {{getenv "FIRSTNAME" "you"}}!' | gomplate
+$ gomplate -i 'Hey, {{getenv "FIRSTNAME" "you"}}!'
 Hey, you!
 ```
 
