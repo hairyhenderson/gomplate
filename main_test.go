@@ -2,9 +2,9 @@ package main
 
 import (
 	"bytes"
+	"io/ioutil"
 	"net/http/httptest"
 	"os"
-	"strings"
 	"testing"
 
 	"text/template"
@@ -14,9 +14,8 @@ import (
 )
 
 func testTemplate(g *Gomplate, template string) string {
-	in := strings.NewReader(template)
 	var out bytes.Buffer
-	g.RunTemplate(in, &out)
+	g.RunTemplate(template, &out)
 	return out.String()
 }
 
@@ -150,4 +149,18 @@ func TestCustomDelim(t *testing.T) {
 		funcMap:    template.FuncMap{},
 	}
 	assert.Equal(t, "hi", testTemplate(g, `[print "hi"]`))
+}
+
+func TestReadInput(t *testing.T) {
+	actual := readInputs("foo", nil)
+	assert.Equal(t, "foo", actual[0])
+
+	// stdin is "" because during tests it's given /dev/null
+	actual = readInputs("", []string{"-"})
+	assert.Equal(t, "", actual[0])
+
+	actual = readInputs("", []string{"main_test.go"})
+	thisFile, _ := os.Open("main_test.go")
+	expected, _ := ioutil.ReadAll(thisFile)
+	assert.Equal(t, string(expected), actual[0])
 }

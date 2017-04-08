@@ -26,15 +26,11 @@ type Gomplate struct {
 }
 
 // RunTemplate -
-func (g *Gomplate) RunTemplate(in io.Reader, out io.Writer) {
+func (g *Gomplate) RunTemplate(text string, out io.Writer) {
 	context := &Context{}
-	text, err := ioutil.ReadAll(in)
+	tmpl, err := g.createTemplate().Delims(g.leftDelim, g.rightDelim).Parse(text)
 	if err != nil {
-		log.Fatalf("Read failed!\n%v\n", err)
-	}
-	tmpl, err := g.createTemplate().Delims(g.leftDelim, g.rightDelim).Parse(string(text))
-	if err != nil {
-		log.Fatalf("Line %q: %v\n", string(text), err)
+		log.Fatalf("Line %q: %v\n", text, err)
 	}
 
 	if err := tmpl.Execute(out, context); err != nil {
@@ -82,6 +78,43 @@ func NewGomplate(data *Data, leftDelim, rightDelim string) *Gomplate {
 	}
 }
 
+func readInputs(input string, files []string) []string {
+	if input != "" {
+		return []string{input}
+	}
+	if len(files) == 0 {
+		files = []string{"-"}
+	}
+	ins := make([]string, len(files))
+
+	for n, filename := range files {
+		var err error
+		var inFile *os.File
+		if filename == "-" {
+			inFile = os.Stdin
+		} else {
+			inFile, err = os.Open(filename)
+			if err != nil {
+				log.Fatalf("Failed to open %s\n%v", filename, err)
+			}
+			defer inFile.Close() // nolint: errcheck
+		}
+		bytes, err := ioutil.ReadAll(inFile)
+		if err != nil {
+			log.Fatalf("Read failed for %s!\n%v\n", filename, err)
+		}
+		ins[n] = string(bytes)
+	}
+	return ins
+}
+
+func openOutFile(filename string) (out *os.File, err error) {
+	if filename == "-" {
+		return os.Stdout, nil
+	}
+	return os.OpenFile(filename, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0644)
+}
+
 func runTemplate(c *cli.Context) error {
 	defer runCleanupHooks()
 	data := NewData(c.StringSlice("datasource"))
@@ -89,7 +122,23 @@ func runTemplate(c *cli.Context) error {
 	rDelim := c.String("right-delim")
 
 	g := NewGomplate(data, lDelim, rDelim)
-	g.RunTemplate(os.Stdin, os.Stdout)
+
+	inputs := readInputs(c.String("in"), c.StringSlice("file"))
+
+	outputs := c.StringSlice("out")
+	if len(outputs) == 0 {
+		outputs = []string{"-"}
+	}
+
+	for n, input := range inputs {
+		out, err := openOutFile(outputs[n])
+		if err != nil {
+			return err
+		}
+		defer out.Close() // nolint: errcheck
+		g.RunTemplate(input, out)
+	}
+
 	return nil
 }
 
@@ -101,6 +150,18 @@ func main() {
 	app.Action = runTemplate
 
 	app.Flags = []cli.Flag{
+		cli.StringSliceFlag{
+			Name:  "file, f",
+			Usage: "Template file to process. Omit to use standard input (-), or use --in",
+		},
+		cli.StringFlag{
+			Name:  "in, i",
+			Usage: "Template string to process (alternative to --file)",
+		},
+		cli.StringSliceFlag{
+			Name:  "out, o",
+			Usage: "Output file name. Omit to use standard output (-).",
+		},
 		cli.StringSliceFlag{
 			Name:  "datasource, d",
 			Usage: "Data source in alias=URL form. Specify multiple times to add multiple sources.",
