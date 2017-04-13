@@ -1,7 +1,9 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -11,6 +13,22 @@ import (
 	"github.com/blang/vfs/memfs"
 	"github.com/stretchr/testify/assert"
 )
+
+var spyLogFatalfMsg string
+
+func restoreLogFatalf() {
+	logFatalf = log.Fatalf
+}
+
+func mockLogFatalf(msg string, args ...interface{}) {
+	spyLogFatalfMsg = msg
+	panic(spyLogFatalfMsg)
+}
+
+func setupMockLogFatalf() {
+	logFatalf = mockLogFatalf
+	spyLogFatalfMsg = ""
+}
 
 func TestNewSource(t *testing.T) {
 	s := NewSource("foo", &url.URL{
@@ -35,6 +53,26 @@ func TestNewSource(t *testing.T) {
 	})
 	assert.Equal(t, "application/json", s.Type)
 	assert.Equal(t, ".json", s.Ext)
+}
+
+func TestNewData(t *testing.T) {
+	d := NewData(nil, nil)
+	assert.Len(t, d.Sources, 0)
+
+	d = NewData([]string{"foo=http:///foo.json"}, nil)
+	assert.Equal(t, "/foo.json", d.Sources["foo"].URL.Path)
+
+	d = NewData([]string{"foo=http:///foo.json"}, []string{})
+	assert.Equal(t, "/foo.json", d.Sources["foo"].URL.Path)
+	assert.Empty(t, d.Sources["foo"].Header)
+
+	d = NewData([]string{"foo=http:///foo.json"}, []string{"bar=Accept: blah"})
+	assert.Equal(t, "/foo.json", d.Sources["foo"].URL.Path)
+	assert.Empty(t, d.Sources["foo"].Header)
+
+	d = NewData([]string{"foo=http:///foo.json"}, []string{"foo=Accept: blah"})
+	assert.Equal(t, "/foo.json", d.Sources["foo"].URL.Path)
+	assert.Equal(t, "blah", d.Sources["foo"].Header["Accept"][0])
 }
 
 func TestParseSourceNoAlias(t *testing.T) {
@@ -112,9 +150,15 @@ func TestDatasourceExists(t *testing.T) {
 
 func setupHTTP(code int, mimetype string, body string) (*httptest.Server, *http.Client) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+
 		w.Header().Set("Content-Type", mimetype)
 		w.WriteHeader(code)
-		fmt.Fprintln(w, body)
+		if body == "" {
+			// mirror back the headers
+			fmt.Fprintln(w, marshalObj(r.Header, json.Marshal))
+		} else {
+			fmt.Fprintln(w, body)
+		}
 	}))
 
 	client := &http.Client{
@@ -149,4 +193,81 @@ func TestHTTPFile(t *testing.T) {
 	expected["hello"] = "world"
 	actual := data.Datasource("foo")
 	assert.Equal(t, expected["hello"], actual["hello"])
+}
+
+func TestHTTPFileWithHeaders(t *testing.T) {
+	server, client := setupHTTP(200, "application/json", "")
+	defer server.Close()
+
+	sources := make(map[string]*Source)
+	sources["foo"] = &Source{
+		Alias: "foo",
+		URL: &url.URL{
+			Scheme: "http",
+			Host:   "example.com",
+			Path:   "/foo",
+		},
+		HC: client,
+		Header: http.Header{
+			"Foo":             {"bar"},
+			"foo":             {"baz"},
+			"User-Agent":      {},
+			"Accept-Encoding": {"test"},
+		},
+	}
+	data := &Data{
+		Sources: sources,
+	}
+	expected := http.Header{
+		"Accept-Encoding": {"test"},
+		"Foo":             {"bar", "baz"},
+	}
+	actual := data.Datasource("foo")
+	assert.Equal(t, marshalObj(expected, json.Marshal), marshalObj(actual, json.Marshal))
+}
+
+func TestParseHeaderArgs(t *testing.T) {
+	args := []string{
+		"foo=Accept: application/json",
+		"bar=Authorization: Bearer supersecret",
+	}
+	expected := map[string]http.Header{
+		"foo": {
+			"Accept": {"application/json"},
+		},
+		"bar": {
+			"Authorization": {"Bearer supersecret"},
+		},
+	}
+	assert.Equal(t, expected, parseHeaderArgs(args))
+
+	defer restoreLogFatalf()
+	setupMockLogFatalf()
+	assert.Panics(t, func() {
+		parseHeaderArgs([]string{"foo"})
+	})
+
+	defer restoreLogFatalf()
+	setupMockLogFatalf()
+	assert.Panics(t, func() {
+		parseHeaderArgs([]string{"foo=bar"})
+	})
+
+	args = []string{
+		"foo=Accept: application/json",
+		"foo=Foo: bar",
+		"foo=foo: baz",
+		"foo=fOO: qux",
+		"bar=Authorization: Bearer  supersecret",
+	}
+	expected = map[string]http.Header{
+		"foo": {
+			"Accept": {"application/json"},
+			"Foo":    {"bar", "baz", "qux"},
+		},
+		"bar": {
+			"Authorization": {"Bearer  supersecret"},
+		},
+	}
+	assert.Equal(t, expected, parseHeaderArgs(args))
 }

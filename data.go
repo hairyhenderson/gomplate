@@ -17,6 +17,9 @@ import (
 	"github.com/hairyhenderson/gomplate/vault"
 )
 
+// logFatal is defined so log.Fatal calls can be overridden for testing
+var logFatalf = log.Fatalf
+
 func init() {
 	// Add some types we want to be able to handle which can be missing by default
 	err := mime.AddExtensionType(".json", "application/json")
@@ -55,14 +58,16 @@ type Data struct {
 }
 
 // NewData - constructor for Data
-func NewData(datasourceArgs []string) *Data {
+func NewData(datasourceArgs []string, headerArgs []string) *Data {
 	sources := make(map[string]*Source)
+	headers := parseHeaderArgs(headerArgs)
 	for _, v := range datasourceArgs {
 		s, err := ParseSource(v)
 		if err != nil {
 			log.Fatalf("error parsing datasource %v", err)
 			return nil
 		}
+		s.Header = headers[s.Alias]
 		sources[s.Alias] = s
 	}
 	return &Data{
@@ -72,13 +77,14 @@ func NewData(datasourceArgs []string) *Data {
 
 // Source - a data source
 type Source struct {
-	Alias string
-	URL   *url.URL
-	Ext   string
-	Type  string
-	FS    vfs.Filesystem // used for file: URLs, nil otherwise
-	HC    *http.Client   // used for http[s]: URLs, nil otherwise
-	VC    *vault.Client  //used for vault: URLs, nil otherwise
+	Alias  string
+	URL    *url.URL
+	Ext    string
+	Type   string
+	FS     vfs.Filesystem // used for file: URLs, nil otherwise
+	HC     *http.Client   // used for http[s]: URLs, nil otherwise
+	VC     *vault.Client  //used for vault: URLs, nil otherwise
+	Header http.Header    // used for http[s]: URLs, nil otherwise
 }
 
 // NewSource - builds a &Source
@@ -236,7 +242,12 @@ func readHTTP(source *Source, args ...string) ([]byte, error) {
 	if source.HC == nil {
 		source.HC = &http.Client{Timeout: time.Second * 5}
 	}
-	res, err := source.HC.Get(source.URL.String())
+	req, err := http.NewRequest("GET", source.URL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+	req.Header = source.Header
+	res, err := source.HC.Do(req)
 	if err != nil {
 		return nil, err
 	}
@@ -285,4 +296,38 @@ func readVault(source *Source, args ...string) ([]byte, error) {
 	source.Type = "application/json"
 
 	return data, nil
+}
+
+func parseHeaderArgs(headerArgs []string) map[string]http.Header {
+	headers := make(map[string]http.Header)
+	for _, v := range headerArgs {
+		ds, name, value := splitHeaderArg(v)
+		if _, ok := headers[ds]; !ok {
+			headers[ds] = make(http.Header)
+		}
+		headers[ds][name] = append(headers[ds][name], strings.TrimSpace(value))
+	}
+	return headers
+}
+
+func splitHeaderArg(arg string) (datasourceAlias, name, value string) {
+	parts := strings.SplitN(arg, "=", 2)
+	if len(parts) != 2 {
+		logFatalf("Invalid datasource-header option '%s'", arg)
+		return "", "", ""
+	}
+	datasourceAlias = parts[0]
+	name, value = splitHeader(parts[1])
+	return datasourceAlias, name, value
+}
+
+func splitHeader(header string) (name, value string) {
+	parts := strings.SplitN(header, ":", 2)
+	if len(parts) != 2 {
+		logFatalf("Invalid HTTP Header format '%s'", header)
+		return "", ""
+	}
+	name = http.CanonicalHeaderKey(parts[0])
+	value = parts[1]
+	return name, value
 }

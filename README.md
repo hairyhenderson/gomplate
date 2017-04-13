@@ -585,6 +585,13 @@ $ echo 'Hello there, {{(datasource "foo").headers.Host}}...' | gomplate -d foo=h
 Hello there, httpbin.org...
 ```
 
+Additional headers can be provided with the `--datasource-header`/`-H` option:
+
+```console
+$ gomplate -d foo=https://httpbin.org/get -H 'foo=Foo: bar' -i '{{(datasource "foo").headers.Foo}}'
+bar
+```
+
 ###### Usage with Vault data
 
 The special `vault://` URL scheme can be used to retrieve data from [Hashicorp
