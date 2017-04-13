@@ -117,7 +117,7 @@ func openOutFile(filename string) (out *os.File, err error) {
 
 func runTemplate(c *cli.Context) error {
 	defer runCleanupHooks()
-	data := NewData(c.StringSlice("datasource"))
+	data := NewData(c.StringSlice("datasource"), c.StringSlice("datasource-header"))
 	lDelim := c.String("left-delim")
 	rDelim := c.String("right-delim")
 
@@ -165,6 +165,10 @@ func main() {
 		cli.StringSliceFlag{
 			Name:  "datasource, d",
 			Usage: "Data source in alias=URL form. Specify multiple times to add multiple sources.",
+		},
+		cli.StringSliceFlag{
+			Name:  "datasource-header, H",
+			Usage: "HTTP Header field in 'alias=Name: value' form to be provided on HTTP-based data sources. Multiples can be set.",
 		},
 		cli.StringFlag{
 			Name:   "left-delim",
