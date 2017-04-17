@@ -35,7 +35,7 @@ Gomplate is an alternative that will let you process templates which also includ
 		- [Commandline Arguments](#commandline-arguments)
 			- [`--file`/`-f`, `--in`/`-i`, and `--out`/`-o`](#-file-f-in-i-and-out-o)
 				- [Multiple inputs](#multiple-inputs)
-			- [`--datasource`/`-d`](#-datasource-d)
+			- [`--datasource`/`-d`](#--datasource-d)
 			- [Overriding the template delimiters](#overriding-the-template-delimiters)
 	- [Syntax](#syntax)
 		- [About `.Env`](#about-env)
