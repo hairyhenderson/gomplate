@@ -2,12 +2,13 @@ package main
 
 import (
 	"io"
-	"io/ioutil"
 	"log"
 	"os"
 
 	"strings"
 	"text/template"
+
+	"errors"
 
 	"github.com/hairyhenderson/gomplate/aws"
 	"github.com/hairyhenderson/gomplate/version"
@@ -32,7 +33,6 @@ func (g *Gomplate) RunTemplate(text string, out io.Writer) {
 	if err != nil {
 		log.Fatalf("Line %q: %v\n", text, err)
 	}
-
 	if err := tmpl.Execute(out, context); err != nil {
 		panic(err)
 	}
@@ -78,43 +78,6 @@ func NewGomplate(data *Data, leftDelim, rightDelim string) *Gomplate {
 	}
 }
 
-func readInputs(input string, files []string) []string {
-	if input != "" {
-		return []string{input}
-	}
-	if len(files) == 0 {
-		files = []string{"-"}
-	}
-	ins := make([]string, len(files))
-
-	for n, filename := range files {
-		var err error
-		var inFile *os.File
-		if filename == "-" {
-			inFile = os.Stdin
-		} else {
-			inFile, err = os.Open(filename)
-			if err != nil {
-				log.Fatalf("Failed to open %s\n%v", filename, err)
-			}
-			defer inFile.Close() // nolint: errcheck
-		}
-		bytes, err := ioutil.ReadAll(inFile)
-		if err != nil {
-			log.Fatalf("Read failed for %s!\n%v\n", filename, err)
-		}
-		ins[n] = string(bytes)
-	}
-	return ins
-}
-
-func openOutFile(filename string) (out *os.File, err error) {
-	if filename == "-" {
-		return os.Stdout, nil
-	}
-	return os.OpenFile(filename, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0644)
-}
-
 func runTemplate(c *cli.Context) error {
 	defer runCleanupHooks()
 	data := NewData(c.StringSlice("datasource"), c.StringSlice("datasource-header"))
@@ -123,22 +86,51 @@ func runTemplate(c *cli.Context) error {
 
 	g := NewGomplate(data, lDelim, rDelim)
 
-	inputs := readInputs(c.String("in"), c.StringSlice("file"))
-
-	outputs := c.StringSlice("out")
-	if len(outputs) == 0 {
-		outputs = []string{"-"}
+	if err := validateInOutOptions(c); err != nil {
+		return err
 	}
 
-	for n, input := range inputs {
-		out, err := openOutFile(outputs[n])
-		if err != nil {
-			return err
+	inputDir := c.String("input-dir")
+	if inputDir != "" {
+		return processInputDir(inputDir, getOutputDir(c), g)
+	}
+
+	return processInputFiles(c.String("in"), c.StringSlice("file"), c.StringSlice("out"), g)
+}
+func getOutputDir(c *cli.Context) string {
+	out := c.String("output-dir")
+	if out != "" {
+		return out
+	}
+	return "."
+}
+
+// Called from process.go ...
+func renderTemplate(g *Gomplate, inString string, outPath string) error {
+	outFile, err := openOutFile(outPath)
+	if err != nil {
+		return err
+	}
+	// nolint: errcheck
+	defer outFile.Close()
+	g.RunTemplate(inString, outFile)
+	return nil
+}
+
+func validateInOutOptions(c *cli.Context) error {
+	if c.String("input-dir") != "" {
+		if c.String("in") != "" || len(c.StringSlice("file")) != 0 {
+			return errors.New("--input-dir can not be used together with --in or --file")
 		}
-		defer out.Close() // nolint: errcheck
-		g.RunTemplate(input, out)
 	}
-
+	if c.String("output-dir") != "" {
+		if len(c.StringSlice("out")) != 0 {
+			return errors.New("--out can not be used together with --output-dir")
+		}
+		if c.String("input-dir") == "" {
+			return errors.New("--input-dir must be set when --output-dir is set")
+		}
+	}
 	return nil
 }
 
@@ -152,15 +144,23 @@ func main() {
 	app.Flags = []cli.Flag{
 		cli.StringSliceFlag{
 			Name:  "file, f",
-			Usage: "Template file to process. Omit to use standard input (-), or use --in",
+			Usage: "Template file to process. Omit to use standard input (-), or use --in or --input-dir",
 		},
 		cli.StringFlag{
 			Name:  "in, i",
-			Usage: "Template string to process (alternative to --file)",
+			Usage: "Template string to process (alternative to --file and --input-dir)",
+		},
+		cli.StringFlag{
+			Name:  "input-dir",
+			Usage: "Directory which is examined recursively for templates (alternative to --file and --in)",
 		},
 		cli.StringSliceFlag{
 			Name:  "out, o",
 			Usage: "Output file name. Omit to use standard output (-).",
+		},
+		cli.StringFlag{
+			Name:  "output-dir",
+			Usage: "Directory to store the processed templates. Only used for --input-dir",
 		},
 		cli.StringSliceFlag{
 			Name:  "datasource, d",
