@@ -1,10 +1,13 @@
 package main
 
 import (
-	"path/filepath"
+	"fmt"
 	"io/ioutil"
 	"os"
-	"fmt"
+	"path/filepath"
+
+	"io"
+
 	"github.com/urfave/cli"
 )
 
@@ -22,7 +25,7 @@ func processInputFiles(c *cli.Context, g *Gomplate) error {
 	}
 
 	for n, input := range inputs {
-		if err:= renderTemplate(g, input, outputs[n]); err != nil {
+		if err := renderTemplate(g, input, outputs[n]); err != nil {
 			return err
 		}
 	}
@@ -34,7 +37,7 @@ func processInputFiles(c *cli.Context, g *Gomplate) error {
 func processInputDir(c *cli.Context, g *Gomplate) error {
 	inputDir := c.String("input-dir")
 	outDir := c.String("output-dir")
-	if err := assertDirectory(outDir); err != nil {
+	if _, err := assertDir(outDir); err != nil {
 		return err
 	}
 	return processDir(g, inputDir, outDir)
@@ -44,45 +47,39 @@ func processDir(g *Gomplate, inPath string, outPath string) error {
 	inPath = filepath.Clean(inPath)
 	outPath = filepath.Clean(outPath)
 
-	// ensure input path
-	si, err := os.Stat(inPath)
-	if err := assertDirectory(inPath); err != nil {
+	// assert tha input path exists
+	si, err := assertDir(inPath)
+	if err != nil {
 		return err
 	}
 
 	// ensure output directory
-	_, err = os.Stat(outPath)
-	if err != nil {
-	  if os.IsNotExist(err) {
-		  err = os.MkdirAll(outPath, si.Mode())
-	  }
-		if err != nil {
-			return err
-		}
+	if err = ensureDir(outPath, si.Mode()); err != nil {
+		return err
 	}
 
 	// read directory
-	paths, err := ioutil.ReadDir(inPath)
+	entries, err := ioutil.ReadDir(inPath)
 	if err != nil {
 		return err
 	}
 
 	// process or dive in again
-	for _, path := range paths {
-		inPath := filepath.Join(inPath, path.Name())
-		outPath := filepath.Join(outPath, path.Name())
+	for _, entry := range entries {
+		nextInPath := filepath.Join(inPath, entry.Name())
+		nextOutPath := filepath.Join(outPath, entry.Name())
 
-		if path.IsDir() {
-			err := processDir(g, inPath, outPath)
+		if entry.IsDir() {
+			err := processDir(g, nextInPath, nextOutPath)
 			if err != nil {
 				return err
 			}
 		} else {
-			inString, err := readInput(inPath)
+			inString, err := readInput(nextInPath)
 			if err != nil {
 				return err
 			}
-			if err := renderTemplate(g, inString, outPath); err != nil {
+			if err := renderTemplate(g, inString, nextOutPath); err != nil {
 				return err
 			}
 		}
@@ -97,21 +94,22 @@ func renderTemplate(g *Gomplate, inString string, outPath string) error {
 	if err != nil {
 		return err
 	}
-	defer outFile.Close()
-	return g.RunTemplate(inString, outFile)
+	defer checkClose(outFile, &err)
+	err = g.RunTemplate(inString, outFile)
+	return err
 }
 
 // == File handling ================================================
 
-func assertDirectory(dir string) error {
+func assertDir(dir string) (os.FileInfo, error) {
 	si, err := os.Stat(dir)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	if !si.IsDir() {
-		return fmt.Errorf("%s is not a directory", dir)
+		return nil, fmt.Errorf("%s is not a directory", dir)
 	}
-	return nil
+	return si, nil
 }
 
 func readInputs(input string, files []string) ([]string, error) {
@@ -141,13 +139,14 @@ func readInput(filename string) (string, error) {
 	} else {
 		inFile, err = os.Open(filename)
 		if err != nil {
-			return "", fmt.Errorf("Failed to open %s\n%v", filename, err)
+			return "", fmt.Errorf("failed to open %s\n%v", filename, err)
 		}
-		defer inFile.Close()
+		defer checkClose(inFile, &err)
 	}
 	bytes, err := ioutil.ReadAll(inFile)
 	if err != nil {
-		return "", fmt.Errorf("Read failed for %s!\n%v\n", filename, err)
+		err = fmt.Errorf("read failed for %s\n%v", filename, err)
+		return "", err
 	}
 	return string(bytes), nil
 }
@@ -157,4 +156,24 @@ func openOutFile(filename string) (out *os.File, err error) {
 		return os.Stdout, nil
 	}
 	return os.OpenFile(filename, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0644)
+}
+
+func ensureDir(dir string, mode os.FileMode) error {
+	_, err := os.Stat(dir)
+	if err != nil {
+		if os.IsNotExist(err) {
+			err = os.MkdirAll(dir, mode)
+		}
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func checkClose(c io.Closer, err *error) {
+	cerr := c.Close()
+	if *err == nil {
+		*err = cerr
+	}
 }

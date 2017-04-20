@@ -5,8 +5,11 @@ import (
 	"os"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
 	"path/filepath"
+
+	"log"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestReadInput(t *testing.T) {
@@ -29,16 +32,20 @@ func TestReadInput(t *testing.T) {
 func TestInputDir(t *testing.T) {
 	outDir, err := ioutil.TempDir("test/files/input-dir", "out-temp-")
 	assert.Nil(t, err)
-	defer os.RemoveAll(outDir)
+	defer (func() {
+		if cerr := os.RemoveAll(outDir); cerr != nil {
+			log.Fatalf("Error while removing temporary directory %s : %v", outDir, cerr)
+		}
+	})()
 
 	src, err := ParseSource("config=test/files/input-dir/config.yml")
 	assert.Nil(t, err)
 
 	data := &Data{
-		Sources: map[string]*Source { "config" : src },
+		Sources: map[string]*Source{"config": src},
 	}
 	gomplate := NewGomplate(data, "{{", "}}")
-	err = processDir(gomplate,"test/files/input-dir/in", outDir)
+	err = processDir(gomplate, "test/files/input-dir/in", outDir)
 	assert.Nil(t, err)
 
 	top, err := ioutil.ReadFile(filepath.Join(outDir, "top.txt"))

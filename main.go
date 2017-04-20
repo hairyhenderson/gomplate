@@ -8,10 +8,11 @@ import (
 	"strings"
 	"text/template"
 
+	"errors"
+
 	"github.com/hairyhenderson/gomplate/aws"
 	"github.com/hairyhenderson/gomplate/version"
 	"github.com/urfave/cli"
-	"errors"
 )
 
 func (g *Gomplate) createTemplate() *template.Template {
@@ -89,9 +90,9 @@ func runTemplate(c *cli.Context) error {
 
 	if c.String("input-dir") != "" {
 		return processInputDir(c, g)
-	} else {
-		return processInputFiles(c, g)
 	}
+
+	return processInputFiles(c, g)
 }
 
 func validateInOutOptions(c *cli.Context) error {

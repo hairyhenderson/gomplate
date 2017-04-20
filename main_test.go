@@ -8,13 +8,18 @@ import (
 
 	"text/template"
 
+	"log"
+
 	"github.com/hairyhenderson/gomplate/aws"
 	"github.com/stretchr/testify/assert"
 )
 
 func testTemplate(g *Gomplate, template string) string {
 	var out bytes.Buffer
-	g.RunTemplate(template, &out)
+	err := g.RunTemplate(template, &out)
+	if err != nil {
+		log.Fatalf("Can't run remplate %v", err)
+	}
 	return out.String()
 }
 
