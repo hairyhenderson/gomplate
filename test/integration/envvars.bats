@@ -11,7 +11,7 @@ load helper
 
 @test "errors with non-existant env var using .Env" {
   gomplate -i '{{.Env.FOO}}'
-  [ "$status" -eq 2 ]
+  [ "$status" -eq 1 ]
   [[ "${lines[0]}" == *"map has no entry for key"* ]]
 }
 
