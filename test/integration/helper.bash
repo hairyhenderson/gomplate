@@ -25,3 +25,11 @@ function __gomplate_stdin () {
   shift 1
   echo "$in" | bin/gomplate "$@"
 }
+
+function start_mirror_svc () {
+  bin/mirror &
+}
+
+function stop_mirror_svc () {
+  wget -q http://127.0.0.1:8080/quit
+}

@@ -18,6 +18,14 @@ define gocross
 			-o $(PREFIX)/bin/$(PKG_NAME)_$(1)-$(2)$(call extension,$(1));
 endef
 
+define gocross-tool
+	GOOS=$(1) GOARCH=$(2) \
+		$(GO) build \
+			-ldflags "-w -s $(COMMIT_FLAG) $(VERSION_FLAG)" \
+			-o $(PREFIX)/bin/$(3)_$(1)-$(2)$(call extension,$(1)) \
+			$(PREFIX)/test/integration/$(3)svc;
+endef
+
 define compress
 	upx $(PREFIX)/bin/$(PKG_NAME)_$(1)-$(2)$(call extension,$(1)) \
 	 -o $(PREFIX)/bin/$(PKG_NAME)_$(1)-$(2)-slim$(call extension,$(1))
@@ -36,25 +44,34 @@ compress-all:
 
 build-release: clean build-x compress-all
 
-$(PREFIX)/bin/$(PKG_NAME)_%: $(shell find . -type f -name '*.go')
+$(PREFIX)/bin/$(PKG_NAME)_%: $(shell find $(PREFIX) -type f -name '*.go' -not -path "$(PREFIX)/test/*")
 	$(call gocross,$(shell echo $* | sed 's/\([^-]*\)-\([^.]*\).*/\1/'),$(shell echo $* | sed 's/\([^-]*\)-\([^.]*\).*/\2/'))
 
-$(PREFIX)/bin/$(PKG_NAME)$(call extension,$(GOOS)): $(shell find . -type f -name '*.go')
+$(PREFIX)/bin/mirror_%: $(shell find $(PREFIX)/test/integration/mirrorsvc -type f -name '*.go')
+	$(call gocross-tool,$(shell echo $* | sed 's/\([^-]*\)-\([^.]*\).*/\1/'),$(shell echo $* | sed 's/\([^-]*\)-\([^.]*\).*/\2/'),mirror)
+
+$(PREFIX)/bin/$(PKG_NAME)$(call extension,$(GOOS)): $(shell find $(PREFIX) -type f -name '*.go' -not -path "$(PREFIX)/test/*")
 	$(GO) build -ldflags "-w -s $(COMMIT_FLAG) $(VERSION_FLAG)" -o $@
 
+$(PREFIX)/bin/mirror$(call extension,$(GOOS)): $(shell find $(PREFIX)/test/integration/mirrorsvc -type f -name '*.go')
+	$(GO) build -ldflags "-w -s $(COMMIT_FLAG) $(VERSION_FLAG)" -o $@ $(PREFIX)/test/integration/mirrorsvc
+
 build: $(PREFIX)/bin/$(PKG_NAME)$(call extension,$(GOOS))
+
+build-mirror: $(PREFIX)/bin/mirror$(call extension,$(GOOS))
 
 test:
 	$(GO) test -v -race `glide novendor`
 
-build-integration-image: $(PREFIX)/bin/$(PKG_NAME)_linux-amd64$(call extension,$(GOOS))
+build-integration-image: $(PREFIX)/bin/$(PKG_NAME)_linux-amd64$(call extension,$(GOOS)) $(PREFIX)/bin/mirror_linux-amd64$(call extension,$(GOOS))
 	cp $(PREFIX)/bin/$(PKG_NAME)_linux-amd64 test/integration/gomplate
+	cp $(PREFIX)/bin/mirror_linux-amd64 test/integration/mirror
 	docker build -f test/integration/Dockerfile -t gomplate-test test/integration/
 
 test-integration-docker: build-integration-image
 	docker run -it --rm gomplate-test
 
-test-integration: build
+test-integration: build build-mirror
 	@test/integration/test.sh
 
 gen-changelog:
