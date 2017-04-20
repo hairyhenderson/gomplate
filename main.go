@@ -27,13 +27,15 @@ type Gomplate struct {
 }
 
 // RunTemplate -
-func (g *Gomplate) RunTemplate(text string, out io.Writer) error {
+func (g *Gomplate) RunTemplate(text string, out io.Writer) {
 	context := &Context{}
 	tmpl, err := g.createTemplate().Delims(g.leftDelim, g.rightDelim).Parse(text)
 	if err != nil {
 		log.Fatalf("Line %q: %v\n", text, err)
 	}
-	return tmpl.Execute(out, context)
+	if err := tmpl.Execute(out, context); err != nil {
+		panic(err)
+	}
 }
 
 // NewGomplate -
@@ -102,8 +104,8 @@ func renderTemplate(g *Gomplate, inString string, outPath string) error {
 		return err
 	}
 	defer checkClose(outFile, &err)
-	err = g.RunTemplate(inString, outFile)
-	return err
+	g.RunTemplate(inString, outFile)
+	return nil
 }
 
 func validateInOutOptions(c *cli.Context) error {
