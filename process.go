@@ -54,7 +54,7 @@ func processDir(g *Gomplate, inPath string, outPath string) error {
 	}
 
 	// ensure output directory
-	if err = ensureDir(outPath, si.Mode()); err != nil {
+	if err = os.MkdirAll(outPath, si.Mode()); err != nil {
 		return err
 	}
 
@@ -85,18 +85,6 @@ func processDir(g *Gomplate, inPath string, outPath string) error {
 		}
 	}
 	return nil
-}
-
-// == Rendering ====================================================
-
-func renderTemplate(g *Gomplate, inString string, outPath string) error {
-	outFile, err := openOutFile(outPath)
-	if err != nil {
-		return err
-	}
-	defer checkClose(outFile, &err)
-	err = g.RunTemplate(inString, outFile)
-	return err
 }
 
 // == File handling ================================================
@@ -156,19 +144,6 @@ func openOutFile(filename string) (out *os.File, err error) {
 		return os.Stdout, nil
 	}
 	return os.OpenFile(filename, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0644)
-}
-
-func ensureDir(dir string, mode os.FileMode) error {
-	_, err := os.Stat(dir)
-	if err != nil {
-		if os.IsNotExist(err) {
-			err = os.MkdirAll(dir, mode)
-		}
-		if err != nil {
-			return err
-		}
-	}
-	return nil
 }
 
 func checkClose(c io.Closer, err *error) {

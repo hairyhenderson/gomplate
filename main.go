@@ -95,6 +95,17 @@ func runTemplate(c *cli.Context) error {
 	return processInputFiles(c, g)
 }
 
+// Called from process ...
+func renderTemplate(g *Gomplate, inString string, outPath string) error {
+	outFile, err := openOutFile(outPath)
+	if err != nil {
+		return err
+	}
+	defer checkClose(outFile, &err)
+	err = g.RunTemplate(inString, outFile)
+	return err
+}
+
 func validateInOutOptions(c *cli.Context) error {
 	if c.String("input-dir") != "" {
 		if c.String("output-dir") == "" {
