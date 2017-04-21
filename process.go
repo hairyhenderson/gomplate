@@ -34,9 +34,8 @@ func processInputFiles(stringTemplate string, inFiles []string, outFiles []strin
 
 	for n, input := range inFiles {
 		go func(idx int, input string) {
-			if err := renderTemplate(g, input, outFiles[idx]); err != nil {
-				results <- &renderResult{err, input, outFiles[idx]}
-			}
+			err := renderTemplate(g, input, outFiles[idx])
+			results <- &renderResult{err, input, outFiles[idx]}
 		}(n, input)
 	}
 
