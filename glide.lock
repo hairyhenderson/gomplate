@@ -1,8 +1,8 @@
 hash: 01c19d423d90e790bc9d99bb469f318dc4d04f66d4464ba1b3276d746c994901
-updated: 2017-02-11T13:38:09.099507894-05:00
+updated: 2017-04-20T19:20:59.31591402-05:00
 imports:
 - name: github.com/aws/aws-sdk-go
-  version: f615b0905b52177eb0efa0fe59340c05c0ea0ed9
+  version: ccc54a4047c1470fdf5af9badadfd60a8a7f82bf
   subpackages:
   - aws
   - aws/awserr
@@ -26,7 +26,6 @@ imports:
   - private/protocol/query/queryutil
   - private/protocol/rest
   - private/protocol/xml/xmlutil
-  - private/waiter
   - service/ec2
   - service/sts
 - name: github.com/blang/vfs
@@ -40,7 +39,7 @@ imports:
 - name: github.com/urfave/cli
   version: 0bdeddeeb0f650497d603c4ad7b20cfe685682f6
 - name: gopkg.in/yaml.v2
-  version: a3f3340b5840cee44f372bddb5880fcbc419b46a
+  version: cd8b52f8269e0feb286dfeef29f8fe4d5b397e0b
   repo: https://github.com/go-yaml/yaml.git
 testImports:
 - name: github.com/davecgh/go-spew

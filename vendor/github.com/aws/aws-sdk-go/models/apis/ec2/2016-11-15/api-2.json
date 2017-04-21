@@ -310,6 +310,15 @@
       "input":{"shape":"CreateFlowLogsRequest"},
       "output":{"shape":"CreateFlowLogsResult"}
     },
+    "CreateFpgaImage":{
+      "name":"CreateFpgaImage",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"CreateFpgaImageRequest"},
+      "output":{"shape":"CreateFpgaImageResult"}
+    },
     "CreateImage":{
       "name":"CreateImage",
       "http":{
@@ -1248,6 +1257,15 @@
       "input":{"shape":"DescribeVolumesRequest"},
       "output":{"shape":"DescribeVolumesResult"}
     },
+    "DescribeVolumesModifications":{
+      "name":"DescribeVolumesModifications",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DescribeVolumesModificationsRequest"},
+      "output":{"shape":"DescribeVolumesModificationsResult"}
+    },
     "DescribeVpcAttribute":{
       "name":"DescribeVpcAttribute",
       "http":{
@@ -1655,6 +1673,15 @@
         "requestUri":"/"
       },
       "input":{"shape":"ModifySubnetAttributeRequest"}
+    },
+    "ModifyVolume":{
+      "name":"ModifyVolume",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ModifyVolumeRequest"},
+      "output":{"shape":"ModifyVolumeResult"}
     },
     "ModifyVolumeAttribute":{
       "name":"ModifyVolumeAttribute",
@@ -2784,6 +2811,13 @@
         "modifying"
       ]
     },
+    "BillingProductList":{
+      "type":"list",
+      "member":{
+        "shape":"String",
+        "locationName":"item"
+      }
+    },
     "Blob":{"type":"blob"},
     "BlobAttributeValue":{
       "type":"structure",
@@ -3519,6 +3553,31 @@
         }
       }
     },
+    "CreateFpgaImageRequest":{
+      "type":"structure",
+      "required":["InputStorageLocation"],
+      "members":{
+        "DryRun":{"shape":"Boolean"},
+        "InputStorageLocation":{"shape":"StorageLocation"},
+        "LogsStorageLocation":{"shape":"StorageLocation"},
+        "Description":{"shape":"String"},
+        "Name":{"shape":"String"},
+        "ClientToken":{"shape":"String"}
+      }
+    },
+    "CreateFpgaImageResult":{
+      "type":"structure",
+      "members":{
+        "FpgaImageId":{
+          "shape":"String",
+          "locationName":"fpgaImageId"
+        },
+        "FpgaImageGlobalId":{
+          "shape":"String",
+          "locationName":"fpgaImageGlobalId"
+        }
+      }
+    },
     "CreateImageRequest":{
       "type":"structure",
       "required":[
@@ -4065,7 +4124,11 @@
           "shape":"Boolean",
           "locationName":"encrypted"
         },
-        "KmsKeyId":{"shape":"String"}
+        "KmsKeyId":{"shape":"String"},
+        "TagSpecifications":{
+          "shape":"TagSpecificationList",
+          "locationName":"TagSpecification"
+        }
       }
     },
     "CreateVpcEndpointRequest":{
@@ -6296,6 +6359,35 @@
         "VolumeStatuses":{
           "shape":"VolumeStatusList",
           "locationName":"volumeStatusSet"
+        },
+        "NextToken":{
+          "shape":"String",
+          "locationName":"nextToken"
+        }
+      }
+    },
+    "DescribeVolumesModificationsRequest":{
+      "type":"structure",
+      "members":{
+        "DryRun":{"shape":"Boolean"},
+        "VolumeIds":{
+          "shape":"VolumeIdStringList",
+          "locationName":"VolumeId"
+        },
+        "Filters":{
+          "shape":"FilterList",
+          "locationName":"Filter"
+        },
+        "NextToken":{"shape":"String"},
+        "MaxResults":{"shape":"Integer"}
+      }
+    },
+    "DescribeVolumesModificationsResult":{
+      "type":"structure",
+      "members":{
+        "VolumesModifications":{
+          "shape":"VolumeModificationList",
+          "locationName":"volumeModificationSet"
         },
         "NextToken":{
           "shape":"String",
@@ -9357,6 +9449,12 @@
         "i2.2xlarge",
         "i2.4xlarge",
         "i2.8xlarge",
+        "i3.large",
+        "i3.xlarge",
+        "i3.2xlarge",
+        "i3.4xlarge",
+        "i3.8xlarge",
+        "i3.16xlarge",
         "hi1.4xlarge",
         "hs1.8xlarge",
         "c1.medium",
@@ -10027,6 +10125,26 @@
         },
         "VolumeId":{"shape":"String"},
         "AutoEnableIO":{"shape":"AttributeBooleanValue"}
+      }
+    },
+    "ModifyVolumeRequest":{
+      "type":"structure",
+      "required":["VolumeId"],
+      "members":{
+        "DryRun":{"shape":"Boolean"},
+        "VolumeId":{"shape":"String"},
+        "Size":{"shape":"Integer"},
+        "VolumeType":{"shape":"VolumeType"},
+        "Iops":{"shape":"Integer"}
+      }
+    },
+    "ModifyVolumeResult":{
+      "type":"structure",
+      "members":{
+        "VolumeModification":{
+          "shape":"VolumeModification",
+          "locationName":"volumeModification"
+        }
       }
     },
     "ModifyVpcAttributeRequest":{
@@ -11317,6 +11435,10 @@
         "RamdiskId":{
           "shape":"String",
           "locationName":"ramdiskId"
+        },
+        "BillingProducts":{
+          "shape":"BillingProductList",
+          "locationName":"BillingProduct"
         },
         "RootDeviceName":{
           "shape":"String",
@@ -12686,6 +12808,10 @@
         "EbsOptimized":{
           "shape":"Boolean",
           "locationName":"ebsOptimized"
+        },
+        "TagSpecifications":{
+          "shape":"TagSpecificationList",
+          "locationName":"TagSpecification"
         }
       }
     },
@@ -13928,6 +14054,13 @@
         "S3":{"shape":"S3Storage"}
       }
     },
+    "StorageLocation":{
+      "type":"structure",
+      "members":{
+        "Bucket":{"shape":"String"},
+        "Key":{"shape":"String"}
+      }
+    },
     "String":{"type":"string"},
     "Subnet":{
       "type":"structure",
@@ -14102,6 +14235,26 @@
       "type":"list",
       "member":{
         "shape":"Tag",
+        "locationName":"item"
+      }
+    },
+    "TagSpecification":{
+      "type":"structure",
+      "members":{
+        "ResourceType":{
+          "shape":"ResourceType",
+          "locationName":"resourceType"
+        },
+        "Tags":{
+          "shape":"TagList",
+          "locationName":"Tag"
+        }
+      }
+    },
+    "TagSpecificationList":{
+      "type":"list",
+      "member":{
+        "shape":"TagSpecification",
         "locationName":"item"
       }
     },
@@ -14574,6 +14727,75 @@
         "shape":"Volume",
         "locationName":"item"
       }
+    },
+    "VolumeModification":{
+      "type":"structure",
+      "members":{
+        "VolumeId":{
+          "shape":"String",
+          "locationName":"volumeId"
+        },
+        "ModificationState":{
+          "shape":"VolumeModificationState",
+          "locationName":"modificationState"
+        },
+        "StatusMessage":{
+          "shape":"String",
+          "locationName":"statusMessage"
+        },
+        "TargetSize":{
+          "shape":"Integer",
+          "locationName":"targetSize"
+        },
+        "TargetIops":{
+          "shape":"Integer",
+          "locationName":"targetIops"
+        },
+        "TargetVolumeType":{
+          "shape":"VolumeType",
+          "locationName":"targetVolumeType"
+        },
+        "OriginalSize":{
+          "shape":"Integer",
+          "locationName":"originalSize"
+        },
+        "OriginalIops":{
+          "shape":"Integer",
+          "locationName":"originalIops"
+        },
+        "OriginalVolumeType":{
+          "shape":"VolumeType",
+          "locationName":"originalVolumeType"
+        },
+        "Progress":{
+          "shape":"Long",
+          "locationName":"progress"
+        },
+        "StartTime":{
+          "shape":"DateTime",
+          "locationName":"startTime"
+        },
+        "EndTime":{
+          "shape":"DateTime",
+          "locationName":"endTime"
+        }
+      }
+    },
+    "VolumeModificationList":{
+      "type":"list",
+      "member":{
+        "shape":"VolumeModification",
+        "locationName":"item"
+      }
+    },
+    "VolumeModificationState":{
+      "type":"string",
+      "enum":[
+        "modifying",
+        "optimizing",
+        "completed",
+        "failed"
+      ]
     },
     "VolumeState":{
       "type":"string",
