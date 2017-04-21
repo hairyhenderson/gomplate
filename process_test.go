@@ -45,7 +45,11 @@ func TestInputDir(t *testing.T) {
 		Sources: map[string]*Source{"config": src},
 	}
 	gomplate := NewGomplate(data, "{{", "}}")
-	err = processDir(gomplate, "test/files/input-dir/in", outDir)
+	results := make(chan *renderResult)
+	defer close(results)
+	nr := processDir(gomplate, "test/files/input-dir/in", outDir, results, 0)
+	log.Print(nr)
+	err = waitAndEvaluateResults(results, nr)
 	assert.Nil(t, err)
 
 	top, err := ioutil.ReadFile(filepath.Join(outDir, "top.txt"))
