@@ -51,11 +51,11 @@ func processInputDir(inputDir string, outDir string, g *Gomplate) error {
 	}
 	results := make(chan *renderResult)
 	defer close(results)
-	nr := processDir(g, inputDir, outDir, results, 0)
+	nr := processDir(inputDir, outDir, g, results, 0)
 	return waitAndEvaluateResults(results, nr)
 }
 
-func processDir(g *Gomplate, inPath string, outPath string, results chan *renderResult, nr int) int {
+func processDir(inPath string, outPath string, g *Gomplate, results chan *renderResult, nr int) int {
 	inPath = filepath.Clean(inPath)
 	outPath = filepath.Clean(outPath)
 
@@ -82,7 +82,7 @@ func processDir(g *Gomplate, inPath string, outPath string, results chan *render
 		nextOutPath := filepath.Join(outPath, entry.Name())
 
 		if entry.IsDir() {
-			nr += processDir(g, nextInPath, nextOutPath, results, 0)
+			nr += processDir(nextInPath, nextOutPath, g, results, 0)
 		} else {
 			go (func(nextInPath string, nextOutPath string) {
 				inString, err := readInput(nextInPath)
