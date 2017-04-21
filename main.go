@@ -90,11 +90,12 @@ func runTemplate(c *cli.Context) error {
 		return err
 	}
 
-	if c.String("input-dir") != "" {
-		return processInputDir(c, g)
+	inputDir := c.String("input-dir")
+	if inputDir != "" {
+		return processInputDir(inputDir, c.String("output-dir"), g)
 	}
 
-	return processInputFiles(c, g)
+	return processInputFiles(c.String("in"), c.StringSlice("file"), c.StringSlice("out"), g)
 }
 
 // Called from process ...
@@ -110,9 +111,6 @@ func renderTemplate(g *Gomplate, inString string, outPath string) error {
 
 func validateInOutOptions(c *cli.Context) error {
 	if c.String("input-dir") != "" {
-		if c.String("output-dir") == "" {
-			return errors.New("--output-dir must be set when --input-dir is set")
-		}
 		if c.String("in") != "" || len(c.StringSlice("file")) != 0 {
 			return errors.New("--input-dir can not be used together with --in or --file")
 		}
@@ -154,7 +152,8 @@ func main() {
 		},
 		cli.StringFlag{
 			Name:  "output-dir",
-			Usage: "Directory to store the processed templates. Can only be used with --file or --input-dir",
+			Usage: "Directory to store the processed templates. Only used for --input-dir",
+			Value: ".",
 		},
 		cli.StringSliceFlag{
 			Name:  "datasource, d",

@@ -9,8 +9,6 @@ import (
 	"io"
 
 	"errors"
-
-	"github.com/urfave/cli"
 )
 
 // == Direct input processing ========================================
@@ -21,36 +19,33 @@ type renderResult struct {
 	outPath string
 }
 
-func processInputFiles(c *cli.Context, g *Gomplate) error {
-	inputs, err := readInputs(c.String("in"), c.StringSlice("file"))
+func processInputFiles(stringTemplate string, inFiles []string, outFiles []string, g *Gomplate) error {
+	inFiles, err := readInputs(stringTemplate, inFiles)
 	if err != nil {
 		return err
 	}
 
-	outputs := c.StringSlice("out")
-	if len(outputs) == 0 {
-		outputs = []string{"-"}
+	if len(outFiles) == 0 {
+		outFiles = []string{"-"}
 	}
 
 	results := make(chan *renderResult)
 	defer close(results)
 
-	for n, input := range inputs {
+	for n, input := range inFiles {
 		go func(idx int, input string) {
-			if err := renderTemplate(g, input, outputs[idx]); err != nil {
-				results <- &renderResult{err, input, outputs[idx]}
+			if err := renderTemplate(g, input, outFiles[idx]); err != nil {
+				results <- &renderResult{err, input, outFiles[idx]}
 			}
 		}(n, input)
 	}
 
-	return waitAndEvaluateResults(results, len(inputs))
+	return waitAndEvaluateResults(results, len(inFiles))
 }
 
 // == Recursive input dir processing ======================================
 
-func processInputDir(c *cli.Context, g *Gomplate) error {
-	inputDir := c.String("input-dir")
-	outDir := c.String("output-dir")
+func processInputDir(inputDir string, outDir string, g *Gomplate) error {
 	if _, err := assertDir(outDir); err != nil {
 		return err
 	}
