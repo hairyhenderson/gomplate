@@ -92,13 +92,20 @@ func runTemplate(c *cli.Context) error {
 
 	inputDir := c.String("input-dir")
 	if inputDir != "" {
-		return processInputDir(inputDir, c.String("output-dir"), g)
+		return processInputDir(inputDir, getOutputDir(c), g)
 	}
 
 	return processInputFiles(c.String("in"), c.StringSlice("file"), c.StringSlice("out"), g)
 }
+func getOutputDir(c *cli.Context) string {
+	out := c.String("output-dir")
+	if out != "" {
+		return out
+	}
+	return "."
+}
 
-// Called from process ...
+// Called from process.go ...
 func renderTemplate(g *Gomplate, inString string, outPath string) error {
 	outFile, err := openOutFile(outPath)
 	if err != nil {
@@ -153,7 +160,6 @@ func main() {
 		cli.StringFlag{
 			Name:  "output-dir",
 			Usage: "Directory to store the processed templates. Only used for --input-dir",
-			Value: ".",
 		},
 		cli.StringSliceFlag{
 			Name:  "datasource, d",
