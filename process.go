@@ -45,9 +45,6 @@ func processInputFiles(stringTemplate string, inFiles []string, outFiles []strin
 // == Recursive input dir processing ======================================
 
 func processInputDir(inputDir string, outDir string, g *Gomplate) error {
-	if _, err := assertDir(outDir); err != nil {
-		return err
-	}
 	results := make(chan *renderResult)
 	defer close(results)
 	nr := processDir(inputDir, outDir, g, results, 0)
