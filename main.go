@@ -143,7 +143,8 @@ func main() {
 	app := cli.App("gomplate", "Process text files with Go templates")
 
 	app.Version("v version", version.Version)
-	app.Spec = "[-f=<input-file> | -i=<template-string>] [-o=<out-file>] [-d=<datasource>] [-H=<datasource-header>] [--left-delim=<delim>] [--right-delim=<delim>]"
+	// app.Spec = "[ -f=<input-file> | -i=<template-string> ] [ -o=<out-file> ] [ -d=<datasource> ] [ -H=<datasource-header> ] [ --left-delim=<delim> ] [ --right-delim=<delim> ]"
+	app.Spec = "[ -f | -i ]... [ -o ]... [ -d ]... [ -H ]... [ --left-delim ] [ --right-delim ]"
 
 	files := app.StringsOpt("f file", nil, "Template file to process. Omit to use standard input (-), or use --in")
 	in := app.StringOpt("i in", "", "Template string to process (alternative to --file)")
