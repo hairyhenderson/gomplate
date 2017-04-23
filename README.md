@@ -223,6 +223,11 @@ A few different forms are valid:
 Sometimes it's necessary to override the default template delimiters (`{{`/`}}`).
 Use `--left-delim`/`--right-delim` or set `$GOMPLATE_LEFT_DELIM`/`$GOMPLATE_RIGHT_DELIM`.
 
+#### Parallel processing
+
+You can switch on parallel template processing with `--parallel` (or `-p`) which can speed up the processing of many
+templates considerably. By default parallel processing is switched off.
+
 ## Syntax
 
 ### About `.Env`

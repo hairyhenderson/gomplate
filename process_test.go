@@ -29,7 +29,15 @@ func TestReadInput(t *testing.T) {
 	assert.Equal(t, string(expected), actual[0])
 }
 
-func TestInputDir(t *testing.T) {
+func TestInputDirSerial(t *testing.T) {
+	inputDirTest(t, false, serialProcessor{})
+}
+
+func TestInputDirParallel(t *testing.T) {
+	inputDirTest(t, true, parallelProcessor{})
+}
+
+func inputDirTest(t *testing.T, parallel bool, p processor) {
 	outDir, err := ioutil.TempDir("test/files/input-dir", "out-temp-")
 	assert.Nil(t, err)
 	defer (func() {
@@ -42,10 +50,12 @@ func TestInputDir(t *testing.T) {
 	assert.Nil(t, err)
 
 	data := &Data{
-		Sources: map[string]*Source{"config": src},
+		Sources:  map[string]*Source{"config": src},
+		parallel: parallel,
 	}
 	gomplate := NewGomplate(data, "{{", "}}")
-	err = processInputDir("test/files/input-dir/in", outDir, gomplate)
+
+	err = p.processInputDir("test/files/input-dir/in", outDir, gomplate)
 	assert.Nil(t, err)
 
 	top, err := ioutil.ReadFile(filepath.Join(outDir, "top.txt"))
