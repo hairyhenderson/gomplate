@@ -7,118 +7,77 @@ import (
 	"path/filepath"
 
 	"io"
-
-	"errors"
 )
 
 // == Direct input processing ========================================
 
-type renderResult struct {
-	err     error
-	inPath  string
-	outPath string
-}
-
-func processInputFiles(stringTemplate string, inFiles []string, outFiles []string, g *Gomplate) error {
-	inFiles, err := readInputs(stringTemplate, inFiles)
+func processInputFiles(stringTemplate string, input []string, output []string, g *Gomplate) error {
+	input, err := readInputs(stringTemplate, input)
 	if err != nil {
 		return err
 	}
 
-	if len(outFiles) == 0 {
-		outFiles = []string{"-"}
+	if len(output) == 0 {
+		output = []string{"-"}
 	}
 
-	results := make(chan *renderResult)
-	defer close(results)
-
-	for n, input := range inFiles {
-		go func(idx int, input string) {
-			err := renderTemplate(g, input, outFiles[idx])
-			results <- &renderResult{err, input, outFiles[idx]}
-		}(n, input)
+	for n, input := range input {
+		if err := renderTemplate(g, input, output[n]); err != nil {
+			return err
+		}
 	}
-
-	return waitAndEvaluateResults(results, len(inFiles))
+	return nil
 }
 
 // == Recursive input dir processing ======================================
 
-func processInputDir(inputDir string, outDir string, g *Gomplate) error {
-	results := make(chan *renderResult)
-	defer close(results)
-	nr := processDir(inputDir, outDir, g, results, 0)
-	return waitAndEvaluateResults(results, nr)
-}
-
-func processDir(inPath string, outPath string, g *Gomplate, results chan *renderResult, nr int) int {
-	inPath = filepath.Clean(inPath)
-	outPath = filepath.Clean(outPath)
+func processInputDir(input string, output string, g *Gomplate) error {
+	input = filepath.Clean(input)
+	output = filepath.Clean(output)
 
 	// assert tha input path exists
-	si, err := assertDir(inPath)
+	si, err := statDir(input)
 	if err != nil {
-		return reportError(err, inPath, outPath, results, nr)
+		return err
 	}
 
 	// ensure output directory
-	if err = os.MkdirAll(outPath, si.Mode()); err != nil {
-		return reportError(err, inPath, outPath, results, nr)
+	if err = os.MkdirAll(output, si.Mode()); err != nil {
+		return err
 	}
 
 	// read directory
-	entries, err := ioutil.ReadDir(inPath)
+	entries, err := ioutil.ReadDir(input)
 	if err != nil {
-		return reportError(err, inPath, outPath, results, nr)
+		return err
 	}
 
 	// process or dive in again
 	for _, entry := range entries {
-		nextInPath := filepath.Join(inPath, entry.Name())
-		nextOutPath := filepath.Join(outPath, entry.Name())
+		nextInPath := filepath.Join(input, entry.Name())
+		nextOutPath := filepath.Join(output, entry.Name())
 
 		if entry.IsDir() {
-			nr += processDir(nextInPath, nextOutPath, g, results, 0)
+			err := processInputDir(nextInPath, nextOutPath, g)
+			if err != nil {
+				return err
+			}
 		} else {
-			go (func(nextInPath string, nextOutPath string) {
-				inString, err := readInput(nextInPath)
-				if err == nil {
-					err = renderTemplate(g, inString, nextOutPath)
-				}
-				results <- &renderResult{err, nextInPath, nextOutPath}
-			})(nextInPath, nextOutPath)
-			nr++
+			inString, err := readInput(nextInPath)
+			if err != nil {
+				return err
+			}
+			if err := renderTemplate(g, inString, nextOutPath); err != nil {
+				return err
+			}
 		}
-	}
-	return nr
-}
-
-func reportError(err error, inPath string, outPath string, results chan *renderResult, nr int) int {
-	go (func() {
-		results <- &renderResult{err, inPath, outPath}
-	})()
-	return nr + 1
-}
-
-// == Thread handling ================================================
-
-func waitAndEvaluateResults(results chan *renderResult, nr int) error {
-	errorMsg := ""
-	for i := 0; i < nr; i++ {
-		result := <-results
-		if result.err != nil {
-			errorMsg += fmt.Sprintf("   %s --> %s : %v", result.inPath, result.outPath, result.err)
-		}
-	}
-	if errorMsg != "" {
-		return errors.New("rendering of the following templates failed:\n" + errorMsg)
 	}
 	return nil
 }
 
 // == File handling ================================================
 
-func assertDir(dir string) (os.FileInfo, error) {
+func statDir(dir string) (os.FileInfo, error) {
 	si, err := os.Stat(dir)
 	if err != nil {
 		return nil, err

@@ -13,8 +13,6 @@ import (
 	"strings"
 	"time"
 
-	"sync"
-
 	"github.com/blang/vfs"
 	"github.com/hairyhenderson/gomplate/vault"
 )
@@ -53,13 +51,10 @@ func addSourceReader(scheme string, readFunc func(*Source, ...string) ([]byte, e
 	sourceReaders[scheme] = readFunc
 }
 
-type cacheKey string
-
 // Data -
 type Data struct {
 	Sources map[string]*Source
-	cache   map[cacheKey]map[string]interface{}
-	mutex   sync.Mutex
+	cache   map[string][]byte
 }
 
 // NewData - constructor for Data
@@ -106,10 +101,6 @@ func NewSource(alias string, URL *url.URL) (s *Source) {
 		URL:   URL,
 		Ext:   ext,
 		Type:  t,
-	}
-
-	if URL.Scheme == "file" {
-		s.FS = vfs.OS()
 	}
 	return
 }
@@ -183,70 +174,49 @@ func (d *Data) Datasource(alias string, args ...string) map[string]interface{} {
 	if err != nil {
 		log.Fatalf("Couldn't read datasource '%s': %s", alias, err)
 	}
-	return b
-}
-
-// ReadSource -
-func (d *Data) ReadSource(fs vfs.Filesystem, source *Source, args ...string) (map[string]interface{}, error) {
-
-	key := calcCacheKey(source, args)
-
-	if cached, ok := d.checkCache(key); ok {
-		return cached, nil
-	}
-
-	if r, ok := sourceReaders[source.URL.Scheme]; ok {
-		data, err := r(source, args...)
-		if err != nil {
-			return nil, err
-		}
-		structuredData := parseData(source, data)
-		d.addToCache(key, structuredData)
-		return structuredData, nil
-	}
-	log.Fatalf("Datasources with scheme %s not yet supported", source.URL.Scheme)
-	return nil, nil
-}
-
-func parseData(source *Source, data []byte) map[string]interface{} {
 	if source.Type == "application/json" {
 		ty := &TypeConv{}
-		return ty.JSON(string(data))
+		return ty.JSON(string(b))
 	}
 	if source.Type == "application/yaml" {
 		ty := &TypeConv{}
-		return ty.YAML(string(data))
+		return ty.YAML(string(b))
 	}
 	log.Fatalf("Datasources of type %s not yet supported", source.Type)
 	return nil
 }
 
-func (d *Data) addToCache(key cacheKey, structuredData map[string]interface{}) {
-	d.mutex.Lock()
-	d.cache[key] = structuredData
-	d.mutex.Unlock()
-}
-
-func (d *Data) checkCache(key cacheKey) (map[string]interface{}, bool) {
-	d.mutex.Lock()
+// ReadSource -
+func (d *Data) ReadSource(fs vfs.Filesystem, source *Source, args ...string) ([]byte, error) {
 	if d.cache == nil {
-		d.cache = make(map[cacheKey]map[string]interface{})
+		d.cache = make(map[string][]byte)
 	}
-	cached, ok := d.cache[key]
-	defer d.mutex.Unlock()
-
-	return cached, ok
-}
-
-func calcCacheKey(source *Source, args []string) cacheKey {
-	key := source.Alias
+	cacheKey := source.Alias
 	for _, v := range args {
-		key += v
+		cacheKey += v
 	}
-	return cacheKey(key)
+	cached, ok := d.cache[cacheKey]
+	if ok {
+		return cached, nil
+	}
+	if r, ok := sourceReaders[source.URL.Scheme]; ok {
+		data, err := r(source, args...)
+		if err != nil {
+			return nil, err
+		}
+		d.cache[cacheKey] = data
+		return data, nil
+	}
+
+	log.Fatalf("Datasources with scheme %s not yet supported", source.URL.Scheme)
+	return nil, nil
 }
 
 func readFile(source *Source, args ...string) ([]byte, error) {
+	if source.FS == nil {
+		source.FS = vfs.OS()
+	}
+
 	// make sure we can access the file
 	_, err := source.FS.Stat(source.URL.Path)
 	if err != nil {
