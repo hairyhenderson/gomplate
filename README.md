@@ -206,6 +206,16 @@ Example:
 gomplate --input-dir=templates --output-dir=config --datasource config=config.yaml
 ```
 
+#### `--chown` 
+
+By default the owner and group of any created output file or directory is the same as the user running the command. Use this command for setting the user and/or group of the created files. 
+ 
+Example for setting user and group to the numeric ids 10000, respectively:
+ 
+```bash
+gomplate --file=template --out=processed.txt --chown 10000:10000
+```
+
 #### `--datasource`/`-d`
 
 Add a data source in `name=URL` form. Specify multiple times to add multiple sources. The data can then be used by the [`datasource`](#datasource) function.

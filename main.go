@@ -92,10 +92,10 @@ func runTemplate(c *cli.Context) error {
 
 	inputDir := c.String("input-dir")
 	if inputDir != "" {
-		return processInputDir(inputDir, getOutputDir(c), g)
+		return processInputDir(inputDir, getOutputDir(c), c.String("chown"), g)
 	}
 
-	return processInputFiles(c.String("in"), c.StringSlice("file"), c.StringSlice("out"), g)
+	return processInputFiles(c.String("in"), c.StringSlice("file"), c.StringSlice("out"), c.String("chown"), g)
 }
 func getOutputDir(c *cli.Context) string {
 	out := c.String("output-dir")
@@ -106,13 +106,18 @@ func getOutputDir(c *cli.Context) string {
 }
 
 // Called from process.go ...
-func renderTemplate(g *Gomplate, inString string, outPath string) error {
+func renderTemplate(g *Gomplate, inString string, outPath string, owner string) error {
 	outFile, err := openOutFile(outPath)
 	if err != nil {
 		return err
 	}
 	defer checkClose(outFile, &err)
 	g.RunTemplate(inString, outFile)
+	if owner != "" {
+		if err := chown(outPath, owner); err != nil {
+			return err
+		}
+	}
 	return nil
 }
 
@@ -160,6 +165,10 @@ func main() {
 		cli.StringFlag{
 			Name:  "output-dir",
 			Usage: "Directory to store the processed templates. Only used for --input-dir",
+		},
+		cli.StringFlag{
+			Name:  "chown",
+			Usage: "Owner (and group) of the generated files in the chown format. Only used for --out or --output-dir",
 		},
 		cli.StringSliceFlag{
 			Name:  "datasource, d",
