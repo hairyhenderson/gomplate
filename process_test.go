@@ -11,7 +11,9 @@ import (
 
 	"fmt"
 
-	"github.com/docker/libcontainer/user"
+	"os/user"
+	"strconv"
+
 	"github.com/stretchr/testify/assert"
 )
 
@@ -75,9 +77,9 @@ func TestChown(t *testing.T) {
 	assert.NoError(t, err)
 
 	// The following lookups might fail e.g. on OSX
-	u, err := user.LookupUid(uid)
+	u, err := user.LookupId(strconv.Itoa(uid))
 	if err != nil {
-		g, err := user.LookupGid(gid)
+		g, err := user.LookupGroupId(strconv.Itoa(gid))
 		if err != nil {
 			err = chown(testDir, fmt.Sprintf("%s:%s", u.Name, g.Name))
 			assert.NoError(t, err)
