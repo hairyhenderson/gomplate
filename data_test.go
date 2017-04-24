@@ -81,7 +81,8 @@ func TestParseSourceNoAlias(t *testing.T) {
 	assert.Equal(t, "foo", s.Alias)
 
 	_, err = ParseSource("../foo.json")
-	assert.Error(t, err)
+	assert.NoError(t, err)
+	assert.Equal(t, "foo", s.Alias)
 
 	_, err = ParseSource("ftp://example.com/foo.yml")
 	assert.Error(t, err)

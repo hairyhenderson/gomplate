@@ -9,8 +9,33 @@ import (
 
 	"log"
 
+	"path"
+
 	"github.com/stretchr/testify/assert"
 )
+
+func TestDatasourceDir(t *testing.T) {
+	outDir, err := ioutil.TempDir("test/files/datasource-dir", "out-temp-")
+	assert.Nil(t, err)
+	defer (func() {
+		if cerr := os.RemoveAll(outDir); cerr != nil {
+			log.Fatalf("Error while removing temporary directory %s : %v", outDir, cerr)
+		}
+	})()
+
+	data := NewData([]string{"test/files/datasource-dir/ds"}, []string{})
+	gomplate := NewGomplate(data, "{{", "}}")
+	err = processInputFiles(
+		"",
+		[]string{"test/files/datasource-dir/in/test.txt"},
+		[]string{path.Join(outDir, "out.txt")},
+		gomplate)
+	assert.NoError(t, err)
+
+	out, err := ioutil.ReadFile(filepath.Join(outDir, "out.txt"))
+	assert.NoError(t, err)
+	assert.Equal(t, "eins-deux", string(out))
+}
 
 func TestReadInput(t *testing.T) {
 	actual, err := readInputs("foo", nil)
