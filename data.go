@@ -224,7 +224,7 @@ func readFile(source *Source, args ...string) ([]byte, error) {
 		return nil, err
 	}
 
-	f, err := source.FS.OpenFile(source.URL.Path, os.O_RDWR, 0)
+	f, err := source.FS.OpenFile(source.URL.Path, os.O_RDONLY, 0)
 	if err != nil {
 		log.Fatalf("Can't open %s: %#v", source.URL.Path, err)
 		return nil, err
