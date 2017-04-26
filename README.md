@@ -194,6 +194,28 @@ By default, `gomplate` will read from `Stdin` and write to `Stdout`. This behavi
 
 You can specify multiple `--file` and `--out` arguments. The same number of each much be given. This allows `gomplate` to process multiple templates _slightly_ faster than invoking `gomplate` multiple times in a row.
 
+##### `--input-dir` and `--output-dir`
+
+For processing multiple templates in a directory you can use `--input-dir` and `--output-dir` together. In this case all files in input directory will be processed as templates and the resulting files stored in `--output-dir`. The output directory will be created if it does not exist and the directory structure of the input directory will be preserved.  
+
+Example:
+
+```bash
+# Process all files in directory "templates" with the datasource given
+# and store the files with the same directory structure in "config"
+gomplate --input-dir=templates --output-dir=config --datasource config=config.yaml
+```
+
+#### `--chown` 
+
+By default the owner and group of any created output file or directory is the same as the user running the command. Use this command for setting the user and/or group of the created files. 
+ 
+Example for setting user and group to the numeric ids 10000, respectively:
+ 
+```bash
+gomplate --file=template --out=processed.txt --chown 10000:10000
+```
+
 #### `--datasource`/`-d`
 
 Add a data source in `name=URL` form. Specify multiple times to add multiple sources. The data can then be used by the [`datasource`](#datasource) function.
