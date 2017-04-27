@@ -11,7 +11,7 @@ import (
 
 	"github.com/hairyhenderson/gomplate/aws"
 	"github.com/hairyhenderson/gomplate/version"
-	"github.com/urfave/cli"
+	"github.com/jawher/mow.cli"
 )
 
 func (g *Gomplate) createTemplate() *template.Template {
@@ -115,17 +115,16 @@ func openOutFile(filename string) (out *os.File, err error) {
 	return os.OpenFile(filename, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0644)
 }
 
-func runTemplate(c *cli.Context) error {
+func runTemplate(files []string, in string, outputs, datasources, dsheaders []string, ldelim, rdelim string) {
 	defer runCleanupHooks()
-	data := NewData(c.StringSlice("datasource"), c.StringSlice("datasource-header"))
-	lDelim := c.String("left-delim")
-	rDelim := c.String("right-delim")
+	data := NewData(datasources, dsheaders)
+	lDelim := ldelim
+	rDelim := rdelim
 
 	g := NewGomplate(data, lDelim, rDelim)
 
-	inputs := readInputs(c.String("in"), c.StringSlice("file"))
+	inputs := readInputs(in, files)
 
-	outputs := c.StringSlice("out")
 	if len(outputs) == 0 {
 		outputs = []string{"-"}
 	}
@@ -133,57 +132,41 @@ func runTemplate(c *cli.Context) error {
 	for n, input := range inputs {
 		out, err := openOutFile(outputs[n])
 		if err != nil {
-			return err
+			panic(err)
 		}
 		defer out.Close() // nolint: errcheck
 		g.RunTemplate(input, out)
 	}
-
-	return nil
 }
 
 func main() {
-	app := cli.NewApp()
-	app.Name = "gomplate"
-	app.Usage = "Process text files with Go templates"
-	app.Version = version.Version
-	app.Action = runTemplate
+	app := cli.App("gomplate", "Process text files with Go templates")
 
-	app.Flags = []cli.Flag{
-		cli.StringSliceFlag{
-			Name:  "file, f",
-			Usage: "Template file to process. Omit to use standard input (-), or use --in",
-		},
-		cli.StringFlag{
-			Name:  "in, i",
-			Usage: "Template string to process (alternative to --file)",
-		},
-		cli.StringSliceFlag{
-			Name:  "out, o",
-			Usage: "Output file name. Omit to use standard output (-).",
-		},
-		cli.StringSliceFlag{
-			Name:  "datasource, d",
-			Usage: "Data source in alias=URL form. Specify multiple times to add multiple sources.",
-		},
-		cli.StringSliceFlag{
-			Name:  "datasource-header, H",
-			Usage: "HTTP Header field in 'alias=Name: value' form to be provided on HTTP-based data sources. Multiples can be set.",
-		},
-		cli.StringFlag{
-			Name:   "left-delim",
-			Usage:  "Override the default left-delimiter `{{`",
-			Value:  "{{",
-			EnvVar: "GOMPLATE_LEFT_DELIM",
-		},
-		cli.StringFlag{
-			Name:   "right-delim",
-			Usage:  "Override the default right-delimiter `}}`",
-			Value:  "}}",
-			EnvVar: "GOMPLATE_RIGHT_DELIM",
-		},
+	app.Version("v version", version.Version)
+	// app.Spec = "[ -f=<input-file> | -i=<template-string> ] [ -o=<out-file> ] [ -d=<datasource> ] [ -H=<datasource-header> ] [ --left-delim=<delim> ] [ --right-delim=<delim> ]"
+	app.Spec = "[ -f | -i ]... [ -o ]... [ -d ]... [ -H ]... [ --left-delim ] [ --right-delim ]"
+
+	files := app.StringsOpt("f file", nil, "Template file to process. Omit to use standard input (-), or use --in")
+	in := app.StringOpt("i in", "", "Template string to process (alternative to --file)")
+	outs := app.StringsOpt("o out", nil, "Output file name. Omit to use standard output (-).")
+	datasources := app.StringsOpt("d datasource", nil, "Data source in alias=URL form. Specify multiple times to add multiple sources.")
+	dsheaders := app.StringsOpt("H datasource-header", nil, "HTTP Header field in 'alias=Name: value' form to be provided on HTTP-based data sources. Multiples can be set.")
+	ldelim := app.String(cli.StringOpt{
+		Name:   "left-delim",
+		Value:  "{{",
+		Desc:   "Override the default left-delimiter `{{`",
+		EnvVar: "GOMPLATE_LEFT_DELIM",
+	})
+	rdelim := app.String(cli.StringOpt{
+		Name:   "right-delim",
+		Value:  "}}",
+		Desc:   "Override the default right-delimiter `}}`",
+		EnvVar: "GOMPLATE_RIGHT_DELIM",
+	})
+
+	app.Action = func() {
+		runTemplate(*files, *in, *outs, *datasources, *dsheaders, *ldelim, *rdelim)
 	}
-
 	err := app.Run(os.Args)
 	if err != nil {
 		log.Fatal(err)

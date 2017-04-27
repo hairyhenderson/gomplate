@@ -1,5 +1,5 @@
-hash: 01c19d423d90e790bc9d99bb469f318dc4d04f66d4464ba1b3276d746c994901
-updated: 2017-04-20T19:20:59.31591402-05:00
+hash: 154e5d10855fccde02013a1709799127372bbeaf9cf47d925a7d782b3c7dd25b
+updated: 2017-04-20T20:08:38.721153353-05:00
 imports:
 - name: github.com/aws/aws-sdk-go
   version: ccc54a4047c1470fdf5af9badadfd60a8a7f82bf
@@ -34,10 +34,10 @@ imports:
   - memfs
 - name: github.com/go-ini/ini
   version: 6f66b0e091edb3c7b380f7c4f0f884274d550b67
+- name: github.com/jawher/mow.cli
+  version: d3ffbc2f98b83e09dc8efd55ecec75eb5fd656ec
 - name: github.com/jmespath/go-jmespath
   version: bd40a432e4c76585ef6b72d3fd96fb9b6dc7b68d
-- name: github.com/urfave/cli
-  version: 0bdeddeeb0f650497d603c4ad7b20cfe685682f6
 - name: gopkg.in/yaml.v2
   version: cd8b52f8269e0feb286dfeef29f8fe4d5b397e0b
   repo: https://github.com/go-yaml/yaml.git
