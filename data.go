@@ -13,6 +13,8 @@ import (
 	"strings"
 	"time"
 
+	"sync"
+
 	"github.com/blang/vfs"
 	"github.com/hairyhenderson/gomplate/vault"
 )
@@ -51,10 +53,15 @@ func addSourceReader(scheme string, readFunc func(*Source, ...string) ([]byte, e
 	sourceReaders[scheme] = readFunc
 }
 
-// Data -
+type cacheKey string
+
+// Data - Data used for serial processing
 type Data struct {
-	Sources map[string]*Source
-	cache   map[string][]byte
+	Sources     map[string]*Source
+	plainCache  map[cacheKey][]byte
+	parsedCache map[cacheKey]map[string]interface{}
+	mutex       sync.Mutex
+	parallel    bool
 }
 
 // NewData - constructor for Data
@@ -71,7 +78,8 @@ func NewData(datasourceArgs []string, headerArgs []string) *Data {
 		sources[s.Alias] = s
 	}
 	return &Data{
-		Sources: sources,
+		Sources:  sources,
+		parallel: false,
 	}
 }
 
@@ -102,6 +110,11 @@ func NewSource(alias string, URL *url.URL) (s *Source) {
 		Ext:   ext,
 		Type:  t,
 	}
+
+	if s.FS == nil {
+		s.FS = vfs.OS()
+	}
+
 	return
 }
 
@@ -166,6 +179,13 @@ func (d *Data) DatasourceExists(alias string) bool {
 
 // Datasource -
 func (d *Data) Datasource(alias string, args ...string) map[string]interface{} {
+	if d.parallel {
+		return d.dataSourceParallel(alias, args...)
+	}
+	return d.dataSourceSerial(alias, args...)
+}
+
+func (d *Data) dataSourceSerial(alias string, args ...string) map[string]interface{} {
 	source, ok := d.Sources[alias]
 	if !ok {
 		log.Fatalf("Undefined datasource '%s'", alias)
@@ -174,37 +194,39 @@ func (d *Data) Datasource(alias string, args ...string) map[string]interface{} {
 	if err != nil {
 		log.Fatalf("Couldn't read datasource '%s': %s", alias, err)
 	}
-	if source.Type == "application/json" {
-		ty := &TypeConv{}
-		return ty.JSON(string(b))
+	return parseData(source, b)
+}
+
+func (d *Data) dataSourceParallel(alias string, args ...string) map[string]interface{} {
+	source, ok := d.Sources[alias]
+	if !ok {
+		log.Fatalf("Undefined datasource '%s'", alias)
 	}
-	if source.Type == "application/yaml" {
-		ty := &TypeConv{}
-		return ty.YAML(string(b))
+	b, err := d.ReadParsedSource(source.FS, source, args...)
+	if err != nil {
+		log.Fatalf("Couldn't read datasource '%s': %s", alias, err)
 	}
-	log.Fatalf("Datasources of type %s not yet supported", source.Type)
-	return nil
+	return b
 }
 
 // ReadSource -
 func (d *Data) ReadSource(fs vfs.Filesystem, source *Source, args ...string) ([]byte, error) {
-	if d.cache == nil {
-		d.cache = make(map[string][]byte)
+	if d.plainCache == nil {
+		d.plainCache = make(map[cacheKey][]byte)
 	}
-	cacheKey := source.Alias
-	for _, v := range args {
-		cacheKey += v
-	}
-	cached, ok := d.cache[cacheKey]
-	if ok {
+
+	key := calcCacheKey(source, args)
+
+	if cached, ok := d.checkCache(key); ok {
 		return cached, nil
 	}
+
 	if r, ok := sourceReaders[source.URL.Scheme]; ok {
 		data, err := r(source, args...)
 		if err != nil {
 			return nil, err
 		}
-		d.cache[cacheKey] = data
+		d.plainCache[key] = data
 		return data, nil
 	}
 
@@ -212,11 +234,75 @@ func (d *Data) ReadSource(fs vfs.Filesystem, source *Source, args ...string) ([]
 	return nil, nil
 }
 
-func readFile(source *Source, args ...string) ([]byte, error) {
-	if source.FS == nil {
-		source.FS = vfs.OS()
+// ReadParsedSource - thread safe reading of the source including parsing. Fully cached (including parsed content)
+func (d *Data) ReadParsedSource(fs vfs.Filesystem, source *Source, args ...string) (map[string]interface{}, error) {
+
+	key := calcCacheKey(source, args)
+
+	if cached, ok := d.checkParallelCache(key); ok {
+		return cached, nil
 	}
 
+	if r, ok := sourceReaders[source.URL.Scheme]; ok {
+		data, err := r(source, args...)
+		if err != nil {
+			return nil, err
+		}
+		structuredData := parseData(source, data)
+		d.addToParallelCache(key, structuredData)
+		return structuredData, nil
+	}
+	log.Fatalf("Datasources with scheme %s not yet supported", source.URL.Scheme)
+	return nil, nil
+}
+
+func parseData(source *Source, data []byte) map[string]interface{} {
+	if source.Type == "application/json" {
+		ty := &TypeConv{}
+		return ty.JSON(string(data))
+	}
+	if source.Type == "application/yaml" {
+		ty := &TypeConv{}
+		return ty.YAML(string(data))
+	}
+	log.Fatalf("Datasources of type %s not yet supported", source.Type)
+	return nil
+}
+
+func (d *Data) addToParallelCache(key cacheKey, structuredData map[string]interface{}) {
+	d.mutex.Lock()
+	d.parsedCache[key] = structuredData
+	d.mutex.Unlock()
+}
+
+func (d *Data) checkCache(key cacheKey) ([]byte, bool) {
+	if d.plainCache == nil {
+		d.plainCache = make(map[cacheKey][]byte)
+	}
+	cached, ok := d.plainCache[key]
+	return cached, ok
+}
+
+func (d *Data) checkParallelCache(key cacheKey) (map[string]interface{}, bool) {
+	d.mutex.Lock()
+	if d.parsedCache == nil {
+		d.parsedCache = make(map[cacheKey]map[string]interface{})
+	}
+	cached, ok := d.parsedCache[key]
+	d.mutex.Unlock()
+
+	return cached, ok
+}
+
+func calcCacheKey(source *Source, args []string) cacheKey {
+	key := source.Alias
+	for _, v := range args {
+		key += v
+	}
+	return cacheKey(key)
+}
+
+func readFile(source *Source, args ...string) ([]byte, error) {
 	// make sure we can access the file
 	_, err := source.FS.Stat(source.URL.Path)
 	if err != nil {

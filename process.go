@@ -7,9 +7,16 @@ import (
 	"path/filepath"
 )
 
+type processor interface {
+	processInputFiles(stringTemplate string, input []string, output []string, g *Gomplate) error
+	processInputDir(input string, output string, g *Gomplate) error
+}
+
+type serialProcessor struct{}
+
 // == Direct input processing ========================================
 
-func processInputFiles(stringTemplate string, input []string, output []string, g *Gomplate) error {
+func (s serialProcessor) processInputFiles(stringTemplate string, input []string, output []string, g *Gomplate) error {
 	input, err := readInputs(stringTemplate, input)
 	if err != nil {
 		return err
@@ -29,7 +36,7 @@ func processInputFiles(stringTemplate string, input []string, output []string, g
 
 // == Recursive input dir processing ======================================
 
-func processInputDir(input string, output string, g *Gomplate) error {
+func (s serialProcessor) processInputDir(input string, output string, g *Gomplate) error {
 	input = filepath.Clean(input)
 	output = filepath.Clean(output)
 
@@ -56,7 +63,7 @@ func processInputDir(input string, output string, g *Gomplate) error {
 		nextOutPath := filepath.Join(output, entry.Name())
 
 		if entry.IsDir() {
-			err := processInputDir(nextInPath, nextOutPath, g)
+			err := s.processInputDir(nextInPath, nextOutPath, g)
 			if err != nil {
 				return err
 			}

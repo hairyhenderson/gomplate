@@ -81,6 +81,15 @@ func NewGomplate(data *Data, leftDelim, rightDelim string) *Gomplate {
 func runTemplate(c *cli.Context) error {
 	defer runCleanupHooks()
 	data := NewData(c.StringSlice("datasource"), c.StringSlice("datasource-header"))
+
+	var p processor
+	if c.Bool("parallel") {
+		data.parallel = true
+		p = processor(parallelProcessor{})
+	} else {
+		data.parallel = false
+		p = processor(serialProcessor{})
+	}
 	lDelim := c.String("left-delim")
 	rDelim := c.String("right-delim")
 
@@ -92,11 +101,12 @@ func runTemplate(c *cli.Context) error {
 
 	inputDir := c.String("input-dir")
 	if inputDir != "" {
-		return processInputDir(inputDir, getOutputDir(c), g)
+		return p.processInputDir(inputDir, getOutputDir(c), g)
 	}
 
-	return processInputFiles(c.String("in"), c.StringSlice("file"), c.StringSlice("out"), g)
+	return p.processInputFiles(c.String("in"), c.StringSlice("file"), c.StringSlice("out"), g)
 }
+
 func getOutputDir(c *cli.Context) string {
 	out := c.String("output-dir")
 	if out != "" {
@@ -181,6 +191,10 @@ func main() {
 			Usage:  "Override the default right-delimiter `}}`",
 			Value:  "}}",
 			EnvVar: "GOMPLATE_RIGHT_DELIM",
+		},
+		cli.BoolFlag{
+			Name:  "parallel, p",
+			Usage: "Process templates in parallel",
 		},
 	}
 
