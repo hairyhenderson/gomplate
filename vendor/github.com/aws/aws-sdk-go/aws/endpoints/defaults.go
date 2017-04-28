@@ -103,6 +103,7 @@ const (
 	MarketplacecommerceanalyticsServiceID = "marketplacecommerceanalytics" // Marketplacecommerceanalytics.
 	MeteringMarketplaceServiceID          = "metering.marketplace"         // MeteringMarketplace.
 	MobileanalyticsServiceID              = "mobileanalytics"              // Mobileanalytics.
+	ModelsLexServiceID                    = "models.lex"                   // ModelsLex.
 	MonitoringServiceID                   = "monitoring"                   // Monitoring.
 	MturkRequesterServiceID               = "mturk-requester"              // MturkRequester.
 	OpsworksServiceID                     = "opsworks"                     // Opsworks.
@@ -142,17 +143,20 @@ const (
 // DefaultResolver returns an Endpoint resolver that will be able
 // to resolve endpoints for: AWS Standard, AWS China, and AWS GovCloud (US).
 //
-// Casting the return value of this func to a EnumPartitions will
-// allow you to get a list of the partitions in the order the endpoints
-// will be resolved in.
+// Use DefaultPartitions() to get the list of the default partitions.
+func DefaultResolver() Resolver {
+	return defaultPartitions
+}
+
+// DefaultPartitions returns a list of the partitions the SDK is bundled
+// with. The available partitions are: AWS Standard, AWS China, and AWS GovCloud (US).
 //
-//    resolver := endpoints.DefaultResolver()
-//    partitions := resolver.(endpoints.EnumPartitions).Partitions()
+//    partitions := endpoints.DefaultPartitions
 //    for _, p := range partitions {
 //        // ... inspect partitions
 //    }
-func DefaultResolver() Resolver {
-	return defaultPartitions
+func DefaultPartitions() []Partition {
+	return defaultPartitions.Partitions()
 }
 
 var defaultPartitions = partitions{
@@ -347,6 +351,7 @@ var awsPartition = partition{
 				"ap-southeast-1": endpoint{},
 				"ap-southeast-2": endpoint{},
 				"eu-west-1":      endpoint{},
+				"eu-west-2":      endpoint{},
 				"us-east-1":      endpoint{},
 				"us-east-2":      endpoint{},
 				"us-west-2":      endpoint{},
@@ -844,8 +849,10 @@ var awsPartition = partition{
 				"ap-south-1":     endpoint{},
 				"ap-southeast-1": endpoint{},
 				"ap-southeast-2": endpoint{},
+				"ca-central-1":   endpoint{},
 				"eu-central-1":   endpoint{},
 				"eu-west-1":      endpoint{},
+				"eu-west-2":      endpoint{},
 				"sa-east-1":      endpoint{},
 				"us-east-1":      endpoint{},
 				"us-east-2":      endpoint{},
@@ -1104,6 +1111,16 @@ var awsPartition = partition{
 		},
 		"mobileanalytics": service{
 
+			Endpoints: endpoints{
+				"us-east-1": endpoint{},
+			},
+		},
+		"models.lex": service{
+			Defaults: endpoint{
+				CredentialScope: credentialScope{
+					Service: "lex",
+				},
+			},
 			Endpoints: endpoints{
 				"us-east-1": endpoint{},
 			},
