@@ -14,6 +14,12 @@ function teardown () {
   rm -rf $tmpdir
 }
 
+@test "reports version" {
+  gomplate -v
+  [ "$status" -eq 0 ]
+  [[ "${output}" == "gomplate version "* ]]
+}
+
 @test "takes stdin by default" {
   gomplate_stdin "hello world"
   [ "$status" -eq 0 ]
@@ -39,10 +45,9 @@ function teardown () {
 }
 
 @test "errors given more inputs than outputs" {
-  skip
   gomplate -f $tmpdir/one -f $tmpdir/two -o $tmpdir/out
-  [ "$status" -eq 2 ]
-  [[ "${output}" == "still need to make this real..." ]]
+  [ "$status" -eq 1 ]
+  [[ "${lines[0]}" == "Error: Must provide same number of --out (1) as --file (2) options" ]]
 }
 
 @test "routes inputs to their proper outputs" {
@@ -52,8 +57,20 @@ function teardown () {
   [[ "$(cat $tmpdir/two.out)" == "hello" ]]
 }
 
-@test "number of input files irrelevant given input string" {
-  gomplate -i 'HELLO WORLD' -f foo -f bar
+@test "can't mix --in and --file" {
+  gomplate -i 'HELLO WORLD' -f -
+  [ "$status" -eq 1 ]
+  [[ "${lines[0]}" == "Error: --in and --file may not be used together" ]]
+}
+
+@test "delimiters can be changed through opts" {
+  gomplate --left-delim "((" --right-delim "))" -i '((print "hi"))'
   [ "$status" -eq 0 ]
-  [[ "${output}" == "HELLO WORLD" ]]
+  [[ "${output}" == "hi" ]]
+}
+
+@test "delimiters can be changed through envvars" {
+  GOMPLATE_LEFT_DELIM="<<" GOMPLATE_RIGHT_DELIM=">>" gomplate -i '<<print "hi">>'
+  [ "$status" -eq 0 ]
+  [[ "${output}" == "hi" ]]
 }

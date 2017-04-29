@@ -1,5 +1,5 @@
-hash: 12829fee44ade4851c3077fb86defcc4442634ca4fd9fd52d1be6527312dff47
-updated: 2017-04-27T20:02:42.097718656-04:00
+hash: 33930aa0a559511f9e6114672db7d9cffc193a7fe0cbdcb94568445023e65cf3
+updated: 2017-04-28T16:06:38.651197226-04:00
 imports:
 - name: github.com/aws/aws-sdk-go
   version: 8cab5437f896c3048506422a6fb9f5a7f2df9944
@@ -34,10 +34,14 @@ imports:
   - memfs
 - name: github.com/go-ini/ini
   version: 6f66b0e091edb3c7b380f7c4f0f884274d550b67
+- name: github.com/inconshreveable/mousetrap
+  version: 76626ae9c91c4f2a10f34cad8ce83ea42c93bb75
 - name: github.com/jmespath/go-jmespath
   version: bd40a432e4c76585ef6b72d3fd96fb9b6dc7b68d
-- name: github.com/urfave/cli
-  version: 0bdeddeeb0f650497d603c4ad7b20cfe685682f6
+- name: github.com/spf13/cobra
+  version: 7b1b6e8dc027253d45fc029bc269d1c019f83a34
+- name: github.com/spf13/pflag
+  version: f1d95a35e132e8a1868023a08932b14f0b8b8fcb
 - name: gopkg.in/yaml.v2
   version: cd8b52f8269e0feb286dfeef29f8fe4d5b397e0b
   repo: https://github.com/go-yaml/yaml.git

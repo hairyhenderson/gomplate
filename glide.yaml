@@ -8,11 +8,11 @@ import:
   - service/ec2
 - package: github.com/blang/vfs
   version: c14afca
-- package: github.com/urfave/cli
-  version: ^1.19.1
 - package: gopkg.in/yaml.v2
   repo: https://github.com/go-yaml/yaml.git
   version: v2
+- package: github.com/spf13/cobra
+- package: github.com/spf13/pflag
 testImport:
 - package: github.com/stretchr/testify
   version: ^1.1.4
