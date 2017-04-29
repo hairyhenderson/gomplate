@@ -47,23 +47,23 @@ function teardown () {
 @test "errors given --output-dir but no --input-dir" {
   gomplate --output-dir "."
   [ "$status" -eq 1 ]
-  [[ "${output}" == "--input-dir must be set when --output-dir is set" ]]
+  [[ "${output}" == "Error: --input-dir must be set when --output-dir is set"* ]]
 }
 
 @test "errors given both --input-dir and --in" {
   gomplate --input-dir "." --in "param"
   [ "$status" -eq 1 ]
-  [[ "${output}" == "--input-dir can not be used together with --in or --file" ]]
+  [[ "${output}" == "Error: --input-dir can not be used together with --in or --file"* ]]
 }
 
 @test "errors given both --input-dir and --file" {
   gomplate --input-dir "." --file input.txt
   [ "$status" -eq 1 ]
-  [[ "${output}" == "--input-dir can not be used together with --in or --file" ]]
+  [[ "${output}" == "Error: --input-dir can not be used together with --in or --file"* ]]
 }
 
 @test "errors given both --output-dir and --out" {
   gomplate --input-dir "." --output-dir /tmp --out out
   [ "$status" -eq 1 ]
-  [[ "${output}" == "--out can not be used together with --output-dir" ]]
+  [[ "${output}" == "Error: --output-dir can not be used together with --out"* ]]
 }

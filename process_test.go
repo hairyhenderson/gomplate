@@ -22,9 +22,9 @@ func TestReadInput(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, "", actual[0])
 
-	actual, err = readInputs("", []string{"main_test.go"})
+	actual, err = readInputs("", []string{"process_test.go"})
 	assert.Nil(t, err)
-	thisFile, _ := os.Open("main_test.go")
+	thisFile, _ := os.Open("process_test.go")
 	expected, _ := ioutil.ReadAll(thisFile)
 	assert.Equal(t, string(expected), actual[0])
 }

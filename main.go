@@ -1,191 +1,100 @@
 package main
 
 import (
-	"io"
-	"log"
+	"errors"
+	"fmt"
 	"os"
 
-	"strings"
-	"text/template"
-
-	"errors"
-
-	"github.com/hairyhenderson/gomplate/aws"
 	"github.com/hairyhenderson/gomplate/version"
-	"github.com/urfave/cli"
+	"github.com/spf13/cobra"
 )
 
-func (g *Gomplate) createTemplate() *template.Template {
-	return template.New("template").Funcs(g.funcMap).Option("missingkey=error")
+// GomplateOpts -
+type GomplateOpts struct {
+	version           bool
+	dataSources       []string
+	dataSourceHeaders []string
+	lDelim            string
+	rDelim            string
+
+	input       string
+	inputFiles  []string
+	inputDir    string
+	outputFiles []string
+	outputDir   string
 }
 
-// Gomplate -
-type Gomplate struct {
-	funcMap    template.FuncMap
-	leftDelim  string
-	rightDelim string
-}
+var opts GomplateOpts
 
-// RunTemplate -
-func (g *Gomplate) RunTemplate(text string, out io.Writer) {
-	context := &Context{}
-	tmpl, err := g.createTemplate().Delims(g.leftDelim, g.rightDelim).Parse(text)
-	if err != nil {
-		log.Fatalf("Line %q: %v\n", text, err)
-	}
-	if err := tmpl.Execute(out, context); err != nil {
-		panic(err)
-	}
-}
-
-// NewGomplate -
-func NewGomplate(data *Data, leftDelim, rightDelim string) *Gomplate {
-	env := &Env{}
-	typeconv := &TypeConv{}
-	ec2meta := aws.NewEc2Meta()
-	ec2info := aws.NewEc2Info()
-	return &Gomplate{
-		leftDelim:  leftDelim,
-		rightDelim: rightDelim,
-		funcMap: template.FuncMap{
-			"getenv":           env.Getenv,
-			"bool":             typeconv.Bool,
-			"has":              typeconv.Has,
-			"json":             typeconv.JSON,
-			"jsonArray":        typeconv.JSONArray,
-			"yaml":             typeconv.YAML,
-			"yamlArray":        typeconv.YAMLArray,
-			"slice":            typeconv.Slice,
-			"join":             typeconv.Join,
-			"toJSON":           typeconv.ToJSON,
-			"toYAML":           typeconv.ToYAML,
-			"ec2meta":          ec2meta.Meta,
-			"ec2dynamic":       ec2meta.Dynamic,
-			"ec2tag":           ec2info.Tag,
-			"ec2region":        ec2meta.Region,
-			"contains":         strings.Contains,
-			"hasPrefix":        strings.HasPrefix,
-			"hasSuffix":        strings.HasSuffix,
-			"split":            strings.Split,
-			"title":            strings.Title,
-			"toUpper":          strings.ToUpper,
-			"toLower":          strings.ToLower,
-			"trim":             strings.Trim,
-			"trimSpace":        strings.TrimSpace,
-			"datasource":       data.Datasource,
-			"datasourceExists": data.DatasourceExists,
-		},
-	}
-}
-
-func runTemplate(c *cli.Context) error {
-	defer runCleanupHooks()
-	data := NewData(c.StringSlice("datasource"), c.StringSlice("datasource-header"))
-	lDelim := c.String("left-delim")
-	rDelim := c.String("right-delim")
-
-	g := NewGomplate(data, lDelim, rDelim)
-
-	if err := validateInOutOptions(c); err != nil {
-		return err
+func validateOpts(cmd *cobra.Command, args []string) error {
+	if cmd.Flag("in").Changed && cmd.Flag("file").Changed {
+		return errors.New("--in and --file may not be used together")
 	}
 
-	inputDir := c.String("input-dir")
-	if inputDir != "" {
-		return processInputDir(inputDir, getOutputDir(c), g)
+	if len(opts.inputFiles) != len(opts.outputFiles) {
+		return fmt.Errorf("Must provide same number of --out (%d) as --file (%d) options", len(opts.outputFiles), len(opts.inputFiles))
 	}
 
-	return processInputFiles(c.String("in"), c.StringSlice("file"), c.StringSlice("out"), g)
-}
-func getOutputDir(c *cli.Context) string {
-	out := c.String("output-dir")
-	if out != "" {
-		return out
+	if cmd.Flag("input-dir").Changed && (cmd.Flag("in").Changed || cmd.Flag("file").Changed) {
+		return errors.New("--input-dir can not be used together with --in or --file")
 	}
-	return "."
-}
 
-// Called from process.go ...
-func renderTemplate(g *Gomplate, inString string, outPath string) error {
-	outFile, err := openOutFile(outPath)
-	if err != nil {
-		return err
-	}
-	// nolint: errcheck
-	defer outFile.Close()
-	g.RunTemplate(inString, outFile)
-	return nil
-}
-
-func validateInOutOptions(c *cli.Context) error {
-	if c.String("input-dir") != "" {
-		if c.String("in") != "" || len(c.StringSlice("file")) != 0 {
-			return errors.New("--input-dir can not be used together with --in or --file")
+	if cmd.Flag("output-dir").Changed {
+		if cmd.Flag("out").Changed {
+			return errors.New("--output-dir can not be used together with --out")
 		}
-	}
-	if c.String("output-dir") != "" {
-		if len(c.StringSlice("out")) != 0 {
-			return errors.New("--out can not be used together with --output-dir")
-		}
-		if c.String("input-dir") == "" {
+		if !cmd.Flag("input-dir").Changed {
 			return errors.New("--input-dir must be set when --output-dir is set")
 		}
 	}
 	return nil
 }
 
-func main() {
-	app := cli.NewApp()
-	app.Name = "gomplate"
-	app.Usage = "Process text files with Go templates"
-	app.Version = version.Version
-	app.Action = runTemplate
+func printVersion(name string) {
+	// fmt.Printf("%s version %s, build %s\n", name, version.Version, version.GitCommit)
+	fmt.Printf("%s version %s\n", name, version.Version)
+}
 
-	app.Flags = []cli.Flag{
-		cli.StringSliceFlag{
-			Name:  "file, f",
-			Usage: "Template file to process. Omit to use standard input (-), or use --in or --input-dir",
-		},
-		cli.StringFlag{
-			Name:  "in, i",
-			Usage: "Template string to process (alternative to --file and --input-dir)",
-		},
-		cli.StringFlag{
-			Name:  "input-dir",
-			Usage: "Directory which is examined recursively for templates (alternative to --file and --in)",
-		},
-		cli.StringSliceFlag{
-			Name:  "out, o",
-			Usage: "Output file name. Omit to use standard output (-).",
-		},
-		cli.StringFlag{
-			Name:  "output-dir",
-			Usage: "Directory to store the processed templates. Only used for --input-dir",
-		},
-		cli.StringSliceFlag{
-			Name:  "datasource, d",
-			Usage: "Data source in alias=URL form. Specify multiple times to add multiple sources.",
-		},
-		cli.StringSliceFlag{
-			Name:  "datasource-header, H",
-			Usage: "HTTP Header field in 'alias=Name: value' form to be provided on HTTP-based data sources. Multiples can be set.",
-		},
-		cli.StringFlag{
-			Name:   "left-delim",
-			Usage:  "Override the default left-delimiter `{{`",
-			Value:  "{{",
-			EnvVar: "GOMPLATE_LEFT_DELIM",
-		},
-		cli.StringFlag{
-			Name:   "right-delim",
-			Usage:  "Override the default right-delimiter `}}`",
-			Value:  "}}",
-			EnvVar: "GOMPLATE_RIGHT_DELIM",
+func newGomplateCmd() *cobra.Command {
+	rootCmd := &cobra.Command{
+		Use:     "gomplate",
+		Short:   "Process text files with Go templates",
+		PreRunE: validateOpts,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			if opts.version {
+				printVersion(cmd.Name())
+				return nil
+			}
+			return runTemplate(&opts)
 		},
 	}
+	return rootCmd
+}
 
-	err := app.Run(os.Args)
-	if err != nil {
-		log.Fatal(err)
+func initFlags(command *cobra.Command) {
+	command.Flags().BoolVarP(&opts.version, "version", "v", false, "print the version")
+
+	command.Flags().StringArrayVarP(&opts.inputFiles, "file", "f", []string{"-"}, "Template `file` to process. Omit to use standard input, or use --in or --input-dir")
+	command.Flags().StringVarP(&opts.input, "in", "i", "", "Template `string` to process (alternative to --file and --input-dir)")
+	command.Flags().StringVar(&opts.inputDir, "input-dir", "", "`directory` which is examined recursively for templates (alternative to --file and --in)")
+	command.Flags().StringArrayVarP(&opts.outputFiles, "out", "o", []string{"-"}, "output `file` name. Omit to use standard output.")
+	command.Flags().StringVar(&opts.outputDir, "output-dir", ".", "`directory` to store the processed templates. Only used for --input-dir")
+
+	command.Flags().StringArrayVarP(&opts.dataSources, "datasource", "d", nil, "`datasource` in alias=URL form. Specify multiple times to add multiple sources.")
+	command.Flags().StringArrayVarP(&opts.dataSourceHeaders, "datasource-header", "H", nil, "HTTP `header` field in 'alias=Name: value' form to be provided on HTTP-based data sources. Multiples can be set.")
+
+	env := &Env{}
+	ldDefault := env.Getenv("GOMPLATE_LEFT_DELIM", "{{")
+	rdDefault := env.Getenv("GOMPLATE_RIGHT_DELIM", "}}")
+	command.Flags().StringVar(&opts.lDelim, "left-delim", ldDefault, "override the default left-`delimiter` [$GOMPLATE_LEFT_DELIM]")
+	command.Flags().StringVar(&opts.rDelim, "right-delim", rdDefault, "override the default right-`delimiter` [$GOMPLATE_RIGHT_DELIM]")
+}
+
+func main() {
+	command := newGomplateCmd()
+	initFlags(command)
+	if err := command.Execute(); err != nil {
+		fmt.Println(err)
+		os.Exit(1)
 	}
 }
