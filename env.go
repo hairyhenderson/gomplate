@@ -10,10 +10,10 @@ type Env struct {
 // It returns the value, or the default (or an emptry string) if the variable is
 // not set.
 func (e *Env) Getenv(key string, def ...string) string {
-	val := os.Getenv(key)
-	if val == "" && len(def) > 0 {
+	val, ok := os.LookupEnv(key)
+	if !ok && len(def) > 0 {
 		return def[0]
 	}
 
-	return os.Getenv(key)
+	return val
 }
