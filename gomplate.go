@@ -69,6 +69,7 @@ func NewGomplate(data *Data, leftDelim, rightDelim string) *Gomplate {
 			"trim":             strings.Trim,
 			"trimSpace":        strings.TrimSpace,
 			"datasource":       data.Datasource,
+			"ds":               data.Datasource,
 			"datasourceExists": data.DatasourceExists,
 		},
 	}
