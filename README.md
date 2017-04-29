@@ -35,7 +35,8 @@ Gomplate is an alternative that will let you process templates which also includ
 		- [Commandline Arguments](#commandline-arguments)
 			- [`--file`/`-f`, `--in`/`-i`, and `--out`/`-o`](#-file-f-in-i-and-out-o)
 				- [Multiple inputs](#multiple-inputs)
-			- [`--datasource`/`-d`](#--datasource-d)
+				- [`--input-dir` and `--output-dir`](#-input-dir-and-output-dir)
+			- [`--datasource`/`-d`](#-datasource-d)
 			- [Overriding the template delimiters](#overriding-the-template-delimiters)
 	- [Syntax](#syntax)
 		- [About `.Env`](#about-env)
@@ -82,6 +83,7 @@ Gomplate is an alternative that will let you process templates which also includ
 					- [Usage with HTTP data](#usage-with-http-data)
 					- [Usage with Vault data](#usage-with-vault-data)
 			- [`datasourceExists`](#datasourceexists)
+			- [`ds`](#ds)
 			- [`ec2meta`](#ec2meta)
 				- [Example](#example)
 			- [`ec2dynamic`](#ec2dynamic)
@@ -201,8 +203,8 @@ For processing multiple templates in a directory you can use `--input-dir` and `
 Example:
 
 ```bash
-# Process all files in directory "templates" with the datasource given
-# and store the files with the same directory structure in "config"
+ # Process all files in directory "templates" with the datasource given
+ # and store the files with the same directory structure in "config"
 gomplate --input-dir=templates --output-dir=config --datasource config=config.yaml
 ```
 
@@ -661,6 +663,10 @@ Useful when used in an `if`/`else` block
 $ echo '{{if (datasourceExists "test")}}{{datasource "test"}}{{else}}no worries{{end}}' | gomplate
 no worries
 ```
+
+#### `ds`
+
+Alias to [`datasource`](#datasource)
 
 #### `ec2meta`
 
