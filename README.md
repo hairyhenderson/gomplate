@@ -761,7 +761,7 @@ Right now the release process is semi-automatic.
 
 [The MIT License](http://opensource.org/licenses/MIT)
 
-Copyright (c) 2016 Dave Henderson
+Copyright (c) 2016-2017 Dave Henderson
 
 [circleci-image]: https://img.shields.io/circleci/project/hairyhenderson/gomplate.svg?style=flat
 [circleci-url]: https://circleci.com/gh/hairyhenderson/gomplate
