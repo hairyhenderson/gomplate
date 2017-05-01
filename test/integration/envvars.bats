@@ -27,6 +27,12 @@ load helper
   [[ "${output}" == "foo" ]]
 }
 
+@test "default string with empty env var using getenv" {
+  FOO="" gomplate -i '{{getenv "FOO" "foo"}}'
+  [ "$status" -eq 0 ]
+  [[ "${output}" == "foo" ]]
+}
+
 @test "existant env var using .Env" {
   gomplate -i '{{.Env.HOME}}'
   [ "$status" -eq 0 ]
