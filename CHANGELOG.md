@@ -1,5 +1,51 @@
 # Change Log
 
+## [v1.6.0](https://github.com/hairyhenderson/gomplate/tree/v1.6.0) (2017-05-01)
+[Full Changelog](https://github.com/hairyhenderson/gomplate/compare/v1.5.1...v1.6.0)
+
+**Implemented enhancements:**
+
+- Support for bulk operations [\#117](https://github.com/hairyhenderson/gomplate/issues/117)
+- Authentication for HTTP/HTTPS datasources [\#113](https://github.com/hairyhenderson/gomplate/issues/113)
+- Make all secrets settable via files [\#106](https://github.com/hairyhenderson/gomplate/issues/106)
+- Adding ds alias for datasource function [\#129](https://github.com/hairyhenderson/gomplate/pull/129) ([hairyhenderson](https://github.com/hairyhenderson))
+- Add --input-dir and --output-dir as options [\#119](https://github.com/hairyhenderson/gomplate/pull/119) ([rhuss](https://github.com/rhuss))
+- Adding more ways to specify input/output [\#114](https://github.com/hairyhenderson/gomplate/pull/114) ([hairyhenderson](https://github.com/hairyhenderson))
+
+**Fixed bugs:**
+
+- Open datasource file in read-only mode [\#126](https://github.com/hairyhenderson/gomplate/pull/126) ([rhuss](https://github.com/rhuss))
+
+**Merged pull requests:**
+
+- Migrating to spf13/cobra for commandline processing [\#128](https://github.com/hairyhenderson/gomplate/pull/128) ([hairyhenderson](https://github.com/hairyhenderson))
+- Updating vendored deps [\#127](https://github.com/hairyhenderson/gomplate/pull/127) ([hairyhenderson](https://github.com/hairyhenderson))
+- Removing integration test dependency on internet access [\#121](https://github.com/hairyhenderson/gomplate/pull/121) ([hairyhenderson](https://github.com/hairyhenderson))
+- Updating vendored deps \(aws-sdk-go and go-yaml\) [\#120](https://github.com/hairyhenderson/gomplate/pull/120) ([hairyhenderson](https://github.com/hairyhenderson))
+- Fix readme ToC link to `--datasource-d` [\#118](https://github.com/hairyhenderson/gomplate/pull/118) ([jamiemjennings](https://github.com/jamiemjennings))
+- Support arbitrary headers with HTTP datasources [\#115](https://github.com/hairyhenderson/gomplate/pull/115) ([hairyhenderson](https://github.com/hairyhenderson))
+- Adding some very basic integration tests [\#112](https://github.com/hairyhenderson/gomplate/pull/112) ([hairyhenderson](https://github.com/hairyhenderson))
+
+## [v1.5.1](https://github.com/hairyhenderson/gomplate/tree/v1.5.1) (2017-03-23)
+[Full Changelog](https://github.com/hairyhenderson/gomplate/compare/v1.5.0...v1.5.1)
+
+**Implemented enhancements:**
+
+- Support Vault authentication on HTTPS datasource [\#54](https://github.com/hairyhenderson/gomplate/issues/54)
+- Supporting \*\_FILE env vars for vault datasource credentials [\#107](https://github.com/hairyhenderson/gomplate/pull/107) ([hairyhenderson](https://github.com/hairyhenderson))
+- Adding support for AppRole vault auth backend [\#105](https://github.com/hairyhenderson/gomplate/pull/105) ([hairyhenderson](https://github.com/hairyhenderson))
+- Adding support for userpass vault auth backend [\#104](https://github.com/hairyhenderson/gomplate/pull/104) ([hairyhenderson](https://github.com/hairyhenderson))
+- Allow custom auth backend mount point for app-id backend [\#103](https://github.com/hairyhenderson/gomplate/pull/103) ([hairyhenderson](https://github.com/hairyhenderson))
+
+**Fixed bugs:**
+
+- Awful performance rendering templates with `ec2tag` function in non-aws environments [\#110](https://github.com/hairyhenderson/gomplate/issues/110)
+- Performance fixes for running ec2tag in non-aws environments [\#111](https://github.com/hairyhenderson/gomplate/pull/111) ([hairyhenderson](https://github.com/hairyhenderson))
+
+**Merged pull requests:**
+
+- Clean up vault auth strategies code [\#130](https://github.com/hairyhenderson/gomplate/pull/130) ([hairyhenderson](https://github.com/hairyhenderson))
+
 ## [v1.5.0](https://github.com/hairyhenderson/gomplate/tree/v1.5.0) (2017-03-07)
 [Full Changelog](https://github.com/hairyhenderson/gomplate/compare/v1.4.0...v1.5.0)
 
@@ -57,6 +103,10 @@
 
 ## [v1.2.2](https://github.com/hairyhenderson/gomplate/tree/v1.2.2) (2016-11-20)
 [Full Changelog](https://github.com/hairyhenderson/gomplate/compare/v1.2.1...v1.2.2)
+
+**Implemented enhancements:**
+
+- Adding support for GitHub auth strategy for Vault datasources [\#80](https://github.com/hairyhenderson/gomplate/pull/80) ([hairyhenderson](https://github.com/hairyhenderson))
 
 **Fixed bugs:**
 
