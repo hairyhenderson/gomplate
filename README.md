@@ -55,6 +55,8 @@ Gomplate is an alternative that will let you process templates which also includ
 				- [Example](#example)
 			- [`split`](#split)
 				- [Example](#example)
+			- [`splitN`](#splitn)
+				- [Example](#example)
 			- [`title`](#title)
 				- [Example](#example)
 			- [`toLower`](#tolower)
@@ -361,18 +363,24 @@ Creates a slice by splitting a string on a given delimiter. Equivalent to
 
 ##### Example
 
-_`input.tmpl`:_
-```
-{{range split "Bart,Lisa,Maggie"}}
-Hello, {{.}}
-{{- end}}
-```
-
 ```console
-$ gomplate < input.tmpl
+$ gomplate -i '{{range split "Bart,Lisa,Maggie" ","}}Hello, {{.}}{{end}}'
 Hello, Bart
 Hello, Lisa
 Hello, Maggie
+```
+
+#### `splitN`
+
+Creates a slice by splitting a string on a given delimiter. The count determines
+the number of substrings to return. Equivalent to [strings.SplitN](https://golang.org/pkg/strings#SplitN)
+
+##### Example
+
+```console
+$ gomplate -i '{{ range splitN "foo:bar:baz" ":" 2 }}{{.}}{{end}}'
+foo
+bar:baz
 ```
 
 #### `title`
