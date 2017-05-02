@@ -64,6 +64,7 @@ func NewGomplate(data *Data, leftDelim, rightDelim string) *Gomplate {
 			"hasPrefix":        strings.HasPrefix,
 			"hasSuffix":        strings.HasSuffix,
 			"split":            strings.Split,
+			"splitN":           strings.SplitN,
 			"title":            strings.Title,
 			"toUpper":          strings.ToUpper,
 			"toLower":          strings.ToLower,
