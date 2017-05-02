@@ -63,6 +63,8 @@ Gomplate is an alternative that will let you process templates which also includ
 				- [Example](#example)
 			- [`trim`](#trim)
 				- [Example](#example)
+			- [`urlParse`](#urlparse)
+				- [Example](#example)
 			- [`has`](#has)
 				- [Example](#example)
 			- [`json`](#json)
@@ -423,6 +425,27 @@ Hello, {{trim .Env.FOO " "}}!
 ```console
 $ FOO="  world " | gomplate < input.tmpl
 Hello, world!
+```
+
+#### `urlParse`
+
+Parses a string as a URL for later use. Equivalent to [url.Parse](https://golang.org/pkg/net/url/#Parse)
+
+##### Example
+
+_`input.tmpl`:_
+```
+{{ $u := urlParse "https://example.com:443/foo/bar" }}
+The scheme is {{ $u.Scheme }}
+The host is {{ $u.Host }}
+The path is {{ $u.Path }}
+```
+
+```console
+$ gomplate < input.tmpl
+The scheme is https
+The host is example.com:443
+The path is /foo/bar
 ```
 
 #### `has`

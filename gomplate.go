@@ -3,6 +3,7 @@ package main
 import (
 	"io"
 	"log"
+	"net/url"
 
 	"strings"
 	"text/template"
@@ -68,6 +69,7 @@ func NewGomplate(data *Data, leftDelim, rightDelim string) *Gomplate {
 			"toLower":          strings.ToLower,
 			"trim":             strings.Trim,
 			"trimSpace":        strings.TrimSpace,
+			"urlParse":         url.Parse,
 			"datasource":       data.Datasource,
 			"ds":               data.Datasource,
 			"datasourceExists": data.DatasourceExists,
