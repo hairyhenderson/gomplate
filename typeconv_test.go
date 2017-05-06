@@ -27,7 +27,7 @@ func TestBool(t *testing.T) {
 func TestUnmarshalObj(t *testing.T) {
 	ty := new(TypeConv)
 	expected := map[string]interface{}{
-		"foo":  "bar",
+		"foo":  map[interface{}]interface{}{"bar": "baz"},
 		"one":  1.0,
 		"true": true,
 	}
@@ -37,8 +37,9 @@ func TestUnmarshalObj(t *testing.T) {
 		assert.Equal(t, expected["one"], actual["one"])
 		assert.Equal(t, expected["true"], actual["true"])
 	}
-	test(ty.JSON(`{"foo":"bar","one":1.0,"true":true}`))
-	test(ty.YAML(`foo: bar
+	test(ty.JSON(`{"foo":{"bar":"baz"},"one":1.0,"true":true}`))
+	test(ty.YAML(`foo:
+  bar: baz
 one: 1.0
 true: true
 `))
@@ -130,8 +131,12 @@ func TestHas(t *testing.T) {
 
 	in := map[string]interface{}{
 		"foo": "bar",
+		"baz": map[string]interface{}{
+			"qux": "quux",
+		},
 	}
 
 	assert.True(t, ty.Has(in, "foo"))
 	assert.False(t, ty.Has(in, "bar"))
+	assert.True(t, ty.Has(in["baz"], "qux"))
 }

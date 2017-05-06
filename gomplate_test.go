@@ -125,8 +125,9 @@ func TestHasTemplate(t *testing.T) {
 			"has":  ty.Has,
 		},
 	}
-	assert.Equal(t, "true", testTemplate(g, `{{has ("foo: true" | yaml) "foo"}}`))
-	assert.Equal(t, "false", testTemplate(g, `{{has ("foo: true" | yaml) "bar"}}`))
+	assert.Equal(t, "true", testTemplate(g, `{{has ("foo:\n  bar: true" | yaml) "foo"}}`))
+	assert.Equal(t, "true", testTemplate(g, `{{has ("foo:\n  bar: true" | yaml).foo "bar"}}`))
+	assert.Equal(t, "false", testTemplate(g, `{{has ("foo: true" | yaml) "bah"}}`))
 	tmpl := `{{- $data := yaml "foo: bar\nbaz: qux\n" }}
 {{- if (has $data "baz") }}
 {{- $data.baz }}

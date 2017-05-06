@@ -13,17 +13,17 @@ function teardown () {
 }
 
 @test "supports json datasource file" {
-  echo '{"foo": "bar"}' > $tmpdir/config.json
-  gomplate -d config=$tmpdir/config.json -i '{{(datasource "config").foo}}'
+  echo '{"foo": {"bar": "baz"}}' > $tmpdir/config.json
+  gomplate -d config=$tmpdir/config.json -i '{{(datasource "config").foo.bar}}'
   [ "$status" -eq 0 ]
-  [[ "${output}" == "bar" ]]
+  [[ "${output}" == "baz" ]]
 }
 
 @test "supports YAML datasource file" {
-  echo 'foo: bar' > $tmpdir/config.yml
-  gomplate -d config=$tmpdir/config.yml -i '{{(datasource "config").foo}}'
+  echo -e 'foo:\n bar: baz' > $tmpdir/config.yml
+  gomplate -d config=$tmpdir/config.yml -i '{{(datasource "config").foo.bar}}'
   [ "$status" -eq 0 ]
-  [[ "${output}" == "bar" ]]
+  [[ "${output}" == "baz" ]]
 }
 
 @test "ds alias" {
