@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"reflect"
 	"strconv"
 	"strings"
 
@@ -43,13 +44,13 @@ func unmarshalArray(obj []interface{}, in string, f func([]byte, interface{}) er
 // JSON - Unmarshal a JSON Object
 func (t *TypeConv) JSON(in string) map[string]interface{} {
 	obj := make(map[string]interface{})
-	return unmarshalObj(obj, in, json.Unmarshal)
+	return unmarshalObj(obj, in, yaml.Unmarshal)
 }
 
 // JSONArray - Unmarshal a JSON Array
 func (t *TypeConv) JSONArray(in string) []interface{} {
 	obj := make([]interface{}, 1)
-	return unmarshalArray(obj, in, json.Unmarshal)
+	return unmarshalArray(obj, in, yaml.Unmarshal)
 }
 
 // YAML - Unmarshal a YAML Object
@@ -102,9 +103,15 @@ func (t *TypeConv) Join(a []interface{}, sep string) string {
 }
 
 // Has determines whether or not a given object has a property with the given key
-func (t *TypeConv) Has(in map[string]interface{}, key string) bool {
-	_, ok := in[key]
-	return ok
+func (t *TypeConv) Has(in interface{}, key string) bool {
+	av := reflect.ValueOf(in)
+	kv := reflect.ValueOf(key)
+
+	if av.Kind() == reflect.Map {
+		return av.MapIndex(kv).IsValid()
+	}
+
+	return false
 }
 
 func toString(in interface{}) string {

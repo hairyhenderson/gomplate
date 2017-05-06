@@ -130,13 +130,13 @@ func TestDatasource(t *testing.T) {
 		data := &Data{
 			Sources: sources,
 		}
-		expected := map[string]interface{}{"hello": "world"}
+		expected := map[string]interface{}{"hello": map[interface{}]interface{}{"cruel": "world"}}
 		actual := data.Datasource("foo")
-		assert.Equal(t, expected["hello"], actual["hello"])
+		assert.Equal(t, expected, actual)
 	}
 
-	test("json", "application/json", `{"hello":"world"}`)
-	test("yml", "application/yaml", `hello: world`)
+	test("json", "application/json", `{"hello":{"cruel":"world"}}`)
+	test("yml", "application/yaml", "hello:\n  cruel: world\n")
 }
 
 func TestDatasourceExists(t *testing.T) {
