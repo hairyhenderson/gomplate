@@ -1,0 +1,9 @@
+#!/bin/bash
+
+# This magic figures out if we're currently on a tag (i.e. a release).
+# We only want to have special tags for releases.
+if (git describe --abbrev=0 --exact-match &>/dev/null); then
+  tag=$(git describe --abbrev=0 --exact-match)
+  docker tag $IMAGE_NAME $DOCKER_REPO:$tag
+  docker push $DOCKER_REPO:$tag
+fi
