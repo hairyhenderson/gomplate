@@ -169,3 +169,16 @@ func TestHas(t *testing.T) {
 	assert.False(t, ty.Has(in, "bar"))
 	assert.True(t, ty.Has(in["baz"], "qux"))
 }
+
+func TestIndent(t *testing.T) {
+	ty := new(TypeConv)
+	actual := "hello\nworld\n!"
+	expected := "  hello\n  world\n  !"
+	assert.Equal(t, expected, ty.indent("  ", actual))
+
+	assert.Equal(t, "\n", ty.indent("  ", "\n"))
+
+	assert.Equal(t, "  foo\n", ty.indent("  ", "foo\n"))
+
+	assert.Equal(t, "   foo", ty.indent("   ", "foo"))
+}

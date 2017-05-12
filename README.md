@@ -52,6 +52,7 @@ Gomplate is an alternative that will let you process templates which also includ
 		- [`trim`](#trim)
 		- [`urlParse`](#urlparse)
 		- [`has`](#has)
+		- [`indent`](#indent)
 		- [`json`](#json)
 		- [`jsonArray`](#jsonarray)
 		- [`yaml`](#yaml)
@@ -457,6 +458,27 @@ On the other hand, if there is no `value` property:
 ```console
 $ gomplate -d vault:///secret/foo < input.tmpl
 The secret is 'foo: bar'
+```
+
+#### `indent`
+
+Indents a given string with the given indentation pattern. If the input string has multiple lines, each line will be indented.
+
+##### Example
+
+This function can be especially useful when adding YAML snippets into other YAML documents, where indentation is important:
+
+_`input.tmpl`:_
+```
+foo:
+{{ `{"bar": {"baz": 2}}` | json | toYAML | indent "  " }}
+```
+
+```console
+$ gomplate -f input.tmpl
+foo:
+  bar:
+    baz: 2
 ```
 
 #### `json`

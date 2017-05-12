@@ -53,6 +53,7 @@ func NewGomplate(data *Data, leftDelim, rightDelim string) *Gomplate {
 			"yaml":             typeconv.YAML,
 			"yamlArray":        typeconv.YAMLArray,
 			"slice":            typeconv.Slice,
+			"indent":           typeconv.indent,
 			"join":             typeconv.Join,
 			"toJSON":           typeconv.ToJSON,
 			"toJSONPretty":     typeconv.toJSONPretty,

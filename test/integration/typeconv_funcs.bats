@@ -29,3 +29,11 @@ function teardown () {
 \"hello\": \"world\"
 }" ]]
 }
+
+@test "indent" {
+  gomplate -i '{{ indent "   " "hello world" }}{{ "hello\nmultiline\nworld" | indent " " }}'
+  [ "$status" -eq 0 ]
+  [[ "${output}" == "   hello world hello
+ multiline
+ world" ]]
+}
