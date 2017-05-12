@@ -99,6 +99,21 @@ func (t *TypeConv) Slice(args ...interface{}) []interface{} {
 	return args
 }
 
+// Indent - indent each line of the string with the given indent string
+func (t *TypeConv) indent(indent, s string) string {
+	var res []byte
+	bol := true
+	for i := 0; i < len(s); i++ {
+		c := s[i]
+		if bol && c != '\n' {
+			res = append(res, indent...)
+		}
+		res = append(res, c)
+		bol = c == '\n'
+	}
+	return string(res)
+}
+
 // Join concatenates the elements of a to create a single string.
 // The separator string sep is placed between elements in the resulting string.
 //
