@@ -79,6 +79,35 @@ func TestToJSON(t *testing.T) {
 	assert.Equal(t, expected, ty.ToJSON(in))
 }
 
+func TestToJSONPretty(t *testing.T) {
+	ty := new(TypeConv)
+	expected := `{
+  "down": {
+    "the": {
+      "rabbit": {
+        "hole": true
+      }
+    }
+  },
+  "foo": "bar",
+  "one": 1,
+  "true": true
+}`
+	in := map[string]interface{}{
+		"foo":  "bar",
+		"one":  1,
+		"true": true,
+		"down": map[string]interface{}{
+			"the": map[string]interface{}{
+				"rabbit": map[string]interface{}{
+					"hole": true,
+				},
+			},
+		},
+	}
+	assert.Equal(t, expected, ty.toJSONPretty("  ", in))
+}
+
 func TestToYAML(t *testing.T) {
 	ty := new(TypeConv)
 	expected := `d: 2006-01-02T15:04:05.999999999-07:00
