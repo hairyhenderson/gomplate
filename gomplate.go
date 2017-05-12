@@ -55,6 +55,7 @@ func NewGomplate(data *Data, leftDelim, rightDelim string) *Gomplate {
 			"slice":            typeconv.Slice,
 			"join":             typeconv.Join,
 			"toJSON":           typeconv.ToJSON,
+			"toJSONPretty":     typeconv.toJSONPretty,
 			"toYAML":           typeconv.ToYAML,
 			"ec2meta":          ec2meta.Meta,
 			"ec2dynamic":       ec2meta.Dynamic,

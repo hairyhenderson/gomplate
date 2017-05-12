@@ -17,3 +17,15 @@ function teardown () {
   [ "$status" -eq 0 ]
   [[ "${output}" == "true" ]]
 }
+
+@test "toJSONPretty" {
+  gomplate -i '{{ `{"hello": "world"}` | json | toJSONPretty "   " }}
+{{ toJSONPretty "" (`{"hello": "world"}` | json) }}'
+  [ "$status" -eq 0 ]
+  [[ "${output}" == "{
+   \"hello\": \"world\"
+}
+{
+\"hello\": \"world\"
+}" ]]
+}

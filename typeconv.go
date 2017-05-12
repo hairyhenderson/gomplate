@@ -79,6 +79,16 @@ func (t *TypeConv) ToJSON(in interface{}) string {
 	return marshalObj(in, json.Marshal)
 }
 
+// ToJSONPretty - Stringify a struct as JSON (indented)
+func (t *TypeConv) toJSONPretty(indent string, in interface{}) string {
+	b, err := json.MarshalIndent(in, "", indent)
+	if err != nil {
+		log.Fatalf("Unable to marshal object %s: %v", in, err)
+	}
+
+	return string(b)
+}
+
 // ToYAML - Stringify a struct as YAML
 func (t *TypeConv) ToYAML(in interface{}) string {
 	return marshalObj(in, yaml.Marshal)

@@ -57,6 +57,7 @@ Gomplate is an alternative that will let you process templates which also includ
 		- [`yaml`](#yaml)
 		- [`yamlArray`](#yamlarray)
 		- [`toJSON`](#tojson)
+		- [`toJSONPretty`](#tojsonpretty)
 		- [`toYAML`](#toyaml)
 		- [`datasource`](#datasource)
 		- [`datasourceExists`](#datasourceexists)
@@ -542,6 +543,26 @@ _`input.tmpl`:_
 ```console
 $ gomplate < input.tmpl
 {"hello":"world"}
+```
+
+#### `toJSONPretty`
+
+Converts an object to a pretty-printed (or _indented_) JSON document. Input objects may be the result of `json`, `yaml`, `jsonArray`, or `yamlArray` functions, or they could be provided by a `datasource`.
+
+The indent string must be provided as an argument.
+
+##### Example
+
+_`input.tmpl`:_
+```
+{{ `{"hello":"world"}` | json | toJSONPretty "  " }}
+```
+
+```console
+$ gomplate < input.tmpl
+{
+  "hello": "world"
+}
 ```
 
 #### `toYAML`
