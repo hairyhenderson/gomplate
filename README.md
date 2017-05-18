@@ -46,6 +46,7 @@ Gomplate is an alternative that will let you process templates which also includ
 		- [`slice`](#slice)
 		- [`split`](#split)
 		- [`splitN`](#splitn)
+		- [`replaceAll`](#replaceAll)
 		- [`title`](#title)
 		- [`toLower`](#tolower)
 		- [`toUpper`](#toupper)
@@ -354,6 +355,23 @@ the number of substrings to return. Equivalent to [strings.SplitN](https://golan
 $ gomplate -i '{{ range splitN "foo:bar:baz" ":" 2 }}{{.}}{{end}}'
 foo
 bar:baz
+```
+#### `replaceAll`
+
+Replaces all occurrences of a given string with another.
+
+##### Example
+
+```console
+$ gomplate -i '{{ replaceAll "." "-" "172.21.1.42" }}'
+172-21-1-42
+```
+
+##### Example (with pipeline)
+
+```console
+$ gomplate -i '{{ "172.21.1.42" | replaceAll "." "-" }}'
+172-21-1-42
 ```
 
 #### `title`
