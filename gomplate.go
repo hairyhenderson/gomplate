@@ -4,7 +4,6 @@ import (
 	"io"
 	"log"
 	"net/url"
-
 	"strings"
 	"text/template"
 
@@ -39,6 +38,7 @@ func (g *Gomplate) RunTemplate(text string, out io.Writer) {
 func NewGomplate(data *Data, leftDelim, rightDelim string) *Gomplate {
 	env := &Env{}
 	typeconv := &TypeConv{}
+	stringfunc := &stringFunc{}
 	ec2meta := aws.NewEc2Meta()
 	ec2info := aws.NewEc2Info()
 	return &Gomplate{
@@ -65,6 +65,7 @@ func NewGomplate(data *Data, leftDelim, rightDelim string) *Gomplate {
 			"contains":         strings.Contains,
 			"hasPrefix":        strings.HasPrefix,
 			"hasSuffix":        strings.HasSuffix,
+			"replaceAll":       stringfunc.replaceAll,
 			"split":            strings.Split,
 			"splitN":           strings.SplitN,
 			"title":            strings.Title,
