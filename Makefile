@@ -9,7 +9,7 @@ VERSION ?= `git describe --abbrev=0 --tags $(git rev-list --tags --max-count=1) 
 COMMIT_FLAG := -X `go list ./version`.GitCommit=$(COMMIT)
 VERSION_FLAG := -X `go list ./version`.Version=$(VERSION)
 
-platforms := linux-amd64 linux-386 linux-arm linux-arm64 darwin-amd64 windows-amd64.exe windows-386.exe
+platforms := linux-amd64 linux-386 linux-arm linux-arm64 darwin-amd64 solaris-amd64 windows-amd64.exe windows-386.exe
 
 define gocross
 	GOOS=$(1) GOARCH=$(2) \
