@@ -30,6 +30,7 @@ Gomplate is an alternative that will let you process templates which also includ
 	- [Alpine Linux](#alpine-linux)
 	- [use with Docker](#use-with-docker)
 	- [manual install](#manual-install)
+	- [install with `go get`](#install-with-go-get)
 - [Usage](#usage)
 	- [Commandline Arguments](#commandline-arguments)
 		- [`--file`/`-f`, `--in`/`-i`, and `--out`/`-o`](#-file-f-in-i-and-out-o)
@@ -46,7 +47,7 @@ Gomplate is an alternative that will let you process templates which also includ
 		- [`slice`](#slice)
 		- [`split`](#split)
 		- [`splitN`](#splitn)
-		- [`replaceAll`](#replaceAll)
+		- [`replaceAll`](#replaceall)
 		- [`title`](#title)
 		- [`toLower`](#tolower)
 		- [`toUpper`](#toupper)
@@ -139,6 +140,16 @@ In other words:
 ```console
 $ curl -o /usr/local/bin/gomplate -sSL https://github.com/hairyhenderson/gomplate/releases/download/<version>/gomplate_<os>-<arch>
 $ chmod 755 /usr/local/bin/gomplate
+$ gomplate --help
+...
+```
+
+### install with `go get`
+
+If you're a Go user already, sometimes it's faster to just use `go get` to install `gomplate`:
+
+```console
+$ go get github.com/hairyhenderson/gomplate
 $ gomplate --help
 ...
 ```
