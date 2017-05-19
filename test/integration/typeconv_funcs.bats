@@ -37,3 +37,9 @@ function teardown () {
  multiline
  world" ]]
 }
+
+@test "join" {
+  gomplate -i '{{ $a := `[1, 2, 3]` | jsonArray }}{{ join $a "-" }}'
+  [ "$status" -eq 0 ]
+  [[ "${output}" == "1-2-3" ]]
+}

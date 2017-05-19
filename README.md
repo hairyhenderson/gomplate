@@ -54,6 +54,7 @@ Gomplate is an alternative that will let you process templates which also includ
 		- [`trim`](#trim)
 		- [`urlParse`](#urlparse)
 		- [`has`](#has)
+		- [`join`](#join)
 		- [`indent`](#indent)
 		- [`json`](#json)
 		- [`jsonArray`](#jsonarray)
@@ -487,6 +488,23 @@ On the other hand, if there is no `value` property:
 ```console
 $ gomplate -d vault:///secret/foo < input.tmpl
 The secret is 'foo: bar'
+```
+
+#### `join`
+
+Concatenates the elements of an array to create a string. The separator string sep is placed between elements in the resulting string.
+
+##### Example
+
+_`input.tmpl`_
+```
+{{ $a := `[1, 2, 3]` | jsonArray }}
+{{ join $a "-" }}
+```
+
+```console
+$ gomplate -f input.tmpl
+1-2-3
 ```
 
 #### `indent`
