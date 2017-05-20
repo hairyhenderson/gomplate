@@ -368,7 +368,7 @@ func (r *Request) ResetBody() {
 	}
 
 	if l == 0 {
-		r.HTTPRequest.Body = noBodyReader
+		r.HTTPRequest.Body = NoBody
 	} else if l > 0 {
 		r.HTTPRequest.Body = r.safeBody
 	} else {
@@ -382,7 +382,7 @@ func (r *Request) ResetBody() {
 		// a io.Reader that was not also an io.Seeker.
 		switch r.Operation.HTTPMethod {
 		case "GET", "HEAD", "DELETE":
-			r.HTTPRequest.Body = noBodyReader
+			r.HTTPRequest.Body = NoBody
 		default:
 			r.HTTPRequest.Body = r.safeBody
 		}
@@ -488,7 +488,7 @@ func (r *Request) Send() error {
 			r.Handlers.Retry.Run(r)
 			r.Handlers.AfterRetry.Run(r)
 			if r.Error != nil {
-				debugLogReqError(r, "Send Request", false, r.Error)
+				debugLogReqError(r, "Send Request", false, err)
 				return r.Error
 			}
 			debugLogReqError(r, "Send Request", true, err)
@@ -497,12 +497,13 @@ func (r *Request) Send() error {
 		r.Handlers.UnmarshalMeta.Run(r)
 		r.Handlers.ValidateResponse.Run(r)
 		if r.Error != nil {
-			err := r.Error
 			r.Handlers.UnmarshalError.Run(r)
+			err := r.Error
+
 			r.Handlers.Retry.Run(r)
 			r.Handlers.AfterRetry.Run(r)
 			if r.Error != nil {
-				debugLogReqError(r, "Validate Response", false, r.Error)
+				debugLogReqError(r, "Validate Response", false, err)
 				return r.Error
 			}
 			debugLogReqError(r, "Validate Response", true, err)
@@ -515,7 +516,7 @@ func (r *Request) Send() error {
 			r.Handlers.Retry.Run(r)
 			r.Handlers.AfterRetry.Run(r)
 			if r.Error != nil {
-				debugLogReqError(r, "Unmarshal Response", false, r.Error)
+				debugLogReqError(r, "Unmarshal Response", false, err)
 				return r.Error
 			}
 			debugLogReqError(r, "Unmarshal Response", true, err)

@@ -1,7 +1,7 @@
 package: github.com/hairyhenderson/gomplate
 import:
 - package: github.com/aws/aws-sdk-go
-  version: ^1.8.17
+  version: 1.8.26
   subpackages:
   - aws
   - aws/session

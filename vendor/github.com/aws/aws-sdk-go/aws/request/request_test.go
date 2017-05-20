@@ -3,7 +3,6 @@ package request_test
 import (
 	"bytes"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -762,31 +761,20 @@ func (reader *errReader) Close() error {
 	return nil
 }
 
-func TestLoggerNotIgnoringErrors(t *testing.T) {
-	s := awstesting.NewClient(&aws.Config{
-		Region:     aws.String("mock-region"),
-		MaxRetries: aws.Int(0),
-		DisableSSL: aws.Bool(true),
-		LogLevel:   aws.LogLevel(aws.LogDebugWithHTTPBody),
-	})
-
-	s.Handlers.Validate.Clear()
-	s.Handlers.Send.Clear()
-	s.Handlers.Send.PushBack(func(r *request.Request) {
-		r.HTTPResponse = &http.Response{StatusCode: 200, Body: &errReader{errors.New("Foo error")}}
-	})
-	s.AddDebugHandlers()
-
-	out := &testData{}
-	r := s.NewRequest(&request.Operation{Name: "Operation"}, nil, out)
-	err := r.Send()
-	if err == nil {
-		t.Error("expected error, but got nil")
+func TestIsNoBodyReader(t *testing.T) {
+	cases := []struct {
+		reader io.ReadCloser
+		expect bool
+	}{
+		{ioutil.NopCloser(bytes.NewReader([]byte("abc"))), false},
+		{ioutil.NopCloser(bytes.NewReader(nil)), false},
+		{nil, false},
+		{request.NoBody, true},
 	}
 
-	if aerr, ok := err.(awserr.Error); !ok {
-		t.Errorf("expected awserr.Error, but got different error, %v", err)
-	} else if aerr.Code() != request.ErrCodeRead {
-		t.Errorf("expected %q, but received %q", request.ErrCodeRead, aerr.Code())
+	for i, c := range cases {
+		if e, a := c.expect, request.NoBody == c.reader; e != a {
+			t.Errorf("%d, expect %t match, but was %t", i, e, a)
+		}
 	}
 }

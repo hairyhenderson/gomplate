@@ -31,7 +31,7 @@ const DefaultDownloadConcurrency = 5
 type Downloader struct {
 	// The buffer size (in bytes) to use when buffering data into chunks and
 	// sending them as parts to S3. The minimum allowed part size is 5MB, and
-	// if this value is set to zero, the DefaultPartSize value will be used.
+	// if this value is set to zero, the DefaultDownloadPartSize value will be used.
 	PartSize int64
 
 	// The number of goroutines to spin up in parallel when sending parts.
@@ -255,13 +255,17 @@ func (d *downloader) downloadPart(ch chan dlchunk) {
 	defer d.wg.Done()
 	for {
 		chunk, ok := <-ch
-		if !ok || d.getErr() != nil {
+		if !ok {
 			break
+		}
+		if d.getErr() != nil {
+			// Drain the channel if there is an error, to prevent deadlocking
+			// of download producer.
+			continue
 		}
 
 		if err := d.downloadChunk(chunk); err != nil {
 			d.setErr(err)
-			break
 		}
 	}
 }
@@ -354,7 +358,7 @@ func (d *downloader) setTotalBytes(resp *s3.GetObjectOutput) {
 	}
 
 	if resp.ContentRange == nil {
-		// ContentRange is nil when the full file contents is provied, and
+		// ContentRange is nil when the full file contents is provided, and
 		// is not chunked. Use ContentLength instead.
 		if resp.ContentLength != nil {
 			d.totalBytes = *resp.ContentLength
