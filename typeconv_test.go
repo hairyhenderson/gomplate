@@ -68,9 +68,9 @@ func TestToJSON(t *testing.T) {
 		"foo":  "bar",
 		"one":  1,
 		"true": true,
-		"down": map[string]interface{}{
-			"the": map[string]interface{}{
-				"rabbit": map[string]interface{}{
+		"down": map[interface{}]interface{}{
+			"the": map[interface{}]interface{}{
+				"rabbit": map[interface{}]interface{}{
 					"hole": true,
 				},
 			},

@@ -1,5 +1,5 @@
-hash: cbec5bf622f6bf3a608195f99d5551692f1e828affb725fe2653fd802db3e433
-updated: 2017-05-19T23:08:13.142013966-04:00
+hash: 407f14694f1796037fe3eff6230a6b10c458b31b68502056aecea9423a24616d
+updated: 2017-05-19T23:11:04.71342422-04:00
 imports:
 - name: github.com/aws/aws-sdk-go
   version: 0b6039ef3d10c1eda49843ebf9773dcc5bba0169
@@ -42,6 +42,10 @@ imports:
   version: 7b1b6e8dc027253d45fc029bc269d1c019f83a34
 - name: github.com/spf13/pflag
   version: f1d95a35e132e8a1868023a08932b14f0b8b8fcb
+- name: github.com/ugorji/go
+  version: 708a42d246822952f38190a8d8c4e6b16a0e600c
+  subpackages:
+  - codec
 - name: gopkg.in/yaml.v2
   version: cd8b52f8269e0feb286dfeef29f8fe4d5b397e0b
   repo: https://github.com/go-yaml/yaml.git

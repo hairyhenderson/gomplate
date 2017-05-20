@@ -9,10 +9,13 @@ import:
 - package: github.com/blang/vfs
   version: c14afca
 - package: gopkg.in/yaml.v2
-  repo: https://github.com/go-yaml/yaml.git
   version: v2
+  repo: https://github.com/go-yaml/yaml.git
 - package: github.com/spf13/cobra
 - package: github.com/spf13/pflag
+- package: github.com/ugorji/go
+  subpackages:
+  - codec
 testImport:
 - package: github.com/stretchr/testify
   version: ^1.1.4

@@ -18,16 +18,30 @@ function teardown () {
   [[ "${output}" == "true" ]]
 }
 
-@test "toJSONPretty" {
-  gomplate -i '{{ `{"hello": "world"}` | json | toJSONPretty "   " }}
-{{ toJSONPretty "" (`{"hello": "world"}` | json) }}'
+@test "'toJSON' can handle nested maps" {
+  gomplate -i '{{ "foo:\n bar:\n  baz: qux" | yaml | toJSON }}'
   [ "$status" -eq 0 ]
-  [[ "${output}" == "{
-   \"hello\": \"world\"
+  [[ "${output}" == '{"foo":{"bar":{"baz":"qux"}}}' ]]
+}
+
+@test "'toJSONPretty' can handle nested maps" {
+  gomplate -i '{{ `{"foo":{"bar":{"baz":"qux"}}}` | json | toJSONPretty "   " }}
+{{ toJSONPretty "" (`{"foo":{"bar":{"baz":"qux"}}}` | json) }}'
+  [ "$status" -eq 0 ]
+  [[ "${output}" == '{
+   "foo": {
+      "bar": {
+         "baz": "qux"
+      }
+   }
 }
 {
-\"hello\": \"world\"
-}" ]]
+"foo": {
+"bar": {
+"baz": "qux"
+}
+}
+}' ]]
 }
 
 @test "indent" {

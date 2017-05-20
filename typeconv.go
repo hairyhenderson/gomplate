@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -9,6 +10,8 @@ import (
 	"strings"
 
 	yaml "gopkg.in/yaml.v2"
+
+	"github.com/ugorji/go/codec"
 )
 
 // TypeConv - type conversion function
@@ -74,19 +77,32 @@ func marshalObj(obj interface{}, f func(interface{}) ([]byte, error)) string {
 	return string(b)
 }
 
+func toJSONBytes(in interface{}) []byte {
+	h := &codec.JsonHandle{}
+	h.Canonical = true
+	buf := new(bytes.Buffer)
+	err := codec.NewEncoder(buf, h).Encode(in)
+	if err != nil {
+		log.Fatalf("Unable to marshal %s: %v", in, err)
+	}
+	return buf.Bytes()
+}
+
 // ToJSON - Stringify a struct as JSON
 func (t *TypeConv) ToJSON(in interface{}) string {
-	return marshalObj(in, json.Marshal)
+	return string(toJSONBytes(in))
 }
 
 // ToJSONPretty - Stringify a struct as JSON (indented)
 func (t *TypeConv) toJSONPretty(indent string, in interface{}) string {
-	b, err := json.MarshalIndent(in, "", indent)
+	out := new(bytes.Buffer)
+	b := toJSONBytes(in)
+	err := json.Indent(out, b, "", indent)
 	if err != nil {
-		log.Fatalf("Unable to marshal object %s: %v", in, err)
+		log.Fatalf("Unable to indent JSON %s: %v", b, err)
 	}
 
-	return string(b)
+	return string(out.Bytes())
 }
 
 // ToYAML - Stringify a struct as YAML
