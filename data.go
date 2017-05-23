@@ -34,6 +34,10 @@ func init() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	err = mime.AddExtensionType(".csv", "text/csv")
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	sourceReaders = make(map[string]func(*Source, ...string) ([]byte, error))
 
@@ -81,6 +85,7 @@ type Source struct {
 	URL    *url.URL
 	Ext    string
 	Type   string
+	Params map[string]string
 	FS     vfs.Filesystem // used for file: URLs, nil otherwise
 	HC     *http.Client   // used for http[s]: URLs, nil otherwise
 	VC     *vault.Client  //used for vault: URLs, nil otherwise
@@ -91,16 +96,20 @@ type Source struct {
 func NewSource(alias string, URL *url.URL) (s *Source) {
 	ext := filepath.Ext(URL.Path)
 
-	var t string
-	if ext != "" {
-		t = mime.TypeByExtension(ext)
-	}
-
 	s = &Source{
 		Alias: alias,
 		URL:   URL,
 		Ext:   ext,
-		Type:  t,
+	}
+
+	if ext != "" {
+		mediatype := mime.TypeByExtension(ext)
+		t, params, err := mime.ParseMediaType(mediatype)
+		if err != nil {
+			log.Fatal(err)
+		}
+		s.Type = t
+		s.Params = params
 	}
 	return
 }
@@ -165,7 +174,7 @@ func (d *Data) DatasourceExists(alias string) bool {
 }
 
 // Datasource -
-func (d *Data) Datasource(alias string, args ...string) map[string]interface{} {
+func (d *Data) Datasource(alias string, args ...string) interface{} {
 	source, ok := d.Sources[alias]
 	if !ok {
 		log.Fatalf("Undefined datasource '%s'", alias)
@@ -174,13 +183,18 @@ func (d *Data) Datasource(alias string, args ...string) map[string]interface{} {
 	if err != nil {
 		log.Fatalf("Couldn't read datasource '%s': %s", alias, err)
 	}
+	s := string(b)
 	if source.Type == "application/json" {
 		ty := &TypeConv{}
-		return ty.JSON(string(b))
+		return ty.JSON(s)
 	}
 	if source.Type == "application/yaml" {
 		ty := &TypeConv{}
-		return ty.YAML(string(b))
+		return ty.YAML(s)
+	}
+	if source.Type == "text/csv" {
+		ty := &TypeConv{}
+		return ty.CSV(s)
 	}
 	log.Fatalf("Datasources of type %s not yet supported", source.Type)
 	return nil
@@ -265,11 +279,12 @@ func readHTTP(source *Source, args ...string) ([]byte, error) {
 	}
 	ctypeHdr := res.Header.Get("Content-Type")
 	if ctypeHdr != "" {
-		mediatype, _, e := mime.ParseMediaType(ctypeHdr)
+		mediatype, params, e := mime.ParseMediaType(ctypeHdr)
 		if e != nil {
 			return nil, e
 		}
 		source.Type = mediatype
+		source.Params = params
 	}
 	return body, nil
 }

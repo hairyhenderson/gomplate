@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"encoding/csv"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -66,6 +67,144 @@ func (t *TypeConv) YAML(in string) map[string]interface{} {
 func (t *TypeConv) YAMLArray(in string) []interface{} {
 	obj := make([]interface{}, 1)
 	return unmarshalArray(obj, in, yaml.Unmarshal)
+}
+
+func parseCSV(args ...string) (records [][]string, hdr []string) {
+	delim := ","
+	var in string
+	if len(args) == 1 {
+		in = args[0]
+	}
+	if len(args) == 2 {
+		in = args[1]
+		if len(args[0]) == 1 {
+			delim = args[0]
+		} else if len(args[0]) == 0 {
+			hdr = []string{}
+		} else {
+			hdr = strings.Split(args[0], delim)
+		}
+	}
+	if len(args) == 3 {
+		delim = args[0]
+		hdr = strings.Split(args[1], delim)
+		in = args[2]
+	}
+	c := csv.NewReader(strings.NewReader(in))
+	c.Comma = rune(delim[0])
+	records, err := c.ReadAll()
+	if err != nil {
+		log.Fatal(err)
+	}
+	if hdr == nil {
+		hdr = records[0]
+		records = records[1:]
+	} else if len(hdr) == 0 {
+		hdr = make([]string, len(records[0]))
+		for i := range hdr {
+			hdr[i] = autoIndex(i)
+		}
+	}
+	return records, hdr
+}
+
+// autoIndex - calculates a default string column name given a numeric value
+func autoIndex(i int) string {
+	s := ""
+	for n := 0; n <= i/26; n++ {
+		s += string('A' + i%26)
+	}
+	return s
+}
+
+// CSV - Unmarshal CSV
+// parameters:
+//  delim - (optional) the (single-character!) field delimiter, defaults to ","
+//     in - the CSV-format string to parse
+// returns:
+//  an array of rows, which are arrays of cells (strings)
+func (t *TypeConv) CSV(args ...string) [][]string {
+	records, hdr := parseCSV(args...)
+	records = append(records, nil)
+	copy(records[1:], records)
+	records[0] = hdr
+	return records
+}
+
+// CSVByRow - Unmarshal CSV in a row-oriented form
+// parameters:
+//  delim - (optional) the (single-character!) field delimiter, defaults to ","
+//    hdr - (optional) comma-separated list of column names,
+//          set to "" to get auto-named columns (A-Z), omit
+//          to use the first line
+//     in - the CSV-format string to parse
+// returns:
+//  an array of rows, indexed by the header name
+func (t *TypeConv) CSVByRow(args ...string) (rows []map[string]string) {
+	records, hdr := parseCSV(args...)
+	for _, record := range records {
+		m := make(map[string]string)
+		for i, v := range record {
+			m[hdr[i]] = v
+		}
+		rows = append(rows, m)
+	}
+	return rows
+}
+
+// CSVByColumn - Unmarshal CSV in a Columnar form
+// parameters:
+//  delim - (optional) the (single-character!) field delimiter, defaults to ","
+//    hdr - (optional) comma-separated list of column names,
+//          set to "" to get auto-named columns (A-Z), omit
+//          to use the first line
+//     in - the CSV-format string to parse
+// returns:
+//  a map of columns, indexed by the header name. values are arrays of strings
+func (t *TypeConv) CSVByColumn(args ...string) (cols map[string][]string) {
+	records, hdr := parseCSV(args...)
+	cols = make(map[string][]string)
+	for _, record := range records {
+		for i, v := range record {
+			cols[hdr[i]] = append(cols[hdr[i]], v)
+		}
+	}
+	return cols
+}
+
+// ToCSV -
+func (t *TypeConv) ToCSV(args ...interface{}) string {
+	delim := ","
+	var in [][]string
+	if len(args) == 2 {
+		d, ok := args[0].(string)
+		if ok {
+			delim = d
+		} else {
+			log.Fatalf("Can't parse ToCSV delimiter (%v) - must be string (is a %T)", args[0], args[0])
+		}
+		in, ok = args[1].([][]string)
+		if !ok {
+			log.Fatal("Can't parse ToCSV input - must be of type [][]string")
+		}
+	}
+	if len(args) == 1 {
+		var ok bool
+		in, ok = args[0].([][]string)
+		if !ok {
+			log.Fatal("Can't parse ToCSV input - must be of type [][]string")
+		}
+	}
+	b := &bytes.Buffer{}
+	c := csv.NewWriter(b)
+	c.Comma = rune(delim[0])
+	// We output RFC4180 CSV, so force this to CRLF
+	c.UseCRLF = true
+	err := c.WriteAll(in)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return string(b.Bytes())
 }
 
 func marshalObj(obj interface{}, f func(interface{}) ([]byte, error)) string {
@@ -135,12 +274,24 @@ func (t *TypeConv) indent(indent, s string) string {
 //
 // This is functionally identical to strings.Join, except that each element is
 // coerced to a string first
-func (t *TypeConv) Join(a []interface{}, sep string) string {
-	b := make([]string, len(a))
-	for i := range a {
-		b[i] = toString(a[i])
+func (t *TypeConv) Join(in interface{}, sep string) string {
+	s, ok := in.([]string)
+	if ok {
+		return strings.Join(s, sep)
 	}
-	return strings.Join(b, sep)
+
+	var a []interface{}
+	a, ok = in.([]interface{})
+	if ok {
+		b := make([]string, len(a))
+		for i := range a {
+			b[i] = toString(a[i])
+		}
+		return strings.Join(b, sep)
+	}
+
+	log.Fatal("Input to Join must be an array")
+	return ""
 }
 
 // Has determines whether or not a given object has a property with the given key

@@ -182,3 +182,114 @@ func TestIndent(t *testing.T) {
 
 	assert.Equal(t, "   foo", ty.indent("   ", "foo"))
 }
+
+func TestCSV(t *testing.T) {
+	ty := new(TypeConv)
+	in := "first,second,third\n1,2,3\n4,5,6"
+	expected := [][]string{
+		{"first", "second", "third"},
+		{"1", "2", "3"},
+		{"4", "5", "6"},
+	}
+	assert.Equal(t, expected, ty.CSV(in))
+
+	in = "first;second;third\r\n1;2;3\r\n4;5;6\r\n"
+	assert.Equal(t, expected, ty.CSV(";", in))
+}
+
+func TestCSVByRow(t *testing.T) {
+	ty := new(TypeConv)
+	in := "first,second,third\n1,2,3\n4,5,6"
+	expected := []map[string]string{
+		{
+			"first":  "1",
+			"second": "2",
+			"third":  "3",
+		},
+		{
+			"first":  "4",
+			"second": "5",
+			"third":  "6",
+		},
+	}
+	assert.Equal(t, expected, ty.CSVByRow(in))
+
+	in = "1,2,3\n4,5,6"
+	assert.Equal(t, expected, ty.CSVByRow("first,second,third", in))
+
+	in = "1;2;3\n4;5;6"
+	assert.Equal(t, expected, ty.CSVByRow(";", "first;second;third", in))
+
+	in = "first;second;third\r\n1;2;3\r\n4;5;6"
+	assert.Equal(t, expected, ty.CSVByRow(";", in))
+
+	expected = []map[string]string{
+		{"A": "1", "B": "2", "C": "3"},
+		{"A": "4", "B": "5", "C": "6"},
+	}
+
+	in = "1,2,3\n4,5,6"
+	assert.Equal(t, expected, ty.CSVByRow("", in))
+
+	expected = []map[string]string{
+		{"A": "1", "B": "1", "C": "1", "D": "1", "E": "1", "F": "1", "G": "1", "H": "1", "I": "1", "J": "1", "K": "1", "L": "1", "M": "1", "N": "1", "O": "1", "P": "1", "Q": "1", "R": "1", "S": "1", "T": "1", "U": "1", "V": "1", "W": "1", "X": "1", "Y": "1", "Z": "1", "AA": "1", "BB": "1", "CC": "1", "DD": "1"},
+	}
+
+	in = "1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1"
+	assert.Equal(t, expected, ty.CSVByRow("", in))
+}
+
+func TestCSVByColumn(t *testing.T) {
+	ty := new(TypeConv)
+	in := "first,second,third\n1,2,3\n4,5,6"
+	expected := map[string][]string{
+		"first":  {"1", "4"},
+		"second": {"2", "5"},
+		"third":  {"3", "6"},
+	}
+	assert.Equal(t, expected, ty.CSVByColumn(in))
+
+	in = "1,2,3\n4,5,6"
+	assert.Equal(t, expected, ty.CSVByColumn("first,second,third", in))
+
+	in = "1;2;3\n4;5;6"
+	assert.Equal(t, expected, ty.CSVByColumn(";", "first;second;third", in))
+
+	in = "first;second;third\r\n1;2;3\r\n4;5;6"
+	assert.Equal(t, expected, ty.CSVByColumn(";", in))
+
+	expected = map[string][]string{
+		"A": {"1", "4"},
+		"B": {"2", "5"},
+		"C": {"3", "6"},
+	}
+
+	in = "1,2,3\n4,5,6"
+	assert.Equal(t, expected, ty.CSVByColumn("", in))
+}
+
+func TestAutoIndex(t *testing.T) {
+	assert.Equal(t, "A", autoIndex(0))
+	assert.Equal(t, "B", autoIndex(1))
+	assert.Equal(t, "Z", autoIndex(25))
+	assert.Equal(t, "AA", autoIndex(26))
+	assert.Equal(t, "ZZ", autoIndex(51))
+	assert.Equal(t, "AAA", autoIndex(52))
+	assert.Equal(t, "YYYYY", autoIndex(128))
+}
+
+func TestToCSV(t *testing.T) {
+	ty := new(TypeConv)
+	in := [][]string{
+		{"first", "second", "third"},
+		{"1", "2", "3"},
+		{"4", "5", "6"},
+	}
+	expected := "first,second,third\r\n1,2,3\r\n4,5,6\r\n"
+
+	assert.Equal(t, expected, ty.ToCSV(in))
+
+	expected = "first;second;third\r\n1;2;3\r\n4;5;6\r\n"
+
+	assert.Equal(t, expected, ty.ToCSV(";", in))
+}
