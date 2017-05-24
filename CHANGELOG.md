@@ -1,5 +1,32 @@
 # Change Log
 
+## [v1.7.0](https://github.com/hairyhenderson/gomplate/tree/v1.7.0) (2017-05-24)
+[Full Changelog](https://github.com/hairyhenderson/gomplate/compare/v1.6.0...v1.7.0)
+
+**Implemented enhancements:**
+
+- Add "replace" function and documentation [\#140](https://github.com/hairyhenderson/gomplate/pull/140) ([jen20](https://github.com/jen20))
+- Adding new indent function [\#139](https://github.com/hairyhenderson/gomplate/pull/139) ([hairyhenderson](https://github.com/hairyhenderson))
+- Adding new toJSONPretty function [\#137](https://github.com/hairyhenderson/gomplate/pull/137) ([hairyhenderson](https://github.com/hairyhenderson))
+- Add urlParse function \(i.e. url.Parse\) [\#132](https://github.com/hairyhenderson/gomplate/pull/132) ([hairyhenderson](https://github.com/hairyhenderson))
+- Add splitN function \(i.e. strings.SplitN\) [\#131](https://github.com/hairyhenderson/gomplate/pull/131) ([hairyhenderson](https://github.com/hairyhenderson))
+
+**Fixed bugs:**
+
+- toJSON fails to marshal objects with nested objects [\#138](https://github.com/hairyhenderson/gomplate/issues/138)
+- function "has" will panic when used on nested map [\#134](https://github.com/hairyhenderson/gomplate/issues/134)
+- Using  github.com/ugorji/go/codec for JSON encoding instead of encoding/json [\#144](https://github.com/hairyhenderson/gomplate/pull/144) ([hairyhenderson](https://github.com/hairyhenderson))
+- Fixing bug with 'has' and 'datasource' around referencing sub-maps in nested maps [\#135](https://github.com/hairyhenderson/gomplate/pull/135) ([hairyhenderson](https://github.com/hairyhenderson))
+
+**Closed issues:**
+
+- Ability to join list of items into string with separator [\#143](https://github.com/hairyhenderson/gomplate/issues/143)
+
+**Merged pull requests:**
+
+- Add `solaris-amd64` build target [\#141](https://github.com/hairyhenderson/gomplate/pull/141) ([jen20](https://github.com/jen20))
+- Making the built Docker image smaller [\#136](https://github.com/hairyhenderson/gomplate/pull/136) ([hairyhenderson](https://github.com/hairyhenderson))
+
 ## [v1.6.0](https://github.com/hairyhenderson/gomplate/tree/v1.6.0) (2017-05-01)
 [Full Changelog](https://github.com/hairyhenderson/gomplate/compare/v1.5.1...v1.6.0)
 
