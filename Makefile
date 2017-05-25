@@ -78,4 +78,10 @@ test-integration: build build-mirror
 gen-changelog:
 	github_changelog_generator --no-filter-by-milestone --exclude-labels duplicate,question,invalid,wontfix,admin
 
+docs/themes/hugo-material-docs:
+	git clone https://github.com/digitalcraftsman/hugo-material-docs.git $@
+
+gen-docs: docs/themes/hugo-material-docs
+	cd docs/; hugo
+
 .PHONY: gen-changelog clean test build-x compress-all build-release build build-integration-image test-integration-docker
