@@ -15,7 +15,7 @@ jobs:
             set -e
             set -o pipefail
             make test | go-junit-report > $CIRCLE_TEST_REPORTS/report.xml
-      - run: gometalinter -j 1 --vendor --deadline 70s --disable gotype --enable gofmt --enable goimports --enable misspell --enable unused --disable gas
+      - run: make lint
       - run: make test-integration
       - store_artifacts:
           path: bin
