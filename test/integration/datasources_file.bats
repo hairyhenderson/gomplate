@@ -32,3 +32,11 @@ function teardown () {
   [ "$status" -eq 0 ]
   [[ "${output}" == "bar" ]]
 }
+
+@test "supports CSV datasource file" {
+  echo -e 'A,B\nA1,B1\nA2,"foo""\nbar"\n' > $tmpdir/foo.csv
+  gomplate -d csv=$tmpdir/foo.csv -i '{{ index (index (ds "csv") 2) 1 }}'
+  [ "$status" -eq 0 ]
+  [[ "${output}" == "foo\"
+bar" ]]
+}

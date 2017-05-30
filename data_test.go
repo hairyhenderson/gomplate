@@ -191,7 +191,7 @@ func TestHTTPFile(t *testing.T) {
 	}
 	expected := make(map[string]interface{})
 	expected["hello"] = "world"
-	actual := data.Datasource("foo")
+	actual := data.Datasource("foo").(map[string]interface{})
 	assert.Equal(t, expected["hello"], actual["hello"])
 }
 

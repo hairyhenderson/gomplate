@@ -57,3 +57,35 @@ function teardown () {
   [ "$status" -eq 0 ]
   [[ "${output}" == "1-2-3" ]]
 }
+
+@test "'csv'" {
+  gomplate -i '{{ $c := `lang,keywords
+C,32
+Go,25
+COBOL,357` | csv -}}
+{{ index (index $c 0) 1 }}'
+  [ "$status" -eq 0 ]
+  [[ "${output}" == "keywords" ]]
+}
+
+@test "'csvByRow' with default settings" {
+  gomplate -i '{{ $c := `lang,keywords
+C,32
+Go,25
+COBOL,357` | csvByRow }}{{ range $c }}{{ .lang }} has {{ .keywords }} keywords.
+{{end}}'
+  [ "$status" -eq 0 ]
+  [[ "${output}" == "C has 32 keywords.
+Go has 25 keywords.
+COBOL has 357 keywords." ]]
+}
+
+@test "'csvByColumn' (tab-separated)" {
+  gomplate -i '{{ $c := `lang	keywords
+C	32
+Go	25
+COBOL	357` | csvByColumn "\t" -}}
+Languages are: {{ join $c.lang " and " }}'
+  [ "$status" -eq 0 ]
+  [[ "${output}" == "Languages are: C and Go and COBOL" ]]
+}

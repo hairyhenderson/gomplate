@@ -372,6 +372,125 @@ $ gomplate < input.tmpl
 Hello world
 ```
 
+## `csv`
+
+Converts a CSV-format string into a 2-dimensional string array.
+
+By default, the [RFC 4180](https://tools.ietf.org/html/rfc4180) format is
+supported, but any single-character delimiter can be specified.
+
+### Usage
+
+```go
+csv [delim] input
+```
+
+Can also be used in a pipeline:
+```go
+input | csv [delim]
+```
+
+### Arguments
+
+| name   | description |
+|--------|-------|
+| `delim` | _(optional)_ the (single-character!) field delimiter, defaults to `","` |
+| `input` | the CSV-format string to parse |
+
+### Example
+
+_`input.tmpl`:_
+```
+{{ $c := `C,32
+Go,25
+COBOL,357` -}}
+{{ range ($c | csv) -}}
+{{ index . 0 }} has {{ index . 1 }} keywords.
+{{ end }}
+```
+
+```console
+$ gomplate < input.tmpl
+C has 32 keywords.
+Go has 25 keywords.
+COBOL has 357 keywords.
+```
+
+## `csvByRow`
+
+Converts a CSV-format string into a slice of maps.
+
+By default, the [RFC 4180](https://tools.ietf.org/html/rfc4180) format is
+supported, but any single-character delimiter can be specified.
+
+Also by default, the first line of the string will be assumed to be the header,
+but this can be overridden by providing an explicit header, or auto-indexing
+can be used.
+
+
+### Usage
+
+```go
+csv [delim] [header] input
+```
+
+Can also be used in a pipeline:
+```go
+input | csv [delim] [header]
+```
+
+### Arguments
+
+| name   | description |
+|--------|-------|
+| `delim` | _(optional)_ the (single-character!) field delimiter, defaults to `","` |
+| `header`| _(optional)_ comma-separated list of column names, set to `""` to get auto-named columns (A-Z), defaults to using the first line of `input` |
+| `input` | the CSV-format string to parse |
+
+### Example
+
+_`input.tmpl`:_
+```
+{{ $c := `lang,keywords
+C,32
+Go,25
+COBOL,357` -}}
+{{ range ($c | csvByRow) -}}
+{{ .lang }} has {{ .keywords }} keywords.
+{{ end }}
+```
+
+```console
+$ gomplate < input.tmpl
+C has 32 keywords.
+Go has 25 keywords.
+COBOL has 357 keywords.
+```
+
+## `csvByColumn`
+
+Like [`csvByRow`](#csvByRow), except that the data is presented as a columnar
+(column-oriented) map.
+
+### Example
+
+_`input.tmpl`:_
+```
+{{ $c := `C;32
+Go;25
+COBOL;357` -}}
+{{ $langs := ($c | csvByColumn ";" "lang,keywords").lang -}}
+{{ range $langs }}{{ . }}
+{{ end -}}
+```
+
+```console
+$ gomplate < input.tmpl
+C
+Go
+COBOL
+```
+
 ## `toJSON`
 
 Converts an object to a JSON document. Input objects may be the result of `json`, `yaml`, `jsonArray`, or `yamlArray` functions, or they could be provided by a `datasource`.
@@ -426,7 +545,51 @@ _`input.tmpl`:_
 ```console
 $ gomplate < input.tmpl
 hello: world
+```
 
+## `toCSV`
+
+Converts an object to a CSV document. The input object must be a 2-dimensional
+array of strings (a `[][]string`). Objects produced by [`csvByRow`](#csvByRow)
+and [`csvByColumn`](#csvByColumn) cannot yet be converted back to CSV documents.
+
+**Note:** With the exception that a custom delimiter can be used, `toCSV`
+outputs according to the [RFC 4180](https://tools.ietf.org/html/rfc4180) format,
+which means that line terminators are `CRLF` (Windows format, or `\r\n`). If
+you require `LF` (UNIX format, or `\n`), the output can be piped through
+[`replaceAll`](#replaceAll) to replace `"\r\n"` with `"\n"`.
+
+### Usage
+
+```go
+toCSV [delim] input
+```
+
+Can also be used in a pipeline:
+```go
+input | toCSV [delim]
+```
+
+### Arguments
+
+| name   | description |
+|--------|-------|
+| `delim` | _(optional)_ the (single-character!) field delimiter, defaults to `","` |
+| `input` | the object to convert to a CSV |
+
+### Examples
+
+_`input.tmpl`:_
+```go
+{{ $rows := (jsonArray `[["first","second"],["1","2"],["3","4"]]`) -}}
+{{ toCSV ";" $rows }}
+```
+
+```console
+$ gomplate -f input.tmpl
+first,second
+1,2
+3,4
 ```
 
 ## `datasource`
@@ -435,7 +598,7 @@ Parses a given datasource (provided by the [`--datasource/-d`](#--datasource-d) 
 
 Currently, `file://`, `http://`, `https://`, and `vault://` URLs are supported.
 
-Currently-supported formats are JSON and YAML.
+Currently-supported formats are JSON, YAML, and CSV.
 
 #### Examples
 
