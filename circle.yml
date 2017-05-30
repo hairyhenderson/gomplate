@@ -10,11 +10,8 @@ jobs:
       - checkout
       - run: make build
       - run:
-          name: Unit Tests
-          command: |
-            set -e
-            set -o pipefail
-            make test | go-junit-report > $CIRCLE_TEST_REPORTS/report.xml
+          name: make test
+          command: make test | go-junit-report > $CIRCLE_TEST_REPORTS/report.xml
       - run: make lint
       - run: make test-integration
       - store_artifacts:
