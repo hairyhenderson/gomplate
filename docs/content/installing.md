@@ -9,8 +9,7 @@ weight: 10
 The simplest method for macOS is to use homebrew:
 
 ```console
-$ brew tap hairyhenderson/tap
-$ brew install gomplate
+$ brew install hairyhenderson/tap/gomplate
 ...
 ```
 
