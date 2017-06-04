@@ -200,6 +200,19 @@ func (d *Data) Datasource(alias string, args ...string) interface{} {
 	return nil
 }
 
+// Include -
+func (d *Data) include(alias string, args ...string) interface{} {
+	source, ok := d.Sources[alias]
+	if !ok {
+		log.Fatalf("Undefined datasource '%s'", alias)
+	}
+	b, err := d.ReadSource(source.FS, source, args...)
+	if err != nil {
+		log.Fatalf("Couldn't read datasource '%s': %s", alias, err)
+	}
+	return string(b)
+}
+
 // ReadSource -
 func (d *Data) ReadSource(fs vfs.Filesystem, source *Source, args ...string) ([]byte, error) {
 	if d.cache == nil {

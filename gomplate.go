@@ -81,6 +81,7 @@ func NewGomplate(data *Data, leftDelim, rightDelim string) *Gomplate {
 			"datasource":       data.Datasource,
 			"ds":               data.Datasource,
 			"datasourceExists": data.DatasourceExists,
+			"include":          data.include,
 		},
 	}
 }

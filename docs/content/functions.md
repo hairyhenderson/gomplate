@@ -704,6 +704,51 @@ no worries
 
 Alias to [`datasource`](#datasource)
 
+## `include`
+
+Includes the content of a given datasource (provided by the [`--datasource/-d`](../usage/#datasource-d) argument).
+
+This is similar to [`datasource`](#datasource),
+except that the data is not parsed.
+
+### Usage
+
+```go
+include alias [subpath]
+```
+
+### Arguments
+
+| name   | description |
+|--------|-------|
+| `alias` | the datasource alias, as provided by [`--datasource/-d`](../usage/#datasource-d) |
+| `subpath` | _(optional)_ the subpath to use, if supported by the datasource |
+
+### Examples
+
+_`person.json`:_
+```json
+{ "name": "Dave" }
+```
+
+_`input.tmpl`:_
+```go
+{
+  "people": [
+    {{ include "person" }}
+  ]
+}
+```
+
+```console
+$ gomplate -d person.json -f input.tmpl
+{
+  "people": [
+    { "name": "Dave" }
+  ]
+}
+```
+
 ## `ec2meta`
 
 Queries AWS [EC2 Instance Metadata](http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-metadata.html) for information. This only retrieves data in the `meta-data` path -- for data in the `dynamic` path use `ec2dynamic`.

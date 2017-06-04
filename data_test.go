@@ -271,3 +271,28 @@ func TestParseHeaderArgs(t *testing.T) {
 	}
 	assert.Equal(t, expected, parseHeaderArgs(args))
 }
+
+func TestInclude(t *testing.T) {
+	ext := "txt"
+	contents := "hello world"
+	fname := "foo." + ext
+	fs := memfs.Create()
+	_ = fs.Mkdir("/tmp", 0777)
+	f, _ := vfs.Create(fs, "/tmp/"+fname)
+	_, _ = f.Write([]byte(contents))
+
+	sources := map[string]*Source{
+		"foo": {
+			Alias: "foo",
+			URL:   &url.URL{Scheme: "file", Path: "/tmp/" + fname},
+			Ext:   ext,
+			Type:  "text/plain",
+			FS:    fs,
+		},
+	}
+	data := &Data{
+		Sources: sources,
+	}
+	actual := data.include("foo")
+	assert.Equal(t, contents, actual)
+}
