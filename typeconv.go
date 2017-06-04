@@ -12,6 +12,8 @@ import (
 
 	yaml "gopkg.in/yaml.v2"
 
+	// XXX: replace once https://github.com/BurntSushi/toml/pull/179 is merged
+	"github.com/hairyhenderson/toml"
 	"github.com/ugorji/go/codec"
 )
 
@@ -67,6 +69,12 @@ func (t *TypeConv) YAML(in string) map[string]interface{} {
 func (t *TypeConv) YAMLArray(in string) []interface{} {
 	obj := make([]interface{}, 1)
 	return unmarshalArray(obj, in, yaml.Unmarshal)
+}
+
+// TOML - Unmarshal a TOML Object
+func (t *TypeConv) TOML(in string) interface{} {
+	obj := make(map[string]interface{})
+	return unmarshalObj(obj, in, toml.Unmarshal)
 }
 
 func parseCSV(args ...string) (records [][]string, hdr []string) {
@@ -247,6 +255,16 @@ func (t *TypeConv) toJSONPretty(indent string, in interface{}) string {
 // ToYAML - Stringify a struct as YAML
 func (t *TypeConv) ToYAML(in interface{}) string {
 	return marshalObj(in, yaml.Marshal)
+}
+
+// ToTOML - Stringify a struct as TOML
+func (t *TypeConv) ToTOML(in interface{}) string {
+	buf := new(bytes.Buffer)
+	err := toml.NewEncoder(buf).Encode(in)
+	if err != nil {
+		log.Fatalf("Unable to marshal %s: %v", in, err)
+	}
+	return string(buf.Bytes())
 }
 
 // Slice creates a slice from a bunch of arguments
