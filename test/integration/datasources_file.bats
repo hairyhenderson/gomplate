@@ -40,3 +40,10 @@ function teardown () {
   [[ "${output}" == "foo\"
 bar" ]]
 }
+
+@test "'include' doesn't parse file" {
+  echo 'foo: bar' > $tmpdir/config.yml
+  gomplate -d config=$tmpdir/config.yml -i '{{include "config"}}'
+  [ "$status" -eq 0 ]
+  [[ "${output}" == "foo: bar" ]]
+}

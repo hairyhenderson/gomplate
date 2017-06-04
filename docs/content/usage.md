@@ -44,7 +44,7 @@ gomplate --input-dir=templates --output-dir=config --datasource config=config.ya
 
 ## `--datasource`/`-d`
 
-Add a data source in `name=URL` form. Specify multiple times to add multiple sources. The data can then be used by the [`datasource`](#datasource) function.
+Add a data source in `name=URL` form. Specify multiple times to add multiple sources. The data can then be used by the [`datasource`](../functions/#datasource) and [`include`](../functions/#include) functions.
 
 A few different forms are valid:
 - `mydata=file:///tmp/my/file.json`
