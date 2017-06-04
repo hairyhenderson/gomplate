@@ -16,6 +16,8 @@ import:
 - package: github.com/ugorji/go
   subpackages:
   - codec
+- package: github.com/hairyhenderson/toml
+  version: support-map-interface-keys
 testImport:
 - package: github.com/stretchr/testify
   version: ^1.1.4

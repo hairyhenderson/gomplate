@@ -1,5 +1,5 @@
-hash: 407f14694f1796037fe3eff6230a6b10c458b31b68502056aecea9423a24616d
-updated: 2017-05-19T23:11:04.71342422-04:00
+hash: c5f5c0c3cee4fa241f3ad60210be5636509d0688021dea0542347a2dcc3341db
+updated: 2017-06-05T10:17:24.952432233-04:00
 imports:
 - name: github.com/aws/aws-sdk-go
   version: 0b6039ef3d10c1eda49843ebf9773dcc5bba0169
@@ -34,6 +34,8 @@ imports:
   - memfs
 - name: github.com/go-ini/ini
   version: 6f66b0e091edb3c7b380f7c4f0f884274d550b67
+- name: github.com/hairyhenderson/toml
+  version: 44f109fd33239176c2a8febd4811e1dbc87d9c57
 - name: github.com/inconshreveable/mousetrap
   version: 76626ae9c91c4f2a10f34cad8ce83ea42c93bb75
 - name: github.com/jmespath/go-jmespath
