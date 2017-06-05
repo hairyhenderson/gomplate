@@ -372,6 +372,44 @@ $ gomplate < input.tmpl
 Hello world
 ```
 
+## `toml`
+
+Converts a [TOML](https://github.com/toml-lang/toml) document into an object.
+This can be used to access properties of TOML documents.
+
+Compatible with [TOML v0.4.0](https://github.com/toml-lang/toml/blob/master/versions/en/toml-v0.4.0.md).
+
+### Usage
+
+```go
+toml input
+```
+
+Can also be used in a pipeline:
+```go
+input | toml
+```
+
+### Arguments
+
+| name   | description |
+|--------|-------|
+| `input` | the TOML document to parse |
+
+#### Example
+
+_`input.tmpl`:_
+```
+{{ $t := `[data]
+hello = "world"` -}}
+Hello {{ (toml $t).hello }}
+```
+
+```console
+$ gomplate -f input.tmpl
+Hello world
+```
+
 ## `csv`
 
 Converts a CSV-format string into a 2-dimensional string array.
@@ -547,6 +585,34 @@ $ gomplate < input.tmpl
 hello: world
 ```
 
+## `toTOML`
+
+Converts an object to a [TOML](https://github.com/toml-lang/toml) document.
+
+### Usage
+
+```go
+toTOML obj
+```
+
+Can also be used in a pipeline:
+```go
+obj | toTOML
+```
+
+### Arguments
+
+| name   | description |
+|--------|-------|
+| `obj`  | the object to marshal as a TOML document |
+
+#### Example
+
+```console
+$ gomplate -i '{{ `{"foo":"bar"}` | json | toTOML }}'
+foo = "bar"
+```
+
 ## `toCSV`
 
 Converts an object to a CSV document. The input object must be a 2-dimensional
@@ -598,7 +664,7 @@ Parses a given datasource (provided by the [`--datasource/-d`](#--datasource-d) 
 
 Currently, `file://`, `http://`, `https://`, and `vault://` URLs are supported.
 
-Currently-supported formats are JSON, YAML, and CSV.
+Currently-supported formats are JSON, YAML, TOML, and CSV.
 
 #### Examples
 

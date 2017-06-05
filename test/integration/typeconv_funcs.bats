@@ -89,3 +89,22 @@ Languages are: {{ join $c.lang " and " }}'
   [ "$status" -eq 0 ]
   [[ "${output}" == "Languages are: C and Go and COBOL" ]]
 }
+
+@test "'toml'" {
+  gomplate -i '{{ $t := `# comment
+foo = "bar"
+
+[baz]
+qux = "quux"` | toml -}}
+{{ $t.baz.qux }}'
+  [ "$status" -eq 0 ]
+  [[ "${output}" == "quux" ]]
+}
+
+@test "'toTOML'" {
+  gomplate -i '{{ "foo:\n bar:\n  baz: qux" | yaml | toTOML }}'
+  [ "$status" -eq 0 ]
+  [[ "${output}" == "[foo]
+  [foo.bar]
+    baz = \"qux\"" ]]
+}

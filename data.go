@@ -20,24 +20,20 @@ import (
 // logFatal is defined so log.Fatal calls can be overridden for testing
 var logFatalf = log.Fatalf
 
+func regExtension(ext, typ string) {
+	err := mime.AddExtensionType(ext, typ)
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
 func init() {
 	// Add some types we want to be able to handle which can be missing by default
-	err := mime.AddExtensionType(".json", "application/json")
-	if err != nil {
-		log.Fatal(err)
-	}
-	err = mime.AddExtensionType(".yml", "application/yaml")
-	if err != nil {
-		log.Fatal(err)
-	}
-	err = mime.AddExtensionType(".yaml", "application/yaml")
-	if err != nil {
-		log.Fatal(err)
-	}
-	err = mime.AddExtensionType(".csv", "text/csv")
-	if err != nil {
-		log.Fatal(err)
-	}
+	regExtension(".json", "application/json")
+	regExtension(".yml", "application/yaml")
+	regExtension(".yaml", "application/yaml")
+	regExtension(".csv", "text/csv")
+	regExtension(".toml", "application/toml")
 
 	sourceReaders = make(map[string]func(*Source, ...string) ([]byte, error))
 
@@ -184,17 +180,18 @@ func (d *Data) Datasource(alias string, args ...string) interface{} {
 		log.Fatalf("Couldn't read datasource '%s': %s", alias, err)
 	}
 	s := string(b)
+	ty := &TypeConv{}
 	if source.Type == "application/json" {
-		ty := &TypeConv{}
 		return ty.JSON(s)
 	}
 	if source.Type == "application/yaml" {
-		ty := &TypeConv{}
 		return ty.YAML(s)
 	}
 	if source.Type == "text/csv" {
-		ty := &TypeConv{}
 		return ty.CSV(s)
+	}
+	if source.Type == "application/toml" {
+		return ty.TOML(s)
 	}
 	log.Fatalf("Datasources of type %s not yet supported", source.Type)
 	return nil

@@ -293,3 +293,103 @@ func TestToCSV(t *testing.T) {
 
 	assert.Equal(t, expected, ty.ToCSV(";", in))
 }
+
+func TestTOML(t *testing.T) {
+	ty := new(TypeConv)
+	in := `# This is a TOML document. Boom.
+
+title = "TOML Example"
+
+[owner]
+name = "Tom Preston-Werner"
+organization = "GitHub"
+bio = "GitHub Cofounder & CEO\nLikes tater tots and beer."
+dob = 1979-05-27T07:32:00Z # First class dates? Why not?
+
+[database]
+server = "192.168.1.1"
+ports = [ 8001, 8001, 8002 ]
+connection_max = 5000
+enabled = true
+
+[servers]
+
+  # You can indent as you please. Tabs or spaces. TOML don't care.
+  [servers.alpha]
+  ip = "10.0.0.1"
+  dc = "eqdc10"
+
+  [servers.beta]
+  ip = "10.0.0.2"
+  dc = "eqdc10"
+
+[clients]
+data = [ ["gamma", "delta"], [1, 2] ] # just an update to make sure parsers support it
+
+# Line breaks are OK when inside arrays
+hosts = [
+  "alpha",
+  "omega"
+]
+`
+	expected := map[string]interface{}{
+		"title": "TOML Example",
+		"owner": map[string]interface{}{
+			"name":         "Tom Preston-Werner",
+			"organization": "GitHub",
+			"bio":          "GitHub Cofounder & CEO\nLikes tater tots and beer.",
+			"dob":          time.Date(1979, time.May, 27, 7, 32, 0, 0, time.UTC),
+		},
+		"database": map[string]interface{}{
+			"server":         "192.168.1.1",
+			"ports":          []interface{}{int64(8001), int64(8001), int64(8002)},
+			"connection_max": int64(5000),
+			"enabled":        true,
+		},
+		"servers": map[string]interface{}{
+			"alpha": map[string]interface{}{
+				"ip": "10.0.0.1",
+				"dc": "eqdc10",
+			},
+			"beta": map[string]interface{}{
+				"ip": "10.0.0.2",
+				"dc": "eqdc10",
+			},
+		},
+		"clients": map[string]interface{}{
+			"data": []interface{}{
+				[]interface{}{"gamma", "delta"},
+				[]interface{}{int64(1), int64(2)},
+			},
+			"hosts": []interface{}{"alpha", "omega"},
+		},
+	}
+
+	assert.Equal(t, expected, ty.TOML(in))
+}
+
+func TestToTOML(t *testing.T) {
+	ty := new(TypeConv)
+	expected := `foo = "bar"
+one = 1
+true = true
+
+[down]
+  [down.the]
+    [down.the.rabbit]
+      hole = true
+`
+	in := map[string]interface{}{
+		"foo":  "bar",
+		"one":  1,
+		"true": true,
+		"down": map[interface{}]interface{}{
+			"the": map[interface{}]interface{}{
+				"rabbit": map[interface{}]interface{}{
+					"hole": true,
+				},
+			},
+		},
+	}
+	assert.Equal(t, expected, ty.ToTOML(in))
+}
