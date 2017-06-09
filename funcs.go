@@ -52,5 +52,6 @@ func initFuncs(data *Data) template.FuncMap {
 		"include":          data.include,
 	}
 	funcs.AWSFuncs(f)
+	funcs.AddBase64Funcs(f)
 	return f
 }
