@@ -8,26 +8,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-// test doubles
-type DummyInstanceDescriber struct {
-	tags []*ec2.Tag
-}
-
-func (d DummyInstanceDescriber) DescribeInstances(*ec2.DescribeInstancesInput) (*ec2.DescribeInstancesOutput, error) {
-	output := &ec2.DescribeInstancesOutput{
-		Reservations: []*ec2.Reservation{
-			{
-				Instances: []*ec2.Instance{
-					{
-						Tags: d.tags,
-					},
-				},
-			},
-		},
-	}
-	return output, nil
-}
-
 func TestTag_MissingKey(t *testing.T) {
 	server, ec2meta := MockServer(200, `"i-1234"`)
 	defer server.Close()
