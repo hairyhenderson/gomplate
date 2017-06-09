@@ -1,6 +1,7 @@
 ---
 title: Usage
-weight: 0
+weight: 11
+menu: main
 ---
 
 The simplest usage of `gomplate` is to just replace environment

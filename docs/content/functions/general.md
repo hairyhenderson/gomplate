@@ -1,11 +1,9 @@
 ---
-title: Built-in functions
-weight: 0
+title: other functions
+menu:
+  main:
+    parent: functions
 ---
-
-In addition to all of the functions and operators that the [Go template](https://golang.org/pkg/text/template/)
-language provides (`if`, `else`, `eq`, `and`, `or`, `range`, etc...), there are
-some additional functions baked in to `gomplate`:
 
 ## `contains`
 
@@ -813,64 +811,4 @@ $ gomplate -d person.json -f input.tmpl
     { "name": "Dave" }
   ]
 }
-```
-
-## `ec2meta`
-
-Queries AWS [EC2 Instance Metadata](http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-metadata.html) for information. This only retrieves data in the `meta-data` path -- for data in the `dynamic` path use `ec2dynamic`.
-
-This only works when running `gomplate` on an EC2 instance. If the EC2 instance metadata API isn't available, the tool will timeout and fail.
-
-#### Example
-
-```console
-$ echo '{{ec2meta "instance-id"}}' | gomplate
-i-12345678
-```
-
-## `ec2dynamic`
-
-Queries AWS [EC2 Instance Dynamic Metadata](http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-metadata.html) for information. This only retrieves data in the `dynamic` path -- for data in the `meta-data` path use `ec2meta`.
-
-This only works when running `gomplate` on an EC2 instance. If the EC2 instance metadata API isn't available, the tool will timeout and fail.
-
-#### Example
-
-```console
-$ echo '{{ (ec2dynamic "instance-identity/document" | json).region }}' | ./gomplate
-us-east-1
-```
-
-## `ec2region`
-
-Queries AWS to get the region. An optional default can be provided, or returns
-`unknown` if it can't be determined for some reason.
-
-#### Example
-
-_In EC2_
-```console
-$ echo '{{ ec2region }}' | ./gomplate
-us-east-1
-```
-_Not in EC2_
-```console
-$ echo '{{ ec2region }}' | ./gomplate
-unknown
-$ echo '{{ ec2region "foo" }}' | ./gomplate
-foo
-```
-
-## `ec2tag`
-
-Queries the AWS EC2 API to find the value of the given [user-defined tag](http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/Using_Tags.html). An optional default
-can be provided.
-
-#### Example
-
-```console
-$ echo 'This server is in the {{ ec2tag "Account" }} account.' | ./gomplate
-foo
-$ echo 'I am a {{ ec2tag "classification" "meat popsicle" }}.' | ./gomplate
-I am a meat popsicle.
 ```
