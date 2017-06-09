@@ -4,7 +4,6 @@ title = "gomplate documentation"
 
 theme = "hugo-material-docs"
 
-
 [params]
   author = "hairyhenderson"
   description = "gomplate documentation"
@@ -19,33 +18,3 @@ theme = "hugo-material-docs"
 [social]
   twitter = "hairyhenderson"
   github  = "hairyhenderson"
-
-[[menu.main]]
-  name   = "About"
-  url    = "/"
-  weight = 1
-  pre    = ""
-
-[[menu.main]]
-  name   = "Installing"
-  url    = "installing/"
-  weight = 10
-  pre    = ""
-
-[[menu.main]]
-  name   = "Usage"
-  url    = "usage/"
-  weight = 11
-  pre    = ""
-
-[[menu.main]]
-  name   = "Syntax"
-  url    = "syntax/"
-  weight = 12
-  pre    = ""
-
-[[menu.main]]
-  name   = "Built-in Functions"
-  url    = "functions/"
-  weight = 13
-  pre    = ""

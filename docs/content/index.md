@@ -1,7 +1,10 @@
 ---
 title: gomplate
 type: index
-weight: 0
+weight: 1
+menu:
+  main:
+    name: About
 ---
 
 A [Go template](https://golang.org/pkg/text/template/)-based CLI tool. `gomplate` can be used as an alternative to
