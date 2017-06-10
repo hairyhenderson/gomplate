@@ -1,5 +1,27 @@
 # Change Log
 
+## [v1.8.0](https://github.com/hairyhenderson/gomplate/tree/v1.8.0) (2017-06-09)
+[Full Changelog](https://github.com/hairyhenderson/gomplate/compare/v1.7.0...v1.8.0)
+
+**Implemented enhancements:**
+
+- base64 encode/decode support [\#155](https://github.com/hairyhenderson/gomplate/issues/155)
+- Ability to include raw text from non-structured files [\#142](https://github.com/hairyhenderson/gomplate/issues/142)
+- Support CSV datasources  [\#44](https://github.com/hairyhenderson/gomplate/issues/44)
+- Adding new base64.Encode/base64.Decode functions [\#156](https://github.com/hairyhenderson/gomplate/pull/156) ([hairyhenderson](https://github.com/hairyhenderson))
+- Adding TOML support [\#154](https://github.com/hairyhenderson/gomplate/pull/154) ([hairyhenderson](https://github.com/hairyhenderson))
+- Add include function [\#153](https://github.com/hairyhenderson/gomplate/pull/153) ([hairyhenderson](https://github.com/hairyhenderson))
+- Adding CSV datasource support [\#150](https://github.com/hairyhenderson/gomplate/pull/150) ([hairyhenderson](https://github.com/hairyhenderson))
+
+**Closed issues:**
+
+- Improve the docs and move to a separate place \(not the README\) [\#146](https://github.com/hairyhenderson/gomplate/issues/146)
+
+**Merged pull requests:**
+
+- Moving docs out of README [\#149](https://github.com/hairyhenderson/gomplate/pull/149) ([hairyhenderson](https://github.com/hairyhenderson))
+- Namespacing the aws funcs [\#148](https://github.com/hairyhenderson/gomplate/pull/148) ([hairyhenderson](https://github.com/hairyhenderson))
+
 ## [v1.7.0](https://github.com/hairyhenderson/gomplate/tree/v1.7.0) (2017-05-24)
 [Full Changelog](https://github.com/hairyhenderson/gomplate/compare/v1.6.0...v1.7.0)
 
