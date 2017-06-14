@@ -1,5 +1,31 @@
 # Change Log
 
+## [Unreleased](https://github.com/hairyhenderson/gomplate/tree/HEAD)
+
+[Full Changelog](https://github.com/hairyhenderson/gomplate/compare/v1.9.0...HEAD)
+
+**Implemented enhancements:**
+
+- Enhance the indent function [\#165](https://github.com/hairyhenderson/gomplate/issues/165)
+
+## [v1.9.0](https://github.com/hairyhenderson/gomplate/tree/v1.9.0) (2017-06-14)
+[Full Changelog](https://github.com/hairyhenderson/gomplate/compare/v1.8.0...v1.9.0)
+
+**Implemented enhancements:**
+
+- DNS resolver function... [\#157](https://github.com/hairyhenderson/gomplate/issues/157)
+- Regular expression support [\#152](https://github.com/hairyhenderson/gomplate/issues/152)
+- Enhancing indent function [\#166](https://github.com/hairyhenderson/gomplate/pull/166) ([hairyhenderson](https://github.com/hairyhenderson))
+- Creating a strings namespace [\#164](https://github.com/hairyhenderson/gomplate/pull/164) ([hairyhenderson](https://github.com/hairyhenderson))
+- Adding regexp support [\#161](https://github.com/hairyhenderson/gomplate/pull/161) ([hairyhenderson](https://github.com/hairyhenderson))
+- Adding net.Lookup\* functions [\#158](https://github.com/hairyhenderson/gomplate/pull/158) ([hairyhenderson](https://github.com/hairyhenderson))
+
+**Closed issues:**
+
+- JSON formatting [\#163](https://github.com/hairyhenderson/gomplate/issues/163)
+- panic: template: template:19:25: executing "template" at \<.Env\>: map has no entry for key "Env" [\#160](https://github.com/hairyhenderson/gomplate/issues/160)
+- Suggestion: add directory support for loading environment [\#159](https://github.com/hairyhenderson/gomplate/issues/159)
+
 ## [v1.8.0](https://github.com/hairyhenderson/gomplate/tree/v1.8.0) (2017-06-09)
 [Full Changelog](https://github.com/hairyhenderson/gomplate/compare/v1.7.0...v1.8.0)
 
