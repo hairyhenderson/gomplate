@@ -25,7 +25,6 @@ func initFuncs(data *Data) template.FuncMap {
 		"csvByRow":         typeconv.CSVByRow,
 		"csvByColumn":      typeconv.CSVByColumn,
 		"slice":            typeconv.Slice,
-		"indent":           typeconv.indent,
 		"join":             typeconv.Join,
 		"toJSON":           typeconv.ToJSON,
 		"toJSONPretty":     typeconv.toJSONPretty,

@@ -132,27 +132,6 @@ $ gomplate -f input.tmpl
 1-2-3
 ```
 
-## `indent`
-
-Indents a given string with the given indentation pattern. If the input string has multiple lines, each line will be indented.
-
-#### Example
-
-This function can be especially useful when adding YAML snippets into other YAML documents, where indentation is important:
-
-_`input.tmpl`:_
-```
-foo:
-{{ `{"bar": {"baz": 2}}` | json | toYAML | indent "  " }}
-```
-
-```console
-$ gomplate -f input.tmpl
-foo:
-  bar:
-    baz: 2
-```
-
 ## `json`
 
 Converts a JSON string into an object. Only works for JSON Objects (not Arrays or other valid JSON types). This can be used to access properties of JSON objects.

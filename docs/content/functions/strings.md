@@ -76,6 +76,52 @@ $ URL=http://example.com gomplate < input.tmpl
 http://example.com:80
 ```
 
+## `strings.Indent`
+
+**Alias:** `indent`
+
+Indents a string. If the input string has multiple lines, each line will be indented.
+
+### Usage
+```go
+strings.Indent [width] [indent] input
+```
+```go
+input | strings.Indent [width] [indent]
+```
+
+### Arguments
+
+| name   | description |
+|--------|-------|
+| `width` | _(optional)_ number of times to repeat the `indent` string. Default: `1` |
+| `indent` | _(optional)_ the string to indent with. Default: `" "` |
+| `input` | the string to indent |
+
+### Example
+
+This function can be especially useful when adding YAML snippets into other YAML documents, where indentation is important:
+
+_`input.tmpl`:_
+```
+foo:
+{{ `{"bar": {"baz": 2}}` | json | toYAML | strings.Indent "  " }}
+{{- `{"qux": true}` | json | toYAML | strings.Indent 2 }}
+  quux:
+{{ `{"quuz": 42}` | json | toYAML | strings.Indent 2 "  " -}}
+```
+
+```console
+$ gomplate -f input.tmpl
+foo:
+  bar:
+    baz: 2
+  qux: true
+
+  quux: 
+    quuz: 42
+```
+
 ## `strings.Split`
 
 Creates a slice by splitting a string on a given delimiter.

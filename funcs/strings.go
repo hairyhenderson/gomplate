@@ -6,9 +6,12 @@ package funcs
 // in templates easier.
 
 import (
+	"log"
 	"sync"
 
 	"strings"
+
+	gompstrings "github.com/hairyhenderson/gomplate/strings"
 )
 
 var (
@@ -31,6 +34,7 @@ func AddStringFuncs(f map[string]interface{}) {
 	f["toUpper"] = StrNS().ToUpper
 	f["toLower"] = StrNS().ToLower
 	f["trimSpace"] = StrNS().TrimSpace
+	f["indent"] = StrNS().Indent
 
 	// these are legacy aliases with non-pipelinable arg order
 	f["contains"] = strings.Contains
@@ -97,4 +101,35 @@ func (f *StringFuncs) ToLower(s string) string {
 // TrimSpace -
 func (f *StringFuncs) TrimSpace(s string) string {
 	return strings.TrimSpace(s)
+}
+
+// Indent -
+func (f *StringFuncs) Indent(args ...interface{}) string {
+	input, ok := args[len(args)-1].(string)
+	if !ok {
+		log.Fatal("Indent: invalid arguments")
+	}
+	indent := " "
+	width := 1
+	switch len(args) {
+	case 2:
+		indent, ok = args[0].(string)
+		if !ok {
+			width, ok = args[0].(int)
+			if !ok {
+				log.Fatal("Indent: invalid arguments")
+			}
+			indent = " "
+		}
+	case 3:
+		width, ok = args[0].(int)
+		if !ok {
+			log.Fatal("Indent: invalid arguments")
+		}
+		indent, ok = args[1].(string)
+		if !ok {
+			log.Fatal("Indent: invalid arguments")
+		}
+	}
+	return gompstrings.Indent(width, indent, input)
 }
