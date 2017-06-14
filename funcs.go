@@ -54,5 +54,6 @@ func initFuncs(data *Data) template.FuncMap {
 	funcs.AWSFuncs(f)
 	funcs.AddBase64Funcs(f)
 	funcs.AddNetFuncs(f)
+	funcs.AddReFuncs(f)
 	return f
 }
