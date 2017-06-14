@@ -44,14 +44,6 @@ function teardown () {
 }' ]]
 }
 
-@test "indent" {
-  gomplate -i '{{ indent "   " "hello world" }}{{ "hello\nmultiline\nworld" | indent " " }}'
-  [ "$status" -eq 0 ]
-  [[ "${output}" == "   hello world hello
- multiline
- world" ]]
-}
-
 @test "join" {
   gomplate -i '{{ $a := `[1, 2, 3]` | jsonArray }}{{ join $a "-" }}'
   [ "$status" -eq 0 ]
