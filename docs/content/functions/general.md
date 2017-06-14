@@ -5,25 +5,6 @@ menu:
     parent: functions
 ---
 
-## `contains`
-
-Contains reports whether the second string is contained within the first. Equivalent to
-[strings.Contains](https://golang.org/pkg/strings#Contains)
-
-### Example
-
-_`input.tmpl`:_
-```
-{{if contains .Env.FOO "f"}}yes{{else}}no{{end}}
-```
-
-```console
-$ FOO=foo gomplate < input.tmpl
-yes
-$ FOO=bar gomplate < input.tmpl
-no
-```
-
 ## `getenv`
 
 Exposes the [os.Getenv](https://golang.org/pkg/os/#Getenv) function.
@@ -40,42 +21,6 @@ $ gomplate -i 'Hello, {{getenv "USER"}}'
 Hello, hairyhenderson
 $ gomplate -i 'Hey, {{getenv "FIRSTNAME" "you"}}!'
 Hey, you!
-```
-
-## `hasPrefix`
-
-Tests whether the string begins with a certain substring. Equivalent to
-[strings.HasPrefix](https://golang.org/pkg/strings#HasPrefix)
-
-#### Example
-
-_`input.tmpl`:_
-```
-{{if hasPrefix .Env.URL "https"}}foo{{else}}bar{{end}}
-```
-
-```console
-$ URL=http://example.com gomplate < input.tmpl
-bar
-$ URL=https://example.com gomplate < input.tmpl
-foo
-```
-
-## `hasSuffix`
-
-Tests whether the string ends with a certain substring. Equivalent to
-[strings.HasSuffix](https://golang.org/pkg/strings#HasSuffix)
-
-#### Example
-
-_`input.tmpl`:_
-```
-{{.Env.URL}}{{if not (hasSuffix .Env.URL ":80")}}:80{{end}}
-```
-
-```console
-$ URL=http://example.com gomplate < input.tmpl
-http://example.com:80
 ```
 
 ## `bool`
@@ -114,100 +59,6 @@ $ gomplate < input.tmpl
 Hello, Bart
 Hello, Lisa
 Hello, Maggie
-```
-
-## `split`
-
-Creates a slice by splitting a string on a given delimiter. Equivalent to
-[strings.Split](https://golang.org/pkg/strings#Split)
-
-#### Example
-
-```console
-$ gomplate -i '{{range split "Bart,Lisa,Maggie" ","}}Hello, {{.}}{{end}}'
-Hello, Bart
-Hello, Lisa
-Hello, Maggie
-```
-
-## `splitN`
-
-Creates a slice by splitting a string on a given delimiter. The count determines
-the number of substrings to return. Equivalent to [strings.SplitN](https://golang.org/pkg/strings#SplitN)
-
-#### Example
-
-```console
-$ gomplate -i '{{ range splitN "foo:bar:baz" ":" 2 }}{{.}}{{end}}'
-foo
-bar:baz
-```
-## `replaceAll`
-
-Replaces all occurrences of a given string with another.
-
-#### Example
-
-```console
-$ gomplate -i '{{ replaceAll "." "-" "172.21.1.42" }}'
-172-21-1-42
-```
-
-#### Example (with pipeline)
-
-```console
-$ gomplate -i '{{ "172.21.1.42" | replaceAll "." "-" }}'
-172-21-1-42
-```
-
-## `title`
-
-Convert to title-case. Equivalent to [strings.Title](https://golang.org/pkg/strings/#Title)
-
-#### Example
-
-```console
-$ echo '{{title "hello, world!"}}' | gomplate
-Hello, World!
-```
-
-## `toLower`
-
-Convert to lower-case. Equivalent to [strings.ToLower](https://golang.org/pkg/strings/#ToLower)
-
-#### Example
-
-```console
-$ echo '{{toLower "HELLO, WORLD!"}}' | gomplate
-hello, world!
-```
-
-## `toUpper`
-
-Convert to upper-case. Equivalent to [strings.ToUpper](https://golang.org/pkg/strings/#ToUpper)
-
-#### Example
-
-```console
-$ echo '{{toUpper "hello, world!"}}' | gomplate
-HELLO, WORLD!
-```
-
-## `trim`
-
-Trims a string by removing the given characters from the beginning and end of
-the string. Equivalent to [strings.Trim](https://golang.org/pkg/strings/#Trim)
-
-#### Example
-
-_`input.tmpl`:_
-```
-Hello, {{trim .Env.FOO " "}}!
-```
-
-```console
-$ FOO="  world " | gomplate < input.tmpl
-Hello, world!
 ```
 
 ## `urlParse`

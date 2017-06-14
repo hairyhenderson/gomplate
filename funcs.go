@@ -2,7 +2,6 @@ package main
 
 import (
 	"net/url"
-	"strings"
 	"text/template"
 
 	"github.com/hairyhenderson/gomplate/funcs"
@@ -12,7 +11,6 @@ import (
 func initFuncs(data *Data) template.FuncMap {
 	env := &Env{}
 	typeconv := &TypeConv{}
-	stringfunc := &stringFunc{}
 
 	f := template.FuncMap{
 		"getenv":           env.Getenv,
@@ -34,17 +32,6 @@ func initFuncs(data *Data) template.FuncMap {
 		"toYAML":           typeconv.ToYAML,
 		"toTOML":           typeconv.ToTOML,
 		"toCSV":            typeconv.ToCSV,
-		"contains":         strings.Contains,
-		"hasPrefix":        strings.HasPrefix,
-		"hasSuffix":        strings.HasSuffix,
-		"replaceAll":       stringfunc.replaceAll,
-		"split":            strings.Split,
-		"splitN":           strings.SplitN,
-		"title":            strings.Title,
-		"toUpper":          strings.ToUpper,
-		"toLower":          strings.ToLower,
-		"trim":             strings.Trim,
-		"trimSpace":        strings.TrimSpace,
 		"urlParse":         url.Parse,
 		"datasource":       data.Datasource,
 		"ds":               data.Datasource,
@@ -55,5 +42,6 @@ func initFuncs(data *Data) template.FuncMap {
 	funcs.AddBase64Funcs(f)
 	funcs.AddNetFuncs(f)
 	funcs.AddReFuncs(f)
+	funcs.AddStringFuncs(f)
 	return f
 }
