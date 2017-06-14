@@ -1,4 +1,4 @@
-package main
+package funcs
 
 import (
 	"testing"
@@ -7,10 +7,10 @@ import (
 )
 
 func TestReplaceAll(t *testing.T) {
-	sf := &stringFunc{}
+	sf := &StringFuncs{}
 
 	assert.Equal(t, "Replaced",
-		sf.replaceAll("Orig", "Replaced", "Orig"))
+		sf.ReplaceAll("Orig", "Replaced", "Orig"))
 	assert.Equal(t, "ReplacedReplaced",
-		sf.replaceAll("Orig", "Replaced", "OrigOrig"))
+		sf.ReplaceAll("Orig", "Replaced", "OrigOrig"))
 }
