@@ -9,6 +9,9 @@ VERSION ?= `git describe --abbrev=0 --tags $(git rev-list --tags --max-count=1) 
 COMMIT_FLAG := -X `go list ./version`.GitCommit=$(COMMIT)
 VERSION_FLAG := -X `go list ./version`.Version=$(VERSION)
 
+GOOS ?= `go version | sed 's/^.*\ \([a-z0-9]*\)\/\([a-z0-9]*\)/\1/'`
+GOARCH ?= `go version | sed 's/^.*\ \([a-z0-9]*\)\/\([a-z0-9]*\)/\2/'`
+
 platforms := linux-amd64 linux-386 linux-arm linux-arm64 darwin-amd64 solaris-amd64 windows-amd64.exe windows-386.exe
 
 define gocross
@@ -42,6 +45,10 @@ compress-all:
 	$(call compress,linux,amd64)
 	$(call compress,linux,arm)
 	$(call compress,windows,amd64)
+
+compress: build
+	@upx $(PREFIX)/bin/$(PKG_NAME)$(call extension,$(GOOS)) \
+		-o $(PREFIX)/bin/$(PKG_NAME)-slim$(call extension,$(GOOS))
 
 build-release: clean build-x compress-all
 

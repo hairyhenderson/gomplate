@@ -5,5 +5,6 @@
 if (git describe --abbrev=0 --exact-match &>/dev/null); then
   tag=$(git describe --abbrev=0 --exact-match)
   docker tag $IMAGE_NAME $DOCKER_REPO:$tag
-  docker push $DOCKER_REPO:$tag
+  docker tag $IMAGE_NAME:slim $DOCKER_REPO:$tag-slim
+  docker push $DOCKER_REPO
 fi
