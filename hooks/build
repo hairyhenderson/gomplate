@@ -7,11 +7,11 @@ docker version
 echo "Build hook running"
 export BUILD_DATE=`date -u +"%Y-%m-%dT%H:%M:%SZ"`
 export VCS_REF=`git rev-parse --short HEAD`
-docker build --build-arg BUILD_DATE=$BUILD_DATE \
-             --build-arg VCS_REF=$VCS_REF \
+docker build --build-arg BUILD_DATE \
+             --build-arg VCS_REF \
              --target gomplate \
              -t $IMAGE_NAME .
-docker build --build-arg BUILD_DATE=$BUILD_DATE \
-             --build-arg VCS_REF=$VCS_REF \
+docker build --build-arg BUILD_DATE \
+             --build-arg VCS_REF \
              --target gomplate-slim \
              -t $IMAGE_NAME:slim .
