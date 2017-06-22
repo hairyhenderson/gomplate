@@ -11,6 +11,11 @@ import (
 
 var describerClient InstanceDescriber
 
+// ClientOptions -
+type ClientOptions struct {
+	Timeout time.Duration
+}
+
 // Ec2Info -
 type Ec2Info struct {
 	describer  func() InstanceDescriber
@@ -24,13 +29,13 @@ type InstanceDescriber interface {
 }
 
 // NewEc2Info -
-func NewEc2Info() *Ec2Info {
-	metaClient := NewEc2Meta()
+func NewEc2Info(options ClientOptions) *Ec2Info {
+	metaClient := NewEc2Meta(options)
 	return &Ec2Info{
 		describer: func() InstanceDescriber {
 			if describerClient == nil {
 				region := metaClient.Region()
-				describerClient = ec2Client(region)
+				describerClient = ec2Client(region, options)
 			}
 			return describerClient
 		},
@@ -39,10 +44,14 @@ func NewEc2Info() *Ec2Info {
 	}
 }
 
-func ec2Client(region string) (client InstanceDescriber) {
+func ec2Client(region string, options ClientOptions) (client InstanceDescriber) {
 	config := aws.NewConfig()
 	config = config.WithRegion(region)
-	config = config.WithHTTPClient(&http.Client{Timeout: 500 * time.Millisecond})
+	timeout := options.Timeout
+	if timeout == 0 {
+		timeout = 500 * time.Millisecond
+	}
+	config = config.WithHTTPClient(&http.Client{Timeout: timeout})
 	client = ec2.New(session.New(config))
 	return client
 }

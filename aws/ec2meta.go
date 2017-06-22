@@ -18,11 +18,12 @@ type Ec2Meta struct {
 	Client   *http.Client
 	nonAWS   bool
 	cache    map[string]string
+	options  ClientOptions
 }
 
 // NewEc2Meta -
-func NewEc2Meta() *Ec2Meta {
-	return &Ec2Meta{cache: make(map[string]string)}
+func NewEc2Meta(options ClientOptions) *Ec2Meta {
+	return &Ec2Meta{cache: make(map[string]string), options: options}
 }
 
 // returnDefault -
@@ -53,7 +54,11 @@ func (e *Ec2Meta) retrieveMetadata(url string, def ...string) string {
 	}
 
 	if e.Client == nil {
-		e.Client = &http.Client{Timeout: 500 * time.Millisecond}
+		timeout := e.options.Timeout
+		if timeout == 0 {
+			timeout = 500 * time.Millisecond
+		}
+		e.Client = &http.Client{Timeout: timeout}
 	}
 	resp, err := e.Client.Get(url)
 	if err != nil {

@@ -1,7 +1,11 @@
 package funcs
 
 import (
+	"log"
+	"os"
+	"strconv"
 	"sync"
+	"time"
 
 	"github.com/hairyhenderson/gomplate/aws"
 )
@@ -13,7 +17,23 @@ var (
 
 // AWSNS - the aws namespace
 func AWSNS() *Funcs {
-	afInit.Do(func() { af = &Funcs{} })
+	afInit.Do(func() {
+		timeout := os.Getenv("AWS_TIMEOUT")
+		if timeout != "" {
+			t, err := strconv.Atoi(timeout)
+			if err != nil {
+				log.Fatalf("Invalid AWS_TIMEOUT value '%s' - must be an integer\n", timeout)
+			}
+
+			af = &Funcs{
+				awsopts: aws.ClientOptions{
+					Timeout: (time.Duration(t) * time.Millisecond),
+				},
+			}
+		} else {
+			af = &Funcs{}
+		}
+	})
 	return af
 }
 
@@ -34,6 +54,7 @@ type Funcs struct {
 	metaInit sync.Once
 	info     *aws.Ec2Info
 	infoInit sync.Once
+	awsopts  aws.ClientOptions
 }
 
 // EC2Region -
@@ -62,12 +83,12 @@ func (a *Funcs) EC2Tag(tag string, def ...string) string {
 
 func (a *Funcs) initMeta() {
 	if a.meta == nil {
-		a.meta = aws.NewEc2Meta()
+		a.meta = aws.NewEc2Meta(a.awsopts)
 	}
 }
 
 func (a *Funcs) initInfo() {
 	if a.info == nil {
-		a.info = aws.NewEc2Info()
+		a.info = aws.NewEc2Info(a.awsopts)
 	}
 }

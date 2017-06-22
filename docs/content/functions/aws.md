@@ -5,6 +5,15 @@ menu:
     parent: functions
 ---
 
+The functions in the `aws` namespace interface with various Amazon Web Services
+APIs to make it possible for a template to render differently based on the AWS
+environment and metadata.
+
+#### `AWS_TIMEOUT` variable
+
+In some cases AWS APIs may be slower to respond. The timeout for these requests
+can be adjusted by setting the `AWS_TIMEOUT` environment variable. The value
+must be in milliseconds, and defaults to 500 milliseconds.
 
 ## `aws.EC2Meta`
 

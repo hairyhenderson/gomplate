@@ -23,7 +23,7 @@ func MockServer(code int, body string) (*httptest.Server, *Ec2Meta) {
 	}
 	httpClient := &http.Client{Transport: tr}
 
-	client := &Ec2Meta{server.URL + "/", httpClient, false, make(map[string]string)}
+	client := &Ec2Meta{server.URL + "/", httpClient, false, make(map[string]string), ClientOptions{}}
 	return server, client
 }
 
