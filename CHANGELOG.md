@@ -1,12 +1,20 @@
 # Change Log
 
-## [Unreleased](https://github.com/hairyhenderson/gomplate/tree/HEAD)
-
-[Full Changelog](https://github.com/hairyhenderson/gomplate/compare/v1.9.0...HEAD)
+## [v1.9.1](https://github.com/hairyhenderson/gomplate/tree/v1.9.1) (2017-06-22)
+[Full Changelog](https://github.com/hairyhenderson/gomplate/compare/v1.9.0...v1.9.1)
 
 **Implemented enhancements:**
 
 - Enhance the indent function [\#165](https://github.com/hairyhenderson/gomplate/issues/165)
+
+**Fixed bugs:**
+
+- gomplate v1.9.0  - fails for aws.EC2 calls that take 1s or plus \(Windows\) [\#168](https://github.com/hairyhenderson/gomplate/issues/168)
+- Adding AWS\_TIMEOUT environment variable [\#169](https://github.com/hairyhenderson/gomplate/pull/169) ([hairyhenderson](https://github.com/hairyhenderson))
+
+**Closed issues:**
+
+- Gomplate function to output a gomplate function [\#167](https://github.com/hairyhenderson/gomplate/issues/167)
 
 ## [v1.9.0](https://github.com/hairyhenderson/gomplate/tree/v1.9.0) (2017-06-14)
 [Full Changelog](https://github.com/hairyhenderson/gomplate/compare/v1.8.0...v1.9.0)
