@@ -68,7 +68,7 @@ func TestUnreachable(t *testing.T) {
 }
 
 func TestRetrieveMetadata_NonEC2(t *testing.T) {
-	ec2meta := NewEc2Meta()
+	ec2meta := NewEc2Meta(ClientOptions{})
 	ec2meta.nonAWS = true
 
 	assert.Equal(t, "foo", ec2meta.retrieveMetadata("", "foo"))

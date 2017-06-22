@@ -94,7 +94,7 @@ func TestNewEc2Info(t *testing.T) {
 			},
 		},
 	}
-	e := NewEc2Info()
+	e := NewEc2Info(ClientOptions{})
 	e.describer = func() InstanceDescriber {
 		return client
 	}
