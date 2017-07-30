@@ -15,14 +15,14 @@ GOARCH ?= `go version | sed 's/^.*\ \([a-z0-9]*\)\/\([a-z0-9]*\)/\2/'`
 platforms := linux-amd64 linux-386 linux-arm linux-arm64 darwin-amd64 solaris-amd64 windows-amd64.exe windows-386.exe
 
 define gocross
-	GOOS=$(1) GOARCH=$(2) \
+	GOOS=$(1) GOARCH=$(2) CGO_ENABLED=0 \
 		$(GO) build \
 			-ldflags "-w -s $(COMMIT_FLAG) $(VERSION_FLAG)" \
 			-o $(PREFIX)/bin/$(PKG_NAME)_$(1)-$(2)$(call extension,$(1));
 endef
 
 define gocross-tool
-	GOOS=$(1) GOARCH=$(2) \
+	GOOS=$(1) GOARCH=$(2) CGO_ENABLED=0 \
 		$(GO) build \
 			-ldflags "-w -s $(COMMIT_FLAG) $(VERSION_FLAG)" \
 			-o $(PREFIX)/bin/$(3)_$(1)-$(2)$(call extension,$(1)) \
@@ -59,10 +59,12 @@ $(PREFIX)/bin/mirror_%: $(shell find $(PREFIX)/test/integration/mirrorsvc -type 
 	$(call gocross-tool,$(shell echo $* | sed 's/\([^-]*\)-\([^.]*\).*/\1/'),$(shell echo $* | sed 's/\([^-]*\)-\([^.]*\).*/\2/'),mirror)
 
 $(PREFIX)/bin/$(PKG_NAME)$(call extension,$(GOOS)): $(shell find $(PREFIX) -type f -name '*.go' -not -path "$(PREFIX)/test/*")
-	$(GO) build -ldflags "-w -s $(COMMIT_FLAG) $(VERSION_FLAG)" -o $@
+	CGO_ENABLED=0 \
+		$(GO) build -ldflags "-w -s $(COMMIT_FLAG) $(VERSION_FLAG)" -o $@
 
 $(PREFIX)/bin/mirror$(call extension,$(GOOS)): $(shell find $(PREFIX)/test/integration/mirrorsvc -type f -name '*.go')
-	$(GO) build -ldflags "-w -s $(COMMIT_FLAG) $(VERSION_FLAG)" -o $@ $(PREFIX)/test/integration/mirrorsvc
+	CGO_ENABLED=0 \
+		$(GO) build -ldflags "-w -s $(COMMIT_FLAG) $(VERSION_FLAG)" -o $@ $(PREFIX)/test/integration/mirrorsvc
 
 build: $(PREFIX)/bin/$(PKG_NAME)$(call extension,$(GOOS))
 
