@@ -183,7 +183,7 @@ func (d *Data) Datasource(alias string, args ...string) interface{} {
 	if !ok {
 		log.Fatalf("Undefined datasource '%s'", alias)
 	}
-	b, err := d.ReadSource(source.FS, source, args...)
+	b, err := d.ReadSource(source, args...)
 	if err != nil {
 		log.Fatalf("Couldn't read datasource '%s': %s", alias, err)
 	}
@@ -214,7 +214,7 @@ func (d *Data) include(alias string, args ...string) interface{} {
 	if !ok {
 		log.Fatalf("Undefined datasource '%s'", alias)
 	}
-	b, err := d.ReadSource(source.FS, source, args...)
+	b, err := d.ReadSource(source, args...)
 	if err != nil {
 		log.Fatalf("Couldn't read datasource '%s': %s", alias, err)
 	}
@@ -222,7 +222,7 @@ func (d *Data) include(alias string, args ...string) interface{} {
 }
 
 // ReadSource -
-func (d *Data) ReadSource(fs vfs.Filesystem, source *Source, args ...string) ([]byte, error) {
+func (d *Data) ReadSource(source *Source, args ...string) ([]byte, error) {
 	if d.cache == nil {
 		d.cache = make(map[string][]byte)
 	}
