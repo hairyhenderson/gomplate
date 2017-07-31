@@ -1,17 +1,17 @@
 package main
 
 import (
-	"os"
-	"io/ioutil"
 	"fmt"
+	"io/ioutil"
 	"log"
+	"os"
 	"path"
 
 	"github.com/blang/vfs"
-	"github.com/hashicorp/vault/helper/jsonutil"
 	vaultapi "github.com/hashicorp/vault/api"
 	credGitHub "github.com/hashicorp/vault/builtin/credential/github"
 	credUserpass "github.com/hashicorp/vault/builtin/credential/userpass"
+	"github.com/hashicorp/vault/helper/jsonutil"
 )
 
 // logFatal is defined so log.Fatal calls can be overridden for testing
@@ -40,10 +40,12 @@ func NewVault() *Vault {
 	return &Vault{client, nil}
 }
 
+// Login -
 func (v *Vault) Login() {
 	v.client.SetToken(v.GetToken())
 }
 
+// GetToken -
 func (v *Vault) GetToken(fsOverrides ...vfs.Filesystem) string {
 	if len(fsOverrides) == 0 {
 		v.fs = vfs.OS()
@@ -70,6 +72,7 @@ func (v *Vault) GetToken(fsOverrides ...vfs.Filesystem) string {
 	return ""
 }
 
+// Logout -
 func (v *Vault) Logout() {
 }
 
@@ -85,23 +88,23 @@ func (v *Vault) Read(path string) ([]byte, error) {
 // AppIDLogin - app-id auth backend
 func (v *Vault) AppIDLogin() string {
 	env := &Env{}
-	appId := env.GetenvFile(v.fs, "VAULT_APP_ID", "")
-	userId := env.GetenvFile(v.fs, "VAULT_USER_ID", "")
+	appID := env.GetenvFile(v.fs, "VAULT_APP_ID", "")
+	userID := env.GetenvFile(v.fs, "VAULT_USER_ID", "")
 
-	if appId == "" {
+	if appID == "" {
 		return ""
 	}
-	if userId == "" {
+	if userID == "" {
 		return ""
 	}
 
 	mount := env.GetenvFile(v.fs, "VAULT_AUTH_APP_ID_MOUNT", "app-id")
 
 	vars := map[string]interface{}{
-		"user_id": userId,
+		"user_id": userID,
 	}
 
-	path := fmt.Sprintf("auth/%s/login/%s", mount, appId)
+	path := fmt.Sprintf("auth/%s/login/%s", mount, appID)
 	secret, err := v.client.Logical().Write(path, vars)
 	if err != nil {
 		logFatal("AppID logon failed", err)
@@ -116,21 +119,21 @@ func (v *Vault) AppIDLogin() string {
 // AppRoleLogin - approle auth backend
 func (v *Vault) AppRoleLogin() string {
 	env := &Env{}
-	roleId := env.GetenvFile(v.fs, "VAULT_ROLE_ID", "")
-	secretId := env.GetenvFile(v.fs, "VAULT_SECRET_ID", "")
+	roleID := env.GetenvFile(v.fs, "VAULT_ROLE_ID", "")
+	secretID := env.GetenvFile(v.fs, "VAULT_SECRET_ID", "")
 
-	if roleId == "" {
+	if roleID == "" {
 		return ""
 	}
-	if secretId == "" {
+	if secretID == "" {
 		return ""
 	}
 
 	mount := env.GetenvFile(v.fs, "VAULT_AUTH_APPROLE_MOUNT", "approle")
 
 	vars := map[string]interface{}{
-		"role_id": roleId,
-		"secret_id": secretId,
+		"role_id":   roleID,
+		"secret_id": secretID,
 	}
 
 	path := fmt.Sprintf("auth/%s/login", mount)
@@ -187,7 +190,7 @@ func (v *Vault) UserPassLogin() string {
 	mount := env.GetenvFile(v.fs, "VAULT_AUTH_USERPASS_MOUNT", "userpass")
 
 	vars := map[string]string{
-		"mount": mount,
+		"mount":    mount,
 		"username": username,
 		"password": password,
 	}
@@ -202,7 +205,7 @@ func (v *Vault) UserPassLogin() string {
 	return token
 }
 
-// TokenLogin
+// TokenLogin -
 func (v *Vault) TokenLogin() string {
 	env := &Env{}
 	if token := env.GetenvFile(v.fs, "VAULT_TOKEN", ""); token != "" {

@@ -1,8 +1,8 @@
 package main
 
 import (
-	"os"
 	"io/ioutil"
+	"os"
 
 	"github.com/blang/vfs"
 )
@@ -23,6 +23,7 @@ func (e *Env) Getenv(key string, def ...string) string {
 	return val
 }
 
+// GetenvFile - Also checks file
 func (e *Env) GetenvFile(fs vfs.Filesystem, key, def string) string {
 	val := os.Getenv(key)
 	if val != "" {
