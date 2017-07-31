@@ -26,35 +26,35 @@ type LibKV struct {
 func NewLibKV(url string) *LibKV {
 	env := &Env{}
 
-	var source_type store.Backend
+	var sourceType store.Backend
 	var client string
 
-	source_type = ""
+	sourceType = ""
 	client = ""
 
 	if strings.HasPrefix(url, "consul:") {
 		consul.Register()
-		source_type = store.CONSUL
+		sourceType = store.CONSUL
 		client = env.Getenv("CONSUL_HTTP_ADDR", "localhost:8500")
 	}
 	if strings.HasPrefix(url, "etcd:") {
 		etcd.Register()
-		source_type = store.ETCD
+		sourceType = store.ETCD
 		client = env.Getenv("ETCD_ADDR", "localhost:2379")
 	}
 	if strings.HasPrefix(url, "zk:") {
 		zookeeper.Register()
-		source_type = store.ZK
+		sourceType = store.ZK
 		client = env.Getenv("ZK_ADDR", "localhost:2181")
 	}
 	if strings.HasPrefix(url, "boltdb:") {
 		boltdb.Register()
-		source_type = store.BOLTDB
+		sourceType = store.BOLTDB
 		client = env.Getenv("BOLTDB_PATH", "")
 	}
 
 	kv, err := libkv.NewStore(
-		source_type,
+		sourceType,
 		[]string{client},
 		&store.Config{},
 	)
@@ -66,7 +66,7 @@ func NewLibKV(url string) *LibKV {
 }
 
 // Login -
-func (kv *LibKV) Login() (error) {
+func (kv *LibKV) Login() error {
 	return nil
 }
 
