@@ -13,4 +13,8 @@ export VAULT_ROOT_TOKEN=00000000-1111-2222-3333-444455556666
 # fire up vault in dev mode for the vault tests
 vault server -dev -dev-root-token-id=${VAULT_ROOT_TOKEN} -log-level=err >&/dev/null &
 
+export CONSUL_HTTP_ADDR=http://127.0.0.1:8500
+
+consul agent -dev -log-level=err >&/dev/null &
+
 bats $(dirname $0)
