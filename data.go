@@ -90,7 +90,7 @@ type Source struct {
 	Params map[string]string
 	FS     vfs.Filesystem // used for file: URLs, nil otherwise
 	HC     *http.Client   // used for http[s]: URLs, nil otherwise
-	VC     *vault.Client  //used for vault: URLs, nil otherwise
+	VC     *Vault         // used for vault: URLs, nil otherwise
 	KV     *libkv.LibKV   // used for consul:, etcd:, zookeeper: & boltdb: URLs, nil otherwise
 	Header http.Header    // used for http[s]: URLs, nil otherwise
 }
@@ -314,12 +314,9 @@ func readHTTP(source *Source, args ...string) ([]byte, error) {
 
 func readVault(source *Source, args ...string) ([]byte, error) {
 	if source.VC == nil {
-		source.VC = vault.NewClient()
-		err := source.VC.Login()
-		addCleanupHook(source.VC.RevokeToken)
-		if err != nil {
-			return nil, err
-		}
+		source.VC = NewVault()
+		source.VC.Login()
+		addCleanupHook(source.VC.Logout)
 	}
 
 	p := source.URL.Path
