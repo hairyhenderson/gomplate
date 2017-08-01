@@ -11,6 +11,7 @@ import (
 	"github.com/docker/libkv/store/consul"
 	"github.com/docker/libkv/store/etcd"
 	"github.com/docker/libkv/store/zookeeper"
+	"github.com/hairyhenderson/gomplate/env"
 )
 
 // logFatal is defined so log.Fatal calls can be overridden for testing
@@ -24,8 +25,6 @@ type LibKV struct {
 
 // NewLibKV - instantiate a new
 func NewLibKV(url *url.URL) *LibKV {
-	env := &Env{}
-
 	var sourceType store.Backend
 	var client string
 
