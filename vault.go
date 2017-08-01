@@ -10,8 +10,8 @@ import (
 	"path"
 
 	"github.com/blang/vfs"
-	vaultapi "github.com/hashicorp/vault/api"
 	"github.com/hairyhenderson/gomplate/env"
+	vaultapi "github.com/hashicorp/vault/api"
 )
 
 // logFatal is defined so log.Fatal calls can be overridden for testing
