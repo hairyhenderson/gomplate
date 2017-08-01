@@ -5,6 +5,7 @@ RUN apk add --no-cache \
     curl \
     bash \
     bats \
+    jq \
   && curl -L -o /tmp/vault.zip https://releases.hashicorp.com/vault/${VAULT_VER}/vault_${VAULT_VER}_linux_amd64.zip \
   && unzip /tmp/vault.zip \
   && mv vault /bin/vault \
