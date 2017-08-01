@@ -1,5 +1,21 @@
 # Change Log
 
+## [v1.10.0](https://github.com/hairyhenderson/gomplate/tree/v1.10.0) (2017-08-01)
+[Full Changelog](https://github.com/hairyhenderson/gomplate/compare/v1.9.1...v1.10.0)
+
+**Implemented enhancements:**
+
+- Adding support for \_FILE fallback to env.Getenv function [\#181](https://github.com/hairyhenderson/gomplate/pull/181) ([hairyhenderson](https://github.com/hairyhenderson))
+
+**Closed issues:**
+
+- 17.7M on Alpine Images [\#171](https://github.com/hairyhenderson/gomplate/issues/171)
+
+**Merged pull requests:**
+
+- Moving getenv to separate package [\#179](https://github.com/hairyhenderson/gomplate/pull/179) ([hairyhenderson](https://github.com/hairyhenderson))
+- Disabling cgo so the binary is truly static [\#174](https://github.com/hairyhenderson/gomplate/pull/174) ([hairyhenderson](https://github.com/hairyhenderson))
+
 ## [v1.9.1](https://github.com/hairyhenderson/gomplate/tree/v1.9.1) (2017-06-22)
 [Full Changelog](https://github.com/hairyhenderson/gomplate/compare/v1.9.0...v1.9.1)
 
