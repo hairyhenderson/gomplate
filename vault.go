@@ -1,6 +1,8 @@
 package main
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -9,7 +11,6 @@ import (
 
 	"github.com/blang/vfs"
 	vaultapi "github.com/hashicorp/vault/api"
-	"github.com/hashicorp/vault/helper/jsonutil"
 )
 
 // logFatal is defined so log.Fatal calls can be overridden for testing
@@ -80,7 +81,12 @@ func (v *Vault) Read(path string) ([]byte, error) {
 		return nil, err
 	}
 
-	return jsonutil.EncodeJSON(secret.Data)
+	var buf bytes.Buffer
+	enc := json.NewEncoder(&buf)
+	if err := enc.Encode(secret.Data); err != nil {
+		return nil, err
+	}
+	return buf.Bytes(), nil
 }
 
 // AppIDLogin - app-id auth backend
