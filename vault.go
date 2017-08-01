@@ -11,6 +11,7 @@ import (
 
 	"github.com/blang/vfs"
 	vaultapi "github.com/hashicorp/vault/api"
+	"github.com/hairyhenderson/gomplate/env"
 )
 
 // logFatal is defined so log.Fatal calls can be overridden for testing
@@ -91,7 +92,6 @@ func (v *Vault) Read(path string) ([]byte, error) {
 
 // AppIDLogin - app-id auth backend
 func (v *Vault) AppIDLogin() string {
-	env := &Env{}
 	appID := env.GetenvFile(v.fs, "VAULT_APP_ID", "")
 	userID := env.GetenvFile(v.fs, "VAULT_USER_ID", "")
 
@@ -122,7 +122,6 @@ func (v *Vault) AppIDLogin() string {
 
 // AppRoleLogin - approle auth backend
 func (v *Vault) AppRoleLogin() string {
-	env := &Env{}
 	roleID := env.GetenvFile(v.fs, "VAULT_ROLE_ID", "")
 	secretID := env.GetenvFile(v.fs, "VAULT_SECRET_ID", "")
 
@@ -154,7 +153,6 @@ func (v *Vault) AppRoleLogin() string {
 
 // GitHubLogin - github auth backend
 func (v *Vault) GitHubLogin() string {
-	env := &Env{}
 	githubToken := env.GetenvFile(v.fs, "VAULT_AUTH_GITHUB_TOKEN", "")
 
 	if githubToken == "" {
@@ -181,7 +179,6 @@ func (v *Vault) GitHubLogin() string {
 
 // UserPassLogin - userpass auth backend
 func (v *Vault) UserPassLogin() string {
-	env := &Env{}
 	username := env.GetenvFile(v.fs, "VAULT_AUTH_USERNAME", "")
 	password := env.GetenvFile(v.fs, "VAULT_AUTH_PASSWORD", "")
 
@@ -212,7 +209,6 @@ func (v *Vault) UserPassLogin() string {
 
 // TokenLogin -
 func (v *Vault) TokenLogin() string {
-	env := &Env{}
 	if token := env.GetenvFile(v.fs, "VAULT_TOKEN", ""); token != "" {
 		return token
 	}
