@@ -9,6 +9,7 @@ import (
 	"text/template"
 
 	"github.com/hairyhenderson/gomplate/aws"
+	"github.com/hairyhenderson/gomplate/env"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -19,7 +20,6 @@ func testTemplate(g *Gomplate, template string) string {
 }
 
 func TestGetenvTemplates(t *testing.T) {
-	env := &Env{}
 	typeconv := &TypeConv{}
 	g := &Gomplate{
 		funcMap: template.FuncMap{

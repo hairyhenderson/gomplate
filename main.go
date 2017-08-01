@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/hairyhenderson/gomplate/env"
 	"github.com/hairyhenderson/gomplate/version"
 	"github.com/spf13/cobra"
 )
@@ -83,7 +84,6 @@ func initFlags(command *cobra.Command) {
 	command.Flags().StringArrayVarP(&opts.dataSources, "datasource", "d", nil, "`datasource` in alias=URL form. Specify multiple times to add multiple sources.")
 	command.Flags().StringArrayVarP(&opts.dataSourceHeaders, "datasource-header", "H", nil, "HTTP `header` field in 'alias=Name: value' form to be provided on HTTP-based data sources. Multiples can be set.")
 
-	env := &Env{}
 	ldDefault := env.Getenv("GOMPLATE_LEFT_DELIM", "{{")
 	rdDefault := env.Getenv("GOMPLATE_RIGHT_DELIM", "}}")
 	command.Flags().StringVar(&opts.lDelim, "left-delim", ldDefault, "override the default left-`delimiter` [$GOMPLATE_LEFT_DELIM]")
