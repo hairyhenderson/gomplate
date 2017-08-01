@@ -153,9 +153,10 @@ func absURL(value string) *url.URL {
 	if err != nil {
 		log.Fatalf("Can't get working directory: %s", err)
 	}
+	urlCwd := strings.Replace(cwd, string(os.PathSeparator), "/", -1)
 	baseURL := &url.URL{
 		Scheme: "file",
-		Path:   cwd + "/",
+		Path:   urlCwd + "/",
 	}
 	relURL := &url.URL{
 		Path: value,
@@ -241,22 +242,24 @@ func readFile(source *Source, args ...string) ([]byte, error) {
 		source.FS = vfs.OS()
 	}
 
+	p := filepath.FromSlash(source.URL.Path)
+
 	// make sure we can access the file
-	_, err := source.FS.Stat(source.URL.Path)
+	_, err := source.FS.Stat(p)
 	if err != nil {
-		log.Fatalf("Can't stat %s: %#v", source.URL.Path, err)
+		log.Fatalf("Can't stat %s: %#v", p, err)
 		return nil, err
 	}
 
-	f, err := source.FS.OpenFile(source.URL.Path, os.O_RDONLY, 0)
+	f, err := source.FS.OpenFile(p, os.O_RDONLY, 0)
 	if err != nil {
-		log.Fatalf("Can't open %s: %#v", source.URL.Path, err)
+		log.Fatalf("Can't open %s: %#v", p, err)
 		return nil, err
 	}
 
 	b, err := ioutil.ReadAll(f)
 	if err != nil {
-		log.Fatalf("Can't read %s: %#v", source.URL.Path, err)
+		log.Fatalf("Can't read %s: %#v", p, err)
 		return nil, err
 	}
 	return b, nil
