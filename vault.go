@@ -92,8 +92,8 @@ func (v *Vault) Read(path string) ([]byte, error) {
 
 // AppIDLogin - app-id auth backend
 func (v *Vault) AppIDLogin() string {
-	appID := env.GetenvFile(v.fs, "VAULT_APP_ID", "")
-	userID := env.GetenvFile(v.fs, "VAULT_USER_ID", "")
+	appID := env.GetenvVFS(v.fs, "VAULT_APP_ID", "")
+	userID := env.GetenvVFS(v.fs, "VAULT_USER_ID", "")
 
 	if appID == "" {
 		return ""
@@ -102,7 +102,7 @@ func (v *Vault) AppIDLogin() string {
 		return ""
 	}
 
-	mount := env.GetenvFile(v.fs, "VAULT_AUTH_APP_ID_MOUNT", "app-id")
+	mount := env.GetenvVFS(v.fs, "VAULT_AUTH_APP_ID_MOUNT", "app-id")
 
 	vars := map[string]interface{}{
 		"user_id": userID,
@@ -122,8 +122,8 @@ func (v *Vault) AppIDLogin() string {
 
 // AppRoleLogin - approle auth backend
 func (v *Vault) AppRoleLogin() string {
-	roleID := env.GetenvFile(v.fs, "VAULT_ROLE_ID", "")
-	secretID := env.GetenvFile(v.fs, "VAULT_SECRET_ID", "")
+	roleID := env.GetenvVFS(v.fs, "VAULT_ROLE_ID", "")
+	secretID := env.GetenvVFS(v.fs, "VAULT_SECRET_ID", "")
 
 	if roleID == "" {
 		return ""
@@ -132,7 +132,7 @@ func (v *Vault) AppRoleLogin() string {
 		return ""
 	}
 
-	mount := env.GetenvFile(v.fs, "VAULT_AUTH_APPROLE_MOUNT", "approle")
+	mount := env.GetenvVFS(v.fs, "VAULT_AUTH_APPROLE_MOUNT", "approle")
 
 	vars := map[string]interface{}{
 		"role_id":   roleID,
@@ -153,13 +153,13 @@ func (v *Vault) AppRoleLogin() string {
 
 // GitHubLogin - github auth backend
 func (v *Vault) GitHubLogin() string {
-	githubToken := env.GetenvFile(v.fs, "VAULT_AUTH_GITHUB_TOKEN", "")
+	githubToken := env.GetenvVFS(v.fs, "VAULT_AUTH_GITHUB_TOKEN", "")
 
 	if githubToken == "" {
 		return ""
 	}
 
-	mount := env.GetenvFile(v.fs, "VAULT_AUTH_GITHUB_MOUNT", "github")
+	mount := env.GetenvVFS(v.fs, "VAULT_AUTH_GITHUB_MOUNT", "github")
 
 	vars := map[string]interface{}{
 		"token": githubToken,
@@ -179,8 +179,8 @@ func (v *Vault) GitHubLogin() string {
 
 // UserPassLogin - userpass auth backend
 func (v *Vault) UserPassLogin() string {
-	username := env.GetenvFile(v.fs, "VAULT_AUTH_USERNAME", "")
-	password := env.GetenvFile(v.fs, "VAULT_AUTH_PASSWORD", "")
+	username := env.GetenvVFS(v.fs, "VAULT_AUTH_USERNAME", "")
+	password := env.GetenvVFS(v.fs, "VAULT_AUTH_PASSWORD", "")
 
 	if username == "" {
 		return ""
@@ -189,7 +189,7 @@ func (v *Vault) UserPassLogin() string {
 		return ""
 	}
 
-	mount := env.GetenvFile(v.fs, "VAULT_AUTH_USERPASS_MOUNT", "userpass")
+	mount := env.GetenvVFS(v.fs, "VAULT_AUTH_USERPASS_MOUNT", "userpass")
 
 	vars := map[string]interface{}{
 		"password": password,
@@ -209,7 +209,7 @@ func (v *Vault) UserPassLogin() string {
 
 // TokenLogin -
 func (v *Vault) TokenLogin() string {
-	if token := env.GetenvFile(v.fs, "VAULT_TOKEN", ""); token != "" {
+	if token := env.GetenvVFS(v.fs, "VAULT_TOKEN", ""); token != "" {
 		return token
 	}
 	f, err := v.fs.OpenFile(path.Join(v.homeDir(), ".vault-token"), os.O_RDONLY, 0)
