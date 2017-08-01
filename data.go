@@ -336,7 +336,7 @@ func readVault(source *Source, args ...string) ([]byte, error) {
 
 func readLibKV(source *Source, args ...string) ([]byte, error) {
 	if source.KV == nil {
-		source.KV = NewLibKV(source.URL.String())
+		source.KV = NewLibKV(source.URL)
 		err := source.KV.Login()
 		addCleanupHook(source.KV.Logout)
 		if err != nil {

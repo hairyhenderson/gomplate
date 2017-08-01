@@ -2,7 +2,7 @@ package main
 
 import (
 	"log"
-	"strings"
+	"net/url"
 
 	"github.com/blang/vfs"
 	"github.com/docker/libkv"
@@ -23,7 +23,7 @@ type LibKV struct {
 }
 
 // NewLibKV - instantiate a new
-func NewLibKV(url string) *LibKV {
+func NewLibKV(url *url.URL) *LibKV {
 	env := &Env{}
 
 	var sourceType store.Backend
@@ -32,25 +32,28 @@ func NewLibKV(url string) *LibKV {
 	sourceType = ""
 	client = ""
 
-	if strings.HasPrefix(url, "consul:") {
+	if url.Scheme == "consul" {
 		consul.Register()
 		sourceType = store.CONSUL
 		client = env.Getenv("CONSUL_HTTP_ADDR", "localhost:8500")
 	}
-	if strings.HasPrefix(url, "etcd:") {
+	if url.Scheme == "etcd" {
 		etcd.Register()
 		sourceType = store.ETCD
 		client = env.Getenv("ETCD_ADDR", "localhost:2379")
 	}
-	if strings.HasPrefix(url, "zk:") {
+	if url.Scheme == "zk" {
 		zookeeper.Register()
 		sourceType = store.ZK
 		client = env.Getenv("ZK_ADDR", "localhost:2181")
 	}
-	if strings.HasPrefix(url, "boltdb:") {
+	if url.Scheme == "boltdb" {
 		boltdb.Register()
 		sourceType = store.BOLTDB
-		client = env.Getenv("BOLTDB_PATH", "")
+		client = url.Path
+		if client == "" {
+			client = env.Getenv("BOLTDB_PATH", "")
+		}
 	}
 
 	kv, err := libkv.NewStore(
