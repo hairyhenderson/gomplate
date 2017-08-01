@@ -13,7 +13,7 @@ will fail and `gomplate` will exit with an error condition.
 Sometimes, this behaviour is desired; if the output is unusable without certain
 strings, this is a sure way to know that variables are missing!
 
-If you want different behaviour, try [`getenv`](../functions/#getenv).
+If you want different behaviour, try [`getenv`](../functions/env/#env-getenv).
 
 ## Built-in functions
 

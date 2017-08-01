@@ -5,24 +5,6 @@ menu:
     parent: functions
 ---
 
-## `getenv`
-
-Exposes the [os.Getenv](https://golang.org/pkg/os/#Getenv) function.
-
-This is a more forgiving alternative to using `.Env`, since missing keys will
-return an empty string.
-
-An optional default value can be given as well.
-
-#### Example
-
-```console
-$ gomplate -i 'Hello, {{getenv "USER"}}'
-Hello, hairyhenderson
-$ gomplate -i 'Hey, {{getenv "FIRSTNAME" "you"}}!'
-Hey, you!
-```
-
 ## `bool`
 
 Converts a true-ish string to a boolean. Can be used to simplify conditional statements based on environment variables or other text input.

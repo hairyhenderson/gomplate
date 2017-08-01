@@ -9,11 +9,9 @@ import (
 
 // initFuncs - The function mappings are defined here!
 func initFuncs(data *Data) template.FuncMap {
-	env := &Env{}
 	typeconv := &TypeConv{}
 
 	f := template.FuncMap{
-		"getenv":           env.Getenv,
 		"bool":             typeconv.Bool,
 		"has":              typeconv.Has,
 		"json":             typeconv.JSON,
@@ -42,5 +40,6 @@ func initFuncs(data *Data) template.FuncMap {
 	funcs.AddNetFuncs(f)
 	funcs.AddReFuncs(f)
 	funcs.AddStringFuncs(f)
+	funcs.AddEnvFuncs(f)
 	return f
 }
