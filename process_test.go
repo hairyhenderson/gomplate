@@ -1,3 +1,5 @@
+// +build !windows
+
 package main
 
 import (
@@ -30,7 +32,7 @@ func TestReadInput(t *testing.T) {
 }
 
 func TestInputDir(t *testing.T) {
-	outDir, err := ioutil.TempDir("test/files/input-dir", "out-temp-")
+	outDir, err := ioutil.TempDir(filepath.Join("test", "files", "input-dir"), "out-temp-")
 	assert.Nil(t, err)
 	defer (func() {
 		if cerr := os.RemoveAll(outDir); cerr != nil {
@@ -45,7 +47,7 @@ func TestInputDir(t *testing.T) {
 		Sources: map[string]*Source{"config": src},
 	}
 	gomplate := NewGomplate(data, "{{", "}}")
-	err = processInputDir("test/files/input-dir/in", outDir, gomplate)
+	err = processInputDir(filepath.Join("test", "files", "input-dir", "in"), outDir, gomplate)
 	assert.Nil(t, err)
 
 	top, err := ioutil.ReadFile(filepath.Join(outDir, "top.txt"))

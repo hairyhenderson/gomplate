@@ -1,4 +1,5 @@
 [![Build Status][circleci-image]][circleci-url]
+[![Windows Build][appveyor-image]][appveyor-url]
 [![Go Report Card][reportcard-image]][reportcard-url]
 [![Codebeat Status][codebeat-image]][codebeat-url]
 [![Coverage][gocover-image]][gocover-url]
@@ -54,6 +55,8 @@ Copyright (c) 2016-2017 Dave Henderson
 
 [circleci-image]: https://img.shields.io/circleci/project/hairyhenderson/gomplate.svg?style=flat
 [circleci-url]: https://circleci.com/gh/hairyhenderson/gomplate
+[appveyor-image]: https://ci.appveyor.com/api/projects/status/eymky02f5snclyxp/branch/master?svg=true
+[appveyor-url]: https://ci.appveyor.com/project/hairyhenderson/gomplate/branch/master
 [reportcard-image]: https://goreportcard.com/badge/github.com/hairyhenderson/gomplate
 [reportcard-url]: https://goreportcard.com/report/github.com/hairyhenderson/gomplate
 [codebeat-image]: https://codebeat.co/badges/39ed2148-4b86-4d1e-8526-25f60e159ba1
