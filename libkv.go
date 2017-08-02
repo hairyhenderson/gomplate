@@ -1,6 +1,7 @@
 package main
 
 import (
+	"crypto/tls"
 	"errors"
 	"log"
 	"net/url"
@@ -101,8 +102,7 @@ func setupConsul(url *url.URL) (*SetupDetails, error) {
 			return nil, err
 		}
 		if enabled {
-			tlsConfig := &consulapi.TLSConfig{}
-			config, err := consulapi.SetupTLSConfig(tlsConfig)
+			config, err := setupTLS("CONSUL")
 			if err != nil {
 				return nil, err
 			}
@@ -131,8 +131,7 @@ func setupEtcd(url *url.URL) (*SetupDetails, error) {
 			return nil, err
 		}
 		if enabled {
-			tlsConfig := &consulapi.TLSConfig{}
-			config, err := consulapi.SetupTLSConfig(tlsConfig)
+			config, err := setupTLS("ETCD")
 			if err != nil {
 				return nil, err
 			}
@@ -193,6 +192,42 @@ func setupBoltDB(url *url.URL) (*SetupDetails, error) {
 		setup.options.PersistConnection = enabled
 	}
 	return setup, nil
+}
+
+func setupTLS(prefix string) (*tls.Config, error) {
+	tlsConfig := &consulapi.TLSConfig{}
+
+	if v := env.Getenv(prefix+"_TLS_SERVER_NAME", ""); v != "" {
+		tlsConfig.Address = v
+	}
+	if v := env.Getenv(prefix+"_CACERT", ""); v != "" {
+		tlsConfig.CAFile = v
+	}
+	if v := env.Getenv(prefix+"_CAPATH", ""); v != "" {
+		tlsConfig.CAPath = v
+	}
+	if v := env.Getenv(prefix+"_CLIENT_CERT", ""); v != "" {
+		tlsConfig.CertFile = v
+	}
+	if v := env.Getenv(prefix+"_CLIENT_KEY", ""); v != "" {
+		tlsConfig.KeyFile = v
+	}
+	if v := env.Getenv(prefix+"_HTTP_SSL_VERIFY", ""); v != "" {
+		verify, err := strconv.ParseBool(v)
+		if err != nil {
+			return nil, err
+		}
+		if !verify {
+			tlsConfig.InsecureSkipVerify = true
+		}
+	}
+
+	config, err := consulapi.SetupTLSConfig(tlsConfig)
+	if err != nil {
+		return nil, err
+	}
+
+	return config, nil
 }
 
 // Login -
