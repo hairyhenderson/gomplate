@@ -511,6 +511,51 @@ $ gomplate -d foo=https://httpbin.org/get -H 'foo=Foo: bar' -i '{{(datasource "f
 bar
 ```
 
+##### Usage with Consul data
+
+There are three URL schemes which can be used to retrieve data from [Hashicorp Consul](https://consul.io/).
+The `consul://` (or `consul+http://`) scheme can optionally be used with a hostname and port to specify a server (e.g. `consul://localhost:8500`).
+By default this will be contacted by HTTP, but the `$CONSUL_HTTP_SSL` can be used to switch to HTTPS mode. Alternatively
+the `consul+https://` scheme can be used.
+
+If the server address isn't included the variable `$CONSUL_HTTP_ADDR` will be checked, otherwise `localhost:8500` will be used.
+
+The following environment variables can be used:
+
+| name | usage |
+| -- | -- |
+| `CONSUL_HTTP_ADDR` | Hostname and optional port for connecting to Consul. Defaults to localhost and port 8500. |
+| `CONSUL_TIMEOUT` | Timeout (in seconds) when communicating to Consul. Defaults to 10 seconds. |
+| `CONSUL_HTTP_TOKEN` | The Consul token to use when connecting to the server. |
+| `CONSUL_HTTP_AUTH` | Should be specified as <username>:<password>. Used to authenticate to the server. |
+| `CONSUL_HTTP_SSL` | Switch to HTTPS mode if set to a true value. It accepts 1, t, T, TRUE, true, True, 0, f, F, FALSE, false, False. Alternatively use the `consul+https://` scheme. |
+| `CONSUL_TLS_SERVER_NAME` | The server name to use as the SNI host when connecting to Consul via TLS. |
+| `CONSUL_CACERT` | If specified points to a CA file for verifying Consul server using TLS. |
+| `CONSUL_CAPATH` | If specified points to a directory of CA files for verifying Consul server using TLS. |
+| `CONSUL_CLIENT_CERT` | Client certificate file for certificate authentication. Both a certificate and key are required. |
+| `CONSUL_CLIENT_KEY` | Client key file for certificate authentication. Both a certificate and key are required. |
+| `CONSUL_HTTP_SSL_VERIFY` | Disable Consul TLS certificate checking. It accepts 1, t, T, TRUE, true, True, 0, f, F, FALSE, false, False. |
+
+If a path is included it is used as a prefix for all uses of the datasource.
+
+##### Usage with BoldDB data
+
+[BoldDB](https://github.com/boltdb/bolt) is a simple local key/value store used by many Go tools.
+
+It can be accessed using the `boltdb://` scheme in addition to the full path to the database file
+and the bucket name specified using the #fragment identifier (e.g. `boltdb:////tmp/database.db#bucket).
+
+As access is vi [libkv](https://github.com/docker/libkv) the first 8 bytes of all values is used as an
+incrementing last modified index value. Therefore all values must be at least 9 bytes long, with the first
+8 being ignored.
+
+The following environment variables can be used:
+
+| name | usage |
+| -- | -- |
+| `BOLTDB_TIMEOUT` | Timeout (in seconds) to wait for a lock on the database file when opening. |
+| `BOLTDB_PERSIST` | If set keep the database open instead of closing after each read. It accepts 1, t, T, TRUE, true, True, 0, f, F, FALSE, false, False. |
+
 ##### Usage with Vault data
 
 The special `vault://` URL scheme can be used to retrieve data from [Hashicorp
