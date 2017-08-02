@@ -1,7 +1,7 @@
 package main
 
 import (
-	"crypto/tls"
+	"errors"
 	"log"
 	"net/url"
 	"strconv"
@@ -15,6 +15,7 @@ import (
 	"github.com/docker/libkv/store/etcd"
 	"github.com/docker/libkv/store/zookeeper"
 	"github.com/hairyhenderson/gomplate/env"
+	consulapi "github.com/hashicorp/consul/api"
 )
 
 // logFatal is defined so log.Fatal calls can be overridden for testing
@@ -26,117 +27,172 @@ type LibKV struct {
 	fs    vfs.Filesystem
 }
 
+type SetupDetails struct {
+	sourceType store.Backend
+	client     string
+	options    *store.Config
+}
+
 // NewLibKV - instantiate a new
 func NewLibKV(url *url.URL) *LibKV {
-	var sourceType store.Backend
-	var client string
-
-	sourceType = ""
-	client = ""
-	options := store.Config{}
+	var s *SetupDetails
 
 	if url.Scheme == "consul" {
-		consul.Register()
-		sourceType = store.CONSUL
-		client = env.Getenv("CONSUL_HTTP_ADDR", "localhost:8500")
-		if timeout := env.Getenv("CONSUL_TIMEOUT", ""); timeout != "" {
-			num, err := strconv.ParseInt(timeout, 10, 16)
-			if err != nil {
-				logFatal("consul timeout error", err)
-			}
-			options.ConnectionTimeout = time.Duration(num) * time.Second
+		setup, err := setupConsul(url)
+		if err != nil {
+			logFatal("consul setup error", err)
 		}
-		if ssl := env.Getenv("CONSUL_HTTP_SSL", ""); ssl != "" {
-			enabled, err := strconv.ParseBool(ssl)
-			if err != nil {
-				logFatal("consul ssl error", err)
-			}
-			if enabled {
-				options.TLS = &tls.Config{}
-			}
-		}
+		s = setup
 	}
 	if url.Scheme == "etcd" {
-		etcd.Register()
-		sourceType = store.ETCD
-		client = env.Getenv("ETCD_ADDR", "localhost:2379")
-		if timeout := env.Getenv("ETCD_TIMEOUT", ""); timeout != "" {
-			num, err := strconv.ParseInt(timeout, 10, 16)
-			if err != nil {
-				logFatal("etcd timeout error", err)
-			}
-			options.ConnectionTimeout = time.Duration(num) * time.Second
+		setup, err := setupEtcd(url)
+		if err != nil {
+			logFatal("etcd setup error", err)
 		}
-		if ssl := env.Getenv("ETCD_TLS", ""); ssl != "" {
-			enabled, err := strconv.ParseBool(ssl)
-			if err != nil {
-				logFatal("consul ssl error", err)
-			}
-			if enabled {
-				options.TLS = &tls.Config{}
-			}
-		}
-		options.Username = env.Getenv("ETCD_USERNAME", "")
-		options.Password = env.Getenv("ETCD_PASSWORD", "")
+		s = setup
 	}
 	if url.Scheme == "zk" {
-		zookeeper.Register()
-		sourceType = store.ZK
-		client = env.Getenv("ZK_ADDR", "localhost:2181")
-		if timeout := env.Getenv("ZK_TIMEOUT", ""); timeout != "" {
-			num, err := strconv.ParseInt(timeout, 10, 16)
-			if err != nil {
-				logFatal("zk timeout error", err)
-			}
-			options.ConnectionTimeout = time.Duration(num) * time.Second
+		setup, err := setupZookeeper(url)
+		if err != nil {
+			logFatal("zk setup error", err)
 		}
+		s = setup
 	}
 	if url.Scheme == "boltdb" {
-		boltdb.Register()
-		sourceType = store.BOLTDB
-		client = url.Path
-		if client == "" {
-			client = env.Getenv("BOLTDB_DATABASE", "")
+		setup, err := setupBoltDB(url)
+		if err != nil {
+			logFatal("boltdb setup error", err)
 		}
-		if url.Fragment != "" {
-			options.Bucket = url.Fragment
-		}
-		if options.Bucket == "" {
-			options.Bucket = env.Getenv("BOLTDB_BUCKET", "")
-		}
-		if options.Bucket == "" {
-			logFatal("boltdb missing bucket")
-		}
-		if timeout := env.Getenv("BOLTDB_TIMEOUT", ""); timeout != "" {
-			num, err := strconv.ParseInt(timeout, 10, 16)
-			if err != nil {
-				logFatal("boltdb timeout error", err)
-			}
-			options.ConnectionTimeout = time.Duration(num) * time.Second
-		}
-		if persist := env.Getenv("BOLTDB_PERSIST", ""); persist != "" {
-			enabled, err := strconv.ParseBool(persist)
-			if err != nil {
-				logFatal("boltdb persist error", err)
-			}
-			options.PersistConnection = enabled
-		}
+		s = setup
 	}
 
-	if client == "" {
+	if s.client == "" {
 		logFatal("missing client location")
 	}
 
 	kv, err := libkv.NewStore(
-		sourceType,
-		[]string{client},
-		&store.Config{},
+		s.sourceType,
+		[]string{s.client},
+		s.options,
 	)
 	if err != nil {
 		logFatal("Cannot create store", err)
 	}
 
 	return &LibKV{kv, nil}
+}
+
+func setupConsul(url *url.URL) (*SetupDetails, error) {
+	setup := &SetupDetails{}
+	consul.Register()
+	setup.sourceType = store.CONSUL
+	setup.client = env.Getenv("CONSUL_HTTP_ADDR", "localhost:8500")
+	setup.options = &store.Config{}
+	if timeout := env.Getenv("CONSUL_TIMEOUT", ""); timeout != "" {
+		num, err := strconv.ParseInt(timeout, 10, 16)
+		if err != nil {
+			return nil, err
+		}
+		setup.options.ConnectionTimeout = time.Duration(num) * time.Second
+	}
+	if ssl := env.Getenv("CONSUL_HTTP_SSL", ""); ssl != "" {
+		enabled, err := strconv.ParseBool(ssl)
+		if err != nil {
+			return nil, err
+		}
+		if enabled {
+			tlsConfig := &consulapi.TLSConfig{}
+			config, err := consulapi.SetupTLSConfig(tlsConfig)
+			if err != nil {
+				return nil, err
+			}
+			setup.options.TLS = config
+		}
+	}
+	return setup, nil
+}
+
+func setupEtcd(url *url.URL) (*SetupDetails, error) {
+	setup := &SetupDetails{}
+	etcd.Register()
+	setup.sourceType = store.ETCD
+	setup.client = env.Getenv("ETCD_ADDR", "localhost:2379")
+	setup.options = &store.Config{}
+	if timeout := env.Getenv("ETCD_TIMEOUT", ""); timeout != "" {
+		num, err := strconv.ParseInt(timeout, 10, 16)
+		if err != nil {
+			return nil, err
+		}
+		setup.options.ConnectionTimeout = time.Duration(num) * time.Second
+	}
+	if ssl := env.Getenv("ETCD_TLS", ""); ssl != "" {
+		enabled, err := strconv.ParseBool(ssl)
+		if err != nil {
+			return nil, err
+		}
+		if enabled {
+			tlsConfig := &consulapi.TLSConfig{}
+			config, err := consulapi.SetupTLSConfig(tlsConfig)
+			if err != nil {
+				return nil, err
+			}
+			setup.options.TLS = config
+		}
+	}
+	setup.options.Username = env.Getenv("ETCD_USERNAME", "")
+	setup.options.Password = env.Getenv("ETCD_PASSWORD", "")
+	return setup, nil
+}
+
+func setupZookeeper(url *url.URL) (*SetupDetails, error) {
+	setup := &SetupDetails{}
+	zookeeper.Register()
+	setup.sourceType = store.ZK
+	setup.client = env.Getenv("ZK_ADDR", "localhost:2181")
+	setup.options = &store.Config{}
+	if timeout := env.Getenv("ZK_TIMEOUT", ""); timeout != "" {
+		num, err := strconv.ParseInt(timeout, 10, 16)
+		if err != nil {
+			return nil, err
+		}
+		setup.options.ConnectionTimeout = time.Duration(num) * time.Second
+	}
+	return setup, nil
+}
+
+func setupBoltDB(url *url.URL) (*SetupDetails, error) {
+	setup := &SetupDetails{}
+	boltdb.Register()
+	setup.sourceType = store.BOLTDB
+	setup.client = url.Path
+	setup.options = &store.Config{}
+	if setup.client == "" {
+		setup.client = env.Getenv("BOLTDB_DATABASE", "")
+	}
+	if url.Fragment != "" {
+		setup.options.Bucket = url.Fragment
+	}
+	if setup.options.Bucket == "" {
+		setup.options.Bucket = env.Getenv("BOLTDB_BUCKET", "")
+	}
+	if setup.options.Bucket == "" {
+		return nil, errors.New("missing bucket")
+	}
+	if timeout := env.Getenv("BOLTDB_TIMEOUT", ""); timeout != "" {
+		num, err := strconv.ParseInt(timeout, 10, 16)
+		if err != nil {
+			return nil, err
+		}
+		setup.options.ConnectionTimeout = time.Duration(num) * time.Second
+	}
+	if persist := env.Getenv("BOLTDB_PERSIST", ""); persist != "" {
+		enabled, err := strconv.ParseBool(persist)
+		if err != nil {
+			return nil, err
+		}
+		setup.options.PersistConnection = enabled
+	}
+	return setup, nil
 }
 
 // Login -
