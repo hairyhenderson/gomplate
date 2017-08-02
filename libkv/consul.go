@@ -1,14 +1,19 @@
 package libkv
 
 import (
+	"fmt"
 	"net/url"
+	"os"
 	"time"
+
+	yaml "gopkg.in/yaml.v2"
 
 	"github.com/docker/libkv"
 	"github.com/docker/libkv/store"
 	"github.com/docker/libkv/store/consul"
 	"github.com/hairyhenderson/gomplate/env"
 	"github.com/hairyhenderson/gomplate/typeconv"
+	"github.com/hairyhenderson/gomplate/vault"
 	consulapi "github.com/hashicorp/consul/api"
 )
 
@@ -17,6 +22,31 @@ func NewConsul(u *url.URL) *LibKV {
 	consul.Register()
 	c := consulURL(u)
 	config := consulConfig(c.Scheme == "https")
+	if role := env.Getenv("CONSUL_VAULT_ROLE", ""); role != "" {
+		mount := env.Getenv("CONSUL_VAULT_MOUNT", "consul")
+
+		client := vault.New()
+		client.Login()
+
+		path := fmt.Sprintf("%s/creds/%s", mount, role)
+
+		data, err := client.Read(path)
+		if err != nil {
+			logFatal("vault consul auth failed", err)
+		}
+
+		decoded := make(map[string]interface{})
+		err = yaml.Unmarshal(data, &decoded)
+		if err != nil {
+			logFatal("Unable to unmarshal object", err)
+		}
+
+		var token = decoded["token"].(string)
+
+		client.Logout()
+
+		os.Setenv("CONSUL_HTTP_TOKEN", token)
+	}
 	kv, err := libkv.NewStore(store.CONSUL, []string{c.String()}, config)
 	if err != nil {
 		logFatal("Consul setup failed", err)
