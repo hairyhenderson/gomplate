@@ -13,8 +13,6 @@ import (
 	"github.com/docker/libkv/store"
 	"github.com/docker/libkv/store/boltdb"
 	"github.com/docker/libkv/store/consul"
-	"github.com/docker/libkv/store/etcd"
-	"github.com/docker/libkv/store/zookeeper"
 	"github.com/hairyhenderson/gomplate/env"
 	consulapi "github.com/hashicorp/consul/api"
 )
@@ -49,27 +47,6 @@ func New(url *url.URL) *LibKV {
 		setup, err := setupConsul(url, true)
 		if err != nil {
 			logFatal("consul setup error", err)
-		}
-		s = setup
-	}
-	if url.Scheme == "etcd" || url.Scheme == "etcd+http" {
-		setup, err := setupEtcd(url, false)
-		if err != nil {
-			logFatal("etcd setup error", err)
-		}
-		s = setup
-	}
-	if url.Scheme == "etcd+https" {
-		setup, err := setupEtcd(url, true)
-		if err != nil {
-			logFatal("etcd setup error", err)
-		}
-		s = setup
-	}
-	if url.Scheme == "zk" {
-		setup, err := setupZookeeper(url, false)
-		if err != nil {
-			logFatal("zk setup error", err)
 		}
 		s = setup
 	}
@@ -123,54 +100,6 @@ func setupConsul(url *url.URL, enableTLS bool) (*SetupDetails, error) {
 			return nil, err
 		}
 		setup.options.TLS = config
-	}
-	return setup, nil
-}
-
-func setupEtcd(url *url.URL, enableTLS bool) (*SetupDetails, error) {
-	setup := &SetupDetails{}
-	etcd.Register()
-	setup.sourceType = store.ETCD
-	setup.client = env.Getenv("ETCD_ADDR", "localhost:2379")
-	setup.options = &store.Config{}
-	if timeout := env.Getenv("ETCD_TIMEOUT", ""); timeout != "" {
-		num, err := strconv.ParseInt(timeout, 10, 16)
-		if err != nil {
-			return nil, err
-		}
-		setup.options.ConnectionTimeout = time.Duration(num) * time.Second
-	}
-	if ssl := env.Getenv("ETCD_TLS", ""); ssl != "" {
-		enabled, err := strconv.ParseBool(ssl)
-		if err != nil {
-			return nil, err
-		}
-		enableTLS = enabled
-	}
-	if enableTLS {
-		config, err := setupTLS("ETCD")
-		if err != nil {
-			return nil, err
-		}
-		setup.options.TLS = config
-	}
-	setup.options.Username = env.Getenv("ETCD_USERNAME", "")
-	setup.options.Password = env.Getenv("ETCD_PASSWORD", "")
-	return setup, nil
-}
-
-func setupZookeeper(url *url.URL, enableTLS bool) (*SetupDetails, error) {
-	setup := &SetupDetails{}
-	zookeeper.Register()
-	setup.sourceType = store.ZK
-	setup.client = env.Getenv("ZK_ADDR", "localhost:2181")
-	setup.options = &store.Config{}
-	if timeout := env.Getenv("ZK_TIMEOUT", ""); timeout != "" {
-		num, err := strconv.ParseInt(timeout, 10, 16)
-		if err != nil {
-			return nil, err
-		}
-		setup.options.ConnectionTimeout = time.Duration(num) * time.Second
 	}
 	return setup, nil
 }

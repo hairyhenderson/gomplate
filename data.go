@@ -44,8 +44,6 @@ func init() {
 	addSourceReader("file", readFile)
 	addSourceReader("vault", readVault)
 	addSourceReader("consul", readLibKV)
-	addSourceReader("etcd", readLibKV)
-	addSourceReader("zk", readLibKV)
 	addSourceReader("boltdb", readLibKV)
 }
 
