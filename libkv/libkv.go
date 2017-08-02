@@ -38,29 +38,43 @@ type SetupDetails struct {
 func New(url *url.URL) *LibKV {
 	var s *SetupDetails
 
-	if url.Scheme == "consul" {
-		setup, err := setupConsul(url)
+	if url.Scheme == "consul" || url.Scheme == "consul+http" {
+		setup, err := setupConsul(url, false)
 		if err != nil {
 			logFatal("consul setup error", err)
 		}
 		s = setup
 	}
-	if url.Scheme == "etcd" {
-		setup, err := setupEtcd(url)
+	if url.Scheme == "consul+https" {
+		setup, err := setupConsul(url, true)
+		if err != nil {
+			logFatal("consul setup error", err)
+		}
+		s = setup
+	}
+	if url.Scheme == "etcd" || url.Scheme == "etcd+http" {
+		setup, err := setupEtcd(url, false)
+		if err != nil {
+			logFatal("etcd setup error", err)
+		}
+		s = setup
+	}
+	if url.Scheme == "etcd+https" {
+		setup, err := setupEtcd(url, true)
 		if err != nil {
 			logFatal("etcd setup error", err)
 		}
 		s = setup
 	}
 	if url.Scheme == "zk" {
-		setup, err := setupZookeeper(url)
+		setup, err := setupZookeeper(url, false)
 		if err != nil {
 			logFatal("zk setup error", err)
 		}
 		s = setup
 	}
 	if url.Scheme == "boltdb" {
-		setup, err := setupBoltDB(url)
+		setup, err := setupBoltDB(url, false)
 		if err != nil {
 			logFatal("boltdb setup error", err)
 		}
@@ -83,7 +97,7 @@ func New(url *url.URL) *LibKV {
 	return &LibKV{kv, nil}
 }
 
-func setupConsul(url *url.URL) (*SetupDetails, error) {
+func setupConsul(url *url.URL, enableTLS bool) (*SetupDetails, error) {
 	setup := &SetupDetails{}
 	consul.Register()
 	setup.sourceType = store.CONSUL
@@ -101,18 +115,19 @@ func setupConsul(url *url.URL) (*SetupDetails, error) {
 		if err != nil {
 			return nil, err
 		}
-		if enabled {
-			config, err := setupTLS("CONSUL")
-			if err != nil {
-				return nil, err
-			}
-			setup.options.TLS = config
+		enableTLS = enabled
+	}
+	if enableTLS {
+		config, err := setupTLS("CONSUL")
+		if err != nil {
+			return nil, err
 		}
+		setup.options.TLS = config
 	}
 	return setup, nil
 }
 
-func setupEtcd(url *url.URL) (*SetupDetails, error) {
+func setupEtcd(url *url.URL, enableTLS bool) (*SetupDetails, error) {
 	setup := &SetupDetails{}
 	etcd.Register()
 	setup.sourceType = store.ETCD
@@ -130,20 +145,21 @@ func setupEtcd(url *url.URL) (*SetupDetails, error) {
 		if err != nil {
 			return nil, err
 		}
-		if enabled {
-			config, err := setupTLS("ETCD")
-			if err != nil {
-				return nil, err
-			}
-			setup.options.TLS = config
+		enableTLS = enabled
+	}
+	if enableTLS {
+		config, err := setupTLS("ETCD")
+		if err != nil {
+			return nil, err
 		}
+		setup.options.TLS = config
 	}
 	setup.options.Username = env.Getenv("ETCD_USERNAME", "")
 	setup.options.Password = env.Getenv("ETCD_PASSWORD", "")
 	return setup, nil
 }
 
-func setupZookeeper(url *url.URL) (*SetupDetails, error) {
+func setupZookeeper(url *url.URL, enableTLS bool) (*SetupDetails, error) {
 	setup := &SetupDetails{}
 	zookeeper.Register()
 	setup.sourceType = store.ZK
@@ -159,7 +175,7 @@ func setupZookeeper(url *url.URL) (*SetupDetails, error) {
 	return setup, nil
 }
 
-func setupBoltDB(url *url.URL) (*SetupDetails, error) {
+func setupBoltDB(url *url.URL, enableTLS bool) (*SetupDetails, error) {
 	setup := &SetupDetails{}
 	boltdb.Register()
 	setup.sourceType = store.BOLTDB
