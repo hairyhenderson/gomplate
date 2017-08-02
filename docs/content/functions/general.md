@@ -627,6 +627,16 @@ $ echo 'db_password={{(datasource "vault" "db/pass").value}}' \
 db_password=prodsecret
 ```
 
+It is also possible to use dynamic secrets by using the write capibility of the datasource. To use
+add additional `"name=value"` parameters after the optional key name. These values are then included
+within the JSON body of the request.
+
+```console
+$ echo 'otp={{(datasource "vault" "ssh/creds/test" "ip=10.1.2.3" "username=user").key}}' \
+  | gomplate -d vault=vault:///
+otp=604a4bd5-7afd-30a2-d2d8-80c4aebc6183
+```
+
 ## `datasourceExists`
 
 Tests whether or not a given datasource was defined on the commandline (with the

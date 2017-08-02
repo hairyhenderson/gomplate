@@ -322,11 +322,35 @@ func readVault(source *Source, args ...string) ([]byte, error) {
 	}
 
 	p := source.URL.Path
-	if len(args) == 1 {
-		p = p + "/" + args[0]
+
+	var write = false
+
+	params := make(map[string]interface{})
+
+	if len(args) > 0 {
+		var index = 0
+		if !strings.Contains(args[0], "=") && args[0] != "" {
+			index = 1
+			p = p + "/" + args[0]
+		}
+		for len(args) > index {
+			write = true
+			var parts = strings.SplitAfterN(args[index], "=", 2)
+			if len(parts) == 2 {
+				params[strings.TrimSuffix(parts[0], "=")] = parts[1]
+			}
+			index++
+		}
 	}
 
-	data, err := source.VC.Read(p)
+	var data []byte
+	var err error
+
+	if write {
+		data, err = source.VC.Write(p, params)
+	} else {
+		data, err = source.VC.Read(p)
+	}
 	if err != nil {
 		return nil, err
 	}

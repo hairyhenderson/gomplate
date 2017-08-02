@@ -29,6 +29,7 @@ function teardown () {
   vault auth-disable app-id2
   vault policy-delete writepol
   vault policy-delete readpol
+  vault unmount ssh
 }
 
 @test "Testing token vault auth" {
@@ -119,6 +120,24 @@ function teardown () {
   VAULT_APP_ID=testappid VAULT_USER_ID=testuserid VAULT_AUTH_APP_ID_MOUNT=app-id2 gomplate -d vault=vault:///secret -i '{{(datasource "vault" "foo").value}}'
   [ "$status" -eq 0 ]
   [[ "${output}" == "$BATS_TEST_DESCRIPTION" ]]
+}
+
+@test "Testing vault auth with dynamic secret" {
+  vault mount ssh
+  vault write ssh/roles/test key_type=otp default_user=user cidr_list=10.0.0.0/8
+  VAULT_TOKEN=$(vault token-create -format=json -policy=writepol -use-limit=2 -ttl=1m | jq -j .auth.client_token)
+  VAULT_TOKEN=$VAULT_TOKEN gomplate -d vault=vault:/// -i '{{(datasource "vault" "ssh/creds/test" "ip=10.1.2.3" "username=user").ip}}'
+  [ "$status" -eq 0 ]
+  [[ "${output}" == "10.1.2.3" ]]
+}
+
+@test "Testing vault auth with dynamic secret using prefix" {
+  vault mount ssh
+  vault write ssh/roles/test key_type=otp default_user=user cidr_list=10.0.0.0/8
+  VAULT_TOKEN=$(vault token-create -format=json -policy=writepol -use-limit=2 -ttl=1m | jq -j .auth.client_token)
+  VAULT_TOKEN=$VAULT_TOKEN gomplate -d vault=vault:///ssh/creds/test -i '{{(datasource "vault" "ip=10.1.2.3" "username=user").ip}}'
+  [ "$status" -eq 0 ]
+  [[ "${output}" == "10.1.2.3" ]]
 }
 
 # TODO: test the github auth backend at some point... this needs a github token though, so...

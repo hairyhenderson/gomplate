@@ -55,3 +55,17 @@ func (v *Vault) Read(path string) ([]byte, error) {
 	}
 	return buf.Bytes(), nil
 }
+
+func (v *Vault) Write(path string, data map[string]interface{}) ([]byte, error) {
+	secret, err := v.client.Logical().Write(path, data)
+	if err != nil {
+		return nil, err
+	}
+
+	var buf bytes.Buffer
+	enc := json.NewEncoder(&buf)
+	if err := enc.Encode(secret.Data); err != nil {
+		return nil, err
+	}
+	return buf.Bytes(), nil
+}
