@@ -1,4 +1,4 @@
-package main
+package libkv
 
 import (
 	"crypto/tls"
@@ -34,8 +34,8 @@ type SetupDetails struct {
 	options    *store.Config
 }
 
-// NewLibKV - instantiate a new
-func NewLibKV(url *url.URL) *LibKV {
+// New - instantiate a new
+func New(url *url.URL) *LibKV {
 	var s *SetupDetails
 
 	if url.Scheme == "consul" {

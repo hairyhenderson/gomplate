@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"github.com/blang/vfs"
+	"github.com/hairyhenderson/gomplate/libkv"
 	"github.com/hairyhenderson/gomplate/vault"
 )
 
@@ -89,7 +90,7 @@ type Source struct {
 	FS     vfs.Filesystem // used for file: URLs, nil otherwise
 	HC     *http.Client   // used for http[s]: URLs, nil otherwise
 	VC     *vault.Client  //used for vault: URLs, nil otherwise
-	KV     *LibKV         // used for consul:, etcd:, zookeeper: & boltdb: URLs, nil otherwise
+	KV     *libkv.LibKV   // used for consul:, etcd:, zookeeper: & boltdb: URLs, nil otherwise
 	Header http.Header    // used for http[s]: URLs, nil otherwise
 }
 
@@ -336,7 +337,7 @@ func readVault(source *Source, args ...string) ([]byte, error) {
 
 func readLibKV(source *Source, args ...string) ([]byte, error) {
 	if source.KV == nil {
-		source.KV = NewLibKV(source.URL)
+		source.KV = libkv.New(source.URL)
 		err := source.KV.Login()
 		addCleanupHook(source.KV.Logout)
 		if err != nil {
