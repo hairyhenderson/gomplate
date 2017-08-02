@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -104,7 +105,7 @@ func NewSource(alias string, URL *url.URL) (s *Source) {
 		Ext:   ext,
 	}
 
-	if ext != "" {
+	if ext != "" && URL.Scheme != "boltdb" {
 		mediatype := mime.TypeByExtension(ext)
 		t, params, err := mime.ParseMediaType(mediatype)
 		if err != nil {
@@ -346,7 +347,13 @@ func readLibKV(source *Source, args ...string) ([]byte, error) {
 	}
 
 	p := source.URL.Path
-	if len(args) == 1 {
+
+	if source.URL.Scheme == "boltdb" {
+		if len(args) != 1 {
+			return nil, errors.New("missing key")
+		}
+		p = args[0]
+	} else if len(args) == 1 {
 		p = p + "/" + args[0]
 	}
 

@@ -25,5 +25,6 @@ COPY mirror /bin/mirror
 COPY *.sh /tests/
 COPY *.bash /tests/
 COPY *.bats /tests/
+COPY *.db /test/integration/
 
 CMD ["/tests/test.sh"]
