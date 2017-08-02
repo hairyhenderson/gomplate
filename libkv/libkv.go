@@ -165,15 +165,7 @@ func setupBoltDB(url *url.URL) (*SetupDetails, error) {
 	setup.sourceType = store.BOLTDB
 	setup.client = url.Path
 	setup.options = &store.Config{}
-	if setup.client == "" {
-		setup.client = env.Getenv("BOLTDB_DATABASE", "")
-	}
-	if url.Fragment != "" {
-		setup.options.Bucket = url.Fragment
-	}
-	if setup.options.Bucket == "" {
-		setup.options.Bucket = env.Getenv("BOLTDB_BUCKET", "")
-	}
+	setup.options.Bucket = url.Fragment
 	if setup.options.Bucket == "" {
 		return nil, errors.New("missing bucket")
 	}
