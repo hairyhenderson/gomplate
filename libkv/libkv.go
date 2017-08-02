@@ -34,38 +34,36 @@ type SetupDetails struct {
 
 // New - instantiate a new
 func New(url *url.URL) *LibKV {
-	var s *SetupDetails
+	var setup *SetupDetails
+	var err error
 
 	if url.Scheme == "consul" || url.Scheme == "consul+http" {
-		setup, err := setupConsul(url, false)
+		setup, err = setupConsul(url, false)
 		if err != nil {
 			logFatal("consul setup error", err)
 		}
-		s = setup
 	}
 	if url.Scheme == "consul+https" {
-		setup, err := setupConsul(url, true)
+		setup, err = setupConsul(url, true)
 		if err != nil {
 			logFatal("consul setup error", err)
 		}
-		s = setup
 	}
 	if url.Scheme == "boltdb" {
-		setup, err := setupBoltDB(url, false)
+		setup, err = setupBoltDB(url, false)
 		if err != nil {
 			logFatal("boltdb setup error", err)
 		}
-		s = setup
 	}
 
-	if s.client == "" {
+	if setup.client == "" {
 		logFatal("missing client location")
 	}
 
 	kv, err := libkv.NewStore(
-		s.sourceType,
-		[]string{s.client},
-		s.options,
+		setup.sourceType,
+		[]string{setup.client},
+		setup.options,
 	)
 	if err != nil {
 		logFatal("Cannot create store", err)
