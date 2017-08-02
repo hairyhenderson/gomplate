@@ -1,4 +1,4 @@
-package main
+package vault
 
 import (
 	"bytes"
@@ -24,7 +24,7 @@ type Vault struct {
 }
 
 // NewVault - instantiate a new
-func NewVault() *Vault {
+func New() *Vault {
 	vaultConfig := vaultapi.DefaultConfig()
 
 	err := vaultConfig.ReadEnvironment()
