@@ -1,6 +1,7 @@
 FROM alpine:edge
 
 ENV VAULT_VER 0.7.0
+ENV CONSUL_VER 0.9.0
 RUN apk add --no-cache \
     curl \
     bash \
@@ -10,6 +11,10 @@ RUN apk add --no-cache \
   && unzip /tmp/vault.zip \
   && mv vault /bin/vault \
   && rm /tmp/vault.zip \
+  && curl -L -o /tmp/consul.zip https://releases.hashicorp.com/consul/${CONSUL_VER}/consul_${CONSUL_VER}_linux_amd64.zip \
+  && unzip /tmp/consul.zip \
+  && mv consul /bin/consul \
+  && rm /tmp/consul.zip \
   && apk del curl
 
 RUN mkdir /lib64 \
@@ -20,5 +25,6 @@ COPY mirror /bin/mirror
 COPY *.sh /tests/
 COPY *.bash /tests/
 COPY *.bats /tests/
+COPY *.db /test/integration/
 
 CMD ["/tests/test.sh"]

@@ -18,6 +18,7 @@ import:
   - codec
 - package: github.com/hairyhenderson/toml
   version: support-map-interface-keys
+- package: github.com/docker/libkv
 testImport:
 - package: github.com/stretchr/testify
   version: ^1.1.4

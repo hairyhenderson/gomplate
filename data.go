@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -14,6 +15,7 @@ import (
 	"time"
 
 	"github.com/blang/vfs"
+	"github.com/hairyhenderson/gomplate/libkv"
 	"github.com/hairyhenderson/gomplate/vault"
 )
 
@@ -42,6 +44,10 @@ func init() {
 	addSourceReader("https", readHTTP)
 	addSourceReader("file", readFile)
 	addSourceReader("vault", readVault)
+	addSourceReader("consul", readLibKV)
+	addSourceReader("consul+http", readLibKV)
+	addSourceReader("consul+https", readLibKV)
+	addSourceReader("boltdb", readLibKV)
 }
 
 var sourceReaders map[string]func(*Source, ...string) ([]byte, error)
@@ -85,6 +91,7 @@ type Source struct {
 	FS     vfs.Filesystem // used for file: URLs, nil otherwise
 	HC     *http.Client   // used for http[s]: URLs, nil otherwise
 	VC     *vault.Client  //used for vault: URLs, nil otherwise
+	KV     *libkv.LibKV   // used for consul:, etcd:, zookeeper: & boltdb: URLs, nil otherwise
 	Header http.Header    // used for http[s]: URLs, nil otherwise
 }
 
@@ -98,7 +105,7 @@ func NewSource(alias string, URL *url.URL) (s *Source) {
 		Ext:   ext,
 	}
 
-	if ext != "" {
+	if ext != "" && URL.Scheme != "boltdb" {
 		mediatype := mime.TypeByExtension(ext)
 		t, params, err := mime.ParseMediaType(mediatype)
 		if err != nil {
@@ -193,6 +200,9 @@ func (d *Data) Datasource(alias string, args ...string) interface{} {
 	}
 	if source.Type == "application/toml" {
 		return ty.TOML(s)
+	}
+	if source.Type == "text/plain" {
+		return s
 	}
 	log.Fatalf("Datasources of type %s not yet supported", source.Type)
 	return nil
@@ -322,6 +332,36 @@ func readVault(source *Source, args ...string) ([]byte, error) {
 		return nil, err
 	}
 	source.Type = "application/json"
+
+	return data, nil
+}
+
+func readLibKV(source *Source, args ...string) ([]byte, error) {
+	if source.KV == nil {
+		source.KV = libkv.New(source.URL)
+		err := source.KV.Login()
+		addCleanupHook(source.KV.Logout)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	p := source.URL.Path
+
+	if source.URL.Scheme == "boltdb" {
+		if len(args) != 1 {
+			return nil, errors.New("missing key")
+		}
+		p = args[0]
+	} else if len(args) == 1 {
+		p = p + "/" + args[0]
+	}
+
+	data, err := source.KV.Read(p)
+	if err != nil {
+		return nil, err
+	}
+	source.Type = "text/plain"
 
 	return data, nil
 }
