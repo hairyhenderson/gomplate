@@ -25,9 +25,8 @@ func (r *Response) DecodeJSON(out interface{}) error {
 // this will fully consume the response body, but will not close it. The
 // body must still be closed manually.
 func (r *Response) Error() error {
-	// 200 to 399 are okay status codes. 429 is the code for health status of
-	// standby nodes.
-	if (r.StatusCode >= 200 && r.StatusCode < 400) || r.StatusCode == 429 {
+	// 200 to 399 are okay status codes
+	if r.StatusCode >= 200 && r.StatusCode < 400 {
 		return nil
 	}
 
