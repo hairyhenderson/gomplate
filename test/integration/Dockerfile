@@ -14,8 +14,7 @@ RUN apk add --no-cache \
   && curl -L -o /tmp/consul.zip https://releases.hashicorp.com/consul/${CONSUL_VER}/consul_${CONSUL_VER}_linux_amd64.zip \
   && unzip /tmp/consul.zip \
   && mv consul /bin/consul \
-  && rm /tmp/consul.zip \
-  && apk del curl
+  && rm /tmp/consul.zip
 
 RUN mkdir /lib64 \
   && ln -s /lib/libc.musl-x86_64.so.1 /lib64/ld-linux-x86-64.so.2

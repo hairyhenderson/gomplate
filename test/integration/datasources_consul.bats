@@ -3,12 +3,14 @@
 load helper
 
 function setup () {
-  tmpdir=$(mktemp -d)
+  start_consul 8501
+  export CONSUL_HTTP_ADDR=http://127.0.0.1:8501
 }
 
 function teardown () {
-  rm -rf $tmpdir
   consul kv delete foo
+  unset CONSUL_HTTP_ADDR
+  stop_consul
 }
 
 @test "Testing consul" {
@@ -21,7 +23,7 @@ function teardown () {
 @test "Consul datasource works with hostname in URL" {
   consul kv put foo "$BATS_TEST_DESCRIPTION"
   unset CONSUL_HTTP_ADDR
-  gomplate -d consul=consul+http://localhost:8500/ -i '{{(datasource "consul" "foo")}}'
+  gomplate -d consul=consul://127.0.0.1:8501/ -i '{{(datasource "consul" "foo")}}'
   [ "$status" -eq 0 ]
   [[ "${output}" == "$BATS_TEST_DESCRIPTION" ]]
 }
@@ -29,7 +31,7 @@ function teardown () {
 @test "Consul datasource works with consul+http scheme" {
   consul kv put foo "$BATS_TEST_DESCRIPTION"
   unset CONSUL_HTTP_ADDR
-  gomplate -d consul=consul+http:// -i '{{(datasource "consul" "foo")}}'
+  gomplate -d consul=consul+http://127.0.0.1:8501/ -i '{{(datasource "consul" "foo")}}'
   [ "$status" -eq 0 ]
   [[ "${output}" == "$BATS_TEST_DESCRIPTION" ]]
 }
