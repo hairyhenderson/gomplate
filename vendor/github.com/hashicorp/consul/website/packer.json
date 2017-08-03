@@ -10,12 +10,15 @@
       "type": "docker",
       "image": "hashicorp/middleman-hashicorp:0.3.28",
       "discard": "true",
-      "volumes": {
-        "{{ pwd }}": "/website"
-      }
+      "run_command": ["-d", "-i", "-t", "{{ .Image }}", "/bin/sh"]
     }
   ],
   "provisioners": [
+    {
+      "type": "file",
+      "source": ".",
+      "destination": "/website"
+    },
     {
       "type": "shell",
       "environment_vars": [
@@ -27,7 +30,7 @@
       "inline": [
         "bundle check || bundle install",
         "bundle exec middleman build",
-        "/bin/bash ./scripts/deploy.sh"
+        "/bin/sh ./scripts/deploy.sh"
       ]
     }
   ]

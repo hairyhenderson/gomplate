@@ -41,7 +41,8 @@ type LockCommand struct {
 
 	child     *os.Process
 	childLock sync.Mutex
-	verbose   bool
+
+	verbose bool
 }
 
 func (c *LockCommand) Help() string {
@@ -74,18 +75,14 @@ func (c *LockCommand) Run(args []string) int {
 }
 
 func (c *LockCommand) run(args []string, lu **LockUnlock) int {
+	var childDone chan struct{}
 	var limit int
 	var monitorRetry int
 	var name string
 	var passStdin bool
-	var propagateChildCode bool
 	var timeout time.Duration
 
 	f := c.BaseCommand.NewFlagSet(c)
-	f.BoolVar(&propagateChildCode, "child-exit-code", false,
-		"Exit 2 if the child process exited with an error if this is true, "+
-			"otherwise this doesn't propagate an error from the child. The "+
-			"default value is false.")
 	f.IntVar(&limit, "n", 1,
 		"Optional limit on the number of concurrent lock holders. The underlying "+
 			"implementation switches from a lock to a semaphore when the value is "+
@@ -103,7 +100,7 @@ func (c *LockCommand) run(args []string, lu **LockUnlock) int {
 		"Pass stdin to the child process.")
 	f.DurationVar(&timeout, "timeout", 0,
 		"Maximum amount of time to wait to acquire the lock, specified as a "+
-			"duration like \"1s\" or \"3h\". The default value is 0.")
+			"timestamp like \"1s\" or \"3h\". The default value is 0.")
 	f.BoolVar(&c.verbose, "verbose", false,
 		"Enable verbose (debugging) output.")
 
@@ -188,8 +185,6 @@ func (c *LockCommand) run(args []string, lu **LockUnlock) int {
 	}
 
 	// Check if we were shutdown but managed to still acquire the lock
-	var childCode int
-	var childErr chan error
 	select {
 	case <-c.ShutdownCh:
 		c.UI.Error("Shutdown triggered during lock acquisition")
@@ -198,9 +193,11 @@ func (c *LockCommand) run(args []string, lu **LockUnlock) int {
 	}
 
 	// Start the child process
-	childErr = make(chan error, 1)
+	childDone = make(chan struct{})
 	go func() {
-		childErr <- c.startChild(script, passStdin)
+		if err := c.startChild(script, childDone, passStdin); err != nil {
+			c.UI.Error(fmt.Sprintf("%s", err))
+		}
 	}()
 
 	// Monitor for shutdown, child termination, or lock loss
@@ -213,10 +210,7 @@ func (c *LockCommand) run(args []string, lu **LockUnlock) int {
 		if c.verbose {
 			c.UI.Info("Lock lost, killing child")
 		}
-	case err := <-childErr:
-		if err != nil {
-			childCode = 2
-		}
+	case <-childDone:
 		if c.verbose {
 			c.UI.Info("Child terminated, releasing lock")
 		}
@@ -226,9 +220,8 @@ func (c *LockCommand) run(args []string, lu **LockUnlock) int {
 	// Prevent starting a new child.  The lock is never released
 	// after this point.
 	c.childLock.Lock()
-
 	// Kill any existing child
-	if err := c.killChild(childErr); err != nil {
+	if err := c.killChild(childDone); err != nil {
 		c.UI.Error(fmt.Sprintf("%s", err))
 	}
 
@@ -250,13 +243,6 @@ RELEASE:
 	} else if c.verbose {
 		c.UI.Info("Cleanup succeeded")
 	}
-
-	// If we detected an error from the child process then we propagate
-	// that.
-	if propagateChildCode {
-		return childCode
-	}
-
 	return 0
 }
 
@@ -335,7 +321,8 @@ func (c *LockCommand) setupSemaphore(client *api.Client, limit int, prefix, name
 
 // startChild is a long running routine used to start and
 // wait for the child process to exit.
-func (c *LockCommand) startChild(script string, passStdin bool) error {
+func (c *LockCommand) startChild(script string, doneCh chan struct{}, passStdin bool) error {
+	defer close(doneCh)
 	if c.verbose {
 		c.UI.Info(fmt.Sprintf("Starting handler '%s'", script))
 	}
@@ -386,7 +373,7 @@ func (c *LockCommand) startChild(script string, passStdin bool) error {
 // termination.
 // On Windows, the child is always hard terminated with a SIGKILL, even
 // on the first attempt.
-func (c *LockCommand) killChild(childErr chan error) error {
+func (c *LockCommand) killChild(childDone chan struct{}) error {
 	// Get the child process
 	child := c.child
 
@@ -408,7 +395,7 @@ func (c *LockCommand) killChild(childErr chan error) error {
 
 	// Wait for termination, or until a timeout
 	select {
-	case <-childErr:
+	case <-childDone:
 		if c.verbose {
 			c.UI.Info("Child terminated")
 		}

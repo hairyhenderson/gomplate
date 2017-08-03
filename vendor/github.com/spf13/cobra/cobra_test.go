@@ -13,13 +13,12 @@ import (
 	"github.com/spf13/pflag"
 )
 
-var tp, te, tt, t1, tr []string
+var tp, te, tt, tr []string
 var rootPersPre, echoPre, echoPersPre, timesPersPre []string
 var flagb1, flagb2, flagb3, flagbr, flagbp bool
 var flags1, flags2a, flags2b, flags3, outs string
 var flagi1, flagi2, flagi3, flagi4, flagir int
-var globalFlag1 bool
-var flagEcho, rootcalled bool
+var rootcalled bool
 var versionUsed int
 
 const strtwoParentHelp = "help message for parent flag strtwo"
@@ -37,6 +36,7 @@ var cmdHidden = &Command{
 
 var cmdPrint = &Command{
 	Use:   "print [string to print]",
+	Args:  MinimumNArgs(1),
 	Short: "Print anything to the screen",
 	Long:  `an absolutely utterly useless command for testing.`,
 	Run: func(cmd *Command, args []string) {
@@ -76,6 +76,7 @@ var cmdDeprecated = &Command{
 	Deprecated: "Please use echo instead",
 	Run: func(cmd *Command, args []string) {
 	},
+	Args: NoArgs,
 }
 
 var cmdTimes = &Command{
@@ -89,6 +90,8 @@ var cmdTimes = &Command{
 	Run: func(cmd *Command, args []string) {
 		tt = args
 	},
+	Args:      OnlyValidArgs,
+	ValidArgs: []string{"one", "two", "three", "four"},
 }
 
 var cmdRootNoRun = &Command{
@@ -104,6 +107,16 @@ var cmdRootSameName = &Command{
 	Use:   "print",
 	Short: "Root with the same name as a subcommand",
 	Long:  "The root description for help",
+}
+
+var cmdRootTakesArgs = &Command{
+	Use:   "root-with-args [random args]",
+	Short: "The root can run it's own function and takes args!",
+	Long:  "The root description for help, and some args",
+	Run: func(cmd *Command, args []string) {
+		tr = args
+	},
+	Args: ArbitraryArgs,
 }
 
 var cmdRootWithRun = &Command{
@@ -227,36 +240,36 @@ type resulter struct {
 	Command *Command
 }
 
-func fullSetupTest(input string) resulter {
+func fullSetupTest(args ...string) resulter {
 	c := initializeWithRootCmd()
 
-	return fullTester(c, input)
+	return fullTester(c, args...)
 }
 
-func noRRSetupTestSilenced(input string) resulter {
+func noRRSetupTestSilenced(args ...string) resulter {
 	c := initialize()
 	c.SilenceErrors = true
 	c.SilenceUsage = true
-	return fullTester(c, input)
+	return fullTester(c, args...)
 }
 
-func noRRSetupTest(input string) resulter {
+func noRRSetupTest(args ...string) resulter {
 	c := initialize()
 
-	return fullTester(c, input)
+	return fullTester(c, args...)
 }
 
-func rootOnlySetupTest(input string) resulter {
+func rootOnlySetupTest(args ...string) resulter {
 	c := initializeWithRootCmd()
 
-	return simpleTester(c, input)
+	return simpleTester(c, args...)
 }
 
-func simpleTester(c *Command, input string) resulter {
+func simpleTester(c *Command, args ...string) resulter {
 	buf := new(bytes.Buffer)
 	// Testing flag with invalid input
 	c.SetOutput(buf)
-	c.SetArgs(strings.Split(input, " "))
+	c.SetArgs(args)
 
 	err := c.Execute()
 	output := buf.String()
@@ -264,11 +277,11 @@ func simpleTester(c *Command, input string) resulter {
 	return resulter{err, output, c}
 }
 
-func simpleTesterC(c *Command, input string) resulter {
+func simpleTesterC(c *Command, args ...string) resulter {
 	buf := new(bytes.Buffer)
 	// Testing flag with invalid input
 	c.SetOutput(buf)
-	c.SetArgs(strings.Split(input, " "))
+	c.SetArgs(args)
 
 	cmd, err := c.ExecuteC()
 	output := buf.String()
@@ -276,13 +289,13 @@ func simpleTesterC(c *Command, input string) resulter {
 	return resulter{err, output, cmd}
 }
 
-func fullTester(c *Command, input string) resulter {
+func fullTester(c *Command, args ...string) resulter {
 	buf := new(bytes.Buffer)
 	// Testing flag with invalid input
 	c.SetOutput(buf)
 	cmdEcho.AddCommand(cmdTimes)
 	c.AddCommand(cmdPrint, cmdEcho, cmdSubNoRun, cmdCustomFlags, cmdDeprecated)
-	c.SetArgs(strings.Split(input, " "))
+	c.SetArgs(args)
 
 	err := c.Execute()
 	output := buf.String()
@@ -332,7 +345,7 @@ func checkOutputContains(t *testing.T, c *Command, check string) {
 }
 
 func TestSingleCommand(t *testing.T) {
-	noRRSetupTest("print one two")
+	noRRSetupTest("print", "one", "two")
 
 	if te != nil || tt != nil {
 		t.Error("Wrong command called")
@@ -346,7 +359,7 @@ func TestSingleCommand(t *testing.T) {
 }
 
 func TestChildCommand(t *testing.T) {
-	noRRSetupTest("echo times one two")
+	noRRSetupTest("echo", "times", "one", "two")
 
 	if te != nil || tp != nil {
 		t.Error("Wrong command called")
@@ -360,7 +373,7 @@ func TestChildCommand(t *testing.T) {
 }
 
 func TestCommandAlias(t *testing.T) {
-	noRRSetupTest("say times one two")
+	noRRSetupTest("say", "times", "one", "two")
 
 	if te != nil || tp != nil {
 		t.Error("Wrong command called")
@@ -375,7 +388,7 @@ func TestCommandAlias(t *testing.T) {
 
 func TestPrefixMatching(t *testing.T) {
 	EnablePrefixMatching = true
-	noRRSetupTest("ech times one two")
+	noRRSetupTest("ech", "times", "one", "two")
 
 	if te != nil || tp != nil {
 		t.Error("Wrong command called")
@@ -393,7 +406,7 @@ func TestPrefixMatching(t *testing.T) {
 func TestNoPrefixMatching(t *testing.T) {
 	EnablePrefixMatching = false
 
-	noRRSetupTest("ech times one two")
+	noRRSetupTest("ech", "times", "one", "two")
 
 	if !(tt == nil && te == nil && tp == nil) {
 		t.Error("Wrong command called")
@@ -402,7 +415,7 @@ func TestNoPrefixMatching(t *testing.T) {
 
 func TestAliasPrefixMatching(t *testing.T) {
 	EnablePrefixMatching = true
-	noRRSetupTest("sa times one two")
+	noRRSetupTest("sa", "times", "one", "two")
 
 	if te != nil || tp != nil {
 		t.Error("Wrong command called")
@@ -419,7 +432,7 @@ func TestAliasPrefixMatching(t *testing.T) {
 func TestChildSameName(t *testing.T) {
 	c := initializeWithSameName()
 	c.AddCommand(cmdPrint, cmdEcho)
-	c.SetArgs(strings.Split("print one two", " "))
+	c.SetArgs([]string{"print", "one", "two"})
 	c.Execute()
 
 	if te != nil || tt != nil {
@@ -437,7 +450,7 @@ func TestGrandChildSameName(t *testing.T) {
 	c := initializeWithSameName()
 	cmdTimes.AddCommand(cmdPrint)
 	c.AddCommand(cmdTimes)
-	c.SetArgs(strings.Split("times print one two", " "))
+	c.SetArgs([]string{"times", "print", "one", "two"})
 	c.Execute()
 
 	if te != nil || tt != nil {
@@ -454,13 +467,70 @@ func TestGrandChildSameName(t *testing.T) {
 func TestUsage(t *testing.T) {
 	x := fullSetupTest("help")
 	checkResultContains(t, x, cmdRootWithRun.Use+" [flags]")
-	x = fullSetupTest("help customflags")
+	x = fullSetupTest("help", "customflags")
 	checkResultContains(t, x, cmdCustomFlags.Use)
 	checkResultOmits(t, x, cmdCustomFlags.Use+" [flags]")
 }
 
+func TestRootTakesNoArgs(t *testing.T) {
+	c := initializeWithSameName()
+	c.AddCommand(cmdPrint, cmdEcho)
+	result := simpleTester(c, "illegal")
+
+	if result.Error == nil {
+		t.Fatal("Expected an error")
+	}
+
+	expectedError := `unknown command "illegal" for "print"`
+	if !strings.Contains(result.Error.Error(), expectedError) {
+		t.Errorf("exptected %v, got %v", expectedError, result.Error.Error())
+	}
+}
+
+func TestRootTakesArgs(t *testing.T) {
+	c := cmdRootTakesArgs
+	result := simpleTester(c, "legal")
+
+	if result.Error != nil {
+		t.Errorf("expected no error, but got %v", result.Error)
+	}
+}
+
+func TestSubCmdTakesNoArgs(t *testing.T) {
+	result := fullSetupTest("deprecated", "illegal")
+
+	if result.Error == nil {
+		t.Fatal("Expected an error")
+	}
+
+	expectedError := `unknown command "illegal" for "cobra-test deprecated"`
+	if !strings.Contains(result.Error.Error(), expectedError) {
+		t.Errorf("expected %v, got %v", expectedError, result.Error.Error())
+	}
+}
+
+func TestSubCmdTakesArgs(t *testing.T) {
+	noRRSetupTest("echo", "times", "one", "two")
+	if strings.Join(tt, " ") != "one two" {
+		t.Error("Command didn't parse correctly")
+	}
+}
+
+func TestCmdOnlyValidArgs(t *testing.T) {
+	result := noRRSetupTest("echo", "times", "one", "two", "five")
+
+	if result.Error == nil {
+		t.Fatal("Expected an error")
+	}
+
+	expectedError := `invalid argument "five"`
+	if !strings.Contains(result.Error.Error(), expectedError) {
+		t.Errorf("expected %v, got %v", expectedError, result.Error.Error())
+	}
+}
+
 func TestFlagLong(t *testing.T) {
-	noRRSetupTest("echo --intone=13 something -- here")
+	noRRSetupTest("echo", "--intone=13", "something", "--", "here")
 
 	if cmdEcho.ArgsLenAtDash() != 1 {
 		t.Errorf("expected argsLenAtDash: %d but got %d", 1, cmdRootNoRun.ArgsLenAtDash())
@@ -477,7 +547,7 @@ func TestFlagLong(t *testing.T) {
 }
 
 func TestFlagShort(t *testing.T) {
-	noRRSetupTest("echo -i13 -- something here")
+	noRRSetupTest("echo", "-i13", "--", "something", "here")
 
 	if cmdEcho.ArgsLenAtDash() != 0 {
 		t.Errorf("expected argsLenAtDash: %d but got %d", 0, cmdRootNoRun.ArgsLenAtDash())
@@ -492,7 +562,7 @@ func TestFlagShort(t *testing.T) {
 		t.Errorf("default flag value changed, 234 expected, %d given", flagi2)
 	}
 
-	noRRSetupTest("echo -i 13 something here")
+	noRRSetupTest("echo", "-i", "13", "something", "here")
 
 	if strings.Join(te, " ") != "something here" {
 		t.Errorf("flags didn't leave proper args remaining..%s given", te)
@@ -504,7 +574,7 @@ func TestFlagShort(t *testing.T) {
 		t.Errorf("default flag value changed, 234 expected, %d given", flagi2)
 	}
 
-	noRRSetupTest("print -i99 one two")
+	noRRSetupTest("print", "-i99", "one", "two")
 
 	if strings.Join(tp, " ") != "one two" {
 		t.Errorf("flags didn't leave proper args remaining..%s given", tp)
@@ -518,14 +588,14 @@ func TestFlagShort(t *testing.T) {
 }
 
 func TestChildCommandFlags(t *testing.T) {
-	noRRSetupTest("echo times -j 99 one two")
+	noRRSetupTest("echo", "times", "-j", "99", "one", "two")
 
 	if strings.Join(tt, " ") != "one two" {
 		t.Errorf("flags didn't leave proper args remaining..%s given", tt)
 	}
 
 	// Testing with flag that shouldn't be persistent
-	r := noRRSetupTest("echo times -j 99 -i77 one two")
+	r := noRRSetupTest("echo", "times", "-j", "99", "-i77", "one", "two")
 
 	if r.Error == nil {
 		t.Errorf("invalid flag should generate error")
@@ -544,7 +614,7 @@ func TestChildCommandFlags(t *testing.T) {
 	}
 
 	// Testing with flag only existing on child
-	r = noRRSetupTest("echo -j 99 -i77 one two")
+	r = noRRSetupTest("echo", "-j", "99", "-i77", "one", "two")
 
 	if r.Error == nil {
 		t.Errorf("invalid flag should generate error")
@@ -554,7 +624,7 @@ func TestChildCommandFlags(t *testing.T) {
 	}
 
 	// Testing with persistent flag overwritten by child
-	noRRSetupTest("echo times --strtwo=child one two")
+	noRRSetupTest("echo", "times", "--strtwo=child", "one", "two")
 
 	if flags2b != "child" {
 		t.Errorf("flag value should be child, %s given", flags2b)
@@ -565,7 +635,7 @@ func TestChildCommandFlags(t *testing.T) {
 	}
 
 	// Testing flag with invalid input
-	r = noRRSetupTest("echo -i10E")
+	r = noRRSetupTest("echo", "-i10E")
 
 	if r.Error == nil {
 		t.Errorf("invalid input should generate error")
@@ -576,7 +646,7 @@ func TestChildCommandFlags(t *testing.T) {
 }
 
 func TestTrailingCommandFlags(t *testing.T) {
-	x := fullSetupTest("echo two -x")
+	x := fullSetupTest("echo", "two", "-x")
 
 	if x.Error == nil {
 		t.Errorf("invalid flag should generate error")
@@ -587,7 +657,7 @@ func TestInvalidSubcommandFlags(t *testing.T) {
 	cmd := initializeWithRootCmd()
 	cmd.AddCommand(cmdTimes)
 
-	result := simpleTester(cmd, "times --inttwo=2 --badflag=bar")
+	result := simpleTester(cmd, "times", "--inttwo=2", "--badflag=bar")
 	// given that we are not checking here result.Error we check for
 	// stock usage message
 	checkResultContains(t, result, "cobra-test times [# times]")
@@ -617,14 +687,14 @@ func TestSubcommandExecuteC(t *testing.T) {
 
 	cmd.AddCommand(double, echo)
 
-	result := simpleTesterC(cmd, "double hello world")
+	result := simpleTesterC(cmd, "double", "hello", "world")
 	checkResultContains(t, result, "hello world hello world")
 
 	if result.Command.Name() != "double" {
 		t.Errorf("invalid cmd returned from ExecuteC: should be 'double' but got %s", result.Command.Name())
 	}
 
-	result = simpleTesterC(cmd, "echo msg to be echoed")
+	result = simpleTesterC(cmd, "echo", "msg", "to", "be", "echoed")
 	checkResultContains(t, result, "msg to be echoed")
 
 	if result.Command.Name() != "echo" {
@@ -650,16 +720,16 @@ func TestSubcommandArgEvaluation(t *testing.T) {
 	}
 	first.AddCommand(second)
 
-	result := simpleTester(cmd, "first second first third")
+	result := simpleTester(cmd, "first", "second", "first", "third")
 
-	expectedOutput := fmt.Sprintf("%v", []string{"first third"})
+	expectedOutput := fmt.Sprint([]string{"first third"})
 	if result.Output != expectedOutput {
 		t.Errorf("exptected %v, got %v", expectedOutput, result.Output)
 	}
 }
 
 func TestPersistentFlags(t *testing.T) {
-	fullSetupTest("echo -s something -p more here")
+	fullSetupTest("echo", "-s", "something", "-p", "more", "here")
 
 	// persistentFlag should act like normal flag on its own command
 	if strings.Join(te, " ") != "more here" {
@@ -673,9 +743,9 @@ func TestPersistentFlags(t *testing.T) {
 	}
 
 	// persistentFlag should act like normal flag on its own command
-	fullSetupTest("echo times -s again -c -p test here")
+	fullSetupTest("echo", "times", "-s", "again", "-c", "-p", "one", "two")
 
-	if strings.Join(tt, " ") != "test here" {
+	if strings.Join(tt, " ") != "one two" {
 		t.Errorf("flags didn't leave proper args remaining. %s given", tt)
 	}
 
@@ -695,17 +765,17 @@ func TestHelpCommand(t *testing.T) {
 	x := fullSetupTest("help")
 	checkResultContains(t, x, cmdRootWithRun.Long)
 
-	x = fullSetupTest("help echo")
+	x = fullSetupTest("help", "echo")
 	checkResultContains(t, x, cmdEcho.Long)
 
-	x = fullSetupTest("help echo times")
+	x = fullSetupTest("help", "echo", "times")
 	checkResultContains(t, x, cmdTimes.Long)
 }
 
 func TestChildCommandHelp(t *testing.T) {
-	c := noRRSetupTest("print --help")
+	c := noRRSetupTest("print", "--help")
 	checkResultContains(t, c, strtwoParentHelp)
-	r := noRRSetupTest("echo times --help")
+	r := noRRSetupTest("echo", "times", "--help")
 	checkResultContains(t, r, strtwoChildHelp)
 }
 
@@ -717,7 +787,7 @@ func TestNonRunChildHelp(t *testing.T) {
 func TestRunnableRootCommand(t *testing.T) {
 	x := fullSetupTest("")
 
-	if rootcalled != true {
+	if !rootcalled {
 		t.Errorf("Root Function was not called\n out:%v", x.Error)
 	}
 }
@@ -751,7 +821,6 @@ func TestVisitParents(t *testing.T) {
 }
 
 func TestRunnableRootCommandNilInput(t *testing.T) {
-	var emptyArg []string
 	c := initializeWithRootCmd()
 
 	buf := new(bytes.Buffer)
@@ -759,23 +828,20 @@ func TestRunnableRootCommandNilInput(t *testing.T) {
 	c.SetOutput(buf)
 	cmdEcho.AddCommand(cmdTimes)
 	c.AddCommand(cmdPrint, cmdEcho)
-	c.SetArgs(emptyArg)
+	c.SetArgs([]string{})
 
 	err := c.Execute()
 	if err != nil {
 		t.Errorf("Execute() failed with %v", err)
 	}
 
-	if rootcalled != true {
+	if !rootcalled {
 		t.Errorf("Root Function was not called")
 	}
 }
 
 func TestRunnableRootCommandEmptyInput(t *testing.T) {
-	args := make([]string, 3)
-	args[0] = ""
-	args[1] = "--introot=12"
-	args[2] = ""
+	args := []string{"", "--introot=12", ""}
 	c := initializeWithRootCmd()
 
 	buf := new(bytes.Buffer)
@@ -787,13 +853,13 @@ func TestRunnableRootCommandEmptyInput(t *testing.T) {
 
 	c.Execute()
 
-	if rootcalled != true {
-		t.Errorf("Root Function was not called.\n\nOutput was:\n\n%s\n", buf)
+	if !rootcalled {
+		t.Errorf("Root Function was not called.\nOutput was:\n%s\n", buf)
 	}
 }
 
 func TestInvalidSubcommandWhenArgsAllowed(t *testing.T) {
-	fullSetupTest("echo invalid-sub")
+	fullSetupTest("echo", "invalid-sub")
 
 	if te[0] != "invalid-sub" {
 		t.Errorf("Subcommand didn't work...")
@@ -801,9 +867,9 @@ func TestInvalidSubcommandWhenArgsAllowed(t *testing.T) {
 }
 
 func TestRootFlags(t *testing.T) {
-	fullSetupTest("-i 17 -b")
+	fullSetupTest("-i", "17", "-b")
 
-	if flagbr != true {
+	if !flagbr {
 		t.Errorf("flag value should be true, %v given", flagbr)
 	}
 
@@ -826,7 +892,7 @@ func TestRootHelp(t *testing.T) {
 		t.Errorf("--help shouldn't display subcommand's usage, Got: \n %s", x.Output)
 	}
 
-	x = fullSetupTest("echo --help")
+	x = fullSetupTest("echo", "--help")
 
 	if strings.Contains(x.Output, cmdTimes.Use) {
 		t.Errorf("--help shouldn't display subsubcommand's usage, Got: \n %s", x.Output)
@@ -861,7 +927,6 @@ func TestFlagAccess(t *testing.T) {
 }
 
 func TestNoNRunnableRootCommandNilInput(t *testing.T) {
-	var args []string
 	c := initialize()
 
 	buf := new(bytes.Buffer)
@@ -869,7 +934,7 @@ func TestNoNRunnableRootCommandNilInput(t *testing.T) {
 	c.SetOutput(buf)
 	cmdEcho.AddCommand(cmdTimes)
 	c.AddCommand(cmdPrint, cmdEcho)
-	c.SetArgs(args)
+	c.SetArgs([]string{})
 
 	c.Execute()
 
@@ -888,7 +953,7 @@ func TestRootNoCommandHelp(t *testing.T) {
 		t.Errorf("--help shouldn't trigger an error, Got: \n %s", x.Output)
 	}
 
-	x = rootOnlySetupTest("echo --help")
+	x = rootOnlySetupTest("echo", "--help")
 
 	checkResultOmits(t, x, "Available Commands:")
 	checkResultOmits(t, x, "for more information about a command")
@@ -906,7 +971,7 @@ func TestRootUnknownCommand(t *testing.T) {
 		t.Errorf("Unexpected response.\nExpecting to be:\n %q\nGot:\n %q\n", s, r.Output)
 	}
 
-	r = noRRSetupTest("--strtwo=a bogus")
+	r = noRRSetupTest("--strtwo=a", "bogus")
 	if r.Output != s {
 		t.Errorf("Unexpected response.\nExpecting to be:\n %q\nGot:\n %q\n", s, r.Output)
 	}
@@ -919,7 +984,7 @@ func TestRootUnknownCommandSilenced(t *testing.T) {
 		t.Errorf("Unexpected response.\nExpecting to be: \n\"\"\n Got:\n %q\n", r.Output)
 	}
 
-	r = noRRSetupTestSilenced("--strtwo=a bogus")
+	r = noRRSetupTestSilenced("--strtwo=a", "bogus")
 	if r.Output != "" {
 		t.Errorf("Unexpected response.\nExpecting to be:\n\"\"\nGot:\n %q\n", r.Output)
 	}
@@ -966,56 +1031,27 @@ func TestRootSuggestions(t *testing.T) {
 
 func TestFlagsBeforeCommand(t *testing.T) {
 	// short without space
-	x := fullSetupTest("-i10 echo")
+	x := fullSetupTest("-i10", "echo")
 	if x.Error != nil {
 		t.Errorf("Valid Input shouldn't have errors, got:\n %q", x.Error)
 	}
 
-	// short (int) with equals
-	// It appears that pflags doesn't support this...
-	// Commenting out until support can be added
-
-	//x = noRRSetupTest("echo -i=10")
-	//if x.Error != nil {
-	//t.Errorf("Valid Input shouldn't have errors, got:\n %s", x.Error)
-	//}
+	x = noRRSetupTest("echo", "-i=10")
+	if x.Error != nil {
+		t.Errorf("Valid Input shouldn't have errors, got:\n %s", x.Error)
+	}
 
 	// long with equals
-	x = noRRSetupTest("--intone=123 echo one two")
+	x = noRRSetupTest("--intone=123", "echo", "one", "two")
 	if x.Error != nil {
 		t.Errorf("Valid Input shouldn't have errors, got:\n %s", x.Error)
 	}
 
 	// With parsing error properly reported
-	x = fullSetupTest("-i10E echo")
+	x = fullSetupTest("-i10E", "echo")
 	if !strings.Contains(x.Error.Error(), "invalid syntax") {
 		t.Errorf("Wrong error message displayed, \n %s", x.Error)
 	}
-
-	//With quotes
-	x = fullSetupTest("-s=\"walking\" echo")
-	if x.Error != nil {
-		t.Errorf("Valid Input shouldn't have errors, got:\n %q", x.Error)
-	}
-
-	//With quotes and space
-	x = fullSetupTest("-s=\"walking fast\" echo")
-	if x.Error != nil {
-		t.Errorf("Valid Input shouldn't have errors, got:\n %q", x.Error)
-	}
-
-	//With inner quote
-	x = fullSetupTest("-s=\"walking \\\"Inner Quote\\\" fast\" echo")
-	if x.Error != nil {
-		t.Errorf("Valid Input shouldn't have errors, got:\n %q", x.Error)
-	}
-
-	//With quotes and space
-	x = fullSetupTest("-s=\"walking \\\"Inner Quote\\\" fast\" echo")
-	if x.Error != nil {
-		t.Errorf("Valid Input shouldn't have errors, got:\n %q", x.Error)
-	}
-
 }
 
 func TestRemoveCommand(t *testing.T) {
@@ -1081,7 +1117,7 @@ func TestDeprecatedSub(t *testing.T) {
 }
 
 func TestPreRun(t *testing.T) {
-	noRRSetupTest("echo one two")
+	noRRSetupTest("echo", "one", "two")
 	if echoPre == nil || echoPersPre == nil {
 		t.Error("PreRun or PersistentPreRun not called")
 	}
@@ -1089,7 +1125,7 @@ func TestPreRun(t *testing.T) {
 		t.Error("Wrong *Pre functions called!")
 	}
 
-	noRRSetupTest("echo times one two")
+	noRRSetupTest("echo", "times", "one", "two")
 	if timesPersPre == nil {
 		t.Error("PreRun or PersistentPreRun not called")
 	}
@@ -1097,7 +1133,7 @@ func TestPreRun(t *testing.T) {
 		t.Error("Wrong *Pre functions called!")
 	}
 
-	noRRSetupTest("print one two")
+	noRRSetupTest("print", "one", "two")
 	if rootPersPre == nil {
 		t.Error("Parent PersistentPreRun not called but should not have been")
 	}
@@ -1115,10 +1151,10 @@ func TestPeristentPreRunPropagation(t *testing.T) {
 	// Now add cmdPrint to rootCmd
 	rootCmd.AddCommand(cmdPrint)
 
-	rootCmd.SetArgs(strings.Split("print echosub lala", " "))
+	rootCmd.SetArgs([]string{"print", "echosub", "lala"})
 	rootCmd.Execute()
 
-	if rootPersPre == nil || len(rootPersPre) == 0 || rootPersPre[0] != "lala" {
+	if len(rootPersPre) == 0 || rootPersPre[0] != "lala" {
 		t.Error("RootCmd PersistentPreRun not called but should have been")
 	}
 }
@@ -1130,7 +1166,7 @@ func TestGlobalNormFuncPropagation(t *testing.T) {
 
 	rootCmd := initialize()
 	rootCmd.SetGlobalNormalizationFunc(normFunc)
-	if reflect.ValueOf(normFunc) != reflect.ValueOf(rootCmd.GlobalNormalizationFunc()) {
+	if reflect.ValueOf(normFunc).Pointer() != reflect.ValueOf(rootCmd.GlobalNormalizationFunc()).Pointer() {
 		t.Error("rootCmd seems to have a wrong normalization function")
 	}
 
@@ -1150,12 +1186,12 @@ func TestGlobalNormFuncPropagation(t *testing.T) {
 
 func TestFlagOnPflagCommandLine(t *testing.T) {
 	flagName := "flagOnCommandLine"
-	pflag.CommandLine.String(flagName, "", "about my flag")
+	pflag.String(flagName, "", "about my flag")
 	r := fullSetupTest("--help")
 
 	checkResultContains(t, r, flagName)
 
-	// reset CommandLine flagset
+	// Reset pflag.CommandLine flagset.
 	pflag.CommandLine = pflag.NewFlagSet(os.Args[0], pflag.ExitOnError)
 }
 

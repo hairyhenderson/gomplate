@@ -10,7 +10,6 @@ import (
 	"time"
 
 	"github.com/hashicorp/consul/agent/consul/structs"
-	"github.com/hashicorp/consul/agent/token"
 	"github.com/hashicorp/consul/api"
 	"github.com/hashicorp/consul/lib"
 	"github.com/hashicorp/consul/types"
@@ -31,6 +30,7 @@ type syncStatus struct {
 // populated during NewLocalAgent from the agent configuration to avoid
 // race conditions with the agent configuration.
 type localStateConfig struct {
+	ACLToken            string
 	AEInterval          time.Duration
 	AdvertiseAddr       string
 	CheckUpdateInterval time.Duration
@@ -38,7 +38,7 @@ type localStateConfig struct {
 	NodeID              types.NodeID
 	NodeName            string
 	TaggedAddresses     map[string]string
-	Tokens              *token.Store
+	TokenForAgent       string
 }
 
 // localState is used to represent the node's services,
@@ -89,8 +89,9 @@ type localState struct {
 }
 
 // NewLocalState creates a  is used to initialize the local state
-func NewLocalState(c *Config, lg *log.Logger, tokens *token.Store) *localState {
+func NewLocalState(c *Config, lg *log.Logger) *localState {
 	lc := localStateConfig{
+		ACLToken:            c.ACLToken,
 		AEInterval:          c.AEInterval,
 		AdvertiseAddr:       c.AdvertiseAddr,
 		CheckUpdateInterval: c.CheckUpdateInterval,
@@ -98,7 +99,7 @@ func NewLocalState(c *Config, lg *log.Logger, tokens *token.Store) *localState {
 		NodeID:              c.NodeID,
 		NodeName:            c.NodeName,
 		TaggedAddresses:     map[string]string{},
-		Tokens:              tokens,
+		TokenForAgent:       c.GetTokenForAgent(),
 	}
 	for k, v := range c.TaggedAddresses {
 		lc.TaggedAddresses[k] = v
@@ -171,7 +172,7 @@ func (l *localState) ServiceToken(id string) string {
 func (l *localState) serviceToken(id string) string {
 	token := l.serviceTokens[id]
 	if token == "" {
-		token = l.config.Tokens.UserToken()
+		token = l.config.ACLToken
 	}
 	return token
 }
@@ -238,7 +239,7 @@ func (l *localState) CheckToken(checkID types.CheckID) string {
 func (l *localState) checkToken(checkID types.CheckID) string {
 	token := l.checkTokens[checkID]
 	if token == "" {
-		token = l.config.Tokens.UserToken()
+		token = l.config.ACLToken
 	}
 	return token
 }
@@ -448,7 +449,7 @@ func (l *localState) setSyncState() error {
 	req := structs.NodeSpecificRequest{
 		Datacenter:   l.config.Datacenter,
 		Node:         l.config.NodeName,
-		QueryOptions: structs.QueryOptions{Token: l.config.Tokens.AgentToken()},
+		QueryOptions: structs.QueryOptions{Token: l.config.TokenForAgent},
 	}
 	var out1 structs.IndexedNodeServices
 	var out2 structs.IndexedHealthChecks
@@ -784,7 +785,7 @@ func (l *localState) syncNodeInfo() error {
 		Address:         l.config.AdvertiseAddr,
 		TaggedAddresses: l.config.TaggedAddresses,
 		NodeMeta:        l.metadata,
-		WriteRequest:    structs.WriteRequest{Token: l.config.Tokens.AgentToken()},
+		WriteRequest:    structs.WriteRequest{Token: l.config.TokenForAgent},
 	}
 	var out struct{}
 	err := l.delegate.RPC("Catalog.Register", &req, &out)

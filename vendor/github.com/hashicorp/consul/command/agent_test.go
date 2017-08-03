@@ -176,7 +176,6 @@ func TestReadCliConfig(t *testing.T) {
 			args: []string{
 				"-data-dir", tmpDir,
 				"-node", `"a"`,
-				"-bind", "1.2.3.4",
 				"-advertise-wan", "1.2.3.4",
 				"-serf-wan-bind", "4.3.2.1",
 				"-serf-lan-bind", "4.3.2.2",
@@ -208,7 +207,6 @@ func TestReadCliConfig(t *testing.T) {
 				"-data-dir", tmpDir,
 				"-node-meta", "somekey:somevalue",
 				"-node-meta", "otherkey:othervalue",
-				"-bind", "1.2.3.4",
 			},
 			ShutdownCh:  shutdownCh,
 			BaseCommand: baseCommand(cli.NewMockUi()),
@@ -231,7 +229,6 @@ func TestReadCliConfig(t *testing.T) {
 				"-node", `"server1"`,
 				"-server",
 				"-data-dir", tmpDir,
-				"-bind", "1.2.3.4",
 			},
 			ShutdownCh:  shutdownCh,
 			BaseCommand: baseCommand(ui),
@@ -259,7 +256,6 @@ func TestReadCliConfig(t *testing.T) {
 			args: []string{
 				"-data-dir", tmpDir,
 				"-node", `"client"`,
-				"-bind", "1.2.3.4",
 			},
 			ShutdownCh:  shutdownCh,
 			BaseCommand: baseCommand(ui),
@@ -305,7 +301,6 @@ func TestAgent_HostBasedIDs(t *testing.T) {
 		cmd := &AgentCommand{
 			args: []string{
 				"-data-dir", tmpDir,
-				"-bind", "127.0.0.1",
 			},
 			BaseCommand: baseCommand(cli.NewMockUi()),
 		}
@@ -322,7 +317,6 @@ func TestAgent_HostBasedIDs(t *testing.T) {
 			args: []string{
 				"-data-dir", tmpDir,
 				"-disable-host-node-id=false",
-				"-bind", "127.0.0.1",
 			},
 			BaseCommand: baseCommand(cli.NewMockUi()),
 		}

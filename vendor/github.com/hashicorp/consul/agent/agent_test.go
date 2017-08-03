@@ -117,7 +117,6 @@ func TestAgent_CheckAdvertiseAddrsSettings(t *testing.T) {
 	cfg.AdvertiseAddrs.SerfLan, _ = net.ResolveTCPAddr("tcp", "127.0.0.42:1233")
 	cfg.AdvertiseAddrs.SerfWan, _ = net.ResolveTCPAddr("tcp", "127.0.0.43:1234")
 	cfg.AdvertiseAddrs.RPC, _ = net.ResolveTCPAddr("tcp", "127.0.0.44:1235")
-	cfg.SetupTaggedAndAdvertiseAddrs()
 	a := NewTestAgent(t.Name(), cfg)
 	defer a.Shutdown()
 
@@ -147,27 +146,6 @@ func TestAgent_CheckAdvertiseAddrsSettings(t *testing.T) {
 	}
 	if !reflect.DeepEqual(a.Config.TaggedAddresses, expected) {
 		t.Fatalf("Tagged addresses not set up properly: %v", a.Config.TaggedAddresses)
-	}
-}
-
-func TestAgent_TokenStore(t *testing.T) {
-	t.Parallel()
-
-	cfg := TestConfig()
-	cfg.ACLToken = "user"
-	cfg.ACLAgentToken = "agent"
-	cfg.ACLAgentMasterToken = "master"
-	a := NewTestAgent(t.Name(), cfg)
-	defer a.Shutdown()
-
-	if got, want := a.tokens.UserToken(), "user"; got != want {
-		t.Fatalf("got %q want %q", got, want)
-	}
-	if got, want := a.tokens.AgentToken(), "agent"; got != want {
-		t.Fatalf("got %q want %q", got, want)
-	}
-	if got, want := a.tokens.IsAgentMasterToken("master"), true; got != want {
-		t.Fatalf("got %v want %v", got, want)
 	}
 }
 
@@ -844,7 +822,7 @@ func TestAgent_AddCheck_ExecDisable(t *testing.T) {
 		Interval: 15 * time.Second,
 	}
 	err := a.AddCheck(health, chk, false, "")
-	if err == nil || !strings.Contains(err.Error(), "Scripts are disabled on this agent") {
+	if err == nil || !strings.Contains(err.Error(), "exec scripts are disabled on this agent") {
 		t.Fatalf("err: %v", err)
 	}
 

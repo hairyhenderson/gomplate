@@ -192,12 +192,10 @@ func (s *serfQueries) handleInstallKey(q *Query) {
 		goto SEND
 	}
 
-	if s.serf.config.KeyringFile != "" {
-		if err := s.serf.writeKeyringFile(); err != nil {
-			response.Message = err.Error()
-			s.logger.Printf("[ERR] serf: Failed to write keyring file: %s", err)
-			goto SEND
-		}
+	if err := s.serf.writeKeyringFile(); err != nil {
+		response.Message = err.Error()
+		s.logger.Printf("[ERR] serf: Failed to write keyring file: %s", err)
+		goto SEND
 	}
 
 	response.Result = true

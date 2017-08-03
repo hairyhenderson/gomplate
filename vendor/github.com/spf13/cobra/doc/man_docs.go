@@ -77,6 +77,8 @@ func GenManTreeFromOpts(cmd *cobra.Command, opts GenManTreeOptions) error {
 	return GenMan(cmd, &headerCopy, f)
 }
 
+// GenManTreeOptions is the options for generating the man pages.
+// Used only in GenManTreeFromOpts.
 type GenManTreeOptions struct {
 	Header           *GenManHeader
 	Path             string
@@ -188,6 +190,9 @@ func manPrintOptions(buf *bytes.Buffer, command *cobra.Command) {
 }
 
 func genMan(cmd *cobra.Command, header *GenManHeader) []byte {
+	cmd.InitDefaultHelpCmd()
+	cmd.InitDefaultHelpFlag()
+
 	// something like `rootcmd-subcmd1-subcmd2`
 	dashCommandName := strings.Replace(cmd.CommandPath(), " ", "-", -1)
 

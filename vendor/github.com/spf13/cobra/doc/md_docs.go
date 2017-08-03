@@ -52,6 +52,9 @@ func GenMarkdown(cmd *cobra.Command, w io.Writer) error {
 
 // GenMarkdownCustom creates custom markdown output.
 func GenMarkdownCustom(cmd *cobra.Command, w io.Writer, linkHandler func(string) string) error {
+	cmd.InitDefaultHelpCmd()
+	cmd.InitDefaultHelpFlag()
+
 	buf := new(bytes.Buffer)
 	name := cmd.CommandPath()
 
@@ -126,6 +129,8 @@ func GenMarkdownTree(cmd *cobra.Command, dir string) error {
 	return GenMarkdownTreeCustom(cmd, dir, emptyStr, identity)
 }
 
+// GenMarkdownTreeCustom is the the same as GenMarkdownTree, but
+// with custom filePrepender and linkHandler.
 func GenMarkdownTreeCustom(cmd *cobra.Command, dir string, filePrepender, linkHandler func(string) string) error {
 	for _, c := range cmd.Commands() {
 		if !c.IsAvailableCommand() || c.IsAdditionalHelpTopicCommand() {

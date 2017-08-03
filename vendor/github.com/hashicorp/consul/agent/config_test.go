@@ -50,34 +50,18 @@ func TestConfigEncryptBytes(t *testing.T) {
 
 func TestDecodeConfig(t *testing.T) {
 	tests := []struct {
-		desc             string
-		in               string
-		c                *Config
-		err              error
-		parseTemplateErr error
+		desc string
+		in   string
+		c    *Config
+		err  error
 	}{
 		// special flows
 		{
 			in:  `{"bad": "no way jose"}`,
 			err: errors.New("Config has invalid keys: bad"),
 		},
-		{
-			in:               `{"advertise_addr":"unix:///path/to/file"}`,
-			parseTemplateErr: errors.New("Failed to parse Advertise address: unix:///path/to/file"),
-			c:                &Config{AdvertiseAddr: "unix:///path/to/file"},
-		},
-		{
-			in:               `{"advertise_addr_wan":"unix:///path/to/file"}`,
-			parseTemplateErr: errors.New("Failed to parse Advertise WAN address: unix:///path/to/file"),
-			c:                &Config{AdvertiseAddrWan: "unix:///path/to/file"},
-		},
-		{
-			in:               `{"addresses":{"http":"notunix://blah"}}`,
-			parseTemplateErr: errors.New("Failed to parse HTTP address, \"notunix://blah\" is not a valid IP address or socket"),
-			c:                &Config{Addresses: AddressConfig{HTTP: "notunix://blah"}},
-		},
 
-		// happy flows in alphabetical order
+		// happy flows in alphabeical order
 		{
 			in: `{"acl_agent_master_token":"a"}`,
 			c:  &Config{ACLAgentMasterToken: "a"},
@@ -119,56 +103,28 @@ func TestDecodeConfig(t *testing.T) {
 			c:  &Config{ACLTTL: 2 * time.Second, ACLTTLRaw: "2s"},
 		},
 		{
-			in: `{"addresses":{"dns":"1.2.3.4"}}`,
-			c:  &Config{Addresses: AddressConfig{DNS: "1.2.3.4"}},
+			in: `{"addresses":{"dns":"a"}}`,
+			c:  &Config{Addresses: AddressConfig{DNS: "a"}},
 		},
 		{
-			in: `{"addresses":{"dns":"{{\"1.2.3.4\"}}"}}`,
-			c:  &Config{Addresses: AddressConfig{DNS: "1.2.3.4"}},
+			in: `{"addresses":{"http":"a"}}`,
+			c:  &Config{Addresses: AddressConfig{HTTP: "a"}},
 		},
 		{
-			in: `{"addresses":{"http":"1.2.3.4"}}`,
-			c:  &Config{Addresses: AddressConfig{HTTP: "1.2.3.4"}},
-		},
-		{
-			in: `{"addresses":{"http":"unix:///var/foo/bar"}}`,
-			c:  &Config{Addresses: AddressConfig{HTTP: "unix:///var/foo/bar"}},
-		},
-		{
-			in: `{"addresses":{"http":"{{\"1.2.3.4\"}}"}}`,
-			c:  &Config{Addresses: AddressConfig{HTTP: "1.2.3.4"}},
-		},
-		{
-			in: `{"addresses":{"https":"1.2.3.4"}}`,
-			c:  &Config{Addresses: AddressConfig{HTTPS: "1.2.3.4"}},
-		},
-		{
-			in: `{"addresses":{"https":"unix:///var/foo/bar"}}`,
-			c:  &Config{Addresses: AddressConfig{HTTPS: "unix:///var/foo/bar"}},
-		},
-		{
-			in: `{"addresses":{"https":"{{\"1.2.3.4\"}}"}}`,
-			c:  &Config{Addresses: AddressConfig{HTTPS: "1.2.3.4"}},
+			in: `{"addresses":{"https":"a"}}`,
+			c:  &Config{Addresses: AddressConfig{HTTPS: "a"}},
 		},
 		{
 			in: `{"addresses":{"rpc":"a"}}`,
 			c:  &Config{Addresses: AddressConfig{RPC: "a"}},
 		},
 		{
-			in: `{"advertise_addr":"1.2.3.4"}`,
-			c:  &Config{AdvertiseAddr: "1.2.3.4"},
+			in: `{"advertise_addr":"a"}`,
+			c:  &Config{AdvertiseAddr: "a"},
 		},
 		{
-			in: `{"advertise_addr":"{{\"1.2.3.4\"}}"}`,
-			c:  &Config{AdvertiseAddr: "1.2.3.4"},
-		},
-		{
-			in: `{"advertise_addr_wan":"1.2.3.4"}`,
-			c:  &Config{AdvertiseAddrWan: "1.2.3.4"},
-		},
-		{
-			in: `{"advertise_addr_wan":"{{\"1.2.3.4\"}}"}`,
-			c:  &Config{AdvertiseAddrWan: "1.2.3.4"},
+			in: `{"advertise_addr_wan":"a"}`,
+			c:  &Config{AdvertiseAddrWan: "a"},
 		},
 		{
 			in: `{"advertise_addrs":{"rpc":"1.2.3.4:5678"}}`,
@@ -246,12 +202,8 @@ func TestDecodeConfig(t *testing.T) {
 			c:  &Config{Autopilot: Autopilot{CleanupDeadServers: Bool(true)}},
 		},
 		{
-			in: `{"bind_addr":"1.2.3.4"}`,
-			c:  &Config{BindAddr: "1.2.3.4"},
-		},
-		{
-			in: `{"bind_addr":"{{\"1.2.3.4\"}}"}`,
-			c:  &Config{BindAddr: "1.2.3.4"},
+			in: `{"bind_addr":"a"}`,
+			c:  &Config{BindAddr: "a"},
 		},
 		{
 			in: `{"bootstrap":true}`,
@@ -278,12 +230,8 @@ func TestDecodeConfig(t *testing.T) {
 			c:  &Config{CertFile: "a"},
 		},
 		{
-			in: `{"client_addr":"1.2.3.4"}`,
-			c:  &Config{ClientAddr: "1.2.3.4"},
-		},
-		{
-			in: `{"client_addr":"{{\"1.2.3.4\"}}"}`,
-			c:  &Config{ClientAddr: "1.2.3.4"},
+			in: `{"client_addr":"a"}`,
+			c:  &Config{ClientAddr: "a"},
 		},
 		{
 			in: `{"data_dir":"a"}`,
@@ -512,63 +460,63 @@ func TestDecodeConfig(t *testing.T) {
 		},
 		{
 			in: `{"retry_join_azure":{"client_id":"a"}}`,
-			c:  &Config{RetryJoin: []string{"provider=azure client_id=a"}},
+			c:  &Config{RetryJoinAzure: RetryJoinAzure{ClientID: "a"}},
 		},
 		{
 			in: `{"retry_join_azure":{"tag_name":"a"}}`,
-			c:  &Config{RetryJoin: []string{"provider=azure tag_name=a"}},
+			c:  &Config{RetryJoinAzure: RetryJoinAzure{TagName: "a"}},
 		},
 		{
 			in: `{"retry_join_azure":{"tag_value":"a"}}`,
-			c:  &Config{RetryJoin: []string{"provider=azure tag_value=a"}},
+			c:  &Config{RetryJoinAzure: RetryJoinAzure{TagValue: "a"}},
 		},
 		{
 			in: `{"retry_join_azure":{"secret_access_key":"a"}}`,
-			c:  &Config{RetryJoin: []string{"provider=azure secret_access_key=a"}},
+			c:  &Config{RetryJoinAzure: RetryJoinAzure{SecretAccessKey: "a"}},
 		},
 		{
 			in: `{"retry_join_azure":{"subscription_id":"a"}}`,
-			c:  &Config{RetryJoin: []string{"provider=azure subscription_id=a"}},
+			c:  &Config{RetryJoinAzure: RetryJoinAzure{SubscriptionID: "a"}},
 		},
 		{
 			in: `{"retry_join_azure":{"tenant_id":"a"}}`,
-			c:  &Config{RetryJoin: []string{"provider=azure tenant_id=a"}},
+			c:  &Config{RetryJoinAzure: RetryJoinAzure{TenantID: "a"}},
 		},
 		{
 			in: `{"retry_join_ec2":{"access_key_id":"a"}}`,
-			c:  &Config{RetryJoin: []string{"provider=aws access_key_id=a"}},
+			c:  &Config{RetryJoinEC2: RetryJoinEC2{AccessKeyID: "a"}},
 		},
 		{
 			in: `{"retry_join_ec2":{"region":"a"}}`,
-			c:  &Config{RetryJoin: []string{"provider=aws region=a"}},
+			c:  &Config{RetryJoinEC2: RetryJoinEC2{Region: "a"}},
 		},
 		{
 			in: `{"retry_join_ec2":{"tag_key":"a"}}`,
-			c:  &Config{RetryJoin: []string{"provider=aws tag_key=a"}},
+			c:  &Config{RetryJoinEC2: RetryJoinEC2{TagKey: "a"}},
 		},
 		{
 			in: `{"retry_join_ec2":{"tag_value":"a"}}`,
-			c:  &Config{RetryJoin: []string{"provider=aws tag_value=a"}},
+			c:  &Config{RetryJoinEC2: RetryJoinEC2{TagValue: "a"}},
 		},
 		{
 			in: `{"retry_join_ec2":{"secret_access_key":"a"}}`,
-			c:  &Config{RetryJoin: []string{"provider=aws secret_access_key=a"}},
+			c:  &Config{RetryJoinEC2: RetryJoinEC2{SecretAccessKey: "a"}},
 		},
 		{
 			in: `{"retry_join_gce":{"credentials_file":"a"}}`,
-			c:  &Config{RetryJoin: []string{"provider=gce credentials_file=a"}},
+			c:  &Config{RetryJoinGCE: RetryJoinGCE{CredentialsFile: "a"}},
 		},
 		{
 			in: `{"retry_join_gce":{"project_name":"a"}}`,
-			c:  &Config{RetryJoin: []string{"provider=gce project_name=a"}},
+			c:  &Config{RetryJoinGCE: RetryJoinGCE{ProjectName: "a"}},
 		},
 		{
 			in: `{"retry_join_gce":{"tag_value":"a"}}`,
-			c:  &Config{RetryJoin: []string{"provider=gce tag_value=a"}},
+			c:  &Config{RetryJoinGCE: RetryJoinGCE{TagValue: "a"}},
 		},
 		{
 			in: `{"retry_join_gce":{"zone_pattern":"a"}}`,
-			c:  &Config{RetryJoin: []string{"provider=gce zone_pattern=a"}},
+			c:  &Config{RetryJoinGCE: RetryJoinGCE{ZonePattern: "a"}},
 		},
 		{
 			in: `{"retry_join_wan":["a","b"]}`,
@@ -583,30 +531,12 @@ func TestDecodeConfig(t *testing.T) {
 			c:  &Config{RetryMaxAttemptsWan: 123},
 		},
 		{
-			in: `{"serf_lan_bind":"1.2.3.4"}`,
-			c:  &Config{SerfLanBindAddr: "1.2.3.4"},
+			in: `{"serf_lan_bind":"a"}`,
+			c:  &Config{SerfLanBindAddr: "a"},
 		},
 		{
-			in:               `{"serf_lan_bind":"unix:///var/foo/bar"}`,
-			c:                &Config{SerfLanBindAddr: "unix:///var/foo/bar"},
-			parseTemplateErr: errors.New("Failed to parse Serf LAN address: unix:///var/foo/bar"),
-		},
-		{
-			in: `{"serf_lan_bind":"{{\"1.2.3.4\"}}"}`,
-			c:  &Config{SerfLanBindAddr: "1.2.3.4"},
-		},
-		{
-			in: `{"serf_wan_bind":"1.2.3.4"}`,
-			c:  &Config{SerfWanBindAddr: "1.2.3.4"},
-		},
-		{
-			in:               `{"serf_wan_bind":"unix:///var/foo/bar"}`,
-			c:                &Config{SerfWanBindAddr: "unix:///var/foo/bar"},
-			parseTemplateErr: errors.New("Failed to parse Serf WAN address: unix:///var/foo/bar"),
-		},
-		{
-			in: `{"serf_wan_bind":"{{\"1.2.3.4\"}}"}`,
-			c:  &Config{SerfWanBindAddr: "1.2.3.4"},
+			in: `{"serf_wan_bind":"a"}`,
+			c:  &Config{SerfWanBindAddr: "a"},
 		},
 		{
 			in: `{"server":true}`,
@@ -1235,12 +1165,39 @@ func TestDecodeConfig(t *testing.T) {
 			if got, want := err, tt.err; !reflect.DeepEqual(got, want) {
 				t.Fatalf("got error %v want %v", got, want)
 			}
-			err = c.ResolveTmplAddrs()
-			if got, want := err, tt.parseTemplateErr; !reflect.DeepEqual(got, want) {
-				t.Fatalf("got error %v on ResolveTmplAddrs, expected %v", err, want)
-			}
 			got, want := c, tt.c
 			verify.Values(t, "", got, want)
+		})
+	}
+}
+
+func TestDecodeConfig_ACLTokenPreference(t *testing.T) {
+	tests := []struct {
+		in  string
+		tok string
+	}{
+		{
+			in:  `{}`,
+			tok: "",
+		},
+		{
+			in:  `{"acl_token":"a"}`,
+			tok: "a",
+		},
+		{
+			in:  `{"acl_token":"a","acl_agent_token":"b"}`,
+			tok: "b",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.in, func(t *testing.T) {
+			c, err := DecodeConfig(strings.NewReader(tt.in))
+			if err != nil {
+				t.Fatalf("got error %v want nil", err)
+			}
+			if got, want := c.GetTokenForAgent(), tt.tok; got != want {
+				t.Fatalf("got token for agent %q want %q", got, want)
+			}
 		})
 	}
 }
@@ -1316,7 +1273,7 @@ func TestMergeConfig(t *testing.T) {
 		CheckUpdateIntervalRaw: "8m",
 		RetryIntervalRaw:       "10s",
 		RetryIntervalWanRaw:    "10s",
-		DeprecatedRetryJoinEC2: RetryJoinEC2{
+		RetryJoinEC2: RetryJoinEC2{
 			Region:          "us-east-1",
 			TagKey:          "Key1",
 			TagValue:        "Value1",
@@ -1465,7 +1422,7 @@ func TestMergeConfig(t *testing.T) {
 				Perms: "0700",
 			},
 		},
-		DeprecatedRetryJoinEC2: RetryJoinEC2{
+		RetryJoinEC2: RetryJoinEC2{
 			Region:          "us-east-2",
 			TagKey:          "Key2",
 			TagValue:        "Value2",

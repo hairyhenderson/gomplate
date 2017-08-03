@@ -73,7 +73,6 @@ func (s *HTTPServer) handler(enableDebug bool) http.Handler {
 
 	// API V1.
 	if s.agent.config.ACLDatacenter != "" {
-		handleFuncMetrics("/v1/acl/bootstrap", s.wrap(s.ACLBootstrap))
 		handleFuncMetrics("/v1/acl/create", s.wrap(s.ACLCreate))
 		handleFuncMetrics("/v1/acl/update", s.wrap(s.ACLUpdate))
 		handleFuncMetrics("/v1/acl/destroy/", s.wrap(s.ACLDestroy))
@@ -81,9 +80,7 @@ func (s *HTTPServer) handler(enableDebug bool) http.Handler {
 		handleFuncMetrics("/v1/acl/clone/", s.wrap(s.ACLClone))
 		handleFuncMetrics("/v1/acl/list", s.wrap(s.ACLList))
 		handleFuncMetrics("/v1/acl/replication", s.wrap(s.ACLReplicationStatus))
-		handleFuncMetrics("/v1/agent/token/", s.wrap(s.AgentToken))
 	} else {
-		handleFuncMetrics("/v1/acl/bootstrap", s.wrap(ACLDisabled))
 		handleFuncMetrics("/v1/acl/create", s.wrap(ACLDisabled))
 		handleFuncMetrics("/v1/acl/update", s.wrap(ACLDisabled))
 		handleFuncMetrics("/v1/acl/destroy/", s.wrap(ACLDisabled))
@@ -91,7 +88,6 @@ func (s *HTTPServer) handler(enableDebug bool) http.Handler {
 		handleFuncMetrics("/v1/acl/clone/", s.wrap(ACLDisabled))
 		handleFuncMetrics("/v1/acl/list", s.wrap(ACLDisabled))
 		handleFuncMetrics("/v1/acl/replication", s.wrap(ACLDisabled))
-		handleFuncMetrics("/v1/agent/token/", s.wrap(ACLDisabled))
 	}
 	handleFuncMetrics("/v1/agent/self", s.wrap(s.AgentSelf))
 	handleFuncMetrics("/v1/agent/maintenance", s.wrap(s.AgentNodeMaintenance))
@@ -432,7 +428,7 @@ func (s *HTTPServer) parseToken(req *http.Request, token *string) {
 	}
 
 	// Set the default ACLToken
-	*token = s.agent.tokens.UserToken()
+	*token = s.agent.config.ACLToken
 }
 
 // parseSource is used to parse the ?near=<node> query parameter, used for
