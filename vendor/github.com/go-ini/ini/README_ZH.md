@@ -76,8 +76,8 @@ sec1, err := cfg.GetSection("Section")
 sec2, err := cfg.GetSection("SecTIOn")
 
 // key1 和 key2 指向同一个键对象
-key1, err := cfg.GetKey("Key")
-key2, err := cfg.GetKey("KeY")
+key1, err := sec1.GetKey("Key")
+key2, err := sec2.GetKey("KeY")
 ```
 
 #### 类似 MySQL 配置中的布尔值键
@@ -99,6 +99,12 @@ cfg, err := LoadSources(LoadOptions{AllowBooleanKeys: true}, "my.cnf"))
 
 这些键的值永远为 `true`，且在保存到文件时也只会输出键名。
 
+如果您想要通过程序来生成此类键，则可以使用 `NewBooleanKey`：
+
+```go
+key, err := sec.NewBooleanKey("skip-host-cache")
+```
+
 #### 关于注释
 
 下述几种情况的内容将被视为注释：
@@ -108,6 +114,12 @@ cfg, err := LoadSources(LoadOptions{AllowBooleanKeys: true}, "my.cnf"))
 3. 分区标签后的文字 (即 `[分区名]` 之后的内容)
 
 如果你希望使用包含 `#` 或 `;` 的值，请使用 ``` ` ``` 或 ``` """ ``` 进行包覆。
+
+除此之外，您还可以通过 `LoadOptions` 完全忽略行内注释：
+
+```go
+cfg, err := LoadSources(LoadOptions{IgnoreInlineComment: true}, "app.ini"))
+```
 
 ### 操作分区（Section）
 

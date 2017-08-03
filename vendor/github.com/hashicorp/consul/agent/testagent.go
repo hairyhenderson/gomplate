@@ -334,7 +334,6 @@ func TestConfig() *Config {
 
 	ccfg.CoordinateUpdatePeriod = 100 * time.Millisecond
 	ccfg.ServerHealthInterval = 10 * time.Millisecond
-	cfg.SetupTaggedAndAdvertiseAddrs()
 	return cfg
 }
 

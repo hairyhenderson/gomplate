@@ -16,11 +16,8 @@ service. This is particularly useful in combination with Consul's
 [DNS Interface](/docs/agent/dns.html) as it allows for much richer queries than
 would be possible given the limited entry points exposed by DNS.
 
-See the [Geo Failover Guide](/docs/guides/geo-failover.html) for details and
-examples for using prepared queries to implement geo failover for services.
-
-See the ACL Guide's [prepared query rules](/docs/guides/acl.html#prepared-query-rules)
-section for more details about how prepared queries work with Consul's ACL system.
+See the [ACL Guide](/docs/guides/acl.html#prepared_query_acls)
+prepared query section for more details about how prepared query policies work.
 
 ### Prepared Query Templates
 
@@ -32,8 +29,7 @@ Here is an example prepared query template:
 {
   "Template": {
     "Type": "name_prefix_match",
-    "Regexp": "^geo-db-(.*?)-([^\\-]+?)$",
-    "RemoveEmptyTags": false
+    "Regexp": "^geo-db-(.*?)-([^\\-]+?)$"
   }
 }
 ```
@@ -55,12 +51,6 @@ static query. It has two fields:
   everything else after as a tag. See the
   [RE2](https://github.com/google/re2/wiki/Syntax) reference for syntax of this
   regular expression.
-
-- `RemoveEmptyTags` is optional, and if set to true, will cause the `Tags` list
-  inside the `Service` structure to be stripped of any empty strings. This defaults
-  to false, meaning that empty strings will remain in the list. This is useful
-  when interpolating into tags in a way where the tag is optional, and where
-  searching for an empty tag would yield no results from the query.
 
 All other fields of the query have the same meanings as for a static query,
 except that several interpolation variables are available to dynamically

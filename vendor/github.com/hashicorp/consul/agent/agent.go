@@ -5,6 +5,7 @@ import (
 	"crypto/sha512"
 	"crypto/tls"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -22,13 +23,13 @@ import (
 	"github.com/hashicorp/consul/agent/consul"
 	"github.com/hashicorp/consul/agent/consul/structs"
 	"github.com/hashicorp/consul/agent/systemd"
-	"github.com/hashicorp/consul/agent/token"
 	"github.com/hashicorp/consul/api"
 	"github.com/hashicorp/consul/ipaddr"
 	"github.com/hashicorp/consul/lib"
 	"github.com/hashicorp/consul/logger"
 	"github.com/hashicorp/consul/types"
 	"github.com/hashicorp/consul/watch"
+	"github.com/hashicorp/go-sockaddr/template"
 	"github.com/hashicorp/go-uuid"
 	"github.com/hashicorp/raft"
 	"github.com/hashicorp/serf/coordinate"
@@ -179,11 +180,6 @@ type Agent struct {
 	// watchPlans tracks all the currently-running watch plans for the
 	// agent.
 	watchPlans []*watch.Plan
-
-	// tokens holds ACL tokens initially from the configuration, but can
-	// be updated at runtime, so should always be used instead of going to
-	// the configuration directly.
-	tokens *token.Store
 }
 
 func New(c *Config) (*Agent, error) {
@@ -224,13 +220,56 @@ func New(c *Config) (*Agent, error) {
 		endpoints:       make(map[string]string),
 		dnsAddrs:        dnsAddrs,
 		httpAddrs:       httpAddrs,
-		tokens:          new(token.Store),
+	}
+	if err := a.resolveTmplAddrs(); err != nil {
+		return nil, err
 	}
 
-	// Set up the initial state of the token store based on the config.
-	a.tokens.UpdateUserToken(a.config.ACLToken)
-	a.tokens.UpdateAgentToken(a.config.ACLAgentToken)
-	a.tokens.UpdateAgentMasterToken(a.config.ACLAgentMasterToken)
+	// Try to get an advertise address
+	switch {
+	case a.config.AdvertiseAddr != "":
+		ipStr, err := parseSingleIPTemplate(a.config.AdvertiseAddr)
+		if err != nil {
+			return nil, fmt.Errorf("Advertise address resolution failed: %v", err)
+		}
+		if net.ParseIP(ipStr) == nil {
+			return nil, fmt.Errorf("Failed to parse advertise address: %v", ipStr)
+		}
+		a.config.AdvertiseAddr = ipStr
+
+	case a.config.BindAddr != "" && !ipaddr.IsAny(a.config.BindAddr):
+		a.config.AdvertiseAddr = a.config.BindAddr
+
+	default:
+		ip, err := consul.GetPrivateIP()
+		if ipaddr.IsAnyV6(a.config.BindAddr) {
+			ip, err = consul.GetPublicIPv6()
+		}
+		if err != nil {
+			return nil, fmt.Errorf("Failed to get advertise address: %v", err)
+		}
+		a.config.AdvertiseAddr = ip.String()
+	}
+
+	// Try to get an advertise address for the wan
+	if a.config.AdvertiseAddrWan != "" {
+		ipStr, err := parseSingleIPTemplate(a.config.AdvertiseAddrWan)
+		if err != nil {
+			return nil, fmt.Errorf("Advertise WAN address resolution failed: %v", err)
+		}
+		if net.ParseIP(ipStr) == nil {
+			return nil, fmt.Errorf("Failed to parse advertise address for WAN: %v", ipStr)
+		}
+		a.config.AdvertiseAddrWan = ipStr
+	} else {
+		a.config.AdvertiseAddrWan = a.config.AdvertiseAddr
+	}
+
+	// Create the default set of tagged addresses.
+	a.config.TaggedAddresses = map[string]string{
+		"lan": a.config.AdvertiseAddr,
+		"wan": a.config.AdvertiseAddrWan,
+	}
 
 	return a, nil
 }
@@ -253,7 +292,7 @@ func (a *Agent) Start() error {
 	}
 
 	// create the local state
-	a.state = NewLocalState(c, a.logger, a.tokens)
+	a.state = NewLocalState(c, a.logger)
 
 	// create the config for the rpc server/client
 	consulCfg, err := a.consulConfig()
@@ -660,6 +699,12 @@ func (a *Agent) consulConfig() (*consul.Config, error) {
 	if a.config.RaftProtocol != 0 {
 		base.RaftConfig.ProtocolVersion = raft.ProtocolVersion(a.config.RaftProtocol)
 	}
+	if a.config.ACLToken != "" {
+		base.ACLToken = a.config.ACLToken
+	}
+	if a.config.ACLAgentToken != "" {
+		base.ACLAgentToken = a.config.ACLAgentToken
+	}
 	if a.config.ACLMasterToken != "" {
 		base.ACLMasterToken = a.config.ACLMasterToken
 	}
@@ -761,6 +806,113 @@ func (a *Agent) consulConfig() (*consul.Config, error) {
 	}
 
 	return base, nil
+}
+
+// parseSingleIPTemplate is used as a helper function to parse out a single IP
+// address from a config parameter.
+func parseSingleIPTemplate(ipTmpl string) (string, error) {
+	out, err := template.Parse(ipTmpl)
+	if err != nil {
+		return "", fmt.Errorf("Unable to parse address template %q: %v", ipTmpl, err)
+	}
+
+	ips := strings.Split(out, " ")
+	switch len(ips) {
+	case 0:
+		return "", errors.New("No addresses found, please configure one.")
+	case 1:
+		return ips[0], nil
+	default:
+		return "", fmt.Errorf("Multiple addresses found (%q), please configure one.", out)
+	}
+}
+
+// resolveTmplAddrs iterates over the myriad of addresses in the agent's config
+// and performs go-sockaddr/template Parse on each known address in case the
+// user specified a template config for any of their values.
+func (a *Agent) resolveTmplAddrs() error {
+	if a.config.AdvertiseAddr != "" {
+		ipStr, err := parseSingleIPTemplate(a.config.AdvertiseAddr)
+		if err != nil {
+			return fmt.Errorf("Advertise address resolution failed: %v", err)
+		}
+		a.config.AdvertiseAddr = ipStr
+	}
+
+	if a.config.Addresses.DNS != "" {
+		ipStr, err := parseSingleIPTemplate(a.config.Addresses.DNS)
+		if err != nil {
+			return fmt.Errorf("DNS address resolution failed: %v", err)
+		}
+		a.config.Addresses.DNS = ipStr
+	}
+
+	if a.config.Addresses.HTTP != "" {
+		ipStr, err := parseSingleIPTemplate(a.config.Addresses.HTTP)
+		if err != nil {
+			return fmt.Errorf("HTTP address resolution failed: %v", err)
+		}
+		a.config.Addresses.HTTP = ipStr
+	}
+
+	if a.config.Addresses.HTTPS != "" {
+		ipStr, err := parseSingleIPTemplate(a.config.Addresses.HTTPS)
+		if err != nil {
+			return fmt.Errorf("HTTPS address resolution failed: %v", err)
+		}
+		a.config.Addresses.HTTPS = ipStr
+	}
+
+	if a.config.AdvertiseAddrWan != "" {
+		ipStr, err := parseSingleIPTemplate(a.config.AdvertiseAddrWan)
+		if err != nil {
+			return fmt.Errorf("Advertise WAN address resolution failed: %v", err)
+		}
+		a.config.AdvertiseAddrWan = ipStr
+	}
+
+	if a.config.BindAddr != "" {
+		ipStr, err := parseSingleIPTemplate(a.config.BindAddr)
+		if err != nil {
+			return fmt.Errorf("Bind address resolution failed: %v", err)
+		}
+		a.config.BindAddr = ipStr
+	}
+
+	if a.config.ClientAddr != "" {
+		ipStr, err := parseSingleIPTemplate(a.config.ClientAddr)
+		if err != nil {
+			return fmt.Errorf("Client address resolution failed: %v", err)
+		}
+		a.config.ClientAddr = ipStr
+	}
+
+	if a.config.SerfLanBindAddr != "" {
+		ipStr, err := parseSingleIPTemplate(a.config.SerfLanBindAddr)
+		if err != nil {
+			return fmt.Errorf("Serf LAN Address resolution failed: %v", err)
+		}
+		a.config.SerfLanBindAddr = ipStr
+	}
+
+	if a.config.SerfWanBindAddr != "" {
+		ipStr, err := parseSingleIPTemplate(a.config.SerfWanBindAddr)
+		if err != nil {
+			return fmt.Errorf("Serf WAN Address resolution failed: %v", err)
+		}
+		a.config.SerfWanBindAddr = ipStr
+	}
+
+	// Parse all tagged addresses
+	for k, v := range a.config.TaggedAddresses {
+		ipStr, err := parseSingleIPTemplate(v)
+		if err != nil {
+			return fmt.Errorf("%s address resolution failed: %v", k, err)
+		}
+		a.config.TaggedAddresses[k] = ipStr
+	}
+
+	return nil
 }
 
 // makeRandomID will generate a random UUID for a node.
@@ -1192,7 +1344,7 @@ func (a *Agent) sendCoordinate() {
 				Datacenter:   a.config.Datacenter,
 				Node:         a.config.NodeName,
 				Coord:        c,
-				WriteRequest: structs.WriteRequest{Token: a.tokens.AgentToken()},
+				WriteRequest: structs.WriteRequest{Token: a.config.GetTokenForAgent()},
 			}
 			var reply struct{}
 			if err := a.RPC("Coordinate.Update", &req, &reply); err != nil {
@@ -1333,24 +1485,15 @@ func writeFileAtomic(path string, contents []byte) error {
 		return err
 	}
 	if _, err := fh.Write(contents); err != nil {
-		fh.Close()
-		os.Remove(tempPath)
 		return err
 	}
 	if err := fh.Sync(); err != nil {
-		fh.Close()
-		os.Remove(tempPath)
 		return err
 	}
 	if err := fh.Close(); err != nil {
-		os.Remove(tempPath)
 		return err
 	}
-	if err := os.Rename(tempPath, path); err != nil {
-		os.Remove(tempPath)
-		return err
-	}
-	return nil
+	return os.Rename(tempPath, path)
 }
 
 // AddService is used to add a service entry.
@@ -1486,7 +1629,7 @@ func (a *Agent) AddCheck(check *structs.HealthCheck, chkType *structs.CheckType,
 		}
 
 		if chkType.IsScript() && !a.config.EnableScriptChecks {
-			return fmt.Errorf("Scripts are disabled on this agent; to enable, configure 'enable_script_checks' to true")
+			return fmt.Errorf("Check types that exec scripts are disabled on this agent")
 		}
 	}
 
@@ -1926,12 +2069,6 @@ func (a *Agent) loadServices(conf *Config) error {
 	for _, fi := range files {
 		// Skip all dirs
 		if fi.IsDir() {
-			continue
-		}
-
-		// Skip all partially written temporary files
-		if strings.HasSuffix(fi.Name(), "tmp") {
-			a.logger.Printf("[WARN] Ignoring temporary service file %v", fi.Name())
 			continue
 		}
 

@@ -191,6 +191,16 @@ type Config struct {
 	// operators track which versions are actively deployed
 	Build string
 
+	// ACLToken is the default token to use when making a request.
+	// If not provided, the anonymous token is used. This enables
+	// backwards compatibility as well.
+	ACLToken string
+
+	// ACLAgentToken is the default token used to make requests for the agent
+	// itself, such as for registering itself with the catalog. If not
+	// configured, the ACLToken will be used.
+	ACLAgentToken string
+
 	// ACLMasterToken is used to bootstrap the ACL system. It should be specified
 	// on the servers in the ACLDatacenter. When the leader comes online, it ensures
 	// that the Master token is available. This provides the initial token.
@@ -449,4 +459,16 @@ func (c *Config) tlsConfig() *tlsutil.Config {
 		PreferServerCipherSuites: c.TLSPreferServerCipherSuites,
 	}
 	return tlsConf
+}
+
+// GetTokenForAgent returns the token the agent should use for its own internal
+// operations, such as registering itself with the catalog.
+func (c *Config) GetTokenForAgent() string {
+	if c.ACLAgentToken != "" {
+		return c.ACLAgentToken
+	}
+	if c.ACLToken != "" {
+		return c.ACLToken
+	}
+	return ""
 }

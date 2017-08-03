@@ -1,22 +1,3 @@
-## 0.8.2 (UNRELEASED)
-
-FEATURES:
-
-IMRPOVEMENTS:
-
-* agent: Fixed a missing case where gossip would stop flowing to dead nodes for a short while. [GH-451]
-* agent: Uses the go-sockaddr library to look for private IP addresses, which prefers non-loopback private addresses over loopback ones when trying to automatically determine the advertise address. [GH-451]
-* agent: Properly seeds Go's random number generator using the seed library. [GH-451]
-* agent: Serf is now built with Go 1.8. [GH-455]
-* agent: Improved address comparison during conflict resolution. [GH-433]
-* library: Moved close of shutdown channel until after network resorces are released. [GH-453]
-* library: Fixed several race conditions with QueryResponse [GH-460]
-
-BUG FIXES:
-
-* agent: Added defenses against invalid network coordinates with NaN and Inf values. [GH-468]
-* agent: Fixed an issue on Windows where "wsarecv" errors were logged when clients accessed the RPC interface. [GH-479]
-
 ## 0.8.1 (February 6, 2017)
 
 IMPROVEMENTS:

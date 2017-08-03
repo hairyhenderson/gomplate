@@ -82,8 +82,7 @@ type Config struct {
 	EncryptKey string `mapstructure:"encrypt_key"`
 
 	// KeyringFile is the path to a file containing a serialized keyring.
-	// The keyring is used to facilitate encryption. If left blank, the
-	// keyring will not be persisted to a file.
+	// The keyring is used to facilitate encryption.
 	KeyringFile string `mapstructure:"keyring_file"`
 
 	// LogLevel is the level of the logs to output.
