@@ -476,9 +476,7 @@ Currently, `file://`, `http://`, `https://`, and `vault://` URLs are supported.
 
 Currently-supported formats are JSON, YAML, TOML, and CSV.
 
-#### Examples
-
-##### Basic usage
+### Basic usage
 
 _`person.json`:_
 ```json
@@ -497,7 +495,7 @@ $ gomplate -d person.json < input.tmpl
 Hello Dave
 ```
 
-##### Usage with HTTP data
+### Usage with HTTP data
 
 ```console
 $ echo 'Hello there, {{(datasource "foo").headers.Host}}...' | gomplate -d foo=https://httpbin.org/get
@@ -511,52 +509,76 @@ $ gomplate -d foo=https://httpbin.org/get -H 'foo=Foo: bar' -i '{{(datasource "f
 bar
 ```
 
-##### Usage with Consul data
+### Usage with Consul data
 
-There are three URL schemes which can be used to retrieve data from [Hashicorp Consul](https://consul.io/).
+There are three supported URL schemes to retrieve data from [Consul](https://consul.io/).
 The `consul://` (or `consul+http://`) scheme can optionally be used with a hostname and port to specify a server (e.g. `consul://localhost:8500`).
-By default this will be contacted by HTTP, but the `$CONSUL_HTTP_SSL` can be used to switch to HTTPS mode. Alternatively
-the `consul+https://` scheme can be used.
+By default HTTP will be used, but the `consul+https://` form can be used to use HTTPS, alternatively `$CONSUL_HTTP_SSL` can be used.
 
-If the server address isn't included the variable `$CONSUL_HTTP_ADDR` will be checked, otherwise `localhost:8500` will be used.
+If the server address isn't part of the datasource URL, `$CONSUL_HTTP_ADDR` will be checked.
 
-The following environment variables can be used:
+The following optional environment variables can be set:
 
 | name | usage |
-| -- | -- |
-| `CONSUL_HTTP_ADDR` | Hostname and optional port for connecting to Consul. Defaults to localhost and port 8500. |
+|------|-------|
+| `CONSUL_HTTP_ADDR` | Hostname and optional port for connecting to Consul. Defaults to `http://localhost:8500` |
 | `CONSUL_TIMEOUT` | Timeout (in seconds) when communicating to Consul. Defaults to 10 seconds. |
 | `CONSUL_HTTP_TOKEN` | The Consul token to use when connecting to the server. |
-| `CONSUL_HTTP_AUTH` | Should be specified as <username>:<password>. Used to authenticate to the server. |
-| `CONSUL_HTTP_SSL` | Switch to HTTPS mode if set to a true value. It accepts 1, t, T, TRUE, true, True, 0, f, F, FALSE, false, False. Alternatively use the `consul+https://` scheme. |
+| `CONSUL_HTTP_AUTH` | Should be specified as `<username>:<password>`. Used to authenticate to the server. |
+| `CONSUL_HTTP_SSL` | Force HTTPS if set to `true` value. Disables if set to `false`. Any value acceptable to [`strconv.ParseBool`](https://golang.org/pkg/strconv/#ParseBool) can be provided. |
 | `CONSUL_TLS_SERVER_NAME` | The server name to use as the SNI host when connecting to Consul via TLS. |
-| `CONSUL_CACERT` | If specified points to a CA file for verifying Consul server using TLS. |
-| `CONSUL_CAPATH` | If specified points to a directory of CA files for verifying Consul server using TLS. |
-| `CONSUL_CLIENT_CERT` | Client certificate file for certificate authentication. Both a certificate and key are required. |
-| `CONSUL_CLIENT_KEY` | Client key file for certificate authentication. Both a certificate and key are required. |
-| `CONSUL_HTTP_SSL_VERIFY` | Disable Consul TLS certificate checking. It accepts 1, t, T, TRUE, true, True, 0, f, F, FALSE, false, False. |
+| `CONSUL_CACERT` | Path to CA file for verifying Consul server using TLS. |
+| `CONSUL_CAPATH` | Path to directory of CA files for verifying Consul server using TLS. |
+| `CONSUL_CLIENT_CERT` | Client certificate file for certificate authentication. If this is set, `$CONSUL_CLIENT_KEY` must also be set. |
+| `CONSUL_CLIENT_KEY` | Client key file for certificate authentication. If this is set, `$CONSUL_CLIENT_CERT` must also be set. |
+| `CONSUL_HTTP_SSL_VERIFY` | Set to `false` to disable Consul TLS certificate checking. Any value acceptable to [`strconv.ParseBool`](https://golang.org/pkg/strconv/#ParseBool) can be provided. <br/> _Recommended only for testing and development scenarios!_ |
 
 If a path is included it is used as a prefix for all uses of the datasource.
 
-##### Usage with BoldDB data
+#### Example
 
-[BoldDB](https://github.com/boltdb/bolt) is a simple local key/value store used by many Go tools.
+```console
+$ gomplate -d consul=consul:// -i '{{(datasource "consul" "foo")}}'
+value for foo key
+```
 
-It can be accessed using the `boltdb://` scheme in addition to the full path to the database file
-and the bucket name specified using the #fragment identifier (e.g. `boltdb:////tmp/database.db#bucket).
+```console
+$ gomplate -d consul=consul+https://my-consul-server.com:8533/foo -i '{{(datasource "consul" "bar")}}'
+value for foo/bar key
+```
 
-As access is vi [libkv](https://github.com/docker/libkv) the first 8 bytes of all values is used as an
-incrementing last modified index value. Therefore all values must be at least 9 bytes long, with the first
+```console
+$ gomplate -d consul=consul:///foo -i '{{(datasource "consul" "bar/baz")}}'
+value for foo/bar/baz key
+```
+
+### Usage with BoltDB data
+
+[BoltDB](https://github.com/boltdb/bolt) is a simple local key/value store used
+by many Go tools. The `boltdb://` scheme can be used to access values stored in
+a BoltDB database file. The full path is provided in the URL, and the bucket name
+can be specified using a URL fragment (e.g. `boltdb:///tmp/database.db#bucket`).
+
+Access is implemented through [libkv](https://github.com/docker/libkv), and as
+such, the first 8 bytes of all values are used as an incrementing last modified
+index value. All values must therefore be at least 9 bytes long, with the first
 8 being ignored.
 
-The following environment variables can be used:
+The following environment variables can be set:
 
 | name | usage |
-| -- | -- |
+|------|-------|
 | `BOLTDB_TIMEOUT` | Timeout (in seconds) to wait for a lock on the database file when opening. |
-| `BOLTDB_PERSIST` | If set keep the database open instead of closing after each read. It accepts 1, t, T, TRUE, true, True, 0, f, F, FALSE, false, False. |
+| `BOLTDB_PERSIST` | If set keep the database open instead of closing after each read. Any value acceptable to [`strconv.ParseBool`](https://golang.org/pkg/strconv/#ParseBool) can be provided. |
 
-##### Usage with Vault data
+### Example
+
+```console
+$ gomplate -d config=boltdb:///tmp/config.db#Bucket1 -i '{{(datasource "config" "foo")}}'
+bar
+```
+
+### Usage with Vault data
 
 The special `vault://` URL scheme can be used to retrieve data from [Hashicorp
 Vault](https://vaultproject.io). To use this, you must put the Vault server's
@@ -565,7 +587,7 @@ URL in the `$VAULT_ADDR` environment variable.
 This table describes the currently-supported authentication mechanisms and how to use them, in order of precedence:
 
 | auth backend | configuration |
-| ---: |--|
+|-------------: |---------------|
 | [`approle`](https://www.vaultproject.io/docs/auth/approle.html) | Environment variables `$VAULT_ROLE_ID` and `$VAULT_SECRET_ID` must be set to the appropriate values.<br/> If the backend is mounted to a different location, set `$VAULT_AUTH_APPROLE_MOUNT`. |
 | [`app-id`](https://www.vaultproject.io/docs/auth/app-id.html) | Environment variables `$VAULT_APP_ID` and `$VAULT_USER_ID` must be set to the appropriate values.<br/> If the backend is mounted to a different location, set `$VAULT_AUTH_APP_ID_MOUNT`. |
 | [`github`](https://www.vaultproject.io/docs/auth/github.html) | Environment variable `$VAULT_AUTH_GITHUB_TOKEN` must be set to an appropriate value.<br/> If the backend is mounted to a different location, set `$VAULT_AUTH_GITHUB_MOUNT`. |

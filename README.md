@@ -21,8 +21,8 @@ _Read the docs at [gomplate.hairyhenderson.ca][docs-url]._
 
 A [Go template](https://golang.org/pkg/text/template/)-based CLI tool. `gomplate` can be used as an alternative to
 [`envsubst`](https://www.gnu.org/software/gettext/manual/html_node/envsubst-Invocation.html) but also supports
-additional template datasources such as: JSON, YAML, AWS EC2 metadata, and
-[Hashicorp Vault](https://https://www.vaultproject.io/) secrets.
+additional template datasources such as: JSON, YAML, AWS EC2 metadata, [BoltDB](https://github.com/boltdb/bolt),
+[Hashicorp Consul](https://www.consul.io/) and [Hashicorp Vault](https://www.vaultproject.io/) secrets.
 
 I really like `envsubst` for use as a super-minimalist template processor. But its simplicity is also its biggest flaw: it's all-or-nothing with shell-like variables.
 
