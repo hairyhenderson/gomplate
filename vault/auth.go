@@ -1,6 +1,8 @@
 package vault
 
 import (
+	"encoding/base64"
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -8,11 +10,17 @@ import (
 	"strings"
 	"time"
 
+	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/sts"
 	"github.com/blang/vfs"
 	"github.com/hairyhenderson/gomplate/aws"
 	"github.com/hairyhenderson/gomplate/conv"
 	"github.com/hairyhenderson/gomplate/env"
+	"github.com/hashicorp/vault/helper/awsutil"
+	awssdk "github.com/aws/aws-sdk-go/aws"
 )
+
+const iamServerIdHeader = "X-Vault-AWS-IAM-Server-ID"
 
 // GetToken -
 func (v *Vault) GetToken() string {
@@ -32,6 +40,9 @@ func (v *Vault) GetToken() string {
 		return token
 	}
 	if token := v.EC2Login(); token != "" {
+		return token
+	}
+	if token := v.IAMLogin(); token != "" {
 		return token
 	}
 	logFatal("All vault auth failed")
@@ -212,6 +223,89 @@ func (v *Vault) EC2Login() string {
 	}
 
 	return secret.Auth.ClientToken
+}
+
+// IAMLogin - AWS IAM auth backend
+func (v *Vault) IAMLogin() string {
+	mount := env.Getenv("VAULT_AUTH_AWS_MOUNT", "aws")
+	role := env.Getenv("VAULT_AUTH_AWS_ROLE")
+	headerValue := env.Getenv("VAULT_AUTH_AWS_IAM_HEADER")
+	accessKeyId := env.Getenv("VAULT_AUTH_AWS_ACCESS_KEY_ID")
+	secretAccessKey := env.Getenv("VAULT_AUTH_AWS_SECRET_ACCESS_KEY")
+	securityToken := env.Getenv("VAULT_AUTH_AWS_SESSION_TOKEN")
+
+	loginData, err := GenerateLoginData(accessKeyId, secretAccessKey, securityToken, headerValue)
+	if err != nil {
+		logFatal("AWS IAM logon failed", err)
+	}
+	if loginData == nil {
+		logFatal("got nil response from GenerateLoginData")
+	}
+	loginData["role"] = role
+	path := fmt.Sprintf("auth/%s/login", mount)
+	secret, err := v.client.Logical().Write(path, loginData)
+
+	if err != nil {
+		logFatal("AWS IAM logon failed", err)
+	}
+	if secret == nil {
+		logFatal("Empty response from AWS IAM logon")
+	}
+
+	return secret.Auth.ClientToken
+}
+
+// Generates the necessary data to send to the Vault server for generating a token
+// This is useful for other API clients to use
+func GenerateLoginData(accessKey, secretKey, sessionToken, headerValue string) (map[string]interface{}, error) {
+	loginData := make(map[string]interface{})
+
+	credConfig := &awsutil.CredentialsConfig{
+		AccessKey:    accessKey,
+		SecretKey:    secretKey,
+		SessionToken: sessionToken,
+	}
+	creds, err := credConfig.GenerateCredentialChain()
+	if err != nil {
+		return nil, err
+	}
+	if creds == nil {
+		return nil, fmt.Errorf("could not compile valid credential providers from static config, environment, shared, or instance metadata")
+	}
+
+	// Use the credentials we've found to construct an STS session
+	stsSession, err := session.NewSessionWithOptions(session.Options{
+		Config: awssdk.Config{Credentials: creds},
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	var params *sts.GetCallerIdentityInput
+	svc := sts.New(stsSession)
+	stsRequest, _ := svc.GetCallerIdentityRequest(params)
+
+	// Inject the required auth header value, if supplied, and then sign the request including that header
+	if headerValue != "" {
+		stsRequest.HTTPRequest.Header.Add(iamServerIdHeader, headerValue)
+	}
+	stsRequest.Sign()
+
+	// Now extract out the relevant parts of the request
+	headersJson, err := json.Marshal(stsRequest.HTTPRequest.Header)
+	if err != nil {
+		return nil, err
+	}
+	requestBody, err := ioutil.ReadAll(stsRequest.HTTPRequest.Body)
+	if err != nil {
+		return nil, err
+	}
+	loginData["iam_http_request_method"] = stsRequest.HTTPRequest.Method
+	loginData["iam_request_url"] = base64.StdEncoding.EncodeToString([]byte(stsRequest.HTTPRequest.URL.String()))
+	loginData["iam_request_headers"] = base64.StdEncoding.EncodeToString(headersJson)
+	loginData["iam_request_body"] = base64.StdEncoding.EncodeToString(requestBody)
+
+	return loginData, nil
 }
 
 // TokenLogin -
