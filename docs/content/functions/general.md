@@ -593,6 +593,7 @@ This table describes the currently-supported authentication mechanisms and how t
 | [`github`](https://www.vaultproject.io/docs/auth/github.html) | Environment variable `$VAULT_AUTH_GITHUB_TOKEN` must be set to an appropriate value.<br/> If the backend is mounted to a different location, set `$VAULT_AUTH_GITHUB_MOUNT`. |
 | [`userpass`](https://www.vaultproject.io/docs/auth/userpass.html) | Environment variables `$VAULT_AUTH_USERNAME` and `$VAULT_AUTH_PASSWORD` must be set to the appropriate values.<br/> If the backend is mounted to a different location, set `$VAULT_AUTH_USERPASS_MOUNT`. |
 | [`token`](https://www.vaultproject.io/docs/auth/token.html) | Determined from either the `$VAULT_TOKEN` environment variable, or read from the file `~/.vault-token` |
+| [`aws`](https://www.vaultproject.io/docs/auth/aws.html) | As a final option authentication will be attempted using the AWS auth backend. See below for more details. |
 
 _**Note:**_ The secret values listed in the above table can either be set in environment
 variables or provided in files. This can increase security when using
@@ -636,6 +637,16 @@ $ echo 'otp={{(datasource "vault" "ssh/creds/test?ip=10.1.2.3&username=user").ke
   | gomplate -d vault=vault:///
 otp=604a4bd5-7afd-30a2-d2d8-80c4aebc6183
 ```
+
+#### Authentication using AWS details
+
+If running on an EC2 instance authentication will be attempted using the AWS auth backend. The
+optional `VAULT_AUTH_AWS_MOUNT` environment variable can be used to set the mount point to use if
+it differs from the default of `aws`. Additionally `AWS_TIMEOUT` can be set (in seconds) to a value
+to wait for AWS to respond before skipping the attempt.
+
+If set, the `VAULT_AUTH_AWS_ROLE` environment variable will be used to specify the role to authenticate
+using. If not set the AMI ID of the EC2 instance will be used by Vault.
 
 ## `datasourceExists`
 
