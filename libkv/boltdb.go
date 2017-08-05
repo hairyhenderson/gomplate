@@ -8,6 +8,7 @@ import (
 	"github.com/docker/libkv/store"
 	"github.com/docker/libkv/store/boltdb"
 	"github.com/hairyhenderson/gomplate/env"
+	"github.com/hairyhenderson/gomplate/typeconv"
 )
 
 // NewBoltDB - initialize a new BoltDB datasource handler
@@ -27,10 +28,10 @@ func setupBoltDB(bucket string) *store.Config {
 		logFatal("missing bucket - must specify BoltDB bucket in URL fragment")
 	}
 
-	t := mustParseInt(env.Getenv("BOLTDB_TIMEOUT"))
+	t := typeconv.MustParseInt(env.Getenv("BOLTDB_TIMEOUT"), 10, 16)
 	return &store.Config{
 		Bucket:            bucket,
 		ConnectionTimeout: time.Duration(t) * time.Second,
-		PersistConnection: mustParseBool(env.Getenv("BOLTDB_PERSIST")),
+		PersistConnection: typeconv.MustParseBool(env.Getenv("BOLTDB_PERSIST")),
 	}
 }
