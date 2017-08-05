@@ -44,10 +44,10 @@ func init() {
 	addSourceReader("https", readHTTP)
 	addSourceReader("file", readFile)
 	addSourceReader("vault", readVault)
-	addSourceReader("consul", readLibKV)
-	addSourceReader("consul+http", readLibKV)
-	addSourceReader("consul+https", readLibKV)
-	addSourceReader("boltdb", readLibKV)
+	addSourceReader("consul", readConsul)
+	addSourceReader("consul+http", readConsul)
+	addSourceReader("consul+https", readConsul)
+	addSourceReader("boltdb", readBoltDB)
 }
 
 var sourceReaders map[string]func(*Source, ...string) ([]byte, error)
@@ -177,6 +177,8 @@ func (d *Data) DatasourceExists(alias string) bool {
 	return ok
 }
 
+const plaintext = "text/plain"
+
 // Datasource -
 func (d *Data) Datasource(alias string, args ...string) interface{} {
 	source, ok := d.Sources[alias]
@@ -201,7 +203,7 @@ func (d *Data) Datasource(alias string, args ...string) interface{} {
 	if source.Type == "application/toml" {
 		return ty.TOML(s)
 	}
-	if source.Type == "text/plain" {
+	if source.Type == plaintext {
 		return s
 	}
 	log.Fatalf("Datasources of type %s not yet supported", source.Type)
@@ -333,9 +335,9 @@ func readVault(source *Source, args ...string) ([]byte, error) {
 	return data, nil
 }
 
-func readLibKV(source *Source, args ...string) ([]byte, error) {
+func readConsul(source *Source, args ...string) ([]byte, error) {
 	if source.KV == nil {
-		source.KV = libkv.New(source.URL)
+		source.KV = libkv.NewConsul(source.URL)
 		err := source.KV.Login()
 		addCleanupHook(source.KV.Logout)
 		if err != nil {
@@ -344,13 +346,7 @@ func readLibKV(source *Source, args ...string) ([]byte, error) {
 	}
 
 	p := source.URL.Path
-
-	if source.URL.Scheme == "boltdb" {
-		if len(args) != 1 {
-			return nil, errors.New("missing key")
-		}
-		p = args[0]
-	} else if len(args) == 1 {
+	if len(args) == 1 {
 		p = p + "/" + args[0]
 	}
 
@@ -358,7 +354,26 @@ func readLibKV(source *Source, args ...string) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	source.Type = "text/plain"
+	source.Type = plaintext
+
+	return data, nil
+}
+
+func readBoltDB(source *Source, args ...string) ([]byte, error) {
+	if source.KV == nil {
+		source.KV = libkv.NewBoltDB(source.URL)
+	}
+
+	if len(args) != 1 {
+		return nil, errors.New("missing key")
+	}
+	p := args[0]
+
+	data, err := source.KV.Read(p)
+	if err != nil {
+		return nil, err
+	}
+	source.Type = plaintext
 
 	return data, nil
 }

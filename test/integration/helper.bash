@@ -33,3 +33,26 @@ function start_mirror_svc () {
 function stop_mirror_svc () {
   wget -q http://127.0.0.1:8080/quit
 }
+
+function wait_for_url () {
+  url=$1
+  for i in {0..10}; do
+    curl -o /dev/null -s -f $url && break || sleep 1
+  done
+}
+
+function start_consul () {
+  port=$1
+  if [ -z $port ]; then
+    port=8500
+  fi
+  PID_FILE=/tmp/gomplate-test-consul.pid
+  rm -f $PID_FILE || true
+  consul agent -dev -log-level=err -http-port=$port -pid-file=$PID_FILE >/dev/null &
+  wait_for_url http://127.0.0.1:$port/v1/status/leader
+}
+
+function stop_consul () {
+  PID_FILE=/tmp/gomplate-test-consul.pid
+  kill $(cat $PID_FILE) &>/dev/null
+}
