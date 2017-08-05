@@ -2,7 +2,6 @@ package libkv
 
 import (
 	"log"
-	"strconv"
 
 	"github.com/docker/libkv/store"
 )
@@ -32,14 +31,4 @@ func (kv *LibKV) Read(path string) ([]byte, error) {
 	}
 
 	return data.Value, nil
-}
-
-func mustParseBool(s string) bool {
-	b, _ := strconv.ParseBool(s)
-	return b
-}
-
-func mustParseInt(s string) int64 {
-	i, _ := strconv.ParseInt(s, 10, 16)
-	return i
 }
