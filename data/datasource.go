@@ -1,4 +1,4 @@
-package main
+package data
 
 import (
 	"errors"
@@ -63,6 +63,14 @@ type Data struct {
 	cache   map[string][]byte
 }
 
+// Cleanup - clean up datasources before shutting the process down - things
+// like Logging out happen here
+func (d *Data) Cleanup() {
+	for _, s := range d.Sources {
+		s.cleanup()
+	}
+}
+
 // NewData - constructor for Data
 func NewData(datasourceArgs []string, headerArgs []string) *Data {
 	sources := make(map[string]*Source)
@@ -93,6 +101,15 @@ type Source struct {
 	VC     *vault.Vault   // used for vault: URLs, nil otherwise
 	KV     *libkv.LibKV   // used for consul:, etcd:, zookeeper: & boltdb: URLs, nil otherwise
 	Header http.Header    // used for http[s]: URLs, nil otherwise
+}
+
+func (s *Source) cleanup() {
+	if s.VC != nil {
+		s.VC.Logout()
+	}
+	if s.KV != nil {
+		s.KV.Logout()
+	}
 }
 
 // NewSource - builds a &Source
@@ -190,18 +207,17 @@ func (d *Data) Datasource(alias string, args ...string) interface{} {
 		log.Fatalf("Couldn't read datasource '%s': %s", alias, err)
 	}
 	s := string(b)
-	ty := &TypeConv{}
 	if source.Type == "application/json" {
-		return ty.JSON(s)
+		return JSON(s)
 	}
 	if source.Type == "application/yaml" {
-		return ty.YAML(s)
+		return YAML(s)
 	}
 	if source.Type == "text/csv" {
-		return ty.CSV(s)
+		return CSV(s)
 	}
 	if source.Type == "application/toml" {
-		return ty.TOML(s)
+		return TOML(s)
 	}
 	if source.Type == plaintext {
 		return s
@@ -211,7 +227,7 @@ func (d *Data) Datasource(alias string, args ...string) interface{} {
 }
 
 // Include -
-func (d *Data) include(alias string, args ...string) interface{} {
+func (d *Data) Include(alias string, args ...string) string {
 	source, ok := d.Sources[alias]
 	if !ok {
 		log.Fatalf("Undefined datasource '%s'", alias)
@@ -318,7 +334,6 @@ func readVault(source *Source, args ...string) ([]byte, error) {
 	if source.VC == nil {
 		source.VC = vault.New()
 		source.VC.Login()
-		addCleanupHook(source.VC.Logout)
 	}
 
 	params := make(map[string]interface{})
@@ -364,7 +379,6 @@ func readConsul(source *Source, args ...string) ([]byte, error) {
 	if source.KV == nil {
 		source.KV = libkv.NewConsul(source.URL)
 		err := source.KV.Login()
-		addCleanupHook(source.KV.Logout)
 		if err != nil {
 			return nil, err
 		}

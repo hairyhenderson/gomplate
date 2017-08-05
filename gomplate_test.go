@@ -9,6 +9,8 @@ import (
 	"text/template"
 
 	"github.com/hairyhenderson/gomplate/aws"
+	"github.com/hairyhenderson/gomplate/conv"
+	"github.com/hairyhenderson/gomplate/data"
 	"github.com/hairyhenderson/gomplate/env"
 	"github.com/stretchr/testify/assert"
 )
@@ -20,11 +22,10 @@ func testTemplate(g *Gomplate, template string) string {
 }
 
 func TestGetenvTemplates(t *testing.T) {
-	typeconv := &TypeConv{}
 	g := &Gomplate{
 		funcMap: template.FuncMap{
 			"getenv": env.Getenv,
-			"bool":   typeconv.Bool,
+			"bool":   conv.Bool,
 		},
 	}
 	assert.Empty(t, testTemplate(g, `{{getenv "BLAHBLAHBLAH"}}`))
@@ -33,10 +34,9 @@ func TestGetenvTemplates(t *testing.T) {
 }
 
 func TestBoolTemplates(t *testing.T) {
-	typeconv := &TypeConv{}
 	g := &Gomplate{
 		funcMap: template.FuncMap{
-			"bool": typeconv.Bool,
+			"bool": conv.Bool,
 		},
 	}
 	assert.Equal(t, "true", testTemplate(g, `{{bool "true"}}`))
@@ -66,12 +66,11 @@ func TestEc2MetaTemplates(t *testing.T) {
 func TestEc2MetaTemplates_WithJSON(t *testing.T) {
 	server, ec2meta := aws.MockServer(200, `{"foo":"bar"}`)
 	defer server.Close()
-	ty := new(TypeConv)
 	g := &Gomplate{
 		funcMap: template.FuncMap{
 			"ec2meta":    ec2meta.Meta,
 			"ec2dynamic": ec2meta.Dynamic,
-			"json":       ty.JSON,
+			"json":       data.JSON,
 		},
 	}
 
@@ -80,10 +79,9 @@ func TestEc2MetaTemplates_WithJSON(t *testing.T) {
 }
 
 func TestJSONArrayTemplates(t *testing.T) {
-	ty := new(TypeConv)
 	g := &Gomplate{
 		funcMap: template.FuncMap{
-			"jsonArray": ty.JSONArray,
+			"jsonArray": data.JSONArray,
 		},
 	}
 
@@ -92,11 +90,10 @@ func TestJSONArrayTemplates(t *testing.T) {
 }
 
 func TestYAMLTemplates(t *testing.T) {
-	ty := new(TypeConv)
 	g := &Gomplate{
 		funcMap: template.FuncMap{
-			"yaml":      ty.YAML,
-			"yamlArray": ty.YAMLArray,
+			"yaml":      data.YAML,
+			"yamlArray": data.YAMLArray,
 		},
 	}
 
@@ -106,10 +103,9 @@ func TestYAMLTemplates(t *testing.T) {
 }
 
 func TestSliceTemplates(t *testing.T) {
-	typeconv := &TypeConv{}
 	g := &Gomplate{
 		funcMap: template.FuncMap{
-			"slice": typeconv.Slice,
+			"slice": conv.Slice,
 		},
 	}
 	assert.Equal(t, "foo", testTemplate(g, `{{index (slice "foo") 0}}`))
@@ -118,11 +114,10 @@ func TestSliceTemplates(t *testing.T) {
 }
 
 func TestHasTemplate(t *testing.T) {
-	ty := new(TypeConv)
 	g := &Gomplate{
 		funcMap: template.FuncMap{
-			"yaml": ty.YAML,
-			"has":  ty.Has,
+			"yaml": data.YAML,
+			"has":  conv.Has,
 		},
 	}
 	assert.Equal(t, "true", testTemplate(g, `{{has ("foo:\n  bar: true" | yaml) "foo"}}`))

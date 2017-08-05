@@ -11,6 +11,7 @@ import (
 
 	"log"
 
+	"github.com/hairyhenderson/gomplate/data"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -40,13 +41,13 @@ func TestInputDir(t *testing.T) {
 		}
 	})()
 
-	src, err := ParseSource("config=test/files/input-dir/config.yml")
+	src, err := data.ParseSource("config=test/files/input-dir/config.yml")
 	assert.Nil(t, err)
 
-	data := &Data{
-		Sources: map[string]*Source{"config": src},
+	d := &data.Data{
+		Sources: map[string]*data.Source{"config": src},
 	}
-	gomplate := NewGomplate(data, "{{", "}}")
+	gomplate := NewGomplate(d, "{{", "}}")
 	err = processInputDir(filepath.Join("test", "files", "input-dir", "in"), outDir, gomplate)
 	assert.Nil(t, err)
 

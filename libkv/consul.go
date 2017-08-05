@@ -11,8 +11,8 @@ import (
 	"github.com/docker/libkv"
 	"github.com/docker/libkv/store"
 	"github.com/docker/libkv/store/consul"
+	"github.com/hairyhenderson/gomplate/conv"
 	"github.com/hairyhenderson/gomplate/env"
-	"github.com/hairyhenderson/gomplate/typeconv"
 	"github.com/hairyhenderson/gomplate/vault"
 	consulapi "github.com/hashicorp/consul/api"
 )
@@ -66,7 +66,7 @@ func consulURL(u *url.URL) *url.URL {
 	case "consul+https", "https":
 		c.Scheme = "https"
 	case "consul":
-		if typeconv.MustParseBool(env.Getenv("CONSUL_HTTP_SSL")) {
+		if conv.Bool(env.Getenv("CONSUL_HTTP_SSL")) {
 			c.Scheme = "https"
 		} else {
 			c.Scheme = "http"
@@ -83,7 +83,7 @@ func consulURL(u *url.URL) *url.URL {
 }
 
 func consulConfig(useTLS bool) *store.Config {
-	t := typeconv.MustAtoi(env.Getenv("CONSUL_TIMEOUT"))
+	t := conv.MustAtoi(env.Getenv("CONSUL_TIMEOUT"))
 	config := &store.Config{
 		ConnectionTimeout: time.Duration(t) * time.Second,
 	}
@@ -107,7 +107,7 @@ func setupTLS(prefix string) *consulapi.TLSConfig {
 		KeyFile:  env.Getenv(prefix + "_CLIENT_KEY"),
 	}
 	if v := env.Getenv(prefix + "_HTTP_SSL_VERIFY"); v != "" {
-		verify := typeconv.MustParseBool(v)
+		verify := conv.Bool(v)
 		tlsConfig.InsecureSkipVerify = !verify
 	}
 	return tlsConfig
