@@ -321,12 +321,37 @@ func readVault(source *Source, args ...string) ([]byte, error) {
 		addCleanupHook(source.VC.Logout)
 	}
 
+	params := make(map[string]interface{})
+
 	p := source.URL.Path
-	if len(args) == 1 {
-		p = p + "/" + args[0]
+
+	for key, val := range source.URL.Query() {
+		params[key] = strings.Join(val, " ")
 	}
 
-	data, err := source.VC.Read(p)
+	if len(args) == 1 {
+		parsed, err := url.Parse(args[0])
+		if err != nil {
+			return nil, err
+		}
+
+		if parsed.Path != "" {
+			p = p + "/" + parsed.Path
+		}
+
+		for key, val := range parsed.Query() {
+			params[key] = strings.Join(val, " ")
+		}
+	}
+
+	var data []byte
+	var err error
+
+	if len(params) > 0 {
+		data, err = source.VC.Write(p, params)
+	} else {
+		data, err = source.VC.Read(p)
+	}
 	if err != nil {
 		return nil, err
 	}
