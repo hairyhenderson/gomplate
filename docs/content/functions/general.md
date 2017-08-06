@@ -627,9 +627,9 @@ $ echo 'db_password={{(datasource "vault" "db/pass").value}}' \
 db_password=prodsecret
 ```
 
-It is also possible to use dynamic secrets by using the write capibility of the datasource. To use
-add an additional query string style section to the optional key name (i.e.
-`"key?name=value&name=value"`). These values are then included within the JSON body of the request.
+It is also possible to use dynamic secrets by using the write capability of the datasource. To use,
+add a URL query to the optional path (i.e. `"key?name=value&name=value"`). These values are then
+included within the JSON body of the request.
 
 ```console
 $ echo 'otp={{(datasource "vault" "ssh/creds/test?ip=10.1.2.3&username=user").key}}' \
