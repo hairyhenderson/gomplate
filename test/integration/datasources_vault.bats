@@ -15,9 +15,15 @@ path "*" {
 }
 EOF
   tmpdir=$(mktemp -d)
+  cp ~/.vault-token ~/.vault-token.bak
+  start_meta_svc
+  start_aws_svc
 }
 
 function teardown () {
+  mv ~/.vault-token.bak ~/.vault-token
+  stop_meta_svc
+  stop_aws_svc
   rm -rf $tmpdir
   unset VAULT_TOKEN
   vault delete secret/foo
@@ -27,6 +33,7 @@ function teardown () {
   vault auth-disable approle2
   vault auth-disable app-id
   vault auth-disable app-id2
+  vault auth-disable aws
   vault policy-delete writepol
   vault policy-delete readpol
   vault unmount ssh
@@ -118,6 +125,20 @@ function teardown () {
   vault write auth/app-id2/map/user-id/testuserid value=testappid
 
   VAULT_APP_ID=testappid VAULT_USER_ID=testuserid VAULT_AUTH_APP_ID_MOUNT=app-id2 gomplate -d vault=vault:///secret -i '{{(datasource "vault" "foo").value}}'
+  [ "$status" -eq 0 ]
+  [[ "${output}" == "$BATS_TEST_DESCRIPTION" ]]
+}
+
+@test "Testing ec2 vault auth" {
+  vault write secret/foo value="$BATS_TEST_DESCRIPTION"
+  vault auth-enable aws
+  vault write auth/aws/config/client secret_key=secret access_key=access endpoint=http://127.0.0.1:8082/ec2 iam_endpoint=http://127.0.0.1:8082/iam sts_endpoint=http://127.0.0.1:8082/sts
+  curl -o $tmpdir/certificate -s -f http://127.0.0.1:8081/certificate
+  vault write auth/aws/config/certificate/testcert type=pkcs7 aws_public_cert=@$tmpdir/certificate
+  vault write auth/aws/role/ami-00000000 auth_type=ec2 bound_ami_id=ami-00000000 policies=readpol
+  unset VAULT_TOKEN
+  rm ~/.vault-token
+  AWS_META_ENDPOINT=http://127.0.0.1:8081 gomplate -d vault=vault:///secret -i '{{(datasource "vault" "foo").value}}'
   [ "$status" -eq 0 ]
   [[ "${output}" == "$BATS_TEST_DESCRIPTION" ]]
 }

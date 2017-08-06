@@ -172,6 +172,10 @@ func (v *Vault) EC2Login() string {
 
 	meta := aws.NewEc2Meta(opts)
 
+	if endpoint := env.Getenv("AWS_META_ENDPOINT"); endpoint != "" {
+		meta.Endpoint = endpoint
+	}
+
 	vars["pkcs7"] = strings.Replace(strings.TrimSpace(meta.Dynamic("instance-identity/pkcs7")), "\n", "", -1)
 
 	if vars["pkcs7"] == "" {
