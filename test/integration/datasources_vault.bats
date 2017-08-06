@@ -140,6 +140,24 @@ function teardown () {
   [[ "${output}" == "10.1.2.3" ]]
 }
 
+@test "Testing vault auth with dynamic secret using prefix and options in URL" {
+  vault mount ssh
+  vault write ssh/roles/test key_type=otp default_user=user cidr_list=10.0.0.0/8
+  VAULT_TOKEN=$(vault token-create -format=json -policy=writepol -use-limit=2 -ttl=1m | jq -j .auth.client_token)
+  VAULT_TOKEN=$VAULT_TOKEN gomplate -d vault=vault:///ssh/creds/test?ip=10.1.2.3\&username=user -i '{{(datasource "vault").ip}}'
+  [ "$status" -eq 0 ]
+  [[ "${output}" == "10.1.2.3" ]]
+}
+
+@test "Testing vault auth with dynamic secret using options in URL and path in template" {
+  vault mount ssh
+  vault write ssh/roles/test key_type=otp default_user=user cidr_list=10.0.0.0/8
+  VAULT_TOKEN=$(vault token-create -format=json -policy=writepol -use-limit=2 -ttl=1m | jq -j .auth.client_token)
+  VAULT_TOKEN=$VAULT_TOKEN gomplate -d vault=vault:///?ip=10.1.2.3\&username=user -i '{{(datasource "vault" "ssh/creds/test").ip}}'
+  [ "$status" -eq 0 ]
+  [[ "${output}" == "10.1.2.3" ]]
+}
+
 # TODO: test the github auth backend at some point... this needs a github token though, so...
 # vault write auth/github/config organization=DockerOttawaMeetup
 # vault write auth/github/map/teams/organizers value=pol
