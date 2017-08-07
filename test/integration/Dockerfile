@@ -1,6 +1,6 @@
 FROM alpine:edge
 
-ENV VAULT_VER 0.7.0
+ENV VAULT_VER 0.7.3
 ENV CONSUL_VER 0.9.0
 RUN apk add --no-cache \
     curl \
@@ -21,6 +21,8 @@ RUN mkdir /lib64 \
 
 COPY gomplate /bin/gomplate
 COPY mirror /bin/mirror
+COPY meta /bin/meta
+COPY aws /bin/aws
 COPY *.sh /tests/
 COPY *.bash /tests/
 COPY *.bats /tests/
