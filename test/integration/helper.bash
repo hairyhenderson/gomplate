@@ -35,7 +35,7 @@ function stop_mirror_svc () {
 }
 
 function start_meta_svc () {
-  bin/meta &
+  bin/meta 3>/dev/null &
 }
 
 function stop_meta_svc () {
