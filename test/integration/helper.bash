@@ -34,6 +34,22 @@ function stop_mirror_svc () {
   wget -q http://127.0.0.1:8080/quit
 }
 
+function start_meta_svc () {
+  bin/meta 3>/dev/null &
+}
+
+function stop_meta_svc () {
+  wget -q http://127.0.0.1:8081/quit
+}
+
+function start_aws_svc () {
+  bin/aws &
+}
+
+function stop_aws_svc () {
+  wget -q http://127.0.0.1:8082/quit
+}
+
 function wait_for_url () {
   url=$1
   for i in {0..10}; do

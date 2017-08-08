@@ -7,10 +7,12 @@ import (
 	"net/http"
 	"strings"
 	"time"
+
+	"github.com/hairyhenderson/gomplate/env"
 )
 
 // DefaultEndpoint -
-const DefaultEndpoint = "http://169.254.169.254"
+var DefaultEndpoint = "http://169.254.169.254"
 
 // Ec2Meta -
 type Ec2Meta struct {
@@ -23,6 +25,10 @@ type Ec2Meta struct {
 
 // NewEc2Meta -
 func NewEc2Meta(options ClientOptions) *Ec2Meta {
+	if endpoint := env.Getenv("AWS_META_ENDPOINT"); endpoint != "" {
+		DefaultEndpoint = endpoint
+	}
+
 	return &Ec2Meta{cache: make(map[string]string), options: options}
 }
 

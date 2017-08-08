@@ -5,9 +5,13 @@ import (
 	"io/ioutil"
 	"os"
 	"path"
+	"strings"
+	"time"
 
 	"github.com/blang/vfs"
+	"github.com/hairyhenderson/gomplate/aws"
 	"github.com/hairyhenderson/gomplate/env"
+	"github.com/hairyhenderson/gomplate/typeconv"
 )
 
 // GetToken -
@@ -25,6 +29,9 @@ func (v *Vault) GetToken() string {
 		return token
 	}
 	if token := v.TokenLogin(); token != "" {
+		return token
+	}
+	if token := v.EC2Login(); token != "" {
 		return token
 	}
 	logFatal("All vault auth failed")
@@ -143,6 +150,41 @@ func (v *Vault) UserPassLogin() string {
 	}
 	if secret == nil {
 		logFatal("Empty response from UserPass logon")
+	}
+
+	return secret.Auth.ClientToken
+}
+
+// EC2Login - AWS EC2 auth backend
+func (v *Vault) EC2Login() string {
+	role := env.Getenv("VAULT_AUTH_AWS_ROLE")
+	mount := env.Getenv("VAULT_AUTH_AWS_MOUNT", "aws")
+
+	vars := map[string]interface{}{}
+
+	if role != "" {
+		vars["role"] = role
+	}
+
+	opts := aws.ClientOptions{
+		Timeout: time.Duration(typeconv.MustAtoi(os.Getenv("AWS_TIMEOUT"))) * time.Millisecond,
+	}
+
+	meta := aws.NewEc2Meta(opts)
+
+	vars["pkcs7"] = strings.Replace(strings.TrimSpace(meta.Dynamic("instance-identity/pkcs7")), "\n", "", -1)
+
+	if vars["pkcs7"] == "" {
+		return ""
+	}
+
+	path := fmt.Sprintf("auth/%s/login", mount)
+	secret, err := v.client.Logical().Write(path, vars)
+	if err != nil {
+		logFatal("AWS EC2 logon failed", err)
+	}
+	if secret == nil {
+		logFatal("Empty response from AWS EC2 logon")
 	}
 
 	return secret.Auth.ClientToken

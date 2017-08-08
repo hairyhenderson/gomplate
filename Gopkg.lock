@@ -38,6 +38,12 @@
   version = "v1.0"
 
 [[projects]]
+  branch = "master"
+  name = "github.com/fullsailor/pkcs7"
+  packages = ["."]
+  revision = "a009d8d7de53d9503c797cb8ec66fa3b21eed209"
+
+[[projects]]
   name = "github.com/go-ini/ini"
   packages = ["."]
   revision = "d3de07a94d22b4a0972deb4b96d790c2c0ce8333"
@@ -184,6 +190,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "3f83e366940e70c240f81a09a042d5a283b02efadd0ad06d0847ee7ad6ee852a"
+  inputs-digest = "31a8e0b536f3b7bdc59f2f911ba5060012b81357402532c1525544065f9d02ea"
   solver-name = "gps-cdcl"
   solver-version = 1

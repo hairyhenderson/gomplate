@@ -38,6 +38,8 @@ clean:
 	rm -Rf $(PREFIX)/bin/*
 	rm -f $(PREFIX)/test/integration/gomplate
 	rm -f $(PREFIX)/test/integration/mirror
+	rm -f $(PREFIX)/test/integration/meta
+	rm -f $(PREFIX)/test/integration/aws
 
 build-x: $(patsubst %,$(PREFIX)/bin/$(PKG_NAME)_%,$(platforms))
 
@@ -58,6 +60,12 @@ $(PREFIX)/bin/$(PKG_NAME)_%: $(shell find $(PREFIX) -type f -name '*.go' -not -p
 $(PREFIX)/bin/mirror_%: $(shell find $(PREFIX)/test/integration/mirrorsvc -type f -name '*.go')
 	$(call gocross-tool,$(shell echo $* | sed 's/\([^-]*\)-\([^.]*\).*/\1/'),$(shell echo $* | sed 's/\([^-]*\)-\([^.]*\).*/\2/'),mirror)
 
+$(PREFIX)/bin/meta_%: $(shell find $(PREFIX)/test/integration/metasvc -type f -name '*.go')
+	$(call gocross-tool,$(shell echo $* | sed 's/\([^-]*\)-\([^.]*\).*/\1/'),$(shell echo $* | sed 's/\([^-]*\)-\([^.]*\).*/\2/'),meta)
+
+$(PREFIX)/bin/aws_%: $(shell find $(PREFIX)/test/integration/awssvc -type f -name '*.go')
+	$(call gocross-tool,$(shell echo $* | sed 's/\([^-]*\)-\([^.]*\).*/\1/'),$(shell echo $* | sed 's/\([^-]*\)-\([^.]*\).*/\2/'),aws)
+
 $(PREFIX)/bin/$(PKG_NAME)$(call extension,$(GOOS)): $(shell find $(PREFIX) -type f -name '*.go' -not -path "$(PREFIX)/test/*")
 	CGO_ENABLED=0 \
 		$(GO) build -ldflags "-w -s $(COMMIT_FLAG) $(VERSION_FLAG)" -o $@
@@ -66,22 +74,36 @@ $(PREFIX)/bin/mirror$(call extension,$(GOOS)): $(shell find $(PREFIX)/test/integ
 	CGO_ENABLED=0 \
 		$(GO) build -ldflags "-w -s $(COMMIT_FLAG) $(VERSION_FLAG)" -o $@ $(PREFIX)/test/integration/mirrorsvc
 
+$(PREFIX)/bin/meta$(call extension,$(GOOS)): $(shell find $(PREFIX)/test/integration/metasvc -type f -name '*.go')
+	CGO_ENABLED=0 \
+		$(GO) build -ldflags "-w -s $(COMMIT_FLAG) $(VERSION_FLAG)" -o $@ $(PREFIX)/test/integration/metasvc
+
+$(PREFIX)/bin/aws$(call extension,$(GOOS)): $(shell find $(PREFIX)/test/integration/awssvc -type f -name '*.go')
+	CGO_ENABLED=0 \
+		$(GO) build -ldflags "-w -s $(COMMIT_FLAG) $(VERSION_FLAG)" -o $@ $(PREFIX)/test/integration/awssvc
+
 build: $(PREFIX)/bin/$(PKG_NAME)$(call extension,$(GOOS))
 
 build-mirror: $(PREFIX)/bin/mirror$(call extension,$(GOOS))
 
+build-meta: $(PREFIX)/bin/meta$(call extension,$(GOOS))
+
+build-aws: $(PREFIX)/bin/aws$(call extension,$(GOOS))
+
 test:
 	$(GO) test -v -race `glide novendor`
 
-build-integration-image: $(PREFIX)/bin/$(PKG_NAME)_linux-amd64$(call extension,$(GOOS)) $(PREFIX)/bin/mirror_linux-amd64$(call extension,$(GOOS))
+build-integration-image: $(PREFIX)/bin/$(PKG_NAME)_linux-amd64$(call extension,$(GOOS)) $(PREFIX)/bin/mirror_linux-amd64$(call extension,$(GOOS)) $(PREFIX)/bin/meta_linux-amd64$(call extension,$(GOOS)) $(PREFIX)/bin/aws_linux-amd64$(call extension,$(GOOS))
 	cp $(PREFIX)/bin/$(PKG_NAME)_linux-amd64 test/integration/gomplate
 	cp $(PREFIX)/bin/mirror_linux-amd64 test/integration/mirror
+	cp $(PREFIX)/bin/meta_linux-amd64 test/integration/meta
+	cp $(PREFIX)/bin/aws_linux-amd64 test/integration/aws
 	docker build -f test/integration/Dockerfile -t gomplate-test test/integration/
 
 test-integration-docker: build-integration-image
 	docker run -it --rm gomplate-test
 
-test-integration: build build-mirror
+test-integration: build build-mirror build-meta build-aws
 	@test/integration/test.sh
 
 gen-changelog:
