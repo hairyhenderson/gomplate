@@ -532,6 +532,8 @@ The following optional environment variables can be set:
 | `CONSUL_CLIENT_CERT` | Client certificate file for certificate authentication. If this is set, `$CONSUL_CLIENT_KEY` must also be set. |
 | `CONSUL_CLIENT_KEY` | Client key file for certificate authentication. If this is set, `$CONSUL_CLIENT_CERT` must also be set. |
 | `CONSUL_HTTP_SSL_VERIFY` | Set to `false` to disable Consul TLS certificate checking. Any value acceptable to [`strconv.ParseBool`](https://golang.org/pkg/strconv/#ParseBool) can be provided. <br/> _Recommended only for testing and development scenarios!_ |
+| `CONSUL_VAULT_ROLE` | If set will fetch the Consul authentication from Vault using the Consul dynamic secret backend. Value should be the name of the role to use. |
+| `CONSUL_VAULT_MOUNT` | If using Vault for authentication set the name of the Consul dynamic secret backend. Defaults to `consul`. |
 
 If a path is included it is used as a prefix for all uses of the datasource.
 
@@ -551,6 +553,11 @@ value for foo/bar key
 $ gomplate -d consul=consul:///foo -i '{{(datasource "consul" "bar/baz")}}'
 value for foo/bar/baz key
 ```
+
+Instead of using a non-authenticated Consul connection or connecting using the token set with the
+`CONSUL_HTTP_TOKEN` environment variable, it is possible to authenticate using a dynamically generated
+token fetched from Vault. This requires Vault to be configured to use the Consul secret backend and
+is enabled by passing the name of the role to use in the `CONSUL_VAULT_ROLE` environment variable.
 
 ### Usage with BoltDB data
 

@@ -64,11 +64,14 @@ function start_consul () {
   fi
   PID_FILE=/tmp/gomplate-test-consul.pid
   rm -f $PID_FILE || true
-  consul agent -dev -log-level=err -http-port=$port -pid-file=$PID_FILE >/dev/null &
+  export CONSUL_ROOT_TOKEN=00000000-1111-2222-3333-444455556666
+  echo "{\"acl_datacenter\": \"dc1\", \"acl_master_token\": \"${CONSUL_ROOT_TOKEN}\"}" >> /tmp/gomplate-test-consul.json
+  consul agent -dev -config-file=/tmp/gomplate-test-consul.json -log-level=err -http-port=$port -pid-file=$PID_FILE >/dev/null &
   wait_for_url http://127.0.0.1:$port/v1/status/leader
 }
 
 function stop_consul () {
   PID_FILE=/tmp/gomplate-test-consul.pid
   kill $(cat $PID_FILE) &>/dev/null
+  rm /tmp/gomplate-test-consul.json
 }
