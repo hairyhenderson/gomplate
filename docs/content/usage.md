@@ -54,6 +54,8 @@ A few different forms are valid:
   - Create a data source named `mydata` which is read from `file.json` (in the current working directory). This form is only valid for files in the current directory.
 - `mydata.json`
   - This form infers the name from the file name (without extension). Only valid for files in the current directory.
+- `mydatadir/`
+  - If a plain directory is given then any plain file within the directory is treated as a data file as described above.
 
 ## Overriding the template delimiters
 
