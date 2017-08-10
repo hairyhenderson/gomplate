@@ -7,6 +7,7 @@ docker version
 echo "Build hook running"
 export BUILD_DATE=`date -u +"%Y-%m-%dT%H:%M:%SZ"`
 export VCS_REF=`git rev-parse --short HEAD`
+export IMAGE_NAME=${IMAGE_NAME:-hairyhenderson/gomplate}
 docker build --build-arg BUILD_DATE \
              --build-arg VCS_REF \
              --target gomplate \

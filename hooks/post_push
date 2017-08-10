@@ -1,5 +1,8 @@
 #!/bin/bash
 
+export IMAGE_NAME=${IMAGE_NAME:-hairyhenderson/gomplate}
+export DOCKER_REPO=${DOCKER_REPO:-hairyhenderson/gomplate}
+
 # This magic figures out if we're currently on a tag (i.e. a release).
 # We only want to have special tags for releases.
 if (git describe --abbrev=0 --exact-match &>/dev/null); then
