@@ -1,6 +1,6 @@
 // +build !windows
 
-package main
+package data
 
 import (
 	"encoding/json"
@@ -295,6 +295,6 @@ func TestInclude(t *testing.T) {
 	data := &Data{
 		Sources: sources,
 	}
-	actual := data.include("foo")
+	actual := data.Include("foo")
 	assert.Equal(t, contents, actual)
 }

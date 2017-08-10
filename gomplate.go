@@ -4,6 +4,8 @@ import (
 	"io"
 	"log"
 	"text/template"
+
+	"github.com/hairyhenderson/gomplate/data"
 )
 
 func (g *Gomplate) createTemplate() *template.Template {
@@ -31,19 +33,20 @@ func (g *Gomplate) RunTemplate(text string, out io.Writer) {
 }
 
 // NewGomplate -
-func NewGomplate(data *Data, leftDelim, rightDelim string) *Gomplate {
+func NewGomplate(d *data.Data, leftDelim, rightDelim string) *Gomplate {
 	return &Gomplate{
 		leftDelim:  leftDelim,
 		rightDelim: rightDelim,
-		funcMap:    initFuncs(data),
+		funcMap:    initFuncs(d),
 	}
 }
 
 func runTemplate(o *GomplateOpts) error {
 	defer runCleanupHooks()
-	data := NewData(o.dataSources, o.dataSourceHeaders)
+	d := data.NewData(o.dataSources, o.dataSourceHeaders)
+	addCleanupHook(d.Cleanup)
 
-	g := NewGomplate(data, o.lDelim, o.rDelim)
+	g := NewGomplate(d, o.lDelim, o.rDelim)
 
 	if o.inputDir != "" {
 		return processInputDir(o.inputDir, o.outputDir, g)

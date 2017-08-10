@@ -10,8 +10,8 @@ import (
 
 	"github.com/blang/vfs"
 	"github.com/hairyhenderson/gomplate/aws"
+	"github.com/hairyhenderson/gomplate/conv"
 	"github.com/hairyhenderson/gomplate/env"
-	"github.com/hairyhenderson/gomplate/typeconv"
 )
 
 // GetToken -
@@ -167,7 +167,7 @@ func (v *Vault) EC2Login() string {
 	}
 
 	opts := aws.ClientOptions{
-		Timeout: time.Duration(typeconv.MustAtoi(os.Getenv("AWS_TIMEOUT"))) * time.Millisecond,
+		Timeout: time.Duration(conv.MustAtoi(os.Getenv("AWS_TIMEOUT"))) * time.Millisecond,
 	}
 
 	meta := aws.NewEc2Meta(opts)
