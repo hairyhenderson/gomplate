@@ -1,5 +1,31 @@
 # Change Log
 
+## [v2.0.0](https://github.com/hairyhenderson/gomplate/tree/v2.0.0) (2017-08-10)
+[Full Changelog](https://github.com/hairyhenderson/gomplate/compare/v1.10.0...v2.0.0)
+
+**Implemented enhancements:**
+
+- Consul support [\#173](https://github.com/hairyhenderson/gomplate/issues/173)
+- Extracting data namespace, renaming typeconv to conv namespace [\#194](https://github.com/hairyhenderson/gomplate/pull/194) ([hairyhenderson](https://github.com/hairyhenderson))
+- Vault AWS EC2 auth [\#190](https://github.com/hairyhenderson/gomplate/pull/190) ([stuart-c](https://github.com/stuart-c))
+- Consul vault auth [\#187](https://github.com/hairyhenderson/gomplate/pull/187) ([stuart-c](https://github.com/stuart-c))
+- Vault write support [\#183](https://github.com/hairyhenderson/gomplate/pull/183) ([stuart-c](https://github.com/stuart-c))
+- Add Consul & BoltDB datasource support [\#178](https://github.com/hairyhenderson/gomplate/pull/178) ([stuart-c](https://github.com/stuart-c))
+
+**Closed issues:**
+
+- gomplate --version: 0.0.0 [\#188](https://github.com/hairyhenderson/gomplate/issues/188)
+
+**Merged pull requests:**
+
+- Adding a couple extra integration tests for vault [\#195](https://github.com/hairyhenderson/gomplate/pull/195) ([hairyhenderson](https://github.com/hairyhenderson))
+- Moving mustParse functions into new typeconv package [\#193](https://github.com/hairyhenderson/gomplate/pull/193) ([hairyhenderson](https://github.com/hairyhenderson))
+- Adding unit tests for libkv datasources [\#189](https://github.com/hairyhenderson/gomplate/pull/189) ([hairyhenderson](https://github.com/hairyhenderson))
+- Fixing up typos and formatting in docs [\#186](https://github.com/hairyhenderson/gomplate/pull/186) ([hairyhenderson](https://github.com/hairyhenderson))
+- Migrate from glide to dep [\#185](https://github.com/hairyhenderson/gomplate/pull/185) ([hairyhenderson](https://github.com/hairyhenderson))
+- Updating dependencies [\#184](https://github.com/hairyhenderson/gomplate/pull/184) ([hairyhenderson](https://github.com/hairyhenderson))
+- Switch to using official Go Vault client [\#177](https://github.com/hairyhenderson/gomplate/pull/177) ([stuart-c](https://github.com/stuart-c))
+
 ## [v1.10.0](https://github.com/hairyhenderson/gomplate/tree/v1.10.0) (2017-08-01)
 [Full Changelog](https://github.com/hairyhenderson/gomplate/compare/v1.9.1...v1.10.0)
 
@@ -14,6 +40,7 @@
 **Merged pull requests:**
 
 - Moving getenv to separate package [\#179](https://github.com/hairyhenderson/gomplate/pull/179) ([hairyhenderson](https://github.com/hairyhenderson))
+- Remove VFS argument from ReadSource which isn't used [\#175](https://github.com/hairyhenderson/gomplate/pull/175) ([stuart-c](https://github.com/stuart-c))
 - Disabling cgo so the binary is truly static [\#174](https://github.com/hairyhenderson/gomplate/pull/174) ([hairyhenderson](https://github.com/hairyhenderson))
 
 ## [v1.9.1](https://github.com/hairyhenderson/gomplate/tree/v1.9.1) (2017-06-22)
