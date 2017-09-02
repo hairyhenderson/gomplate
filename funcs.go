@@ -18,5 +18,6 @@ func initFuncs(d *data.Data) template.FuncMap {
 	funcs.AddStringFuncs(f)
 	funcs.AddEnvFuncs(f)
 	funcs.AddConvFuncs(f)
+	funcs.AddTimeFuncs(f)
 	return f
 }
