@@ -204,7 +204,10 @@ func (d *Data) Datasource(alias string, args ...string) interface{} {
 	}
 	b, err := d.ReadSource(source, args...)
 	if err != nil {
-		log.Fatalf("Couldn't read datasource '%s': %s", alias, err)
+		logFatalf("Couldn't read datasource '%s': %s", alias, err)
+	}
+	if b == nil || len(b) == 0 {
+		logFatalf("No value found for %s from datasource '%s'", args, alias)
 	}
 	s := string(b)
 	if source.Type == "application/json" {

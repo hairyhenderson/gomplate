@@ -47,6 +47,13 @@ function teardown () {
   [[ "${output}" == "$BATS_TEST_DESCRIPTION" ]]
 }
 
+@test "Testing failure with non-existant secret" {
+  VAULT_TOKEN=$(vault token-create -format=json -policy=readpol -use-limit=1 -ttl=1m | jq -j .auth.client_token)
+  VAULT_TOKEN=$VAULT_TOKEN gomplate -d vault=vault:///secret -i '{{(datasource "vault" "bar").value}}'
+  [ "$status" -eq 1 ]
+  [[ "${output}" == *"No value found for [bar] from datasource 'vault'" ]]
+}
+
 @test "Testing token vault auth using file" {
   vault write secret/foo value="$BATS_TEST_DESCRIPTION"
   vault token-create -format=json -policy=readpol -use-limit=1 -ttl=1m | jq -j .auth.client_token > $tmpdir/token
