@@ -113,12 +113,12 @@ func TestParseSourceWithAlias(t *testing.T) {
 }
 
 func TestDatasource(t *testing.T) {
-	test := func(ext, mime, contents string) {
+	setup := func(ext, mime string, contents []byte) *Data {
 		fname := "foo." + ext
 		fs := memfs.Create()
 		_ = fs.Mkdir("/tmp", 0777)
 		f, _ := vfs.Create(fs, "/tmp/"+fname)
-		_, _ = f.Write([]byte(contents))
+		_, _ = f.Write(contents)
 
 		sources := map[string]*Source{
 			"foo": {
@@ -129,16 +129,25 @@ func TestDatasource(t *testing.T) {
 				FS:    fs,
 			},
 		}
-		data := &Data{
-			Sources: sources,
-		}
+		return &Data{Sources: sources}
+	}
+	test := func(ext, mime string, contents []byte) {
+		data := setup(ext, mime, contents)
 		expected := map[string]interface{}{"hello": map[interface{}]interface{}{"cruel": "world"}}
 		actual := data.Datasource("foo")
 		assert.Equal(t, expected, actual)
 	}
 
-	test("json", "application/json", `{"hello":{"cruel":"world"}}`)
-	test("yml", "application/yaml", "hello:\n  cruel: world\n")
+	test("json", "application/json", []byte(`{"hello":{"cruel":"world"}}`))
+	test("yml", "application/yaml", []byte("hello:\n  cruel: world\n"))
+
+	d := setup("", "text/plain", nil)
+	defer restoreLogFatalf()
+	setupMockLogFatalf()
+	assert.Panics(t, func() {
+		d.Datasource("foo")
+	})
+	assert.Contains(t, spyLogFatalfMsg, "No value found for")
 }
 
 func TestDatasourceExists(t *testing.T) {
