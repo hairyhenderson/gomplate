@@ -6,7 +6,6 @@ import (
 	"os"
 	"path"
 	"strings"
-	"strconv"
 	"time"
 
 	"github.com/blang/vfs"
@@ -162,7 +161,6 @@ func (v *Vault) EC2Login() string {
 	mount := env.Getenv("VAULT_AUTH_AWS_MOUNT", "aws")
 	nonce := env.Getenv("VAULT_AUTH_AWS_NONCE")
 	output := env.Getenv("VAULT_AUTH_AWS_NONCE_OUTPUT")
-	perms := env.Getenv("VAULT_AUTH_AWS_NONCE_PERMISSION", "0666")
 
 	vars := map[string]interface{}{}
 
@@ -172,11 +170,6 @@ func (v *Vault) EC2Login() string {
 
 	if nonce != "" {
 		vars["nonce"] = nonce
-	}
-
-	perm, err := strconv.ParseUint(perms, 0, 0)
-	if err != nil {
-		logFatal("Error decoding permission string")
 	}
 
 	opts := aws.ClientOptions{
@@ -205,7 +198,7 @@ func (v *Vault) EC2Login() string {
 			nonce = val
 		}
 		fs := vfs.OS()
-		f, err := fs.OpenFile(output, os.O_WRONLY, os.FileMode(perm))
+		f, err := fs.OpenFile(output, os.O_WRONLY, os.FileMode(0600))
 		if err != nil {
 			logFatal("Error opening nonce output file")
 		}
