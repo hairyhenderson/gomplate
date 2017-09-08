@@ -159,11 +159,17 @@ func (v *Vault) UserPassLogin() string {
 func (v *Vault) EC2Login() string {
 	role := env.Getenv("VAULT_AUTH_AWS_ROLE")
 	mount := env.Getenv("VAULT_AUTH_AWS_MOUNT", "aws")
+	nonce := env.Getenv("VAULT_AUTH_AWS_NONCE")
+	output := env.Getenv("VAULT_AUTH_AWS_NONCE_OUTPUT")
 
 	vars := map[string]interface{}{}
 
 	if role != "" {
 		vars["role"] = role
+	}
+
+	if nonce != "" {
+		vars["nonce"] = nonce
 	}
 
 	opts := aws.ClientOptions{
@@ -185,6 +191,24 @@ func (v *Vault) EC2Login() string {
 	}
 	if secret == nil {
 		logFatal("Empty response from AWS EC2 logon")
+	}
+
+	if output != "" {
+		if val, ok := secret.Auth.Metadata["nonce"]; ok {
+			nonce = val
+		}
+		fs := vfs.OS()
+		f, err := fs.OpenFile(output, os.O_WRONLY, os.FileMode(0600))
+		if err != nil {
+			logFatal("Error opening nonce output file")
+		}
+		n, err := f.Write([]byte(nonce + "\n"))
+		if err != nil {
+			logFatal("Error writing nonce output file")
+		}
+		if n == 0 {
+			logFatal("No bytes written to nonce output file")
+		}
 	}
 
 	return secret.Auth.ClientToken
