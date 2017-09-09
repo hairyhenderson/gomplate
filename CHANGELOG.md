@@ -1,5 +1,17 @@
 # Change Log
 
+## [v2.0.1](https://github.com/hairyhenderson/gomplate/tree/v2.0.1) (2017-09-08)
+[Full Changelog](https://github.com/hairyhenderson/gomplate/compare/v2.0.0...v2.0.1)
+
+**Fixed bugs:**
+
+- Crash when vault secret is not found [\#200](https://github.com/hairyhenderson/gomplate/issues/200)
+- Fixing crash on 404 [\#201](https://github.com/hairyhenderson/gomplate/pull/201) ([hairyhenderson](https://github.com/hairyhenderson))
+
+**Merged pull requests:**
+
+- Add nonce support [\#202](https://github.com/hairyhenderson/gomplate/pull/202) ([stuart-c](https://github.com/stuart-c))
+
 ## [v2.0.0](https://github.com/hairyhenderson/gomplate/tree/v2.0.0) (2017-08-10)
 [Full Changelog](https://github.com/hairyhenderson/gomplate/compare/v1.10.0...v2.0.0)
 
