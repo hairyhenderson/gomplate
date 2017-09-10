@@ -1,18 +1,27 @@
 #!/bin/bash
 
-# $IMAGE_NAME var is injected into the build so the tag is correct.
-
 docker version
 
-echo "Build hook running"
+echo "======== Build hook running"
 export BUILD_DATE=`date -u +"%Y-%m-%dT%H:%M:%SZ"`
 export VCS_REF=`git rev-parse --short HEAD`
-export IMAGE_NAME=${IMAGE_NAME:-hairyhenderson/gomplate}
+export DOCKER_REPO=${DOCKER_REPO:-hairyhenderson/gomplate}
+export DOCKER_TAG=${DOCKER_TAG:-latest}
+export IMAGE_NAME=${IMAGE_NAME:-${DOCKER_REPO}:${DOCKER_TAG}}
+
+echo "======== Building $IMAGE_NAME"
 docker build --build-arg BUILD_DATE \
              --build-arg VCS_REF \
              --target gomplate \
-             -t $IMAGE_NAME .
+             -t ${IMAGE_NAME} .
+
+if [ "$DOCKER_TAG" == "latest" ]; then
+  export SLIM_TAG="slim"
+else
+  export SLIM_TAG="${DOCKER_TAG}-slim"
+fi
+echo "======== Building ${DOCKER_REPO}:${SLIM_TAG}"
 docker build --build-arg BUILD_DATE \
              --build-arg VCS_REF \
              --target gomplate-slim \
-             -t $IMAGE_NAME:slim .
+             -t ${DOCKER_REPO}:${SLIM_TAG} .
