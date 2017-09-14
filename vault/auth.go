@@ -198,7 +198,7 @@ func (v *Vault) EC2Login() string {
 			nonce = val
 		}
 		fs := vfs.OS()
-		f, err := fs.OpenFile(output, os.O_WRONLY, os.FileMode(0600))
+		f, err := fs.OpenFile(output, os.O_WRONLY | os.O_CREATE | os.O_TRUNC, os.FileMode(0600))
 		if err != nil {
 			logFatal("Error opening nonce output file")
 		}
