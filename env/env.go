@@ -3,6 +3,7 @@ package env
 import (
 	"io/ioutil"
 	"os"
+	"strings"
 
 	"github.com/blang/vfs"
 )
@@ -37,7 +38,7 @@ func getenvFile(fs vfs.Filesystem, key string) string {
 		if err != nil {
 			return ""
 		}
-		return val
+		return strings.TrimSpace(val)
 	}
 
 	return ""
