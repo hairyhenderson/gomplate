@@ -68,12 +68,7 @@ func newGomplateCmd() *cobra.Command {
 			}
 			return runTemplate(&opts)
 		},
-		Args: func(cmd *cobra.Command, args []string) error {
-			if len(args) > 0 {
-				return fmt.Errorf("unrecognized argument '%s'", args[0])
-			}
-			return nil
-		},
+		Args: cobra.NoArgs,
 	}
 	return rootCmd
 }
