@@ -74,3 +74,9 @@ function teardown () {
   [ "$status" -eq 0 ]
   [[ "${output}" == "hi" ]]
 }
+
+@test "unknown arguments result in error" {
+  gomplate -in flibbit
+  [ "$status" -eq 1 ]
+  [[ "${lines[0]}" == "Error: unrecognized argument 'flibbit'" ]]
+}
