@@ -68,6 +68,7 @@ func newGomplateCmd() *cobra.Command {
 			}
 			return runTemplate(&opts)
 		},
+		Args: cobra.NoArgs,
 	}
 	return rootCmd
 }
