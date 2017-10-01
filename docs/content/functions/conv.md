@@ -128,3 +128,74 @@ The host is example.com:443
 The path is /foo/bar
 ```
 
+## `conv.ParseInt`
+
+Parses a string as an int64 for later use. Equivalent to [strconv.ParseInt](https://golang.org/pkg/strconv/#ParseInt)
+
+#### Example
+
+_`input.tmpl`:_
+```
+{{ $val := conv.ParseInt (getenv "HEXVAL") 16 32 }}
+The value in decimal is {{ $val }}
+```
+
+```console
+$ HEXVAL=7C0 gomplate < input.tmpl
+
+The value in decimal is 1984
+```
+
+## `conv.ParseFloat`
+
+Parses a string as an float64 for later use. Equivalent to [strconv.ParseFloat](https://golang.org/pkg/strconv/#ParseFloat)
+
+#### Example
+
+_`input.tmpl`:_
+```
+{{ $pi := conv.ParseFloat (getenv "PI") 64 }}
+{{- if (gt $pi 3.0) -}}
+pi is greater than 3
+{{- end }}
+```
+
+```console
+$ PI=3.14159265359 gomplate < input.tmpl
+pi is greater than 3
+```
+
+## `conv.ParseUint`
+
+Parses a string as an uint64 for later use. Equivalent to [strconv.ParseUint](https://golang.org/pkg/strconv/#ParseUint)
+
+_`input.tmpl`:_
+```
+{{ conv.ParseInt (getenv "BIG") 16 64 }} is max int64
+{{ conv.ParseUint (getenv "BIG") 16 64 }} is max uint64
+```
+
+```console
+$ BIG=FFFFFFFFFFFFFFFF gomplate < input.tmpl
+9223372036854775807 is max int64
+18446744073709551615 is max uint64
+```
+
+## `conv.Atoi`
+
+Parses a string as an int for later use. Equivalent to [strconv.Atoi](https://golang.org/pkg/strconv/#Atoi)
+
+_`input.tmpl`:_
+```
+{{ $number := conv.Atoi (getenv "NUMBER") }}
+{{- if (gt $number 5) -}}
+The number is greater than 5
+{{- else -}}
+The number is less than 5
+{{- end }}
+```
+
+```console
+$ NUMBER=21 gomplate < input.tmpl
+The number is greater than 5
+```
