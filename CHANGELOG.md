@@ -1,5 +1,37 @@
 # Change Log
 
+## [Unreleased](https://github.com/hairyhenderson/gomplate/tree/HEAD)
+
+[Full Changelog](https://github.com/hairyhenderson/gomplate/compare/v2.1.0...HEAD)
+
+**Implemented enhancements:**
+
+- Add some time-related functions [\#199](https://github.com/hairyhenderson/gomplate/issues/199)
+
+## [v2.1.0](https://github.com/hairyhenderson/gomplate/tree/v2.1.0) (2017-10-14)
+[Full Changelog](https://github.com/hairyhenderson/gomplate/compare/v2.0.1...v2.1.0)
+
+**Implemented enhancements:**
+
+- Add time funcs [\#211](https://github.com/hairyhenderson/gomplate/pull/211) ([hairyhenderson](https://github.com/hairyhenderson))
+
+**Fixed bugs:**
+
+- 'client nonce mismatch' when using AWS auth with nonce [\#205](https://github.com/hairyhenderson/gomplate/issues/205)
+- AWS Auth nonce file not created if it doesn't already exist [\#204](https://github.com/hairyhenderson/gomplate/issues/204)
+- "gomplate -in flibbit" should produce an error [\#192](https://github.com/hairyhenderson/gomplate/issues/192)
+- Fixes \#192 - fail with unknown args [\#208](https://github.com/hairyhenderson/gomplate/pull/208) ([drmdrew](https://github.com/drmdrew))
+- Remove trailing spaces [\#207](https://github.com/hairyhenderson/gomplate/pull/207) ([stuart-c](https://github.com/stuart-c))
+- Create file if it doesn't exist [\#206](https://github.com/hairyhenderson/gomplate/pull/206) ([stuart-c](https://github.com/stuart-c))
+
+**Closed issues:**
+
+- Document 4 new conv functions in 2.0.0 [\#196](https://github.com/hairyhenderson/gomplate/issues/196)
+
+**Merged pull requests:**
+
+- Document conv.ParseInt, conv.ParseFloat, conv.ParseUint, and conv.Atoi [\#212](https://github.com/hairyhenderson/gomplate/pull/212) ([danedmunds](https://github.com/danedmunds))
+
 ## [v2.0.1](https://github.com/hairyhenderson/gomplate/tree/v2.0.1) (2017-09-08)
 [Full Changelog](https://github.com/hairyhenderson/gomplate/compare/v2.0.0...v2.0.1)
 
