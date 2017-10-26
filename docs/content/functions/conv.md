@@ -199,3 +199,37 @@ The number is less than 5
 $ NUMBER=21 gomplate < input.tmpl
 The number is greater than 5
 ```
+
+## `conv.ToInt64`
+
+Converts the input to an `int64`.
+
+```console
+$ gomplate -i '{{conv.ToInt64 "9223372036854775807"}}'
+9223372036854775807
+```
+
+## `conv.ToInt`
+
+Converts the input to an `int`. This is similar to `conv.Atoi`, but handles booleans and numbers as well as strings.
+
+```console
+$ gomplate -i '{{conv.ToInt (gt 1 2)}}'
+0
+```
+
+## `conv.ToInt64s`
+
+Converts the inputs to an array of `int64`s
+
+## `conv.ToInts`
+
+Converts the inputs to an array of `int`s
+
+## `conv.ToFloat64`
+
+Converts the input to a `float64`
+
+## `conv.ToFloat64s`
+
+Converts the inputs to an array of `float64`s

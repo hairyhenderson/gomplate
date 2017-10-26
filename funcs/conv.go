@@ -62,3 +62,27 @@ func (f *ConvFuncs) Atoi(s string) int {
 func (f *ConvFuncs) URL(s string) (*url.URL, error) {
 	return url.Parse(s)
 }
+
+func (f *ConvFuncs) ToInt64(in interface{}) int64 {
+	return conv.ToInt64(in)
+}
+
+func (f *ConvFuncs) ToInt(in interface{}) int {
+	return conv.ToInt(in)
+}
+
+func (f *ConvFuncs) ToInt64s(in ...interface{}) []int64 {
+	return conv.ToInt64s(in)
+}
+
+func (f *ConvFuncs) ToInts(in ...interface{}) []int {
+	return conv.ToInts(in)
+}
+
+func (f *ConvFuncs) ToFloat64(in interface{}) float64 {
+	return conv.ToFloat64(in)
+}
+
+func (f *ConvFuncs) ToFloat64s(in ...interface{}) []float64 {
+	return conv.ToFloat64s(in)
+}
