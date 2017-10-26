@@ -108,3 +108,98 @@ func MustAtoi(s string) int {
 	i, _ := strconv.Atoi(s)
 	return i
 }
+
+// ToInt64 - taken from github.com/Masterminds/sprig
+func ToInt64(v interface{}) int64 {
+	if str, ok := v.(string); ok {
+		iv, err := strconv.ParseInt(str, 0, 64)
+		if err != nil {
+			return 0
+		}
+		return iv
+	}
+
+	val := reflect.Indirect(reflect.ValueOf(v))
+	switch val.Kind() {
+	case reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64, reflect.Int:
+		return val.Int()
+	case reflect.Uint8, reflect.Uint16, reflect.Uint32:
+		return int64(val.Uint())
+	case reflect.Uint, reflect.Uint64:
+		tv := val.Uint()
+		// this can overflow and give -1, but IMO this is better than
+		// returning maxint64
+		return int64(tv)
+	case reflect.Float32, reflect.Float64:
+		return int64(val.Float())
+	case reflect.Bool:
+		if val.Bool() == true {
+			return 1
+		}
+		return 0
+	default:
+		return 0
+	}
+}
+
+// ToInt -
+func ToInt(in interface{}) int {
+	return int(ToInt64(in))
+}
+
+// ToInt64s -
+func ToInt64s(in ...interface{}) []int64 {
+	out := make([]int64, len(in))
+	for i, v := range in {
+		out[i] = ToInt64(v)
+	}
+	return out
+}
+
+// ToInts -
+func ToInts(in ...interface{}) []int {
+	out := make([]int, len(in))
+	for i, v := range in {
+		out[i] = ToInt(v)
+	}
+	return out
+}
+
+// ToFloat64 - taken from github.com/Masterminds/sprig
+func ToFloat64(v interface{}) float64 {
+	if str, ok := v.(string); ok {
+		iv, err := strconv.ParseFloat(str, 64)
+		if err != nil {
+			return 0
+		}
+		return iv
+	}
+
+	val := reflect.Indirect(reflect.ValueOf(v))
+	switch val.Kind() {
+	case reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64, reflect.Int:
+		return float64(val.Int())
+	case reflect.Uint8, reflect.Uint16, reflect.Uint32:
+		return float64(val.Uint())
+	case reflect.Uint, reflect.Uint64:
+		return float64(val.Uint())
+	case reflect.Float32, reflect.Float64:
+		return val.Float()
+	case reflect.Bool:
+		if val.Bool() == true {
+			return 1
+		}
+		return 0
+	default:
+		return 0
+	}
+}
+
+// ToFloat64s -
+func ToFloat64s(in ...interface{}) []float64 {
+	out := make([]float64, len(in))
+	for i, v := range in {
+		out[i] = ToFloat64(v)
+	}
+	return out
+}

@@ -1,6 +1,7 @@
 package conv
 
 import (
+	"math"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -83,4 +84,79 @@ func TestMustParseFloat(t *testing.T) {
 	}
 	assert.Equal(t, 1.0, MustParseFloat("1", 64))
 	assert.Equal(t, -1.0, MustParseFloat("-1", 64))
+}
+
+func TestToInt64(t *testing.T) {
+	assert.Equal(t, int64(1), ToInt64(1))
+	assert.Equal(t, int64(1), ToInt64(int32(1)))
+	assert.Equal(t, int64(1), ToInt64(int64(1)))
+	assert.Equal(t, int64(1), ToInt64(float32(1)))
+	assert.Equal(t, int64(1), ToInt64(float64(1)))
+	assert.Equal(t, int64(42), ToInt64(42))
+	assert.Equal(t, int64(-1), ToInt64(uint64(math.MaxUint64)))
+	assert.Equal(t, int64(0xFF), ToInt64(uint8(math.MaxUint8)))
+
+	assert.Equal(t, int64(0), ToInt64(nil))
+	assert.Equal(t, int64(0), ToInt64(false))
+	assert.Equal(t, int64(1), ToInt64(true))
+	assert.Equal(t, int64(0), ToInt64(""))
+	assert.Equal(t, int64(0), ToInt64("foo"))
+	assert.Equal(t, int64(0xFFFF), ToInt64("0xFFFF"))
+	assert.Equal(t, int64(8), ToInt64("010"))
+}
+
+func TestToInt(t *testing.T) {
+	assert.Equal(t, 1, ToInt(1))
+	assert.Equal(t, 1, ToInt(int32(1)))
+	assert.Equal(t, 1, ToInt(int64(1)))
+	assert.Equal(t, 1, ToInt(float32(1)))
+	assert.Equal(t, 1, ToInt(float64(1)))
+	assert.Equal(t, 42, ToInt(42))
+	assert.Equal(t, -1, ToInt(uint64(math.MaxUint64)))
+	assert.Equal(t, 0xFF, ToInt(uint8(math.MaxUint8)))
+
+	assert.Equal(t, 0, ToInt(nil))
+	assert.Equal(t, 0, ToInt(false))
+	assert.Equal(t, 1, ToInt(true))
+	assert.Equal(t, 0, ToInt(""))
+	assert.Equal(t, 0, ToInt("foo"))
+	assert.Equal(t, 0xFFFF, ToInt("0xFFFF"))
+	assert.Equal(t, 8, ToInt("010"))
+}
+
+func TestToInt64s(t *testing.T) {
+	assert.Equal(t, []int64{}, ToInt64s())
+
+	assert.Equal(t, []int64{0}, ToInt64s(""))
+	assert.Equal(t, []int64{0}, ToInt64s("0"))
+	assert.Equal(t, []int64{42, 15}, ToInt64s("42", "15"))
+	assert.Equal(t, []int64{0, 0, 0, 1, 1, 2, 3, 5, 8, 13},
+		ToInt64s(nil, false, "", true, 1, 2.0, uint8(3), int64(5), float32(8), "13"))
+}
+
+func TestToInts(t *testing.T) {
+	assert.Equal(t, []int{}, ToInts())
+
+	assert.Equal(t, []int{0}, ToInts(""))
+	assert.Equal(t, []int{0}, ToInts("0"))
+	assert.Equal(t, []int{42, 15}, ToInts("42", "15"))
+	assert.Equal(t, []int{0, 0, 0, 1, 1, 2, 3, 5, 8, 13},
+		ToInts(nil, false, "", true, 1, 2.0, uint8(3), int64(5), float32(8), "13"))
+}
+
+func TestToFloat64(t *testing.T) {
+	z := []interface{}{0, 0.0, nil, false, float32(0), "", "0", "foo", int64(0), uint(0)}
+	for _, n := range z {
+		assert.Equal(t, 0.0, ToFloat64(n))
+	}
+	assert.Equal(t, 1.0, ToFloat64(true))
+	z = []interface{}{42, 42.0, float32(42), "42", "42.0", uint8(42)}
+	for _, n := range z {
+		assert.Equal(t, 42.0, ToFloat64(n))
+	}
+}
+
+func TestToFloat64s(t *testing.T) {
+	assert.Equal(t, []float64{}, ToFloat64s())
+	assert.Equal(t, []float64{0, 1.0, 2.0, math.Pi, 4.0}, ToFloat64s(nil, true, "2", math.Pi, uint8(4)))
 }
