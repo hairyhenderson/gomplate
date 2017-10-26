@@ -93,6 +93,8 @@ func TestToInt64(t *testing.T) {
 	assert.Equal(t, int64(1), ToInt64(float32(1)))
 	assert.Equal(t, int64(1), ToInt64(float64(1)))
 	assert.Equal(t, int64(42), ToInt64(42))
+	assert.Equal(t, int64(42), ToInt64("42.0"))
+	assert.Equal(t, int64(3), ToInt64("3.5"))
 	assert.Equal(t, int64(-1), ToInt64(uint64(math.MaxUint64)))
 	assert.Equal(t, int64(0xFF), ToInt64(uint8(math.MaxUint8)))
 
@@ -145,12 +147,12 @@ func TestToInts(t *testing.T) {
 }
 
 func TestToFloat64(t *testing.T) {
-	z := []interface{}{0, 0.0, nil, false, float32(0), "", "0", "foo", int64(0), uint(0)}
+	z := []interface{}{0, 0.0, nil, false, float32(0), "", "0", "foo", int64(0), uint(0), "0x0", "00"}
 	for _, n := range z {
 		assert.Equal(t, 0.0, ToFloat64(n))
 	}
 	assert.Equal(t, 1.0, ToFloat64(true))
-	z = []interface{}{42, 42.0, float32(42), "42", "42.0", uint8(42)}
+	z = []interface{}{42, 42.0, float32(42), "42", "42.0", uint8(42), "0x2A", "052"}
 	for _, n := range z {
 		assert.Equal(t, 42.0, ToFloat64(n))
 	}
