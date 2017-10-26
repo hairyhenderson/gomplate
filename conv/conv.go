@@ -114,7 +114,13 @@ func ToInt64(v interface{}) int64 {
 	if str, ok := v.(string); ok {
 		iv, err := strconv.ParseInt(str, 0, 64)
 		if err != nil {
-			return 0
+			// maybe it's a float?
+			var fv float64
+			fv, err = strconv.ParseFloat(str, 64)
+			if err != nil {
+				return 0
+			}
+			return ToInt64(fv)
 		}
 		return iv
 	}
@@ -168,11 +174,19 @@ func ToInts(in ...interface{}) []int {
 // ToFloat64 - taken from github.com/Masterminds/sprig
 func ToFloat64(v interface{}) float64 {
 	if str, ok := v.(string); ok {
-		iv, err := strconv.ParseFloat(str, 64)
+		// this is inefficient, but it's the only way I can think of to
+		// properly convert octal integers to floats
+		iv, err := strconv.ParseInt(str, 0, 64)
 		if err != nil {
-			return 0
+			// ok maybe it's a float?
+			var fv float64
+			fv, err = strconv.ParseFloat(str, 64)
+			if err != nil {
+				return 0
+			}
+			return fv
 		}
-		return iv
+		return float64(iv)
 	}
 
 	val := reflect.Indirect(reflect.ValueOf(v))
