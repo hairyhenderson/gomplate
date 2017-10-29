@@ -2,7 +2,6 @@ package main
 
 import (
 	"io"
-	"log"
 	"text/template"
 
 	"github.com/hairyhenderson/gomplate/data"
@@ -20,16 +19,14 @@ type Gomplate struct {
 }
 
 // RunTemplate -
-func (g *Gomplate) RunTemplate(text string, out io.Writer) {
+func (g *Gomplate) RunTemplate(text string, out io.Writer) error {
 	context := &Context{}
 	tmpl, err := g.createTemplate().Delims(g.leftDelim, g.rightDelim).Parse(text)
 	if err != nil {
-		log.Fatalf("Line %q: %v\n", text, err)
+		return err
 	}
-
-	if err := tmpl.Execute(out, context); err != nil {
-		panic(err)
-	}
+	err = tmpl.Execute(out, context)
+	return err
 }
 
 // NewGomplate -
@@ -63,6 +60,6 @@ func renderTemplate(g *Gomplate, inString string, outPath string) error {
 	}
 	// nolint: errcheck
 	defer outFile.Close()
-	g.RunTemplate(inString, outFile)
-	return nil
+	err = g.RunTemplate(inString, outFile)
+	return err
 }
