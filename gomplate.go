@@ -2,6 +2,7 @@ package main
 
 import (
 	"io"
+	"path/filepath"
 	"text/template"
 
 	"github.com/hairyhenderson/gomplate/data"
@@ -45,11 +46,16 @@ func runTemplate(o *GomplateOpts) error {
 
 	g := NewGomplate(d, o.lDelim, o.rDelim)
 
-	if o.inputDir != "" {
-		return processInputDir(o.inputDir, o.outputDir, g)
+	excludeList, err := filepath.Glob(o.excludeGlob)
+	if err != nil {
+		return err
 	}
 
-	return processInputFiles(o.input, o.inputFiles, o.outputFiles, g)
+	if o.inputDir != "" {
+		return processInputDir(o.inputDir, o.outputDir, excludeList, g)
+	}
+
+	return processInputFiles(o.input, o.inputFiles, o.outputFiles, excludeList, g)
 }
 
 // Called from process.go ...

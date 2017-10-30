@@ -48,7 +48,7 @@ func TestInputDir(t *testing.T) {
 		Sources: map[string]*data.Source{"config": src},
 	}
 	gomplate := NewGomplate(d, "{{", "}}")
-	err = processInputDir(filepath.Join("test", "files", "input-dir", "in"), outDir, gomplate)
+	err = processInputDir(filepath.Join("test", "files", "input-dir", "in"), outDir, []string{"**/*.exclude.txt"}, gomplate)
 	assert.Nil(t, err)
 
 	top, err := ioutil.ReadFile(filepath.Join(outDir, "top.txt"))
@@ -58,4 +58,8 @@ func TestInputDir(t *testing.T) {
 	inner, err := ioutil.ReadFile(filepath.Join(outDir, "inner/nested.txt"))
 	assert.Nil(t, err)
 	assert.Equal(t, "zwei", string(inner))
+
+	// excluded file should not exist in out dir
+	_, err = ioutil.ReadFile(filepath.Join(outDir, "inner/exclude.txt"))
+	assert.NotEmpty(t, err)
 }
