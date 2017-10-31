@@ -41,8 +41,6 @@ func main() {
 	flag.StringVar(&port, "p", "8081", "Port to listen to")
 	flag.Parse()
 
-	certificateGenerate()
-
 	l, err := net.Listen("tcp", ":"+port)
 	if err != nil {
 		log.Fatal(err)
@@ -128,6 +126,9 @@ func documentHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func certificateHandler(w http.ResponseWriter, r *http.Request) {
+	if derBytes == nil {
+		certificateGenerate()
+	}
 	encoded := pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE", Bytes: derBytes})
 
 	w.Header().Set("Content-Type", "text/plain")

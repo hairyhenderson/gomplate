@@ -31,15 +31,15 @@ function start_mirror_svc () {
 }
 
 function stop_mirror_svc () {
-  wget -q http://127.0.0.1:8080/quit
+  wget -q -O - http://127.0.0.1:8080/quit
 }
 
 function start_meta_svc () {
-  bin/meta 3>/dev/null &
+  bin/meta &> /tmp/meta.log &
 }
 
 function stop_meta_svc () {
-  wget -q http://127.0.0.1:8081/quit
+  wget -q -O - http://127.0.0.1:8081/quit
 }
 
 function start_aws_svc () {
@@ -47,7 +47,7 @@ function start_aws_svc () {
 }
 
 function stop_aws_svc () {
-  wget -q http://127.0.0.1:8082/quit
+  wget -q -O - http://127.0.0.1:8082/quit
 }
 
 function wait_for_url () {
