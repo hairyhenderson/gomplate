@@ -162,3 +162,19 @@ time.ZoneName
 $ gomplate -i '{{time.ZoneName}}'
 EDT
 ```
+
+## `time.ZoneOffset`
+
+Return the local system's time zone offset, in seconds east of UTC.
+
+### Usage
+```go
+time.ZoneOffset
+```
+
+### Example
+
+```console
+$ gomplate -i '{{time.ZoneOffset}}'
+-14400
+```

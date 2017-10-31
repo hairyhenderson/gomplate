@@ -9,3 +9,9 @@ func ZoneName() string {
 	n, _ := time.Now().Zone()
 	return n
 }
+
+// ZoneOffset - determine the current timezone's offset, in seconds east of UTC
+func ZoneOffset() int {
+	_, o := time.Now().Zone()
+	return o
+}
