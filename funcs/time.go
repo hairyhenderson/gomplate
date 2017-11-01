@@ -68,6 +68,11 @@ func (f *TimeFuncs) ZoneName() string {
 	return time.ZoneName()
 }
 
+// ZoneOffset - return the local system's time zone's name
+func (f *TimeFuncs) ZoneOffset() int {
+	return time.ZoneOffset()
+}
+
 // Parse -
 func (f *TimeFuncs) Parse(layout, value string) (gotime.Time, error) {
 	return gotime.Parse(layout, value)

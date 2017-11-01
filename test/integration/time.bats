@@ -8,6 +8,12 @@ load helper
   [[ "${output}" == `date +"%Z"` ]]
 }
 
+@test "'time.ZoneOffset'" {
+  TZ=UTC gomplate -i '{{ time.ZoneOffset }}'
+  [ "$status" -eq 0 ]
+  [[ "${output}" == "0" ]]
+}
+
 @test "'(time.Now).Format'" {
   gomplate -i '{{ (time.Now).Format "2006-01-02 15 -0700" }}'
   [ "$status" -eq 0 ]
