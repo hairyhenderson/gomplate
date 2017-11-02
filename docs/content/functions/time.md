@@ -10,6 +10,8 @@ few of the functions return a `time.Time` value. All of the
 [`time.Time` functions](https://golang.org/pkg/time/#Time) can then be used to
 convert, adjust, or format the time in your template.
 
+### Reference time
+
 An important difference between this and many other time/date utilities is how
 parsing and formatting is accomplished. Instead of relying solely on pre-defined
 formats, or having a complex system of variables, formatting is accomplished by
@@ -109,17 +111,78 @@ A number of pre-defined layouts are provided as constants, defined
 Just like [`time.Now`](#time-now), this is usually used in conjunction with
 other functions.
 
+_Note: In the absence of a time zone indicator, `time.Parse` returns a time in UTC._
+
 ### Usage
 ```go
 time.Parse layout timestamp
 ```
 
+### Arguments
+
+| name   | description |
+|--------|-------|
+| `layout` | The layout string to parse with|
+| `timestamp` | The timestamp to parse |
+
 ### Examples
 
 Usage with [`Format`](https://golang.org/pkg/time/#Time.Format):
 ```console
-$ gomplate -i '{{ (time.Parse "2006-01-02" "1993-10-23").Format "Monday January 2, 2006" }}'
-Saturday October 23, 1993
+$ gomplate -i '{{ (time.Parse "2006-01-02" "1993-10-23").Format "Monday January 2, 2006 MST" }}'
+Saturday October 23, 1993 UTC
+```
+
+## `time.ParseLocal`
+
+Same as [`time.Parse`](#time-parse), except that in the absence of a time zone
+indicator, the timestamp wil be parsed in the local timezone.
+
+### Usage
+```go
+time.ParseLocal layout timestamp
+```
+
+### Arguments
+
+| name   | description |
+|--------|-------|
+| `layout` | The layout string to parse with|
+| `timestamp` | The timestamp to parse |
+
+### Examples
+
+Usage with [`Format`](https://golang.org/pkg/time/#Time.Format):
+```console
+$ bin/gomplate -i '{{ (time.ParseLocal time.Kitchen "6:00AM").Format "15:04 MST" }}'
+06:00 EST
+```
+
+## `time.ParseInLocation`
+
+Same as [`time.Parse`](#time-parse), except that the time is parsed in the given location's time zone.
+
+This wraps [`time.ParseInLocation`](https://golang.org/pkg/time/#ParseInLocation).
+
+### Usage
+```go
+time.ParseInLocation layout location timestamp
+```
+
+### Arguments
+
+| name   | description |
+|--------|-------|
+| `layout` | The layout string to parse with |
+| `location` | The location to parse in |
+| `timestamp` | The timestamp to parse |
+
+### Examples
+
+Usage with [`Format`](https://golang.org/pkg/time/#Time.Format):
+```console
+$ gomplate -i '{{ (time.ParseInLocation time.Kitchen "Africa/Luanda" "6:00AM").Format "15:04 MST" }}'
+06:00 LMT
 ```
 
 ## `time.Unix`

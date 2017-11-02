@@ -78,6 +78,20 @@ func (f *TimeFuncs) Parse(layout, value string) (gotime.Time, error) {
 	return gotime.Parse(layout, value)
 }
 
+// ParseLocal -
+func (f *TimeFuncs) ParseLocal(layout, value string) (gotime.Time, error) {
+	return gotime.ParseInLocation(layout, value, gotime.Local)
+}
+
+// ParseInLocation -
+func (f *TimeFuncs) ParseInLocation(layout, location, value string) (gotime.Time, error) {
+	loc, err := gotime.LoadLocation(location)
+	if err != nil {
+		return gotime.Time{}, err
+	}
+	return gotime.ParseInLocation(layout, value, loc)
+}
+
 // Now -
 func (f *TimeFuncs) Now() gotime.Time {
 	return gotime.Now()
