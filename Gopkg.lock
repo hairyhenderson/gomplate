@@ -153,7 +153,7 @@
 
 [[projects]]
   name = "github.com/stretchr/testify"
-  packages = ["assert"]
+  packages = ["assert","require"]
   revision = "69483b4bd14f5845b5a1e55bca19e954e827f1d0"
   version = "v1.1.4"
 
@@ -162,6 +162,12 @@
   name = "github.com/ugorji/go"
   packages = ["codec"]
   revision = "5efa3251c7f7d05e5d9704a69a984ec9f1386a40"
+
+[[projects]]
+  name = "github.com/zealic/xignore"
+  packages = ["."]
+  revision = "299cc3d7c39d4d7c66b52c1a5d024cfe360192dd"
+  version = "v0.1.0"
 
 [[projects]]
   branch = "master"
@@ -190,6 +196,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "31a8e0b536f3b7bdc59f2f911ba5060012b81357402532c1525544065f9d02ea"
+  inputs-digest = "d0edfeef433554e967aa61da4f87d1596e7ece38ff1d39009c1d669d2d33d3a4"
   solver-name = "gps-cdcl"
   solver-version = 1

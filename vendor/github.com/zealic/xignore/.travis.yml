@@ -1,0 +1,9 @@
+sudo: false
+language: go
+go:
+  - 1.8
+  - 1.9
+  - tip
+script:
+  - go get -t  ./...
+  - go test -v ./...
