@@ -1,0 +1,5 @@
+# Ignore self
+.gomplateignore
+
+# Ignore txt files
+*.txt

@@ -5,7 +5,12 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+
+	"github.com/zealic/xignore"
 )
+
+// Ignorefile define ignore filename
+const Ignorefile = ".gomplateignore"
 
 // == Direct input processing ========================================
 
@@ -28,48 +33,61 @@ func processInputFiles(stringTemplate string, input []string, output []string, g
 }
 
 // == Recursive input dir processing ======================================
+func ensureDir(dir string, mode os.FileMode) error {
+	if _, err := os.Stat(dir); os.IsNotExist(err) {
+		return os.MkdirAll(dir, mode)
+	}
+	return nil
+}
 
 func processInputDir(input string, output string, g *Gomplate) error {
 	input = filepath.Clean(input)
-	output = filepath.Clean(output)
+	ignoreMatches, err := xignore.DirMatches(input, &xignore.DirIgnoreOptions{
+		IgnoreFile: Ignorefile,
+	})
+	if err != nil {
+		return err
+	}
 
-	// assert tha input path exists
+	outputDir, err := filepath.Abs(filepath.Clean(output))
+	if err != nil {
+		return err
+	}
+
+	// Ensure directories
 	si, err := os.Stat(input)
 	if err != nil {
 		return err
 	}
-
-	// read directory
-	entries, err := ioutil.ReadDir(input)
+	err = ensureDir(outputDir, si.Mode())
 	if err != nil {
 		return err
 	}
-
-	// ensure output directory
-	if err = os.MkdirAll(output, si.Mode()); err != nil {
-		return err
-	}
-
-	// process or dive in again
-	for _, entry := range entries {
-		nextInPath := filepath.Join(input, entry.Name())
-		nextOutPath := filepath.Join(output, entry.Name())
-
-		if entry.IsDir() {
-			err := processInputDir(nextInPath, nextOutPath, g)
-			if err != nil {
-				return err
-			}
-		} else {
-			inString, err := readInput(nextInPath)
-			if err != nil {
-				return err
-			}
-			if err := renderTemplate(g, inString, nextOutPath); err != nil {
-				return err
-			}
+	for _, dir := range []string(ignoreMatches.UnmatchedDirs) {
+		err = ensureDir(filepath.Join(outputDir, dir), si.Mode())
+		if err != nil {
+			return err
 		}
 	}
+
+	// Render files
+	for _, tplFile := range ignoreMatches.UnmatchedFiles {
+		tplFile = filepath.Join(ignoreMatches.BaseDir, tplFile)
+		inString, err := readInput(tplFile)
+		if err != nil {
+			return err
+		}
+
+		relname, err := filepath.Rel(ignoreMatches.BaseDir, tplFile)
+		if err != nil {
+			return err
+		}
+		outputFile := filepath.Join(outputDir, relname)
+		if err := renderTemplate(g, inString, outputFile); err != nil {
+			return err
+		}
+	}
+
 	return nil
 }
 
