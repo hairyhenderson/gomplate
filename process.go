@@ -40,6 +40,21 @@ func ensureDir(dir string, mode os.FileMode) error {
 	return nil
 }
 
+func renderDirFile(basedir, outputDir, sourceFile string, g *Gomplate) error {
+	sourceFile = filepath.Join(basedir, sourceFile)
+	inString, err := readInput(sourceFile)
+	if err != nil {
+		return err
+	}
+
+	relname, err := filepath.Rel(basedir, sourceFile)
+	if err != nil {
+		return err
+	}
+	targetFile := filepath.Join(outputDir, relname)
+	return renderTemplate(g, inString, targetFile)
+}
+
 func processInputDir(input string, output string, g *Gomplate) error {
 	input = filepath.Clean(input)
 	ignoreMatches, err := xignore.DirMatches(input, &xignore.DirIgnoreOptions{
@@ -63,7 +78,7 @@ func processInputDir(input string, output string, g *Gomplate) error {
 	if err != nil {
 		return err
 	}
-	for _, dir := range []string(ignoreMatches.UnmatchedDirs) {
+	for _, dir := range ignoreMatches.UnmatchedDirs {
 		err = ensureDir(filepath.Join(outputDir, dir), si.Mode())
 		if err != nil {
 			return err
@@ -72,18 +87,8 @@ func processInputDir(input string, output string, g *Gomplate) error {
 
 	// Render files
 	for _, tplFile := range ignoreMatches.UnmatchedFiles {
-		tplFile = filepath.Join(ignoreMatches.BaseDir, tplFile)
-		inString, err := readInput(tplFile)
+		err = renderDirFile(ignoreMatches.BaseDir, outputDir, tplFile, g)
 		if err != nil {
-			return err
-		}
-
-		relname, err := filepath.Rel(ignoreMatches.BaseDir, tplFile)
-		if err != nil {
-			return err
-		}
-		outputFile := filepath.Join(outputDir, relname)
-		if err := renderTemplate(g, inString, outputFile); err != nil {
 			return err
 		}
 	}
