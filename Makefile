@@ -91,7 +91,7 @@ build-meta: $(PREFIX)/bin/meta$(call extension,$(GOOS))
 build-aws: $(PREFIX)/bin/aws$(call extension,$(GOOS))
 
 test:
-	$(GO) test -v -race `glide novendor`
+	$(GO) test -v -race ./...
 
 build-integration-image: $(PREFIX)/bin/$(PKG_NAME)_linux-amd64$(call extension,$(GOOS)) $(PREFIX)/bin/mirror_linux-amd64$(call extension,$(GOOS)) $(PREFIX)/bin/meta_linux-amd64$(call extension,$(GOOS)) $(PREFIX)/bin/aws_linux-amd64$(call extension,$(GOOS))
 	cp $(PREFIX)/bin/$(PKG_NAME)_linux-amd64 test/integration/gomplate
