@@ -52,10 +52,28 @@ func TestRem(t *testing.T) {
 	m := MathNS()
 	assert.Equal(t, int64(0), m.Rem(1, 1))
 	assert.Equal(t, int64(2), m.Rem(5, 3.0))
-	// assert.Equal(t, int64(1), m.Mod(true, "42"))
 }
 
 func TestPow(t *testing.T) {
 	m := MathNS()
 	assert.Equal(t, int64(4), m.Pow(2, "2"))
+}
+
+func mustSeq(n ...interface{}) []int64 {
+	m := MathNS()
+	s, err := m.Seq(n...)
+	if err != nil {
+		panic(err)
+	}
+	return s
+}
+func TestSeq(t *testing.T) {
+	m := MathNS()
+	assert.EqualValues(t, []int64{0, 1, 2, 3}, mustSeq(0, 3))
+	assert.EqualValues(t, []int64{1, 0}, mustSeq(0))
+	assert.EqualValues(t, []int64{0, 2, 4}, mustSeq(0, 4, 2))
+	assert.EqualValues(t, []int64{0, 2, 4}, mustSeq(0, 5, 2))
+	assert.EqualValues(t, []int64{0}, mustSeq(0, 5, 8))
+	_, err := m.Seq()
+	assert.Error(t, err)
 }

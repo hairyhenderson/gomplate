@@ -31,6 +31,7 @@ func AddMathFuncs(f map[string]interface{}) {
 	f["div"] = MathNS().Div
 	f["rem"] = MathNS().Rem
 	f["pow"] = MathNS().Pow
+	f["seq"] = MathNS().Seq
 }
 
 // MathFuncs -
@@ -69,4 +70,28 @@ func (f *MathFuncs) Rem(a, b interface{}) int64 {
 // Pow -
 func (f *MathFuncs) Pow(a, b interface{}) int64 {
 	return conv.ToInt64(gmath.Pow(conv.ToFloat64(a), conv.ToFloat64(b)))
+}
+
+// Seq - return a sequence from `start` to `end`, in steps of `step`
+// start and step are optional, and default to 1.
+func (f *MathFuncs) Seq(n ...interface{}) ([]int64, error) {
+	start := int64(1)
+	end := int64(0)
+	step := int64(1)
+	if len(n) == 0 {
+		return nil, fmt.Errorf("math.Seq must be given at least an 'end' value")
+	}
+	if len(n) == 1 {
+		end = conv.ToInt64(n[0])
+	}
+	if len(n) == 2 {
+		start = conv.ToInt64(n[0])
+		end = conv.ToInt64(n[1])
+	}
+	if len(n) == 3 {
+		start = conv.ToInt64(n[0])
+		end = conv.ToInt64(n[1])
+		step = conv.ToInt64(n[2])
+	}
+	return math.Seq(conv.ToInt64(start), conv.ToInt64(end), conv.ToInt64(step)), nil
 }

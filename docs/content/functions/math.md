@@ -165,3 +165,36 @@ $ gomplate -i '{{ math.Pow 2 32 }}'
 4294967296
 ```
 
+## `math.Seq`
+
+**Alias:** `seq`
+
+Return a sequence from `start` to `end`, in steps of `step`. Can handle counting
+down as well as up, including with negative numbers.
+
+Note that the sequence _may_ not end at `end`, if `end` is not divisible by `step`.
+
+### Usage
+```go
+math.Seq [start] end [step]
+```
+
+### Arguments
+
+| name   | description |
+|--------|-------|
+| `start` | _(optional)_ The first number in the sequence (defaults to `1`) |
+| `end` | _(required)_ The last number in the sequence |
+| `step` | _(optional)_ The amount to increment between each number (defaults to `1`) |
+
+### Examples
+
+```console
+$ gomplate -i '{{ range (math.Seq 5) }}{{.}} {{end}}'
+1 2 3 4 5 
+```
+
+```console
+$ gomplate -i '{{ conv.Join (math.Seq 10 -3 2) ", " }}'
+10, 8, 6, 4, 2, 0, -2
+```
