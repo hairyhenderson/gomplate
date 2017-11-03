@@ -37,3 +37,9 @@ load helper
   [ "$status" -eq 0 ]
   [[ "${output}" == "4096 4" ]]
 }
+
+@test "'math.Seq'" {
+  gomplate -i '{{ math.Seq 0 }}, {{ seq 0 3 }}, {{ seq -5 -10 2 }}'
+  [ "$status" -eq 0 ]
+  [[ "${output}" == "[1 0], [0 1 2 3], [-5 -7 -9]" ]]
+}
