@@ -1,13 +1,28 @@
 # Change Log
 
-## [Unreleased](https://github.com/hairyhenderson/gomplate/tree/HEAD)
-
-[Full Changelog](https://github.com/hairyhenderson/gomplate/compare/v2.1.0...HEAD)
+## [v2.2.0](https://github.com/hairyhenderson/gomplate/tree/v2.2.0) (2017-11-03)
+[Full Changelog](https://github.com/hairyhenderson/gomplate/compare/v2.1.0...v2.2.0)
 
 **Implemented enhancements:**
 
 - Add some time-related functions [\#199](https://github.com/hairyhenderson/gomplate/issues/199)
+- Adding math.Seq function [\#227](https://github.com/hairyhenderson/gomplate/pull/227) ([hairyhenderson](https://github.com/hairyhenderson))
+- Add time.ParseLocal and time.ParseInLocation functions [\#223](https://github.com/hairyhenderson/gomplate/pull/223) ([hairyhenderson](https://github.com/hairyhenderson))
+- Adding time.ZoneOffset function [\#222](https://github.com/hairyhenderson/gomplate/pull/222) ([hairyhenderson](https://github.com/hairyhenderson))
+- Adding conv.ToInt64, conv.ToFloat64, and others... [\#216](https://github.com/hairyhenderson/gomplate/pull/216) ([hairyhenderson](https://github.com/hairyhenderson))
+- Adding math functions [\#214](https://github.com/hairyhenderson/gomplate/pull/214) ([hairyhenderson](https://github.com/hairyhenderson))
 
+**Fixed bugs:**
+
+- Fixing conv.Join to handle non-interface{} arrays [\#226](https://github.com/hairyhenderson/gomplate/pull/226) ([hairyhenderson](https://github.com/hairyhenderson))
+- Fixing bugs in ToInt64/ToFloat64 [\#217](https://github.com/hairyhenderson/gomplate/pull/217) ([hairyhenderson](https://github.com/hairyhenderson))
+
+**Merged pull requests:**
+
+- Using Go 1.9.x now - go test ignores vendor on its own now [\#228](https://github.com/hairyhenderson/gomplate/pull/228) ([hairyhenderson](https://github.com/hairyhenderson))
+- Stabilizing integration tests a bit [\#221](https://github.com/hairyhenderson/gomplate/pull/221) ([hairyhenderson](https://github.com/hairyhenderson))
+- Don't panic on template errors [\#219](https://github.com/hairyhenderson/gomplate/pull/219) ([hairyhenderson](https://github.com/hairyhenderson))
+ 
 ## [v2.1.0](https://github.com/hairyhenderson/gomplate/tree/v2.1.0) (2017-10-14)
 [Full Changelog](https://github.com/hairyhenderson/gomplate/compare/v2.0.1...v2.1.0)
 
