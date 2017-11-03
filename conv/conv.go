@@ -36,6 +36,11 @@ func Join(in interface{}, sep string) string {
 
 	var a []interface{}
 	a, ok = in.([]interface{})
+	if !ok {
+		var err error
+		a, err = interfaceSlice(in)
+		ok = err == nil
+	}
 	if ok {
 		b := make([]string, len(a))
 		for i := range a {
@@ -46,6 +51,18 @@ func Join(in interface{}, sep string) string {
 
 	log.Fatal("Input to Join must be an array")
 	return ""
+}
+
+func interfaceSlice(slice interface{}) ([]interface{}, error) {
+	s := reflect.ValueOf(slice)
+	if s.Kind() != reflect.Slice {
+		return nil, fmt.Errorf("interfaceSlice given a non-slice type %T", s)
+	}
+	ret := make([]interface{}, s.Len())
+	for i := 0; i < s.Len(); i++ {
+		ret[i] = s.Index(i).Interface()
+	}
+	return ret, nil
 }
 
 // Has determines whether or not a given object has a property with the given key
@@ -61,28 +78,28 @@ func Has(in interface{}, key string) bool {
 }
 
 func toString(in interface{}) string {
+	if in == nil {
+		return "nil"
+	}
 	if s, ok := in.(string); ok {
 		return s
 	}
 	if s, ok := in.(fmt.Stringer); ok {
 		return s.String()
 	}
-	if i, ok := in.(int); ok {
-		return strconv.Itoa(i)
+	val := reflect.Indirect(reflect.ValueOf(in))
+	switch val.Kind() {
+	case reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64, reflect.Int:
+		return strconv.FormatInt(val.Int(), 10)
+	case reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint, reflect.Uint64:
+		return strconv.FormatUint(val.Uint(), 10)
+	case reflect.Float32, reflect.Float64:
+		return strconv.FormatFloat(val.Float(), 'f', -1, 64)
+	case reflect.Bool:
+		return strconv.FormatBool(val.Bool())
+	default:
+		return fmt.Sprintf("%s", in)
 	}
-	if u, ok := in.(uint64); ok {
-		return strconv.FormatUint(u, 10)
-	}
-	if f, ok := in.(float64); ok {
-		return strconv.FormatFloat(f, 'f', -1, 64)
-	}
-	if b, ok := in.(bool); ok {
-		return strconv.FormatBool(b)
-	}
-	if in == nil {
-		return "nil"
-	}
-	return fmt.Sprintf("%s", in)
 }
 
 // MustParseInt - wrapper for strconv.ParseInt that returns 0 in the case of error

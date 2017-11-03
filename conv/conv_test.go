@@ -36,6 +36,11 @@ func TestJoin(t *testing.T) {
 	assert.Equal(t, "foo,\nbar", Join([]interface{}{"foo", "bar"}, ",\n"))
 	// Join handles all kinds of scalar types too...
 	assert.Equal(t, "42-18446744073709551615", Join([]interface{}{42, uint64(18446744073709551615)}, "-"))
+	assert.Equal(t, "42,100", Join([]int{42, 100}, ","))
+	assert.Equal(t, "42,100", Join([]int64{42, 100}, ","))
+	assert.Equal(t, "42,100", Join([]uint64{42, 100}, ","))
+	assert.Equal(t, "true,false", Join([]bool{true, false}, ","))
+	assert.Equal(t, "1,2", Join([]float64{1, 2}, ","))
 	assert.Equal(t, "1,,true,3.14,foo,nil", Join([]interface{}{1, "", true, 3.14, "foo", nil}, ","))
 	// and best-effort with weird types
 	assert.Equal(t, "[foo],bar", Join([]interface{}{[]string{"foo"}, "bar"}, ","))
