@@ -42,6 +42,13 @@ func TestNewSource(t *testing.T) {
 	assert.Equal(t, ".json", s.Ext)
 
 	s = NewSource("foo", &url.URL{
+		Scheme: "file",
+		Path:   "/foo",
+	})
+	assert.Equal(t, "text/plain", s.Type)
+	assert.Equal(t, "", s.Ext)
+
+	s = NewSource("foo", &url.URL{
 		Scheme: "http",
 		Host:   "example.com",
 		Path:   "/foo.json",
@@ -56,6 +63,28 @@ func TestNewSource(t *testing.T) {
 	})
 	assert.Equal(t, "application/json", s.Type)
 	assert.Equal(t, ".json", s.Ext)
+
+	s = NewSource("foo", &url.URL{
+		Scheme:   "ftp",
+		Host:     "example.com",
+		Path:     "/foo.blarb",
+		RawQuery: "type=application/json%3Bcharset=utf-8",
+	})
+
+	assert.Equal(t, "application/json", s.Type)
+	assert.Equal(t, ".blarb", s.Ext)
+	assert.Equal(t, map[string]string{"charset": "utf-8"}, s.Params)
+
+	s = NewSource("foo", &url.URL{
+		Scheme:   "stdin",
+		Host:     "",
+		Path:     "",
+		RawQuery: "type=application/json",
+	})
+
+	assert.Equal(t, "application/json", s.Type)
+	assert.Equal(t, "", s.Ext)
+	assert.Equal(t, map[string]string{}, s.Params)
 }
 
 func TestNewData(t *testing.T) {
