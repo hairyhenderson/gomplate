@@ -3,6 +3,7 @@ package data
 import (
 	"errors"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"log"
 	"mime"
@@ -21,6 +22,9 @@ import (
 
 // logFatal is defined so log.Fatal calls can be overridden for testing
 var logFatalf = log.Fatalf
+
+// stdin - for overriding in tests
+var stdin io.Reader
 
 func regExtension(ext, typ string) {
 	err := mime.AddExtensionType(ext, typ)
@@ -43,6 +47,7 @@ func init() {
 	addSourceReader("http", readHTTP)
 	addSourceReader("https", readHTTP)
 	addSourceReader("file", readFile)
+	addSourceReader("stdin", readStdin)
 	addSourceReader("vault", readVault)
 	addSourceReader("consul", readConsul)
 	addSourceReader("consul+http", readConsul)
@@ -157,6 +162,9 @@ func ParseSource(value string) (*Source, error) {
 		srcURL = absURL(f)
 	} else if len(parts) == 2 {
 		alias = parts[0]
+		if parts[1] == "-" {
+			parts[1] = "stdin://"
+		}
 		var err error
 		srcURL, err = url.Parse(parts[1])
 		if err != nil {
@@ -291,6 +299,18 @@ func readFile(source *Source, args ...string) ([]byte, error) {
 	b, err := ioutil.ReadAll(f)
 	if err != nil {
 		log.Fatalf("Can't read %s: %#v", p, err)
+		return nil, err
+	}
+	return b, nil
+}
+
+func readStdin(source *Source, args ...string) ([]byte, error) {
+	if stdin == nil {
+		stdin = os.Stdin
+	}
+	b, err := ioutil.ReadAll(stdin)
+	if err != nil {
+		log.Printf("Can't read %v: %#v", stdin, err)
 		return nil, err
 	}
 	return b, nil
