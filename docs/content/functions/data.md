@@ -11,7 +11,7 @@ A collection of functions that retrieve, parse, and convert structured data.
 
 Parses a given datasource (provided by the [`--datasource/-d`](#--datasource-d) argument).
 
-Currently, `file://`, `http://`, `https://`, and `vault://` URLs are supported.
+Currently, `file://`, `stdin://`, `http://`, `https://`, and `vault://` URLs are supported.
 
 Currently-supported formats are JSON, YAML, TOML, and CSV.
 
@@ -32,6 +32,25 @@ Hello {{ (datasource "person").name }}
 ```console
 $ gomplate -d person.json < input.tmpl
 Hello Dave
+```
+
+### Providing datasources on standard input (`stdin`)
+
+Normally `stdin` is used as the input for the template, but it can also be used
+to provide datasources. To do this, specify a URL with the `stdin:` scheme:
+
+```console
+$ echo 'foo: bar' | gomplate -i '{{(ds "data").foo}}' -d data=stdin:///foo.yaml
+bar
+```
+
+Note that the URL must have a file name with a supported extension in order for
+the input to be correctly parsed. If no parsing is required (i.e. if the data
+is being included verbatim with the include function), just `stdin:` is enough:
+
+```console
+$ echo 'foo' | gomplate -i '{{ include "data" }}' -d data=stdin:
+foo
 ```
 
 ### Usage with HTTP data
