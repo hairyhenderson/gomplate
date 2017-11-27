@@ -43,6 +43,21 @@ Example:
 gomplate --input-dir=templates --output-dir=config --datasource config=config.yaml
 ```
 
+### `--exclude`
+
+To prevent certain files from being processed, you can use `--exclude`. It takes a glob, and any files matching that glob will not be included.
+
+Example:
+
+```
+gomplate --exclude example/** \
+          --exclude *.png
+```
+
+This will stop all files in the example folder from being processed, as well as all .png files in the root folder.
+
+You can also chain the exclude flag to build up a series of globs to be excluded
+
 ## `--datasource`/`-d`
 
 Add a data source in `name=URL` form. Specify multiple times to add multiple sources. The data can then be used by the [`datasource`](../functions/#datasource) and [`include`](../functions/#include) functions.
