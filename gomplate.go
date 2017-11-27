@@ -46,7 +46,7 @@ func runTemplate(o *GomplateOpts) error {
 
 	g := NewGomplate(d, o.lDelim, o.rDelim)
 
-	excludeList, err := filepath.Glob(o.excludeGlob)
+	excludeList, err := executeCombinedGlob(o.excludeGlob)
 	if err != nil {
 		return err
 	}
@@ -68,4 +68,20 @@ func renderTemplate(g *Gomplate, inString string, outPath string) error {
 	defer outFile.Close()
 	err = g.RunTemplate(inString, outFile)
 	return err
+}
+
+// takes an array of glob strings and executes it as a whole,
+// returning a merged list of globbed files
+func executeCombinedGlob(globArray []string) ([]string, error) {
+	var combinedExcludes []string
+	for _, glob := range globArray {
+		excludeList, err := filepath.Glob(glob)
+		if err != nil {
+			return nil, err
+		}
+
+		combinedExcludes = append(combinedExcludes, excludeList...)
+	}
+
+	return combinedExcludes, nil
 }
