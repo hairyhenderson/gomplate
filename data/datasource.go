@@ -118,17 +118,20 @@ func (s *Source) cleanup() {
 }
 
 // NewSource - builds a &Source
-func NewSource(alias string, URL *url.URL) (s *Source) {
+func NewSource(alias string, URL *url.URL) *Source {
 	ext := filepath.Ext(URL.Path)
 
-	s = &Source{
+	s := &Source{
 		Alias: alias,
 		URL:   URL,
 		Ext:   ext,
 	}
 
-	if ext != "" && URL.Scheme != "boltdb" {
-		mediatype := mime.TypeByExtension(ext)
+	mediatype := s.URL.Query().Get("type")
+	if mediatype == "" {
+		mediatype = mime.TypeByExtension(ext)
+	}
+	if mediatype != "" {
 		t, params, err := mime.ParseMediaType(mediatype)
 		if err != nil {
 			log.Fatal(err)
@@ -136,7 +139,10 @@ func NewSource(alias string, URL *url.URL) (s *Source) {
 		s.Type = t
 		s.Params = params
 	}
-	return
+	if s.Type == "" {
+		s.Type = plaintext
+	}
+	return s
 }
 
 // String is the method to format the flag's value, part of the flag.Value interface.
@@ -416,7 +422,6 @@ func readConsul(source *Source, args ...string) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	source.Type = plaintext
 
 	return data, nil
 }
@@ -435,7 +440,6 @@ func readBoltDB(source *Source, args ...string) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	source.Type = plaintext
 
 	return data, nil
 }

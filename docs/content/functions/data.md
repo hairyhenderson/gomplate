@@ -11,7 +11,7 @@ A collection of functions that retrieve, parse, and convert structured data.
 
 Parses a given datasource (provided by the [`--datasource/-d`](#--datasource-d) argument).
 
-Currently, `file://`, `stdin://`, `http://`, `https://`, and `vault://` URLs are supported.
+Currently, `file://`, `stdin://`, `http://`, `https://`, `vault://`, and `boltdb://` URLs are supported.
 
 Currently-supported formats are JSON, YAML, TOML, and CSV.
 
@@ -51,6 +51,22 @@ is being included verbatim with the include function), just `stdin:` is enough:
 ```console
 $ echo 'foo' | gomplate -i '{{ include "data" }}' -d data=stdin:
 foo
+```
+
+### Overriding the MIME type
+
+On occasion it's necessary to override the MIME type a datasource is parsed with.
+To accomplish this, gomplate supports a `type` query string parameter on
+datasource URLs. This can contain the same value as a standard
+[HTTP Content-Type](https://tools.ietf.org/html/rfc7231#section-3.1.1.1)
+header.
+
+For example, to force a file named `data.txt` to be parsed as a JSON document:
+
+```console
+$ echo '{"foo": "bar"}' > /tmp/data.txt
+$ gomplate -d data=file:///tmp/data.txt?type=application/json -i '{{ (ds "data").foo }}'
+bar
 ```
 
 ### Usage with HTTP data

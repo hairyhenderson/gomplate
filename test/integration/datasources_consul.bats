@@ -21,6 +21,13 @@ function teardown () {
   [[ "${output}" == "$BATS_TEST_DESCRIPTION" ]]
 }
 
+@test "Consul datasource works with MIME override" {
+  consul kv put foo "{\"desc\":$BATS_TEST_DESCRIPTION}"
+  gomplate -d consul=consul://?type=application/json -i '{{(datasource "consul" "foo").desc}}'
+  [ "$status" -eq 0 ]
+  [[ "${output}" == "$BATS_TEST_DESCRIPTION" ]]
+}
+
 @test "Consul datasource works with hostname in URL" {
   consul kv put foo "$BATS_TEST_DESCRIPTION"
   unset CONSUL_HTTP_ADDR
