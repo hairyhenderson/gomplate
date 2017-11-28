@@ -9,7 +9,7 @@ import (
 
 // == Direct input processing ========================================
 
-func processInputFiles(stringTemplate string, input []string, output []string, g *Gomplate) error {
+func processInputFiles(stringTemplate string, input []string, output []string, excludeList []string, g *Gomplate) error {
 	input, err := readInputs(stringTemplate, input)
 	if err != nil {
 		return err
@@ -29,7 +29,7 @@ func processInputFiles(stringTemplate string, input []string, output []string, g
 
 // == Recursive input dir processing ======================================
 
-func processInputDir(input string, output string, g *Gomplate) error {
+func processInputDir(input string, output string, excludeList []string, g *Gomplate) error {
 	input = filepath.Clean(input)
 	output = filepath.Clean(output)
 
@@ -55,8 +55,12 @@ func processInputDir(input string, output string, g *Gomplate) error {
 		nextInPath := filepath.Join(input, entry.Name())
 		nextOutPath := filepath.Join(output, entry.Name())
 
+		if inList(excludeList, nextInPath) {
+			continue
+		}
+
 		if entry.IsDir() {
-			err := processInputDir(nextInPath, nextOutPath, g)
+			err := processInputDir(nextInPath, nextOutPath, excludeList, g)
 			if err != nil {
 				return err
 			}
@@ -71,6 +75,16 @@ func processInputDir(input string, output string, g *Gomplate) error {
 		}
 	}
 	return nil
+}
+
+func inList(list []string, entry string) bool {
+	for _, file := range list {
+		if file == entry {
+			return true
+		}
+	}
+
+	return false
 }
 
 // == File handling ================================================

@@ -23,6 +23,7 @@ type GomplateOpts struct {
 	inputDir    string
 	outputFiles []string
 	outputDir   string
+	excludeGlob []string
 }
 
 var opts GomplateOpts
@@ -79,6 +80,7 @@ func initFlags(command *cobra.Command) {
 	command.Flags().StringArrayVarP(&opts.inputFiles, "file", "f", []string{"-"}, "Template `file` to process. Omit to use standard input, or use --in or --input-dir")
 	command.Flags().StringVarP(&opts.input, "in", "i", "", "Template `string` to process (alternative to --file and --input-dir)")
 	command.Flags().StringVar(&opts.inputDir, "input-dir", "", "`directory` which is examined recursively for templates (alternative to --file and --in)")
+	command.Flags().StringArrayVar(&opts.excludeGlob, "exclude", []string{}, "glob of files to not parse")
 	command.Flags().StringArrayVarP(&opts.outputFiles, "out", "o", []string{"-"}, "output `file` name. Omit to use standard output.")
 	command.Flags().StringVar(&opts.outputDir, "output-dir", ".", "`directory` to store the processed templates. Only used for --input-dir")
 

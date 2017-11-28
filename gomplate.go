@@ -2,6 +2,7 @@ package main
 
 import (
 	"io"
+	"path/filepath"
 	"text/template"
 
 	"github.com/hairyhenderson/gomplate/data"
@@ -45,11 +46,16 @@ func runTemplate(o *GomplateOpts) error {
 
 	g := NewGomplate(d, o.lDelim, o.rDelim)
 
-	if o.inputDir != "" {
-		return processInputDir(o.inputDir, o.outputDir, g)
+	excludeList, err := executeCombinedGlob(o.excludeGlob)
+	if err != nil {
+		return err
 	}
 
-	return processInputFiles(o.input, o.inputFiles, o.outputFiles, g)
+	if o.inputDir != "" {
+		return processInputDir(o.inputDir, o.outputDir, excludeList, g)
+	}
+
+	return processInputFiles(o.input, o.inputFiles, o.outputFiles, excludeList, g)
 }
 
 // Called from process.go ...
@@ -62,4 +68,20 @@ func renderTemplate(g *Gomplate, inString string, outPath string) error {
 	defer outFile.Close()
 	err = g.RunTemplate(inString, outFile)
 	return err
+}
+
+// takes an array of glob strings and executes it as a whole,
+// returning a merged list of globbed files
+func executeCombinedGlob(globArray []string) ([]string, error) {
+	var combinedExcludes []string
+	for _, glob := range globArray {
+		excludeList, err := filepath.Glob(glob)
+		if err != nil {
+			return nil, err
+		}
+
+		combinedExcludes = append(combinedExcludes, excludeList...)
+	}
+
+	return combinedExcludes, nil
 }
