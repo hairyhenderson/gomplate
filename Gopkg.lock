@@ -99,7 +99,7 @@
 
 [[projects]]
   name = "github.com/hashicorp/vault"
-  packages = ["api","helper/compressutil","helper/jsonutil"]
+  packages = ["api","helper/awsutil","helper/compressutil","helper/jsonutil"]
   revision = "0b20ae0b9b7a748d607082b1add3663a28e31b68"
   version = "v0.7.3"
 
@@ -167,7 +167,7 @@
   branch = "master"
   name = "golang.org/x/net"
   packages = ["http2","http2/hpack","idna","lex/httplex"]
-  revision = "f5079bd7f6f74e23c4d65efa0f4ce14cbd6a3c0f"
+  revision = "090ebbdfc2aff44cc6674372b72e02e731f7f0ef"
 
 [[projects]]
   branch = "master"
@@ -190,6 +190,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "31a8e0b536f3b7bdc59f2f911ba5060012b81357402532c1525544065f9d02ea"
+  inputs-digest = "a682358d7526fba2bef8d85708e89e221da6dca26ceedae51c1d25cb35f66cc0"
   solver-name = "gps-cdcl"
   solver-version = 1
