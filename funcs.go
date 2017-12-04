@@ -20,5 +20,6 @@ func initFuncs(d *data.Data) template.FuncMap {
 	funcs.AddConvFuncs(f)
 	funcs.AddTimeFuncs(f)
 	funcs.AddMathFuncs(f)
+	funcs.AddCryptoFuncs(f)
 	return f
 }
