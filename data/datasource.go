@@ -18,6 +18,9 @@ import (
 	"github.com/blang/vfs"
 	"github.com/hairyhenderson/gomplate/libkv"
 	"github.com/hairyhenderson/gomplate/vault"
+	meta_v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/rest"
 )
 
 // logFatal is defined so log.Fatal calls can be overridden for testing
@@ -53,6 +56,7 @@ func init() {
 	addSourceReader("consul+http", readConsul)
 	addSourceReader("consul+https", readConsul)
 	addSourceReader("boltdb", readBoltDB)
+	addSourceReader("k8s", readK8S)
 }
 
 var sourceReaders map[string]func(*Source, ...string) ([]byte, error)
@@ -101,11 +105,12 @@ type Source struct {
 	Ext    string
 	Type   string
 	Params map[string]string
-	FS     vfs.Filesystem // used for file: URLs, nil otherwise
-	HC     *http.Client   // used for http[s]: URLs, nil otherwise
-	VC     *vault.Vault   // used for vault: URLs, nil otherwise
-	KV     *libkv.LibKV   // used for consul:, etcd:, zookeeper: & boltdb: URLs, nil otherwise
-	Header http.Header    // used for http[s]: URLs, nil otherwise
+	FS     vfs.Filesystem        // used for file: URLs, nil otherwise
+	HC     *http.Client          // used for http[s]: URLs, nil otherwise
+	VC     *vault.Vault          // used for vault: URLs, nil otherwise
+	KV     *libkv.LibKV          // used for consul:, etcd:, zookeeper: & boltdb: URLs, nil otherwise
+	Header http.Header           // used for http[s]: URLs, nil otherwise
+	K8S    *kubernetes.Clientset //used for k8s: URLs, nil otherwise
 }
 
 func (s *Source) cleanup() {
@@ -424,6 +429,36 @@ func readConsul(source *Source, args ...string) ([]byte, error) {
 	}
 
 	return data, nil
+}
+
+func readK8S(source *Source, args ...string) ([]byte, error) {
+	if len(args) < 1 {
+		return nil, fmt.Errorf("a key is needed")
+	}
+	if source.K8S == nil {
+		config, err := rest.InClusterConfig()
+		if err != nil {
+			return nil, err
+		}
+		// creates the clientset
+		source.K8S, err = kubernetes.NewForConfig(config)
+		if err != nil {
+			return nil, err
+		}
+	}
+	namespace := source.URL.Host
+	configmapName := strings.Trim(source.URL.Path, "/")
+	configmap, err := source.K8S.CoreV1().ConfigMaps(namespace).Get(configmapName, meta_v1.GetOptions{})
+	if err != nil {
+		return nil, err
+	}
+	if data, ok := configmap.Data[args[0]]; ok {
+		return []byte(data), nil
+	}
+	if len(args) > 1 {
+		return []byte(args[1]), nil
+	}
+	return nil, nil
 }
 
 func readBoltDB(source *Source, args ...string) ([]byte, error) {

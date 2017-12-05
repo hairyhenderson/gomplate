@@ -40,6 +40,7 @@ clean:
 	rm -f $(PREFIX)/test/integration/mirror
 	rm -f $(PREFIX)/test/integration/meta
 	rm -f $(PREFIX)/test/integration/aws
+	rm -f $(PREFIX)/test/integration/k8s
 
 build-x: $(patsubst %,$(PREFIX)/bin/$(PKG_NAME)_%,$(platforms))
 
@@ -66,6 +67,9 @@ $(PREFIX)/bin/meta_%: $(shell find $(PREFIX)/test/integration/metasvc -type f -n
 $(PREFIX)/bin/aws_%: $(shell find $(PREFIX)/test/integration/awssvc -type f -name '*.go')
 	$(call gocross-tool,$(shell echo $* | sed 's/\([^-]*\)-\([^.]*\).*/\1/'),$(shell echo $* | sed 's/\([^-]*\)-\([^.]*\).*/\2/'),aws)
 
+$(PREFIX)/bin/k8s_%: $(shell find $(PREFIX)/test/integration/k8ssvc -type f -name '*.go')
+	$(call gocross-tool,$(shell echo $* | sed 's/\([^-]*\)-\([^.]*\).*/\1/'),$(shell echo $* | sed 's/\([^-]*\)-\([^.]*\).*/\2/'),k8s)
+
 $(PREFIX)/bin/$(PKG_NAME)$(call extension,$(GOOS)): $(shell find $(PREFIX) -type f -name '*.go' -not -path "$(PREFIX)/test/*")
 	CGO_ENABLED=0 \
 		$(GO) build -ldflags "-w -s $(COMMIT_FLAG) $(VERSION_FLAG)" -o $@
@@ -82,6 +86,10 @@ $(PREFIX)/bin/aws$(call extension,$(GOOS)): $(shell find $(PREFIX)/test/integrat
 	CGO_ENABLED=0 \
 		$(GO) build -ldflags "-w -s $(COMMIT_FLAG) $(VERSION_FLAG)" -o $@ $(PREFIX)/test/integration/awssvc
 
+$(PREFIX)/bin/k8s$(call extension,$(GOOS)): $(shell find $(PREFIX)/test/integration/k8ssvc -type f -name '*.go')
+	CGO_ENABLED=0 \
+		$(GO) build -ldflags "-w -s $(COMMIT_FLAG) $(VERSION_FLAG)" -o $@ $(PREFIX)/test/integration/k8ssvc
+
 build: $(PREFIX)/bin/$(PKG_NAME)$(call extension,$(GOOS))
 
 build-mirror: $(PREFIX)/bin/mirror$(call extension,$(GOOS))
@@ -90,20 +98,23 @@ build-meta: $(PREFIX)/bin/meta$(call extension,$(GOOS))
 
 build-aws: $(PREFIX)/bin/aws$(call extension,$(GOOS))
 
+build-k8s: $(PREFIX)/bin/k8s$(call extension,$(GOOS))
+
 test:
 	$(GO) test -v -race ./...
 
-build-integration-image: $(PREFIX)/bin/$(PKG_NAME)_linux-amd64$(call extension,$(GOOS)) $(PREFIX)/bin/mirror_linux-amd64$(call extension,$(GOOS)) $(PREFIX)/bin/meta_linux-amd64$(call extension,$(GOOS)) $(PREFIX)/bin/aws_linux-amd64$(call extension,$(GOOS))
+build-integration-image: $(PREFIX)/bin/$(PKG_NAME)_linux-amd64$(call extension,$(GOOS)) $(PREFIX)/bin/mirror_linux-amd64$(call extension,$(GOOS)) $(PREFIX)/bin/meta_linux-amd64$(call extension,$(GOOS)) $(PREFIX)/bin/aws_linux-amd64$(call extension,$(GOOS)) $(PREFIX)/bin/k8s_linux-amd64$(call extension,$(GOOS))
 	cp $(PREFIX)/bin/$(PKG_NAME)_linux-amd64 test/integration/gomplate
 	cp $(PREFIX)/bin/mirror_linux-amd64 test/integration/mirror
 	cp $(PREFIX)/bin/meta_linux-amd64 test/integration/meta
 	cp $(PREFIX)/bin/aws_linux-amd64 test/integration/aws
+	cp $(PREFIX)/bin/k8s_linux-amd64 test/integration/k8s
 	docker build -f test/integration/Dockerfile -t gomplate-test test/integration/
 
 test-integration-docker: build-integration-image
 	docker run -it --rm gomplate-test
 
-test-integration: build build-mirror build-meta build-aws
+test-integration: build build-mirror build-meta build-aws build-k8s
 	@test/integration/test.sh
 
 gen-changelog:

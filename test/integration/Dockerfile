@@ -7,6 +7,7 @@ RUN apk add --no-cache \
     bash \
     bats \
     jq \
+    openssl \
   && curl -L -o /tmp/vault.zip https://releases.hashicorp.com/vault/${VAULT_VER}/vault_${VAULT_VER}_linux_amd64.zip \
   && unzip /tmp/vault.zip \
   && mv vault /bin/vault \
@@ -23,6 +24,10 @@ COPY gomplate /bin/gomplate
 COPY mirror /bin/mirror
 COPY meta /bin/meta
 COPY aws /bin/aws
+COPY k8s /bin/k8s
+COPY k8ssvc/generate.sh /tmp/
+COPY k8ssvc/openssl.cnf /tmp/
+RUN /tmp/generate.sh
 COPY *.sh /tests/
 COPY *.bash /tests/
 COPY *.bats /tests/

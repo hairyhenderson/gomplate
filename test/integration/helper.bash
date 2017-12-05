@@ -50,6 +50,14 @@ function stop_aws_svc () {
   wget -q -O - http://127.0.0.1:8082/quit
 }
 
+function start_k8s_svc () {
+  bin/k8s &
+}
+
+function stop_k8s_svc () {
+  wget -q -O - https://127.0.0.1:8083/quit
+}
+
 function wait_for_url () {
   url=$1
   for i in {0..10}; do
