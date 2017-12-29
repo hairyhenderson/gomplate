@@ -18,18 +18,18 @@ import (
 func TestReadInput(t *testing.T) {
 	actual, err := readInputs("foo", nil)
 	assert.Nil(t, err)
-	assert.Equal(t, "foo", actual[0])
+	assert.Equal(t, &input{"<arg>", "foo"}, actual[0])
 
 	// stdin is "" because during tests it's given /dev/null
 	actual, err = readInputs("", []string{"-"})
 	assert.Nil(t, err)
-	assert.Equal(t, "", actual[0])
+	assert.Equal(t, &input{"-", ""}, actual[0])
 
 	actual, err = readInputs("", []string{"process_test.go"})
 	assert.Nil(t, err)
 	thisFile, _ := os.Open("process_test.go")
 	expected, _ := ioutil.ReadAll(thisFile)
-	assert.Equal(t, string(expected), actual[0])
+	assert.Equal(t, &input{"process_test.go", string(expected)}, actual[0])
 }
 
 func TestInputDir(t *testing.T) {

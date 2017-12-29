@@ -8,8 +8,8 @@ import (
 	"github.com/hairyhenderson/gomplate/data"
 )
 
-func (g *Gomplate) createTemplate() *template.Template {
-	return template.New("template").Funcs(g.funcMap).Option("missingkey=error")
+func (g *Gomplate) createTemplate(name string) *template.Template {
+	return template.New(name).Funcs(g.funcMap).Option("missingkey=error")
 }
 
 // Gomplate -
@@ -20,9 +20,9 @@ type Gomplate struct {
 }
 
 // RunTemplate -
-func (g *Gomplate) RunTemplate(text string, out io.Writer) error {
+func (g *Gomplate) RunTemplate(in *input, out io.Writer) error {
 	context := &Context{}
-	tmpl, err := g.createTemplate().Delims(g.leftDelim, g.rightDelim).Parse(text)
+	tmpl, err := g.createTemplate(in.name).Delims(g.leftDelim, g.rightDelim).Parse(in.contents)
 	if err != nil {
 		return err
 	}
@@ -37,6 +37,12 @@ func NewGomplate(d *data.Data, leftDelim, rightDelim string) *Gomplate {
 		rightDelim: rightDelim,
 		funcMap:    initFuncs(d),
 	}
+}
+
+// input - models an input file...
+type input struct {
+	name     string
+	contents string
 }
 
 func runTemplate(o *GomplateOpts) error {
@@ -59,14 +65,14 @@ func runTemplate(o *GomplateOpts) error {
 }
 
 // Called from process.go ...
-func renderTemplate(g *Gomplate, inString string, outPath string) error {
+func renderTemplate(g *Gomplate, in *input, outPath string) error {
 	outFile, err := openOutFile(outPath)
 	if err != nil {
 		return err
 	}
 	// nolint: errcheck
 	defer outFile.Close()
-	err = g.RunTemplate(inString, outFile)
+	err = g.RunTemplate(in, outFile)
 	return err
 }
 

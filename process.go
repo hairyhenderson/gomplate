@@ -10,7 +10,7 @@ import (
 // == Direct input processing ========================================
 
 func processInputFiles(stringTemplate string, input []string, output []string, excludeList []string, g *Gomplate) error {
-	input, err := readInputs(stringTemplate, input)
+	ins, err := readInputs(stringTemplate, input)
 	if err != nil {
 		return err
 	}
@@ -19,8 +19,8 @@ func processInputFiles(stringTemplate string, input []string, output []string, e
 		output = []string{"-"}
 	}
 
-	for n, input := range input {
-		if err := renderTemplate(g, input, output[n]); err != nil {
+	for n, in := range ins {
+		if err := renderTemplate(g, in, output[n]); err != nil {
 			return err
 		}
 	}
@@ -65,11 +65,11 @@ func processInputDir(input string, output string, excludeList []string, g *Gompl
 				return err
 			}
 		} else {
-			inString, err := readInput(nextInPath)
+			in, err := readInput(nextInPath)
 			if err != nil {
 				return err
 			}
-			if err := renderTemplate(g, inString, nextOutPath); err != nil {
+			if err := renderTemplate(g, in, nextOutPath); err != nil {
 				return err
 			}
 		}
@@ -89,26 +89,29 @@ func inList(list []string, entry string) bool {
 
 // == File handling ================================================
 
-func readInputs(input string, files []string) ([]string, error) {
-	if input != "" {
-		return []string{input}, nil
+func readInputs(inString string, files []string) ([]*input, error) {
+	if inString != "" {
+		return []*input{{
+			name:     "<arg>",
+			contents: inString,
+		}}, nil
 	}
 	if len(files) == 0 {
 		files = []string{"-"}
 	}
-	ins := make([]string, len(files))
+	ins := make([]*input, len(files))
 
 	for n, filename := range files {
-		inString, err := readInput(filename)
+		in, err := readInput(filename)
 		if err != nil {
 			return nil, err
 		}
-		ins[n] = inString
+		ins[n] = in
 	}
 	return ins, nil
 }
 
-func readInput(filename string) (string, error) {
+func readInput(filename string) (*input, error) {
 	var err error
 	var inFile *os.File
 	if filename == "-" {
@@ -116,7 +119,7 @@ func readInput(filename string) (string, error) {
 	} else {
 		inFile, err = os.Open(filename)
 		if err != nil {
-			return "", fmt.Errorf("failed to open %s\n%v", filename, err)
+			return nil, fmt.Errorf("failed to open %s\n%v", filename, err)
 		}
 		// nolint: errcheck
 		defer inFile.Close()
@@ -124,9 +127,13 @@ func readInput(filename string) (string, error) {
 	bytes, err := ioutil.ReadAll(inFile)
 	if err != nil {
 		err = fmt.Errorf("read failed for %s\n%v", filename, err)
-		return "", err
+		return nil, err
 	}
-	return string(bytes), nil
+	in := &input{
+		name:     filename,
+		contents: string(bytes),
+	}
+	return in, nil
 }
 
 func openOutFile(filename string) (out *os.File, err error) {

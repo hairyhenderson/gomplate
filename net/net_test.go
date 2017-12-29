@@ -14,7 +14,7 @@ func TestLookupIP(t *testing.T) {
 }
 
 func TestLookupIPs(t *testing.T) {
-	assert.Equal(t, []string{"127.0.0.1"}, LookupIPs("localhost"))
+	assert.Equal(t, "127.0.0.1", LookupIPs("localhost")[0])
 	assert.Equal(t, []string{"169.254.255.254"}, LookupIPs("hostlocal.io"))
 	assert.Equal(t, []string{"93.184.216.34"}, LookupIPs("example.com"))
 }
