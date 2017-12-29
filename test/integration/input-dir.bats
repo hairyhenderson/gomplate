@@ -67,3 +67,11 @@ function teardown () {
   [ "$status" -eq 1 ]
   [[ "${output}" == "Error: --output-dir can not be used together with --out"* ]]
 }
+
+@test "errors with filename when using input dir and bad input file" {
+  rm -rf $tmpdir/out || true
+  echo -n "{{end}}" > $tmpdir/in/bad.tmpl
+  gomplate --input-dir $tmpdir/in --output-dir $tmpdir/out -d config=$tmpdir/config.yml
+  [ "$status" -eq 1 ]
+  [[ "${output}" == "Error: template: $tmpdir/in/bad.tmpl:1: unexpected {{end}}"* ]]
+}
