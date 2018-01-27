@@ -53,8 +53,8 @@ Right now the release process is semi-automatic.
 
 Copyright (c) 2016-2017 Dave Henderson
 
-[circleci-image]: https://img.shields.io/circleci/project/hairyhenderson/gomplate.svg?style=flat
-[circleci-url]: https://circleci.com/gh/hairyhenderson/gomplate
+[circleci-image]: https://circleci.com/gh/hairyhenderson/gomplate/tree/master.svg?style=shield
+[circleci-url]: https://circleci.com/gh/hairyhenderson/gomplate/tree/master
 [appveyor-image]: https://ci.appveyor.com/api/projects/status/eymky02f5snclyxp/branch/master?svg=true
 [appveyor-url]: https://ci.appveyor.com/project/hairyhenderson/gomplate/branch/master
 [reportcard-image]: https://goreportcard.com/badge/github.com/hairyhenderson/gomplate
