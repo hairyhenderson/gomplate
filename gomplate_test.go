@@ -15,9 +15,9 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func testTemplate(g *Gomplate, template string) string {
+func testTemplate(g *Gomplate, tmpl string) string {
 	var out bytes.Buffer
-	g.RunTemplate(&input{"testtemplate", template}, &out)
+	g.RunTemplate(&tplate{name: "testtemplate", contents: tmpl, target: &out})
 	return out.String()
 }
 
