@@ -20,6 +20,7 @@
     "aws/request",
     "aws/session",
     "aws/signer/v4",
+    "internal/shareddefaults",
     "private/protocol",
     "private/protocol/ec2query",
     "private/protocol/query",
@@ -29,8 +30,8 @@
     "service/ec2",
     "service/sts"
   ]
-  revision = "0b6039ef3d10c1eda49843ebf9773dcc5bba0169"
-  version = "v1.8.26"
+  revision = "1b176c5c6b57adb03bb982c21930e708ebca5a77"
+  version = "v1.12.70"
 
 [[projects]]
   branch = "master"
@@ -278,6 +279,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "e7989b804e1992dd66a03ffbe166b13e9f38e91bf8a11fdb2288acf9c2526fec"
+  inputs-digest = "f97a4e5d90d8359ae88bdf8cdd24f7820b3456745692d0fa2b57b773b00d6f88"
   solver-name = "gps-cdcl"
   solver-version = 1
