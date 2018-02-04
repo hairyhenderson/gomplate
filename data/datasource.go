@@ -53,6 +53,8 @@ func init() {
 	addSourceReader("file", readFile)
 	addSourceReader("stdin", readStdin)
 	addSourceReader("vault", readVault)
+	addSourceReader("vault+http", readVault)
+	addSourceReader("vault+https", readVault)
 	addSourceReader("consul", readConsul)
 	addSourceReader("consul+http", readConsul)
 	addSourceReader("consul+https", readConsul)
@@ -372,7 +374,7 @@ func readHTTP(source *Source, args ...string) ([]byte, error) {
 
 func readVault(source *Source, args ...string) ([]byte, error) {
 	if source.VC == nil {
-		source.VC = vault.New()
+		source.VC = vault.New(source.URL)
 		source.VC.Login()
 	}
 

@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"log"
+	"net/url"
 
 	vaultapi "github.com/hashicorp/vault/api"
 )
@@ -17,7 +18,7 @@ type Vault struct {
 }
 
 // New -
-func New() *Vault {
+func New(u *url.URL) *Vault {
 	vaultConfig := vaultapi.DefaultConfig()
 
 	err := vaultConfig.ReadEnvironment()
@@ -25,12 +26,24 @@ func New() *Vault {
 		logFatal("Vault setup failed", err)
 	}
 
+	setVaultURL(vaultConfig, u)
+
 	client, err := vaultapi.NewClient(vaultConfig)
 	if err != nil {
 		logFatal("Vault setup failed", err)
 	}
 
 	return &Vault{client}
+}
+
+func setVaultURL(c *vaultapi.Config, u *url.URL) {
+	if u != nil && u.Host != "" {
+		scheme := "https"
+		if u.Scheme == "vault+http" {
+			scheme = "http"
+		}
+		c.Address = scheme + "://" + u.Host
+	}
 }
 
 // Login -

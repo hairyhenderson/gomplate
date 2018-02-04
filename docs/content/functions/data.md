@@ -223,8 +223,13 @@ aaa
 ### Usage with Vault data
 
 The special `vault://` URL scheme can be used to retrieve data from [Hashicorp
-Vault](https://vaultproject.io). To use this, you must put the Vault server's
-URL in the `$VAULT_ADDR` environment variable.
+Vault](https://vaultproject.io). To use this, you must either provide the Vault
+server's hostname and port in the URL, or put the Vault server's URL in the
+`$VAULT_ADDR` environment variable.
+
+The `vault+http://` URL scheme can be used to indicate that request must be sent
+over regular unencrypted HTTP, while `vault+https://` and `vault://` are equivalent,
+and indicate that requests must be sent over HTTPS.
 
 This table describes the currently-supported authentication mechanisms and how to use them, in order of precedence:
 
@@ -246,7 +251,7 @@ any `_FILE` variable and the secret file will be ignored.
 
 To use a Vault datasource with a single secret, just use a URL of
 `vault:///secret/mysecret`. Note the 3 `/`s - the host portion of the URL is left
-empty.
+empty in this example.
 
 ```console
 $ echo 'My voice is my passport. {{(datasource "vault").value}}' \
@@ -254,11 +259,12 @@ $ echo 'My voice is my passport. {{(datasource "vault").value}}' \
 My voice is my passport. Verify me.
 ```
 
-You can also specify the secret path in the template by using a URL of `vault://`
-(or `vault:///`, or `vault:`):
+You can also specify the secret path in the template by omitting the path portion
+of the URL:
+
 ```console
 $ echo 'My voice is my passport. {{(datasource "vault" "secret/sneakers").value}}' \
-  | gomplate -d vault=vault://
+  | gomplate -d vault=vault:///
 My voice is my passport. Verify me.
 ```
 
@@ -268,6 +274,15 @@ And the two can be mixed to scope secrets to a specific namespace:
 $ echo 'db_password={{(datasource "vault" "db/pass").value}}' \
   | gomplate -d vault=vault:///secret/production
 db_password=prodsecret
+```
+
+If you are unable to set the `VAULT_ADDR` environment variable, or need to
+specify multiple Vault datasources connecting to different servers, you can set
+the address as part of the URL:
+
+```console
+$ gomplate -d v=vault://vaultserver.com/secret/foo -i '{{ (ds "v").value }}'
+bar
 ```
 
 It is also possible to use dynamic secrets by using the write capability of the datasource. To use,

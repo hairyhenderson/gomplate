@@ -75,3 +75,28 @@ function stop_consul () {
   kill $(cat $PID_FILE) &>/dev/null
   rm /tmp/gomplate-test-consul.json
 }
+
+function start_vault () {
+  port=$1
+  PID_FILE=/tmp/gomplate-test-vault.pid
+  export VAULT_ROOT_TOKEN=00000000-1111-2222-3333-444455556666
+
+  # back up any existing token so it doesn't get overridden
+  if [ -f ~/.vault-token ]; then
+    cp ~/.vault-token ~/.vault-token.bak
+  fi
+
+  vault server -dev -dev-root-token-id=${VAULT_ROOT_TOKEN} -log-level=err >&/dev/null &
+  echo $! > $PID_FILE
+  wait_for_url http://127.0.0.1:$port/sys/health
+}
+
+function stop_vault () {
+  PID_FILE=/tmp/gomplate-test-vault.pid  
+  kill $(cat $PID_FILE) &>/dev/null
+
+  # restore old token if it was backed up
+  if [ -f ~/.vault-token.bak ]; then
+    mv ~/.vault-token.bak ~/.vault-token
+  fi
+}

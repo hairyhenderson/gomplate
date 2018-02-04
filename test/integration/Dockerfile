@@ -1,7 +1,7 @@
 FROM alpine:edge
 
-ENV VAULT_VER 0.7.3
-ENV CONSUL_VER 0.9.0
+ENV VAULT_VER 0.9.3
+ENV CONSUL_VER 1.0.3
 RUN apk add --no-cache \
     curl \
     bash \

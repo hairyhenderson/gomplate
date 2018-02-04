@@ -1,10 +1,35 @@
 package vault
 
 import (
+	"net/url"
+	"os"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
+
+func TestNew(t *testing.T) {
+	v := New(nil)
+	assert.Equal(t, "https://127.0.0.1:8200", v.client.Address())
+
+	os.Setenv("VAULT_ADDR", "http://example.com:1234")
+	defer os.Unsetenv("VAULT_ADDR")
+	v = New(nil)
+	assert.Equal(t, "http://example.com:1234", v.client.Address())
+	os.Unsetenv("VAULT_ADDR")
+
+	u, _ := url.Parse("vault://vault.rocks:8200/secret/foo/bar")
+	v = New(u)
+	assert.Equal(t, "https://vault.rocks:8200", v.client.Address())
+
+	u, _ = url.Parse("vault+https://vault.rocks:8200/secret/foo/bar")
+	v = New(u)
+	assert.Equal(t, "https://vault.rocks:8200", v.client.Address())
+
+	u, _ = url.Parse("vault+http://vault.rocks:8200/secret/foo/bar")
+	v = New(u)
+	assert.Equal(t, "http://vault.rocks:8200", v.client.Address())
+}
 
 func TestRead(t *testing.T) {
 	server, v := MockServer(404, "Not Found")

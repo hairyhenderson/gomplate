@@ -13,13 +13,13 @@ type Req struct {
 	Headers http.Header `json:"headers"`
 }
 
-var port string
+var port int
 
 func main() {
-	flag.StringVar(&port, "p", "8080", "Port to listen to")
+	flag.IntVar(&port, "p", 8080, "Port to listen to")
 	flag.Parse()
 
-	l, err := net.Listen("tcp", ":"+port)
+	l, err := net.ListenTCP("tcp", &net.TCPAddr{Port: port})
 	if err != nil {
 		log.Fatal(err)
 	}
