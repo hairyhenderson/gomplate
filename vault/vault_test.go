@@ -9,6 +9,7 @@ import (
 )
 
 func TestNew(t *testing.T) {
+	os.Unsetenv("VAULT_ADDR")
 	v := New(nil)
 	assert.Equal(t, "https://127.0.0.1:8200", v.client.Address())
 

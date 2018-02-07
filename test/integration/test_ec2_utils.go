@@ -1,48 +1,100 @@
-package main
+package integration
 
 import (
-	"encoding/json"
-	"flag"
+	"bytes"
+	"crypto/rand"
+	"crypto/rsa"
+	"crypto/x509"
+	"crypto/x509/pkix"
+	"encoding/pem"
 	"log"
-	"net"
+	"math/big"
 	"net/http"
-	"time"
+
+	"github.com/fullsailor/pkcs7"
 )
 
-// Req -
-type Req struct {
-	Headers http.Header `json:"headers"`
-}
+const instanceDocument = `{
+    "devpayProductCodes" : null,
+    "availabilityZone" : "xx-test-1b",
+    "privateIp" : "10.1.2.3",
+    "version" : "2010-08-31",
+    "instanceId" : "i-00000000000000000",
+    "billingProducts" : null,
+    "instanceType" : "t2.micro",
+    "accountId" : "1",
+    "imageId" : "ami-00000000",
+    "pendingTime" : "2000-00-01T0:00:00Z",
+    "architecture" : "x86_64",
+    "kernelId" : null,
+    "ramdiskId" : null,
+    "region" : "xx-test-1"
+}`
 
-var port int
-
-func main() {
-	flag.IntVar(&port, "p", 8082, "Port to listen to")
-	flag.Parse()
-
-	l, err := net.ListenTCP("tcp", &net.TCPAddr{IP: net.ParseIP("127.0.0.1"), Port: port})
-	if err != nil {
-		log.Fatal(err)
-	}
-	// defer l.Close()
-	http.HandleFunc("/", rootHandler)
-
-	http.HandleFunc("/sts/", stsHandler)
-	http.HandleFunc("/ec2/", ec2Handler)
-	http.HandleFunc("/quit", quitHandler(l))
-
-	http.Serve(l, nil)
-}
-
-func rootHandler(w http.ResponseWriter, r *http.Request) {
-	req := Req{r.Header}
-	b, err := json.Marshal(req)
-	if err != nil {
-		log.Println(err)
-		w.WriteHeader(http.StatusBadRequest)
-	}
+func instanceDocumentHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-	w.Write(b)
+	w.Write([]byte(instanceDocument))
+}
+
+func certificateGenerate() (priv *rsa.PrivateKey, derBytes []byte, err error) {
+	priv, err = rsa.GenerateKey(rand.Reader, 2048)
+	if err != nil {
+		log.Fatalf("failed to generate private key: %s", err)
+	}
+
+	serialNumberLimit := new(big.Int).Lsh(big.NewInt(1), 128)
+	serialNumber, err := rand.Int(rand.Reader, serialNumberLimit)
+	if err != nil {
+		log.Fatalf("failed to generate serial number: %s", err)
+	}
+
+	template := x509.Certificate{
+		SerialNumber: serialNumber,
+		Subject: pkix.Name{
+			Organization: []string{"Test"},
+		},
+	}
+
+	derBytes, err = x509.CreateCertificate(rand.Reader, &template, &template, &priv.PublicKey, priv)
+	if err != nil {
+		log.Fatalf("Failed to create certificate: %s", err)
+	}
+
+	return priv, derBytes, err
+}
+
+func pkcsHandler(priv *rsa.PrivateKey, derBytes []byte) func(http.ResponseWriter, *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+		cert, err := x509.ParseCertificate(derBytes)
+		if err != nil {
+			log.Fatalf("Cannot decode certificate: %s", err)
+		}
+
+		// Initialize a SignedData struct with content to be signed
+		signedData, err := pkcs7.NewSignedData([]byte(instanceDocument))
+		if err != nil {
+			log.Fatalf("Cannot initialize signed data: %s", err)
+		}
+
+		// Add the signing cert and private key
+		if err = signedData.AddSigner(cert, priv, pkcs7.SignerInfoConfig{}); err != nil {
+			log.Fatalf("Cannot add signer: %s", err)
+		}
+
+		// Finish() to obtain the signature bytes
+		detachedSignature, err := signedData.Finish()
+		if err != nil {
+			log.Fatalf("Cannot finish signing data: %s", err)
+		}
+
+		encoded := pem.EncodeToMemory(&pem.Block{Type: "PKCS7", Bytes: detachedSignature})
+
+		encoded = bytes.TrimPrefix(encoded, []byte("-----BEGIN PKCS7-----\n"))
+		encoded = bytes.TrimSuffix(encoded, []byte("\n-----END PKCS7-----\n"))
+
+		w.Header().Set("Content-Type", "text/plain")
+		w.Write(encoded)
+	}
 }
 
 func stsHandler(w http.ResponseWriter, r *http.Request) {
@@ -181,14 +233,4 @@ func ec2Handler(w http.ResponseWriter, r *http.Request) {
         </item>
     </reservationSet>
 </DescribeInstancesResponse>`))
-}
-
-func quitHandler(l net.Listener) func(http.ResponseWriter, *http.Request) {
-	return func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(http.StatusNoContent)
-		go func() {
-			time.Sleep(500 * time.Millisecond)
-			l.Close()
-		}()
-	}
 }

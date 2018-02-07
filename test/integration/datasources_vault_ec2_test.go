@@ -1,0 +1,155 @@
+//+build integration
+//+build !windows
+
+package integration
+
+import (
+	"encoding/pem"
+	"io/ioutil"
+	"net"
+	"net/http"
+	"os"
+	"os/user"
+	"path"
+	"strconv"
+
+	. "gopkg.in/check.v1"
+
+	"github.com/gotestyourself/gotestyourself/fs"
+	"github.com/gotestyourself/gotestyourself/icmd"
+)
+
+type VaultEc2DatasourcesSuite struct {
+	tmpDir      *fs.Dir
+	pidDir      *fs.Dir
+	vaultAddr   string
+	vaultResult *icmd.Result
+	v           *vaultClient
+	l           *net.TCPListener
+	cert        []byte
+}
+
+var _ = Suite(&VaultEc2DatasourcesSuite{})
+
+func (s *VaultEc2DatasourcesSuite) SetUpSuite(c *C) {
+	var err error
+	s.l, err = net.ListenTCP("tcp", &net.TCPAddr{IP: net.ParseIP("127.0.0.1")})
+	handle(c, err)
+	priv, der, _ := certificateGenerate()
+	s.cert = pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE", Bytes: der})
+	http.HandleFunc("/latest/dynamic/instance-identity/pkcs7", pkcsHandler(priv, der))
+	http.HandleFunc("/latest/dynamic/instance-identity/document", instanceDocumentHandler)
+	http.HandleFunc("/sts/", stsHandler)
+	http.HandleFunc("/ec2/", ec2Handler)
+	go http.Serve(s.l, nil)
+
+	s.startVault(c)
+
+	s.v, err = createVaultClient(s.vaultAddr, vaultRootToken)
+	handle(c, err)
+
+	err = s.v.vc.Sys().PutPolicy("writepol", `path "*" {
+  policy = "write"
+}`)
+	handle(c, err)
+	err = s.v.vc.Sys().PutPolicy("readpol", `path "*" {
+  policy = "read"
+}`)
+	handle(c, err)
+}
+
+func (s *VaultEc2DatasourcesSuite) startVault(c *C) {
+	s.pidDir = fs.NewDir(c, "gomplate-inttests-vaultpid")
+	s.tmpDir = fs.NewDir(c, "gomplate-inttests",
+		fs.WithFile("config.json", `{
+		"pid_file": "`+s.pidDir.Join("vault.pid")+`"
+		}`),
+	)
+
+	// rename any existing token so it doesn't get overridden
+	u, _ := user.Current()
+	homeDir := u.HomeDir
+	tokenFile := path.Join(homeDir, ".vault-token")
+	info, err := os.Stat(tokenFile)
+	if err == nil && info.Mode().IsRegular() {
+		os.Rename(tokenFile, path.Join(homeDir, ".vault-token.bak"))
+	}
+
+	_, s.vaultAddr = freeport()
+	vault := icmd.Command("vault", "server",
+		"-dev",
+		"-dev-root-token-id="+vaultRootToken,
+		"-log-level=trace",
+		"-dev-listen-address="+s.vaultAddr,
+		"-config="+s.tmpDir.Join("config.json"),
+	)
+	s.vaultResult = icmd.StartCmd(vault)
+
+	c.Logf("Fired up Vault: %v", vault)
+
+	err = waitForURL(c, "http://"+s.vaultAddr+"/v1/sys/health")
+	handle(c, err)
+}
+
+func (s *VaultEc2DatasourcesSuite) TearDownSuite(c *C) {
+	s.l.Close()
+
+	defer s.tmpDir.Remove()
+	defer s.pidDir.Remove()
+
+	p, err := ioutil.ReadFile(s.pidDir.Join("vault.pid"))
+	handle(c, err)
+	pid, err := strconv.Atoi(string(p))
+	handle(c, err)
+	process, err := os.FindProcess(pid)
+	handle(c, err)
+	err = process.Kill()
+	handle(c, err)
+
+	// restore old token if it was backed up
+	u, _ := user.Current()
+	homeDir := u.HomeDir
+	tokenFile := path.Join(homeDir, ".vault-token.bak")
+	info, err := os.Stat(tokenFile)
+	if err == nil && info.Mode().IsRegular() {
+		os.Rename(tokenFile, path.Join(homeDir, ".vault-token"))
+	}
+}
+
+func (s *VaultEc2DatasourcesSuite) TestEc2Auth(c *C) {
+	s.v.vc.Logical().Write("secret/foo", map[string]interface{}{"value": "bar"})
+	defer s.v.vc.Logical().Delete("secret/foo")
+	err := s.v.vc.Sys().EnableAuth("aws", "aws", "")
+	handle(c, err)
+	defer s.v.vc.Sys().DisableAuth("aws")
+	_, err = s.v.vc.Logical().Write("auth/aws/config/client", map[string]interface{}{
+		"secret_key": "secret", "access_key": "access",
+		"endpoint":     "http://" + s.l.Addr().String() + "/ec2",
+		"iam_endpoint": "http://" + s.l.Addr().String() + "/iam",
+		"sts_endpoint": "http://" + s.l.Addr().String() + "/sts",
+	})
+	handle(c, err)
+
+	_, err = s.v.vc.Logical().Write("auth/aws/config/certificate/testcert", map[string]interface{}{
+		"type": "pkcs7", "aws_public_cert": string(s.cert),
+	})
+	handle(c, err)
+
+	_, err = s.v.vc.Logical().Write("auth/aws/role/ami-00000000", map[string]interface{}{
+		"auth_type": "ec2", "bound_ami_id": "ami-00000000",
+		"policies": "readpol",
+	})
+	handle(c, err)
+
+	result := icmd.RunCmd(icmd.Command(GomplateBin,
+		"-d", "vault=vault:///secret",
+		"-i", `{{(ds "vault" "foo").value}}`,
+	), func(c *icmd.Cmd) {
+		c.Env = []string{
+			"HOME=" + s.tmpDir.Join("home"),
+			"VAULT_ADDR=http://" + s.v.addr,
+			"AWS_META_ENDPOINT=http://" + s.l.Addr().String(),
+		}
+	})
+	result.Assert(c, icmd.Expected{ExitCode: 0, Out: "bar"})
+}
