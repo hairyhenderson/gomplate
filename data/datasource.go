@@ -26,8 +26,6 @@ import (
 var logFatalf = log.Fatalf
 
 var json_mimetype = "application/json"
-var json_array_mimetype = "application/vnd.json-array"
-var yaml_array_mimetype = "application/vnd.yaml-array"
 
 // stdin - for overriding in tests
 var stdin io.Reader
@@ -104,7 +102,6 @@ func NewData(datasourceArgs []string, headerArgs []string) *Data {
 // - A subset of SSM API for use in unit testing
 type AWSSMPGetter interface {
 	GetParameter(*ssm.GetParameterInput) (*ssm.GetParameterOutput, error)
-	GetParametersByPathPages(*ssm.GetParametersByPathInput, func(*ssm.GetParametersByPathOutput, bool) bool) error
 }
 
 // Source - a data source
@@ -238,12 +235,6 @@ func (d *Data) Datasource(alias string, args ...string) interface{} {
 		logFatalf("No value found for %s from datasource '%s'", args, alias)
 	}
 	s := string(b)
-	if source.Type == json_array_mimetype {
-		return JSONArray(s)
-	}
-	if source.Type == yaml_array_mimetype {
-		return YAMLArray(s)
-	}
 	if source.Type == json_mimetype {
 		return JSON(s)
 	}

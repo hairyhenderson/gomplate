@@ -170,28 +170,21 @@ secrets for easy retrieval by AWS resources.
 #### Arguments for aws+smp datasource
 
 ```go
-datasource alias [subpath] [mode]
+datasource alias [subpath]
 ```
 
 | name   | description |
 |--------|-------|
 | `alias` | the datasource alias, as provided by [`--datasource/-d`](../usage/#datasource-d) |
 | `subpath` | _(optional)_ the subpath to use, using path-join semantics (add a '/' if none at start/end of path-in-the-url and subpath) |
-| `mode` | _(optional)_ get all or just the immediate children of a given path in the hierarchy |
 
 You must grant the gomplate process IAM credentials via the AWS golang SDK default
-methods (e.g. environment args, ~/.aws/* files, instance profiles) for the following
-actions, dependant on the mode used:
-
-| `mode` (3rd argument) | IAM permission required | mode description |
-| --- | --- | --- |
-| (none, default) | ssm.GetParameter | retrieve a single parameter as an object - errors if not found |
-| "mode:one-level" | ssm.GetParametersByPath | retrieve parameters immediately under a given hierarchy path as a list |
-| "mode:recursive" | ssm.GetParametersByPath | retrieve all parameters recursively under a given hierarchy path as a list |
+methods (e.g. environment args, ~/.aws/* files, instance profiles) for the
+`ssm.GetParameter` action.
 
 #### Output of aws+smp datasource
 
-The output will be either a list or single Parameter object from the
+The output will be a single Parameter object from the
 [AWS golang SDK](https://docs.aws.amazon.com/sdk-for-go/api/service/ssm/#Parameter):
 
 | name   | description |
@@ -201,6 +194,10 @@ The output will be either a list or single Parameter object from the
 | `Value` | textual value, comma-separated single string if StringList |
 | `Version` | incrementing integer version |
 
+If the Parameter key specified is not found (or not allowed to be read due to
+missing `ssm.GetParameter` permission) an error will be generated.
+There is no default.
+
 #### Examples
 
 Given your [AWS account's Parameter Store](https://eu-west-1.console.aws.amazon.com/ec2/v2/home#Parameters:sort=Name) has the following data:
@@ -208,8 +205,6 @@ Given your [AWS account's Parameter Store](https://eu-west-1.console.aws.amazon.
 * /foo/first/others - "Bill,Ben" (a StringList)
 * /foo/first/password - "super-secret" (a SecureString)
 * /foo/second/p1 - "aaa"
-* /foo/second/p2 - "yyy"
-* /foo/upper - "zzz"
 
 ```console
 $ echo '{{ ds "foo" }}' | gomplate -d foo=aws+smp:///foo/first/password
@@ -223,12 +218,6 @@ Bill,Ben
 
 $ echo '{{ (ds "foo" "/second/p1").Value }}' | gomplate -d foo=aws+smp:///foo/
 aaa
-
-$ echo '{{range(ds "foo" "" "mode:one-level")}}{{.Value }},{{end}}' | gomplate -d foo=aws+smp:///foo
-zzz,
-
-$ echo '{{range(ds "foo" "" "mode:recursive")}}{{.Value }},{{end}}' | gomplate -d foo=aws+smp:///foo
-Bill,Ben,super-secret,aaa,yyy,zzz,
 ```
 
 ### Usage with Vault data
