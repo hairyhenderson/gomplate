@@ -1,11 +1,7 @@
 package funcs
 
 import (
-	"log"
-	"os"
-	"strconv"
 	"sync"
-	"time"
 
 	"github.com/hairyhenderson/gomplate/aws"
 )
@@ -18,20 +14,8 @@ var (
 // AWSNS - the aws namespace
 func AWSNS() *Funcs {
 	afInit.Do(func() {
-		timeout := os.Getenv("AWS_TIMEOUT")
-		if timeout != "" {
-			t, err := strconv.Atoi(timeout)
-			if err != nil {
-				log.Fatalf("Invalid AWS_TIMEOUT value '%s' - must be an integer\n", timeout)
-			}
-
-			af = &Funcs{
-				awsopts: aws.ClientOptions{
-					Timeout: (time.Duration(t) * time.Millisecond),
-				},
-			}
-		} else {
-			af = &Funcs{}
+		af = &Funcs{
+			awsopts: aws.GetClientOptions(),
 		}
 	})
 	return af

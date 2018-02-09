@@ -24,7 +24,7 @@ func restoreLogFatalf() {
 }
 
 func mockLogFatalf(msg string, args ...interface{}) {
-	spyLogFatalfMsg = msg
+	spyLogFatalfMsg = fmt.Sprintf(msg, args...)
 	panic(spyLogFatalfMsg)
 }
 

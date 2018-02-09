@@ -159,6 +159,67 @@ $ gomplate -d config=boltdb:///tmp/config.db#Bucket1 -i '{{(datasource "config" 
 bar
 ```
 
+### Usage with AWS Systems Manager Parameter data
+
+The special `aws+smp://` URL scheme can be used to retrieve data from the
+[AWS Systems Manager]((https://aws.amazon.com/systems-manager/) (née AWS EC2 Simple 
+Systems Manager) [Parameter Store](https://aws.amazon.com/systems-manager/features/#Parameter_Store).
+This hierarchically organised key/value store allows you to store text, lists or encrypted
+secrets for easy retrieval by AWS resources.
+
+#### Arguments for aws+smp datasource
+
+```go
+datasource alias [subpath]
+```
+
+| name   | description |
+|--------|-------|
+| `alias` | the datasource alias, as provided by [`--datasource/-d`](../usage/#datasource-d) |
+| `subpath` | _(optional)_ the subpath to use, using path-join semantics (add a '/' if none at start/end of path-in-the-url and subpath) |
+
+You must grant the gomplate process IAM credentials via the AWS golang SDK default
+methods (e.g. environment args, ~/.aws/* files, instance profiles) for the
+`ssm.GetParameter` action.
+
+#### Output of aws+smp datasource
+
+The output will be a single Parameter object from the
+[AWS golang SDK](https://docs.aws.amazon.com/sdk-for-go/api/service/ssm/#Parameter):
+
+| name   | description |
+|--------|-------|
+| `Name` | full Parameter name |
+| `Type` | `String`, `StringList` or `SecureString` |
+| `Value` | textual value, comma-separated single string if StringList |
+| `Version` | incrementing integer version |
+
+If the Parameter key specified is not found (or not allowed to be read due to
+missing `ssm.GetParameter` permission) an error will be generated.
+There is no default.
+
+#### Examples
+
+Given your [AWS account's Parameter Store](https://eu-west-1.console.aws.amazon.com/ec2/v2/home#Parameters:sort=Name) has the following data:
+
+* /foo/first/others - "Bill,Ben" (a StringList)
+* /foo/first/password - "super-secret" (a SecureString)
+* /foo/second/p1 - "aaa"
+
+```console
+$ echo '{{ ds "foo" }}' | gomplate -d foo=aws+smp:///foo/first/password
+map[Name:/foo/first/password Type:SecureString Value:super-secret Version:1]
+
+$ echo '{{ (ds "foo").Value }}' | gomplate -d foo=aws+smp:///foo/first/password
+super-secret
+
+$ echo '{{ (ds "foo" "/foo/first/others").Value }}' | gomplate -d foo=aws+smp:
+Bill,Ben
+
+$ echo '{{ (ds "foo" "/second/p1").Value }}' | gomplate -d foo=aws+smp:///foo/
+aaa
+```
+
 ### Usage with Vault data
 
 The special `vault://` URL scheme can be used to retrieve data from [Hashicorp

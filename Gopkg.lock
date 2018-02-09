@@ -23,11 +23,14 @@
     "internal/shareddefaults",
     "private/protocol",
     "private/protocol/ec2query",
+    "private/protocol/json/jsonutil",
+    "private/protocol/jsonrpc",
     "private/protocol/query",
     "private/protocol/query/queryutil",
     "private/protocol/rest",
     "private/protocol/xml/xmlutil",
     "service/ec2",
+    "service/ssm",
     "service/sts"
   ]
   revision = "1b176c5c6b57adb03bb982c21930e708ebca5a77"
@@ -279,6 +282,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "f97a4e5d90d8359ae88bdf8cdd24f7820b3456745692d0fa2b57b773b00d6f88"
+  inputs-digest = "fe2864704d9ac4ba9339c88333baf3a21188f1db96a066108da07ca67274feb8"
   solver-name = "gps-cdcl"
   solver-version = 1

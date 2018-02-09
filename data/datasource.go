@@ -15,6 +15,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/aws/aws-sdk-go/service/ssm"
+
 	"github.com/blang/vfs"
 	"github.com/hairyhenderson/gomplate/libkv"
 	"github.com/hairyhenderson/gomplate/vault"
@@ -22,6 +24,8 @@ import (
 
 // logFatal is defined so log.Fatal calls can be overridden for testing
 var logFatalf = log.Fatalf
+
+var json_mimetype = "application/json"
 
 // stdin - for overriding in tests
 var stdin io.Reader
@@ -53,6 +57,7 @@ func init() {
 	addSourceReader("consul+http", readConsul)
 	addSourceReader("consul+https", readConsul)
 	addSourceReader("boltdb", readBoltDB)
+	addSourceReader("aws+smp", readAWSSMP)
 }
 
 var sourceReaders map[string]func(*Source, ...string) ([]byte, error)
@@ -94,6 +99,11 @@ func NewData(datasourceArgs []string, headerArgs []string) *Data {
 	}
 }
 
+// - A subset of SSM API for use in unit testing
+type AWSSMPGetter interface {
+	GetParameter(*ssm.GetParameterInput) (*ssm.GetParameterOutput, error)
+}
+
 // Source - a data source
 type Source struct {
 	Alias  string
@@ -105,6 +115,7 @@ type Source struct {
 	HC     *http.Client   // used for http[s]: URLs, nil otherwise
 	VC     *vault.Vault   // used for vault: URLs, nil otherwise
 	KV     *libkv.LibKV   // used for consul:, etcd:, zookeeper: & boltdb: URLs, nil otherwise
+	ASMPG  AWSSMPGetter   // used for aws+smp:, nil otherwise
 	Header http.Header    // used for http[s]: URLs, nil otherwise
 }
 
@@ -224,7 +235,7 @@ func (d *Data) Datasource(alias string, args ...string) interface{} {
 		logFatalf("No value found for %s from datasource '%s'", args, alias)
 	}
 	s := string(b)
-	if source.Type == "application/json" {
+	if source.Type == json_mimetype {
 		return JSON(s)
 	}
 	if source.Type == "application/yaml" {

@@ -1,7 +1,11 @@
 package aws
 
 import (
+	"log"
 	"net/http"
+	"os"
+	"strconv"
+	"sync"
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -10,6 +14,13 @@ import (
 )
 
 var describerClient InstanceDescriber
+
+var (
+	co ClientOptions
+	coInit sync.Once
+	sdkSession *session.Session
+	sdkSessionInit sync.Once
+)
 
 // ClientOptions -
 type ClientOptions struct {
@@ -28,32 +39,64 @@ type InstanceDescriber interface {
 	DescribeInstances(*ec2.DescribeInstancesInput) (*ec2.DescribeInstancesOutput, error)
 }
 
+// Centralised reading of AWS_TIMEOUT
+// ... but cannot use in vault/auth.go as different strconv.Atoi error handling
+func GetClientOptions() (ClientOptions) {
+	coInit.Do(func() {
+		timeout := os.Getenv("AWS_TIMEOUT")
+		if timeout != "" {
+			t, err := strconv.Atoi(timeout)
+			if err != nil {
+				log.Fatalf("Invalid AWS_TIMEOUT value '%s' - must be an integer\n", timeout)
+			}
+
+			co.Timeout = time.Duration(t) * time.Millisecond
+		}
+	})
+	return co
+}
+
+func SDKSession() (*session.Session) {
+	sdkSessionInit.Do(func() {
+		options := GetClientOptions()
+		timeout := options.Timeout
+		if timeout == 0 {
+			timeout = 500 * time.Millisecond
+		}
+
+		config := aws.NewConfig()
+		config = config.WithHTTPClient(&http.Client{Timeout: timeout})
+
+		// Waiting for https://github.com/aws/aws-sdk-go/issues/1103
+		metaClient := NewEc2Meta(options)
+		metaRegion := metaClient.Region()
+		_, default1 := os.LookupEnv("AWS_REGION");
+		_, default2 := os.LookupEnv("AWS_DEFAULT_REGION");
+		if metaRegion != "unknown" && !default1 && !default2 {
+			config = config.WithRegion(metaRegion)
+		}
+
+		sdkSession = session.Must(session.NewSessionWithOptions(session.Options{
+			Config: *config,
+			SharedConfigState: session.SharedConfigEnable,
+		}))
+	})
+	return sdkSession
+}
+
 // NewEc2Info -
 func NewEc2Info(options ClientOptions) *Ec2Info {
 	metaClient := NewEc2Meta(options)
 	return &Ec2Info{
 		describer: func() InstanceDescriber {
 			if describerClient == nil {
-				region := metaClient.Region()
-				describerClient = ec2Client(region, options)
+				describerClient = ec2.New(SDKSession())
 			}
 			return describerClient
 		},
 		metaClient: metaClient,
 		cache:      make(map[string]interface{}),
 	}
-}
-
-func ec2Client(region string, options ClientOptions) (client InstanceDescriber) {
-	config := aws.NewConfig()
-	config = config.WithRegion(region)
-	timeout := options.Timeout
-	if timeout == 0 {
-		timeout = 500 * time.Millisecond
-	}
-	config = config.WithHTTPClient(&http.Client{Timeout: timeout})
-	client = ec2.New(session.New(config))
-	return client
 }
 
 // Tag -
