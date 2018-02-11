@@ -1,7 +1,6 @@
 baseURL = "/"
 languageCode = "en-us"
 title = "gomplate documentation"
-
 theme = "hugo-material-docs"
 
 [params]
@@ -11,9 +10,13 @@ theme = "hugo-material-docs"
   provider = "GitHub"
   repo_url = "https://github.com/hairyhenderson/gomplate"
   googleAnalytics = "UA-82637990-1"
+  logo = "images/gomplate-icon.svg"
+  favicon = "favicon.ico"
+  custom_css = ["stylesheets/custom-palettes.css"]
 
 [params.palette]
-  primary = "indigo"
+  primary = "spalding-gray"
+  accent = "spalding-blue"
 
 [social]
   twitter = "hairyhenderson"

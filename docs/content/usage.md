@@ -17,9 +17,9 @@ $ echo "Hello, {{.Env.USER}}" | gomplate
 Hello, hairyhenderson
 ```
 
-# Commandline Arguments
+## Commandline Arguments
 
-## `--file`/`-f`, `--in`/`-i`, and `--out`/`-o`
+### `--file`/`-f`, `--in`/`-i`, and `--out`/`-o`
 
 By default, `gomplate` will read from `Stdin` and write to `Stdout`. This behaviour can be changed.
 
@@ -27,7 +27,7 @@ By default, `gomplate` will read from `Stdin` and write to `Stdout`. This behavi
 - Use `--out`/`-o` to save output to file. The special value `-` means `Stdout`.
 - Use `--in`/`-i` if you want to set the input template right on the commandline. This overrides `--file`. Because of shell command line lengths, it's probably not a good idea to use a very long value with this argument.
 
-### Multiple inputs
+#### Multiple inputs
 
 You can specify multiple `--file` and `--out` arguments. The same number of each much be given. This allows `gomplate` to process multiple templates _slightly_ faster than invoking `gomplate` multiple times in a row.
 
@@ -58,7 +58,7 @@ This will stop all files in the example folder from being processed, as well as 
 
 You can also chain the exclude flag to build up a series of globs to be excluded
 
-## `--datasource`/`-d`
+### `--datasource`/`-d`
 
 Add a data source in `name=URL` form. Specify multiple times to add multiple sources. The data can then be used by the [`datasource`](../functions/#datasource) and [`include`](../functions/#include) functions.
 
@@ -70,7 +70,7 @@ A few different forms are valid:
 - `mydata.json`
   - This form infers the name from the file name (without extension). Only valid for files in the current directory.
 
-## Overriding the template delimiters
+### Overriding the template delimiters
 
 Sometimes it's necessary to override the default template delimiters (`{{`/`}}`).
 Use `--left-delim`/`--right-delim` or set `$GOMPLATE_LEFT_DELIM`/`$GOMPLATE_RIGHT_DELIM`.

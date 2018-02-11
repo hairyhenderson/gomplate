@@ -1,3 +1,7 @@
+<img src="docs/static/images/gomplate.png" width="512px" alt="gomplate logo"/>
+
+_Read the docs at [gomplate.hairyhenderson.ca][docs-url]._
+
 [![Build Status][circleci-image]][circleci-url]
 [![Windows Build][appveyor-image]][appveyor-url]
 [![Go Report Card][reportcard-image]][reportcard-url]
@@ -14,10 +18,6 @@
 [![DockerHub Latest Commit][microbadger-commit-image]][microbadger-url]
 
 [![Install Docs][install-docs-image]][install-docs-url]
-
-_Read the docs at [gomplate.hairyhenderson.ca][docs-url]._
-
-# gomplate
 
 A [Go template](https://golang.org/pkg/text/template/)-based CLI tool. `gomplate` can be used as an alternative to
 [`envsubst`](https://www.gnu.org/software/gettext/manual/html_node/envsubst-Invocation.html) but also supports

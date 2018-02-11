@@ -115,6 +115,11 @@ docs/themes/hugo-material-docs:
 gen-docs: docs/themes/hugo-material-docs
 	cd docs/; hugo
 
+# this target doesn't usually get used - it's mostly here as a reminder to myself
+# hint: make sure CLOUDCONVERT_API_KEY is set ;)
+gomplate.png: gomplate.svg
+	cloudconvert -f png -c density=288 $^
+
 ifeq ("$(CI)","true")
 lint:
 	gometalinter -j 1 --vendor --deadline 120s --disable gotype --enable gofmt --enable goimports --enable misspell --enable unused --disable gas
