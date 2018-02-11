@@ -19,7 +19,7 @@ func main() {
 	flag.IntVar(&port, "p", 8080, "Port to listen to")
 	flag.Parse()
 
-	l, err := net.ListenTCP("tcp", &net.TCPAddr{Port: port})
+	l, err := net.ListenTCP("tcp", &net.TCPAddr{IP: net.ParseIP("127.0.0.1"), Port: port})
 	if err != nil {
 		log.Fatal(err)
 	}
