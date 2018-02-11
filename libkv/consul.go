@@ -25,7 +25,7 @@ func NewConsul(u *url.URL) *LibKV {
 	if role := env.Getenv("CONSUL_VAULT_ROLE", ""); role != "" {
 		mount := env.Getenv("CONSUL_VAULT_MOUNT", "consul")
 
-		client := vault.New()
+		client := vault.New(nil)
 		client.Login()
 
 		path := fmt.Sprintf("%s/creds/%s", mount, role)

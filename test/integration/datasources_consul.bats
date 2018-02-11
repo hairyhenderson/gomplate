@@ -10,7 +10,7 @@ function setup () {
 function teardown () {
   export CONSUL_HTTP_ADDR=http://127.0.0.1:8501
   consul kv delete foo
-  vault unmount consul
+  vault secrets disable consul
   stop_consul
 }
 
