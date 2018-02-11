@@ -16,7 +16,7 @@ import (
 	"github.com/fullsailor/pkcs7"
 )
 
-var port string
+var port int
 var priv *rsa.PrivateKey
 var derBytes []byte
 
@@ -38,10 +38,10 @@ const instanceDocument = `{
 }`
 
 func main() {
-	flag.StringVar(&port, "p", "8081", "Port to listen to")
+	flag.IntVar(&port, "p", 8081, "Port to listen to")
 	flag.Parse()
 
-	l, err := net.Listen("tcp", ":"+port)
+	l, err := net.ListenTCP("tcp", &net.TCPAddr{IP: net.ParseIP("127.0.0.1"), Port: port})
 	if err != nil {
 		log.Fatal(err)
 	}
