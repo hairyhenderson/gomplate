@@ -3,7 +3,6 @@ title: Installing
 weight: 10
 menu: main
 ---
-# Installing
 
 ## macOS with homebrew
 

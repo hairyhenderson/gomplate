@@ -1,0 +1,126 @@
+@import url('https://fonts.googleapis.com/css?family=Source+Sans+Pro:200,300,400');
+
+@supports (-webkit-appearance:none) {
+    .palette-primary-spalding-gray {
+        background: rgb(145, 132, 121)
+    }
+}
+
+.palette-primary-spalding-gray .footer,
+.palette-primary-spalding-gray .header {
+    background: rgb(145, 132, 121)
+}
+
+.palette-primary-spalding-gray .drawer .toc a.current,
+.palette-primary-spalding-gray .drawer .toc a:focus,
+.palette-primary-spalding-gray .drawer .toc a:hover {
+    color: rgb(145, 132, 121)
+}
+
+.palette-primary-spalding-gray .drawer .anchor a {
+    border-left: 2px solid rgb(145, 132, 121);
+}
+
+.ios.standalone .palette-primary-spalding-gray .article {
+    background: -webkit-linear-gradient(top, #fff 50%, rgb(145, 132, 121) 0);
+    background: linear-gradient(180deg, #fff 50%, rgb(145, 132, 121) 0);
+}
+
+.palette-primary-spalding-gray .article a,
+.palette-primary-spalding-gray .article code,
+.palette-primary-spalding-gray .article h1,
+.palette-primary-spalding-gray .article h2 {
+    color: rgb(145, 132, 121)
+}
+
+.palette-primary-spalding-gray .article .headerlink {
+    color: rgba(0, 0, 0, .26)
+}
+
+.palette-primary-spalding-gray .article table th {
+    background: #6d6259;
+}
+
+.palette-primary-spalding-gray .results .meta {
+    background: rgb(145, 132, 121)
+}
+
+.palette-accent-spalding-gray .article a:focus,
+.palette-accent-spalding-gray .article a:hover {
+    color: #bb8550;
+}
+
+.palette-accent-spalding-gray .repo a {
+    background: #bb8550;
+}
+
+@media only screen and (max-width:959px) {
+    .palette-primary-spalding-gray .project {
+        background: rgb(145, 132, 121)
+    }
+}
+
+@supports (-webkit-appearance:none) {
+    .palette-primary-spalding-blue {
+        background: rgb(120, 133, 145);
+    }
+}
+
+.palette-primary-spalding-blue .footer,
+.palette-primary-spalding-blue .header {
+    background: rgb(120, 133, 145);
+}
+
+.palette-primary-spalding-blue .drawer .toc a.current,
+.palette-primary-spalding-blue .drawer .toc a:focus,
+.palette-primary-spalding-blue .drawer .toc a:hover {
+    color: rgb(120, 133, 145);
+}
+
+.palette-primary-spalding-blue .drawer .anchor a {
+    border-left: 2px solid rgb(120, 133, 145);
+}
+
+.ios.standalone .palette-primary-spalding-blue .article {
+    background: -webkit-linear-gradient(top, #fff 50%, rgb(120, 133, 145) 0);
+    background: linear-gradient(180deg, #fff 50%, rgb(120, 133, 145) 0);
+}
+
+.palette-primary-spalding-blue .article a,
+.palette-primary-spalding-blue .article code,
+.palette-primary-spalding-blue .article h1,
+.palette-primary-spalding-blue .article h2 {
+    color: rgb(120, 133, 145);
+}
+
+.palette-primary-spalding-blue .article .headerlink {
+    color: rgba(0, 0, 0, .26)
+}
+
+.palette-primary-spalding-blue .article table th {
+    background: #596d63;
+}
+
+.palette-primary-spalding-blue .results .meta {
+    background: rgb(120, 133, 145);
+}
+
+.palette-accent-spalding-blue .article a:focus,
+.palette-accent-spalding-blue .article a:hover {
+    color: #787991;
+}
+
+.palette-accent-spalding-blue .repo a {
+    background: #596d63;
+}
+
+@media only screen and (max-width:959px) {
+    .palette-primary-spalding-blue .project {
+        background: rgb(120, 133, 145);
+    }
+}
+
+header .title {
+    font-family: 'Source Sans Pro', 'Roboto', Helvetica, Arial, sans-serif;
+    font-weight: 300;
+}

@@ -18,15 +18,8 @@ Gomplate is an alternative that will let you process templates which also includ
 
 
 _Please report any bugs found in the [issue tracker](https://github.com/hairyhenderson/gomplate/issues/)._
-
-{{< note title="Note" >}}
-This documentation is still in the process of being migrated out of the
-[README](https://github.com/hairyhenderson/gomplate/tree/master/README.md), so
-expect some inconsistencies! If you want to help, [PRs and issues are welcome!](https://github.com/hairyhenderson/gomplate/issues/new)
-{{< /note >}}
-
 ## License
 
 [The MIT License](http://opensource.org/licenses/MIT)
 
-Copyright (c) 2016-2017 Dave Henderson
+Copyright (c) 2016-{{< year >}} Dave Henderson
