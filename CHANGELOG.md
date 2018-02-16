@@ -1,5 +1,40 @@
 # Change Log
 
+## [v2.3.0](https://github.com/hairyhenderson/gomplate/tree/v2.3.0) (2018-02-12)
+[Full Changelog](https://github.com/hairyhenderson/gomplate/compare/v2.2.0...v2.3.0)
+
+**Implemented enhancements:**
+
+- Enable reading from AWS SSM Parameter Store? [\#245](https://github.com/hairyhenderson/gomplate/issues/245)
+- Can we specify stdin as a datasource? [\#230](https://github.com/hairyhenderson/gomplate/issues/230)
+- Trade the dependency on `aws-sdk-go` for something smaller [\#47](https://github.com/hairyhenderson/gomplate/issues/47)
+- Allow vault address to be specified in the vault:// URL [\#251](https://github.com/hairyhenderson/gomplate/pull/251) ([hairyhenderson](https://github.com/hairyhenderson))
+- Add AWS SSM Parameter support [\#248](https://github.com/hairyhenderson/gomplate/pull/248) ([tyrken](https://github.com/tyrken))
+- Add crypto namespace [\#236](https://github.com/hairyhenderson/gomplate/pull/236) ([hairyhenderson](https://github.com/hairyhenderson))
+- Support setting MIME type with URL query string [\#234](https://github.com/hairyhenderson/gomplate/pull/234) ([hairyhenderson](https://github.com/hairyhenderson))
+- Adding support for stdin: scheme for datasources [\#233](https://github.com/hairyhenderson/gomplate/pull/233) ([hairyhenderson](https://github.com/hairyhenderson))
+- Can now pass --exclude as a flag [\#220](https://github.com/hairyhenderson/gomplate/pull/220) ([Gman98ish](https://github.com/Gman98ish))
+
+**Fixed bugs:**
+
+- "unexpected {{end}}" error that only happens when using --input-dir [\#238](https://github.com/hairyhenderson/gomplate/issues/238)
+
+**Closed issues:**
+
+- gomplate should output which template was being parsed when an error is encountered [\#239](https://github.com/hairyhenderson/gomplate/issues/239)
+- function "math" not defined [\#224](https://github.com/hairyhenderson/gomplate/issues/224)
+
+**Merged pull requests:**
+
+- new logo [\#253](https://github.com/hairyhenderson/gomplate/pull/253) ([hairyhenderson](https://github.com/hairyhenderson))
+- bind test binaries explicitly to 127.0.0.1 [\#252](https://github.com/hairyhenderson/gomplate/pull/252) ([hairyhenderson](https://github.com/hairyhenderson))
+- Updating github.com/aws/aws-sdk-go to v1.12.70 [\#247](https://github.com/hairyhenderson/gomplate/pull/247) ([hairyhenderson](https://github.com/hairyhenderson))
+- Updating for dep 0.4.0 and revendoring [\#246](https://github.com/hairyhenderson/gomplate/pull/246) ([hairyhenderson](https://github.com/hairyhenderson))
+- Increase gometalinter timeout and make it go faster locally [\#244](https://github.com/hairyhenderson/gomplate/pull/244) ([hairyhenderson](https://github.com/hairyhenderson))
+- Refactoring template processing [\#241](https://github.com/hairyhenderson/gomplate/pull/241) ([hairyhenderson](https://github.com/hairyhenderson))
+- Naming template after input filename [\#240](https://github.com/hairyhenderson/gomplate/pull/240) ([hairyhenderson](https://github.com/hairyhenderson))
+- Pruning dependencies with `dep prune` [\#237](https://github.com/hairyhenderson/gomplate/pull/237) ([hairyhenderson](https://github.com/hairyhenderson))
+
 ## [v2.2.0](https://github.com/hairyhenderson/gomplate/tree/v2.2.0) (2017-11-03)
 [Full Changelog](https://github.com/hairyhenderson/gomplate/compare/v2.1.0...v2.2.0)
 
@@ -22,7 +57,7 @@
 - Using Go 1.9.x now - go test ignores vendor on its own now [\#228](https://github.com/hairyhenderson/gomplate/pull/228) ([hairyhenderson](https://github.com/hairyhenderson))
 - Stabilizing integration tests a bit [\#221](https://github.com/hairyhenderson/gomplate/pull/221) ([hairyhenderson](https://github.com/hairyhenderson))
 - Don't panic on template errors [\#219](https://github.com/hairyhenderson/gomplate/pull/219) ([hairyhenderson](https://github.com/hairyhenderson))
- 
+
 ## [v2.1.0](https://github.com/hairyhenderson/gomplate/tree/v2.1.0) (2017-10-14)
 [Full Changelog](https://github.com/hairyhenderson/gomplate/compare/v2.0.1...v2.1.0)
 
