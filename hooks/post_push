@@ -1,4 +1,5 @@
 #!/bin/bash
+set -exuo pipefail
 
 export DOCKER_REPO=${DOCKER_REPO:-hairyhenderson/gomplate}
 export DOCKER_TAG=${DOCKER_TAG:-latest}
