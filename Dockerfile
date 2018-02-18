@@ -1,4 +1,4 @@
-FROM golang:1.8-alpine AS build
+FROM golang:1.10-alpine AS build
 
 RUN mkdir -p /go/src/github.com/hairyhenderson/gomplate
 WORKDIR /go/src/github.com/hairyhenderson/gomplate
