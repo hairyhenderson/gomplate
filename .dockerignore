@@ -2,3 +2,5 @@ Dockerfile
 .vscode
 *.md
 bin/
+*.cid
+*.iid

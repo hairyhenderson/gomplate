@@ -4,6 +4,9 @@ set -exuo pipefail
 export DOCKER_REPO=${DOCKER_REPO:-hairyhenderson/gomplate}
 export DOCKER_TAG=${DOCKER_TAG:-latest}
 export IMAGE_NAME=${IMAGE_NAME:-${DOCKER_REPO}:${DOCKER_TAG}}
+
+docker push ${DOCKER_REPO}:artifacts
+
 if [ "$DOCKER_TAG" == "latest" ]; then
   export SLIM_TAG="slim"
 else
