@@ -20,7 +20,7 @@ RUN curl -fsSL -o /tmp/upx.tar.xz https://github.com/upx/upx/releases/download/v
 COPY --from=build /go/src/github.com/hairyhenderson/gomplate/bin/gomplate /gomplate
 RUN /tmp/upx --lzma /gomplate -o /gomplate-slim
 
-FROM alpine:3.6 AS gomplate
+FROM scratch AS gomplate
 
 ARG BUILD_DATE
 ARG VCS_REF
@@ -36,7 +36,7 @@ ENTRYPOINT [ "/gomplate" ]
 
 CMD [ "--help" ]
 
-FROM alpine:3.6 AS gomplate-slim
+FROM scratch AS gomplate-slim
 
 ARG BUILD_DATE
 ARG VCS_REF
