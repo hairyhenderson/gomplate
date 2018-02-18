@@ -30,7 +30,7 @@ define gocross-tool
 endef
 
 define compress
-	upx $(PREFIX)/bin/$(PKG_NAME)_$(1)-$(2)$(call extension,$(1)) \
+	upx --lzma $(PREFIX)/bin/$(PKG_NAME)_$(1)-$(2)$(call extension,$(1)) \
 	 -o $(PREFIX)/bin/$(PKG_NAME)_$(1)-$(2)-slim$(call extension,$(1))
 endef
 
@@ -49,7 +49,7 @@ compress-all:
 	$(call compress,windows,amd64)
 
 compress: build
-	@upx $(PREFIX)/bin/$(PKG_NAME)$(call extension,$(GOOS)) \
+	@upx --lzma $(PREFIX)/bin/$(PKG_NAME)$(call extension,$(GOOS)) \
 		-o $(PREFIX)/bin/$(PKG_NAME)-slim$(call extension,$(GOOS))
 
 build-release: clean build-x compress-all
