@@ -6,6 +6,7 @@ import (
 	"log"
 	"net"
 	"net/http"
+	"time"
 )
 
 // Req -
@@ -44,7 +45,10 @@ func rootHandler(w http.ResponseWriter, r *http.Request) {
 
 func quitHandler(l net.Listener) func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
-		l.Close()
 		w.WriteHeader(http.StatusNoContent)
+		go func() {
+			time.Sleep(500 * time.Millisecond)
+			l.Close()
+		}()
 	}
 }
