@@ -107,7 +107,8 @@ test-integration: build build-mirror build-meta build-aws
 	@test/integration/test.sh
 
 gen-changelog:
-	github_changelog_generator --no-filter-by-milestone --exclude-labels duplicate,question,invalid,wontfix,admin
+	docker run -it -v $(pwd):/app --workdir /app -e CHANGELOG_GITHUB_TOKEN hairyhenderson/github_changelog_generator \
+		github_changelog_generator --no-filter-by-milestone --exclude-labels duplicate,question,invalid,wontfix,admin
 
 docs/themes/hugo-material-docs:
 	git clone https://github.com/digitalcraftsman/hugo-material-docs.git $@
