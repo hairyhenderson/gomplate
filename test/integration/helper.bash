@@ -28,6 +28,7 @@ function __gomplate_stdin () {
 
 function start_mirror_svc () {
   bin/mirror &
+  wait_for_url http://127.0.0.1:8080/
 }
 
 function stop_mirror_svc () {
@@ -36,6 +37,7 @@ function stop_mirror_svc () {
 
 function start_meta_svc () {
   bin/meta &> /tmp/meta.log &
+  wait_for_url http://127.0.0.1:8081/
 }
 
 function stop_meta_svc () {
@@ -44,6 +46,7 @@ function stop_meta_svc () {
 
 function start_aws_svc () {
   bin/aws &
+  wait_for_url http://127.0.0.1:8082/
 }
 
 function stop_aws_svc () {
