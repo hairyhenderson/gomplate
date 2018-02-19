@@ -54,7 +54,8 @@ $(PREFIX)/bin/$(PKG_NAME)_%: $(shell find $(PREFIX) -type f -name '*.go')
 	GOOS=$(shell echo $* | cut -f1 -d-) GOARCH=$(shell echo $* | cut -f2 -d- | cut -f1 -d.) CGO_ENABLED=0 \
 		$(GO) build \
 			-ldflags "-w -s $(COMMIT_FLAG) $(VERSION_FLAG)" \
-			-o $@
+			-o $@ \
+			./cmd/gomplate
 
 $(PREFIX)/bin/$(PKG_NAME)$(call extension,$(GOOS)): $(PREFIX)/bin/$(PKG_NAME)_$(GOOS)-$(GOARCH)$(call extension,$(GOOS))
 	cp $< $@

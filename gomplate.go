@@ -1,4 +1,4 @@
-package main
+package gomplate
 
 import (
 	"io"
@@ -7,16 +7,33 @@ import (
 	"github.com/hairyhenderson/gomplate/data"
 )
 
-// Gomplate -
-type Gomplate struct {
+// Config - values necessary for rendering templates with gomplate.
+// Mainly for use by the CLI
+type Config struct {
+	Input       string
+	InputFiles  []string
+	InputDir    string
+	ExcludeGlob []string
+	OutputFiles []string
+	OutputDir   string
+
+	DataSources       []string
+	DataSourceHeaders []string
+
+	LDelim string
+	RDelim string
+}
+
+// gomplate -
+type gomplate struct {
 	funcMap    template.FuncMap
 	leftDelim  string
 	rightDelim string
 }
 
-// RunTemplate -
-func (g *Gomplate) RunTemplate(t *tplate) error {
-	context := &Context{}
+// runTemplate -
+func (g *gomplate) runTemplate(t *tplate) error {
+	context := &context{}
 	tmpl, err := t.toGoTemplate(g)
 	if err != nil {
 		return err
@@ -31,28 +48,33 @@ func (g *Gomplate) RunTemplate(t *tplate) error {
 	return err
 }
 
-// NewGomplate -
-func NewGomplate(d *data.Data, leftDelim, rightDelim string) *Gomplate {
-	return &Gomplate{
+// newGomplate -
+func newGomplate(d *data.Data, leftDelim, rightDelim string) *gomplate {
+	return &gomplate{
 		leftDelim:  leftDelim,
 		rightDelim: rightDelim,
 		funcMap:    initFuncs(d),
 	}
 }
 
-func runTemplate(o *GomplateOpts) error {
+// RunTemplates - run all gomplate templates specified by the given configuration
+func RunTemplates(o *Config) error {
 	defer runCleanupHooks()
-	d := data.NewData(o.dataSources, o.dataSourceHeaders)
+	d := data.NewData(o.DataSources, o.DataSourceHeaders)
 	addCleanupHook(d.Cleanup)
 
-	g := NewGomplate(d, o.lDelim, o.rDelim)
+	g := newGomplate(d, o.LDelim, o.RDelim)
 
+	return g.runTemplates(o)
+}
+
+func (g *gomplate) runTemplates(o *Config) error {
 	tmpl, err := gatherTemplates(o)
 	if err != nil {
 		return err
 	}
 	for _, t := range tmpl {
-		if err := g.RunTemplate(t); err != nil {
+		if err := g.runTemplate(t); err != nil {
 			return err
 		}
 	}

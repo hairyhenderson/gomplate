@@ -1,4 +1,4 @@
-package main
+package gomplate
 
 import (
 	"os"
@@ -8,13 +8,13 @@ import (
 )
 
 func TestEnvMapifiesEnvironment(t *testing.T) {
-	c := &Context{}
+	c := &context{}
 	env := c.Env()
 	assert.Equal(t, env["USER"], os.Getenv("USER"))
 }
 
 func TestEnvGetsUpdatedEnvironment(t *testing.T) {
-	c := &Context{}
+	c := &context{}
 	assert.Empty(t, c.Env()["FOO"])
 	assert.NoError(t, os.Setenv("FOO", "foo"))
 	assert.Equal(t, c.Env()["FOO"], "foo")
