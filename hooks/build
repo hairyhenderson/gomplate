@@ -10,6 +10,9 @@ export DOCKER_REPO=${DOCKER_REPO:-hairyhenderson/gomplate}
 export DOCKER_TAG=${DOCKER_TAG:-latest}
 export IMAGE_NAME=${IMAGE_NAME:-${DOCKER_REPO}:${DOCKER_TAG}}
 
+docker build --target artifacts \
+             -t ${DOCKER_REPO}:artifacts .
+
 echo "======== Building $IMAGE_NAME"
 docker build --build-arg BUILD_DATE \
              --build-arg VCS_REF \

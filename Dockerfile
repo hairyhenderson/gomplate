@@ -1,36 +1,36 @@
 FROM golang:1.10-alpine AS build
 
+RUN apk add --no-cache \
+    make \
+    git \
+    upx
+
 RUN mkdir -p /go/src/github.com/hairyhenderson/gomplate
 WORKDIR /go/src/github.com/hairyhenderson/gomplate
 COPY . /go/src/github.com/hairyhenderson/gomplate
 
-RUN apk add --no-cache \
-    make \
-    git
+RUN make build-x compress-all
 
-RUN make build
+FROM scratch AS artifacts
 
-FROM debian:jessie AS compress
+COPY --from=build /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
+COPY --from=build /go/src/github.com/hairyhenderson/gomplate/bin/* /bin/
 
-RUN apt-get update -qq
-RUN DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -yq curl xz-utils ca-certificates
-RUN curl -fsSL -o /tmp/upx.tar.xz https://github.com/upx/upx/releases/download/v3.94/upx-3.94-amd64_linux.tar.xz \
-  && tar Jxv -C /tmp --strip-components=1 -f /tmp/upx.tar.xz
-
-COPY --from=build /go/src/github.com/hairyhenderson/gomplate/bin/gomplate /gomplate
-RUN /tmp/upx --lzma /gomplate -o /gomplate-slim
+CMD [ "/bin/gomplate_linux-amd64" ]
 
 FROM scratch AS gomplate
 
 ARG BUILD_DATE
 ARG VCS_REF
+ARG OS=linux
+ARG ARCH=amd64
 
 LABEL org.label-schema.build-date=$BUILD_DATE \
       org.label-schema.vcs-ref=$VCS_REF \
       org.label-schema.vcs-url="https://github.com/hairyhenderson/gomplate"
 
-COPY --from=build /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt 
-COPY --from=build /go/src/github.com/hairyhenderson/gomplate/bin/gomplate /gomplate
+COPY --from=artifacts /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
+COPY --from=artifacts /gomplate_${OS}-${ARCH} /gomplate
 
 ENTRYPOINT [ "/gomplate" ]
 
@@ -40,13 +40,15 @@ FROM scratch AS gomplate-slim
 
 ARG BUILD_DATE
 ARG VCS_REF
+ARG OS=linux
+ARG ARCH=amd64
 
 LABEL org.label-schema.build-date=$BUILD_DATE \
       org.label-schema.vcs-ref=$VCS_REF \
       org.label-schema.vcs-url="https://github.com/hairyhenderson/gomplate"
 
-COPY --from=build /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt 
-COPY --from=compress /gomplate-slim /gomplate
+COPY --from=artifacts /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
+COPY --from=artifacts /gomplate_${OS}-${ARCH}-slim /gomplate
 
 ENTRYPOINT [ "/gomplate" ]
 
