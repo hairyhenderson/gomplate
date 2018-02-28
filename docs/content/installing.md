@@ -39,7 +39,7 @@ must be mounted and any environment variables to be used must be passed through:
 
 ```console
 $ echo 'My voice is my {{.Env.THING}}. {{(datasource "vault").value}}' \
-  | docker run -e THING=passport -v /home/me/.vault-token:/root/.vault-token hairyhenderson/gomplate -d vault=vault:///secret/sneakers -f -
+  | docker run -i -e THING=passport -v /home/me/.vault-token:/root/.vault-token hairyhenderson/gomplate -d vault=vault:///secret/sneakers -f -
 My voice is my passport. Verify me.
 ```
 
