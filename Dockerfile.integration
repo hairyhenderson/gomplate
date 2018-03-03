@@ -1,0 +1,14 @@
+FROM golang:1.10-alpine
+
+COPY --from=vault:0.9.5 /bin/vault /bin/vault
+COPY --from=consul:1.0.6 /bin/consul /bin/consul
+
+RUN apk add --no-cache make tzdata
+
+WORKDIR /go/src/github.com/hairyhenderson/gomplate/
+COPY vendor ./vendor
+COPY test/integration ./test/integration
+COPY Makefile ./Makefile
+COPY bin/gomplate_linux-amd64 ./bin/gomplate
+
+CMD ["make", "integration"]

@@ -13,7 +13,7 @@ jobs:
           name: make test
           command: make test | go-junit-report > $CIRCLE_TEST_REPORTS/report.xml
       - run: make lint
-      - run: make test-integration
+      - run: make integration
       - store_artifacts:
           path: bin
           destination: binaries

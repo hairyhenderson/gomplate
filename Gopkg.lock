@@ -93,6 +93,30 @@
   revision = "553a641470496b2327abcac10b36396bd98e45c9"
 
 [[projects]]
+  name = "github.com/google/go-cmp"
+  packages = [
+    "cmp",
+    "cmp/internal/diff",
+    "cmp/internal/function",
+    "cmp/internal/value"
+  ]
+  revision = "8099a9787ce5dc5984ed879a3bda47dc730a8e97"
+  version = "v0.1.0"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/gotestyourself/gotestyourself"
+  packages = [
+    "assert",
+    "assert/cmp",
+    "fs",
+    "icmd",
+    "internal/format",
+    "internal/source"
+  ]
+  revision = "a5aa18bffc0b24e6e50a798d24b53fe6d9ad2e45"
+
+[[projects]]
   branch = "support-map-interface-keys"
   name = "github.com/hairyhenderson/toml"
   packages = ["."]
@@ -185,6 +209,12 @@
   revision = "b4575eea38cca1123ec2dc90c26529b5c5acfcff"
 
 [[projects]]
+  name = "github.com/pkg/errors"
+  packages = ["."]
+  revision = "645ef00459ed84a119197bfb8d8205042c6df63d"
+  version = "v0.8.0"
+
+[[projects]]
   name = "github.com/pmezard/go-difflib"
   packages = ["difflib"]
   revision = "792786c7400a136282c1664665ae0a8db921c6c2"
@@ -274,6 +304,12 @@
   revision = "e19ae1496984b1c655b8044a65c0300a3c878dd3"
 
 [[projects]]
+  branch = "v1"
+  name = "gopkg.in/check.v1"
+  packages = ["."]
+  revision = "20d25e2804050c1cd24a7eea1e7a6447dd0e74ec"
+
+[[projects]]
   branch = "v2"
   name = "gopkg.in/yaml.v2"
   packages = ["."]
@@ -282,6 +318,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "fe2864704d9ac4ba9339c88333baf3a21188f1db96a066108da07ca67274feb8"
+  inputs-digest = "95dd9c909caf916514936452806a3a69cb3d238460f69b05a66cbd3ca7dec825"
   solver-name = "gps-cdcl"
   solver-version = 1

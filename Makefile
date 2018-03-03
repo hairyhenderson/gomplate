@@ -20,10 +20,6 @@ compressed-platforms := linux-amd64-slim linux-arm-slim linux-arm64-slim darwin-
 clean:
 	rm -Rf $(PREFIX)/bin/*
 	rm -f $(PREFIX)/*.[ci]id
-	rm -f $(PREFIX)/test/integration/gomplate
-	rm -f $(PREFIX)/test/integration/mirror
-	rm -f $(PREFIX)/test/integration/meta
-	rm -f $(PREFIX)/test/integration/aws
 
 build-x: $(patsubst %,$(PREFIX)/bin/$(PKG_NAME)_%,$(platforms))
 
@@ -54,7 +50,7 @@ build-release: artifacts.cid
 
 docker-images: gomplate.iid gomplate-slim.iid
 
-$(PREFIX)/bin/$(PKG_NAME)_%: $(shell find $(PREFIX) -type f -name '*.go' -not -path "$(PREFIX)/test/*")
+$(PREFIX)/bin/$(PKG_NAME)_%: $(shell find $(PREFIX) -type f -name '*.go')
 	GOOS=$(shell echo $* | cut -f1 -d-) GOARCH=$(shell echo $* | cut -f2 -d- | cut -f1 -d.) CGO_ENABLED=0 \
 		$(GO) build \
 			-ldflags "-w -s $(COMMIT_FLAG) $(VERSION_FLAG)" \
@@ -63,41 +59,20 @@ $(PREFIX)/bin/$(PKG_NAME)_%: $(shell find $(PREFIX) -type f -name '*.go' -not -p
 $(PREFIX)/bin/$(PKG_NAME)$(call extension,$(GOOS)): $(PREFIX)/bin/$(PKG_NAME)_$(GOOS)-$(GOARCH)$(call extension,$(GOOS))
 	cp $< $@
 
-$(PREFIX)/test/integration/mirror$(call extension,$(GOOS)): $(shell find $(PREFIX)/test/integration/mirrorsvc -type f -name '*.go')
-	CGO_ENABLED=0 \
-		$(GO) build -ldflags "-w -s $(COMMIT_FLAG) $(VERSION_FLAG)" -o $@ $(PREFIX)/test/integration/mirrorsvc
-
-$(PREFIX)/test/integration/meta$(call extension,$(GOOS)): $(shell find $(PREFIX)/test/integration/metasvc -type f -name '*.go')
-	CGO_ENABLED=0 \
-		$(GO) build -ldflags "-w -s $(COMMIT_FLAG) $(VERSION_FLAG)" -o $@ $(PREFIX)/test/integration/metasvc
-
-$(PREFIX)/test/integration/aws$(call extension,$(GOOS)): $(shell find $(PREFIX)/test/integration/awssvc -type f -name '*.go')
-	CGO_ENABLED=0 \
-		$(GO) build -ldflags "-w -s $(COMMIT_FLAG) $(VERSION_FLAG)" -o $@ $(PREFIX)/test/integration/awssvc
-
 build: $(PREFIX)/bin/$(PKG_NAME)$(call extension,$(GOOS))
-
-build-mirror: $(PREFIX)/test/integration/mirror$(call extension,$(GOOS))
-
-build-meta: $(PREFIX)/test/integration/meta$(call extension,$(GOOS))
-
-build-aws: $(PREFIX)/test/integration/aws$(call extension,$(GOOS))
 
 test:
 	$(GO) test -v -race ./...
 
-build-integration-image: $(PREFIX)/bin/$(PKG_NAME)_linux-amd64$(call extension,$(GOOS)) $(PREFIX)/bin/mirror_linux-amd64$(call extension,$(GOOS)) $(PREFIX)/bin/meta_linux-amd64$(call extension,$(GOOS)) $(PREFIX)/bin/aws_linux-amd64$(call extension,$(GOOS))
-	cp $(PREFIX)/bin/$(PKG_NAME)_linux-amd64 test/integration/gomplate
-	cp $(PREFIX)/bin/mirror_linux-amd64 test/integration/mirror
-	cp $(PREFIX)/bin/meta_linux-amd64 test/integration/meta
-	cp $(PREFIX)/bin/aws_linux-amd64 test/integration/aws
-	docker build -f test/integration/Dockerfile -t gomplate-test test/integration/
+integration: ./bin/gomplate
+	$(GO) test -v -tags=integration \
+		./test/integration -check.v
 
-test-integration-docker: build-integration-image
+integration.iid: Dockerfile.integration $(PREFIX)/bin/$(PKG_NAME)_linux-amd64$(call extension,$(GOOS))
+	docker build -f $< --iidfile $@ -t gomplate-test .
+
+test-integration-docker: integration.iid
 	docker run -it --rm gomplate-test
-
-test-integration: build build-mirror build-meta build-aws
-	@test/integration/test.sh
 
 gen-changelog:
 	docker run -it -v $(pwd):/app --workdir /app -e CHANGELOG_GITHUB_TOKEN hairyhenderson/github_changelog_generator \
