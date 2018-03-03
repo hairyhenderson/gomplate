@@ -6,7 +6,3 @@
 [[constraint]]
   name = "github.com/hairyhenderson/toml"
   branch = "support-map-interface-keys"
-
-[[constraint]]
-  name = "gopkg.in/yaml.v2"
-  branch = "v2"

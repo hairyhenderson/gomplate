@@ -237,3 +237,74 @@ func isNil(obj interface{}, msgFunc func(reflect.Value) string) Comparison {
 		return ResultFailure(fmt.Sprintf("%v (type %s) can not be nil", value, value.Type()))
 	}
 }
+
+// ErrorType succeeds if err is not nil and is of the expected type.
+//
+// Expected can be one of:
+// a func(error) bool which returns true if the error is the expected type,
+// an instance of a struct of the expected type,
+// a pointer to an interface the error is expected to implement,
+// a reflect.Type of the expected struct or interface.
+func ErrorType(err error, expected interface{}) Comparison {
+	return func() Result {
+		switch expectedType := expected.(type) {
+		case func(error) bool:
+			return cmpErrorTypeFunc(err, expectedType)
+		case reflect.Type:
+			if expectedType.Kind() == reflect.Interface {
+				return cmpErrorTypeImplementsType(err, expectedType)
+			}
+			return cmpErrorTypeEqualType(err, expectedType)
+		case nil:
+			return ResultFailure(fmt.Sprintf("invalid type for expected: nil"))
+		}
+
+		expectedType := reflect.TypeOf(expected)
+		switch {
+		case expectedType.Kind() == reflect.Struct:
+			return cmpErrorTypeEqualType(err, expectedType)
+		case isPtrToInterface(expectedType):
+			return cmpErrorTypeImplementsType(err, expectedType.Elem())
+		}
+		return ResultFailure(fmt.Sprintf("invalid type for expected: %T", expected))
+	}
+}
+
+func cmpErrorTypeFunc(err error, f func(error) bool) Result {
+	if f(err) {
+		return ResultSuccess
+	}
+	actual := "nil"
+	if err != nil {
+		actual = fmt.Sprintf("%s (%T)", err, err)
+	}
+	return ResultFailureTemplate(`error is {{ .Data.actual }}
+		{{- with callArg 1 }}, not {{ formatNode . }}{{end -}}`,
+		map[string]interface{}{"actual": actual})
+}
+
+func cmpErrorTypeEqualType(err error, expectedType reflect.Type) Result {
+	if err == nil {
+		return ResultFailure(fmt.Sprintf("error is nil, not %s", expectedType))
+	}
+	errValue := reflect.ValueOf(err)
+	if errValue.Type() == expectedType {
+		return ResultSuccess
+	}
+	return ResultFailure(fmt.Sprintf("error is %s (%T), not %s", err, err, expectedType))
+}
+
+func cmpErrorTypeImplementsType(err error, expectedType reflect.Type) Result {
+	if err == nil {
+		return ResultFailure(fmt.Sprintf("error is nil, not %s", expectedType))
+	}
+	errValue := reflect.ValueOf(err)
+	if errValue.Type().Implements(expectedType) {
+		return ResultSuccess
+	}
+	return ResultFailure(fmt.Sprintf("error is %s (%T), not %s", err, err, expectedType))
+}
+
+func isPtrToInterface(typ reflect.Type) bool {
+	return typ.Kind() == reflect.Ptr && typ.Elem().Kind() == reflect.Interface
+}

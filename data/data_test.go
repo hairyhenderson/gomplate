@@ -88,7 +88,7 @@ func TestToJSONPretty(t *testing.T) {
 }
 
 func TestToYAML(t *testing.T) {
-	expected := `d: 2006-01-02T15:04:05.999999999-07:00
+	expected := `d: !!timestamp 2006-01-02T15:04:05.999999999-07:00
 foo: bar
 ? |-
   multi
