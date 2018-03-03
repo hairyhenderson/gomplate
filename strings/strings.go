@@ -4,6 +4,9 @@ import "strings"
 
 // Indent - indent each line of the string with the given indent string
 func Indent(width int, indent, s string) string {
+	if width == 0 {
+		return s
+	}
 	if width > 1 {
 		indent = strings.Repeat(indent, width)
 	}
