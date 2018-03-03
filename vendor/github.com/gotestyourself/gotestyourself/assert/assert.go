@@ -34,7 +34,7 @@ The example below shows assert used with some common types.
 	    assert.NilError(t, closer.Close())
 	    assert.Assert(t, is.Error(err, "the exact error message"))
 	    assert.Assert(t, is.ErrorContains(err, "includes this"))
-	    assert.Assert(t, os.IsNotExist(err), "got %+v", err)
+	    assert.Assert(t, is.ErrorType(err, os.IsNotExist))
 
 	    // complex types
 	    assert.DeepEqual(t, result, myStruct{Name: "title"})
@@ -51,17 +51,7 @@ Comparisons
 
 https://godoc.org/github.com/gotestyourself/gotestyourself/assert/cmp provides
 many common comparisons. Additional comparisons can be written to compare
-values in other ways.
-
-Below is an example of a custom comparison using a regex pattern:
-
-	func RegexP(value string, pattern string) func() (bool, string) {
-	    return func() (bool, string) {
-	        re := regexp.MustCompile(pattern)
-	        msg := fmt.Sprintf("%q did not match pattern %q", value, pattern)
-	        return re.MatchString(value), msg
-	    }
-	}
+values in other ways. See the example Assert (CustomComparison).
 
 */
 package assert
