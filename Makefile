@@ -75,7 +75,7 @@ test-integration-docker: integration.iid
 	docker run -it --rm gomplate-test
 
 gen-changelog:
-	docker run -it -v $(pwd):/app --workdir /app -e CHANGELOG_GITHUB_TOKEN hairyhenderson/github_changelog_generator \
+	docker run -it -v $(shell pwd):/app --workdir /app -e CHANGELOG_GITHUB_TOKEN hairyhenderson/github_changelog_generator \
 		github_changelog_generator --no-filter-by-milestone --exclude-labels duplicate,question,invalid,wontfix,admin
 
 docs/themes/hugo-material-docs:

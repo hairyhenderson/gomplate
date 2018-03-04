@@ -1,5 +1,42 @@
 # Change Log
 
+## [Unreleased](https://github.com/hairyhenderson/gomplate/tree/HEAD)
+
+[Full Changelog](https://github.com/hairyhenderson/gomplate/compare/v2.4.0...HEAD)
+
+**Implemented enhancements:**
+
+- Add `go-sockaddr` functions [\#145](https://github.com/hairyhenderson/gomplate/issues/145)
+
+## [v2.4.0](https://github.com/hairyhenderson/gomplate/tree/v2.4.0) (2018-03-04)
+[Full Changelog](https://github.com/hairyhenderson/gomplate/compare/v2.3.0...v2.4.0)
+
+**Implemented enhancements:**
+
+- Support setting Vault server URL in datasource URL [\#243](https://github.com/hairyhenderson/gomplate/issues/243)
+- Exclude option support [\#218](https://github.com/hairyhenderson/gomplate/issues/218)
+- Adding sockaddr namespace [\#271](https://github.com/hairyhenderson/gomplate/pull/271) ([hairyhenderson](https://github.com/hairyhenderson))
+- Adding file namespace [\#270](https://github.com/hairyhenderson/gomplate/pull/270) ([hairyhenderson](https://github.com/hairyhenderson))
+
+**Fixed bugs:**
+
+- Solaris build is broken 💥 [\#255](https://github.com/hairyhenderson/gomplate/issues/255)
+- strings.Indent should not indent when width is 0 [\#268](https://github.com/hairyhenderson/gomplate/pull/268) ([keitwb](https://github.com/keitwb))
+- Attempting to fix intermittent Integration Test failure [\#260](https://github.com/hairyhenderson/gomplate/pull/260) ([hairyhenderson](https://github.com/hairyhenderson))
+
+**Closed issues:**
+
+- docker run hairyhenderson/gomplate --version doesn't print version [\#266](https://github.com/hairyhenderson/gomplate/issues/266)
+
+**Merged pull requests:**
+
+- Log test output in CI [\#272](https://github.com/hairyhenderson/gomplate/pull/272) ([hairyhenderson](https://github.com/hairyhenderson))
+- Updating vendored dependencies [\#269](https://github.com/hairyhenderson/gomplate/pull/269) ([hairyhenderson](https://github.com/hairyhenderson))
+- Fix the example command in 'use with docker' section [\#267](https://github.com/hairyhenderson/gomplate/pull/267) ([yizhiheng](https://github.com/yizhiheng))
+- Migrate from bats to pure Go for integration tests [\#265](https://github.com/hairyhenderson/gomplate/pull/265) ([hairyhenderson](https://github.com/hairyhenderson))
+- Rebasing Docker images on `scratch` instead of alpine [\#261](https://github.com/hairyhenderson/gomplate/pull/261) ([hairyhenderson](https://github.com/hairyhenderson))
+- Building with Go 1.10 [\#258](https://github.com/hairyhenderson/gomplate/pull/258) ([hairyhenderson](https://github.com/hairyhenderson))
+
 ## [v2.3.0](https://github.com/hairyhenderson/gomplate/tree/v2.3.0) (2018-02-12)
 [Full Changelog](https://github.com/hairyhenderson/gomplate/compare/v2.2.0...v2.3.0)
 
