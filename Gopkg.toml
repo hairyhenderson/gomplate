@@ -6,3 +6,7 @@
 [[constraint]]
   name = "github.com/hairyhenderson/toml"
   branch = "support-map-interface-keys"
+
+[[constraint]]
+  branch = "master"
+  name = "github.com/hashicorp/go-sockaddr"
