@@ -155,6 +155,15 @@
 
 [[projects]]
   branch = "master"
+  name = "github.com/hashicorp/go-sockaddr"
+  packages = [
+    ".",
+    "template"
+  ]
+  revision = "7165ee14aff120ee3642aa2bcf2dea8eebef29c3"
+
+[[projects]]
+  branch = "master"
   name = "github.com/hashicorp/hcl"
   packages = [
     ".",
@@ -326,6 +335,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "149aecc123ec6f0be1528d26e722e887e18a8b34bdf70b9035323f9763883827"
+  inputs-digest = "08cccb4ec728c57e26a057044c9ccd3c64711666ef50ee5304a1df5606706f82"
   solver-name = "gps-cdcl"
   solver-version = 1
