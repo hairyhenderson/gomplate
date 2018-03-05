@@ -30,7 +30,7 @@ LABEL org.label-schema.build-date=$BUILD_DATE \
       org.label-schema.vcs-url="https://github.com/hairyhenderson/gomplate"
 
 COPY --from=artifacts /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
-COPY --from=artifacts /gomplate_${OS}-${ARCH} /gomplate
+COPY --from=artifacts /bin/gomplate_${OS}-${ARCH} /gomplate
 
 ENTRYPOINT [ "/gomplate" ]
 
@@ -48,7 +48,7 @@ LABEL org.label-schema.build-date=$BUILD_DATE \
       org.label-schema.vcs-url="https://github.com/hairyhenderson/gomplate"
 
 COPY --from=artifacts /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
-COPY --from=artifacts /gomplate_${OS}-${ARCH}-slim /gomplate
+COPY --from=artifacts /bin/gomplate_${OS}-${ARCH}-slim /gomplate
 
 ENTRYPOINT [ "/gomplate" ]
 
