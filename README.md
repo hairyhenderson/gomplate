@@ -30,13 +30,6 @@ Gomplate is an alternative that will let you process templates which also includ
 
 Read more documentation at [gomplate.hairyhenderson.ca][docs-url]!
 
-<!-- TOC depthFrom:2 depthTo:4 withLinks:1 updateOnSave:1 orderedList:0 -->
-
-- [Releasing](#releasing)
-- [License](#license)
-
-<!-- /TOC -->
-
 _Please report any bugs found in the [issue tracker](https://github.com/hairyhenderson/gomplate/issues/)._
 
 ## Releasing
@@ -51,7 +44,7 @@ Right now the release process is semi-automatic.
 
 [The MIT License](http://opensource.org/licenses/MIT)
 
-Copyright (c) 2016-2017 Dave Henderson
+Copyright (c) 2016-2018 Dave Henderson
 
 [circleci-image]: https://circleci.com/gh/hairyhenderson/gomplate/tree/master.svg?style=shield
 [circleci-url]: https://circleci.com/gh/hairyhenderson/gomplate/tree/master
