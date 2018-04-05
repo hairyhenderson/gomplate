@@ -2,6 +2,7 @@ package funcs
 
 import (
 	"os"
+	"path/filepath"
 	"sync"
 
 	"github.com/hairyhenderson/gomplate/file"
@@ -54,4 +55,9 @@ func (f *FileFuncs) IsDir(path string) bool {
 // ReadDir -
 func (f *FileFuncs) ReadDir(path string) ([]string, error) {
 	return file.ReadDir(path)
+}
+
+// Glob -
+func (f *FileFuncs) Glob(pattern string) ([]string, error) {
+	return filepath.Glob(pattern)
 }
