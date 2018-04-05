@@ -57,19 +57,15 @@ func (f *FileFuncs) ReadDir(path string) ([]string, error) {
 	return file.ReadDir(path)
 }
 
-// Glob -
-func (f *FileFuncs) Glob(dir string) ([]string, error) {
+// FindFiles -
+func (f *FileFuncs) FindFiles(dir string) ([]string, error) {
 	fileList := make([]string, 0)
-	e := filepath.Walk(dir, func(path string, finfo os.FileInfo, err error) error {
-		if (!f.IsDir(path)) {
+	filepath.Walk(dir, func(path string, finfo os.FileInfo, err error) error {
+		if (f.Exists(path) && !f.IsDir(path)) {
 			fileList = append(fileList, path)
 		}
 		return err
 	})
-
-	if e != nil {
-		panic(e)
-	}
 
 	return fileList, nil
 }
