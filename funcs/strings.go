@@ -43,6 +43,7 @@ func AddStringFuncs(f map[string]interface{}) {
 	f["split"] = strings.Split
 	f["splitN"] = strings.SplitN
 	f["trim"] = strings.Trim
+	f["trimPrefix"] = strings.TrimPrefix
 }
 
 // StringFuncs -
