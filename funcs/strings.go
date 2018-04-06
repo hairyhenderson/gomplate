@@ -84,6 +84,11 @@ func (f *StringFuncs) Trim(cutset, s string) string {
 	return strings.Trim(s, cutset)
 }
 
+// Trim Prefix-
+func (f *StringFuncs) TrimPrefix(cutset, s string) string {
+	return strings.TrimPrefix(s, cutset)
+}
+
 // Title -
 func (f *StringFuncs) Title(s string) string {
 	return strings.Title(s)
