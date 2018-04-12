@@ -2,7 +2,6 @@ package funcs
 
 import (
 	"os"
-	"path/filepath"
 	"sync"
 
 	"github.com/hairyhenderson/gomplate/file"
@@ -57,15 +56,15 @@ func (f *FileFuncs) ReadDir(path string) ([]string, error) {
 	return file.ReadDir(path)
 }
 
-// FindFiles -
-func (f *FileFuncs) FindFiles(dir string) ([]string, error) {
-	fileList := make([]string, 0)
-	filepath.Walk(dir, func(path string, finfo os.FileInfo, err error) error {
-		if (f.Exists(path) && !f.IsDir(path)) {
-			fileList = append(fileList, path)
+// Walk -
+func (f *FileFuncs) Walk(path string) ([]string, error) {
+	files := make([]string, 0)
+	afero.Walk(f.fs, path, func(subpath string, finfo os.FileInfo, err error) error {
+		if err != nil {
+			return err
 		}
-		return err
+		files = append(files, subpath)
+		return nil
 	})
-
-	return fileList, nil
+	return files, nil
 }
