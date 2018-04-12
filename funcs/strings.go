@@ -43,7 +43,6 @@ func AddStringFuncs(f map[string]interface{}) {
 	f["split"] = strings.Split
 	f["splitN"] = strings.SplitN
 	f["trim"] = strings.Trim
-	f["trimPrefix"] = strings.TrimPrefix
 }
 
 // StringFuncs -
@@ -82,11 +81,6 @@ func (f *StringFuncs) SplitN(sep string, n int, s string) []string {
 // Trim -
 func (f *StringFuncs) Trim(cutset, s string) string {
 	return strings.Trim(s, cutset)
-}
-
-// Trim Prefix-
-func (f *StringFuncs) TrimPrefix(cutset, s string) string {
-	return strings.TrimPrefix(s, cutset)
 }
 
 // Title -
