@@ -36,6 +36,34 @@ func TestGetenvFile(t *testing.T) {
 	assert.Equal(t, "bar", GetenvVFS(fs, "FOO", "bar"))
 }
 
+func TestExpandEnv(t *testing.T) {
+	assert.Empty(t, ExpandEnv("${FOOBARBAZ}"))
+	assert.Equal(t, os.Getenv("USER"), ExpandEnv("$USER"))
+	assert.Equal(t, "something", ExpandEnv("something$BLAHBLAHBLAH"))
+	assert.Equal(t, os.Getenv("USER")+": "+os.Getenv("HOME"),
+		ExpandEnv("$USER: ${HOME}"))
+}
+
+func TestExpandEnvFile(t *testing.T) {
+	var fs vfs.Filesystem
+	fs = memfs.Create()
+	_ = fs.Mkdir("/tmp", 0777)
+	f, _ := vfs.Create(fs, "/tmp/foo")
+	_, _ = f.Write([]byte("foo"))
+
+	defer os.Unsetenv("FOO_FILE")
+	os.Setenv("FOO_FILE", "/tmp/foo")
+	assert.Equal(t, "foo is foo", expandEnvVFS(fs, "foo is $FOO"))
+
+	os.Setenv("FOO_FILE", "/tmp/missing")
+	assert.Equal(t, "empty", expandEnvVFS(fs, "${FOO}empty"))
+
+	f, _ = vfs.Create(fs, "/tmp/unreadable")
+	fs = WriteOnly(fs)
+	os.Setenv("FOO_FILE", "/tmp/unreadable")
+	assert.Equal(t, "", expandEnvVFS(fs, "${FOO}"))
+}
+
 // Maybe extract this into a separate package sometime...
 // WriteOnly - represents a filesystem that's writeable, but read operations fail
 func WriteOnly(fs vfs.Filesystem) vfs.Filesystem {

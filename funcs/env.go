@@ -32,3 +32,8 @@ type EnvFuncs struct{}
 func (f *EnvFuncs) Getenv(key string, def ...string) string {
 	return env.Getenv(key, def...)
 }
+
+// ExpandEnv -
+func (f *EnvFuncs) ExpandEnv(s string) string {
+	return env.ExpandEnv(s)
+}
