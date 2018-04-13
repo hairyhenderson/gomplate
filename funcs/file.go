@@ -55,3 +55,16 @@ func (f *FileFuncs) IsDir(path string) bool {
 func (f *FileFuncs) ReadDir(path string) ([]string, error) {
 	return file.ReadDir(path)
 }
+
+// Walk -
+func (f *FileFuncs) Walk(path string) ([]string, error) {
+	files := make([]string, 0)
+	afero.Walk(f.fs, path, func(subpath string, finfo os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+		files = append(files, subpath)
+		return nil
+	})
+	return files, nil
+}
