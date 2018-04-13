@@ -22,3 +22,10 @@ func TestIndent(t *testing.T) {
 	assert.Equal(t, "---foo\n---bar\n---baz", sf.Indent(3, "-", "foo\nbar\nbaz"))
 	assert.Equal(t, "   foo\n   bar\n   baz", sf.Indent(3, "foo\nbar\nbaz"))
 }
+
+func TestTrimPrefix(t *testing.T) {
+	sf := &StringFuncs{}
+
+	assert.Equal(t, "Bar",
+		sf.TrimPrefix("Foo", "FooBar"))
+}

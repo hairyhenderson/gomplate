@@ -16,6 +16,18 @@ func Getenv(key string, def ...string) string {
 	return GetenvVFS(vfs.OS(), key, def...)
 }
 
+// ExpandEnv - like os.ExpandEnv, except supports `_FILE` vars as well
+func ExpandEnv(s string) string {
+	return expandEnvVFS(vfs.OS(), s)
+}
+
+// expandEnvVFS -
+func expandEnvVFS(fs vfs.Filesystem, s string) string {
+	return os.Expand(s, func(s string) string {
+		return GetenvVFS(fs, s)
+	})
+}
+
 // GetenvVFS - a convenience function intended for internal use only!
 func GetenvVFS(fs vfs.Filesystem, key string, def ...string) string {
 	val := getenvFile(fs, key)

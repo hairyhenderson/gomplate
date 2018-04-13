@@ -26,6 +26,10 @@ func (s *EnvvarsSuite) TestNonExistantEnvVar(c *C) {
 		`{{ getenv "FOO" "foo" }}`)
 	result.Assert(c, icmd.Expected{ExitCode: 0, Out: "foo"})
 
+	result = icmd.RunCommand(GomplateBin, "-i",
+		`{{env.ExpandEnv "${BAR}foo"}}`)
+	result.Assert(c, icmd.Expected{ExitCode: 0, Out: "foo"})
+
 	result = icmd.RunCmd(icmd.Command(GomplateBin, "-i", `{{ getenv "FOO" "foo" }}`),
 		func(c *icmd.Cmd) {
 			c.Env = []string{"FOO="}
@@ -48,5 +52,9 @@ func (s *EnvvarsSuite) TestExistantEnvVar(c *C) {
 
 	result = icmd.RunCmd(icmd.Command(GomplateBin, "-i",
 		`{{ env.Getenv "FOO" }}`), setFoo)
+	result.Assert(c, expected)
+
+	result = icmd.RunCmd(icmd.Command(GomplateBin, "-i",
+		`{{env.ExpandEnv "${FOO}"}}`), setFoo)
 	result.Assert(c, expected)
 }
