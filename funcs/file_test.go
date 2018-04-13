@@ -1,6 +1,7 @@
 package funcs
 
 import (
+	"path/filepath"
 	"testing"
 
 	"github.com/spf13/afero"
@@ -37,12 +38,18 @@ func TestFileWalk(t *testing.T) {
 
 	_ = fs.Mkdir("/tmp", 0777)
 	_ = fs.Mkdir("/tmp/bar", 0777)
-	f, _ := fs.Create("/tmp/bar/baz")
+	_ = fs.Mkdir("/tmp/bar/baz", 0777)
+	f, _ := fs.Create("/tmp/bar/baz/foo")
 	_, _ = f.Write([]byte("foo"))
 
-	actual, err := ff.Walk("/tmp")
+	expectedLists := [][]string{{"tmp", "bar" }, {"tmp", "bar", "baz"}, {"tmp", "bar", "baz", "foo"}}
+	expectedPaths := make([]string, 0)
+	for _, path := range expectedLists {
+		expectedPaths = append(expectedPaths, string(filepath.Separator) + filepath.Join(path...))
+	}
+
+	actualPaths, err := ff.Walk("/tmp/bar")
 
 	assert.NoError(t, err)
-
-	assert.Equal(t, []string{"/tmp", "/tmp/bar", "/tmp/bar/baz"}, actual)
+	assert.Equal(t, expectedPaths, actualPaths)
 }
