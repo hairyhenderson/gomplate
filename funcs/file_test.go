@@ -42,13 +42,13 @@ func TestFileWalk(t *testing.T) {
 	f, _ := fs.Create("/tmp/bar/baz/foo")
 	_, _ = f.Write([]byte("foo"))
 
-	expectedLists := [][]string{{"tmp", "bar" }, {"tmp", "bar", "baz"}, {"tmp", "bar", "baz", "foo"}}
+	expectedLists := [][]string{{"tmp"}, {"tmp", "bar" }, {"tmp", "bar", "baz"}, {"tmp", "bar", "baz", "foo"}}
 	expectedPaths := make([]string, 0)
 	for _, path := range expectedLists {
 		expectedPaths = append(expectedPaths, string(filepath.Separator) + filepath.Join(path...))
 	}
 
-	actualPaths, err := ff.Walk("/tmp/bar")
+	actualPaths, err := ff.Walk(string(filepath.Separator) + "tmp")
 
 	assert.NoError(t, err)
 	assert.Equal(t, expectedPaths, actualPaths)
