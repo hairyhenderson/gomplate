@@ -39,5 +39,35 @@ $ gomplate -i 'Your secret is {{getenv "SECRET"}}'
 Your secret is safe
 ```
 
+## `env.ExpandEnv`
+
+Exposes the [os.ExpandEnv](https://golang.org/pkg/os/#ExpandEnv) function.
+
+Replaces `${var}` or `$var` in the input string according to the values of the
+current environment variables. References to undefined variables are replaced by the empty string.
+
+Like [`env.Getenv`](#env-getenv), the `_FILE` variant of a variable is used.
+
+#### Example
+
+```console
+$ gomplate -i '{{env.ExpandEnv "Hello $USER"}}'
+Hello, hairyhenderson
+$ gomplate -i 'Hey, {{env.ExpandEnv "Hey, ${FIRSTNAME}!"}}'
+Hey, you!
+```
+
+```console
+$ echo "safe" > /tmp/mysecret
+$ export SECRET_FILE=/tmp/mysecret
+$ gomplate -i '{{env.ExpandEnv "Your secret is $SECRET"}}'
+Your secret is safe
+```
+
+```console
+$ gomplate -i '{{env.ExpandEnv (file.Read "foo")}}
+contents of file "foo"...
+```
+
 [12-factor]: https://12factor.net
 [Docker Secrets]: https://docs.docker.com/engine/swarm/secrets/#build-support-for-docker-secrets-into-your-images
