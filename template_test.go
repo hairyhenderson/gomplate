@@ -1,6 +1,6 @@
 // +build !windows
 
-package main
+package gomplate
 
 import (
 	"bytes"
@@ -153,30 +153,30 @@ func TestGatherTemplates(t *testing.T) {
 	afero.WriteFile(fs, "in/2", []byte("bar"), 0644)
 	afero.WriteFile(fs, "in/3", []byte("baz"), 0644)
 
-	templates, err := gatherTemplates(&GomplateOpts{})
+	templates, err := gatherTemplates(&Config{})
 	assert.NoError(t, err)
 	assert.Len(t, templates, 0)
 
-	templates, err = gatherTemplates(&GomplateOpts{
-		input: "foo",
+	templates, err = gatherTemplates(&Config{
+		Input: "foo",
 	})
 	assert.NoError(t, err)
 	assert.Len(t, templates, 1)
 	assert.Equal(t, "foo", templates[0].contents)
 	assert.Equal(t, stdout, templates[0].target)
 
-	templates, err = gatherTemplates(&GomplateOpts{
-		inputFiles:  []string{"foo"},
-		outputFiles: []string{"out"},
+	templates, err = gatherTemplates(&Config{
+		InputFiles:  []string{"foo"},
+		OutputFiles: []string{"out"},
 	})
 	assert.NoError(t, err)
 	assert.Len(t, templates, 1)
 	assert.Equal(t, "bar", templates[0].contents)
 	assert.NotEqual(t, stdout, templates[0].target)
 
-	templates, err = gatherTemplates(&GomplateOpts{
-		inputDir:  "in",
-		outputDir: "out",
+	templates, err = gatherTemplates(&Config{
+		InputDir:  "in",
+		OutputDir: "out",
 	})
 	assert.NoError(t, err)
 	assert.Len(t, templates, 3)

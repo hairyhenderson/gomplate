@@ -1,4 +1,4 @@
-package main
+package gomplate
 
 import (
 	"fmt"
@@ -16,14 +16,14 @@ var stdin io.ReadCloser = os.Stdin
 var stdout io.WriteCloser = os.Stdout
 var fs = afero.NewOsFs()
 
-// tplate - models a tplate file...
+// tplate - models a gomplate template file...
 type tplate struct {
 	name     string
 	target   io.Writer
 	contents string
 }
 
-func (t *tplate) toGoTemplate(g *Gomplate) (*template.Template, error) {
+func (t *tplate) toGoTemplate(g *gomplate) (*template.Template, error) {
 	tmpl := template.New(t.name)
 	tmpl.Option("missingkey=error")
 	tmpl.Funcs(g.funcMap)
@@ -39,48 +39,40 @@ func (t *tplate) loadContents() (err error) {
 	return err
 }
 
-func (t *tplate) addTarget(outFile string) error {
+func (t *tplate) addTarget(outFile string) (err error) {
 	if t.target == nil {
-		target, err := openOutFile(outFile)
-		if err != nil {
-			return err
-		}
-		addCleanupHook(func() {
-			// nolint: errcheck
-			target.Close()
-		})
-		t.target = target
+		t.target, err = openOutFile(outFile)
 	}
-	return nil
+	return err
 }
 
 // gatherTemplates - gather and prepare input template(s) and output file(s) for rendering
-func gatherTemplates(o *GomplateOpts) (templates []*tplate, err error) {
+func gatherTemplates(o *Config) (templates []*tplate, err error) {
 	// the arg-provided input string gets a special name
-	if o.input != "" {
+	if o.Input != "" {
 		templates = []*tplate{{
 			name:     "<arg>",
-			contents: o.input,
+			contents: o.Input,
 		}}
 	}
 
 	// input dirs presume output dirs are set too
-	if o.inputDir != "" {
-		o.inputFiles, o.outputFiles, err = walkDir(o.inputDir, o.outputDir, o.excludeGlob)
+	if o.InputDir != "" {
+		o.InputFiles, o.OutputFiles, err = walkDir(o.InputDir, o.OutputDir, o.ExcludeGlob)
 		if err != nil {
 			return nil, err
 		}
 	}
 
 	if len(templates) == 0 {
-		templates = make([]*tplate, len(o.inputFiles))
+		templates = make([]*tplate, len(o.InputFiles))
 		for i := range templates {
-			templates[i] = &tplate{name: o.inputFiles[i]}
+			templates[i] = &tplate{name: o.InputFiles[i]}
 		}
 	}
 
-	if len(o.outputFiles) == 0 {
-		o.outputFiles = []string{"-"}
+	if len(o.OutputFiles) == 0 {
+		o.OutputFiles = []string{"-"}
 	}
 
 	for i, t := range templates {
@@ -88,7 +80,7 @@ func gatherTemplates(o *GomplateOpts) (templates []*tplate, err error) {
 			return nil, err
 		}
 
-		if err := t.addTarget(o.outputFiles[i]); err != nil {
+		if err := t.addTarget(o.OutputFiles[i]); err != nil {
 			return nil, err
 		}
 	}

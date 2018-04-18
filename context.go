@@ -1,16 +1,16 @@
-package main
+package gomplate
 
 import (
 	"os"
 	"strings"
 )
 
-// Context for templates
-type Context struct {
+// context for templates
+type context struct {
 }
 
 // Env - Map environment variables for use in a template
-func (c *Context) Env() map[string]string {
+func (c *context) Env() map[string]string {
 	env := make(map[string]string)
 	for _, i := range os.Environ() {
 		sep := strings.Index(i, "=")

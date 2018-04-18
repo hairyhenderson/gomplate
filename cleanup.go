@@ -1,4 +1,4 @@
-package main
+package gomplate
 
 var cleanupHooks = make([]func(), 0)
 

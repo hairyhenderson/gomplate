@@ -1,4 +1,4 @@
-package main
+package gomplate
 
 import (
 	"text/template"
