@@ -49,7 +49,7 @@ func (t *tplate) addTarget(outFile string, mode os.FileMode) (err error) {
 // gatherTemplates - gather and prepare input template(s) and output file(s) for rendering
 func gatherTemplates(o *Config) (templates []*tplate, err error) {
 	// the arg-provided input string gets a special name
-	var of []*outFile
+	var of []*outFileInfo
 	if o.Input != "" {
 		templates = []*tplate{{
 			name:     "<arg>",
@@ -65,25 +65,7 @@ func gatherTemplates(o *Config) (templates []*tplate, err error) {
 		}
 	}
 
-	if len(templates) == 0 {
-		templates = make([]*tplate, len(o.InputFiles))
-		for i := range templates {
-			templates[i] = &tplate{name: o.InputFiles[i]}
-		}
-	}
-
-	if len(o.OutputFiles) == 0 && len(of) == len(templates) {
-		for i := range templates {
-			o.OutputFiles = append(o.OutputFiles, of[i].name)
-		}
-	} else if len(templates) > len(of) {
-		of = make([]*outFile, len(templates))
-		for i := range templates {
-			o.OutputFiles = append(o.OutputFiles, "-")
-			of[i] = &outFile{"-", 0644}
-		}
-	}
-
+	templates, o.OutputFiles, of = prepareFileLists(templates, o.InputFiles, o.OutputFiles, of)
 	for i, t := range templates {
 		if err := t.loadContents(); err != nil {
 			return nil, err
@@ -96,10 +78,33 @@ func gatherTemplates(o *Config) (templates []*tplate, err error) {
 	return templates, nil
 }
 
+func prepareFileLists(templates []*tplate, inFileNames, outFileNames []string, oFileInfo []*outFileInfo) ([]*tplate, []string, []*outFileInfo) {
+	if len(templates) == 0 {
+		templates = make([]*tplate, len(inFileNames))
+		for i := range templates {
+			templates[i] = &tplate{name: inFileNames[i]}
+		}
+	}
+
+	if len(outFileNames) == 0 && len(oFileInfo) == len(templates) {
+		for i := range templates {
+			outFileNames = append(outFileNames, oFileInfo[i].name)
+		}
+	} else if len(templates) > len(oFileInfo) {
+		oFileInfo = make([]*outFileInfo, len(templates))
+		for i := range templates {
+			outFileNames = append(outFileNames, "-")
+			oFileInfo[i] = &outFileInfo{"-", 0644}
+		}
+	}
+
+	return templates, outFileNames, oFileInfo
+}
+
 // walkDir - given an input dir `dir` and an output dir `outDir`, and a list
 // of exclude globs (if any), walk the input directory and create a list of
 // input and output files, and an error, if any.
-func walkDir(dir, outDir string, excludeGlob []string) ([]string, []*outFile, error) {
+func walkDir(dir, outDir string, excludeGlob []string) ([]string, []*outFileInfo, error) {
 	dir = filepath.Clean(dir)
 	outDir = filepath.Clean(outDir)
 
@@ -123,7 +128,7 @@ func walkDir(dir, outDir string, excludeGlob []string) ([]string, []*outFile, er
 	}
 
 	inFiles := []string{}
-	outFiles := make([]*outFile, 0)
+	outFiles := make([]*outFileInfo, 0)
 	for _, entry := range entries {
 		nextInPath := filepath.Join(dir, entry.Name())
 		nextOutPath := filepath.Join(outDir, entry.Name())
@@ -140,7 +145,7 @@ func walkDir(dir, outDir string, excludeGlob []string) ([]string, []*outFile, er
 			inFiles = append(inFiles, i...)
 			outFiles = append(outFiles, o...)
 		} else {
-			of := &outFile{name: nextOutPath, mode: entry.Mode()}
+			of := &outFileInfo{name: nextOutPath, mode: entry.Mode()}
 			inFiles = append(inFiles, nextInPath)
 			outFiles = append(outFiles, of)
 		}

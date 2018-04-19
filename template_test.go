@@ -156,7 +156,7 @@ func TestWalkDir(t *testing.T) {
 
 	assert.NoError(t, err)
 	assert.Equal(t, []string{"/indir/one/bar", "/indir/one/foo"}, in)
-	assert.Equal(t, []*outFile{&outFile{"/outdir/one/bar", 0644}, &outFile{"/outdir/one/foo", 0644}}, out)
+	assert.Equal(t, []*outFileInfo{{"/outdir/one/bar", 0644}, {"/outdir/one/foo", 0644}}, out)
 }
 
 func TestLoadContents(t *testing.T) {

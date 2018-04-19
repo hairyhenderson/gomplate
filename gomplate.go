@@ -32,7 +32,7 @@ type gomplate struct {
 	rightDelim string
 }
 
-type outFile struct {
+type outFileInfo struct {
 	name string
 	mode os.FileMode
 }
