@@ -54,7 +54,7 @@ func TestOpenOutFile(t *testing.T) {
 	fs = afero.NewMemMapFs()
 	_ = fs.Mkdir("/tmp", 0777)
 
-	_, err := openOutFile("/tmp/foo")
+	_, err := openOutFile("/tmp/foo", 0644)
 	assert.NoError(t, err)
 	i, err := fs.Stat("/tmp/foo")
 	assert.NoError(t, err)
@@ -63,7 +63,47 @@ func TestOpenOutFile(t *testing.T) {
 	defer func() { stdout = os.Stdout }()
 	stdout = &nopWCloser{&bytes.Buffer{}}
 
-	f, err := openOutFile("-")
+	f, err := openOutFile("-", 0644)
+	assert.NoError(t, err)
+	assert.Equal(t, stdout, f)
+}
+
+func TestOpenOutFileWithNoneDefaultPerms(t *testing.T) {
+	origfs := fs
+	defer func() { fs = origfs }()
+	fs = afero.NewMemMapFs()
+	_ = fs.Mkdir("/tmp", 0777)
+
+	_, err := openOutFile("/tmp/foo", 0444)
+	assert.NoError(t, err)
+	i, err := fs.Stat("/tmp/foo")
+	assert.NoError(t, err)
+	assert.Equal(t, os.FileMode(0444), i.Mode())
+
+	defer func() { stdout = os.Stdout }()
+	stdout = &nopWCloser{&bytes.Buffer{}}
+
+	f, err := openOutFile("-", 0444)
+	assert.NoError(t, err)
+	assert.Equal(t, stdout, f)
+}
+
+func TestOpenOutFileWithExecuteBit(t *testing.T) {
+	origfs := fs
+	defer func() { fs = origfs }()
+	fs = afero.NewMemMapFs()
+	_ = fs.Mkdir("/tmp", 0777)
+
+	_, err := openOutFile("/tmp/foo", 0544)
+	assert.NoError(t, err)
+	i, err := fs.Stat("/tmp/foo")
+	assert.NoError(t, err)
+	assert.Equal(t, os.FileMode(0544), i.Mode())
+
+	defer func() { stdout = os.Stdout }()
+	stdout = &nopWCloser{&bytes.Buffer{}}
+
+	f, err := openOutFile("-", 0544)
 	assert.NoError(t, err)
 	assert.Equal(t, stdout, f)
 }
@@ -116,7 +156,7 @@ func TestWalkDir(t *testing.T) {
 
 	assert.NoError(t, err)
 	assert.Equal(t, []string{"/indir/one/bar", "/indir/one/foo"}, in)
-	assert.Equal(t, []string{"/outdir/one/bar", "/outdir/one/foo"}, out)
+	assert.Equal(t, []*outFile{&outFile{"/outdir/one/bar", 0644}, &outFile{"/outdir/one/foo", 0644}}, out)
 }
 
 func TestLoadContents(t *testing.T) {
@@ -138,7 +178,7 @@ func TestAddTarget(t *testing.T) {
 	fs = afero.NewMemMapFs()
 
 	tmpl := &tplate{name: "foo"}
-	err := tmpl.addTarget("/out/outfile")
+	err := tmpl.addTarget("/out/outfile", 0644)
 	assert.NoError(t, err)
 	assert.NotNil(t, tmpl.target)
 }

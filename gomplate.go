@@ -2,6 +2,7 @@ package gomplate
 
 import (
 	"io"
+	"os"
 	"text/template"
 
 	"github.com/hairyhenderson/gomplate/data"
@@ -29,6 +30,11 @@ type gomplate struct {
 	funcMap    template.FuncMap
 	leftDelim  string
 	rightDelim string
+}
+
+type outFile struct {
+	name string
+	mode os.FileMode
 }
 
 // runTemplate -
