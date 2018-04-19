@@ -212,6 +212,30 @@ $ gomplate -i '{{ (time.ParseInLocation time.Kitchen "Africa/Luanda" "6:00AM").F
 06:00 LMT
 ```
 
+## `time.Since`
+
+Returns the time elapsed since a given time. This wraps [`time.Since`](https://golang.org/pkg/time/#Since).
+
+It is shorthand for `time.Now.Sub t`.
+
+### Usage
+```go
+time.Since t
+```
+
+### Arguments
+
+| name   | description |
+|--------|-------------|
+| `t`    | the `Time` to calculate since |
+
+### Examples
+
+```console
+$ gomplate -i '{{ $t := time.Parse time.RFC3339 "1970-01-01T00:00:00Z" }}time since the epoch: {{ time.Since $t }}'
+time since the epoch: 423365h0m24.353828924s
+```
+
 ## `time.Unix`
 
 Returns the local `Time` corresponding to the given Unix time, in seconds since
@@ -235,6 +259,36 @@ _with fractional seconds:_
 ```console
 $ gomplate -i '{{ (time.Unix "123456.789").UTC.Format time.StampMilli}}'
 Jan  2 10:17:36.789
+```
+
+## `time.Until`
+
+Returns the duration until a given time. This wraps [`time.Until`](https://golang.org/pkg/time/#Until).
+
+It is shorthand for `$t.Sub time.Now`.
+
+### Usage
+```go
+time.Until t
+```
+
+### Arguments
+
+| name   | description |
+|--------|-------------|
+| `t`    | the `Time` to calculate until |
+
+### Examples
+
+```console
+$ gomplate -i '{{ $t := time.Parse time.RFC3339 "2020-01-01T00:00:00Z" }}only {{ time.Until $t }} to go...'
+only 14922h56m46.578625891s to go...
+```
+
+Or, less precise:
+```console
+$ bin/gomplate -i '{{ $t := time.Parse time.RFC3339 "2020-01-01T00:00:00Z" }}only {{ (time.Until $t).Round (time.Hour 1) }} to go...'
+only 14923h0m0s to go...
 ```
 
 ## `time.ZoneName`
