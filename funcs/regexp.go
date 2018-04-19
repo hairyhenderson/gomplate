@@ -3,6 +3,7 @@ package funcs
 import (
 	"sync"
 
+	"github.com/hairyhenderson/gomplate/conv"
 	"github.com/hairyhenderson/gomplate/regexp"
 )
 
@@ -26,11 +27,11 @@ func AddReFuncs(f map[string]interface{}) {
 type ReFuncs struct{}
 
 // Replace -
-func (f *ReFuncs) Replace(re, replacement, input string) string {
-	return regexp.Replace(re, replacement, input)
+func (f *ReFuncs) Replace(re, replacement string, input interface{}) string {
+	return regexp.Replace(re, replacement, conv.ToString(input))
 }
 
 // Match -
-func (f *ReFuncs) Match(re, input string) bool {
-	return regexp.Match(re, input)
+func (f *ReFuncs) Match(re string, input interface{}) bool {
+	return regexp.Match(re, conv.ToString(input))
 }

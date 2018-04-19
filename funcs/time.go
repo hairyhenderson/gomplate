@@ -7,6 +7,7 @@ import (
 	"sync"
 	gotime "time"
 
+	"github.com/hairyhenderson/gomplate/conv"
 	"github.com/hairyhenderson/gomplate/time"
 )
 
@@ -74,22 +75,22 @@ func (f *TimeFuncs) ZoneOffset() int {
 }
 
 // Parse -
-func (f *TimeFuncs) Parse(layout, value string) (gotime.Time, error) {
-	return gotime.Parse(layout, value)
+func (f *TimeFuncs) Parse(layout string, value interface{}) (gotime.Time, error) {
+	return gotime.Parse(layout, conv.ToString(value))
 }
 
 // ParseLocal -
-func (f *TimeFuncs) ParseLocal(layout, value string) (gotime.Time, error) {
-	return gotime.ParseInLocation(layout, value, gotime.Local)
+func (f *TimeFuncs) ParseLocal(layout string, value interface{}) (gotime.Time, error) {
+	return gotime.ParseInLocation(layout, conv.ToString(value), gotime.Local)
 }
 
 // ParseInLocation -
-func (f *TimeFuncs) ParseInLocation(layout, location, value string) (gotime.Time, error) {
+func (f *TimeFuncs) ParseInLocation(layout, location string, value interface{}) (gotime.Time, error) {
 	loc, err := gotime.LoadLocation(location)
 	if err != nil {
 		return gotime.Time{}, err
 	}
-	return gotime.ParseInLocation(layout, value, loc)
+	return gotime.ParseInLocation(layout, conv.ToString(value), loc)
 }
 
 // Now -
@@ -108,33 +109,33 @@ func (f *TimeFuncs) Unix(in interface{}) (gotime.Time, error) {
 }
 
 // Nanosecond -
-func (f *TimeFuncs) Nanosecond(n int64) gotime.Duration {
-	return gotime.Nanosecond * gotime.Duration(n)
+func (f *TimeFuncs) Nanosecond(n interface{}) gotime.Duration {
+	return gotime.Nanosecond * gotime.Duration(conv.ToInt64(n))
 }
 
 // Microsecond -
-func (f *TimeFuncs) Microsecond(n int64) gotime.Duration {
-	return gotime.Microsecond * gotime.Duration(n)
+func (f *TimeFuncs) Microsecond(n interface{}) gotime.Duration {
+	return gotime.Microsecond * gotime.Duration(conv.ToInt64(n))
 }
 
 // Millisecond -
-func (f *TimeFuncs) Millisecond(n int64) gotime.Duration {
-	return gotime.Millisecond * gotime.Duration(n)
+func (f *TimeFuncs) Millisecond(n interface{}) gotime.Duration {
+	return gotime.Millisecond * gotime.Duration(conv.ToInt64(n))
 }
 
 // Second -
-func (f *TimeFuncs) Second(n int64) gotime.Duration {
-	return gotime.Second * gotime.Duration(n)
+func (f *TimeFuncs) Second(n interface{}) gotime.Duration {
+	return gotime.Second * gotime.Duration(conv.ToInt64(n))
 }
 
 // Minute -
-func (f *TimeFuncs) Minute(n int64) gotime.Duration {
-	return gotime.Minute * gotime.Duration(n)
+func (f *TimeFuncs) Minute(n interface{}) gotime.Duration {
+	return gotime.Minute * gotime.Duration(conv.ToInt64(n))
 }
 
 // Hour -
-func (f *TimeFuncs) Hour(n int64) gotime.Duration {
-	return gotime.Hour * gotime.Duration(n)
+func (f *TimeFuncs) Hour(n interface{}) gotime.Duration {
+	return gotime.Hour * gotime.Duration(conv.ToInt64(n))
 }
 
 // convert a number input to a pair of int64s, representing the integer portion and the decimal remainder

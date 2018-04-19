@@ -33,8 +33,8 @@ func AddConvFuncs(f map[string]interface{}) {
 type ConvFuncs struct{}
 
 // Bool -
-func (f *ConvFuncs) Bool(s string) bool {
-	return conv.Bool(s)
+func (f *ConvFuncs) Bool(s interface{}) bool {
+	return conv.Bool(conv.ToString(s))
 }
 
 // Slice -
@@ -53,28 +53,28 @@ func (f *ConvFuncs) Has(in interface{}, key string) bool {
 }
 
 // ParseInt -
-func (f *ConvFuncs) ParseInt(s string, base, bitSize int) int64 {
-	return conv.MustParseInt(s, base, bitSize)
+func (f *ConvFuncs) ParseInt(s interface{}, base, bitSize int) int64 {
+	return conv.MustParseInt(conv.ToString(s), base, bitSize)
 }
 
 // ParseFloat -
-func (f *ConvFuncs) ParseFloat(s string, bitSize int) float64 {
-	return conv.MustParseFloat(s, bitSize)
+func (f *ConvFuncs) ParseFloat(s interface{}, bitSize int) float64 {
+	return conv.MustParseFloat(conv.ToString(s), bitSize)
 }
 
 // ParseUint -
-func (f *ConvFuncs) ParseUint(s string, base, bitSize int) uint64 {
-	return conv.MustParseUint(s, base, bitSize)
+func (f *ConvFuncs) ParseUint(s interface{}, base, bitSize int) uint64 {
+	return conv.MustParseUint(conv.ToString(s), base, bitSize)
 }
 
 // Atoi -
-func (f *ConvFuncs) Atoi(s string) int {
-	return conv.MustAtoi(s)
+func (f *ConvFuncs) Atoi(s interface{}) int {
+	return conv.MustAtoi(conv.ToString(s))
 }
 
 // URL -
-func (f *ConvFuncs) URL(s string) (*url.URL, error) {
-	return url.Parse(s)
+func (f *ConvFuncs) URL(s interface{}) (*url.URL, error) {
+	return url.Parse(conv.ToString(s))
 }
 
 // ToInt64 -

@@ -4,6 +4,7 @@ import (
 	"os"
 	"sync"
 
+	"github.com/hairyhenderson/gomplate/conv"
 	"github.com/hairyhenderson/gomplate/file"
 	"github.com/spf13/afero"
 )
@@ -30,36 +31,36 @@ type FileFuncs struct {
 }
 
 // Read -
-func (f *FileFuncs) Read(path string) (string, error) {
-	return file.Read(path)
+func (f *FileFuncs) Read(path interface{}) (string, error) {
+	return file.Read(conv.ToString(path))
 }
 
 // Stat -
-func (f *FileFuncs) Stat(path string) (os.FileInfo, error) {
-	return f.fs.Stat(path)
+func (f *FileFuncs) Stat(path interface{}) (os.FileInfo, error) {
+	return f.fs.Stat(conv.ToString(path))
 }
 
 // Exists -
-func (f *FileFuncs) Exists(path string) bool {
-	_, err := f.Stat(path)
+func (f *FileFuncs) Exists(path interface{}) bool {
+	_, err := f.Stat(conv.ToString(path))
 	return err == nil
 }
 
 // IsDir -
-func (f *FileFuncs) IsDir(path string) bool {
-	i, err := f.Stat(path)
+func (f *FileFuncs) IsDir(path interface{}) bool {
+	i, err := f.Stat(conv.ToString(path))
 	return err == nil && i.IsDir()
 }
 
 // ReadDir -
-func (f *FileFuncs) ReadDir(path string) ([]string, error) {
-	return file.ReadDir(path)
+func (f *FileFuncs) ReadDir(path interface{}) ([]string, error) {
+	return file.ReadDir(conv.ToString(path))
 }
 
 // Walk -
-func (f *FileFuncs) Walk(path string) ([]string, error) {
+func (f *FileFuncs) Walk(path interface{}) ([]string, error) {
 	files := make([]string, 0)
-	afero.Walk(f.fs, path, func(subpath string, finfo os.FileInfo, err error) error {
+	afero.Walk(f.fs, conv.ToString(path), func(subpath string, finfo os.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}

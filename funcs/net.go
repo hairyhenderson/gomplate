@@ -4,6 +4,8 @@ import (
 	stdnet "net"
 	"sync"
 
+	"github.com/hairyhenderson/gomplate/conv"
+
 	"github.com/hairyhenderson/gomplate/net"
 )
 
@@ -27,31 +29,31 @@ func AddNetFuncs(f map[string]interface{}) {
 type NetFuncs struct{}
 
 // LookupIP -
-func (f *NetFuncs) LookupIP(name string) string {
-	return net.LookupIP(name)
+func (f *NetFuncs) LookupIP(name interface{}) string {
+	return net.LookupIP(conv.ToString(name))
 }
 
 // LookupIPs -
-func (f *NetFuncs) LookupIPs(name string) []string {
-	return net.LookupIPs(name)
+func (f *NetFuncs) LookupIPs(name interface{}) []string {
+	return net.LookupIPs(conv.ToString(name))
 }
 
 // LookupCNAME -
-func (f *NetFuncs) LookupCNAME(name string) string {
-	return net.LookupCNAME(name)
+func (f *NetFuncs) LookupCNAME(name interface{}) string {
+	return net.LookupCNAME(conv.ToString(name))
 }
 
 // LookupSRV -
-func (f *NetFuncs) LookupSRV(name string) *stdnet.SRV {
-	return net.LookupSRV(name)
+func (f *NetFuncs) LookupSRV(name interface{}) *stdnet.SRV {
+	return net.LookupSRV(conv.ToString(name))
 }
 
 // LookupSRVs -
-func (f *NetFuncs) LookupSRVs(name string) []*stdnet.SRV {
-	return net.LookupSRVs(name)
+func (f *NetFuncs) LookupSRVs(name interface{}) []*stdnet.SRV {
+	return net.LookupSRVs(conv.ToString(name))
 }
 
 // LookupTXT -
-func (f *NetFuncs) LookupTXT(name string) []string {
-	return net.LookupTXT(name)
+func (f *NetFuncs) LookupTXT(name interface{}) []string {
+	return net.LookupTXT(conv.ToString(name))
 }
