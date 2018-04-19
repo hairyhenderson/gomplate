@@ -3,6 +3,7 @@ package funcs
 import (
 	"sync"
 
+	"github.com/hairyhenderson/gomplate/conv"
 	"github.com/hairyhenderson/gomplate/data"
 )
 
@@ -45,28 +46,28 @@ func AddDataFuncs(f map[string]interface{}, d *data.Data) {
 type DataFuncs struct{}
 
 // JSON -
-func (f *DataFuncs) JSON(in string) map[string]interface{} {
-	return data.JSON(in)
+func (f *DataFuncs) JSON(in interface{}) map[string]interface{} {
+	return data.JSON(conv.ToString(in))
 }
 
 // JSONArray -
-func (f *DataFuncs) JSONArray(in string) []interface{} {
-	return data.JSONArray(in)
+func (f *DataFuncs) JSONArray(in interface{}) []interface{} {
+	return data.JSONArray(conv.ToString(in))
 }
 
 // YAML -
-func (f *DataFuncs) YAML(in string) map[string]interface{} {
-	return data.YAML(in)
+func (f *DataFuncs) YAML(in interface{}) map[string]interface{} {
+	return data.YAML(conv.ToString(in))
 }
 
 // YAMLArray -
-func (f *DataFuncs) YAMLArray(in string) []interface{} {
-	return data.YAMLArray(in)
+func (f *DataFuncs) YAMLArray(in interface{}) []interface{} {
+	return data.YAMLArray(conv.ToString(in))
 }
 
 // TOML -
-func (f *DataFuncs) TOML(in string) interface{} {
-	return data.TOML(in)
+func (f *DataFuncs) TOML(in interface{}) interface{} {
+	return data.TOML(conv.ToString(in))
 }
 
 // CSV -

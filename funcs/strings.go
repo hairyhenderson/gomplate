@@ -9,6 +9,8 @@ import (
 	"log"
 	"sync"
 
+	"github.com/hairyhenderson/gomplate/conv"
+
 	"strings"
 
 	gompstrings "github.com/hairyhenderson/gomplate/strings"
@@ -49,73 +51,71 @@ func AddStringFuncs(f map[string]interface{}) {
 type StringFuncs struct{}
 
 // ReplaceAll -
-func (f *StringFuncs) ReplaceAll(old, new, s string) string {
-	return strings.Replace(s, old, new, -1)
+func (f *StringFuncs) ReplaceAll(old, new string, s interface{}) string {
+	return strings.Replace(conv.ToString(s), old, new, -1)
 }
 
 // Contains -
-func (f *StringFuncs) Contains(substr, s string) bool {
-	return strings.Contains(s, substr)
+func (f *StringFuncs) Contains(substr string, s interface{}) bool {
+	return strings.Contains(conv.ToString(s), substr)
 }
 
 // HasPrefix -
-func (f *StringFuncs) HasPrefix(prefix, s string) bool {
-	return strings.HasPrefix(s, prefix)
+func (f *StringFuncs) HasPrefix(prefix string, s interface{}) bool {
+	return strings.HasPrefix(conv.ToString(s), prefix)
 }
 
 // HasSuffix -
-func (f *StringFuncs) HasSuffix(suffix, s string) bool {
-	return strings.HasSuffix(s, suffix)
+func (f *StringFuncs) HasSuffix(suffix string, s interface{}) bool {
+	return strings.HasSuffix(conv.ToString(s), suffix)
 }
 
 // Split -
-func (f *StringFuncs) Split(sep, s string) []string {
-	return strings.Split(s, sep)
+func (f *StringFuncs) Split(sep string, s interface{}) []string {
+	return strings.Split(conv.ToString(s), sep)
 }
 
 // SplitN -
-func (f *StringFuncs) SplitN(sep string, n int, s string) []string {
-	return strings.SplitN(s, sep, n)
+func (f *StringFuncs) SplitN(sep string, n int, s interface{}) []string {
+	return strings.SplitN(conv.ToString(s), sep, n)
 }
 
 // Trim -
-func (f *StringFuncs) Trim(cutset, s string) string {
-	return strings.Trim(s, cutset)
+func (f *StringFuncs) Trim(cutset string, s interface{}) string {
+	return strings.Trim(conv.ToString(s), cutset)
 }
 
-// Trim Prefix-
-func (f *StringFuncs) TrimPrefix(cutset, s string) string {
-	return strings.TrimPrefix(s, cutset)
+// TrimPrefix -
+func (f *StringFuncs) TrimPrefix(cutset string, s interface{}) string {
+	return strings.TrimPrefix(conv.ToString(s), cutset)
 }
 
 // Title -
-func (f *StringFuncs) Title(s string) string {
-	return strings.Title(s)
+func (f *StringFuncs) Title(s interface{}) string {
+	return strings.Title(conv.ToString(s))
 }
 
 // ToUpper -
-func (f *StringFuncs) ToUpper(s string) string {
-	return strings.ToUpper(s)
+func (f *StringFuncs) ToUpper(s interface{}) string {
+	return strings.ToUpper(conv.ToString(s))
 }
 
 // ToLower -
-func (f *StringFuncs) ToLower(s string) string {
-	return strings.ToLower(s)
+func (f *StringFuncs) ToLower(s interface{}) string {
+	return strings.ToLower(conv.ToString(s))
 }
 
 // TrimSpace -
-func (f *StringFuncs) TrimSpace(s string) string {
-	return strings.TrimSpace(s)
+func (f *StringFuncs) TrimSpace(s interface{}) string {
+	return strings.TrimSpace(conv.ToString(s))
 }
 
 // Indent -
 func (f *StringFuncs) Indent(args ...interface{}) string {
-	input, ok := args[len(args)-1].(string)
-	if !ok {
-		log.Fatal("Indent: invalid arguments")
-	}
+	input := conv.ToString(args[len(args)-1])
 	indent := " "
 	width := 1
+	var ok bool
 	switch len(args) {
 	case 2:
 		indent, ok = args[0].(string)

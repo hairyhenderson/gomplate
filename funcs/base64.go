@@ -1,11 +1,10 @@
 package funcs
 
 import (
-	"fmt"
-	"strconv"
 	"sync"
 
 	"github.com/hairyhenderson/gomplate/base64"
+	"github.com/hairyhenderson/gomplate/conv"
 )
 
 var (
@@ -35,7 +34,7 @@ func (f *Base64Funcs) Encode(in interface{}) string {
 
 // Decode -
 func (f *Base64Funcs) Decode(in interface{}) string {
-	return string(base64.Decode(toString(in)))
+	return string(base64.Decode(conv.ToString(in)))
 }
 
 type byter interface {
@@ -55,30 +54,5 @@ func toBytes(in interface{}) []byte {
 	if s, ok := in.(string); ok {
 		return []byte(s)
 	}
-	return []byte(fmt.Sprintf("%s", in))
-}
-
-func toString(in interface{}) string {
-	if s, ok := in.(string); ok {
-		return s
-	}
-	if s, ok := in.(fmt.Stringer); ok {
-		return s.String()
-	}
-	if i, ok := in.(int); ok {
-		return strconv.Itoa(i)
-	}
-	if u, ok := in.(uint64); ok {
-		return strconv.FormatUint(u, 10)
-	}
-	if f, ok := in.(float64); ok {
-		return strconv.FormatFloat(f, 'f', -1, 64)
-	}
-	if b, ok := in.(bool); ok {
-		return strconv.FormatBool(b)
-	}
-	if in == nil {
-		return "nil"
-	}
-	return fmt.Sprintf("%s", in)
+	return []byte(conv.ToString(in))
 }
