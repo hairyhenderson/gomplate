@@ -222,15 +222,41 @@ func TestGatherTemplates(t *testing.T) {
 	assert.Len(t, templates, 3)
 	assert.Equal(t, "foo", templates[0].contents)
 
-	f1Stat, err := fs.Stat("in/1")
+	f1Stat, err := fs.Stat("out/1")
 	assert.NoError(t, err)
 	assert.Equal(t, os.FileMode(0744), f1Stat.Mode().Perm())
 
-	f2Stat, err := fs.Stat("in/2")
+	f2Stat, err := fs.Stat("out/2")
 	assert.NoError(t, err)
 	assert.Equal(t, os.FileMode(0754), f2Stat.Mode().Perm())
 
-	f3Stat, err := fs.Stat("in/3")
+	f3Stat, err := fs.Stat("out/3")
 	assert.NoError(t, err)
 	assert.Equal(t, os.FileMode(0640), f3Stat.Mode().Perm())
+}
+
+func TestOutputDirAndOutputFileDefaultDoesNotPanic(t *testing.T) {
+	origfs := fs
+	defer func() { fs = origfs }()
+	fs = afero.NewMemMapFs()
+	afero.WriteFile(fs, "config.yml", []byte("one: eins\ntwo: deux\n"), 0644)
+	afero.WriteFile(fs, "in/1", []byte(`{{ (ds "config").one }}`), 0744)
+	afero.WriteFile(fs, "in/2", []byte(`{{ (ds "config").two }}`), 0754)
+
+	templates, err := gatherTemplates(&Config{
+		InputDir:    "in",
+		OutputDir:   "out",
+		OutputFiles: []string{"-"},
+		DataSources: []string{"config.yml"},
+	})
+	assert.NoError(t, err)
+	assert.Len(t, templates, 2)
+
+	f1Stat, err := fs.Stat("out/1")
+	assert.NoError(t, err)
+	assert.Equal(t, os.FileMode(0744), f1Stat.Mode().Perm())
+
+	f2Stat, err := fs.Stat("out/2")
+	assert.NoError(t, err)
+	assert.Equal(t, os.FileMode(0754), f2Stat.Mode().Perm())
 }
