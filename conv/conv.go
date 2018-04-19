@@ -44,7 +44,7 @@ func Join(in interface{}, sep string) string {
 	if ok {
 		b := make([]string, len(a))
 		for i := range a {
-			b[i] = toString(a[i])
+			b[i] = ToString(a[i])
 		}
 		return strings.Join(b, sep)
 	}
@@ -77,7 +77,8 @@ func Has(in interface{}, key string) bool {
 	return false
 }
 
-func toString(in interface{}) string {
+// ToString -
+func ToString(in interface{}) string {
 	if in == nil {
 		return "nil"
 	}
@@ -87,19 +88,12 @@ func toString(in interface{}) string {
 	if s, ok := in.(fmt.Stringer); ok {
 		return s.String()
 	}
-	val := reflect.Indirect(reflect.ValueOf(in))
-	switch val.Kind() {
-	case reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64, reflect.Int:
-		return strconv.FormatInt(val.Int(), 10)
-	case reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint, reflect.Uint64:
-		return strconv.FormatUint(val.Uint(), 10)
-	case reflect.Float32, reflect.Float64:
-		return strconv.FormatFloat(val.Float(), 'f', -1, 64)
-	case reflect.Bool:
-		return strconv.FormatBool(val.Bool())
-	default:
-		return fmt.Sprintf("%s", in)
+
+	v, ok := printableValue(reflect.ValueOf(in))
+	if ok {
+		in = v
 	}
+	return fmt.Sprint(in)
 }
 
 // MustParseInt - wrapper for strconv.ParseInt that returns 0 in the case of error

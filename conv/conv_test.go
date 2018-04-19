@@ -1,6 +1,7 @@
 package conv
 
 import (
+	"fmt"
 	"math"
 	"testing"
 
@@ -166,4 +167,49 @@ func TestToFloat64(t *testing.T) {
 func TestToFloat64s(t *testing.T) {
 	assert.Equal(t, []float64{}, ToFloat64s())
 	assert.Equal(t, []float64{0, 1.0, 2.0, math.Pi, 4.0}, ToFloat64s(nil, true, "2", math.Pi, uint8(4)))
+}
+
+type foo struct {
+	val string
+}
+
+func (f foo) String() string {
+	return f.val
+}
+
+func TestToString(t *testing.T) {
+	var p *string
+	f := "foo"
+	p = &f
+
+	var n *string
+
+	data := []struct {
+		in  interface{}
+		out string
+	}{
+		{nil, "nil"},
+		{"", ""},
+		{"foo", "foo"},
+		{true, "true"},
+		{42, "42"},
+		{3.14, "3.14"},
+		{-127, "-127"},
+		{0xFF, "255"},
+		{uint8(42), "42"},
+		{math.Pi, "3.141592653589793"},
+		{math.NaN(), "NaN"},
+		{math.Inf(1), "+Inf"},
+		{math.Inf(-1), "-Inf"},
+		{foo{"bar"}, "bar"},
+		{p, "foo"},
+		{fmt.Errorf("hi"), "hi"},
+		{n, "<nil>"},
+	}
+
+	for _, d := range data {
+		t.Run(fmt.Sprintf("%T/%#v == %s", d.in, d.in, d.out), func(t *testing.T) {
+			assert.Equal(t, d.out, ToString(d.in))
+		})
+	}
 }

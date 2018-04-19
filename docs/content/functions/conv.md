@@ -233,3 +233,7 @@ Converts the input to a `float64`
 ## `conv.ToFloat64s`
 
 Converts the inputs to an array of `float64`s
+
+## `conv.ToString`
+
+Converts the input (of any type) to a `string`
