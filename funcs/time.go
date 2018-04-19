@@ -138,6 +138,11 @@ func (f *TimeFuncs) Hour(n interface{}) gotime.Duration {
 	return gotime.Hour * gotime.Duration(conv.ToInt64(n))
 }
 
+// ParseDuration -
+func (f *TimeFuncs) ParseDuration(n interface{}) (gotime.Duration, error) {
+	return gotime.ParseDuration(conv.ToString(n))
+}
+
 // convert a number input to a pair of int64s, representing the integer portion and the decimal remainder
 // this can handle a string as well as any integer or float type
 // precision is at the "nano" level (i.e. 1e+9)

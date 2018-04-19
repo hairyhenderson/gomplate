@@ -72,6 +72,8 @@ $ gomplate -i '{{ (time.Now).Format time.Kitchen }}
 11:05AM
 ```
 
+For other durations, such as `2h10m`, [`time.ParseDuration`](#time-parseduration) can be used.
+
 ## `time.Now`
 
 Returns the current local time, as a `time.Time`. This wraps [`time.Now`](https://golang.org/pkg/time/#Now).
@@ -131,6 +133,31 @@ Usage with [`Format`](https://golang.org/pkg/time/#Time.Format):
 ```console
 $ gomplate -i '{{ (time.Parse "2006-01-02" "1993-10-23").Format "Monday January 2, 2006 MST" }}'
 Saturday October 23, 1993 UTC
+```
+
+## `time.ParseDuration`
+
+Parses a duration string. This wraps [`time.ParseDuration`](https://golang.org/pkg/time/#ParseDuration).
+
+A duration string is a possibly signed sequence of decimal numbers, each with
+optional fraction and a unit suffix, such as `300ms`, `-1.5h` or `2h45m`. Valid
+time units are `ns`, `us` (or `µs`), `ms`, `s`, `m`, `h`.
+
+### Usage
+```go
+time.ParseDuration duration
+```
+```go
+duration | time.ParseDuration
+```
+
+### Examples
+
+```console
+$ gomplate -i '{{ (time.Now).Format time.Kitchen }}
+{{ ((time.Now).Add (time.ParseDuration "2h30m")).Format time.Kitchen }}'
+12:43AM
+3:13AM
 ```
 
 ## `time.ParseLocal`
