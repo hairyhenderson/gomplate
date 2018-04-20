@@ -2,6 +2,7 @@ package gomplate
 
 import (
 	"bytes"
+	"io"
 	"net/http/httptest"
 	"os"
 	"testing"
@@ -14,6 +15,15 @@ import (
 	"github.com/hairyhenderson/gomplate/env"
 	"github.com/stretchr/testify/assert"
 )
+
+// like ioutil.NopCloser(), except for io.WriteClosers...
+type nopWCloser struct {
+	io.Writer
+}
+
+func (n *nopWCloser) Close() error {
+	return nil
+}
 
 func testTemplate(g *gomplate, tmpl string) string {
 	var out bytes.Buffer
@@ -147,4 +157,14 @@ func TestCustomDelim(t *testing.T) {
 		funcMap:    template.FuncMap{},
 	}
 	assert.Equal(t, "hi", testTemplate(g, `[print "hi"]`))
+}
+
+func TestRunTemplates(t *testing.T) {
+	defer func() { Stdout = os.Stdout }()
+	buf := &bytes.Buffer{}
+	Stdout = &nopWCloser{buf}
+	config := &Config{Input: "foo"}
+	err := RunTemplates(config)
+	assert.NoError(t, err)
+	assert.Equal(t, "foo", buf.String())
 }
