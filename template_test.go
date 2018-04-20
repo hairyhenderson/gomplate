@@ -45,7 +45,7 @@ func TestOpenOutFile(t *testing.T) {
 	fs = afero.NewMemMapFs()
 	_ = fs.Mkdir("/tmp", 0777)
 
-	_, err := openOutFile("/tmp/foo")
+	_, err := openOutFile("/tmp/foo", os.FileMode(0644))
 	assert.NoError(t, err)
 	i, err := fs.Stat("/tmp/foo")
 	assert.NoError(t, err)
@@ -54,7 +54,7 @@ func TestOpenOutFile(t *testing.T) {
 	defer func() { Stdout = os.Stdout }()
 	Stdout = &nopWCloser{&bytes.Buffer{}}
 
-	f, err := openOutFile("-")
+	f, err := openOutFile("-", os.FileMode(0644))
 	assert.NoError(t, err)
 	assert.Equal(t, Stdout, f)
 }
@@ -94,7 +94,7 @@ func TestWalkDir(t *testing.T) {
 	defer func() { fs = origfs }()
 	fs = afero.NewMemMapFs()
 
-	_, _, err := walkDir("/indir", "/outdir", nil)
+	_, err := walkDir("/indir", "/outdir", nil)
 	assert.Error(t, err)
 
 	_ = fs.MkdirAll("/indir/one", 0777)
@@ -103,11 +103,14 @@ func TestWalkDir(t *testing.T) {
 	afero.WriteFile(fs, "/indir/one/bar", []byte("bar"), 0644)
 	afero.WriteFile(fs, "/indir/two/baz", []byte("baz"), 0644)
 
-	in, out, err := walkDir("/indir", "/outdir", []string{"/*/two"})
+	templates, err := walkDir("/indir", "/outdir", []string{"/*/two"})
 
 	assert.NoError(t, err)
-	assert.Equal(t, []string{"/indir/one/bar", "/indir/one/foo"}, in)
-	assert.Equal(t, []string{"/outdir/one/bar", "/outdir/one/foo"}, out)
+	assert.Equal(t, 2, len(templates))
+	assert.Equal(t, "/indir/one/bar", templates[0].name)
+	assert.Equal(t, "/outdir/one/bar", templates[0].targetPath)
+	assert.Equal(t, "/indir/one/foo", templates[1].name)
+	assert.Equal(t, "/outdir/one/foo", templates[1].targetPath)
 }
 
 func TestLoadContents(t *testing.T) {
@@ -128,8 +131,8 @@ func TestAddTarget(t *testing.T) {
 	defer func() { fs = origfs }()
 	fs = afero.NewMemMapFs()
 
-	tmpl := &tplate{name: "foo"}
-	err := tmpl.addTarget("/out/outfile")
+	tmpl := &tplate{name: "foo", targetPath: "/out/outfile"}
+	err := tmpl.addTarget()
 	assert.NoError(t, err)
 	assert.NotNil(t, tmpl.target)
 }
