@@ -4,7 +4,6 @@ package gomplate
 
 import (
 	"bytes"
-	"io"
 	"io/ioutil"
 	"os"
 	"testing"
@@ -14,14 +13,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-// like ioutil.NopCloser(), except for io.WriteClosers...
-type nopWCloser struct {
-	io.Writer
-}
-
-func (n *nopWCloser) Close() error {
-	return nil
-}
 func TestReadInput(t *testing.T) {
 	origfs := fs
 	defer func() { fs = origfs }()
@@ -60,12 +51,12 @@ func TestOpenOutFile(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, os.FileMode(0644), i.Mode())
 
-	defer func() { stdout = os.Stdout }()
-	stdout = &nopWCloser{&bytes.Buffer{}}
+	defer func() { Stdout = os.Stdout }()
+	Stdout = &nopWCloser{&bytes.Buffer{}}
 
 	f, err := openOutFile("-")
 	assert.NoError(t, err)
-	assert.Equal(t, stdout, f)
+	assert.Equal(t, Stdout, f)
 }
 
 func TestInList(t *testing.T) {
@@ -163,7 +154,7 @@ func TestGatherTemplates(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Len(t, templates, 1)
 	assert.Equal(t, "foo", templates[0].contents)
-	assert.Equal(t, stdout, templates[0].target)
+	assert.Equal(t, Stdout, templates[0].target)
 
 	templates, err = gatherTemplates(&Config{
 		InputFiles:  []string{"foo"},
@@ -172,7 +163,7 @@ func TestGatherTemplates(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Len(t, templates, 1)
 	assert.Equal(t, "bar", templates[0].contents)
-	assert.NotEqual(t, stdout, templates[0].target)
+	assert.NotEqual(t, Stdout, templates[0].target)
 
 	templates, err = gatherTemplates(&Config{
 		InputDir:  "in",

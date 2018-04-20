@@ -13,8 +13,10 @@ import (
 
 // for overriding in tests
 var stdin io.ReadCloser = os.Stdin
-var stdout io.WriteCloser = os.Stdout
 var fs = afero.NewOsFs()
+
+// Stdout allows overriding the writer to use when templates are written to stdout ("-").
+var Stdout io.WriteCloser = os.Stdout
 
 // tplate - models a gomplate template file...
 type tplate struct {
@@ -151,7 +153,7 @@ func inList(list []string, entry string) bool {
 
 func openOutFile(filename string) (out io.WriteCloser, err error) {
 	if filename == "-" {
-		return stdout, nil
+		return Stdout, nil
 	}
 	return fs.OpenFile(filename, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0644)
 }
