@@ -65,7 +65,8 @@ func gatherTemplates(o *Config) (templates []*tplate, err error) {
 		}
 	}
 
-	templates, o.OutputFiles, of = prepareFileLists(templates, o.InputFiles, o.OutputFiles, of)
+	templates = verifyTemplates(templates, o.InputFiles)
+	templates, o.OutputFiles, of = prepareFileLists(templates, o.OutputFiles, of)
 	for i, t := range templates {
 		if err := t.loadContents(); err != nil {
 			return nil, err
@@ -78,7 +79,7 @@ func gatherTemplates(o *Config) (templates []*tplate, err error) {
 	return templates, nil
 }
 
-func prepareFileLists(templates []*tplate, inFileNames, outFileNames []string, oFileInfo []*outFileInfo) ([]*tplate, []string, []*outFileInfo) {
+func verifyTemplates(templates []*tplate, inFileNames []string) []*tplate {
 	if len(templates) == 0 {
 		templates = make([]*tplate, len(inFileNames))
 		for i := range templates {
@@ -86,10 +87,13 @@ func prepareFileLists(templates []*tplate, inFileNames, outFileNames []string, o
 		}
 	}
 
+	return templates
+}
+
+func prepareFileLists(templates []*tplate, outFileNames []string, oFileInfo []*outFileInfo) ([]*tplate, []string, []*outFileInfo) {
 	if len(outFileNames) == 1 && len(oFileInfo) > 0 && outFileNames[0] == "-" {
 		outFileNames = []string{}
 	}
-
 	if len(outFileNames) == 0 && len(oFileInfo) == len(templates) {
 		for i := range templates {
 			outFileNames = append(outFileNames, oFileInfo[i].name)
