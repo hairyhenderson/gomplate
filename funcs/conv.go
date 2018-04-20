@@ -3,6 +3,7 @@ package funcs
 import (
 	"net/url"
 	"sync"
+	"text/template"
 
 	"github.com/hairyhenderson/gomplate/conv"
 )
@@ -27,6 +28,7 @@ func AddConvFuncs(f map[string]interface{}) {
 	f["has"] = ConvNS().Has
 	f["slice"] = ConvNS().Slice
 	f["join"] = ConvNS().Join
+	f["default"] = ConvNS().Default
 }
 
 // ConvFuncs -
@@ -110,4 +112,12 @@ func (f *ConvFuncs) ToFloat64s(in ...interface{}) []float64 {
 // ToString -
 func (f *ConvFuncs) ToString(in interface{}) string {
 	return conv.ToString(in)
+}
+
+// Default -
+func (f *ConvFuncs) Default(def, in interface{}) interface{} {
+	if truth, ok := template.IsTrue(in); truth && ok {
+		return in
+	}
+	return def
 }
