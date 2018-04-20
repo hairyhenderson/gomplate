@@ -41,9 +41,9 @@ func (t *tplate) loadContents() (err error) {
 	return err
 }
 
-func (t *tplate) addTarget(outFile string) (err error) {
+func (t *tplate) addTarget(outFile string, mode os.FileMode) (err error) {
 	if t.target == nil {
-		t.target, err = openOutFile(outFile)
+		t.target, err = openOutFile(outFile, mode)
 	}
 	return err
 }
@@ -51,6 +51,7 @@ func (t *tplate) addTarget(outFile string) (err error) {
 // gatherTemplates - gather and prepare input template(s) and output file(s) for rendering
 func gatherTemplates(o *Config) (templates []*tplate, err error) {
 	// the arg-provided input string gets a special name
+	var of []*outFileInfo
 	if o.Input != "" {
 		templates = []*tplate{{
 			name:     "<arg>",
@@ -60,29 +61,19 @@ func gatherTemplates(o *Config) (templates []*tplate, err error) {
 
 	// input dirs presume output dirs are set too
 	if o.InputDir != "" {
-		o.InputFiles, o.OutputFiles, err = walkDir(o.InputDir, o.OutputDir, o.ExcludeGlob)
+		o.InputFiles, of, err = walkDir(o.InputDir, o.OutputDir, o.ExcludeGlob)
 		if err != nil {
 			return nil, err
 		}
 	}
 
-	if len(templates) == 0 {
-		templates = make([]*tplate, len(o.InputFiles))
-		for i := range templates {
-			templates[i] = &tplate{name: o.InputFiles[i]}
-		}
-	}
-
-	if len(o.OutputFiles) == 0 {
-		o.OutputFiles = []string{"-"}
-	}
-
+	templates = verifyTemplates(templates, o.InputFiles)
+	templates, o.OutputFiles, of = prepareFileLists(templates, o.OutputFiles, of)
 	for i, t := range templates {
 		if err := t.loadContents(); err != nil {
 			return nil, err
 		}
-
-		if err := t.addTarget(o.OutputFiles[i]); err != nil {
+		if err := t.addTarget(o.OutputFiles[i], of[i].mode); err != nil {
 			return nil, err
 		}
 	}
@@ -90,10 +81,40 @@ func gatherTemplates(o *Config) (templates []*tplate, err error) {
 	return templates, nil
 }
 
+func verifyTemplates(templates []*tplate, inFileNames []string) []*tplate {
+	if len(templates) == 0 {
+		templates = make([]*tplate, len(inFileNames))
+		for i := range templates {
+			templates[i] = &tplate{name: inFileNames[i]}
+		}
+	}
+
+	return templates
+}
+
+func prepareFileLists(templates []*tplate, outFileNames []string, oFileInfo []*outFileInfo) ([]*tplate, []string, []*outFileInfo) {
+	if len(outFileNames) == 1 && len(oFileInfo) > 0 && outFileNames[0] == "-" {
+		outFileNames = []string{}
+	}
+	if len(outFileNames) == 0 && len(oFileInfo) == len(templates) {
+		for i := range templates {
+			outFileNames = append(outFileNames, oFileInfo[i].name)
+		}
+	} else if len(templates) > len(oFileInfo) {
+		oFileInfo = make([]*outFileInfo, len(templates))
+		for i := range templates {
+			outFileNames = append(outFileNames, "-")
+			oFileInfo[i] = &outFileInfo{"-", 0644}
+		}
+	}
+
+	return templates, outFileNames, oFileInfo
+}
+
 // walkDir - given an input dir `dir` and an output dir `outDir`, and a list
 // of exclude globs (if any), walk the input directory and create a list of
 // input and output files, and an error, if any.
-func walkDir(dir, outDir string, excludeGlob []string) ([]string, []string, error) {
+func walkDir(dir, outDir string, excludeGlob []string) ([]string, []*outFileInfo, error) {
 	dir = filepath.Clean(dir)
 	outDir = filepath.Clean(outDir)
 
@@ -117,7 +138,7 @@ func walkDir(dir, outDir string, excludeGlob []string) ([]string, []string, erro
 	}
 
 	inFiles := []string{}
-	outFiles := []string{}
+	outFiles := make([]*outFileInfo, 0)
 	for _, entry := range entries {
 		nextInPath := filepath.Join(dir, entry.Name())
 		nextOutPath := filepath.Join(outDir, entry.Name())
@@ -134,8 +155,9 @@ func walkDir(dir, outDir string, excludeGlob []string) ([]string, []string, erro
 			inFiles = append(inFiles, i...)
 			outFiles = append(outFiles, o...)
 		} else {
+			of := &outFileInfo{name: nextOutPath, mode: entry.Mode()}
 			inFiles = append(inFiles, nextInPath)
-			outFiles = append(outFiles, nextOutPath)
+			outFiles = append(outFiles, of)
 		}
 	}
 	return inFiles, outFiles, nil
@@ -151,11 +173,11 @@ func inList(list []string, entry string) bool {
 	return false
 }
 
-func openOutFile(filename string) (out io.WriteCloser, err error) {
+func openOutFile(filename string, mode os.FileMode) (out io.WriteCloser, err error) {
 	if filename == "-" {
 		return Stdout, nil
 	}
-	return fs.OpenFile(filename, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0644)
+	return fs.OpenFile(filename, os.O_RDWR|os.O_CREATE|os.O_TRUNC, mode.Perm())
 }
 
 func readInput(filename string) (string, error) {

@@ -45,7 +45,7 @@ func TestOpenOutFile(t *testing.T) {
 	fs = afero.NewMemMapFs()
 	_ = fs.Mkdir("/tmp", 0777)
 
-	_, err := openOutFile("/tmp/foo")
+	_, err := openOutFile("/tmp/foo", 0644)
 	assert.NoError(t, err)
 	i, err := fs.Stat("/tmp/foo")
 	assert.NoError(t, err)
@@ -54,7 +54,47 @@ func TestOpenOutFile(t *testing.T) {
 	defer func() { Stdout = os.Stdout }()
 	Stdout = &nopWCloser{&bytes.Buffer{}}
 
-	f, err := openOutFile("-")
+	f, err := openOutFile("-", 0644)
+	assert.NoError(t, err)
+	assert.Equal(t, stdout, f)
+}
+
+func TestOpenOutFileWithNoneDefaultPerms(t *testing.T) {
+	origfs := fs
+	defer func() { fs = origfs }()
+	fs = afero.NewMemMapFs()
+	_ = fs.Mkdir("/tmp", 0777)
+
+	_, err := openOutFile("/tmp/foo", 0444)
+	assert.NoError(t, err)
+	i, err := fs.Stat("/tmp/foo")
+	assert.NoError(t, err)
+	assert.Equal(t, os.FileMode(0444), i.Mode())
+
+	defer func() { stdout = os.Stdout }()
+	stdout = &nopWCloser{&bytes.Buffer{}}
+
+	f, err := openOutFile("-", 0444)
+	assert.NoError(t, err)
+	assert.Equal(t, stdout, f)
+}
+
+func TestOpenOutFileWithExecuteBit(t *testing.T) {
+	origfs := fs
+	defer func() { fs = origfs }()
+	fs = afero.NewMemMapFs()
+	_ = fs.Mkdir("/tmp", 0777)
+
+	_, err := openOutFile("/tmp/foo", 0544)
+	assert.NoError(t, err)
+	i, err := fs.Stat("/tmp/foo")
+	assert.NoError(t, err)
+	assert.Equal(t, os.FileMode(0544), i.Mode())
+
+	defer func() { stdout = os.Stdout }()
+	stdout = &nopWCloser{&bytes.Buffer{}}
+
+	f, err := openOutFile("-", 0544)
 	assert.NoError(t, err)
 	assert.Equal(t, Stdout, f)
 }
@@ -107,7 +147,7 @@ func TestWalkDir(t *testing.T) {
 
 	assert.NoError(t, err)
 	assert.Equal(t, []string{"/indir/one/bar", "/indir/one/foo"}, in)
-	assert.Equal(t, []string{"/outdir/one/bar", "/outdir/one/foo"}, out)
+	assert.Equal(t, []*outFileInfo{{"/outdir/one/bar", 0644}, {"/outdir/one/foo", 0644}}, out)
 }
 
 func TestLoadContents(t *testing.T) {
@@ -129,7 +169,7 @@ func TestAddTarget(t *testing.T) {
 	fs = afero.NewMemMapFs()
 
 	tmpl := &tplate{name: "foo"}
-	err := tmpl.addTarget("/out/outfile")
+	err := tmpl.addTarget("/out/outfile", 0644)
 	assert.NoError(t, err)
 	assert.NotNil(t, tmpl.target)
 }
@@ -140,9 +180,9 @@ func TestGatherTemplates(t *testing.T) {
 	fs = afero.NewMemMapFs()
 	afero.WriteFile(fs, "foo", []byte("bar"), 0644)
 
-	afero.WriteFile(fs, "in/1", []byte("foo"), 0644)
-	afero.WriteFile(fs, "in/2", []byte("bar"), 0644)
-	afero.WriteFile(fs, "in/3", []byte("baz"), 0644)
+	afero.WriteFile(fs, "in/1", []byte("foo"), 0744)
+	afero.WriteFile(fs, "in/2", []byte("bar"), 0754)
+	afero.WriteFile(fs, "in/3", []byte("baz"), 0640)
 
 	templates, err := gatherTemplates(&Config{})
 	assert.NoError(t, err)
@@ -172,4 +212,42 @@ func TestGatherTemplates(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Len(t, templates, 3)
 	assert.Equal(t, "foo", templates[0].contents)
+
+	f1Stat, err := fs.Stat("out/1")
+	assert.NoError(t, err)
+	assert.Equal(t, os.FileMode(0744), f1Stat.Mode().Perm())
+
+	f2Stat, err := fs.Stat("out/2")
+	assert.NoError(t, err)
+	assert.Equal(t, os.FileMode(0754), f2Stat.Mode().Perm())
+
+	f3Stat, err := fs.Stat("out/3")
+	assert.NoError(t, err)
+	assert.Equal(t, os.FileMode(0640), f3Stat.Mode().Perm())
+}
+
+func TestOutputDirAndOutputFileDefaultDoesNotPanic(t *testing.T) {
+	origfs := fs
+	defer func() { fs = origfs }()
+	fs = afero.NewMemMapFs()
+	afero.WriteFile(fs, "config.yml", []byte("one: eins\ntwo: deux\n"), 0644)
+	afero.WriteFile(fs, "in/1", []byte(`{{ (ds "config").one }}`), 0744)
+	afero.WriteFile(fs, "in/2", []byte(`{{ (ds "config").two }}`), 0754)
+
+	templates, err := gatherTemplates(&Config{
+		InputDir:    "in",
+		OutputDir:   "out",
+		OutputFiles: []string{"-"},
+		DataSources: []string{"config.yml"},
+	})
+	assert.NoError(t, err)
+	assert.Len(t, templates, 2)
+
+	f1Stat, err := fs.Stat("out/1")
+	assert.NoError(t, err)
+	assert.Equal(t, os.FileMode(0744), f1Stat.Mode().Perm())
+
+	f2Stat, err := fs.Stat("out/2")
+	assert.NoError(t, err)
+	assert.Equal(t, os.FileMode(0754), f2Stat.Mode().Perm())
 }
