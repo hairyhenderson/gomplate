@@ -28,6 +28,24 @@ $ FOO=true gomplate < input.tmpl
 foo
 ```
 
+## `conv.Default`
+
+**Alias:** `default`
+
+Provides a default value given an empty input. Empty inputs are `0` for numeric
+types, `""` for strings, `false` for booleans, empty arrays/maps, and `nil`. 
+
+Note that this will not provide a default for the case where the input is undefined
+(i.e. referencing things like `.foo` where there is no `foo` field of `.`), but
+[`conv.Has`](#conv-has) can be used for that.
+
+#### Example
+
+```console
+$ gomplate -i '{{ "" | default "foo" }} {{ "bar" | default "baz" }}'
+foo bar
+```
+
 ## `conv.Slice`
 
 **Alias:** `slice`
