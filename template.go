@@ -48,10 +48,6 @@ func (t *tplate) addTarget(outFile string, mode os.FileMode) (err error) {
 
 // gatherTemplates - gather and prepare input template(s) and output file(s) for rendering
 func gatherTemplates(o *Config) (templates []*tplate, err error) {
-	if len(o.OutputDir) > 0 && len(o.OutputFiles) > 0 && len(o.OutputFiles) == 1 && o.OutputFiles[0] == "-" {
-		o.OutputFiles = make([]string, 0)
-	}
-
 	// the arg-provided input string gets a special name
 	var of []*outFileInfo
 	if o.Input != "" {
@@ -88,6 +84,10 @@ func prepareFileLists(templates []*tplate, inFileNames, outFileNames []string, o
 		for i := range templates {
 			templates[i] = &tplate{name: inFileNames[i]}
 		}
+	}
+
+	if len(outFileNames) == 1 && len(oFileInfo) > 0 && outFileNames[0] == "-" {
+		outFileNames = []string{}
 	}
 
 	if len(outFileNames) == 0 && len(oFileInfo) == len(templates) {
