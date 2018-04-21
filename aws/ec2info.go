@@ -16,9 +16,9 @@ import (
 var describerClient InstanceDescriber
 
 var (
-	co ClientOptions
-	coInit sync.Once
-	sdkSession *session.Session
+	co             ClientOptions
+	coInit         sync.Once
+	sdkSession     *session.Session
 	sdkSessionInit sync.Once
 )
 
@@ -39,9 +39,9 @@ type InstanceDescriber interface {
 	DescribeInstances(*ec2.DescribeInstancesInput) (*ec2.DescribeInstancesOutput, error)
 }
 
-// Centralised reading of AWS_TIMEOUT
+// GetClientOptions - Centralised reading of AWS_TIMEOUT
 // ... but cannot use in vault/auth.go as different strconv.Atoi error handling
-func GetClientOptions() (ClientOptions) {
+func GetClientOptions() ClientOptions {
 	coInit.Do(func() {
 		timeout := os.Getenv("AWS_TIMEOUT")
 		if timeout != "" {
@@ -56,7 +56,8 @@ func GetClientOptions() (ClientOptions) {
 	return co
 }
 
-func SDKSession() (*session.Session) {
+// SDKSession -
+func SDKSession() *session.Session {
 	sdkSessionInit.Do(func() {
 		options := GetClientOptions()
 		timeout := options.Timeout
@@ -70,14 +71,14 @@ func SDKSession() (*session.Session) {
 		// Waiting for https://github.com/aws/aws-sdk-go/issues/1103
 		metaClient := NewEc2Meta(options)
 		metaRegion := metaClient.Region()
-		_, default1 := os.LookupEnv("AWS_REGION");
-		_, default2 := os.LookupEnv("AWS_DEFAULT_REGION");
+		_, default1 := os.LookupEnv("AWS_REGION")
+		_, default2 := os.LookupEnv("AWS_DEFAULT_REGION")
 		if metaRegion != "unknown" && !default1 && !default2 {
 			config = config.WithRegion(metaRegion)
 		}
 
 		sdkSession = session.Must(session.NewSessionWithOptions(session.Options{
-			Config: *config,
+			Config:            *config,
 			SharedConfigState: session.SharedConfigEnable,
 		}))
 	})

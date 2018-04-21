@@ -17,11 +17,16 @@ import (
 	consulapi "github.com/hashicorp/consul/api"
 )
 
+const (
+	http  = "http"
+	https = "https"
+)
+
 // NewConsul - instantiate a new Consul datasource handler
 func NewConsul(u *url.URL) *LibKV {
 	consul.Register()
 	c := consulURL(u)
-	config := consulConfig(c.Scheme == "https")
+	config := consulConfig(c.Scheme == https)
 	if role := env.Getenv("CONSUL_VAULT_ROLE", ""); role != "" {
 		mount := env.Getenv("CONSUL_VAULT_MOUNT", "consul")
 
@@ -41,11 +46,11 @@ func NewConsul(u *url.URL) *LibKV {
 			logFatal("Unable to unmarshal object", err)
 		}
 
-		var token = decoded["token"].(string)
+		token := decoded["token"].(string)
 
 		client.Logout()
 
-		os.Setenv("CONSUL_HTTP_TOKEN", token)
+		_ = os.Setenv("CONSUL_HTTP_TOKEN", token)
 	}
 	kv, err := libkv.NewStore(store.CONSUL, []string{c.String()}, config)
 	if err != nil {
@@ -61,15 +66,15 @@ func consulURL(u *url.URL) *url.URL {
 		c.Scheme = u.Scheme
 	}
 	switch c.Scheme {
-	case "consul+http", "http":
-		c.Scheme = "http"
-	case "consul+https", "https":
-		c.Scheme = "https"
+	case "consul+http", http:
+		c.Scheme = http
+	case "consul+https", https:
+		c.Scheme = https
 	case "consul":
 		if conv.Bool(env.Getenv("CONSUL_HTTP_SSL")) {
-			c.Scheme = "https"
+			c.Scheme = https
 		} else {
-			c.Scheme = "http"
+			c.Scheme = http
 		}
 	}
 

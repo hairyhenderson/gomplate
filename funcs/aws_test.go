@@ -8,7 +8,9 @@ import (
 )
 
 func TestNSIsIdempotent(t *testing.T) {
-	assert.True(t, AWSNS() == AWSNS())
+	left := AWSNS()
+	right := AWSNS()
+	assert.True(t, left == right)
 }
 func TestFuncs(t *testing.T) {
 	m := aws.NewDummyEc2Meta()
