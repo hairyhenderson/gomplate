@@ -120,20 +120,10 @@ func MustAtoi(s string) int {
 	return i
 }
 
-// ToInt64 - taken from github.com/Masterminds/sprig
+// ToInt64 - convert input to an int64, if convertible. Otherwise, returns 0.
 func ToInt64(v interface{}) int64 {
 	if str, ok := v.(string); ok {
-		iv, err := strconv.ParseInt(str, 0, 64)
-		if err != nil {
-			// maybe it's a float?
-			var fv float64
-			fv, err = strconv.ParseFloat(str, 64)
-			if err != nil {
-				return 0
-			}
-			return ToInt64(fv)
-		}
-		return iv
+		return strToInt64(str)
 	}
 
 	val := reflect.Indirect(reflect.ValueOf(v))
@@ -150,7 +140,7 @@ func ToInt64(v interface{}) int64 {
 	case reflect.Float32, reflect.Float64:
 		return int64(val.Float())
 	case reflect.Bool:
-		if val.Bool() == true {
+		if val.Bool() {
 			return 1
 		}
 		return 0
@@ -182,22 +172,10 @@ func ToInts(in ...interface{}) []int {
 	return out
 }
 
-// ToFloat64 - taken from github.com/Masterminds/sprig
+// ToFloat64 - convert input to a float64, if convertible. Otherwise, returns 0.
 func ToFloat64(v interface{}) float64 {
 	if str, ok := v.(string); ok {
-		// this is inefficient, but it's the only way I can think of to
-		// properly convert octal integers to floats
-		iv, err := strconv.ParseInt(str, 0, 64)
-		if err != nil {
-			// ok maybe it's a float?
-			var fv float64
-			fv, err = strconv.ParseFloat(str, 64)
-			if err != nil {
-				return 0
-			}
-			return fv
-		}
-		return float64(iv)
+		return strToFloat64(str)
 	}
 
 	val := reflect.Indirect(reflect.ValueOf(v))
@@ -211,13 +189,43 @@ func ToFloat64(v interface{}) float64 {
 	case reflect.Float32, reflect.Float64:
 		return val.Float()
 	case reflect.Bool:
-		if val.Bool() == true {
+		if val.Bool() {
 			return 1
 		}
 		return 0
 	default:
 		return 0
 	}
+}
+
+func strToInt64(str string) int64 {
+	iv, err := strconv.ParseInt(str, 0, 64)
+	if err != nil {
+		// maybe it's a float?
+		var fv float64
+		fv, err = strconv.ParseFloat(str, 64)
+		if err != nil {
+			return 0
+		}
+		return ToInt64(fv)
+	}
+	return iv
+}
+
+func strToFloat64(str string) float64 {
+	// this is inefficient, but it's the only way I can think of to
+	// properly convert octal integers to floats
+	iv, err := strconv.ParseInt(str, 0, 64)
+	if err != nil {
+		// ok maybe it's a float?
+		var fv float64
+		fv, err = strconv.ParseFloat(str, 64)
+		if err != nil {
+			return 0
+		}
+		return fv
+	}
+	return float64(iv)
 }
 
 // ToFloat64s -

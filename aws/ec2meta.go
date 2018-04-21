@@ -74,6 +74,7 @@ func (e *Ec2Meta) retrieveMetadata(url string, def ...string) string {
 		return returnDefault(def)
 	}
 
+	// nolint: errcheck
 	defer resp.Body.Close()
 	if resp.StatusCode > 399 {
 		return returnDefault(def)

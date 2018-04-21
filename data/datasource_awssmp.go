@@ -17,7 +17,7 @@ func parseAWSSMPArgs(origPath string, args ...string) (paramPath string, err err
 	}
 
 	if len(args) >= 2 {
-		err = errors.New("Maximum two arguments to aws+smp datasource: alias, extraPath")		
+		err = errors.New("Maximum two arguments to aws+smp datasource: alias, extraPath")
 	}
 	return
 }
@@ -28,15 +28,17 @@ func readAWSSMP(source *Source, args ...string) (output []byte, err error) {
 	}
 
 	paramPath, err := parseAWSSMPArgs(source.URL.Path, args...)
+	if err != nil {
+		return nil, err
+	}
 
-	source.Type = json_mimetype
-	output, err = readAWSSMPParam(source, paramPath)
-	return
+	source.Type = jsonMimetype
+	return readAWSSMPParam(source, paramPath)
 }
 
 func readAWSSMPParam(source *Source, paramPath string) ([]byte, error) {
 	input := &ssm.GetParameterInput{
-		Name: aws.String(paramPath),
+		Name:           aws.String(paramPath),
 		WithDecryption: aws.Bool(true),
 	}
 
@@ -47,7 +49,7 @@ func readAWSSMPParam(source *Source, paramPath string) ([]byte, error) {
 			input, err)
 		return nil, err
 	}
-	
+
 	result := *response.Parameter
 
 	output := ToJSON(result)

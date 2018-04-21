@@ -19,7 +19,7 @@ func TestRead(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, "foo", actual)
 
-	actual, err = Read("/tmp/bar")
+	_, err = Read("/tmp/bar")
 	assert.Error(t, err)
 }
 
