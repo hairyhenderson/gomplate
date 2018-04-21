@@ -92,10 +92,10 @@ gomplate.png: gomplate.svg
 
 ifeq ("$(CI)","true")
 lint:
-	gometalinter -j 1 --vendor --deadline 120s --disable gotype --enable gofmt --enable goimports --enable misspell --enable unused --disable gas
+	gometalinter -j 1 --vendor --deadline 120s --disable gotype --enable gofmt --enable goimports --enable misspell --enable unused --disable gas ./...
 else
 lint:
-	gometalinter -j $(shell nproc) --vendor --deadline 120s --disable gotype --enable gofmt --enable goimports --enable misspell --enable unused --disable gas
+	gometalinter -j $(shell nproc) --vendor --deadline 120s --disable gotype --enable gofmt --enable goimports --enable misspell --enable unused --disable gas ./...
 endif
 
 .PHONY: gen-changelog clean test build-x compress-all build-release build build-integration-image test-integration-docker gen-docs lint clean-images clean-containers docker-images
