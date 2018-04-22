@@ -102,7 +102,7 @@ func processTemplates(templates []*tplate) ([]*tplate, error) {
 
 // walkDir - given an input dir `dir` and an output dir `outDir`, and a list
 // of exclude globs (if any), walk the input directory and create a list of
-// input and output files, and an error, if any.
+// tplate objects, and an error, if any.
 func walkDir(dir, outDir string, excludeGlob []string) ([]*tplate, error) {
 	dir = filepath.Clean(dir)
 	outDir = filepath.Clean(outDir)
