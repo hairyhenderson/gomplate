@@ -4,6 +4,12 @@ GO := go
 PKG_NAME := gomplate
 PREFIX := .
 
+ifeq ("$(CI)","true")
+LINT_PROCS ?= 1
+else
+LINT_PROCS ?= $(shell nproc)
+endif
+
 COMMIT ?= `git rev-parse --short HEAD 2>/dev/null`
 VERSION ?= `git describe --abbrev=0 --tags $(git rev-list --tags --max-count=1) 2>/dev/null | sed 's/v\(.*\)/\1/'`
 BUILD_DATE ?= `date -u +"%Y-%m-%dT%H:%M:%SZ"`
@@ -90,13 +96,13 @@ gen-docs: docs/themes/hugo-material-docs
 gomplate.png: gomplate.svg
 	cloudconvert -f png -c density=288 $^
 
-ifeq ("$(CI)","true")
 lint:
-	gometalinter -j 1 --vendor --deadline 120s --disable gotype --enable gofmt --enable goimports --enable misspell --enable unused --disable gas
-else
-lint:
-	gometalinter -j $(shell nproc) --vendor --deadline 120s --disable gotype --enable gofmt --enable goimports --enable misspell --enable unused --disable gas
-endif
+	gometalinter -j $(LINT_PROCS) --vendor --skip test --deadline 120s --disable gotype --enable gofmt --enable goimports --enable misspell --disable gas ./...
+	gometalinter -j $(LINT_PROCS) --vendor --deadline 120s \
+		--disable gotype --disable megacheck --disable deadcode --disable gas \
+		--enable gofmt --enable goimports --enable misspell \
+		./test/integration
+	megacheck -tags integration ./test/integration
 
 .PHONY: gen-changelog clean test build-x compress-all build-release build build-integration-image test-integration-docker gen-docs lint clean-images clean-containers docker-images
 .DELETE_ON_ERROR:

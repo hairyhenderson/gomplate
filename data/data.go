@@ -194,7 +194,7 @@ func ToCSV(args ...interface{}) string {
 	if err != nil {
 		log.Fatal(err)
 	}
-	return string(b.Bytes())
+	return b.String()
 }
 
 func marshalObj(obj interface{}, f func(interface{}) ([]byte, error)) string {
@@ -231,7 +231,7 @@ func ToJSONPretty(indent string, in interface{}) string {
 		log.Fatalf("Unable to indent JSON %s: %v", b, err)
 	}
 
-	return string(out.Bytes())
+	return out.String()
 }
 
 // ToYAML - Stringify a struct as YAML
@@ -246,5 +246,5 @@ func ToTOML(in interface{}) string {
 	if err != nil {
 		log.Fatalf("Unable to marshal %s: %v", in, err)
 	}
-	return string(buf.Bytes())
+	return buf.String()
 }

@@ -17,8 +17,7 @@ func TestGetenv(t *testing.T) {
 }
 
 func TestGetenvFile(t *testing.T) {
-	var fs vfs.Filesystem
-	fs = memfs.Create()
+	fs := newMemFS()
 	_ = fs.Mkdir("/tmp", 0777)
 	f, _ := vfs.Create(fs, "/tmp/foo")
 	_, _ = f.Write([]byte("foo"))
@@ -30,7 +29,7 @@ func TestGetenvFile(t *testing.T) {
 	os.Setenv("FOO_FILE", "/tmp/missing")
 	assert.Equal(t, "bar", GetenvVFS(fs, "FOO", "bar"))
 
-	f, _ = vfs.Create(fs, "/tmp/unreadable")
+	_, _ = vfs.Create(fs, "/tmp/unreadable")
 	fs = WriteOnly(fs)
 	os.Setenv("FOO_FILE", "/tmp/unreadable")
 	assert.Equal(t, "bar", GetenvVFS(fs, "FOO", "bar"))
@@ -45,8 +44,7 @@ func TestExpandEnv(t *testing.T) {
 }
 
 func TestExpandEnvFile(t *testing.T) {
-	var fs vfs.Filesystem
-	fs = memfs.Create()
+	fs := newMemFS()
 	_ = fs.Mkdir("/tmp", 0777)
 	f, _ := vfs.Create(fs, "/tmp/foo")
 	_, _ = f.Write([]byte("foo"))
@@ -58,7 +56,7 @@ func TestExpandEnvFile(t *testing.T) {
 	os.Setenv("FOO_FILE", "/tmp/missing")
 	assert.Equal(t, "empty", expandEnvVFS(fs, "${FOO}empty"))
 
-	f, _ = vfs.Create(fs, "/tmp/unreadable")
+	_, _ = vfs.Create(fs, "/tmp/unreadable")
 	fs = WriteOnly(fs)
 	os.Setenv("FOO_FILE", "/tmp/unreadable")
 	assert.Equal(t, "", expandEnvVFS(fs, "${FOO}"))
@@ -68,6 +66,10 @@ func TestExpandEnvFile(t *testing.T) {
 // WriteOnly - represents a filesystem that's writeable, but read operations fail
 func WriteOnly(fs vfs.Filesystem) vfs.Filesystem {
 	return &WoFS{fs}
+}
+
+func newMemFS() vfs.Filesystem {
+	return memfs.Create()
 }
 
 type WoFS struct {

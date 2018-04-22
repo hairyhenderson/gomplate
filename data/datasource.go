@@ -25,7 +25,7 @@ import (
 // logFatal is defined so log.Fatal calls can be overridden for testing
 var logFatalf = log.Fatalf
 
-var json_mimetype = "application/json"
+var jsonMimetype = "application/json"
 
 // stdin - for overriding in tests
 var stdin io.Reader
@@ -101,7 +101,7 @@ func NewData(datasourceArgs []string, headerArgs []string) *Data {
 	}
 }
 
-// - A subset of SSM API for use in unit testing
+// AWSSMPGetter - A subset of SSM API for use in unit testing
 type AWSSMPGetter interface {
 	GetParameter(*ssm.GetParameterInput) (*ssm.GetParameterOutput, error)
 }
@@ -233,11 +233,11 @@ func (d *Data) Datasource(alias string, args ...string) interface{} {
 	if err != nil {
 		logFatalf("Couldn't read datasource '%s': %s", alias, err)
 	}
-	if b == nil || len(b) == 0 {
+	if len(b) == 0 {
 		logFatalf("No value found for %s from datasource '%s'", args, alias)
 	}
 	s := string(b)
-	if source.Type == json_mimetype {
+	if source.Type == jsonMimetype {
 		return JSON(s)
 	}
 	if source.Type == "application/yaml" {

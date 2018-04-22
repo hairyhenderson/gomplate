@@ -33,7 +33,10 @@ const instanceDocument = `{
 
 func instanceDocumentHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-	w.Write([]byte(instanceDocument))
+	_, err := w.Write([]byte(instanceDocument))
+	if err != nil {
+		w.WriteHeader(500)
+	}
 }
 
 func certificateGenerate() (priv *rsa.PrivateKey, derBytes []byte, err error) {
@@ -93,13 +96,16 @@ func pkcsHandler(priv *rsa.PrivateKey, derBytes []byte) func(http.ResponseWriter
 		encoded = bytes.TrimSuffix(encoded, []byte("\n-----END PKCS7-----\n"))
 
 		w.Header().Set("Content-Type", "text/plain")
-		w.Write(encoded)
+		_, err = w.Write(encoded)
+		if err != nil {
+			w.WriteHeader(500)
+		}
 	}
 }
 
 func stsHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/xml")
-	w.Write([]byte(`<GetCallerIdentityResponse xmlns="https://sts.amazonaws.com/doc/2011-06-15/">
+	_, err := w.Write([]byte(`<GetCallerIdentityResponse xmlns="https://sts.amazonaws.com/doc/2011-06-15/">
   <GetCallerIdentityResult>
    <Arn>arn:aws:iam::1:user/Test</Arn>
     <UserId>AKIAI44QH8DHBEXAMPLE</UserId>
@@ -109,11 +115,14 @@ func stsHandler(w http.ResponseWriter, r *http.Request) {
     <RequestId>01234567-89ab-cdef-0123-456789abcdef</RequestId>
   </ResponseMetadata>
 </GetCallerIdentityResponse>`))
+	if err != nil {
+		w.WriteHeader(500)
+	}
 }
 
 func ec2Handler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/xml")
-	w.Write([]byte(`<DescribeInstancesResponse xmlns="http://ec2.amazonaws.com/doc/2016-11-15/">
+	_, err := w.Write([]byte(`<DescribeInstancesResponse xmlns="http://ec2.amazonaws.com/doc/2016-11-15/">
     <requestId>8f7724cf-496f-496e-8fe3-example</requestId>
     <reservationSet>
         <item>
@@ -233,4 +242,7 @@ func ec2Handler(w http.ResponseWriter, r *http.Request) {
         </item>
     </reservationSet>
 </DescribeInstancesResponse>`))
+	if err != nil {
+		w.WriteHeader(500)
+	}
 }

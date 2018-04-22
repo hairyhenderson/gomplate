@@ -14,9 +14,9 @@ import (
 
 // DummyParamGetter - test double
 type DummyParamGetter struct {
-	t *testing.T
-	param *ssm.Parameter
-	err awserr.Error
+	t                *testing.T
+	param            *ssm.Parameter
+	err              awserr.Error
 	mockGetParameter func(*ssm.GetParameterInput) (*ssm.GetParameterOutput, error)
 }
 
@@ -37,7 +37,7 @@ func (d DummyParamGetter) GetParameter(input *ssm.GetParameterInput) (*ssm.GetPa
 func simpleAWSSourceHelper(dummy AWSSMPGetter) *Source {
 	return &Source{
 		Alias: "foo",
-		URL:   &url.URL{
+		URL: &url.URL{
 			Scheme: "aws+smp",
 			Path:   "/foo",
 		},
@@ -71,16 +71,16 @@ func TestAWSSMP_ParseArgsTooMany(t *testing.T) {
 func TestAWSSMP_GetParameterSetup(t *testing.T) {
 	calledOk := false
 	s := simpleAWSSourceHelper(DummyParamGetter{
-			t: t,
-			mockGetParameter: func(input *ssm.GetParameterInput) (*ssm.GetParameterOutput, error) {
-				assert.Equal(t, "/foo/bar", *input.Name)
-				assert.True(t, *input.WithDecryption)
-				calledOk = true
-				return &ssm.GetParameterOutput{
-					Parameter: &ssm.Parameter{},
-				}, nil
-			},
-		})
+		t: t,
+		mockGetParameter: func(input *ssm.GetParameterInput) (*ssm.GetParameterOutput, error) {
+			assert.Equal(t, "/foo/bar", *input.Name)
+			assert.True(t, *input.WithDecryption)
+			calledOk = true
+			return &ssm.GetParameterOutput{
+				Parameter: &ssm.Parameter{},
+			}, nil
+		},
+	})
 
 	_, err := readAWSSMP(s, "/bar")
 	assert.True(t, calledOk)
@@ -89,28 +89,28 @@ func TestAWSSMP_GetParameterSetup(t *testing.T) {
 
 func TestAWSSMP_GetParameterValidOutput(t *testing.T) {
 	s := simpleAWSSourceHelper(DummyParamGetter{
-			t: t,
-			param: &ssm.Parameter{
-				Name: aws.String("/foo"),
-				Type: aws.String("String"),
-				Value: aws.String("val"),
-				Version: aws.Int64(1),
-			},
-		})
+		t: t,
+		param: &ssm.Parameter{
+			Name:    aws.String("/foo"),
+			Type:    aws.String("String"),
+			Value:   aws.String("val"),
+			Version: aws.Int64(1),
+		},
+	})
 
 	output, err := readAWSSMP(s, "")
 	assert.Nil(t, err)
 	expected := "{\"Name\":\"/foo\",\"Type\":\"String\",\"Value\":\"val\",\"Version\":1}"
 	assert.Equal(t, []byte(expected), output)
-	assert.Equal(t, json_mimetype, s.Type)
+	assert.Equal(t, jsonMimetype, s.Type)
 }
 
 func TestAWSSMP_GetParameterMissing(t *testing.T) {
 	expectedErr := awserr.New("ParameterNotFound", "Test of error message", nil)
 	s := simpleAWSSourceHelper(DummyParamGetter{
-			t: t,
-			err: expectedErr,
-		})
+		t:   t,
+		err: expectedErr,
+	})
 
 	defer restoreLogFatalf()
 	setupMockLogFatalf()
@@ -119,5 +119,3 @@ func TestAWSSMP_GetParameterMissing(t *testing.T) {
 	})
 	assert.Contains(t, spyLogFatalfMsg, "Test of error message")
 }
-
-

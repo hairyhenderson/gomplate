@@ -3,6 +3,7 @@ package gomplate
 import (
 	"io"
 	"text/template"
+	"time"
 
 	"github.com/hairyhenderson/gomplate/data"
 )
@@ -59,6 +60,7 @@ func newGomplate(d *data.Data, leftDelim, rightDelim string) *gomplate {
 
 // RunTemplates - run all gomplate templates specified by the given configuration
 func RunTemplates(o *Config) error {
+	Metrics = newMetrics()
 	defer runCleanupHooks()
 	d := data.NewData(o.DataSources, o.DataSourceHeaders)
 	addCleanupHook(d.Cleanup)
@@ -69,14 +71,25 @@ func RunTemplates(o *Config) error {
 }
 
 func (g *gomplate) runTemplates(o *Config) error {
+	start := time.Now()
 	tmpl, err := gatherTemplates(o)
+	Metrics.GatherDuration = time.Now().Sub(start)
 	if err != nil {
+		Metrics.Errors++
 		return err
 	}
+	Metrics.TemplatesGathered = len(tmpl)
+	start = time.Now()
+	defer func() { Metrics.TotalRenderDuration = time.Now().Sub(start) }()
 	for _, t := range tmpl {
-		if err := g.runTemplate(t); err != nil {
+		tstart := time.Now()
+		err := g.runTemplate(t)
+		Metrics.RenderDuration[t.name] = time.Now().Sub(tstart)
+		if err != nil {
+			Metrics.Errors++
 			return err
 		}
+		Metrics.TemplatesProcessed++
 	}
 	return nil
 }

@@ -167,4 +167,7 @@ func TestRunTemplates(t *testing.T) {
 	err := RunTemplates(config)
 	assert.NoError(t, err)
 	assert.Equal(t, "foo", buf.String())
+	assert.Equal(t, 1, Metrics.TemplatesGathered)
+	assert.Equal(t, 1, Metrics.TemplatesProcessed)
+	assert.Equal(t, 0, Metrics.Errors)
 }

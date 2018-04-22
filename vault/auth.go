@@ -157,29 +157,12 @@ func (v *Vault) UserPassLogin() string {
 
 // EC2Login - AWS EC2 auth backend
 func (v *Vault) EC2Login() string {
-	role := env.Getenv("VAULT_AUTH_AWS_ROLE")
 	mount := env.Getenv("VAULT_AUTH_AWS_MOUNT", "aws")
-	nonce := env.Getenv("VAULT_AUTH_AWS_NONCE")
 	output := env.Getenv("VAULT_AUTH_AWS_NONCE_OUTPUT")
 
-	vars := map[string]interface{}{}
+	nonce := env.Getenv("VAULT_AUTH_AWS_NONCE")
 
-	if role != "" {
-		vars["role"] = role
-	}
-
-	if nonce != "" {
-		vars["nonce"] = nonce
-	}
-
-	opts := aws.ClientOptions{
-		Timeout: time.Duration(conv.MustAtoi(os.Getenv("AWS_TIMEOUT"))) * time.Millisecond,
-	}
-
-	meta := aws.NewEc2Meta(opts)
-
-	vars["pkcs7"] = strings.Replace(strings.TrimSpace(meta.Dynamic("instance-identity/pkcs7")), "\n", "", -1)
-
+	vars := createEc2LoginVars(nonce)
 	if vars["pkcs7"] == "" {
 		return ""
 	}
@@ -212,6 +195,29 @@ func (v *Vault) EC2Login() string {
 	}
 
 	return secret.Auth.ClientToken
+}
+
+func createEc2LoginVars(nonce string) map[string]interface{} {
+	role := env.Getenv("VAULT_AUTH_AWS_ROLE")
+
+	vars := map[string]interface{}{}
+
+	if role != "" {
+		vars["role"] = role
+	}
+
+	if nonce != "" {
+		vars["nonce"] = nonce
+	}
+
+	opts := aws.ClientOptions{
+		Timeout: time.Duration(conv.MustAtoi(os.Getenv("AWS_TIMEOUT"))) * time.Millisecond,
+	}
+
+	meta := aws.NewEc2Meta(opts)
+
+	vars["pkcs7"] = strings.Replace(strings.TrimSpace(meta.Dynamic("instance-identity/pkcs7")), "\n", "", -1)
+	return vars
 }
 
 // TokenLogin -

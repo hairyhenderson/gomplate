@@ -95,6 +95,7 @@ func (f *CryptoFuncs) SHA512(input interface{}) string {
 }
 
 // SHA512_224 -
+// nolint: golint
 func (f *CryptoFuncs) SHA512_224(input interface{}) string {
 	in := toBytes(input)
 	out := sha512.Sum512_224(in)
@@ -102,6 +103,7 @@ func (f *CryptoFuncs) SHA512_224(input interface{}) string {
 }
 
 // SHA512_256 -
+// nolint: golint
 func (f *CryptoFuncs) SHA512_256(input interface{}) string {
 	in := toBytes(input)
 	out := sha512.Sum512_256(in)

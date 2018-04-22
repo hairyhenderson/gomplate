@@ -35,8 +35,8 @@ func AWSFuncs(f map[string]interface{}) {
 // Funcs -
 type Funcs struct {
 	meta     *aws.Ec2Meta
-	metaInit sync.Once
 	info     *aws.Ec2Info
+	metaInit sync.Once
 	infoInit sync.Once
 	awsopts  aws.ClientOptions
 }
