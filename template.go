@@ -60,6 +60,7 @@ func gatherTemplates(o *Config) (templates []*tplate, err error) {
 		templates = []*tplate{{
 			name:     "<arg>",
 			contents: o.Input,
+			mode:     os.FileMode(0644),
 		}}
 
 		if len(o.OutputFiles) == 1 {
