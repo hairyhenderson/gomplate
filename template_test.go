@@ -160,6 +160,15 @@ func TestGatherTemplates(t *testing.T) {
 	assert.Equal(t, Stdout, templates[0].target)
 
 	templates, err = gatherTemplates(&Config{
+		Input:       "foo",
+		OutputFiles: []string{"out"},
+	})
+	assert.NoError(t, err)
+	assert.Len(t, templates, 1)
+	assert.Equal(t, "out", templates[0].targetPath)
+	assert.Equal(t, os.FileMode(0644), templates[0].mode)
+
+	templates, err = gatherTemplates(&Config{
 		InputFiles:  []string{"foo"},
 		OutputFiles: []string{"out"},
 	})
