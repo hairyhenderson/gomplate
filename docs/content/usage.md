@@ -74,3 +74,13 @@ A few different forms are valid:
 
 Sometimes it's necessary to override the default template delimiters (`{{`/`}}`).
 Use `--left-delim`/`--right-delim` or set `$GOMPLATE_LEFT_DELIM`/`$GOMPLATE_RIGHT_DELIM`.
+
+## Post-template command execution
+
+Gomplate can launch other commands when template execution is successful. Simply
+add the command to the command-line after a `--` argument:
+
+```console
+$ gomplate -i 'hello world' -o out.txt -- cat out.txt
+hello world
+```
