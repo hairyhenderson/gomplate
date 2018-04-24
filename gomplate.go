@@ -2,6 +2,7 @@ package gomplate
 
 import (
 	"io"
+	"os"
 	"text/template"
 	"time"
 
@@ -42,8 +43,10 @@ func (g *gomplate) runTemplate(t *tplate) error {
 
 	switch t.target.(type) {
 	case io.Closer:
-		// nolint: errcheck
-		defer t.target.(io.Closer).Close()
+		if t.target != os.Stdout {
+			// nolint: errcheck
+			defer t.target.(io.Closer).Close()
+		}
 	}
 	err = tmpl.Execute(t.target, context)
 	return err
