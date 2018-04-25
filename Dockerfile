@@ -36,6 +36,24 @@ ENTRYPOINT [ "/gomplate" ]
 
 CMD [ "--help" ]
 
+FROM alpine:3.7 AS gomplate-alpine
+
+ARG BUILD_DATE
+ARG VCS_REF
+ARG OS=linux
+ARG ARCH=amd64
+
+LABEL org.label-schema.build-date=$BUILD_DATE \
+      org.label-schema.vcs-ref=$VCS_REF \
+      org.label-schema.vcs-url="https://github.com/hairyhenderson/gomplate"
+
+RUN apk add --no-cache ca-certificates
+COPY --from=artifacts /bin/gomplate_${OS}-${ARCH}-slim /bin/gomplate
+
+ENTRYPOINT [ "/gomplate" ]
+
+CMD [ "--help" ]
+
 FROM scratch AS gomplate-slim
 
 ARG BUILD_DATE
