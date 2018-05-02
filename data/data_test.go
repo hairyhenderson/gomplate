@@ -124,6 +124,15 @@ func TestCSV(t *testing.T) {
 
 	in = "first;second;third\r\n1;2;3\r\n4;5;6\r\n"
 	assert.Equal(t, expected, CSV(";", in))
+
+	in = ""
+	assert.Equal(t, [][]string{nil}, CSV(in))
+
+	in = "\n"
+	assert.Equal(t, [][]string{nil}, CSV(in))
+
+	in = "foo"
+	assert.Equal(t, [][]string{{"foo"}}, CSV(in))
 }
 
 func TestCSVByRow(t *testing.T) {

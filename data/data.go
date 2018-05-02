@@ -59,9 +59,30 @@ func TOML(in string) interface{} {
 	return unmarshalObj(obj, in, toml.Unmarshal)
 }
 
-func parseCSV(args ...string) (records [][]string, hdr []string) {
-	delim := ","
-	var in string
+func parseCSV(args ...string) ([][]string, []string) {
+	in, delim, hdr := csvParseArgs(args...)
+	c := csv.NewReader(strings.NewReader(in))
+	c.Comma = rune(delim[0])
+	records, err := c.ReadAll()
+	if err != nil {
+		log.Fatal(err)
+	}
+	if len(records) > 0 {
+		if hdr == nil {
+			hdr = records[0]
+			records = records[1:]
+		} else if len(hdr) == 0 {
+			hdr = make([]string, len(records[0]))
+			for i := range hdr {
+				hdr[i] = autoIndex(i)
+			}
+		}
+	}
+	return records, hdr
+}
+
+func csvParseArgs(args ...string) (in, delim string, hdr []string) {
+	delim = ","
 	if len(args) == 1 {
 		in = args[0]
 	}
@@ -80,22 +101,7 @@ func parseCSV(args ...string) (records [][]string, hdr []string) {
 		hdr = strings.Split(args[1], delim)
 		in = args[2]
 	}
-	c := csv.NewReader(strings.NewReader(in))
-	c.Comma = rune(delim[0])
-	records, err := c.ReadAll()
-	if err != nil {
-		log.Fatal(err)
-	}
-	if hdr == nil {
-		hdr = records[0]
-		records = records[1:]
-	} else if len(hdr) == 0 {
-		hdr = make([]string, len(records[0]))
-		for i := range hdr {
-			hdr[i] = autoIndex(i)
-		}
-	}
-	return records, hdr
+	return in, delim, hdr
 }
 
 // autoIndex - calculates a default string column name given a numeric value
