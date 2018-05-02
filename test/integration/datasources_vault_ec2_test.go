@@ -43,7 +43,7 @@ func (s *VaultEc2DatasourcesSuite) SetUpSuite(c *C) {
 	http.HandleFunc("/ec2/", ec2Handler)
 	go http.Serve(s.l, nil)
 
-	s.startVault(c)
+	s.pidDir, s.tmpDir, s.vaultAddr, s.vaultResult = startVault(c)
 
 	s.v, err = createVaultClient(s.vaultAddr, vaultRootToken)
 	handle(c, err)
@@ -55,39 +55,6 @@ func (s *VaultEc2DatasourcesSuite) SetUpSuite(c *C) {
 	err = s.v.vc.Sys().PutPolicy("readpol", `path "*" {
   policy = "read"
 }`)
-	handle(c, err)
-}
-
-func (s *VaultEc2DatasourcesSuite) startVault(c *C) {
-	s.pidDir = fs.NewDir(c, "gomplate-inttests-vaultpid")
-	s.tmpDir = fs.NewDir(c, "gomplate-inttests",
-		fs.WithFile("config.json", `{
-		"pid_file": "`+s.pidDir.Join("vault.pid")+`"
-		}`),
-	)
-
-	// rename any existing token so it doesn't get overridden
-	u, _ := user.Current()
-	homeDir := u.HomeDir
-	tokenFile := path.Join(homeDir, ".vault-token")
-	info, err := os.Stat(tokenFile)
-	if err == nil && info.Mode().IsRegular() {
-		os.Rename(tokenFile, path.Join(homeDir, ".vault-token.bak"))
-	}
-
-	_, s.vaultAddr = freeport()
-	vault := icmd.Command("vault", "server",
-		"-dev",
-		"-dev-root-token-id="+vaultRootToken,
-		"-log-level=trace",
-		"-dev-listen-address="+s.vaultAddr,
-		"-config="+s.tmpDir.Join("config.json"),
-	)
-	s.vaultResult = icmd.StartCmd(vault)
-
-	c.Logf("Fired up Vault: %v", vault)
-
-	err = waitForURL(c, "http://"+s.vaultAddr+"/v1/sys/health")
 	handle(c, err)
 }
 
