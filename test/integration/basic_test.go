@@ -1,4 +1,4 @@
-//+build integration
+// +build integration
 //+build !windows
 
 package integration
@@ -151,4 +151,16 @@ func (s *BasicSuite) TestDelimsChangedThroughEnvVars(c *C) {
 func (s *BasicSuite) TestUnknownArgErrors(c *C) {
 	result := icmd.RunCommand(GomplateBin, "-in", "flibbit")
 	result.Assert(c, icmd.Expected{ExitCode: 1, Out: `unknown command "flibbit" for "gomplate"`})
+}
+
+func (s *BasicSuite) TestExecCommand(c *C) {
+	out := s.tmpDir.Join("out")
+	result := icmd.RunCmd(icmd.Command(GomplateBin,
+		"-i", `{{print "hello world"}}`,
+		"-o", out,
+		"--", "cat", out))
+	result.Assert(c, icmd.Expected{
+		ExitCode: 0,
+		Out:      "hello world",
+	})
 }

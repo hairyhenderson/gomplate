@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"os/exec"
 
 	"github.com/hairyhenderson/gomplate"
 	"github.com/hairyhenderson/gomplate/env"
@@ -45,6 +46,29 @@ func printVersion(name string) {
 	fmt.Printf("%s version %s\n", name, version.Version)
 }
 
+// postRunExec - if templating succeeds, the command following a '--' will be executed
+func postRunExec(cmd *cobra.Command, args []string) error {
+	if len(args) > 0 {
+		name := args[0]
+		args = args[1:]
+		c := exec.Command(name, args...)
+		c.Stdin = os.Stdin
+		c.Stderr = os.Stderr
+		c.Stdout = os.Stdout
+		return c.Run()
+	}
+	return nil
+}
+
+// optionalExecArgs - implements cobra.PositionalArgs. Allows extra args following
+// a '--', but not otherwise.
+func optionalExecArgs(cmd *cobra.Command, args []string) error {
+	if cmd.ArgsLenAtDash() == 0 {
+		return nil
+	}
+	return cobra.NoArgs(cmd, args)
+}
+
 func newGomplateCmd() *cobra.Command {
 	rootCmd := &cobra.Command{
 		Use:     "gomplate",
@@ -57,7 +81,8 @@ func newGomplateCmd() *cobra.Command {
 			}
 			return gomplate.RunTemplates(&opts)
 		},
-		Args: cobra.NoArgs,
+		PostRunE: postRunExec,
+		Args:     optionalExecArgs,
 	}
 	return rootCmd
 }
