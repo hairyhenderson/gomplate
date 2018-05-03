@@ -76,18 +76,18 @@ func RunTemplates(o *Config) error {
 func (g *gomplate) runTemplates(o *Config) error {
 	start := time.Now()
 	tmpl, err := gatherTemplates(o)
-	Metrics.GatherDuration = time.Now().Sub(start)
+	Metrics.GatherDuration = time.Since(start)
 	if err != nil {
 		Metrics.Errors++
 		return err
 	}
 	Metrics.TemplatesGathered = len(tmpl)
 	start = time.Now()
-	defer func() { Metrics.TotalRenderDuration = time.Now().Sub(start) }()
+	defer func() { Metrics.TotalRenderDuration = time.Since(start) }()
 	for _, t := range tmpl {
 		tstart := time.Now()
 		err := g.runTemplate(t)
-		Metrics.RenderDuration[t.name] = time.Now().Sub(tstart)
+		Metrics.RenderDuration[t.name] = time.Since(tstart)
 		if err != nil {
 			Metrics.Errors++
 			return err
