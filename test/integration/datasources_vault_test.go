@@ -141,7 +141,7 @@ func (s *VaultDatasourcesSuite) TestTokenAuth(c *C) {
 			"VAULT_TOKEN=" + tok,
 		}
 	})
-	result.Assert(c, icmd.Expected{ExitCode: 1, Err: "No value found for [bar] from datasource 'vault'"})
+	result.Assert(c, icmd.Expected{ExitCode: 1, Err: "error calling ds: Couldn't read datasource 'vault': no value found for path /secret/bar"})
 
 	tokFile := fs.NewFile(c, "test-vault-token", fs.WithContent(tok))
 	defer tokFile.Remove()

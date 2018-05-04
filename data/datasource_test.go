@@ -165,8 +165,9 @@ func TestDatasource(t *testing.T) {
 	test("yml", "application/yaml", []byte("hello:\n  cruel: world\n"))
 
 	d := setup("", "text/plain", nil)
-	_, err := d.Datasource("foo")
-	assert.Errorf(t, err, "No value found for")
+	actual, err := d.Datasource("foo")
+	assert.NoError(t, err)
+	assert.Equal(t, "", actual)
 }
 
 func TestDatasourceExists(t *testing.T) {

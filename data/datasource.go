@@ -238,9 +238,6 @@ func (d *Data) Datasource(alias string, args ...string) (interface{}, error) {
 	if err != nil {
 		return nil, errors.Wrapf(err, "Couldn't read datasource '%s'", alias)
 	}
-	if len(b) == 0 {
-		return nil, errors.Errorf("No value found for %s from datasource '%s'", args, alias)
-	}
 	s := string(b)
 	if source.Type == jsonMimetype {
 		return JSON(s), nil
@@ -410,6 +407,9 @@ func readVault(source *Source, args ...string) ([]byte, error) {
 	}
 	if err != nil {
 		return nil, err
+	}
+	if len(data) == 0 {
+		return nil, errors.Errorf("no value found for path %s", p)
 	}
 	source.Type = "application/json"
 
