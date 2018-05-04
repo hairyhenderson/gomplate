@@ -319,10 +319,21 @@ defined.
 
 Note: this does _not_ verify if the datasource is reachable.
 
-Useful when used in an `if`/`else` block
+Useful when used in an `if`/`else` block.
 
 ```console
 $ echo '{{if (datasourceExists "test")}}{{datasource "test"}}{{else}}no worries{{end}}' | gomplate
+no worries
+```
+
+## `datasourceReachable`
+
+Tests whether or not a given datasource is defined and reachable, where the definition of "reachable" differs by datasource, but generally means the data is able to be read successfully.
+
+Useful when used in an `if`/`else` block.
+
+```console
+$ gomplate -i '{{if (datasourceReachable "test")}}{{datasource "test"}}{{else}}no worries{{end}}' -d test=https://bogus.example.com/wontwork.json
 no worries
 ```
 

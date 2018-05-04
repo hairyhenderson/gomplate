@@ -257,6 +257,17 @@ func (d *Data) Datasource(alias string, args ...string) (interface{}, error) {
 	return nil, errors.Errorf("Datasources of type %s not yet supported", source.Type)
 }
 
+// DatasourceReachable - Determines if the named datasource is reachable with
+// the given arguments. Reads from the datasource, and discards the returned data.
+func (d *Data) DatasourceReachable(alias string, args ...string) bool {
+	source, ok := d.Sources[alias]
+	if !ok {
+		return false
+	}
+	_, err := d.ReadSource(source, args...)
+	return err == nil
+}
+
 // Include -
 func (d *Data) Include(alias string, args ...string) (string, error) {
 	source, ok := d.Sources[alias]
