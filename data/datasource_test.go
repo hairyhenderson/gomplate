@@ -5,7 +5,6 @@ package data
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -17,92 +16,85 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var spyLogFatalfMsg string
-
-func restoreLogFatalf() {
-	logFatalf = log.Fatalf
-}
-
-func mockLogFatalf(msg string, args ...interface{}) {
-	spyLogFatalfMsg = fmt.Sprintf(msg, args...)
-	panic(spyLogFatalfMsg)
-}
-
-func setupMockLogFatalf() {
-	logFatalf = mockLogFatalf
-	spyLogFatalfMsg = ""
-}
-
 func TestNewSource(t *testing.T) {
-	s := NewSource("foo", &url.URL{
+	s, err := NewSource("foo", &url.URL{
 		Scheme: "file",
 		Path:   "/foo.json",
 	})
+	assert.NoError(t, err)
 	assert.Equal(t, "application/json", s.Type)
 	assert.Equal(t, ".json", s.Ext)
 
-	s = NewSource("foo", &url.URL{
+	s, err = NewSource("foo", &url.URL{
 		Scheme: "file",
 		Path:   "/foo",
 	})
+	assert.NoError(t, err)
 	assert.Equal(t, "text/plain", s.Type)
 	assert.Equal(t, "", s.Ext)
 
-	s = NewSource("foo", &url.URL{
+	s, err = NewSource("foo", &url.URL{
 		Scheme: "http",
 		Host:   "example.com",
 		Path:   "/foo.json",
 	})
+	assert.NoError(t, err)
 	assert.Equal(t, "application/json", s.Type)
 	assert.Equal(t, ".json", s.Ext)
 
-	s = NewSource("foo", &url.URL{
+	s, err = NewSource("foo", &url.URL{
 		Scheme: "ftp",
 		Host:   "example.com",
 		Path:   "/foo.json",
 	})
+	assert.NoError(t, err)
 	assert.Equal(t, "application/json", s.Type)
 	assert.Equal(t, ".json", s.Ext)
 
-	s = NewSource("foo", &url.URL{
+	s, err = NewSource("foo", &url.URL{
 		Scheme:   "ftp",
 		Host:     "example.com",
 		Path:     "/foo.blarb",
 		RawQuery: "type=application/json%3Bcharset=utf-8",
 	})
-
+	assert.NoError(t, err)
 	assert.Equal(t, "application/json", s.Type)
 	assert.Equal(t, ".blarb", s.Ext)
 	assert.Equal(t, map[string]string{"charset": "utf-8"}, s.Params)
 
-	s = NewSource("foo", &url.URL{
+	s, err = NewSource("foo", &url.URL{
 		Scheme:   "stdin",
 		Host:     "",
 		Path:     "",
 		RawQuery: "type=application/json",
 	})
-
+	assert.NoError(t, err)
 	assert.Equal(t, "application/json", s.Type)
 	assert.Equal(t, "", s.Ext)
 	assert.Equal(t, map[string]string{}, s.Params)
 }
 
 func TestNewData(t *testing.T) {
-	d := NewData(nil, nil)
+	d, err := NewData(nil, nil)
+	assert.NoError(t, err)
 	assert.Len(t, d.Sources, 0)
 
-	d = NewData([]string{"foo=http:///foo.json"}, nil)
+	d, err = NewData([]string{"foo=http:///foo.json"}, nil)
+	assert.NoError(t, err)
 	assert.Equal(t, "/foo.json", d.Sources["foo"].URL.Path)
 
-	d = NewData([]string{"foo=http:///foo.json"}, []string{})
-	assert.Equal(t, "/foo.json", d.Sources["foo"].URL.Path)
-	assert.Empty(t, d.Sources["foo"].Header)
-
-	d = NewData([]string{"foo=http:///foo.json"}, []string{"bar=Accept: blah"})
+	d, err = NewData([]string{"foo=http:///foo.json"}, []string{})
+	assert.NoError(t, err)
 	assert.Equal(t, "/foo.json", d.Sources["foo"].URL.Path)
 	assert.Empty(t, d.Sources["foo"].Header)
 
-	d = NewData([]string{"foo=http:///foo.json"}, []string{"foo=Accept: blah"})
+	d, err = NewData([]string{"foo=http:///foo.json"}, []string{"bar=Accept: blah"})
+	assert.NoError(t, err)
+	assert.Equal(t, "/foo.json", d.Sources["foo"].URL.Path)
+	assert.Empty(t, d.Sources["foo"].Header)
+
+	d, err = NewData([]string{"foo=http:///foo.json"}, []string{"foo=Accept: blah"})
+	assert.NoError(t, err)
 	assert.Equal(t, "/foo.json", d.Sources["foo"].URL.Path)
 	assert.Equal(t, "blah", d.Sources["foo"].Header["Accept"][0])
 }
@@ -164,7 +156,8 @@ func TestDatasource(t *testing.T) {
 	test := func(ext, mime string, contents []byte) {
 		data := setup(ext, mime, contents)
 		expected := map[string]interface{}{"hello": map[interface{}]interface{}{"cruel": "world"}}
-		actual := data.Datasource("foo")
+		actual, err := data.Datasource("foo")
+		assert.NoError(t, err)
 		assert.Equal(t, expected, actual)
 	}
 
@@ -172,12 +165,8 @@ func TestDatasource(t *testing.T) {
 	test("yml", "application/yaml", []byte("hello:\n  cruel: world\n"))
 
 	d := setup("", "text/plain", nil)
-	defer restoreLogFatalf()
-	setupMockLogFatalf()
-	assert.Panics(t, func() {
-		d.Datasource("foo")
-	})
-	assert.Contains(t, spyLogFatalfMsg, "No value found for")
+	_, err := d.Datasource("foo")
+	assert.Errorf(t, err, "No value found for")
 }
 
 func TestDatasourceExists(t *testing.T) {
@@ -232,7 +221,9 @@ func TestHTTPFile(t *testing.T) {
 	}
 	expected := make(map[string]interface{})
 	expected["hello"] = "world"
-	actual := data.Datasource("foo").(map[string]interface{})
+	d, err := data.Datasource("foo")
+	assert.NoError(t, err)
+	actual := d.(map[string]interface{})
 	assert.Equal(t, expected["hello"], actual["hello"])
 }
 
@@ -263,7 +254,8 @@ func TestHTTPFileWithHeaders(t *testing.T) {
 		"Accept-Encoding": {"test"},
 		"Foo":             {"bar", "baz"},
 	}
-	actual := data.Datasource("foo")
+	actual, err := data.Datasource("foo")
+	assert.NoError(t, err)
 	assert.Equal(t, marshalObj(expected, json.Marshal), marshalObj(actual, json.Marshal))
 }
 
@@ -280,19 +272,15 @@ func TestParseHeaderArgs(t *testing.T) {
 			"Authorization": {"Bearer supersecret"},
 		},
 	}
-	assert.Equal(t, expected, parseHeaderArgs(args))
+	parsed, err := parseHeaderArgs(args)
+	assert.NoError(t, err)
+	assert.Equal(t, expected, parsed)
 
-	defer restoreLogFatalf()
-	setupMockLogFatalf()
-	assert.Panics(t, func() {
-		parseHeaderArgs([]string{"foo"})
-	})
+	_, err = parseHeaderArgs([]string{"foo"})
+	assert.Error(t, err)
 
-	defer restoreLogFatalf()
-	setupMockLogFatalf()
-	assert.Panics(t, func() {
-		parseHeaderArgs([]string{"foo=bar"})
-	})
+	_, err = parseHeaderArgs([]string{"foo=bar"})
+	assert.Error(t, err)
 
 	args = []string{
 		"foo=Accept: application/json",
@@ -310,7 +298,9 @@ func TestParseHeaderArgs(t *testing.T) {
 			"Authorization": {"Bearer  supersecret"},
 		},
 	}
-	assert.Equal(t, expected, parseHeaderArgs(args))
+	parsed, err = parseHeaderArgs(args)
+	assert.NoError(t, err)
+	assert.Equal(t, expected, parsed)
 }
 
 func TestInclude(t *testing.T) {
@@ -334,7 +324,8 @@ func TestInclude(t *testing.T) {
 	data := &Data{
 		Sources: sources,
 	}
-	actual := data.Include("foo")
+	actual, err := data.Include("foo")
+	assert.NoError(t, err)
 	assert.Equal(t, contents, actual)
 }
 

@@ -65,7 +65,10 @@ func newGomplate(d *data.Data, leftDelim, rightDelim string) *gomplate {
 func RunTemplates(o *Config) error {
 	Metrics = newMetrics()
 	defer runCleanupHooks()
-	d := data.NewData(o.DataSources, o.DataSourceHeaders)
+	d, err := data.NewData(o.DataSources, o.DataSourceHeaders)
+	if err != nil {
+		return err
+	}
 	addCleanupHook(d.Cleanup)
 
 	g := newGomplate(d, o.LDelim, o.RDelim)

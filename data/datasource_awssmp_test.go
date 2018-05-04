@@ -112,10 +112,6 @@ func TestAWSSMP_GetParameterMissing(t *testing.T) {
 		err: expectedErr,
 	})
 
-	defer restoreLogFatalf()
-	setupMockLogFatalf()
-	assert.Panics(t, func() {
-		readAWSSMP(s, "")
-	})
-	assert.Contains(t, spyLogFatalfMsg, "Test of error message")
+	_, err := readAWSSMP(s, "")
+	assert.Error(t, err, "Test of error message")
 }
