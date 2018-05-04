@@ -1,12 +1,56 @@
 # Change Log
 
-## [Unreleased](https://github.com/hairyhenderson/gomplate/tree/HEAD)
-
-[Full Changelog](https://github.com/hairyhenderson/gomplate/compare/v2.4.0...HEAD)
+## [v2.5.0](https://github.com/hairyhenderson/gomplate/tree/v2.5.0) (2018-05-04)
+[Full Changelog](https://github.com/hairyhenderson/gomplate/compare/v2.4.0...v2.5.0)
 
 **Implemented enhancements:**
 
+- Exec mode... [\#300](https://github.com/hairyhenderson/gomplate/issues/300)
+- Need a way to determine whether a datasource is reachable [\#286](https://github.com/hairyhenderson/gomplate/issues/286)
 - Add `go-sockaddr` functions [\#145](https://github.com/hairyhenderson/gomplate/issues/145)
+- Adding datasourceReachable function [\#315](https://github.com/hairyhenderson/gomplate/pull/315) ([hairyhenderson](https://github.com/hairyhenderson))
+- Execute additional command after -- [\#307](https://github.com/hairyhenderson/gomplate/pull/307) ([hairyhenderson](https://github.com/hairyhenderson))
+
+**Fixed bugs:**
+
+- panic when parsing an empty CSV as a datasource [\#311](https://github.com/hairyhenderson/gomplate/issues/311)
+- File mode is not preserved [\#296](https://github.com/hairyhenderson/gomplate/issues/296)
+- Fixing panic when parsing empty CSVs and CSVs containing only newlines [\#312](https://github.com/hairyhenderson/gomplate/pull/312) ([hairyhenderson](https://github.com/hairyhenderson))
+- Avoid closing stdout [\#306](https://github.com/hairyhenderson/gomplate/pull/306) ([hairyhenderson](https://github.com/hairyhenderson))
+- Writing output files from a stdin template requires permissions [\#305](https://github.com/hairyhenderson/gomplate/pull/305) ([benjdewan](https://github.com/benjdewan))
+- Linting subpackages too... [\#302](https://github.com/hairyhenderson/gomplate/pull/302) ([hairyhenderson](https://github.com/hairyhenderson))
+
+**Closed issues:**
+
+- Writing an output file from a template provided via --in sets no FileMode when run using Docker [\#304](https://github.com/hairyhenderson/gomplate/issues/304)
+- function "dict" not defined [\#291](https://github.com/hairyhenderson/gomplate/issues/291)
+- unexpected "|" in template clause [\#290](https://github.com/hairyhenderson/gomplate/issues/290)
+- Conditional statement as default value in getenv? [\#285](https://github.com/hairyhenderson/gomplate/issues/285)
+- Pull in sprig functions? [\#283](https://github.com/hairyhenderson/gomplate/issues/283)
+- Consider breaking the gomplate cmd into a sub-package [\#147](https://github.com/hairyhenderson/gomplate/issues/147)
+
+**Merged pull requests:**
+
+- Relaxing restriction on empty datasources [\#316](https://github.com/hairyhenderson/gomplate/pull/316) ([hairyhenderson](https://github.com/hairyhenderson))
+- Improving error handling for datasources [\#314](https://github.com/hairyhenderson/gomplate/pull/314) ([hairyhenderson](https://github.com/hairyhenderson))
+- Pin alpine Docker tag [\#309](https://github.com/hairyhenderson/gomplate/pull/309) ([renovate[bot]](https://github.com/apps/renovate))
+- Adding alpine Docker image variant [\#308](https://github.com/hairyhenderson/gomplate/pull/308) ([hairyhenderson](https://github.com/hairyhenderson))
+- Adding basic metrics around template rendering [\#303](https://github.com/hairyhenderson/gomplate/pull/303) ([hairyhenderson](https://github.com/hairyhenderson))
+- Preserve FileMode of input file when writing output file [\#301](https://github.com/hairyhenderson/gomplate/pull/301) ([djgilcrease](https://github.com/djgilcrease))
+- Exporting the writer used when templates are sent to Stdout [\#299](https://github.com/hairyhenderson/gomplate/pull/299) ([hairyhenderson](https://github.com/hairyhenderson))
+- Adding new conv.Default function [\#298](https://github.com/hairyhenderson/gomplate/pull/298) ([hairyhenderson](https://github.com/hairyhenderson))
+- Adding time.Since and time.Until funcs [\#295](https://github.com/hairyhenderson/gomplate/pull/295) ([hairyhenderson](https://github.com/hairyhenderson))
+- Adding time.ParseDuration function [\#294](https://github.com/hairyhenderson/gomplate/pull/294) ([hairyhenderson](https://github.com/hairyhenderson))
+- Relax inputs for many functions [\#293](https://github.com/hairyhenderson/gomplate/pull/293) ([hairyhenderson](https://github.com/hairyhenderson))
+- Adding conv.ToString function [\#292](https://github.com/hairyhenderson/gomplate/pull/292) ([hairyhenderson](https://github.com/hairyhenderson))
+- chore\(deps\): update golang:1.10-alpine docker digest to 356aea [\#289](https://github.com/hairyhenderson/gomplate/pull/289) ([renovate[bot]](https://github.com/apps/renovate))
+- meta: Add release for freebsd-amd64 [\#287](https://github.com/hairyhenderson/gomplate/pull/287) ([jen20](https://github.com/jen20))
+- New env.ExpandEnv function [\#284](https://github.com/hairyhenderson/gomplate/pull/284) ([hairyhenderson](https://github.com/hairyhenderson))
+- New function proposal: `strings.TrimPrefix` [\#282](https://github.com/hairyhenderson/gomplate/pull/282) ([christopher-avila](https://github.com/christopher-avila))
+- New function: `file.Walk` [\#281](https://github.com/hairyhenderson/gomplate/pull/281) ([christopher-avila](https://github.com/christopher-avila))
+- Update golang Docker image 1.10-alpine digest \(2d95d3\) [\#280](https://github.com/hairyhenderson/gomplate/pull/280) ([renovate[bot]](https://github.com/apps/renovate))
+- Update deps [\#273](https://github.com/hairyhenderson/gomplate/pull/273) ([hairyhenderson](https://github.com/hairyhenderson))
+- Putting main pkg in cmd subdirectory [\#264](https://github.com/hairyhenderson/gomplate/pull/264) ([hairyhenderson](https://github.com/hairyhenderson))
 
 ## [v2.4.0](https://github.com/hairyhenderson/gomplate/tree/v2.4.0) (2018-03-04)
 [Full Changelog](https://github.com/hairyhenderson/gomplate/compare/v2.3.0...v2.4.0)
