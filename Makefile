@@ -97,11 +97,38 @@ gomplate.png: gomplate.svg
 	cloudconvert -f png -c density=288 $^
 
 lint:
-	gometalinter -j $(LINT_PROCS) --vendor --skip test --deadline 120s --disable gotype --enable gofmt --enable goimports --enable misspell --disable gas ./...
+	gometalinter --vendor --disable-all \
+		--enable=gas \
+		--enable=goconst \
+		--enable=gocyclo \
+		--enable=golint \
+		--enable=gotypex \
+		--enable=ineffassign \
+		--enable=vet \
+		--enable=vetshadow \
+		--enable=misspell \
+		--enable=goimports \
+		--enable=gofmt \
+		./...
+	gometalinter --vendor --skip test --disable-all \
+		--enable=deadcode \
+		./...
+
+slow-lint:
+	gometalinter -j $(LINT_PROCS) --vendor --skip test --deadline 120s \
+		--disable gotype \
+		--enable gofmt \
+		--enable goimports \
+		--enable misspell \
+			./...
 	gometalinter -j $(LINT_PROCS) --vendor --deadline 120s \
-		--disable gotype --disable megacheck --disable deadcode --disable gas \
-		--enable gofmt --enable goimports --enable misspell \
-		./test/integration
+		--disable gotype \
+		--disable megacheck \
+		--disable deadcode \
+		--enable gofmt \
+		--enable goimports \
+		--enable misspell \
+			./test/integration
 	megacheck -tags integration ./test/integration
 
 .PHONY: gen-changelog clean test build-x compress-all build-release build build-integration-image test-integration-docker gen-docs lint clean-images clean-containers docker-images

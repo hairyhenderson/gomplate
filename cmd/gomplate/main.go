@@ -51,6 +51,7 @@ func postRunExec(cmd *cobra.Command, args []string) error {
 	if len(args) > 0 {
 		name := args[0]
 		args = args[1:]
+		// nolint: gas
 		c := exec.Command(name, args...)
 		c.Stdin = os.Stdin
 		c.Stderr = os.Stderr
