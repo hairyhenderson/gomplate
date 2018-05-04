@@ -30,7 +30,7 @@ var _ = Suite(&VaultDatasourcesSuite{})
 const vaultRootToken = "00000000-1111-2222-3333-444455556666"
 
 func (s *VaultDatasourcesSuite) SetUpSuite(c *C) {
-	s.startVault(c)
+	s.pidDir, s.tmpDir, s.vaultAddr, s.vaultResult = startVault(c)
 
 	var err error
 	s.v, err = createVaultClient(s.vaultAddr, vaultRootToken)
@@ -46,11 +46,11 @@ func (s *VaultDatasourcesSuite) SetUpSuite(c *C) {
 	handle(c, err)
 }
 
-func (s *VaultDatasourcesSuite) startVault(c *C) {
-	s.pidDir = fs.NewDir(c, "gomplate-inttests-vaultpid")
-	s.tmpDir = fs.NewDir(c, "gomplate-inttests",
+func startVault(c *C) (pidDir, tmpDir *fs.Dir, vaultAddr string, vaultResult *icmd.Result) {
+	pidDir = fs.NewDir(c, "gomplate-inttests-vaultpid")
+	tmpDir = fs.NewDir(c, "gomplate-inttests",
 		fs.WithFile("config.json", `{
-		"pid_file": "`+s.pidDir.Join("vault.pid")+`"
+		"pid_file": "`+pidDir.Join("vault.pid")+`"
 		}`),
 	)
 
@@ -63,20 +63,23 @@ func (s *VaultDatasourcesSuite) startVault(c *C) {
 		os.Rename(tokenFile, path.Join(homeDir, ".vault-token.bak"))
 	}
 
-	_, s.vaultAddr = freeport()
+	_, vaultAddr = freeport()
 	vault := icmd.Command("vault", "server",
 		"-dev",
 		"-dev-root-token-id="+vaultRootToken,
+		"-dev-leased-kv",
 		"-log-level=err",
-		"-dev-listen-address="+s.vaultAddr,
-		"-config="+s.tmpDir.Join("config.json"),
+		"-dev-listen-address="+vaultAddr,
+		"-config="+tmpDir.Join("config.json"),
 	)
-	s.vaultResult = icmd.StartCmd(vault)
+	vaultResult = icmd.StartCmd(vault)
 
 	c.Logf("Fired up Vault: %v", vault)
 
-	err = waitForURL(c, "http://"+s.vaultAddr+"/v1/sys/health")
+	err = waitForURL(c, "http://"+vaultAddr+"/v1/sys/health")
 	handle(c, err)
+
+	return pidDir, tmpDir, vaultAddr, vaultResult
 }
 
 func (s *VaultDatasourcesSuite) TearDownSuite(c *C) {
@@ -105,7 +108,7 @@ func (s *VaultDatasourcesSuite) TearDownSuite(c *C) {
 func (s *VaultDatasourcesSuite) TestTokenAuth(c *C) {
 	s.v.vc.Logical().Write("secret/foo", map[string]interface{}{"value": "bar"})
 	defer s.v.vc.Logical().Delete("secret/foo")
-	tok, err := s.v.tokenCreate("readpol", 4)
+	tok, err := s.v.tokenCreate("readpol", 5)
 	handle(c, err)
 
 	result := icmd.RunCmd(icmd.Command(GomplateBin,

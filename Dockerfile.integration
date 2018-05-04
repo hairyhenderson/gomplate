@@ -1,7 +1,7 @@
 FROM golang:1.10-alpine
 
-COPY --from=vault:0.9.5 /bin/vault /bin/vault
-COPY --from=consul:1.0.6 /bin/consul /bin/consul
+COPY --from=vault:0.10.1 /bin/vault /bin/vault
+COPY --from=consul:1.0.7 /bin/consul /bin/consul
 
 RUN apk add --no-cache make tzdata
 
