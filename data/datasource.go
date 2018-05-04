@@ -1,7 +1,6 @@
 package data
 
 import (
-	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -15,15 +14,14 @@ import (
 	"strings"
 	"time"
 
+	"github.com/pkg/errors"
+
 	"github.com/aws/aws-sdk-go/service/ssm"
 
 	"github.com/blang/vfs"
 	"github.com/hairyhenderson/gomplate/libkv"
 	"github.com/hairyhenderson/gomplate/vault"
 )
-
-// logFatal is defined so log.Fatal calls can be overridden for testing
-var logFatalf = log.Fatalf
 
 var jsonMimetype = "application/json"
 
@@ -84,21 +82,23 @@ func (d *Data) Cleanup() {
 }
 
 // NewData - constructor for Data
-func NewData(datasourceArgs []string, headerArgs []string) *Data {
+func NewData(datasourceArgs []string, headerArgs []string) (*Data, error) {
 	sources := make(map[string]*Source)
-	headers := parseHeaderArgs(headerArgs)
+	headers, err := parseHeaderArgs(headerArgs)
+	if err != nil {
+		return nil, err
+	}
 	for _, v := range datasourceArgs {
 		s, err := ParseSource(v)
 		if err != nil {
-			log.Fatalf("error parsing datasource %v", err)
-			return nil
+			return nil, errors.Wrapf(err, "error parsing datasource")
 		}
 		s.Header = headers[s.Alias]
 		sources[s.Alias] = s
 	}
 	return &Data{
 		Sources: sources,
-	}
+	}, nil
 }
 
 // AWSSMPGetter - A subset of SSM API for use in unit testing
@@ -131,7 +131,7 @@ func (s *Source) cleanup() {
 }
 
 // NewSource - builds a &Source
-func NewSource(alias string, URL *url.URL) *Source {
+func NewSource(alias string, URL *url.URL) (*Source, error) {
 	ext := filepath.Ext(URL.Path)
 
 	s := &Source{
@@ -147,7 +147,7 @@ func NewSource(alias string, URL *url.URL) *Source {
 	if mediatype != "" {
 		t, params, err := mime.ParseMediaType(mediatype)
 		if err != nil {
-			log.Fatal(err)
+			return nil, err
 		}
 		s.Type = t
 		s.Params = params
@@ -155,7 +155,7 @@ func NewSource(alias string, URL *url.URL) *Source {
 	if s.Type == "" {
 		s.Type = plaintext
 	}
-	return s
+	return s, nil
 }
 
 // String is the method to format the flag's value, part of the flag.Value interface.
@@ -169,40 +169,45 @@ func ParseSource(value string) (*Source, error) {
 	var (
 		alias  string
 		srcURL *url.URL
+		err    error
 	)
 	parts := strings.SplitN(value, "=", 2)
 	if len(parts) == 1 {
 		f := parts[0]
 		alias = strings.SplitN(value, ".", 2)[0]
 		if path.Base(f) != f {
-			err := fmt.Errorf("Invalid datasource (%s). Must provide an alias with files not in working directory", value)
+			err = errors.Errorf("Invalid datasource (%s). Must provide an alias with files not in working directory", value)
 			return nil, err
 		}
-		srcURL = absURL(f)
+		srcURL, err = absURL(f)
+		if err != nil {
+			return nil, err
+		}
 	} else if len(parts) == 2 {
 		alias = parts[0]
 		if parts[1] == "-" {
 			parts[1] = "stdin://"
 		}
-		var err error
 		srcURL, err = url.Parse(parts[1])
 		if err != nil {
 			return nil, err
 		}
 
 		if !srcURL.IsAbs() {
-			srcURL = absURL(parts[1])
+			srcURL, err = absURL(parts[1])
+			if err != nil {
+				return nil, err
+			}
 		}
 	}
 
-	s := NewSource(alias, srcURL)
-	return s, nil
+	return NewSource(alias, srcURL)
 }
 
-func absURL(value string) *url.URL {
+func absURL(value string) (*url.URL, error) {
 	cwd, err := os.Getwd()
 	if err != nil {
-		log.Fatalf("Can't get working directory: %s", err)
+		return nil, errors.Wrapf(err, "can't get working directory")
 	}
 	urlCwd := strings.Replace(cwd, string(os.PathSeparator), "/", -1)
 	baseURL := &url.URL{
@@ -212,7 +217,7 @@ func absURL(value string) *url.URL {
 	relURL := &url.URL{
 		Path: value,
 	}
-	return baseURL.ResolveReference(relURL)
+	return baseURL.ResolveReference(relURL), nil
 }
 
 // DatasourceExists -
@@ -224,49 +229,48 @@ func (d *Data) DatasourceExists(alias string) bool {
 const plaintext = "text/plain"
 
 // Datasource -
-func (d *Data) Datasource(alias string, args ...string) interface{} {
+func (d *Data) Datasource(alias string, args ...string) (interface{}, error) {
 	source, ok := d.Sources[alias]
 	if !ok {
-		log.Fatalf("Undefined datasource '%s'", alias)
+		return nil, errors.Errorf("Undefined datasource '%s'", alias)
 	}
 	b, err := d.ReadSource(source, args...)
 	if err != nil {
-		logFatalf("Couldn't read datasource '%s': %s", alias, err)
+		return nil, errors.Wrapf(err, "Couldn't read datasource '%s'", alias)
 	}
 	if len(b) == 0 {
-		logFatalf("No value found for %s from datasource '%s'", args, alias)
+		return nil, errors.Errorf("No value found for %s from datasource '%s'", args, alias)
 	}
 	s := string(b)
 	if source.Type == jsonMimetype {
-		return JSON(s)
+		return JSON(s), nil
 	}
 	if source.Type == "application/yaml" {
-		return YAML(s)
+		return YAML(s), nil
 	}
 	if source.Type == "text/csv" {
-		return CSV(s)
+		return CSV(s), nil
 	}
 	if source.Type == "application/toml" {
-		return TOML(s)
+		return TOML(s), nil
 	}
 	if source.Type == plaintext {
-		return s
+		return s, nil
 	}
-	log.Fatalf("Datasources of type %s not yet supported", source.Type)
-	return nil
+	return nil, errors.Errorf("Datasources of type %s not yet supported", source.Type)
 }
 
 // Include -
-func (d *Data) Include(alias string, args ...string) string {
+func (d *Data) Include(alias string, args ...string) (string, error) {
 	source, ok := d.Sources[alias]
 	if !ok {
-		log.Fatalf("Undefined datasource '%s'", alias)
+		return "", errors.Errorf("Undefined datasource '%s'", alias)
 	}
 	b, err := d.ReadSource(source, args...)
 	if err != nil {
-		log.Fatalf("Couldn't read datasource '%s': %s", alias, err)
+		return "", errors.Wrapf(err, "Couldn't read datasource '%s'", alias)
 	}
-	return string(b)
+	return string(b), nil
 }
 
 // ReadSource -
@@ -291,8 +295,7 @@ func (d *Data) ReadSource(source *Source, args ...string) ([]byte, error) {
 		return data, nil
 	}
 
-	log.Fatalf("Datasources with scheme %s not yet supported", source.URL.Scheme)
-	return nil, nil
+	return nil, errors.Errorf("Datasources with scheme %s not yet supported", source.URL.Scheme)
 }
 
 func readFile(source *Source, args ...string) ([]byte, error) {
@@ -305,20 +308,17 @@ func readFile(source *Source, args ...string) ([]byte, error) {
 	// make sure we can access the file
 	_, err := source.FS.Stat(p)
 	if err != nil {
-		log.Fatalf("Can't stat %s: %#v", p, err)
-		return nil, err
+		return nil, errors.Wrapf(err, "Can't stat %s", p)
 	}
 
 	f, err := source.FS.OpenFile(p, os.O_RDONLY, 0)
 	if err != nil {
-		log.Fatalf("Can't open %s: %#v", p, err)
-		return nil, err
+		return nil, errors.Wrapf(err, "Can't open %s", p)
 	}
 
 	b, err := ioutil.ReadAll(f)
 	if err != nil {
-		log.Fatalf("Can't read %s: %#v", p, err)
-		return nil, err
+		return nil, errors.Wrapf(err, "Can't read %s", p)
 	}
 	return b, nil
 }
@@ -329,8 +329,7 @@ func readStdin(source *Source, args ...string) ([]byte, error) {
 	}
 	b, err := ioutil.ReadAll(stdin)
 	if err != nil {
-		log.Printf("Can't read %v: %#v", stdin, err)
-		return nil, err
+		return nil, errors.Wrapf(err, "Can't read %s", stdin)
 	}
 	return b, nil
 }
@@ -357,7 +356,7 @@ func readHTTP(source *Source, args ...string) ([]byte, error) {
 		return nil, err
 	}
 	if res.StatusCode != 200 {
-		err := fmt.Errorf("Unexpected HTTP status %d on GET from %s: %s", res.StatusCode, source.URL, string(body))
+		err := errors.Errorf("Unexpected HTTP status %d on GET from %s: %s", res.StatusCode, source.URL, string(body))
 		return nil, err
 	}
 	ctypeHdr := res.Header.Get("Content-Type")
@@ -457,36 +456,39 @@ func readBoltDB(source *Source, args ...string) ([]byte, error) {
 	return data, nil
 }
 
-func parseHeaderArgs(headerArgs []string) map[string]http.Header {
+func parseHeaderArgs(headerArgs []string) (map[string]http.Header, error) {
 	headers := make(map[string]http.Header)
 	for _, v := range headerArgs {
-		ds, name, value := splitHeaderArg(v)
+		ds, name, value, err := splitHeaderArg(v)
+		if err != nil {
+			return nil, err
+		}
 		if _, ok := headers[ds]; !ok {
 			headers[ds] = make(http.Header)
 		}
 		headers[ds][name] = append(headers[ds][name], strings.TrimSpace(value))
 	}
-	return headers
+	return headers, nil
 }
 
-func splitHeaderArg(arg string) (datasourceAlias, name, value string) {
+func splitHeaderArg(arg string) (datasourceAlias, name, value string, err error) {
 	parts := strings.SplitN(arg, "=", 2)
 	if len(parts) != 2 {
-		logFatalf("Invalid datasource-header option '%s'", arg)
-		return "", "", ""
+		err = errors.Errorf("Invalid datasource-header option '%s'", arg)
+		return "", "", "", err
 	}
 	datasourceAlias = parts[0]
-	name, value = splitHeader(parts[1])
-	return datasourceAlias, name, value
+	name, value, err = splitHeader(parts[1])
+	return datasourceAlias, name, value, err
 }
 
-func splitHeader(header string) (name, value string) {
+func splitHeader(header string) (name, value string, err error) {
 	parts := strings.SplitN(header, ":", 2)
 	if len(parts) != 2 {
-		logFatalf("Invalid HTTP Header format '%s'", header)
-		return "", ""
+		err = errors.Errorf("Invalid HTTP Header format '%s'", header)
+		return "", "", err
 	}
 	name = http.CanonicalHeaderKey(parts[0])
 	value = parts[1]
-	return name, value
+	return name, value, nil
 }

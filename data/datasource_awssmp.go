@@ -1,11 +1,11 @@
 package data
 
 import (
-	"errors"
 	"path"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ssm"
+	"github.com/pkg/errors"
 
 	gaws "github.com/hairyhenderson/gomplate/aws"
 )
@@ -45,9 +45,7 @@ func readAWSSMPParam(source *Source, paramPath string) ([]byte, error) {
 	response, err := source.ASMPG.GetParameter(input)
 
 	if err != nil {
-		logFatalf("Error reading aws+smp from AWS using GetParameter with input %v:\n%v",
-			input, err)
-		return nil, err
+		return nil, errors.Wrapf(err, "Error reading aws+smp from AWS using GetParameter with input %v", input)
 	}
 
 	result := *response.Parameter
