@@ -170,6 +170,33 @@ func TestDatasource(t *testing.T) {
 	assert.Equal(t, "", actual)
 }
 
+func TestDatasourceReachable(t *testing.T) {
+	fname := "foo.json"
+	fs := memfs.Create()
+	_ = fs.Mkdir("/tmp", 0777)
+	f, _ := vfs.Create(fs, "/tmp/"+fname)
+	_, _ = f.Write([]byte("{}"))
+
+	sources := map[string]*Source{
+		"foo": {
+			Alias: "foo",
+			URL:   &url.URL{Scheme: "file", Path: "/tmp/" + fname},
+			Ext:   "json",
+			Type:  "application/json",
+			FS:    fs,
+		},
+		"bar": {
+			Alias: "bar",
+			URL:   &url.URL{Scheme: "file", Path: "/bogus"},
+			FS:    fs,
+		},
+	}
+	data := &Data{Sources: sources}
+
+	assert.True(t, data.DatasourceReachable("foo"))
+	assert.False(t, data.DatasourceReachable("bar"))
+}
+
 func TestDatasourceExists(t *testing.T) {
 	sources := map[string]*Source{
 		"foo": {Alias: "foo"},
