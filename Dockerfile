@@ -25,9 +25,9 @@ ARG VCS_REF
 ARG OS=linux
 ARG ARCH=amd64
 
-LABEL org.label-schema.build-date=$BUILD_DATE \
-      org.label-schema.vcs-ref=$VCS_REF \
-      org.label-schema.vcs-url="https://github.com/hairyhenderson/gomplate"
+LABEL org.opencontainers.image.created=$BUILD_DATE \
+      org.opencontainers.image.revision=$VCS_REF \
+      org.opencontainers.image.source="https://github.com/hairyhenderson/gomplate"
 
 COPY --from=artifacts /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
 COPY --from=artifacts /bin/gomplate_${OS}-${ARCH} /gomplate
@@ -43,9 +43,9 @@ ARG VCS_REF
 ARG OS=linux
 ARG ARCH=amd64
 
-LABEL org.label-schema.build-date=$BUILD_DATE \
-      org.label-schema.vcs-ref=$VCS_REF \
-      org.label-schema.vcs-url="https://github.com/hairyhenderson/gomplate"
+LABEL org.opencontainers.image.created=$BUILD_DATE \
+      org.opencontainers.image.revision=$VCS_REF \
+      org.opencontainers.image.source="https://github.com/hairyhenderson/gomplate"
 
 RUN apk add --no-cache ca-certificates
 COPY --from=artifacts /bin/gomplate_${OS}-${ARCH}-slim /bin/gomplate
@@ -61,9 +61,9 @@ ARG VCS_REF
 ARG OS=linux
 ARG ARCH=amd64
 
-LABEL org.label-schema.build-date=$BUILD_DATE \
-      org.label-schema.vcs-ref=$VCS_REF \
-      org.label-schema.vcs-url="https://github.com/hairyhenderson/gomplate"
+LABEL org.opencontainers.image.created=$BUILD_DATE \
+      org.opencontainers.image.revision=$VCS_REF \
+      org.opencontainers.image.source="https://github.com/hairyhenderson/gomplate"
 
 COPY --from=artifacts /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
 COPY --from=artifacts /bin/gomplate_${OS}-${ARCH}-slim /gomplate
