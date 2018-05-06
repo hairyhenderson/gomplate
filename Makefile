@@ -45,7 +45,7 @@ $(PREFIX)/bin/checksums.txt: \
 		$(patsubst %,$(PREFIX)/bin/$(PKG_NAME)_%_checksum.txt,$(compressed-platforms))
 	@cat $^ > $@
 
-$(PREFIX)/bin/checksums-signed.txt: $(PREFIX)/bin/checksums.txt
+$(PREFIX)/%.signed: $(PREFIX)/%
 	@keybase sign < $< > $@
 
 compress: $(PREFIX)/bin/$(PKG_NAME)_$(GOOS)-$(GOARCH)-slim$(call extension,$(GOOS))
