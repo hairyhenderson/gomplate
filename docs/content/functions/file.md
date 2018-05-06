@@ -114,3 +114,40 @@ $ echo "hello world" > /tmp/foo
 $ gomplate -i '{{ $s := file.Stat "/tmp/foo" }}{{ $s.Mode }} {{ $s.Size }} {{ $s.Name }}'
 -rw-r--r-- 12 foo
 ```
+
+## `file.Walk`
+
+Like a recursive [`file.ReadDir`](#file-readdir), recursively walks the file tree rooted at `path`, and returns an array of all files and directories contained within. 
+
+The files are walked in lexical order, which makes the output deterministic but means that for very large directories can be inefficient.
+
+Walk does not follow symbolic links.
+
+Similar to Go's [`filepath.Walk`](https://golang.org/pkg/path/filepath/#Walk) function.
+
+### Usage
+
+```go
+file.Walk path
+```
+
+### Examples
+
+```console
+$ tree /tmp/foo
+/tmp/foo
+├── one
+├── sub
+│   ├── one
+│   └── two
+├── three
+└── two
+
+1 directory, 5 files
+$ gomplate -i '{{ range file.Walk "/tmp/foo" }}{{ if not (file.IsDir .) }}{{.}} is a file{{"\n"}}{{end}}{{end}}' 
+/tmp/foo/one is a file
+/tmp/foo/sub/one is a file
+/tmp/foo/sub/two is a file
+/tmp/foo/three is a file
+/tmp/foo/two is a file
+```
