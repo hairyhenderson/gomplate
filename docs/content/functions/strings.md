@@ -270,6 +270,27 @@ $ gomplate -i '{{ "_-foo-_" | strings.Trim "_-" }}
 foo
 ```
 
+## `strings.TrimPrefix`
+
+Returns a string without the provided leading prefix string, if the prefix is present.
+
+This wraps Go's [`strings.TrimPrefix`](https://golang.org/pkg/strings/#TrimPrefix).
+
+### Usage
+```go
+strings.TrimPrefix prefix input
+```
+```go
+input | strings.TrimPrefix prefix
+```
+
+#### Example
+
+```console
+$ gomplate -i '{{ "hello, world" | strings.TrimPrefix "hello, " }}'
+world
+```
+
 ## `strings.TrimSpace`
 
 **Alias:** `trimSpace`
