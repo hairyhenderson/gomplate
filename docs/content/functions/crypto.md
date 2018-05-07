@@ -7,7 +7,35 @@ menu:
 
 A set of crypto-related functions to be able to perform hashing and (simple!) encryption operations with `gomplate`.
 
-_Note: These functions are mostly wrappers of existing functions in the Go standard library. The authors of gomplate are not cryptographic experts, however, and so can not guarantee correctness of implementation. Do not use gomplate for critical security infrastructure!_
+_Note: These functions are mostly wrappers of existing functions in the Go standard library. The authors of gomplate are not cryptographic experts, however, and so can not guarantee correctness of implementation. It is recommended to have your resident security experts inspect gomplate's code before using gomplate for critical security infrastructure!_
+
+## `crypto.Bcrypt`
+
+Uses the [bcrypt](https://en.wikipedia.org/wiki/Bcrypt) password hashing algorithm to generate the hash of a given string. Wraps the [`golang.org/x/crypto/brypt`](https://godoc.org/golang.org/x/crypto/bcrypt) package.
+
+### Usage
+```
+crypto.Bcrypt [cost] input
+```
+```
+input | crypto.Bcrypt [cost]
+```
+
+### Arguments
+
+| name   | description |
+|--------|-------|
+| `input` | _(required)_ the input to hash, usually a password |
+| `cost` | _(optional)_ the cost, as a number from `4` to `31` - defaults to `10` |
+
+### Example
+
+```console
+$ gomplate -i '{{ "foo" | crypto.Bcrypt }}'
+$2a$10$jO8nKZ1etGkKK7I3.vPti.fYDAiBqwazQZLUhaFoMN7MaLhTP0SLy
+$ gomplate -i '{{ crypto.Bcrypt 4 "foo" }}
+$2a$04$zjba3N38sjyYsw0Y7IRCme1H4gD0MJxH8Ixai0/sgsrf7s1MFUK1C
+```
 
 ## `crypto.PBKDF2`
 

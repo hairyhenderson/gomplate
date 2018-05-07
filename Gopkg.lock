@@ -280,7 +280,11 @@
 [[projects]]
   branch = "master"
   name = "golang.org/x/crypto"
-  packages = ["pbkdf2"]
+  packages = [
+    "bcrypt",
+    "blowfish",
+    "pbkdf2"
+  ]
   revision = "21652f85b0fdddb6c2b6b77a5beca5c5a908174a"
 
 [[projects]]
@@ -336,6 +340,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "08cccb4ec728c57e26a057044c9ccd3c64711666ef50ee5304a1df5606706f82"
+  inputs-digest = "bcf97a704f2216b782a6e28d34bc7a2e401986b10c951cc0ef5fda0cf845a825"
   solver-name = "gps-cdcl"
   solver-version = 1

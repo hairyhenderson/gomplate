@@ -1,6 +1,7 @@
 package funcs
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -43,4 +44,23 @@ func TestSHA(t *testing.T) {
 	assert.Equal(t, sha512, c.SHA512(in))
 	assert.Equal(t, sha512_224, c.SHA512_224(in))
 	assert.Equal(t, sha512_256, c.SHA512_256(in))
+}
+
+func TestBcrypt(t *testing.T) {
+	in := "foo"
+	c := CryptoNS()
+	actual, err := c.Bcrypt(in)
+	assert.NoError(t, err)
+	assert.True(t, strings.HasPrefix(actual, "$2a$10$"))
+
+	actual, err = c.Bcrypt(0, in)
+	assert.NoError(t, err)
+	assert.True(t, strings.HasPrefix(actual, "$2a$10$"))
+
+	actual, err = c.Bcrypt(15, in)
+	assert.NoError(t, err)
+	assert.True(t, strings.HasPrefix(actual, "$2a$15$"))
+
+	_, err = c.Bcrypt()
+	assert.Error(t, err)
 }
