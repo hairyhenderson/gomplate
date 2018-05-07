@@ -164,6 +164,29 @@ foo
 bar:baz
 ```
 
+## `strings.Repeat`
+
+Returns a new string consisting of `count` copies of the input string.
+
+It errors if `count` is negative or if the length of `input` multiplied by `count` overflows.
+
+This wraps Go's [`strings.Repeat`](https://golang.org/pkg/strings/#Repeat).
+
+### Usage
+```go
+strings.Repeat count input
+```
+```go
+input | strings.Repeat count
+```
+
+#### Example
+
+```console
+$ gomplate -i '{{ "hello, world" | strings.Repeat "world" }}jello'
+hello, jello
+```
+
 ## `strings.ReplaceAll`
 
 **Alias:** `replaceAll`
@@ -311,6 +334,28 @@ input | strings.TrimSpace
 ```console
 $ gomplate -i '{{ "  \n\t foo" | strings.TrimSpace }}'
 foo
+```
+
+
+## `strings.TrimSuffix`
+
+Returns a string without the provided trailing suffix string, if the suffix is present.
+
+This wraps Go's [`strings.TrimSuffix`](https://golang.org/pkg/strings/#TrimSuffix).
+
+### Usage
+```go
+strings.TrimSuffix suffix input
+```
+```go
+input | strings.TrimSuffix suffix
+```
+
+#### Example
+
+```console
+$ gomplate -i '{{ "hello, world" | strings.TrimSuffix "world" }}jello'
+hello, jello
 ```
 
 ## `contains`

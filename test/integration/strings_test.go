@@ -29,3 +29,17 @@ func (s *StringsSuite) TestIndent(c *C) {
     hello
      world`})
 }
+
+func (s *StringsSuite) TestRepeat(c *C) {
+	result := icmd.RunCommand(GomplateBin, "-i",
+		`ba{{ strings.Repeat 2 "na" }}`)
+	result.Assert(c, icmd.Expected{ExitCode: 0, Out: `banana`})
+
+	result = icmd.RunCommand(GomplateBin, "-i",
+		`ba{{ strings.Repeat 9223372036854775807 "na" }}`)
+	result.Assert(c, icmd.Expected{ExitCode: 1, Out: `too long: causes overflow`})
+
+	result = icmd.RunCommand(GomplateBin, "-i",
+		`ba{{ strings.Repeat -1 "na" }}`)
+	result.Assert(c, icmd.Expected{ExitCode: 1, Out: `negative count`})
+}

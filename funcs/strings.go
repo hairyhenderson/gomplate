@@ -10,6 +10,7 @@ import (
 	"sync"
 
 	"github.com/hairyhenderson/gomplate/conv"
+	"github.com/pkg/errors"
 
 	"strings"
 
@@ -70,6 +71,18 @@ func (f *StringFuncs) HasSuffix(suffix string, s interface{}) bool {
 	return strings.HasSuffix(conv.ToString(s), suffix)
 }
 
+// Repeat -
+func (f *StringFuncs) Repeat(count int, s interface{}) (string, error) {
+	if count < 0 {
+		return "", errors.Errorf("negative count %d", count)
+	}
+	str := conv.ToString(s)
+	if count > 0 && len(str)*count/count != len(str) {
+		return "", errors.Errorf("count %d too long: causes overflow", count)
+	}
+	return strings.Repeat(str, count), nil
+}
+
 // Split -
 func (f *StringFuncs) Split(sep string, s interface{}) []string {
 	return strings.Split(conv.ToString(s), sep)
@@ -88,6 +101,11 @@ func (f *StringFuncs) Trim(cutset string, s interface{}) string {
 // TrimPrefix -
 func (f *StringFuncs) TrimPrefix(cutset string, s interface{}) string {
 	return strings.TrimPrefix(conv.ToString(s), cutset)
+}
+
+// TrimSuffix -
+func (f *StringFuncs) TrimSuffix(cutset string, s interface{}) string {
+	return strings.TrimSuffix(conv.ToString(s), cutset)
 }
 
 // Title -
