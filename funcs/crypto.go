@@ -8,7 +8,10 @@ import (
 	"fmt"
 	"sync"
 
+	"golang.org/x/crypto/bcrypt"
+
 	"github.com/hairyhenderson/gomplate/conv"
+	"github.com/pkg/errors"
 
 	"github.com/hairyhenderson/gomplate/crypto"
 )
@@ -108,4 +111,22 @@ func (f *CryptoFuncs) SHA512_256(input interface{}) string {
 	in := toBytes(input)
 	out := sha512.Sum512_256(in)
 	return fmt.Sprintf("%02x", out)
+}
+
+// Bcrypt -
+func (f *CryptoFuncs) Bcrypt(args ...interface{}) (string, error) {
+	input := ""
+	cost := bcrypt.DefaultCost
+	if len(args) == 0 {
+		return "", errors.Errorf("bcrypt requires at least an 'input' value")
+	}
+	if len(args) == 1 {
+		input = conv.ToString(args[0])
+	}
+	if len(args) == 2 {
+		cost = conv.ToInt(args[0])
+		input = conv.ToString(args[1])
+	}
+	hash, err := bcrypt.GenerateFromPassword([]byte(input), cost)
+	return string(hash), err
 }
