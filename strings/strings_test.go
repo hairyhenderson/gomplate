@@ -16,3 +16,12 @@ func TestIndent(t *testing.T) {
 	assert.Equal(t, "   foo", Indent(1, "   ", "foo"))
 	assert.Equal(t, "   foo", Indent(3, " ", "foo"))
 }
+
+func TestTrunc(t *testing.T) {
+	assert.Equal(t, "", Trunc(5, ""))
+	assert.Equal(t, "", Trunc(0, "hello, world"))
+	assert.Equal(t, "hello", Trunc(5, "hello, world"))
+	assert.Equal(t, "hello, world", Trunc(12, "hello, world"))
+	assert.Equal(t, "hello, world", Trunc(42, "hello, world"))
+	assert.Equal(t, "hello, world", Trunc(-1, "hello, world"))
+}

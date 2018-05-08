@@ -22,3 +22,14 @@ func Indent(width int, indent, s string) string {
 	}
 	return string(res)
 }
+
+// Trunc - truncate a string to the given length
+func Trunc(length int, s string) string {
+	if length < 0 {
+		return s
+	}
+	if len(s) <= length {
+		return s
+	}
+	return s[0:length]
+}

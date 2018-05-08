@@ -2,6 +2,12 @@
 
 
 [[projects]]
+  name = "github.com/Masterminds/goutils"
+  packages = ["."]
+  revision = "3391d3790d23d03408670993e957e8f408993c34"
+  version = "v1.0.1"
+
+[[projects]]
   name = "github.com/aws/aws-sdk-go"
   packages = [
     "aws",
@@ -340,6 +346,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "bcf97a704f2216b782a6e28d34bc7a2e401986b10c951cc0ef5fda0cf845a825"
+  inputs-digest = "c6bab62a1ce1b4f20c40fa069982c733959426996113f48feb8be8e8ea7e0ce6"
   solver-name = "gps-cdcl"
   solver-version = 1
