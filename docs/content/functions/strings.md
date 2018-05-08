@@ -5,6 +5,37 @@ menu:
     parent: functions
 ---
 
+## `strings.Abbrev`
+
+Abbreviates a string using `...` (ellipses). Takes an optional offset from the beginning of the string, and a maximum final width (including added ellipses).
+
+_Also see [`strings.Trunc`](#strings-trunc)._
+
+### Usage
+```go
+strings.Abbrev [offset] width input
+```
+```go
+input | strings.Abbrev [offset] width
+```
+
+### Arguments
+
+| name   | description |
+|--------|-------|
+| `offset` | _(optional)_ offset from the start of the string. Must be `4` or greater for ellipses to be added. Defaults to `0` |
+| `width` | _(required)_ the desired maximum final width of the string, including ellipses |
+| `input` | _(required)_ the input string to abbreviate |
+
+### Example
+
+```console
+$ gomplate -i '{{ "foobarbazquxquux" | strings.Abbrev 9 }}'
+foobar...
+$ gomplate -i '{{ "foobarbazquxquux" | strings.Abbrev 6 9 }}'
+...baz...
+```
+
 ## `strings.Contains`
 
 Reports whether a substring is contained within a string.
@@ -356,6 +387,27 @@ input | strings.TrimSuffix suffix
 ```console
 $ gomplate -i '{{ "hello, world" | strings.TrimSuffix "world" }}jello'
 hello, jello
+```
+
+## `strings.Trunc`
+
+Returns a string truncated to the given length.
+
+_Also see [`strings.Abbrev`](#strings-abbrev)._
+
+### Usage
+```go
+strings.Trunc length input
+```
+```go
+input | strings.Trunc length
+```
+
+#### Example
+
+```console
+$ gomplate -i '{{ "hello, world" | strings.Trunc 5 }}'
+hello
 ```
 
 ## `contains`

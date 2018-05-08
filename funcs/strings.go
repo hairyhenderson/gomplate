@@ -9,6 +9,7 @@ import (
 	"log"
 	"sync"
 
+	"github.com/Masterminds/goutils"
 	"github.com/hairyhenderson/gomplate/conv"
 	"github.com/pkg/errors"
 
@@ -50,6 +51,29 @@ func AddStringFuncs(f map[string]interface{}) {
 
 // StringFuncs -
 type StringFuncs struct{}
+
+// Abbrev -
+func (f *StringFuncs) Abbrev(args ...interface{}) (string, error) {
+	str := ""
+	offset := 0
+	maxWidth := 0
+	if len(args) < 2 {
+		return "", errors.Errorf("abbrev requires a 'maxWidth' and 'input' argument")
+	}
+	if len(args) == 2 {
+		maxWidth = conv.ToInt(args[0])
+		str = conv.ToString(args[1])
+	}
+	if len(args) == 3 {
+		offset = conv.ToInt(args[0])
+		maxWidth = conv.ToInt(args[1])
+		str = conv.ToString(args[2])
+	}
+	if len(str) <= maxWidth {
+		return str, nil
+	}
+	return goutils.AbbreviateFull(str, offset, maxWidth)
+}
 
 // ReplaceAll -
 func (f *StringFuncs) ReplaceAll(old, new string, s interface{}) string {
@@ -126,6 +150,11 @@ func (f *StringFuncs) ToLower(s interface{}) string {
 // TrimSpace -
 func (f *StringFuncs) TrimSpace(s interface{}) string {
 	return strings.TrimSpace(conv.ToString(s))
+}
+
+// Trunc -
+func (f *StringFuncs) Trunc(length int, s interface{}) string {
+	return gompstrings.Trunc(length, conv.ToString(s))
 }
 
 // Indent -
