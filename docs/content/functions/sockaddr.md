@@ -84,7 +84,6 @@ The valid selectors are:
 | `default` | whether or not the `IfAddr` has a default route |
 | `name` | the interface name |
 | `port` | the port, if included in the `IfAddr` |
-| `private` | private addresses first |
 | `size` | the size of the network mask, smaller mask (larger number of hosts per network) to largest (e.g. a /24 sorts before a /32) |
 | `type` | the type of the `IfAddr`. Order is Unix, IPv4, then IPv6 |
 
@@ -124,7 +123,6 @@ The valid selectors are:
 | `name` | the interface name |
 | `network` | being part of the given IP network (in net/mask format) |
 | `port` | the port, if included in the `IfAddr` |
-| `private` | private addresses |
 | `rfc` | being included in networks defined by the given RFC. See [the source code](https://github.com/hashicorp/go-sockaddr/blob/master/rfc.go#L38) for a list of valid RFCs | 
 | `size` | the size of the network mask, as number of bits (e.g. `"24"` for a /24) |
 | `type` | the type of the `IfAddr`. `unix`, `ipv4`, or `ipv6` |
