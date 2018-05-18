@@ -13,7 +13,7 @@ Parses a given datasource (provided by the [`--datasource/-d`](#--datasource-d) 
 
 Currently, `file://`, `stdin://`, `http://`, `https://`, `vault://`, and `boltdb://` URLs are supported.
 
-Currently-supported formats are JSON, YAML, TOML, and CSV.
+Currently-supported formats are JSON, YAML, TOML, and CSV. Plain-text datasources can also be specified, but can only be safely accessed with the [`include`](#include) function.
 
 ### Basic usage
 
@@ -231,6 +231,8 @@ The `vault+http://` URL scheme can be used to indicate that request must be sent
 over regular unencrypted HTTP, while `vault+https://` and `vault://` are equivalent,
 and indicate that requests must be sent over HTTPS.
 
+List support is also available when the URL ends with a `/` character. In order for this to work correctly, the authenticated token must have permission to use the [`list` capability](https://www.vaultproject.io/docs/concepts/policies.html#list) for the given path.
+
 This table describes the currently-supported authentication mechanisms and how to use them, in order of precedence:
 
 | auth backend | configuration |
@@ -345,8 +347,7 @@ Alias to [`datasource`](#datasource)
 
 Includes the content of a given datasource (provided by the [`--datasource/-d`](../usage/#datasource-d) argument).
 
-This is similar to [`datasource`](#datasource),
-except that the data is not parsed.
+This is similar to [`datasource`](#datasource), except that the data is not parsed. There is no restriction on the type of data included, except that it should be textual.
 
 ### Usage
 
