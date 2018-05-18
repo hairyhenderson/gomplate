@@ -49,7 +49,7 @@ Returns an array of `IfAddr`s containing every IP that matches
 [RFC 6890][], is attached to the interface with
 the default route, and is a forwardable IP address.
 
-**Note:** RFC 6890 is a more exhaustive version of [RFC 1918][]
+**Note:** [RFC 6890][] is a more exhaustive version of [RFC 1918][]
 because it spans IPv4 and IPv6, however it does permit the inclusion of likely
 undesired addresses such as multicast, therefore our definition of a "private"
 address also excludes non-forwardable IP addresses (as defined by the IETF).
@@ -372,4 +372,5 @@ $ gomplate -i '{{ sockaddr.GetInterfaceIPs "en0" }}'
 10.0.0.28 fe80::1f9a:5582:4b41:bd18
 ```
 
+[RFC 1918]: http://tools.ietf.org/html/rfc1918
 [RFC 6890]: http://tools.ietf.org/html/rfc6890
