@@ -3,6 +3,7 @@ package funcs
 import (
 	"fmt"
 	gmath "math"
+	"strconv"
 	"sync"
 
 	"github.com/hairyhenderson/gomplate/conv"
@@ -37,25 +38,108 @@ func AddMathFuncs(f map[string]interface{}) {
 // MathFuncs -
 type MathFuncs struct{}
 
+// IsInt -
+func (f *MathFuncs) IsInt(n interface{}) bool {
+	switch i := n.(type) {
+	case int, int8, int16, int32, int64, uint, uint8, uint16, uint32, uint64:
+		return true
+	case string:
+		_, err := strconv.ParseInt(i, 0, 64)
+		return err == nil
+	}
+	return false
+}
+
+// IsFloat -
+func (f *MathFuncs) IsFloat(n interface{}) bool {
+	switch i := n.(type) {
+	case float32, float64:
+		return true
+	case string:
+		_, err := strconv.ParseFloat(i, 64)
+		if err != nil {
+			return false
+		}
+		if f.IsInt(i) {
+			return false
+		}
+		return true
+	}
+	return false
+}
+
+func (f *MathFuncs) containsFloat(n ...interface{}) bool {
+	c := false
+	for _, v := range n {
+		if f.IsFloat(v) {
+			return true
+		}
+	}
+	return c
+}
+
+// IsNum -
+func (f *MathFuncs) IsNum(n interface{}) bool {
+	return f.IsInt(n) || f.IsFloat(n)
+}
+
+// Abs -
+func (f *MathFuncs) Abs(n interface{}) interface{} {
+	m := gmath.Abs(conv.ToFloat64(n))
+	if f.IsInt(n) {
+		return conv.ToInt64(m)
+	}
+	return m
+}
+
 // Add -
-func (f *MathFuncs) Add(n ...interface{}) int64 {
-	return math.AddInt(conv.ToInt64s(n...)...)
+func (f *MathFuncs) Add(n ...interface{}) interface{} {
+	if f.containsFloat(n...) {
+		nums := conv.ToFloat64s(n...)
+		var x float64
+		for _, v := range nums {
+			x += v
+		}
+		return x
+	}
+	nums := conv.ToInt64s(n...)
+	var x int64
+	for _, v := range nums {
+		x += v
+	}
+	return x
 }
 
 // Mul -
-func (f *MathFuncs) Mul(n ...interface{}) int64 {
-	return math.MulInt(conv.ToInt64s(n...)...)
+func (f *MathFuncs) Mul(n ...interface{}) interface{} {
+	if f.containsFloat(n...) {
+		nums := conv.ToFloat64s(n...)
+		x := 1.
+		for _, v := range nums {
+			x *= v
+		}
+		return x
+	}
+	nums := conv.ToInt64s(n...)
+	x := int64(1)
+	for _, v := range nums {
+		x *= v
+	}
+	return x
 }
 
 // Sub -
-func (f *MathFuncs) Sub(a, b interface{}) int64 {
+func (f *MathFuncs) Sub(a, b interface{}) interface{} {
+	if f.containsFloat(a, b) {
+		return conv.ToFloat64(a) - conv.ToFloat64(b)
+	}
 	return conv.ToInt64(a) - conv.ToInt64(b)
 }
 
 // Div -
-func (f *MathFuncs) Div(a, b interface{}) (int64, error) {
-	divisor := conv.ToInt64(a)
-	dividend := conv.ToInt64(b)
+func (f *MathFuncs) Div(a, b interface{}) (interface{}, error) {
+	divisor := conv.ToFloat64(a)
+	dividend := conv.ToFloat64(b)
 	if dividend == 0 {
 		return 0, fmt.Errorf("Error: division by 0")
 	}
@@ -63,13 +147,17 @@ func (f *MathFuncs) Div(a, b interface{}) (int64, error) {
 }
 
 // Rem -
-func (f *MathFuncs) Rem(a, b interface{}) int64 {
+func (f *MathFuncs) Rem(a, b interface{}) interface{} {
 	return conv.ToInt64(a) % conv.ToInt64(b)
 }
 
 // Pow -
-func (f *MathFuncs) Pow(a, b interface{}) int64 {
-	return conv.ToInt64(gmath.Pow(conv.ToFloat64(a), conv.ToFloat64(b)))
+func (f *MathFuncs) Pow(a, b interface{}) interface{} {
+	r := gmath.Pow(conv.ToFloat64(a), conv.ToFloat64(b))
+	if f.IsFloat(a) {
+		return r
+	}
+	return conv.ToInt64(r)
 }
 
 // Seq - return a sequence from `start` to `end`, in steps of `step`
@@ -94,4 +182,55 @@ func (f *MathFuncs) Seq(n ...interface{}) ([]int64, error) {
 		step = conv.ToInt64(n[2])
 	}
 	return math.Seq(conv.ToInt64(start), conv.ToInt64(end), conv.ToInt64(step)), nil
+}
+
+// Max -
+func (f *MathFuncs) Max(a interface{}, b ...interface{}) (interface{}, error) {
+	if f.IsFloat(a) || f.containsFloat(b...) {
+		m := conv.ToFloat64(a)
+		for _, n := range conv.ToFloat64s(b...) {
+			m = gmath.Max(m, n)
+		}
+		return m, nil
+	}
+	m := conv.ToInt64(a)
+	for _, n := range conv.ToInt64s(b...) {
+		if n > m {
+			m = n
+		}
+	}
+	return m, nil
+}
+
+// Min -
+func (f *MathFuncs) Min(a interface{}, b ...interface{}) (interface{}, error) {
+	if f.IsFloat(a) || f.containsFloat(b...) {
+		m := conv.ToFloat64(a)
+		for _, n := range conv.ToFloat64s(b...) {
+			m = gmath.Min(m, n)
+		}
+		return m, nil
+	}
+	m := conv.ToInt64(a)
+	for _, n := range conv.ToInt64s(b...) {
+		if n < m {
+			m = n
+		}
+	}
+	return m, nil
+}
+
+// Ceil -
+func (f *MathFuncs) Ceil(n interface{}) interface{} {
+	return gmath.Ceil(conv.ToFloat64(n))
+}
+
+// Floor -
+func (f *MathFuncs) Floor(n interface{}) interface{} {
+	return gmath.Floor(conv.ToFloat64(n))
+}
+
+// Round -
+func (f *MathFuncs) Round(n interface{}) interface{} {
+	return gmath.Round(conv.ToFloat64(n))
 }
