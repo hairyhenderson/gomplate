@@ -6,7 +6,7 @@ menu: main
 
 The simplest usage of `gomplate` is to just replace environment
 variables. All environment variables are available by referencing [`.Env`](../syntax/#about-env)
-(or [`getenv`](../functions/#getenv)) in the template.
+(or [`getenv`](../functions/env/#getenv)) in the template.
 
 The template is read from standard in, and written to standard out.
 
@@ -49,18 +49,19 @@ To prevent certain files from being processed, you can use `--exclude`. It takes
 
 Example:
 
-```
-gomplate --exclude example/** \
-          --exclude *.png
+```console
+$ gomplate --exclude example/** --exclude *.png
 ```
 
-This will stop all files in the example folder from being processed, as well as all .png files in the root folder.
+This will stop all files in the example folder from being processed, as well as all `.png` files in the current folder.
 
-You can also chain the exclude flag to build up a series of globs to be excluded
+You can also chain the flag to build up a series of globs to be excluded.
 
 ### `--datasource`/`-d`
 
-Add a data source in `name=URL` form. Specify multiple times to add multiple sources. The data can then be used by the [`datasource`](../functions/#datasource) and [`include`](../functions/#include) functions.
+Add a data source in `name=URL` form. Specify multiple times to add multiple sources. The data can then be used by the [`datasource`](../functions/data/#datasource) and [`include`](../functions/data/#include) functions.
+
+See [Datasources](../datasources) for full details.
 
 A few different forms are valid:
 - `mydata=file:///tmp/my/file.json`
