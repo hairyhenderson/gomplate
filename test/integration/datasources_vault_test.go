@@ -37,11 +37,15 @@ func (s *VaultDatasourcesSuite) SetUpSuite(c *C) {
 	handle(c, err)
 
 	err = s.v.vc.Sys().PutPolicy("writepol", `path "*" {
-  policy = "write"
+  capabilities = ["create","update","delete"]
 }`)
 	handle(c, err)
 	err = s.v.vc.Sys().PutPolicy("readpol", `path "*" {
-  policy = "read"
+  capabilities = ["read","delete"]
+}`)
+	handle(c, err)
+	err = s.v.vc.Sys().PutPolicy("listPol", `path "*" {
+  capabilities = ["read","list","delete"]
 }`)
 	handle(c, err)
 }
@@ -358,4 +362,34 @@ func (s *VaultDatasourcesSuite) TestDynamicAuth(c *C) {
 		})
 		result.Assert(c, icmd.Expected{ExitCode: 0, Out: "10.1.2.3"})
 	}
+}
+
+func (s *VaultDatasourcesSuite) TestList(c *C) {
+	s.v.vc.Logical().Write("secret/dir/foo", map[string]interface{}{"value": "one"})
+	s.v.vc.Logical().Write("secret/dir/bar", map[string]interface{}{"value": "two"})
+	defer s.v.vc.Logical().Delete("secret/dir/foo")
+	defer s.v.vc.Logical().Delete("secret/dir/bar")
+	tok, err := s.v.tokenCreate("listpol", 5)
+	handle(c, err)
+
+	result := icmd.RunCmd(icmd.Command(GomplateBin,
+		"-d", "vault=vault:///secret/dir/",
+		"-i", `{{ range (ds "vault" ) }}{{ . }}: {{ (ds "vault" .).value }} {{end}}`,
+	), func(c *icmd.Cmd) {
+		c.Env = []string{
+			"VAULT_ADDR=http://" + s.v.addr,
+			"VAULT_TOKEN=" + tok,
+		}
+	})
+	result.Assert(c, icmd.Expected{ExitCode: 0, Out: "bar: two foo: one"})
+
+	result = icmd.RunCmd(icmd.Command(GomplateBin,
+		"-d", "vault=vault+http://"+s.v.addr+"/secret",
+		"-i", `{{ range (ds "vault" "dir/" ) }}{{ . }} {{end}}`,
+	), func(c *icmd.Cmd) {
+		c.Env = []string{
+			"VAULT_TOKEN=" + tok,
+		}
+	})
+	result.Assert(c, icmd.Expected{ExitCode: 0, Out: "bar foo"})
 }

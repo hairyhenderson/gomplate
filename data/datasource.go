@@ -23,7 +23,10 @@ import (
 	"github.com/hairyhenderson/gomplate/vault"
 )
 
-var jsonMimetype = "application/json"
+const (
+	plaintext    = "text/plain"
+	jsonMimetype = "application/json"
+)
 
 // stdin - for overriding in tests
 var stdin io.Reader
@@ -226,8 +229,6 @@ func (d *Data) DatasourceExists(alias string) bool {
 	return ok
 }
 
-const plaintext = "text/plain"
-
 // Datasource -
 func (d *Data) Datasource(alias string, args ...string) (interface{}, error) {
 	source, ok := d.Sources[alias]
@@ -239,22 +240,24 @@ func (d *Data) Datasource(alias string, args ...string) (interface{}, error) {
 		return nil, errors.Wrapf(err, "Couldn't read datasource '%s'", alias)
 	}
 	s := string(b)
-	if source.Type == jsonMimetype {
-		return JSON(s), nil
+	var out interface{}
+	switch source.Type {
+	case jsonMimetype:
+		out = JSON(s)
+	case "application/array+json":
+		out = JSONArray(s)
+	case "application/yaml":
+		out = YAML(s)
+	case "text/csv":
+		out = CSV(s)
+	case "application/toml":
+		out = TOML(s)
+	case plaintext:
+		out = s
+	default:
+		return nil, errors.Errorf("Datasources of type %s not yet supported", source.Type)
 	}
-	if source.Type == "application/yaml" {
-		return YAML(s), nil
-	}
-	if source.Type == "text/csv" {
-		return CSV(s), nil
-	}
-	if source.Type == "application/toml" {
-		return TOML(s), nil
-	}
-	if source.Type == plaintext {
-		return s, nil
-	}
-	return nil, errors.Errorf("Datasources of type %s not yet supported", source.Type)
+	return out, nil
 }
 
 // DatasourceReachable - Determines if the named datasource is reachable with
@@ -377,54 +380,6 @@ func readHTTP(source *Source, args ...string) ([]byte, error) {
 		source.Params = params
 	}
 	return body, nil
-}
-
-func readVault(source *Source, args ...string) ([]byte, error) {
-	if source.VC == nil {
-		source.VC = vault.New(source.URL)
-		source.VC.Login()
-	}
-
-	params := make(map[string]interface{})
-
-	p := source.URL.Path
-
-	for key, val := range source.URL.Query() {
-		params[key] = strings.Join(val, " ")
-	}
-
-	if len(args) == 1 {
-		parsed, err := url.Parse(args[0])
-		if err != nil {
-			return nil, err
-		}
-
-		if parsed.Path != "" {
-			p = p + "/" + parsed.Path
-		}
-
-		for key, val := range parsed.Query() {
-			params[key] = strings.Join(val, " ")
-		}
-	}
-
-	var data []byte
-	var err error
-
-	if len(params) > 0 {
-		data, err = source.VC.Write(p, params)
-	} else {
-		data, err = source.VC.Read(p)
-	}
-	if err != nil {
-		return nil, err
-	}
-	if len(data) == 0 {
-		return nil, errors.Errorf("no value found for path %s", p)
-	}
-	source.Type = "application/json"
-
-	return data, nil
 }
 
 func readConsul(source *Source, args ...string) ([]byte, error) {

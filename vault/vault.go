@@ -6,6 +6,8 @@ import (
 	"log"
 	"net/url"
 
+	"github.com/pkg/errors"
+
 	vaultapi "github.com/hashicorp/vault/api"
 )
 
@@ -86,6 +88,29 @@ func (v *Vault) Write(path string, data map[string]interface{}) ([]byte, error) 
 	var buf bytes.Buffer
 	enc := json.NewEncoder(&buf)
 	if err := enc.Encode(secret.Data); err != nil {
+		return nil, err
+	}
+	return buf.Bytes(), nil
+}
+
+// List -
+func (v *Vault) List(path string) ([]byte, error) {
+	secret, err := v.client.Logical().List(path)
+	if err != nil {
+		return nil, err
+	}
+	if secret == nil {
+		return nil, nil
+	}
+
+	keys, ok := secret.Data["keys"]
+	if !ok {
+		return nil, errors.Errorf("keys param missing from vault list")
+	}
+
+	var buf bytes.Buffer
+	enc := json.NewEncoder(&buf)
+	if err := enc.Encode(keys); err != nil {
 		return nil, err
 	}
 	return buf.Bytes(), nil
