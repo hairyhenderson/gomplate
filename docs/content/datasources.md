@@ -53,6 +53,7 @@ When the _path_ component of the URL ends with a `/` character, the datasource i
 
 Currently the following datasources support directory semantics:
 
+- [File](#using-file-datasources)
 - [Vault](#using-vault-datasources) - translates to Vault's [LIST](https://www.vaultproject.io/api/index.html#reading-writing-and-listing-secrets) method
 
 When accessing a directory datasource, an array of key names is returned, and can be iterated through to access each individual value contained within.
@@ -227,15 +228,14 @@ value for foo/bar/baz key
 
 ## Using `file` datasources
 
-The `file` datasource type provides access to files in any of the [supported formats](#mime-types).
+The `file` datasource type provides access to files in any of the [supported formats](#mime-types). [Directory datasource](#directory-datasources) semantics are supported.
 
 ### URL Considerations
 
-For `file`, the _scheme_ and _path_ are used, and the _query_ component can be used to [override the MIME type](#overriding-mime-types).
+The _scheme_ and _path_ are used, and the _query_ component can be used to [override the MIME type](#overriding-mime-types).
 
-Unique to `file`, the _scheme_ can be omitted to allow setting relative paths. 
-
-In addition, if the file  being referenced is in the current working directory, the file's base name (without extension) is used as the datasource alias in absence of an explicit alias.
+- the _scheme_ must be `file` for absolute URLs, but may be omitted to allow setting relative paths
+- the _path_ component is required, and can be an absolute or relative path, and if the file being referenced is in the current working directory, the file's base name (without extension) is used as the datasource alias in absence of an explicit alias. [Directory](#directory-datasources) semantics are available when the path ends with a `/` character.
 
 ### Examples
 

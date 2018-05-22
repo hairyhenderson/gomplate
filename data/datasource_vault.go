@@ -46,11 +46,11 @@ func readVault(source *Source, args ...string) ([]byte, error) {
 
 	var data []byte
 
-	source.Type = "application/json"
+	source.Type = jsonMimetype
 	if len(params) > 0 {
 		data, err = source.VC.Write(p, params)
 	} else if strings.HasSuffix(p, "/") {
-		source.Type = "application/array+json"
+		source.Type = jsonArrayMimetype
 		data, err = source.VC.List(p)
 	} else {
 		data, err = source.VC.Read(p)

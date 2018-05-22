@@ -23,11 +23,6 @@ import (
 	"github.com/hairyhenderson/gomplate/vault"
 )
 
-const (
-	plaintext    = "text/plain"
-	jsonMimetype = "application/json"
-)
-
 // stdin - for overriding in tests
 var stdin io.Reader
 
@@ -40,11 +35,11 @@ func regExtension(ext, typ string) {
 
 func init() {
 	// Add some types we want to be able to handle which can be missing by default
-	regExtension(".json", "application/json")
-	regExtension(".yml", "application/yaml")
-	regExtension(".yaml", "application/yaml")
-	regExtension(".csv", "text/csv")
-	regExtension(".toml", "application/toml")
+	regExtension(".json", jsonMimetype)
+	regExtension(".yml", yamlMimetype)
+	regExtension(".yaml", yamlMimetype)
+	regExtension(".csv", csvMimetype)
+	regExtension(".toml", tomlMimetype)
 
 	sourceReaders = make(map[string]func(*Source, ...string) ([]byte, error))
 
@@ -156,7 +151,7 @@ func NewSource(alias string, URL *url.URL) (*Source, error) {
 		s.Params = params
 	}
 	if s.Type == "" {
-		s.Type = plaintext
+		s.Type = textMimetype
 	}
 	return s, nil
 }
@@ -244,15 +239,15 @@ func (d *Data) Datasource(alias string, args ...string) (interface{}, error) {
 	switch source.Type {
 	case jsonMimetype:
 		out = JSON(s)
-	case "application/array+json":
+	case jsonArrayMimetype:
 		out = JSONArray(s)
-	case "application/yaml":
+	case yamlMimetype:
 		out = YAML(s)
-	case "text/csv":
+	case csvMimetype:
 		out = CSV(s)
-	case "application/toml":
+	case tomlMimetype:
 		out = TOML(s)
-	case plaintext:
+	case textMimetype:
 		out = s
 	default:
 		return nil, errors.Errorf("Datasources of type %s not yet supported", source.Type)
@@ -307,31 +302,6 @@ func (d *Data) ReadSource(source *Source, args ...string) ([]byte, error) {
 	}
 
 	return nil, errors.Errorf("Datasources with scheme %s not yet supported", source.URL.Scheme)
-}
-
-func readFile(source *Source, args ...string) ([]byte, error) {
-	if source.FS == nil {
-		source.FS = vfs.OS()
-	}
-
-	p := filepath.FromSlash(source.URL.Path)
-
-	// make sure we can access the file
-	_, err := source.FS.Stat(p)
-	if err != nil {
-		return nil, errors.Wrapf(err, "Can't stat %s", p)
-	}
-
-	f, err := source.FS.OpenFile(p, os.O_RDONLY, 0)
-	if err != nil {
-		return nil, errors.Wrapf(err, "Can't open %s", p)
-	}
-
-	b, err := ioutil.ReadAll(f)
-	if err != nil {
-		return nil, errors.Wrapf(err, "Can't read %s", p)
-	}
-	return b, nil
 }
 
 func readStdin(source *Source, args ...string) ([]byte, error) {

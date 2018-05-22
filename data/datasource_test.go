@@ -22,7 +22,7 @@ func TestNewSource(t *testing.T) {
 		Path:   "/foo.json",
 	})
 	assert.NoError(t, err)
-	assert.Equal(t, "application/json", s.Type)
+	assert.Equal(t, jsonMimetype, s.Type)
 	assert.Equal(t, ".json", s.Ext)
 
 	s, err = NewSource("foo", &url.URL{
@@ -30,7 +30,7 @@ func TestNewSource(t *testing.T) {
 		Path:   "/foo",
 	})
 	assert.NoError(t, err)
-	assert.Equal(t, "text/plain", s.Type)
+	assert.Equal(t, textMimetype, s.Type)
 	assert.Equal(t, "", s.Ext)
 
 	s, err = NewSource("foo", &url.URL{
@@ -39,7 +39,7 @@ func TestNewSource(t *testing.T) {
 		Path:   "/foo.json",
 	})
 	assert.NoError(t, err)
-	assert.Equal(t, "application/json", s.Type)
+	assert.Equal(t, jsonMimetype, s.Type)
 	assert.Equal(t, ".json", s.Ext)
 
 	s, err = NewSource("foo", &url.URL{
@@ -48,7 +48,7 @@ func TestNewSource(t *testing.T) {
 		Path:   "/foo.json",
 	})
 	assert.NoError(t, err)
-	assert.Equal(t, "application/json", s.Type)
+	assert.Equal(t, jsonMimetype, s.Type)
 	assert.Equal(t, ".json", s.Ext)
 
 	s, err = NewSource("foo", &url.URL{
@@ -58,7 +58,7 @@ func TestNewSource(t *testing.T) {
 		RawQuery: "type=application/json%3Bcharset=utf-8",
 	})
 	assert.NoError(t, err)
-	assert.Equal(t, "application/json", s.Type)
+	assert.Equal(t, jsonMimetype, s.Type)
 	assert.Equal(t, ".blarb", s.Ext)
 	assert.Equal(t, map[string]string{"charset": "utf-8"}, s.Params)
 
@@ -69,7 +69,7 @@ func TestNewSource(t *testing.T) {
 		RawQuery: "type=application/json",
 	})
 	assert.NoError(t, err)
-	assert.Equal(t, "application/json", s.Type)
+	assert.Equal(t, jsonMimetype, s.Type)
 	assert.Equal(t, "", s.Ext)
 	assert.Equal(t, map[string]string{}, s.Params)
 }
@@ -116,7 +116,7 @@ func TestParseSourceWithAlias(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, "data", s.Alias)
 	assert.Equal(t, "file", s.URL.Scheme)
-	assert.Equal(t, "application/json", s.Type)
+	assert.Equal(t, jsonMimetype, s.Type)
 	assert.True(t, s.URL.IsAbs())
 
 	s, err = ParseSource("data=/otherdir/foo.json")
@@ -161,10 +161,10 @@ func TestDatasource(t *testing.T) {
 		assert.Equal(t, expected, actual)
 	}
 
-	test("json", "application/json", []byte(`{"hello":{"cruel":"world"}}`))
-	test("yml", "application/yaml", []byte("hello:\n  cruel: world\n"))
+	test("json", jsonMimetype, []byte(`{"hello":{"cruel":"world"}}`))
+	test("yml", yamlMimetype, []byte("hello:\n  cruel: world\n"))
 
-	d := setup("", "text/plain", nil)
+	d := setup("", textMimetype, nil)
 	actual, err := d.Datasource("foo")
 	assert.NoError(t, err)
 	assert.Equal(t, "", actual)
@@ -182,7 +182,7 @@ func TestDatasourceReachable(t *testing.T) {
 			Alias: "foo",
 			URL:   &url.URL{Scheme: "file", Path: "/tmp/" + fname},
 			Ext:   "json",
-			Type:  "application/json",
+			Type:  jsonMimetype,
 			FS:    fs,
 		},
 		"bar": {
@@ -256,7 +256,7 @@ func TestHTTPFile(t *testing.T) {
 }
 
 func TestHTTPFileWithHeaders(t *testing.T) {
-	server, client := setupHTTP(200, "application/json", "")
+	server, client := setupHTTP(200, jsonMimetype, "")
 	defer server.Close()
 
 	sources := make(map[string]*Source)
@@ -294,7 +294,7 @@ func TestParseHeaderArgs(t *testing.T) {
 	}
 	expected := map[string]http.Header{
 		"foo": {
-			"Accept": {"application/json"},
+			"Accept": {jsonMimetype},
 		},
 		"bar": {
 			"Authorization": {"Bearer supersecret"},
@@ -319,7 +319,7 @@ func TestParseHeaderArgs(t *testing.T) {
 	}
 	expected = map[string]http.Header{
 		"foo": {
-			"Accept": {"application/json"},
+			"Accept": {jsonMimetype},
 			"Foo":    {"bar", "baz", "qux"},
 		},
 		"bar": {
@@ -345,7 +345,7 @@ func TestInclude(t *testing.T) {
 			Alias: "foo",
 			URL:   &url.URL{Scheme: "file", Path: "/tmp/" + fname},
 			Ext:   ext,
-			Type:  "text/plain",
+			Type:  textMimetype,
 			FS:    fs,
 		},
 	}

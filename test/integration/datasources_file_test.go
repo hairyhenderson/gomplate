@@ -73,4 +73,10 @@ bar`})
 		"-i", `{{ include "config" }}`,
 	)
 	result.Assert(c, icmd.Expected{ExitCode: 0, Out: `foo: bar`})
+
+	result = icmd.RunCommand(GomplateBin,
+		"-d", "dir="+s.tmpDir.Path()+"/",
+		"-i", `{{ range (ds "dir") }}{{ . }} {{ end }}`,
+	)
+	result.Assert(c, icmd.Expected{ExitCode: 0, Out: `config.json config.yml config2.yml foo.csv`})
 }

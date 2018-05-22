@@ -17,7 +17,7 @@ func TestReadVault(t *testing.T) {
 		Alias: "foo",
 		URL:   &url.URL{Scheme: "vault", Path: "/secret/foo"},
 		Ext:   "",
-		Type:  "text/plain",
+		Type:  textMimetype,
 		VC:    v,
 	}
 
