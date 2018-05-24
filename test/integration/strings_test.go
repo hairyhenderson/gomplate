@@ -43,3 +43,9 @@ func (s *StringsSuite) TestRepeat(c *C) {
 		`ba{{ strings.Repeat -1 "na" }}`)
 	result.Assert(c, icmd.Expected{ExitCode: 1, Out: `negative count`})
 }
+
+func (s *StringsSuite) TestSlug(c *C) {
+	result := icmd.RunCommand(GomplateBin, "-i",
+		`{{ strings.Slug "Hellö, Wôrld! Free @ last..." }}`)
+	result.Assert(c, icmd.Expected{ExitCode: 0, Out: `hello-world-free-at-last`})
+}

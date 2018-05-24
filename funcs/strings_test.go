@@ -58,3 +58,30 @@ func TestAbbrev(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, "...baz...", s)
 }
+
+func TestSlug(t *testing.T) {
+	sf := &StringFuncs{}
+	s := sf.Slug(nil)
+	assert.Equal(t, "nil", s)
+
+	s = sf.Slug(0)
+	assert.Equal(t, "0", s)
+
+	s = sf.Slug(1.85e-5)
+	assert.Equal(t, "1-85e-05", s)
+
+	s = sf.Slug("Hello, World!")
+	assert.Equal(t, "hello-world", s)
+
+	s = sf.Slug("foo@example.com")
+	assert.Equal(t, "fooatexample-com", s)
+
+	s = sf.Slug("rock & roll!")
+	assert.Equal(t, "rock-and-roll", s)
+
+	s = sf.Slug("foo@example.com")
+	assert.Equal(t, "fooatexample-com", s)
+
+	s = sf.Slug(`100%`)
+	assert.Equal(t, "100", s)
+}

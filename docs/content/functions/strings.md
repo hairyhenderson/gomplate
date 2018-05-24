@@ -241,6 +241,27 @@ $ gomplate -i '{{ "172.21.1.42" | strings.ReplaceAll "." "-" }}'
 172-21-1-42
 ```
 
+## `strings.Slug`
+
+Creates a a "slug" from a given string - supports unicode correctly. This wraps the [github.com/gosimple/slug](https://github.com/gosimple/slug) package. See [the github.com/gosimple/slug docs](https://godoc.org/github.com/gosimple/slug) for more information.
+
+### Usage
+```go
+strings.Slug input
+```
+```go
+input | strings.Slug
+```
+
+### Examples
+```console
+$ gomplate -i '{{ "Hello, world!" | strings.Slug }}'
+hello-world
+
+$ echo 'Rock & Roll @ Cafe Wha?' | gomplate -d in=stdin: -i '{{ strings.Slug (include "in") }}'
+rock-and-roll-at-cafe-wha
+```
+
 ## `strings.Title`
 
 **Alias:** `title`
