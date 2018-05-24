@@ -41,8 +41,8 @@
     "service/ssm",
     "service/sts"
   ]
-  revision = "28d0127967e59b0c41cede1e8d548ed85374bbbc"
-  version = "v1.13.14"
+  revision = "fad131ddc707880428615dc8bc1587b55fb46d74"
+  version = "v1.13.54"
 
 [[projects]]
   branch = "master"
@@ -77,28 +77,22 @@
   version = "v0.2.1"
 
 [[projects]]
-  name = "github.com/fatih/structs"
-  packages = ["."]
-  revision = "a720dfa8df582c51dee1b36feabb906bde1588bd"
-  version = "v1.0"
-
-[[projects]]
   branch = "master"
   name = "github.com/fullsailor/pkcs7"
   packages = ["."]
-  revision = "1d5002593acb237433a98512c6343587b03ebe5d"
+  revision = "ae226422660e5ca10db350d33f81c6608f3fbcdd"
 
 [[projects]]
   name = "github.com/go-ini/ini"
   packages = ["."]
-  revision = "6333e38ac20b8949a8dd68baa3650f4dee8f39f0"
-  version = "v1.33.0"
+  revision = "6529cf7c58879c08d927016dde4477f18a0634cb"
+  version = "v1.36.0"
 
 [[projects]]
   branch = "master"
   name = "github.com/golang/snappy"
   packages = ["."]
-  revision = "553a641470496b2327abcac10b36396bd98e45c9"
+  revision = "2e65f85255dbc3072edf28d6b5b8efc472979f5a"
 
 [[projects]]
   name = "github.com/google/go-cmp"
@@ -118,11 +112,13 @@
     "assert/cmp",
     "fs",
     "icmd",
+    "internal/difflib",
     "internal/format",
-    "internal/source"
+    "internal/source",
+    "x/subtest"
   ]
-  revision = "03704babdbbc36b67d9a4cd94c9e00adf82f339f"
-  version = "v1.3.0"
+  revision = "f2728c79a87095c99f7a496701a81d3eae9fe3df"
+  version = "v1.4.0"
 
 [[projects]]
   branch = "support-map-interface-keys"
@@ -133,8 +129,8 @@
 [[projects]]
   name = "github.com/hashicorp/consul"
   packages = ["api"]
-  revision = "9a494b5fb9c86180a5702e29c485df1507a47198"
-  version = "v1.0.6"
+  revision = "5174058f0d2bda63fa5198ab96c33d9a909c58ed"
+  version = "v1.1.0"
 
 [[projects]]
   branch = "master"
@@ -167,7 +163,7 @@
     ".",
     "template"
   ]
-  revision = "d9a0390d2f53eca0e692e01e2e34c490f4fa6ca8"
+  revision = "6d291a969b86c4b633730bfc6b8b9d64c3aafed9"
 
 [[projects]]
   branch = "master"
@@ -183,7 +179,7 @@
     "json/scanner",
     "json/token"
   ]
-  revision = "23c074d0eceb2b8a5bfdbb271ab780cde70f05a8"
+  revision = "ef8a98b0bbce4a65b5aa4c368430a80ddc533168"
 
 [[projects]]
   name = "github.com/hashicorp/serf"
@@ -200,8 +196,8 @@
     "helper/parseutil",
     "helper/strutil"
   ]
-  revision = "36edb4d42380d89a897e7f633046423240b710d9"
-  version = "v0.9.5"
+  revision = "5dd7f25f5c4b541f2da62d70075b6f82771a650d"
+  version = "v0.10.0"
 
 [[projects]]
   name = "github.com/inconshreveable/mousetrap"
@@ -218,13 +214,13 @@
   branch = "master"
   name = "github.com/mitchellh/go-homedir"
   packages = ["."]
-  revision = "b8bc1bf767474819792c23f32d8286a45736f1c6"
+  revision = "3864e76763d94a6df2f9960b16a20a33da9f9a66"
 
 [[projects]]
   branch = "master"
   name = "github.com/mitchellh/mapstructure"
   packages = ["."]
-  revision = "00c29f56e2386353d58c599509e8dc3801b0d716"
+  revision = "bb74f1db0675b241733089d5a1faa5dd8b0ef57b"
 
 [[projects]]
   name = "github.com/pkg/errors"
@@ -245,10 +241,10 @@
   version = "v0.1"
 
 [[projects]]
-  branch = "master"
   name = "github.com/sethgrid/pester"
   packages = ["."]
-  revision = "ed9870dad3170c0b25ab9b11830cc57c3a7798fb"
+  revision = "03e26c9abbbf5accb8349790bf9f41bde09d72c3"
+  version = "1.0.0"
 
 [[projects]]
   name = "github.com/spf13/afero"
@@ -256,20 +252,20 @@
     ".",
     "mem"
   ]
-  revision = "bb8f1927f2a9d3ab41c9340aa034f6b803f4359c"
-  version = "v1.0.2"
+  revision = "63644898a8da0bc22138abf860edaf5277b6102e"
+  version = "v1.1.0"
 
 [[projects]]
   name = "github.com/spf13/cobra"
   packages = ["."]
-  revision = "7b2c5ac9fc04fc5efafb60700713d4fa609b777b"
-  version = "v0.0.1"
+  revision = "ef82de70bb3f60c65fb8eebacbb2d122ef517385"
+  version = "v0.0.3"
 
 [[projects]]
   name = "github.com/spf13/pflag"
   packages = ["."]
-  revision = "e57e3eeb33f795204c1ca35f56c44f83227c6e66"
-  version = "v1.0.0"
+  revision = "583c0c0531f06d5278b7d917446061adc344b5cd"
+  version = "v1.0.1"
 
 [[projects]]
   name = "github.com/stretchr/testify"
@@ -280,8 +276,8 @@
 [[projects]]
   name = "github.com/ugorji/go"
   packages = ["codec"]
-  revision = "9831f2c3ac1068a78f50999a30db84270f647af6"
-  version = "v1.1"
+  revision = "b4c50a2b199d93b13dc15e78929cfb23bfdf21ab"
+  version = "v1.1.1"
 
 [[projects]]
   branch = "master"
@@ -291,24 +287,24 @@
     "blowfish",
     "pbkdf2"
   ]
-  revision = "21652f85b0fdddb6c2b6b77a5beca5c5a908174a"
+  revision = "75e913eb8a8e3d31a97b216de09de106a7b07681"
 
 [[projects]]
   branch = "master"
   name = "golang.org/x/net"
   packages = [
+    "http/httpguts",
     "http2",
     "http2/hpack",
-    "idna",
-    "lex/httplex"
+    "idna"
   ]
-  revision = "e0c57d8f86c17f0724497efcb3bc617e82834821"
+  revision = "9ef9f5bb98a1fdc41f8cf6c250a4404b4085e389"
 
 [[projects]]
   branch = "master"
   name = "golang.org/x/sys"
   packages = ["unix"]
-  revision = "89ac7f292d17a339edab4de8efcba5d8672ff661"
+  revision = "56ad15cc2170219c9fed5b7d059e825c97588071"
 
 [[projects]]
   name = "golang.org/x/text"
@@ -340,8 +336,8 @@
 [[projects]]
   name = "gopkg.in/yaml.v2"
   packages = ["."]
-  revision = "7f97868eec74b32b0982dd158a51a446d1da7eb5"
-  version = "v2.1.1"
+  revision = "5420a8b6744d3b0345ab293f6fcba19c978f1183"
+  version = "v2.2.1"
 
 [solve-meta]
   analyzer-name = "dep"

@@ -33,7 +33,7 @@ func TestNew(t *testing.T) {
 }
 
 func TestRead(t *testing.T) {
-	server, v := MockServer(404, "Not Found")
+	server, v := MockServer(404, "")
 	defer server.Close()
 	val, err := v.Read("secret/bogus")
 	assert.Empty(t, val)

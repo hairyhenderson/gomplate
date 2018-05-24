@@ -228,6 +228,7 @@ func StartCmd(cmd Cmd) *Result {
 	return result
 }
 
+// TODO: support exec.CommandContext
 func buildCmd(cmd Cmd) *Result {
 	var execCmd *exec.Cmd
 	switch len(cmd.Command) {

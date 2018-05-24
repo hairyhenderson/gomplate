@@ -8,7 +8,7 @@ comparison fails. The one difference is that Assert() will end the test executio
 immediately (using t.FailNow()) whereas Check() will fail the test (using t.Fail()),
 return the value of the comparison, then proceed with the rest of the test case.
 
-Example Usage
+Example usage
 
 The example below shows assert used with some common types.
 
@@ -32,9 +32,9 @@ The example below shows assert used with some common types.
 
 	    // errors
 	    assert.NilError(t, closer.Close())
-	    assert.Assert(t, is.Error(err, "the exact error message"))
-	    assert.Assert(t, is.ErrorContains(err, "includes this"))
-	    assert.Assert(t, is.ErrorType(err, os.IsNotExist))
+	    assert.Error(t, err, "the exact error message")
+	    assert.ErrorContains(t, err, "includes this")
+	    assert.ErrorType(t, err, os.IsNotExist)
 
 	    // complex types
 	    assert.DeepEqual(t, result, myStruct{Name: "title"})
@@ -49,9 +49,17 @@ The example below shows assert used with some common types.
 
 Comparisons
 
-https://godoc.org/github.com/gotestyourself/gotestyourself/assert/cmp provides
+Package assert/cmp (http://bit.do/assert-cmp) provides
 many common comparisons. Additional comparisons can be written to compare
 values in other ways. See the example Assert (CustomComparison).
+
+Automated migration from testify
+
+gty-migrate-from-testify is a binary which can update source code which uses
+testify assertions to use the assertions provided by this package.
+
+See http://bit.do/cmd-gty-migrate-from-testify.
+
 
 */
 package assert
@@ -87,7 +95,7 @@ const failureMessage = "assertion failed: "
 func assert(
 	t TestingT,
 	failer func(),
-	argsFilter astExprListFilter,
+	argSelector argSelector,
 	comparison BoolOrComparison,
 	msgAndArgs ...interface{},
 ) bool {
@@ -114,10 +122,10 @@ func assert(
 		t.Log(format.WithCustomMessage(failureMessage+msg+check.Error(), msgAndArgs...))
 
 	case cmp.Comparison:
-		success = runComparison(t, argsFilter, check, msgAndArgs...)
+		success = runComparison(t, argSelector, check, msgAndArgs...)
 
 	case func() cmp.Result:
-		success = runComparison(t, argsFilter, check, msgAndArgs...)
+		success = runComparison(t, argSelector, check, msgAndArgs...)
 
 	default:
 		t.Log(fmt.Sprintf("invalid Comparison: %v (%T)", check, check))
@@ -146,6 +154,9 @@ func runCompareFunc(
 }
 
 func logFailureFromBool(t TestingT, msgAndArgs ...interface{}) {
+	if ht, ok := t.(helperT); ok {
+		ht.Helper()
+	}
 	const stackIndex = 3 // Assert()/Check(), assert(), formatFailureFromBool()
 	const comparisonArgPos = 1
 	args, err := source.CallExprArgs(stackIndex)
@@ -206,7 +217,7 @@ func Assert(t TestingT, comparison BoolOrComparison, msgAndArgs ...interface{}) 
 	if ht, ok := t.(helperT); ok {
 		ht.Helper()
 	}
-	assert(t, t.FailNow, filterExprArgsFromComparison, comparison, msgAndArgs...)
+	assert(t, t.FailNow, argsFromComparisonCall, comparison, msgAndArgs...)
 }
 
 // Check performs a comparison. If the comparison fails the test is marked as
@@ -218,7 +229,7 @@ func Check(t TestingT, comparison BoolOrComparison, msgAndArgs ...interface{}) b
 	if ht, ok := t.(helperT); ok {
 		ht.Helper()
 	}
-	return assert(t, t.Fail, filterExprArgsFromComparison, comparison, msgAndArgs...)
+	return assert(t, t.Fail, argsFromComparisonCall, comparison, msgAndArgs...)
 }
 
 // NilError fails the test immediately if err is not nil.
@@ -227,7 +238,7 @@ func NilError(t TestingT, err error, msgAndArgs ...interface{}) {
 	if ht, ok := t.(helperT); ok {
 		ht.Helper()
 	}
-	assert(t, t.FailNow, filterExprExcludeFirst, err, msgAndArgs...)
+	assert(t, t.FailNow, argsAfterT, err, msgAndArgs...)
 }
 
 // Equal uses the == operator to assert two values are equal and fails the test
@@ -236,15 +247,55 @@ func Equal(t TestingT, x, y interface{}, msgAndArgs ...interface{}) {
 	if ht, ok := t.(helperT); ok {
 		ht.Helper()
 	}
-	assert(t, t.FailNow, filterExprExcludeFirst, cmp.Equal(x, y), msgAndArgs...)
+	assert(t, t.FailNow, argsAfterT, cmp.Equal(x, y), msgAndArgs...)
 }
 
-// DeepEqual uses https://github.com/google/go-cmp/cmp to assert two values
-// are equal and fails the test if they are not equal.
+// DeepEqual uses google/go-cmp (http://bit.do/go-cmp) to assert two values are
+// equal and fails the test if they are not equal.
+//
+// Package assert/opt (http://bit.do/t-assert-opt) provides some additional
+// commonly used Options.
+//
 // This is equivalent to Assert(t, cmp.DeepEqual(x, y)).
 func DeepEqual(t TestingT, x, y interface{}, opts ...gocmp.Option) {
 	if ht, ok := t.(helperT); ok {
 		ht.Helper()
 	}
-	assert(t, t.FailNow, filterExprExcludeFirst, cmp.DeepEqual(x, y, opts...))
+	assert(t, t.FailNow, argsAfterT, cmp.DeepEqual(x, y, opts...))
+}
+
+// Error fails the test if err is nil, or the error message is not the expected
+// message.
+// Equivalent to Assert(t, cmp.Error(err, message)).
+func Error(t TestingT, err error, message string, msgAndArgs ...interface{}) {
+	if ht, ok := t.(helperT); ok {
+		ht.Helper()
+	}
+	assert(t, t.FailNow, argsAfterT, cmp.Error(err, message), msgAndArgs...)
+}
+
+// ErrorContains fails the test if err is nil, or the error message does not
+// contain the expected substring.
+// Equivalent to Assert(t, cmp.ErrorContains(err, substring)).
+func ErrorContains(t TestingT, err error, substring string, msgAndArgs ...interface{}) {
+	if ht, ok := t.(helperT); ok {
+		ht.Helper()
+	}
+	assert(t, t.FailNow, argsAfterT, cmp.ErrorContains(err, substring), msgAndArgs...)
+}
+
+// ErrorType fails the test if err is nil, or err is not the expected type.
+//
+// Expected can be one of:
+// a func(error) bool which returns true if the error is the expected type,
+// an instance of (or a pointer to) a struct of the expected type,
+// a pointer to an interface the error is expected to implement,
+// a reflect.Type of the expected struct or interface.
+//
+// Equivalent to Assert(t, cmp.ErrorType(err, expected)).
+func ErrorType(t TestingT, err error, expected interface{}, msgAndArgs ...interface{}) {
+	if ht, ok := t.(helperT); ok {
+		ht.Helper()
+	}
+	assert(t, t.FailNow, argsAfterT, cmp.ErrorType(err, expected), msgAndArgs...)
 }

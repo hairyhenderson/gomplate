@@ -1,5 +1,5 @@
-/*Package fs provides tools for creating and working with temporary files and
-directories.
+/*Package fs provides tools for creating temporary files, and testing the
+contents and structure of a directory.
 */
 package fs
 
@@ -9,9 +9,12 @@ import (
 	"path/filepath"
 
 	"github.com/gotestyourself/gotestyourself/assert"
+	"github.com/gotestyourself/gotestyourself/x/subtest"
 )
 
-// Path objects return their filesystem path. Both File and Dir implement Path.
+// Path objects return their filesystem path. Path may be implemented by a
+// real filesystem object (such as File and Dir) or by a type which updates
+// entries in a Manifest.
 type Path interface {
 	Path() string
 	Remove()
@@ -45,6 +48,9 @@ func NewFile(t assert.TestingT, prefix string, ops ...PathOp) *File {
 	for _, op := range ops {
 		assert.NilError(t, op(file))
 	}
+	if tc, ok := t.(subtest.TestContext); ok {
+		tc.AddCleanup(file.Remove)
+	}
 	return file
 }
 
@@ -76,6 +82,9 @@ func NewDir(t assert.TestingT, prefix string, ops ...PathOp) *Dir {
 
 	for _, op := range ops {
 		assert.NilError(t, op(dir))
+	}
+	if tc, ok := t.(subtest.TestContext); ok {
+		tc.AddCleanup(dir.Remove)
 	}
 	return dir
 }
