@@ -9,6 +9,7 @@ import (
 	"log"
 	"sync"
 
+	"github.com/gosimple/slug"
 	"github.com/Masterminds/goutils"
 	"github.com/hairyhenderson/gomplate/conv"
 	"github.com/pkg/errors"
@@ -39,6 +40,7 @@ func AddStringFuncs(f map[string]interface{}) {
 	f["toLower"] = StrNS().ToLower
 	f["trimSpace"] = StrNS().TrimSpace
 	f["indent"] = StrNS().Indent
+	f["slugify"] = StrNS().Slugify
 
 	// these are legacy aliases with non-pipelinable arg order
 	f["contains"] = strings.Contains
@@ -184,4 +186,9 @@ func (f *StringFuncs) Indent(args ...interface{}) string {
 		}
 	}
 	return gompstrings.Indent(width, indent, input)
+}
+
+// Slugify -
+func (f *StringFuncs) Slugify(s interface{}) string {
+	return slug.Make(conv.ToString(s))
 }
