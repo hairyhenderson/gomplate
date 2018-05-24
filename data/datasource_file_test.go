@@ -3,18 +3,12 @@
 package data
 
 import (
-	"net/url"
 	"testing"
 
 	"github.com/blang/vfs"
 	"github.com/blang/vfs/memfs"
 	"github.com/stretchr/testify/assert"
 )
-
-func mustParseURL(in string) *url.URL {
-	u, _ := url.Parse(in)
-	return u
-}
 
 func TestReadFile(t *testing.T) {
 	content := []byte(`hello world`)
