@@ -15,6 +15,7 @@ import (
 
 	"strings"
 
+	"github.com/gosimple/slug"
 	gompstrings "github.com/hairyhenderson/gomplate/strings"
 )
 
@@ -184,4 +185,9 @@ func (f *StringFuncs) Indent(args ...interface{}) string {
 		}
 	}
 	return gompstrings.Indent(width, indent, input)
+}
+
+// Slug -
+func (f *StringFuncs) Slug(in interface{}) string {
+	return slug.Make(conv.ToString(in))
 }

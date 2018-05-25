@@ -106,6 +106,12 @@
   version = "v0.2.0"
 
 [[projects]]
+  name = "github.com/gosimple/slug"
+  packages = ["."]
+  revision = "e9f42fa127660e552d0ad2b589868d403a9be7c6"
+  version = "v1.1.1"
+
+[[projects]]
   name = "github.com/gotestyourself/gotestyourself"
   packages = [
     "assert",
@@ -235,6 +241,12 @@
   version = "v1.0.0"
 
 [[projects]]
+  branch = "master"
+  name = "github.com/rainycape/unidecode"
+  packages = ["."]
+  revision = "cb7f23ec59bec0d61b19c56cd88cee3d0cc1870c"
+
+[[projects]]
   name = "github.com/ryanuber/go-glob"
   packages = ["."]
   revision = "572520ed46dbddaed19ea3d9541bdd0494163693"
@@ -342,6 +354,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "c6bab62a1ce1b4f20c40fa069982c733959426996113f48feb8be8e8ea7e0ce6"
+  inputs-digest = "9481245e10ffa11db1ebb5816e95e882692a408d69407880a90e8d2b6cc65183"
   solver-name = "gps-cdcl"
   solver-version = 1
