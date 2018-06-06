@@ -199,6 +199,9 @@ func ToFloat64(v interface{}) float64 {
 }
 
 func strToInt64(str string) int64 {
+	if strings.Contains(str, ",") {
+		str = strings.Replace(str, ",", "", -1)
+	}
 	iv, err := strconv.ParseInt(str, 0, 64)
 	if err != nil {
 		// maybe it's a float?
@@ -213,6 +216,9 @@ func strToInt64(str string) int64 {
 }
 
 func strToFloat64(str string) float64 {
+	if strings.Contains(str, ",") {
+		str = strings.Replace(str, ",", "", -1)
+	}
 	// this is inefficient, but it's the only way I can think of to
 	// properly convert octal integers to floats
 	iv, err := strconv.ParseInt(str, 0, 64)

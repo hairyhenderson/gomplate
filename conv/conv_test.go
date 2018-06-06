@@ -111,6 +111,8 @@ func TestToInt64(t *testing.T) {
 	assert.Equal(t, int64(0), ToInt64("foo"))
 	assert.Equal(t, int64(0xFFFF), ToInt64("0xFFFF"))
 	assert.Equal(t, int64(8), ToInt64("010"))
+	assert.Equal(t, int64(4096), ToInt64("4,096"))
+	assert.Equal(t, int64(-4096), ToInt64("-4,096.00"))
 }
 
 func TestToInt(t *testing.T) {
@@ -130,6 +132,8 @@ func TestToInt(t *testing.T) {
 	assert.Equal(t, 0, ToInt("foo"))
 	assert.Equal(t, 0xFFFF, ToInt("0xFFFF"))
 	assert.Equal(t, 8, ToInt("010"))
+	assert.Equal(t, 4096, ToInt("4,096"))
+	assert.Equal(t, -4096, ToInt("-4,096.00"))
 }
 
 func TestToInt64s(t *testing.T) {
@@ -138,8 +142,8 @@ func TestToInt64s(t *testing.T) {
 	assert.Equal(t, []int64{0}, ToInt64s(""))
 	assert.Equal(t, []int64{0}, ToInt64s("0"))
 	assert.Equal(t, []int64{42, 15}, ToInt64s("42", "15"))
-	assert.Equal(t, []int64{0, 0, 0, 1, 1, 2, 3, 5, 8, 13},
-		ToInt64s(nil, false, "", true, 1, 2.0, uint8(3), int64(5), float32(8), "13"))
+	assert.Equal(t, []int64{0, 0, 0, 1, 1, 2, 3, 5, 8, 13, -1000},
+		ToInt64s(nil, false, "", true, 1, 2.0, uint8(3), int64(5), float32(8), "13", "-1,000"))
 }
 
 func TestToInts(t *testing.T) {
@@ -148,12 +152,12 @@ func TestToInts(t *testing.T) {
 	assert.Equal(t, []int{0}, ToInts(""))
 	assert.Equal(t, []int{0}, ToInts("0"))
 	assert.Equal(t, []int{42, 15}, ToInts("42", "15"))
-	assert.Equal(t, []int{0, 0, 0, 1, 1, 2, 3, 5, 8, 13},
-		ToInts(nil, false, "", true, 1, 2.0, uint8(3), int64(5), float32(8), "13"))
+	assert.Equal(t, []int{0, 0, 0, 1, 1, 2, 3, 5, 8, 13, 42000},
+		ToInts(nil, false, "", true, 1, 2.0, uint8(3), int64(5), float32(8), "13", "42,000"))
 }
 
 func TestToFloat64(t *testing.T) {
-	z := []interface{}{0, 0.0, nil, false, float32(0), "", "0", "foo", int64(0), uint(0), "0x0", "00"}
+	z := []interface{}{0, 0.0, nil, false, float32(0), "", "0", "foo", int64(0), uint(0), "0x0", "00", "0,000"}
 	for _, n := range z {
 		assert.Equal(t, 0.0, ToFloat64(n))
 	}
@@ -161,6 +165,10 @@ func TestToFloat64(t *testing.T) {
 	z = []interface{}{42, 42.0, float32(42), "42", "42.0", uint8(42), "0x2A", "052"}
 	for _, n := range z {
 		assert.Equal(t, 42.0, ToFloat64(n))
+	}
+	z = []interface{}{1000.34, "1000.34", "1,000.34"}
+	for _, n := range z {
+		assert.Equal(t, 1000.34, ToFloat64(n))
 	}
 }
 
