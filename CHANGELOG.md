@@ -1,5 +1,47 @@
 # Change Log
 
+## [v2.6.0](https://github.com/hairyhenderson/gomplate/tree/v2.6.0) (2018-06-09)
+[Full Changelog](https://github.com/hairyhenderson/gomplate/compare/v2.5.0...v2.6.0)
+
+**Implemented enhancements:**
+
+- Directory datasource [\#215](https://github.com/hairyhenderson/gomplate/issues/215)
+
+**Fixed bugs:**
+
+- The `sockaddr.Include` and `sockaddr.Exclude` do not have "private" selector. [\#328](https://github.com/hairyhenderson/gomplate/issues/328)
+- Support commas in number conversion [\#345](https://github.com/hairyhenderson/gomplate/pull/345) ([hairyhenderson](https://github.com/hairyhenderson))
+
+**Closed issues:**
+
+- Add slugify [\#336](https://github.com/hairyhenderson/gomplate/issues/336)
+- Action Required: Fix Renovate Configuration [\#335](https://github.com/hairyhenderson/gomplate/issues/335)
+- Consider publishing sha256sums of release files [\#318](https://github.com/hairyhenderson/gomplate/issues/318)
+- Vault list support [\#229](https://github.com/hairyhenderson/gomplate/issues/229)
+
+**Merged pull requests:**
+
+- Update golang:1.10-alpine Docker digest to 56db23 [\#346](https://github.com/hairyhenderson/gomplate/pull/346) ([renovate[bot]](https://github.com/apps/renovate))
+- Update golang:1.10-alpine Docker digest to bb3108 [\#344](https://github.com/hairyhenderson/gomplate/pull/344) ([renovate[bot]](https://github.com/apps/renovate))
+- Adding env datasource [\#341](https://github.com/hairyhenderson/gomplate/pull/341) ([hairyhenderson](https://github.com/hairyhenderson))
+- Add strings.Slug function [\#339](https://github.com/hairyhenderson/gomplate/pull/339) ([hairyhenderson](https://github.com/hairyhenderson))
+- Updating vendored packages [\#338](https://github.com/hairyhenderson/gomplate/pull/338) ([hairyhenderson](https://github.com/hairyhenderson))
+- Adding directory support for file datasources [\#334](https://github.com/hairyhenderson/gomplate/pull/334) ([hairyhenderson](https://github.com/hairyhenderson))
+- Overhauling datasource documentation [\#333](https://github.com/hairyhenderson/gomplate/pull/333) ([hairyhenderson](https://github.com/hairyhenderson))
+- Adding vault list support [\#332](https://github.com/hairyhenderson/gomplate/pull/332) ([hairyhenderson](https://github.com/hairyhenderson))
+- Adding more math functions [\#331](https://github.com/hairyhenderson/gomplate/pull/331) ([hairyhenderson](https://github.com/hairyhenderson))
+- Add missing anchor for RFC 1918 link in sockaddr documentation. [\#330](https://github.com/hairyhenderson/gomplate/pull/330) ([kwilczynski](https://github.com/kwilczynski))
+- Remove notion of "private" selector from the Include/Exclude filter. [\#329](https://github.com/hairyhenderson/gomplate/pull/329) ([kwilczynski](https://github.com/kwilczynski))
+- Improving documentation around slim binaries [\#327](https://github.com/hairyhenderson/gomplate/pull/327) ([hairyhenderson](https://github.com/hairyhenderson))
+- Update golang:1.10-alpine Docker digest to 96e25c [\#325](https://github.com/hairyhenderson/gomplate/pull/325) ([renovate[bot]](https://github.com/apps/renovate))
+- Update alpine:3.7 Docker digest to 8c03bb [\#324](https://github.com/hairyhenderson/gomplate/pull/324) ([renovate[bot]](https://github.com/apps/renovate))
+- Adding strings.Trunc and strings.Abbrev [\#323](https://github.com/hairyhenderson/gomplate/pull/323) ([hairyhenderson](https://github.com/hairyhenderson))
+- Adding crypto.Bcrypt function [\#322](https://github.com/hairyhenderson/gomplate/pull/322) ([hairyhenderson](https://github.com/hairyhenderson))
+- Adding strings.TrimSuffix and strings.Repeat [\#321](https://github.com/hairyhenderson/gomplate/pull/321) ([hairyhenderson](https://github.com/hairyhenderson))
+- Adding missing docs for file.Walk and strings.TrimPrefix [\#320](https://github.com/hairyhenderson/gomplate/pull/320) ([hairyhenderson](https://github.com/hairyhenderson))
+- Add ability to generate checksums of binaries [\#319](https://github.com/hairyhenderson/gomplate/pull/319) ([hairyhenderson](https://github.com/hairyhenderson))
+- Update golang:1.10-alpine Docker digest to 9de80c [\#317](https://github.com/hairyhenderson/gomplate/pull/317) ([renovate[bot]](https://github.com/apps/renovate))
+
 ## [v2.5.0](https://github.com/hairyhenderson/gomplate/tree/v2.5.0) (2018-05-04)
 [Full Changelog](https://github.com/hairyhenderson/gomplate/compare/v2.4.0...v2.5.0)
 
