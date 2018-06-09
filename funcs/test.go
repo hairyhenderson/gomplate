@@ -26,6 +26,7 @@ func AddTestFuncs(f map[string]interface{}) {
 
 	f["assert"] = TestNS().Assert
 	f["fail"] = TestNS().Fail
+	f["required"] = TestNS().Required
 }
 
 // TestFuncs -
@@ -57,5 +58,21 @@ func (f *TestFuncs) Fail(args ...interface{}) (string, error) {
 		return "", test.Fail(conv.ToString(args[0]))
 	default:
 		return "", errors.Errorf("wrong number of args: want 0 or 1, got %d", len(args))
+	}
+}
+
+// Required -
+func (f *TestFuncs) Required(args ...interface{}) (interface{}, error) {
+	switch len(args) {
+	case 1:
+		return test.Required("", args[0])
+	case 2:
+		message, ok := args[0].(string)
+		if !ok {
+			return nil, errors.Errorf("at <1>: expected string; found %T", args[0])
+		}
+		return test.Required(message, args[1])
+	default:
+		return nil, errors.Errorf("wrong number of args: want 1 or 2, got %d", len(args))
 	}
 }

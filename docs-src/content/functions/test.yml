@@ -37,3 +37,42 @@ funcs:
         template: <arg>:1:3: executing "<arg>" at <fail>: error calling fail: template generation failed
         $ gomplate -i '{{ test.Fail "something is wrong!" }}'
         template: <arg>:1:7: executing "<arg>" at <test.Fail>: error calling Fail: template generation failed: something is wrong!
+  - name: test.Required
+    alias: required
+    description: |
+      Passes through the given value, if it's non-empty, and non-`nil`. Otherwise,
+      exits and prints a given error message so the user can adjust as necessary.
+
+      This is particularly useful for cases where templates require user-provided
+      data (such as datasources or environment variables), and rendering can not
+      continue correctly.
+
+      This was inspired by [Helm's `required` function](https://github.com/kubernetes/helm/blob/master/docs/charts_tips_and_tricks.md#know-your-template-functions),
+      but has slightly different behaviour. Notably, gomplate will always fail in
+      cases where a referenced _key_ is missing, and this function will have no
+      effect.
+    pipeline: true
+    arguments:
+      - name: message
+        required: false
+        description: The optional message to provide when the required value is not provided
+      - name: value
+        required: true
+        description: The required value
+    examples:
+      - |
+        $ FOO=foobar gomplate -i '{{ getenv "FOO" | required "Missing FOO environment variable!" }}'
+        foobar
+        $ FOO= gomplate -i '{{ getenv "FOO" | required "Missing FOO environment variable!" }}'
+        error: Missing FOO environment variable!
+      - |
+        $ cat <<EOF> config.yaml
+        defined: a value
+        empty: ""
+        EOF
+        $ gomplate -d config=config.yaml -i '{{ (ds "config").defined | required "The `config` datasource must have a value defined for `defined`" }}'
+        a value
+        $ gomplate -d config=config.yaml -i '{{ (ds "config").empty | required "The `config` datasource must have a value defined for `empty`" }}'
+        template: <arg>:1:25: executing "<arg>" at <required "The `confi...>: error calling required: The `config` datasource must have a value defined for `empty`
+        $ gomplate -d config=config.yaml -i '{{ (ds "config").bogus | required "The `config` datasource must have a value defined for `bogus`" }}'
+        template: <arg>:1:7: executing "<arg>" at <"config">: map has no entry for key "bogus"

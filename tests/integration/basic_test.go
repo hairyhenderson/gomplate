@@ -5,7 +5,6 @@ package integration
 
 import (
 	"bytes"
-	"fmt"
 	"io/ioutil"
 	"os"
 
@@ -121,7 +120,6 @@ func (s *BasicSuite) TestRoutesInputsToProperOutputsWithChmod(c *C) {
 		cmd.Stdin = bytes.NewBufferString("hello world")
 	})
 	result.Assert(c, icmd.Success)
-	fmt.Println(result.Combined())
 
 	testdata := []struct {
 		path    string
@@ -150,7 +148,6 @@ func (s *BasicSuite) TestOverridesOutputModeWithChmod(c *C) {
 		cmd.Stdin = bytes.NewBufferString("hello world")
 	})
 	result.Assert(c, icmd.Success)
-	fmt.Println(result.Combined())
 
 	testdata := []struct {
 		path    string
