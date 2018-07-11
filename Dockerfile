@@ -36,7 +36,7 @@ ENTRYPOINT [ "/gomplate" ]
 
 CMD [ "--help" ]
 
-FROM alpine:3.7@sha256:5ce5f501c457015c4b91f91a15ac69157d9b06f1a75cf9107bf2b62e0843983a AS gomplate-alpine
+FROM alpine:3.8@sha256:7043076348bf5040220df6ad703798fd8593a0918d06d3ce30c6c93be117e430 AS gomplate-alpine
 
 ARG BUILD_DATE
 ARG VCS_REF
