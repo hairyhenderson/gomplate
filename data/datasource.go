@@ -69,6 +69,9 @@ func addSourceReader(scheme string, readFunc func(*Source, ...string) ([]byte, e
 type Data struct {
 	Sources map[string]*Source
 	cache   map[string][]byte
+
+	// headers from the --datasource-header/-H option that don't reference datasources from the commandline
+	extraHeaders map[string]http.Header
 }
 
 // Cleanup - clean up datasources before shutting the process down - things
@@ -92,10 +95,14 @@ func NewData(datasourceArgs []string, headerArgs []string) (*Data, error) {
 			return nil, errors.Wrapf(err, "error parsing datasource")
 		}
 		s.Header = headers[s.Alias]
+		// pop the header out of the map, so we end up with only the unreferenced ones
+		delete(headers, s.Alias)
+
 		sources[s.Alias] = s
 	}
 	return &Data{
-		Sources: sources,
+		Sources:      sources,
+		extraHeaders: headers,
 	}, nil
 }
 
@@ -216,6 +223,26 @@ func absURL(value string) (*url.URL, error) {
 		Path: value,
 	}
 	return baseURL.ResolveReference(relURL), nil
+}
+
+// DefineDatasource -
+func (d *Data) DefineDatasource(alias, value string) error {
+	if d.DatasourceExists(alias) {
+		return nil
+	}
+	if alias != "" {
+		alias = alias + "="
+	}
+	s, err := ParseSource(alias + value)
+	if err != nil {
+		return err
+	}
+	s.Header = d.extraHeaders[s.Alias]
+	if d.Sources == nil {
+		d.Sources = make(map[string]*Source)
+	}
+	d.Sources[s.Alias] = s
+	return nil
 }
 
 // DatasourceExists -

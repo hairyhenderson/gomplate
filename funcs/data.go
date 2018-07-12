@@ -24,6 +24,7 @@ func AddDataFuncs(f map[string]interface{}, d *data.Data) {
 	f["ds"] = d.Datasource
 	f["datasourceExists"] = d.DatasourceExists
 	f["datasourceReachable"] = d.DatasourceReachable
+	f["defineDatasource"] = d.DefineDatasource
 	f["include"] = d.Include
 
 	f["data"] = DataNS

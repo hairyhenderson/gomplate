@@ -65,6 +65,43 @@ $ gomplate -i '{{if (datasourceReachable "test")}}{{datasource "test"}}{{else}}n
 no worries
 ```
 
+## `defineDatasource`
+
+Define a datasource alias with target URL inside the template. Overridden by the [`--datasource/-d`](#--datasource-d) flag.
+
+Note: once a datasource is defined, it can not be redefined (i.e. if this function is called twice with the same alias, only the first applies).
+
+This function can provide a good way to set a default datasource when sharing templates.
+
+See [Datasources](../../datasources) for (much!) more information.
+
+### Usage
+
+```go
+defineDatasource alias url
+```
+
+### Arguments
+
+| name   | description |
+|--------|-------|
+| `alias` | the datasource alias |
+| `url` | the datasource's URL |
+
+### Examples
+
+_`person.json`:_
+```json
+{ "name": "Dave" }
+```
+
+```console
+$ gomplate -i '{{ defineDatasource "person" "person.json" }}Hello {{ (ds "person").name }}'
+Hello Dave
+$ FOO='{"name": "Daisy"}' gomplate -d person=env:///FOO -i '{{ defineDatasource "person" "person.json" }}Hello {{ (ds "person").name }}'
+Hello Daisy
+```
+
 ## `ds`
 
 Alias to [`datasource`](#datasource)

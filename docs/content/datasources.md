@@ -8,7 +8,7 @@ Datasources are an optional, but central concept in gomplate. While the basic fl
 
 Some common use-cases include injecting sensitive material like passwords (which should not be stored in source-control with the templates), or providing simplified configuration formats that can be fed to a template to provide a much more complex output.
 
-Datasources can be defined with the [`--datasource`/`-d`][] commandline flag, and referenced via an _alias_ inside the template, using a function such as [`datasource`][] or [`include`][].
+Datasources can be defined with the [`--datasource`/`-d`][] commandline flag or the [`defineDatasource`][] function, and referenced via an _alias_ inside the template, using a function such as [`datasource`][] or [`include`][].
 
 Since datasources are defined separately from the template, the same templates can be used with different datasources and even different datasource types. For example, gomplate could be run on a developer machine with a `file` datasource pointing to a JSON file containing test data, where the same template could be used in a production environment using a `consul` datasource with the real production data.
 
@@ -430,6 +430,7 @@ The file `/tmp/vault-aws-nonce` will be created if it didn't already exist, and 
 
 [`--datasource`/`-d`]: ../usage/#datasource-d
 [`--datasource-header`/`-H`]: ../usage/#datasource-header-h
+[`defineDatasource`]: ../functions/data/#definedatasource
 [`datasource`]: ../functions/data/#datasource
 [`include`]: ../functions/data/#include
 [`data.CSV`]: ../functions/data/#data-csv
