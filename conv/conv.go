@@ -96,6 +96,15 @@ func ToString(in interface{}) string {
 	return fmt.Sprint(in)
 }
 
+// ToStrings -
+func ToStrings(in ...interface{}) []string {
+	out := make([]string, len(in))
+	for i, v := range in {
+		out[i] = ToString(v)
+	}
+	return out
+}
+
 // MustParseInt - wrapper for strconv.ParseInt that returns 0 in the case of error
 func MustParseInt(s string, base, bitSize int) int64 {
 	i, _ := strconv.ParseInt(s, base, bitSize)

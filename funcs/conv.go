@@ -91,12 +91,12 @@ func (f *ConvFuncs) ToInt(in interface{}) int {
 
 // ToInt64s -
 func (f *ConvFuncs) ToInt64s(in ...interface{}) []int64 {
-	return conv.ToInt64s(in)
+	return conv.ToInt64s(in...)
 }
 
 // ToInts -
 func (f *ConvFuncs) ToInts(in ...interface{}) []int {
-	return conv.ToInts(in)
+	return conv.ToInts(in...)
 }
 
 // ToFloat64 -
@@ -106,12 +106,17 @@ func (f *ConvFuncs) ToFloat64(in interface{}) float64 {
 
 // ToFloat64s -
 func (f *ConvFuncs) ToFloat64s(in ...interface{}) []float64 {
-	return conv.ToFloat64s(in)
+	return conv.ToFloat64s(in...)
 }
 
 // ToString -
 func (f *ConvFuncs) ToString(in interface{}) string {
 	return conv.ToString(in)
+}
+
+// ToStrings -
+func (f *ConvFuncs) ToStrings(in ...interface{}) []string {
+	return conv.ToStrings(in...)
 }
 
 // Default -
