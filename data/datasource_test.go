@@ -168,6 +168,9 @@ func TestDatasource(t *testing.T) {
 	actual, err := d.Datasource("foo")
 	assert.NoError(t, err)
 	assert.Equal(t, "", actual)
+
+	_, err = d.Datasource("bar")
+	assert.Error(t, err)
 }
 
 func TestDatasourceReachable(t *testing.T) {
@@ -247,12 +250,18 @@ func TestHTTPFile(t *testing.T) {
 	data := &Data{
 		Sources: sources,
 	}
-	expected := make(map[string]interface{})
-	expected["hello"] = "world"
-	d, err := data.Datasource("foo")
+
+	expected := map[string]interface{}{
+		"hello": "world",
+	}
+
+	actual, err := data.Datasource("foo")
 	assert.NoError(t, err)
-	actual := d.(map[string]interface{})
-	assert.Equal(t, expected["hello"], actual["hello"])
+	assert.Equal(t, marshalObj(expected, json.Marshal), marshalObj(actual, json.Marshal))
+
+	actual, err = data.Datasource(server.URL)
+	assert.NoError(t, err)
+	assert.Equal(t, marshalObj(expected, json.Marshal), marshalObj(actual, json.Marshal))
 }
 
 func TestHTTPFileWithHeaders(t *testing.T) {
@@ -283,6 +292,19 @@ func TestHTTPFileWithHeaders(t *testing.T) {
 		"Foo":             {"bar", "baz"},
 	}
 	actual, err := data.Datasource("foo")
+	assert.NoError(t, err)
+	assert.Equal(t, marshalObj(expected, json.Marshal), marshalObj(actual, json.Marshal))
+
+	expected = http.Header{
+		"Accept-Encoding": {"test"},
+		"Foo":             {"bar", "baz"},
+		"User-Agent":      {"Go-http-client/1.1"},
+	}
+	data = &Data{
+		Sources:      sources,
+		extraHeaders: map[string]http.Header{server.URL: expected},
+	}
+	actual, err = data.Datasource(server.URL)
 	assert.NoError(t, err)
 	assert.Equal(t, marshalObj(expected, json.Marshal), marshalObj(actual, json.Marshal))
 }

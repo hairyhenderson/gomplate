@@ -263,11 +263,28 @@ func (d *Data) DatasourceExists(alias string) bool {
 	return ok
 }
 
-// Datasource -
-func (d *Data) Datasource(alias string, args ...string) (interface{}, error) {
+func (d *Data) lookupSource(alias string) (*Source, error) {
 	source, ok := d.Sources[alias]
 	if !ok {
-		return nil, errors.Errorf("Undefined datasource '%s'", alias)
+		srcURL, err := url.Parse(alias)
+		if err != nil || !srcURL.IsAbs() {
+			return nil, errors.Errorf("Undefined datasource '%s'", alias)
+		}
+		source, err = NewSource(alias, srcURL)
+		if err != nil {
+			return nil, err
+		}
+		source.Header = d.extraHeaders[alias]
+		d.Sources[alias] = source
+	}
+	return source, nil
+}
+
+// Datasource -
+func (d *Data) Datasource(alias string, args ...string) (interface{}, error) {
+	source, err := d.lookupSource(alias)
+	if err != nil {
+		return nil, err
 	}
 	b, err := d.ReadSource(source, args...)
 	if err != nil {

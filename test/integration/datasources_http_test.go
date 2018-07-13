@@ -42,4 +42,8 @@ func (s *DatasourcesHTTPSuite) TestReportsVersion(c *C) {
 		"-H", "foo=Foo:bar",
 		"-i", "{{defineDatasource `foo` `http://"+s.l.Addr().String()+"/`}}{{ index (ds `foo`).headers.Foo 0 }}")
 	result.Assert(c, icmd.Expected{ExitCode: 0, Out: "bar"})
+
+	result = icmd.RunCommand(GomplateBin,
+		"-i", "{{ $d := ds `http://"+s.l.Addr().String()+"/`}}{{ index (index $d.headers `Accept-Encoding`) 0 }}")
+	result.Assert(c, icmd.Expected{ExitCode: 0, Out: "gzip"})
 }
