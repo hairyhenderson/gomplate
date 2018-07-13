@@ -9,7 +9,9 @@ A collection of functions that retrieve, parse, and convert structured data.
 
 ## `datasource`
 
-Parses a given datasource (provided by the [`--datasource/-d`](#--datasource-d) argument).
+Parses a given datasource (provided by the [`--datasource/-d`](#--datasource-d) argument or [`defineDatasource`](#definedatasource)).
+
+If the `alias` is undefined, but is a valid URL, `datasource` will dynamically read from that URL. 
 
 See [Datasources](../../datasources) for (much!) more information.
 
@@ -23,7 +25,7 @@ datasource alias [subpath]
 
 | name   | description |
 |--------|-------|
-| `alias` | the datasource alias, as provided by [`--datasource`/`-d`](../usage/#datasource-d) |
+| `alias` | the datasource alias (or a URL for dynamic use) |
 | `subpath` | _(optional)_ the subpath to use, if supported by the datasource |
 
 ### Examples
