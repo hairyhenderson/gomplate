@@ -379,41 +379,36 @@ func TestReadStdin(t *testing.T) {
 
 func TestDefineDatasource(t *testing.T) {
 	d := &Data{}
-	err := d.DefineDatasource("", "foo.json")
-	assert.NoError(t, err)
-	s := d.Sources["foo"]
-	assert.Equal(t, "foo", s.Alias)
-
-	d = &Data{}
-	err = d.DefineDatasource("", "../foo.json")
+	s, err := d.DefineDatasource("", "foo.json")
 	assert.Error(t, err)
 
 	d = &Data{}
-	err = d.DefineDatasource("", "ftp://example.com/foo.yml")
+	s, err = d.DefineDatasource("", "../foo.json")
 	assert.Error(t, err)
 
 	d = &Data{}
-	err = d.DefineDatasource("data", "foo.json")
+	s, err = d.DefineDatasource("", "ftp://example.com/foo.yml")
+	assert.Error(t, err)
+
+	d = &Data{}
+	s, err = d.DefineDatasource("data", "foo.json")
 	assert.NoError(t, err)
-	s = d.Sources["data"]
 	assert.Equal(t, "data", s.Alias)
 	assert.Equal(t, "file", s.URL.Scheme)
 	assert.Equal(t, jsonMimetype, s.Type)
 	assert.True(t, s.URL.IsAbs())
 
 	d = &Data{}
-	err = d.DefineDatasource("data", "/otherdir/foo.json")
+	s, err = d.DefineDatasource("data", "/otherdir/foo.json")
 	assert.NoError(t, err)
-	s = d.Sources["data"]
 	assert.Equal(t, "data", s.Alias)
 	assert.Equal(t, "file", s.URL.Scheme)
 	assert.True(t, s.URL.IsAbs())
 	assert.Equal(t, "/otherdir/foo.json", s.URL.Path)
 
 	d = &Data{}
-	err = d.DefineDatasource("data", "sftp://example.com/blahblah/foo.json")
+	s, err = d.DefineDatasource("data", "sftp://example.com/blahblah/foo.json")
 	assert.NoError(t, err)
-	s = d.Sources["data"]
 	assert.Equal(t, "data", s.Alias)
 	assert.Equal(t, "sftp", s.URL.Scheme)
 	assert.True(t, s.URL.IsAbs())
@@ -424,9 +419,8 @@ func TestDefineDatasource(t *testing.T) {
 			"data": {Alias: "data"},
 		},
 	}
-	err = d.DefineDatasource("data", "/otherdir/foo.json")
+	s, err = d.DefineDatasource("data", "/otherdir/foo.json")
 	assert.NoError(t, err)
-	s = d.Sources["data"]
 	assert.Equal(t, "data", s.Alias)
 	assert.Nil(t, s.URL)
 }
