@@ -190,23 +190,31 @@ func ParseSource(value string) (*Source, error) {
 		}
 	} else if len(parts) == 2 {
 		alias = parts[0]
-		if parts[1] == "-" {
-			parts[1] = "stdin://"
-		}
-		srcURL, err = url.Parse(parts[1])
+		srcURL, err = parseSourceURL(parts[1])
 		if err != nil {
 			return nil, err
-		}
-
-		if !srcURL.IsAbs() {
-			srcURL, err = absURL(parts[1])
-			if err != nil {
-				return nil, err
-			}
 		}
 	}
 
 	return NewSource(alias, srcURL)
+}
+
+func parseSourceURL(value string) (*url.URL, error) {
+	if value == "-" {
+		value = "stdin://"
+	}
+	srcURL, err := url.Parse(value)
+	if err != nil {
+		return nil, err
+	}
+
+	if !srcURL.IsAbs() {
+		srcURL, err = absURL(value)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return srcURL, nil
 }
 
 func absURL(value string) (*url.URL, error) {
@@ -226,23 +234,27 @@ func absURL(value string) (*url.URL, error) {
 }
 
 // DefineDatasource -
-func (d *Data) DefineDatasource(alias, value string) error {
+func (d *Data) DefineDatasource(alias, value string) (*Source, error) {
+	if alias == "" {
+		return nil, errors.New("datasource alias must be provided")
+	}
 	if d.DatasourceExists(alias) {
-		return nil
+		return d.Sources[alias], nil
 	}
-	if alias != "" {
-		alias = alias + "="
-	}
-	s, err := ParseSource(alias + value)
+	srcURL, err := parseSourceURL(value)
 	if err != nil {
-		return err
+		return nil, err
+	}
+	s, err := NewSource(alias, srcURL)
+	if err != nil {
+		return nil, err
 	}
 	s.Header = d.extraHeaders[s.Alias]
 	if d.Sources == nil {
 		d.Sources = make(map[string]*Source)
 	}
 	d.Sources[s.Alias] = s
-	return nil
+	return s, nil
 }
 
 // DatasourceExists -
