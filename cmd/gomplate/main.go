@@ -80,7 +80,11 @@ func newGomplateCmd() *cobra.Command {
 				printVersion(cmd.Name())
 				return nil
 			}
-			return gomplate.RunTemplates(&opts)
+
+			err := gomplate.RunTemplates(&opts)
+			cmd.SilenceErrors = true
+			cmd.SilenceUsage = true
+			return err
 		},
 		PostRunE: postRunExec,
 		Args:     optionalExecArgs,
@@ -111,7 +115,7 @@ func main() {
 	command := newGomplateCmd()
 	initFlags(command)
 	if err := command.Execute(); err != nil {
-		fmt.Println(err)
+		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}
 }
