@@ -84,13 +84,13 @@ test:
 
 integration: ./bin/gomplate
 	$(GO) test -v -tags=integration \
-		./test/integration -check.v
+		./tests/integration -check.v
 
 integration.iid: Dockerfile.integration $(PREFIX)/bin/$(PKG_NAME)_linux-amd64$(call extension,$(GOOS))
-	docker build -f $< --iidfile $@ -t gomplate-test .
+	docker build -f $< --iidfile $@ .
 
 test-integration-docker: integration.iid
-	docker run -it --rm gomplate-test
+	docker run -it --rm $(shell cat $<)
 
 gen-changelog:
 	docker run -it -v $(shell pwd):/app --workdir /app -e CHANGELOG_GITHUB_TOKEN hairyhenderson/github_changelog_generator \
@@ -121,12 +121,12 @@ lint:
 		--enable=goimports \
 		--enable=gofmt \
 		./...
-	gometalinter --vendor --skip test --disable-all \
+	gometalinter --vendor --skip tests --disable-all \
 		--enable=deadcode \
 		./...
 
 slow-lint:
-	gometalinter -j $(LINT_PROCS) --vendor --skip test --deadline 120s \
+	gometalinter -j $(LINT_PROCS) --vendor --skip tests --deadline 120s \
 		--disable gotype \
 		--enable gofmt \
 		--enable goimports \
@@ -139,9 +139,9 @@ slow-lint:
 		--enable gofmt \
 		--enable goimports \
 		--enable misspell \
-			./test/integration
-	megacheck -tags integration ./test/integration
+			./tests/integration
+	megacheck -tags integration ./tests/integration
 
-.PHONY: gen-changelog clean test build-x compress-all build-release build build-integration-image test-integration-docker gen-docs lint clean-images clean-containers docker-images
+.PHONY: gen-changelog clean test build-x compress-all build-release build test-integration-docker gen-docs lint clean-images clean-containers docker-images
 .DELETE_ON_ERROR:
 .SECONDARY:
