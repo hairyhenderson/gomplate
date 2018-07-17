@@ -11,11 +11,54 @@ import (
 // Bool converts a string to a boolean value, using strconv.ParseBool under the covers.
 // Possible true values are: 1, t, T, TRUE, true, True
 // All other values are considered false.
+//
+// See ToBool also for a more flexible version.
 func Bool(in string) bool {
 	if b, err := strconv.ParseBool(in); err == nil {
 		return b
 	}
 	return false
+}
+
+// ToBool converts an arbitrary input into a boolean.
+// Possible non-boolean true values are: 1 or the strings "t", "true", or "yes"
+// (any capitalizations)
+// All other values are considered false.
+func ToBool(in interface{}) bool {
+	if b, ok := in.(bool); ok {
+		return b
+	}
+
+	if str, ok := in.(string); ok {
+		str = strings.ToLower(str)
+		switch str {
+		case "1", "t", "true", "yes":
+			return true
+		default:
+			return strToFloat64(str) == 1
+		}
+	}
+
+	val := reflect.Indirect(reflect.ValueOf(in))
+	switch val.Kind() {
+	case reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64, reflect.Int:
+		return val.Int() == 1
+	case reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uint:
+		return val.Uint() == 1
+	case reflect.Float32, reflect.Float64:
+		return val.Float() == 1
+	default:
+		return false
+	}
+}
+
+// ToBools -
+func ToBools(in ...interface{}) []bool {
+	out := make([]bool, len(in))
+	for i, v := range in {
+		out[i] = ToBool(v)
+	}
+	return out
 }
 
 // Slice creates a slice from a bunch of arguments
