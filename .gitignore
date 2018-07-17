@@ -4,3 +4,4 @@ report.xml
 ./gomplate
 *.cid
 *.iid
+*.out

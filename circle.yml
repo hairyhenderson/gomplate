@@ -9,11 +9,13 @@ jobs:
     steps:
       - checkout
       - run: make build
+      - run: cc-test-reporter before-build
       - run:
           name: make test
           command: |
             trap "go-junit-report < $CIRCLE_TEST_REPORTS/go-test.out > $CIRCLE_TEST_REPORTS/report.xml" EXIT
             make test | tee $CIRCLE_TEST_REPORTS/go-test.out
+            cc-test-reporter after-build --exit-code $?
       - run: make lint
       - run: make integration
       - store_artifacts:
