@@ -37,11 +37,11 @@ func (s *StringsSuite) TestRepeat(c *C) {
 
 	result = icmd.RunCommand(GomplateBin, "-i",
 		`ba{{ strings.Repeat 9223372036854775807 "na" }}`)
-	result.Assert(c, icmd.Expected{ExitCode: 1, Out: `too long: causes overflow`})
+	result.Assert(c, icmd.Expected{ExitCode: 1, Err: `too long: causes overflow`})
 
 	result = icmd.RunCommand(GomplateBin, "-i",
 		`ba{{ strings.Repeat -1 "na" }}`)
-	result.Assert(c, icmd.Expected{ExitCode: 1, Out: `negative count`})
+	result.Assert(c, icmd.Expected{ExitCode: 1, Err: `negative count`})
 }
 
 func (s *StringsSuite) TestSlug(c *C) {

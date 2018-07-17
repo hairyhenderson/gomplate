@@ -73,7 +73,7 @@ func (s *BasicSuite) TestErrorsWithInputOutputImbalance(c *C) {
 	})
 	result.Assert(c, icmd.Expected{
 		ExitCode: 1,
-		Err:      "Error: Must provide same number of --out (1) as --file (2) options",
+		Err:      "Must provide same number of --out (1) as --file (2) options",
 	})
 }
 
@@ -101,31 +101,31 @@ func (s *BasicSuite) TestFlagRules(c *C) {
 	result := icmd.RunCommand(GomplateBin, "-f", "-", "-i", "HELLO WORLD")
 	result.Assert(c, icmd.Expected{
 		ExitCode: 1,
-		Out:      "--in and --file may not be used together",
+		Err:      "--in and --file may not be used together",
 	})
 
 	result = icmd.RunCommand(GomplateBin, "--output-dir", ".")
 	result.Assert(c, icmd.Expected{
 		ExitCode: 1,
-		Out:      "--input-dir must be set when --output-dir is set",
+		Err:      "--input-dir must be set when --output-dir is set",
 	})
 
 	result = icmd.RunCommand(GomplateBin, "--input-dir", ".", "--in", "param")
 	result.Assert(c, icmd.Expected{
 		ExitCode: 1,
-		Out:      "--input-dir can not be used together with --in or --file",
+		Err:      "--input-dir can not be used together with --in or --file",
 	})
 
 	result = icmd.RunCommand(GomplateBin, "--input-dir", ".", "--file", "input.txt")
 	result.Assert(c, icmd.Expected{
 		ExitCode: 1,
-		Out:      "--input-dir can not be used together with --in or --file",
+		Err:      "--input-dir can not be used together with --in or --file",
 	})
 
 	result = icmd.RunCommand(GomplateBin, "--output-dir", ".", "--out", "param")
 	result.Assert(c, icmd.Expected{
 		ExitCode: 1,
-		Out:      "--output-dir can not be used together with --out",
+		Err:      "--output-dir can not be used together with --out",
 	})
 }
 
@@ -150,7 +150,7 @@ func (s *BasicSuite) TestDelimsChangedThroughEnvVars(c *C) {
 
 func (s *BasicSuite) TestUnknownArgErrors(c *C) {
 	result := icmd.RunCommand(GomplateBin, "-in", "flibbit")
-	result.Assert(c, icmd.Expected{ExitCode: 1, Out: `unknown command "flibbit" for "gomplate"`})
+	result.Assert(c, icmd.Expected{ExitCode: 1, Err: `unknown command "flibbit" for "gomplate"`})
 }
 
 func (s *BasicSuite) TestExecCommand(c *C) {
