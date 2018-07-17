@@ -12,7 +12,7 @@ func TestNSIsIdempotent(t *testing.T) {
 	right := AWSNS()
 	assert.True(t, left == right)
 }
-func TestFuncs(t *testing.T) {
+func TestAWSFuncs(t *testing.T) {
 	m := aws.NewDummyEc2Meta()
 	i := aws.NewDummyEc2Info(m)
 	af := &Funcs{meta: m, info: i}
