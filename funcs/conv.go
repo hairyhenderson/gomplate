@@ -39,6 +39,16 @@ func (f *ConvFuncs) Bool(s interface{}) bool {
 	return conv.Bool(conv.ToString(s))
 }
 
+// ToBool -
+func (f *ConvFuncs) ToBool(in interface{}) bool {
+	return conv.ToBool(in)
+}
+
+// ToBools -
+func (f *ConvFuncs) ToBools(in ...interface{}) []bool {
+	return conv.ToBools(in...)
+}
+
 // Slice -
 func (f *ConvFuncs) Slice(args ...interface{}) []interface{} {
 	return conv.Slice(args...)

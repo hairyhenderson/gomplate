@@ -12,6 +12,8 @@ to another - generally from a `string` to something else, and vice-versa.
 
 **Alias:** `bool`
 
+**Note:** See also [`conv.ToBool`](#conv-tobool) for a more flexible variant.
+
 Converts a true-ish string to a boolean. Can be used to simplify conditional statements based on environment variables or other text input.
 
 #### Example
@@ -216,6 +218,65 @@ The number is less than 5
 ```console
 $ NUMBER=21 gomplate < input.tmpl
 The number is greater than 5
+```
+
+## `conv.ToBool`
+
+Converts the input to a boolean value.
+Possible `true` values are: `1` or the strings `"t"`, `"true"`, or `"yes"`
+(any capitalizations). All other values are considered `false`.
+
+### Usage
+```go
+conv.ToBool input 
+```
+```go
+input | conv.ToBool  
+```
+
+### Arguments
+
+| name | description |
+|------|-------------|
+| `input` | _(required)_ The input to convert |
+
+### Examples
+
+```console
+$ gomplate -i '{{ conv.ToBool "yes" }} {{ conv.ToBool true }} {{ conv.ToBool "0x01" }}'
+true true true
+$ gomplate -i '{{ conv.ToBool false }} {{ conv.ToBool "blah" }} {{ conv.ToBool 0 }}'
+false false false
+```
+
+## `conv.ToBools`
+
+Converts a list of inputs to an array of boolean values.
+Possible `true` values are: `1` or the strings `"t"`, `"true"`, or `"yes"`
+(any capitalizations). All other values are considered `false`.
+
+### Usage
+```go
+conv.ToBools input 
+```
+
+```go
+input | conv.ToBools  
+```
+
+### Arguments
+
+| name | description |
+|------|-------------|
+| `input` | _(required)_ The input array to convert |
+
+### Examples
+
+```console
+$ gomplate -i '{{ conv.ToBools "yes" true "0x01" }}'
+[true true true]
+$ gomplate -i '{{ conv.ToBools false "blah" 0 }}'
+[false false false]
 ```
 
 ## `conv.ToInt64`
