@@ -25,5 +25,6 @@ func initFuncs(d *data.Data) template.FuncMap {
 	funcs.AddFilePathFuncs(f)
 	funcs.AddPathFuncs(f)
 	funcs.AddSockaddrFuncs(f)
+	funcs.AddTestFuncs(f)
 	return f
 }
