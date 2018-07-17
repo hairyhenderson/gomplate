@@ -80,7 +80,7 @@ $(PREFIX)/bin/$(PKG_NAME)$(call extension,$(GOOS)): $(PREFIX)/bin/$(PKG_NAME)_$(
 build: $(PREFIX)/bin/$(PKG_NAME)$(call extension,$(GOOS))
 
 test:
-	$(GO) test -v -race ./...
+	$(GO) test -v -race -coverprofile=c.out ./...
 
 integration: ./bin/gomplate
 	$(GO) test -v -tags=integration \
