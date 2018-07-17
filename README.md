@@ -9,7 +9,6 @@ _Read the docs at [gomplate.hairyhenderson.ca][docs-url]._
 [![Coverage][gocover-image]][gocover-url]
 [![Total Downloads][gh-downloads-image]][gh-downloads-url]
 [![CII Best Practices][cii-bp-image]][cii-bp-url]
-[![FOSSA Status][fossa-image]][fossa-url]
 
 [![hairyhenderson/gomplate on DockerHub][dockerhub-image]][dockerhub-url]
 [![DockerHub Stars][dockerhub-stars-image]][dockerhub-url]
@@ -72,9 +71,6 @@ Copyright (c) 2016-2018 Dave Henderson
 [microbadger-layers-image]: https://images.microbadger.com/badges/image/hairyhenderson/gomplate.svg
 [microbadger-commit-image]: https://images.microbadger.com/badges/commit/hairyhenderson/gomplate.svg
 [microbadger-url]: https://microbadger.com/image/hairyhenderson/gomplate
-
-[fossa-image]: https://app.fossa.io/api/projects/git%2Bgithub.com%2Fhairyhenderson%2Fgomplate.svg?type=shield
-[fossa-url]: https://app.fossa.io/projects/git%2Bgithub.com%2Fhairyhenderson%2Fgomplate?ref=badge_shield
 
 [docs-url]: https://gomplate.hairyhenderson.ca
 [install-docs-image]: https://img.shields.io/badge/install-docs-blue.svg
