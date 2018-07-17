@@ -57,9 +57,9 @@ func TestBcrypt(t *testing.T) {
 	assert.NoError(t, err)
 	assert.True(t, strings.HasPrefix(actual, "$2a$10$"))
 
-	actual, err = c.Bcrypt(15, in)
+	actual, err = c.Bcrypt(4, in)
 	assert.NoError(t, err)
-	assert.True(t, strings.HasPrefix(actual, "$2a$15$"))
+	assert.True(t, strings.HasPrefix(actual, "$2a$04$"))
 
 	_, err = c.Bcrypt()
 	assert.Error(t, err)
