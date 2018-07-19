@@ -153,6 +153,35 @@ foo:
     quuz: 42
 ```
 
+## `strings.Sort`
+
+**Alias:** `sort`
+
+Returns an alphanumerically-sorted copy of a given string list.
+
+
+### Usage
+```go
+strings.Sort list
+```
+
+```go
+list | strings.Sort
+```
+
+### Arguments
+
+| name | description |
+|------|-------------|
+| `list` | _(required)_ The list to sort |
+
+### Examples
+
+```console
+$ gomplate -i '{{ (slice "foo" "bar" "baz") | sort }}'
+[bar baz foo]
+```
+
 ## `strings.Split`
 
 Creates a slice by splitting a string on a given delimiter.
