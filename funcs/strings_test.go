@@ -85,3 +85,15 @@ func TestSlug(t *testing.T) {
 	s = sf.Slug(`100%`)
 	assert.Equal(t, "100", s)
 }
+
+func must(in interface{}, err error) interface{} {
+	return in
+}
+func TestSort(t *testing.T) {
+	sf := &StringFuncs{}
+	in := []string{"foo", "bar", "baz"}
+	out := []string{"bar", "baz", "foo"}
+	assert.Equal(t, out, must(sf.Sort(in)))
+
+	assert.Equal(t, out, must(sf.Sort([]interface{}{"foo", "bar", "baz"})))
+}

@@ -40,6 +40,7 @@ func AddStringFuncs(f map[string]interface{}) {
 	f["toLower"] = StrNS().ToLower
 	f["trimSpace"] = StrNS().TrimSpace
 	f["indent"] = StrNS().Indent
+	f["sort"] = StrNS().Sort
 
 	// these are legacy aliases with non-pipelinable arg order
 	f["contains"] = strings.Contains
@@ -106,6 +107,23 @@ func (f *StringFuncs) Repeat(count int, s interface{}) (string, error) {
 		return "", errors.Errorf("count %d too long: causes overflow", count)
 	}
 	return strings.Repeat(str, count), nil
+}
+
+// Sort -
+func (f *StringFuncs) Sort(list interface{}) ([]string, error) {
+	switch v := list.(type) {
+	case []string:
+		return gompstrings.Sort(v), nil
+	case []interface{}:
+		l := len(v)
+		b := make([]string, len(v))
+		for i := 0; i < l; i++ {
+			b[i] = conv.ToString(v[i])
+		}
+		return gompstrings.Sort(b), nil
+	default:
+		return nil, errors.Errorf("wrong type for value; expected []string; got %T", list)
+	}
 }
 
 // Split -

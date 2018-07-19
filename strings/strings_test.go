@@ -25,3 +25,17 @@ func TestTrunc(t *testing.T) {
 	assert.Equal(t, "hello, world", Trunc(42, "hello, world"))
 	assert.Equal(t, "hello, world", Trunc(-1, "hello, world"))
 }
+
+func TestSort(t *testing.T) {
+	in := []string{}
+	expected := []string{}
+	assert.EqualValues(t, expected, Sort(in))
+
+	in = []string{"c", "a", "b"}
+	expected = []string{"a", "b", "c"}
+	assert.EqualValues(t, expected, Sort(in))
+
+	in = []string{"42", "45", "18"}
+	expected = []string{"18", "42", "45"}
+	assert.EqualValues(t, expected, Sort(in))
+}

@@ -1,6 +1,9 @@
 package strings
 
-import "strings"
+import (
+	"sort"
+	"strings"
+)
 
 // Indent - indent each line of the string with the given indent string
 func Indent(width int, indent, s string) string {
@@ -32,4 +35,11 @@ func Trunc(length int, s string) string {
 		return s
 	}
 	return s[0:length]
+}
+
+// Sort - return an alphanumerically-sorted list of strings
+func Sort(list []string) []string {
+	sorted := sort.StringSlice(list)
+	sorted.Sort()
+	return sorted
 }
