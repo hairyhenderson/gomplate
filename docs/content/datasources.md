@@ -43,10 +43,10 @@ Gomplate supports a number of datasources, each specified with a particular URL 
 | [BoltDB](#using-boltdb-datasources) | `boltdb` | [BoltDB][] is a simple local key/value store used by many Go tools |
 | [Consul](#using-consul-datasources) | `consul`, `consul+http`, `consul+https` | [HashiCorp Consul][] provides (among many other features) a key/value store |
 | [Environment](#using-env-datasources) | `env` | Environment variables can be used as datasources - useful for testing |
-| [File](#using-file-datasources) | `file` | Files can be read in any of the [supported formats](#supported-formats), including by piping through standard input (`Stdin`) |
+| [File](#using-file-datasources) | `file` | Files can be read in any of the [supported formats](#mime-types), including by piping through standard input (`Stdin`). [Directories](#directory-datasources) are also supported. |
 | [HTTP](#using-http-datasources) | `http`, `https` | Data can be sourced from HTTP/HTTPS sites in many different formats. Arbitrary HTTP headers can be set with the [`--datasource-header`/`-H`][] flag |
 | [Stdin](#using-stdin-datasources) | `stdin` | A special case of the `file` datasource; allows piping through standard input (`Stdin`) |
-| [Vault](#using-vault-datasources) | `vault`, `vault+http`, `vault+https` | [HashiCorp Vault][] is an industry-leading open-source secret management tool |
+| [Vault](#using-vault-datasources) | `vault`, `vault+http`, `vault+https` | [HashiCorp Vault][] is an industry-leading open-source secret management tool. [List support](#directory-datasources) is also available. |
 
 ## Directory Datasources
 
