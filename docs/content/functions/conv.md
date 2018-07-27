@@ -74,35 +74,40 @@ Hello, Maggie
 
 **Alias:** `has`
 
-Has reports whether or not a given object has a property with the given key. Can be used with `if` to prevent the template from trying to access a non-existent property in an object.
+Reports whether a given object has a property with the given key, or whether a given array/slice contains the given value. Can be used with `if` to prevent the template from trying to access a non-existent property in an object.
 
-#### Example
-
-_Let's say we're using a Vault datasource..._
-
-_`input.tmpl`:_
-```
-{{ $secret := datasource "vault" "mysecret" -}}
-The secret is '
-{{- if (has $secret "value") }}
-{{- $secret.value }}
-{{- else }}
-{{- $secret | toYAML }}
-{{- end }}'
+### Usage
+```go
+conv.Has in item
 ```
 
-If the `secret/foo/mysecret` secret in Vault has a property named `value` set to `supersecret`:
+### Arguments
+
+| name | description |
+|------|-------------|
+| `in` | _(required)_ The object or list to search |
+| `item` | _(required)_ The item to search for |
+
+### Examples
 
 ```console
-$ gomplate -d vault:///secret/foo < input.tmpl
-The secret is 'supersecret'
+$ gomplate -i '{{ $l := slice "foo" "bar" "baz" -}}
+there is {{ if has $l "bar" }}a{{else}}no{{end}} bar'
+there is a bar
 ```
 
-On the other hand, if there is no `value` property:
+```console
+$ export DATA='{"foo": "bar"}'
+$ gomplate -i '{{ $o := data.JSON (getenv "DATA") -}}
+{{ if (has $o "foo") }}{{ $o.foo }}{{ else }}THERE IS NO FOO{{ end }}'
+bar
+```
 
 ```console
-$ gomplate -d vault:///secret/foo < input.tmpl
-The secret is 'foo: bar'
+$ export DATA='{"baz": "qux"}'
+$ gomplate -i '{{ $o := data.JSON (getenv "DATA") -}}
+{{ if (has $o "foo") }}{{ $o.foo }}{{ else }}THERE IS NO FOO{{ end }}'
+THERE IS NO FOO
 ```
 
 ## `conv.Join`
