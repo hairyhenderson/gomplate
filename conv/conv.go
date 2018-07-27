@@ -109,12 +109,22 @@ func interfaceSlice(slice interface{}) ([]interface{}, error) {
 }
 
 // Has determines whether or not a given object has a property with the given key
-func Has(in interface{}, key string) bool {
+func Has(in interface{}, key interface{}) bool {
 	av := reflect.ValueOf(in)
-	kv := reflect.ValueOf(key)
 
-	if av.Kind() == reflect.Map {
+	switch av.Kind() {
+	case reflect.Map:
+		kv := reflect.ValueOf(key)
 		return av.MapIndex(kv).IsValid()
+	case reflect.Slice, reflect.Array:
+		l := av.Len()
+		for i := 0; i < l; i++ {
+			var v interface{}
+			v = av.Index(i).Interface()
+			if reflect.DeepEqual(v, key) {
+				return true
+			}
+		}
 	}
 
 	return false

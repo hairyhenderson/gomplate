@@ -59,6 +59,10 @@ func TestHas(t *testing.T) {
 	assert.True(t, Has(in, "foo"))
 	assert.False(t, Has(in, "bar"))
 	assert.True(t, Has(in["baz"], "qux"))
+	assert.True(t, Has([]string{"foo", "bar", "baz"}, "bar"))
+	assert.True(t, Has([]interface{}{"foo", "bar", "baz"}, "bar"))
+	assert.False(t, Has([]interface{}{"foo", "bar", "baz"}, 42))
+	assert.True(t, Has([]int{1, 2, 42}, 42))
 }
 
 func TestMustParseInt(t *testing.T) {
