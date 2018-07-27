@@ -1,0 +1,46 @@
+{{ $data := ds "data" -}}
+---
+title: {{ $data.ns }} functions
+menu:
+  main:
+    parent: functions
+---
+
+{{ $data.preamble -}}
+
+{{ range $_, $f := $data.funcs }}
+## `{{ $f.name }}`
+{{ if has $f "alias" }}
+**Alias:** `{{$f.alias}}`
+{{ end }}
+
+{{- if has $f "description" }}
+{{ $f.description }}
+{{ end -}}
+
+{{ if has $f "arguments" -}}
+### Usage
+```go
+{{ $f.name }} {{ range $f.arguments -}} {{ if not .required }}[{{ .name }}]{{else}}{{ .name }}{{end}} {{end}}
+```
+{{ if has $f "pipeline" }}{{ if $f.pipeline }}
+```go
+{{ $last := (sub (len $f.arguments) 1) -}}
+{{ (index $f.arguments $last).name }} | {{ $f.name }} {{ range $i, $a := $f.arguments -}} {{if not (eq $i $last)}}{{ if not $a.required }}[{{ .name }}]{{else}}{{ .name }}{{end}}{{end}} {{end}}
+```
+{{ end }}{{ end }}
+### Arguments
+
+| name | description |
+|------|-------------|
+{{ range $f.arguments }}| `{{.name}}` | _({{if .required}}required{{else}}optional{{end}})_ {{.description}} |
+{{ end }}
+{{- end -}}
+{{if has $f "examples" }}
+### Examples
+
+{{ range $f.examples -}}
+```console
+{{ . | strings.TrimSpace }}
+```
+{{ end }}{{ end }}{{ end -}}

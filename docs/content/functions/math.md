@@ -31,18 +31,18 @@ $ gomplate -i '{{ add 2.5 2.5 }}'
 
 ## `math.Abs`
 
-Returns the absolute value of a given number. When the input is an integer, , the result will be an `int64`, otherwise it will be an `float64`.
+Returns the absolute value of a given number. When the input is an integer, the result will be an `int64`, otherwise it will be a `float64`.
 
 ### Usage
 ```go
-math.Abs num
+math.Abs num 
 ```
 
 ### Arguments
 
-| name   | description |
-|--------|-------|
-| `num`  | _(required)_ The input number |
+| name | description |
+|------|-------------|
+| `num` | _(required)_ The input number |
 
 ### Examples
 
@@ -59,13 +59,16 @@ Adds all given operators. When one of the inputs is a floating-point number, the
 
 ### Usage
 ```go
-math.Add n...
-```
-```go
-x | math.Add.Add n...
+math.Add n... 
 ```
 
-### Example
+### Arguments
+
+| name | description |
+|------|-------------|
+| `n...` | _(required)_ The numbers to add together |
+
+### Examples
 
 ```console
 $ gomplate -i '{{ math.Add 1 2 3 4 }} {{ math.Add 1.5 2 3 }}'
@@ -80,19 +83,19 @@ Returns the least integer value greater than or equal to a given floating-point 
 
 ### Usage
 ```go
-math.Ceil num
+math.Ceil num 
 ```
 
 ### Arguments
 
-| name   | description |
-|--------|-------|
+| name | description |
+|------|-------------|
 | `num` | _(required)_ The input number. Will be converted to a `float64`, or `0` if not convertable |
 
 ### Examples
 
 ```console
-$ gomplate -i '{{ range (slice 5.1 42 "3.14" "0xFF" "NaN" "Inf" "-0") }}ceil {{ printf "%#v" . }} = {{ math.Ceil . }}{{"\n"}}{{ end }}' 
+$ gomplate -i '{{ range (slice 5.1 42 "3.14" "0xFF" "NaN" "Inf" "-0") }}ceil {{ printf "%#v" . }} = {{ math.Ceil . }}{{"\n"}}{{ end }}'
 ceil 5.1 = 6
 ceil 42 = 42
 ceil "3.14" = 4
@@ -110,13 +113,21 @@ Divide the first number by the second. Division by zero is disallowed. The resul
 
 ### Usage
 ```go
-math.Div a b
-```
-```go
-b | math.Div a
+math.Div a b 
 ```
 
-### Example
+```go
+b | math.Div a  
+```
+
+### Arguments
+
+| name | description |
+|------|-------------|
+| `a` | _(required)_ The divisor |
+| `b` | _(required)_ The dividend |
+
+### Examples
 
 ```console
 $ gomplate -i '{{ math.Div 8 2 }} {{ math.Div 3 2 }}'
@@ -131,13 +142,13 @@ Returns the greatest integer value less than or equal to a given floating-point 
 
 ### Usage
 ```go
-math.Floor num
+math.Floor num 
 ```
 
 ### Arguments
 
-| name   | description |
-|--------|-------|
+| name | description |
+|------|-------------|
 | `num` | _(required)_ The input number. Will be converted to a `float64`, or `0` if not convertable |
 
 ### Examples
@@ -161,13 +172,13 @@ Returns whether or not the given number can be interpreted as a floating-point l
 
 ### Usage
 ```go
-math.IsFloat num
+math.IsFloat num 
 ```
 
 ### Arguments
 
-| name   | description |
-|--------|-------|
+| name | description |
+|------|-------------|
 | `num` | _(required)_ The value to test |
 
 ### Examples
@@ -185,17 +196,16 @@ Inf is a float
 ## `math.IsInt`
 
 Returns whether or not the given number is an integer.
-Returns whether or not the given number can be interpreted as a floating-point literal, as defined by the [Go language reference](https://golang.org/ref/spec#Integer_literals).
 
 ### Usage
 ```go
-math.IsInt num
+math.IsInt num 
 ```
 
 ### Arguments
 
-| name   | description |
-|--------|-------|
+| name | description |
+|------|-------------|
 | `num` | _(required)_ The value to test |
 
 ### Examples
@@ -213,13 +223,13 @@ Returns whether the given input is a number. Useful for `if` conditions.
 
 ### Usage
 ```go
-math.IsNum in
+math.IsNum in 
 ```
 
 ### Arguments
 
-| name   | description |
-|--------|-------|
+| name | description |
+|------|-------------|
 | `in` | _(required)_ The value to test |
 
 ### Examples
@@ -235,14 +245,14 @@ Returns the largest number provided. If any values are floating-point numbers, a
 
 ### Usage
 ```go
-math.Max nums...
+math.Max nums... 
 ```
 
 ### Arguments
 
-| name   | description |
-|--------|-------|
-| `nums` | _(required)_ One or more numbers to compare |
+| name | description |
+|------|-------------|
+| `nums...` | _(required)_ One or more numbers to compare |
 
 ### Examples
 
@@ -257,14 +267,14 @@ Returns the smallest number provided. If any values are floating-point numbers, 
 
 ### Usage
 ```go
-math.Min nums...
+math.Min nums... 
 ```
 
 ### Arguments
 
-| name   | description |
-|--------|-------|
-| `nums` | _(required)_ One or more numbers to compare |
+| name | description |
+|------|-------------|
+| `nums...` | _(required)_ One or more numbers to compare |
 
 ### Examples
 
@@ -281,13 +291,16 @@ Multiply all given operators together.
 
 ### Usage
 ```go
-math.Mul n...
-```
-```go
-x | math.Mul n...
+math.Mul n... 
 ```
 
-### Example
+### Arguments
+
+| name | description |
+|------|-------------|
+| `n...` | _(required)_ The numbers to multiply |
+
+### Examples
 
 ```console
 $ gomplate -i '{{ math.Mul 8 8 2 }}'
@@ -302,13 +315,17 @@ Calculate an exponent - _b<sup>n</sup>_. This wraps Go's [`math.Pow`](https://go
 
 ### Usage
 ```go
-math.Pow b n
-```
-```go
-n | math.Pow b
+math.Pow b n 
 ```
 
-### Example
+### Arguments
+
+| name | description |
+|------|-------------|
+| `b` | _(required)_ The base |
+| `n` | _(required)_ The exponent |
+
+### Examples
 
 ```console
 $ gomplate -i '{{ math.Pow 10 2 }}'
@@ -327,13 +344,21 @@ Return the remainder from an integer division operation.
 
 ### Usage
 ```go
-math.Rem a b
-```
-```go
-b | math.Rem b
+math.Rem a b 
 ```
 
-### Example
+```go
+b | math.Rem a  
+```
+
+### Arguments
+
+| name | description |
+|------|-------------|
+| `a` | _(required)_ The divisor |
+| `b` | _(required)_ The dividend |
+
+### Examples
 
 ```console
 $ gomplate -i '{{ math.Rem 5 3 }}'
@@ -350,13 +375,13 @@ Returns the nearest integer, rounding half away from zero.
 
 ### Usage
 ```go
-math.Round num
+math.Round num 
 ```
 
 ### Arguments
 
-| name   | description |
-|--------|-------|
+| name | description |
+|------|-------------|
 | `num` | _(required)_ The input number. Will be converted to a `float64`, or `0` if not convertable |
 
 ### Examples
@@ -381,13 +406,13 @@ Note that the sequence _may_ not end at `end`, if `end` is not divisible by `ste
 
 ### Usage
 ```go
-math.Seq [start] end [step]
+math.Seq [start] end [step] 
 ```
 
 ### Arguments
 
-| name   | description |
-|--------|-------|
+| name | description |
+|------|-------------|
 | `start` | _(optional)_ The first number in the sequence (defaults to `1`) |
 | `end` | _(required)_ The last number in the sequence |
 | `step` | _(optional)_ The amount to increment between each number (defaults to `1`) |
@@ -396,9 +421,8 @@ math.Seq [start] end [step]
 
 ```console
 $ gomplate -i '{{ range (math.Seq 5) }}{{.}} {{end}}'
-1 2 3 4 5 
+1 2 3 4 5
 ```
-
 ```console
 $ gomplate -i '{{ conv.Join (math.Seq 10 -3 2) ", " }}'
 10, 8, 6, 4, 2, 0, -2
@@ -412,13 +436,21 @@ Subtract the second from the first of the given operators.  When one of the inpu
 
 ### Usage
 ```go
-math.Sub a b
-```
-```go
-b | math.Sub a
+math.Sub a b 
 ```
 
-### Example
+```go
+b | math.Sub a  
+```
+
+### Arguments
+
+| name | description |
+|------|-------------|
+| `a` | _(required)_ The minuend (the number to subtract from) |
+| `b` | _(required)_ The subtrahend (the number being subtracted) |
+
+### Examples
 
 ```console
 $ gomplate -i '{{ math.Sub 3 1 }}'

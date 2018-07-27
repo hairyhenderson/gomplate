@@ -1,0 +1,60 @@
+ns: conv
+preamble: |
+  These are a collection of functions that mostly help converting from one type
+  to another - generally from a `string` to something else, and vice-versa.
+funcs:
+  - name: conv.Bool
+    alias: bool
+  - name: conv.Default
+    alias: default
+  - name: conv.Slice
+    alias: slice
+  - name: conv.Has
+    alias: has
+  - name: conv.Join
+    alias: join
+  - name: conv.URL
+  - name: conv.ParseInt
+  - name: conv.ParseFloat
+  - name: conv.ParseUint
+  - name: conv.Atoi
+  - name: conv.ToBool
+    description: |
+      Converts the input to a boolean value.
+      Possible `true` values are: `1` or the strings `"t"`, `"true"`, or `"yes"`
+      (any capitalizations). All other values are considered `false`.
+    pipeline: true
+    arguments:
+      - name: input
+        required: true
+        description: The input to convert
+    examples:
+      - |
+        $ gomplate -i '{{ conv.ToBool "yes" }} {{ conv.ToBool true }} {{ conv.ToBool "0x01" }}'
+        true true true
+        $ gomplate -i '{{ conv.ToBool false }} {{ conv.ToBool "blah" }} {{ conv.ToBool 0 }}'
+        false false false
+  - name: conv.ToBools
+    description: |
+      Converts a list of inputs to an array of boolean values.
+      Possible `true` values are: `1` or the strings `"t"`, `"true"`, or `"yes"`
+      (any capitalizations). All other values are considered `false`.
+    pipeline: true
+    arguments:
+      - name: input
+        required: true
+        description: The input array to convert
+    examples:
+      - |
+        $ gomplate -i '{{ conv.ToBools "yes" true "0x01" }}'
+        [true true true]
+        $ gomplate -i '{{ conv.ToBools false "blah" 0 }}'
+        [false false false]
+  - name: conv.ToInt64
+  - name: conv.ToInt
+  - name: conv.ToInt64s
+  - name: conv.ToInts
+  - name: conv.ToFloat64
+  - name: conv.ToFloat64s
+  - name: conv.ToString
+  - name: conv.ToStrings

@@ -102,6 +102,9 @@ docs/themes/hugo-material-docs:
 gen-docs: docs/themes/hugo-material-docs
 	cd docs/; hugo
 
+docs/content/functions/%.md: docs-src/content/functions/%.yml docs-src/content/functions/func_doc.md.tmpl
+	gomplate -d data=$< -f docs-src/content/functions/func_doc.md.tmpl -o $@
+
 # this target doesn't usually get used - it's mostly here as a reminder to myself
 # hint: make sure CLOUDCONVERT_API_KEY is set ;)
 gomplate.png: gomplate.svg

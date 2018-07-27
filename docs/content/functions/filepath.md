@@ -15,11 +15,9 @@ These functions are wrappers for Go's [`path/filepath`](https://golang.org/pkg/p
 
 ## `filepath.Base`
 
-
 Returns the last element of path. Trailing path separators are removed before extracting the last element. If the path is empty, Base returns `.`. If the path consists entirely of separators, Base returns a single separator.
 
 A wrapper for Go's [`filepath.Base`](https://golang.org/pkg/path/filepath/#Base) function.
-
 
 ### Usage
 ```go
@@ -30,13 +28,11 @@ filepath.Base path
 path | filepath.Base  
 ```
 
-
 ### Arguments
 
 | name | description |
 |------|-------------|
 | `path` | _(required)_ The input path |
-
 
 ### Examples
 
@@ -47,11 +43,9 @@ foo
 
 ## `filepath.Clean`
 
-
 Clean returns the shortest path name equivalent to path by purely lexical processing.
 
 A wrapper for Go's [`filepath.Clean`](https://golang.org/pkg/path/filepath/#Clean) function.
-
 
 ### Usage
 ```go
@@ -62,13 +56,11 @@ filepath.Clean path
 path | filepath.Clean  
 ```
 
-
 ### Arguments
 
 | name | description |
 |------|-------------|
 | `path` | _(required)_ The input path |
-
 
 ### Examples
 
@@ -79,11 +71,9 @@ $ gomplate -i '{{ filepath.Clean "/tmp//foo/../" }}'
 
 ## `filepath.Dir`
 
-
 Returns all but the last element of path, typically the path's directory.
 
 A wrapper for Go's [`filepath.Dir`](https://golang.org/pkg/path/filepath/#Dir) function.
-
 
 ### Usage
 ```go
@@ -94,13 +84,11 @@ filepath.Dir path
 path | filepath.Dir  
 ```
 
-
 ### Arguments
 
 | name | description |
 |------|-------------|
 | `path` | _(required)_ The input path |
-
 
 ### Examples
 
@@ -111,11 +99,9 @@ $ gomplate -i '{{ filepath.Dir "/tmp/foo" }}'
 
 ## `filepath.Ext`
 
-
 Returns the file name extension used by path.
 
 A wrapper for Go's [`filepath.Ext`](https://golang.org/pkg/path/filepath/#Ext) function.
-
 
 ### Usage
 ```go
@@ -126,13 +112,11 @@ filepath.Ext path
 path | filepath.Ext  
 ```
 
-
 ### Arguments
 
 | name | description |
 |------|-------------|
 | `path` | _(required)_ The input path |
-
 
 ### Examples
 
@@ -143,11 +127,9 @@ $ gomplate -i '{{ filepath.Ext "/tmp/foo.csv" }}'
 
 ## `filepath.FromSlash`
 
-
 Returns the result of replacing each slash (`/`) character in the path with the platform's separator character.
 
 A wrapper for Go's [`filepath.FromSlash`](https://golang.org/pkg/path/filepath/#FromSlash) function.
-
 
 ### Usage
 ```go
@@ -158,13 +140,11 @@ filepath.FromSlash path
 path | filepath.FromSlash  
 ```
 
-
 ### Arguments
 
 | name | description |
 |------|-------------|
 | `path` | _(required)_ The input path |
-
 
 ### Examples
 
@@ -177,11 +157,9 @@ C:\foo\bar
 
 ## `filepath.IsAbs`
 
-
 Reports whether the path is absolute.
 
 A wrapper for Go's [`filepath.IsAbs`](https://golang.org/pkg/path/filepath/#IsAbs) function.
-
 
 ### Usage
 ```go
@@ -192,13 +170,11 @@ filepath.IsAbs path
 path | filepath.IsAbs  
 ```
 
-
 ### Arguments
 
 | name | description |
 |------|-------------|
 | `path` | _(required)_ The input path |
-
 
 ### Examples
 
@@ -211,24 +187,20 @@ the path is relative
 
 ## `filepath.Join`
 
-
 Joins any number of path elements into a single path, adding a separator if necessary.
 
 A wrapper for Go's [`filepath.Join`](https://golang.org/pkg/path/filepath/#Join) function.
-
 
 ### Usage
 ```go
 filepath.Join elem... 
 ```
 
-
 ### Arguments
 
 | name | description |
 |------|-------------|
 | `elem...` | _(required)_ The path elements to join (0 or more) |
-
 
 ### Examples
 
@@ -241,17 +213,14 @@ C:\tmp\foo\bar
 
 ## `filepath.Match`
 
-
 Reports whether name matches the shell file name pattern.
 
 A wrapper for Go's [`filepath.Match`](https://golang.org/pkg/path/filepath/#Match) function.
-
 
 ### Usage
 ```go
 filepath.Match pattern path 
 ```
-
 
 ### Arguments
 
@@ -259,7 +228,6 @@ filepath.Match pattern path
 |------|-------------|
 | `pattern` | _(required)_ The pattern to match on |
 | `path` | _(required)_ The path to match |
-
 
 ### Examples
 
@@ -270,25 +238,21 @@ true
 
 ## `filepath.Rel`
 
-
 Returns a relative path that is lexically equivalent to targetpath when joined to basepath with an intervening separator.
 
 A wrapper for Go's [`filepath.Rel`](https://golang.org/pkg/path/filepath/#Rel) function.
-
 
 ### Usage
 ```go
 filepath.Rel basepath targetpath 
 ```
 
-
 ### Arguments
 
 | name | description |
 |------|-------------|
-| `basepath` | _(required)_ The |
-| `targetpath` | _(required)_ The |
-
+| `basepath` | _(required)_ The base path |
+| `targetpath` | _(required)_ The target path |
 
 ### Examples
 
@@ -299,13 +263,11 @@ b/c
 
 ## `filepath.Split`
 
-
 Splits path immediately following the final path separator, separating it into a directory and file name component.
 
 The function returns an array with two values, the first being the diretory, and the second the file.
 
 A wrapper for Go's [`filepath.Split`](https://golang.org/pkg/path/filepath/#Split) function.
-
 
 ### Usage
 ```go
@@ -316,13 +278,11 @@ filepath.Split path
 path | filepath.Split  
 ```
 
-
 ### Arguments
 
 | name | description |
 |------|-------------|
 | `path` | _(required)_ The input path |
-
 
 ### Examples
 
@@ -335,11 +295,9 @@ dir is C:\tmp\, file is foo
 
 ## `filepath.ToSlash`
 
-
 Returns the result of replacing each separator character in path with a slash (`/`) character.
 
 A wrapper for Go's [`filepath.ToSlash`](https://golang.org/pkg/path/filepath/#ToSlash) function.
-
 
 ### Usage
 ```go
@@ -350,13 +308,11 @@ filepath.ToSlash path
 path | filepath.ToSlash  
 ```
 
-
 ### Arguments
 
 | name | description |
 |------|-------------|
 | `path` | _(required)_ The input path |
-
 
 ### Examples
 
@@ -369,11 +325,9 @@ foo/bar/baz
 
 ## `filepath.VolumeName`
 
-
 Returns the leading volume name. Given `C:\foo\bar` it returns `C:` on Windows. Given a UNC like `\\host\share\foo` it returns `\\host\share`. On other platforms it returns an empty string.
 
 A wrapper for Go's [`filepath.VolumeName`](https://golang.org/pkg/path/filepath/#VolumeName) function.
-
 
 ### Usage
 ```go
@@ -384,13 +338,11 @@ filepath.VolumeName path
 path | filepath.VolumeName  
 ```
 
-
 ### Arguments
 
 | name | description |
 |------|-------------|
 | `path` | _(required)_ The input path |
-
 
 ### Examples
 
