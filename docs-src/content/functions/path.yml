@@ -1,0 +1,127 @@
+ns: path
+preamble: |
+  gomplate's path functions are split into 2 namespaces:
+  - `path`, which is useful for manipulating slash-based (`/`) paths, such as in URLs
+  - `filepath`, which should be used for local filesystem paths, especially when Windows paths may be involved.
+
+  This page documents the `path` namespace - see also the [`filepath`](../filepath) documentation.
+
+  These functions are wrappers for Go's [`path`](https://golang.org/pkg/path/) and [`path/filepath`](https://golang.org/pkg/path/filepath/) packages.
+funcs:
+  - name: path.Base
+    description: |
+      Returns the last element of path. Trailing slashes are removed before extracting the last element. If the path is empty, Base returns `.`. If the path consists entirely of slashes, Base returns `/`.
+
+      A wrapper for Go's [`path.Base`](https://golang.org/pkg/path/#Base) function.
+    pipeline: true
+    arguments:
+      - name: path
+        required: true
+        description: The input path
+    examples:
+      - |
+        $ gomplate -i '{{ path.Base "/tmp/foo" }}'
+        foo
+  - name: path.Clean
+    description: |
+      Clean returns the shortest path name equivalent to path by purely lexical processing.
+
+      A wrapper for Go's [`path.Clean`](https://golang.org/pkg/path/#Clean) function.
+    pipeline: true
+    arguments:
+      - name: path
+        required: true
+        description: The input path
+    examples:
+      - |
+        $ gomplate -i '{{ path.Clean "/tmp//foo/../" }}'
+        /tmp
+  - name: path.Dir
+    description: |
+      Returns all but the last element of path, typically the path's directory.
+
+      A wrapper for Go's [`path.Dir`](https://golang.org/pkg/path/#Dir) function.
+    pipeline: true
+    arguments:
+      - name: path
+        required: true
+        description: The input path
+    examples:
+      - |
+        $ gomplate -i '{{ path.Dir "/tmp/foo" }}'
+        /tmp
+  - name: path.Ext
+    description: |
+      Returns the file name extension used by path.
+
+      A wrapper for Go's [`path.Ext`](https://golang.org/pkg/path/#Ext) function.
+    pipeline: true
+    arguments:
+      - name: path
+        required: true
+        description: The input path
+    examples:
+      - |
+        $ gomplate -i '{{ path.Ext "/tmp/foo.csv" }}'
+        .csv
+  - name: path.IsAbs
+    description: |
+      Reports whether the path is absolute.
+
+      A wrapper for Go's [`path.IsAbs`](https://golang.org/pkg/path/#IsAbs) function.
+    pipeline: true
+    arguments:
+      - name: path
+        required: true
+        description: The input path
+    examples:
+      - |
+        $ gomplate -i 'the path is {{ if (path.IsAbs "/tmp/foo.csv") }}absolute{{else}}relative{{end}}'
+        the path is absolute
+        $ gomplate -i 'the path is {{ if (path.IsAbs "../foo.csv") }}absolute{{else}}relative{{end}}'
+        the path is relative
+  - name: path.Join
+    description: |
+      Joins any number of path elements into a single path, adding a separating slash if necessary.
+
+      A wrapper for Go's [`path.Join`](https://golang.org/pkg/path/#Join) function.
+    arguments:
+      - name: elem...
+        required: true
+        description: The path elements to join (0 or more)
+    examples:
+      - |
+        $ gomplate -i '{{ path.Join "/tmp" "foo" "bar" }}'
+        /tmp/foo/bar
+  - name: path.Match
+    description: |
+      Reports whether name matches the shell file name pattern.
+
+      A wrapper for Go's [`path.Match`](https://golang.org/pkg/path/#Match) function.
+    arguments:
+      - name: pattern
+        required: true
+        description: The pattern to match on
+      - name: path
+        required: true
+        description: The path to match
+    examples:
+      - |
+        $ gomplate -i '{{ path.Match "*.csv" "foo.csv" }}'
+        true
+  - name: path.Split
+    description: |
+      Splits path immediately following the final slash, separating it into a directory and file name component.
+
+      The function returns an array with two values, the first being the diretory, and the second the file.
+
+      A wrapper for Go's [`path.Split`](https://golang.org/pkg/path/#Split) function.
+    pipeline: true
+    arguments:
+      - name: path
+        required: true
+        description: The input path
+    examples:
+      - |
+        $ gomplate -i '{{ $p := path.Split "/tmp/foo" }}{{ $dir := index $p 0 }}{{ $file := index $p 1 }}dir is {{$dir}}, file is {{$file}}'
+        dir is /tmp/, file is foo

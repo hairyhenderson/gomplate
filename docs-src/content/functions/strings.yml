@@ -1,0 +1,16 @@
+ns: strings
+preamble: ''
+funcs:
+  - name: strings.Sort
+    alias: sort
+    description: |
+      Returns an alphanumerically-sorted copy of a given string list.
+    pipeline: true
+    arguments:
+      - name: list
+        required: true
+        description: The list to sort
+    examples:
+      - |
+        $ gomplate -i '{{ (slice "foo" "bar" "baz") | sort }}'
+        [bar baz foo]
