@@ -1,5 +1,39 @@
 # Change Log
 
+## [v2.7.0](https://github.com/hairyhenderson/gomplate/tree/v2.7.0) (2018-07-27)
+[Full Changelog](https://github.com/hairyhenderson/gomplate/compare/v2.6.0...v2.7.0)
+
+**Implemented enhancements:**
+
+- Adding slice/array support to conv.Has [\#365](https://github.com/hairyhenderson/gomplate/pull/365) ([hairyhenderson](https://github.com/hairyhenderson))
+- Allowing datasources to be defined dynamically [\#357](https://github.com/hairyhenderson/gomplate/pull/357) ([hairyhenderson](https://github.com/hairyhenderson))
+
+**Fixed bugs:**
+
+- Require alias for defineDatasource [\#358](https://github.com/hairyhenderson/gomplate/pull/358) ([hairyhenderson](https://github.com/hairyhenderson))
+
+**Closed issues:**
+
+- Feature Request: Allow datasources to be defined dynamically [\#349](https://github.com/hairyhenderson/gomplate/issues/349)
+- Can't evaluate field Trunc in type \*funcs.StringFuncs [\#347](https://github.com/hairyhenderson/gomplate/issues/347)
+
+**Merged pull requests:**
+
+- Generating docs [\#366](https://github.com/hairyhenderson/gomplate/pull/366) ([hairyhenderson](https://github.com/hairyhenderson))
+- Adding new strings.Sort function [\#364](https://github.com/hairyhenderson/gomplate/pull/364) ([hairyhenderson](https://github.com/hairyhenderson))
+- Reducing output on template errors [\#362](https://github.com/hairyhenderson/gomplate/pull/362) ([hairyhenderson](https://github.com/hairyhenderson))
+- Move integration tests [\#361](https://github.com/hairyhenderson/gomplate/pull/361) ([hairyhenderson](https://github.com/hairyhenderson))
+- Adding fail and assert functions [\#360](https://github.com/hairyhenderson/gomplate/pull/360) ([hairyhenderson](https://github.com/hairyhenderson))
+- Adding conv.ToBool/conv.ToBools functions [\#359](https://github.com/hairyhenderson/gomplate/pull/359) ([hairyhenderson](https://github.com/hairyhenderson))
+- Adding new defineDatasource function [\#356](https://github.com/hairyhenderson/gomplate/pull/356) ([hairyhenderson](https://github.com/hairyhenderson))
+- New path/filepath function namespaces [\#355](https://github.com/hairyhenderson/gomplate/pull/355) ([hairyhenderson](https://github.com/hairyhenderson))
+- Add conv.ToStrings function [\#354](https://github.com/hairyhenderson/gomplate/pull/354) ([hairyhenderson](https://github.com/hairyhenderson))
+- Bump golang from 1.10-alpine to 1.10.3-alpine [\#353](https://github.com/hairyhenderson/gomplate/pull/353) ([dependabot[bot]](https://github.com/apps/dependabot))
+- Bump alpine from 3.7 to 3.8 [\#352](https://github.com/hairyhenderson/gomplate/pull/352) ([dependabot[bot]](https://github.com/apps/dependabot))
+- Update golang:1.10-alpine Docker digest to 1c53b8 [\#351](https://github.com/hairyhenderson/gomplate/pull/351) ([renovate[bot]](https://github.com/apps/renovate))
+- Update alpine:3.7 Docker digest to 5ce5f5 [\#350](https://github.com/hairyhenderson/gomplate/pull/350) ([renovate[bot]](https://github.com/apps/renovate))
+- Update golang:1.10-alpine Docker digest to 79d51d [\#348](https://github.com/hairyhenderson/gomplate/pull/348) ([renovate[bot]](https://github.com/apps/renovate))
+
 ## [v2.6.0](https://github.com/hairyhenderson/gomplate/tree/v2.6.0) (2018-06-09)
 [Full Changelog](https://github.com/hairyhenderson/gomplate/compare/v2.5.0...v2.6.0)
 
