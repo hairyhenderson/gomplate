@@ -3,6 +3,7 @@
 package data
 
 import (
+	"encoding/json"
 	"net/url"
 	"testing"
 
@@ -88,20 +89,23 @@ func TestAWSSMP_GetParameterSetup(t *testing.T) {
 }
 
 func TestAWSSMP_GetParameterValidOutput(t *testing.T) {
+	expected := &ssm.Parameter{
+		Name:    aws.String("/foo"),
+		Type:    aws.String("String"),
+		Value:   aws.String("val"),
+		Version: aws.Int64(1),
+	}
 	s := simpleAWSSourceHelper(DummyParamGetter{
-		t: t,
-		param: &ssm.Parameter{
-			Name:    aws.String("/foo"),
-			Type:    aws.String("String"),
-			Value:   aws.String("val"),
-			Version: aws.Int64(1),
-		},
+		t:     t,
+		param: expected,
 	})
 
 	output, err := readAWSSMP(s, "")
 	assert.Nil(t, err)
-	expected := "{\"Name\":\"/foo\",\"Type\":\"String\",\"Value\":\"val\",\"Version\":1}"
-	assert.Equal(t, []byte(expected), output)
+	actual := &ssm.Parameter{}
+	err = json.Unmarshal(output, &actual)
+	assert.Nil(t, err)
+	assert.Equal(t, expected, actual)
 	assert.Equal(t, jsonMimetype, s.Type)
 }
 
