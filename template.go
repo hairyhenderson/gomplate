@@ -20,11 +20,12 @@ var Stdout io.WriteCloser = os.Stdout
 
 // tplate - models a gomplate template file...
 type tplate struct {
-	name       string
-	targetPath string
-	target     io.Writer
-	contents   string
-	mode       os.FileMode
+	name         string
+	targetPath   string
+	target       io.Writer
+	contents     string
+	mode         os.FileMode
+	modeOverride bool
 }
 
 func (t *tplate) toGoTemplate(g *gomplate) (*template.Template, error) {
@@ -48,19 +49,25 @@ func (t *tplate) addTarget() (err error) {
 		t.targetPath = "-"
 	}
 	if t.target == nil {
-		t.target, err = openOutFile(t.targetPath, t.mode)
+		t.target, err = openOutFile(t.targetPath, t.mode, t.modeOverride)
 	}
 	return err
 }
 
 // gatherTemplates - gather and prepare input template(s) and output file(s) for rendering
 func gatherTemplates(o *Config) (templates []*tplate, err error) {
+	mode, modeOverride, err := o.getMode()
+
 	// the arg-provided input string gets a special name
 	if o.Input != "" {
+		if mode == 0 {
+			mode = 0644
+		}
 		templates = []*tplate{{
-			name:     "<arg>",
-			contents: o.Input,
-			mode:     os.FileMode(0644),
+			name:         "<arg>",
+			contents:     o.Input,
+			mode:         mode,
+			modeOverride: modeOverride,
 		}}
 
 		if len(o.OutputFiles) == 1 {
@@ -70,14 +77,14 @@ func gatherTemplates(o *Config) (templates []*tplate, err error) {
 
 	// input dirs presume output dirs are set too
 	if o.InputDir != "" {
-		templates, err = walkDir(o.InputDir, o.OutputDir, o.ExcludeGlob)
+		templates, err = walkDir(o.InputDir, o.OutputDir, o.ExcludeGlob, mode, modeOverride)
 		if err != nil {
 			return nil, err
 		}
 	} else if len(o.InputFiles) > 0 && o.Input == "" {
 		templates = make([]*tplate, len(o.InputFiles))
 		for i := range o.InputFiles {
-			templates[i], err = fileToTemplates(o.InputFiles[i], o.OutputFiles[i])
+			templates[i], err = fileToTemplates(o.InputFiles[i], o.OutputFiles[i], mode, modeOverride)
 			if err != nil {
 				return nil, err
 			}
@@ -104,7 +111,7 @@ func processTemplates(templates []*tplate) ([]*tplate, error) {
 // walkDir - given an input dir `dir` and an output dir `outDir`, and a list
 // of exclude globs (if any), walk the input directory and create a list of
 // tplate objects, and an error, if any.
-func walkDir(dir, outDir string, excludeGlob []string) ([]*tplate, error) {
+func walkDir(dir, outDir string, excludeGlob []string, mode os.FileMode, modeOverride bool) ([]*tplate, error) {
 	dir = filepath.Clean(dir)
 	outDir = filepath.Clean(outDir)
 	si, err := fs.Stat(dir)
@@ -136,35 +143,41 @@ func walkDir(dir, outDir string, excludeGlob []string) ([]*tplate, error) {
 		}
 
 		if entry.IsDir() {
-			t, err := walkDir(nextInPath, nextOutPath, excludes)
+			t, err := walkDir(nextInPath, nextOutPath, excludes, mode, modeOverride)
 			if err != nil {
 				return nil, err
 			}
 			templates = append(templates, t...)
 		} else {
+			if mode == 0 {
+				mode = entry.Mode()
+			}
 			templates = append(templates, &tplate{
-				name:       nextInPath,
-				targetPath: nextOutPath,
-				mode:       entry.Mode(),
+				name:         nextInPath,
+				targetPath:   nextOutPath,
+				mode:         mode,
+				modeOverride: modeOverride,
 			})
 		}
 	}
 	return templates, nil
 }
 
-func fileToTemplates(inFile, outFile string) (*tplate, error) {
-	mode := os.FileMode(0644)
+func fileToTemplates(inFile, outFile string, mode os.FileMode, modeOverride bool) (*tplate, error) {
 	if inFile != "-" {
 		si, err := fs.Stat(inFile)
 		if err != nil {
 			return nil, err
 		}
-		mode = si.Mode()
+		if mode == 0 {
+			mode = si.Mode()
+		}
 	}
 	tmpl := &tplate{
-		name:       inFile,
-		targetPath: outFile,
-		mode:       mode,
+		name:         inFile,
+		targetPath:   outFile,
+		mode:         mode,
+		modeOverride: modeOverride,
 	}
 
 	return tmpl, nil
@@ -180,11 +193,18 @@ func inList(list []string, entry string) bool {
 	return false
 }
 
-func openOutFile(filename string, mode os.FileMode) (out io.WriteCloser, err error) {
+func openOutFile(filename string, mode os.FileMode, modeOverride bool) (out io.WriteCloser, err error) {
 	if filename == "-" {
 		return Stdout, nil
 	}
-	return fs.OpenFile(filename, os.O_RDWR|os.O_CREATE|os.O_TRUNC, mode.Perm())
+	out, err = fs.OpenFile(filename, os.O_RDWR|os.O_CREATE|os.O_TRUNC, mode.Perm())
+	if err != nil {
+		return out, err
+	}
+	if modeOverride {
+		err = fs.Chmod(filename, mode.Perm())
+	}
+	return out, err
 }
 
 func readInput(filename string) (string, error) {

@@ -43,6 +43,12 @@ Example:
 gomplate --input-dir=templates --output-dir=config --datasource config=config.yaml
 ```
 
+### `--chmod`
+
+By default, output files are created with the same file mode (permissions) as input files. If desired, the `--chmod` option can be used to override this behaviour, and set the output file mode explicitly. This can be useful for creating executable scripts or ensuring write permissions.
+
+The value must be an octal integer in the standard UNIX `chmod` format, i.e. `644` to indicate that owner gets read+write, group gets read-only, and others get read-only permissions. See the [`chmod(1)` man page](https://linux.die.net/man/1/chmod) for more details.
+
 ### `--exclude`
 
 To prevent certain files from being processed, you can use `--exclude`. It takes a glob, and any files matching that glob will not be included.

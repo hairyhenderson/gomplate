@@ -1,11 +1,13 @@
-// +build integration
+//+build integration
 //+build !windows
 
 package integration
 
 import (
 	"bytes"
+	"fmt"
 	"io/ioutil"
+	"os"
 
 	. "gopkg.in/check.v1"
 
@@ -21,13 +23,13 @@ type BasicSuite struct {
 
 var _ = Suite(&BasicSuite{})
 
-func (s *BasicSuite) SetUpSuite(c *C) {
+func (s *BasicSuite) SetUpTest(c *C) {
 	s.tmpDir = fs.NewDir(c, "gomplate-inttests",
-		fs.WithFile("one", "hi\n"),
+		fs.WithFile("one", "hi\n", fs.WithMode(0640)),
 		fs.WithFile("two", "hello\n"))
 }
 
-func (s *BasicSuite) TearDownSuite(c *C) {
+func (s *BasicSuite) TearDownTest(c *C) {
 	s.tmpDir.Remove()
 }
 
@@ -89,12 +91,82 @@ func (s *BasicSuite) TestRoutesInputsToProperOutputs(c *C) {
 	})
 	result.Assert(c, icmd.Success)
 
-	content, err := ioutil.ReadFile(oneOut)
-	assert.NilError(c, err)
-	assert.Equal(c, "hi\n", string(content))
-	content, err = ioutil.ReadFile(twoOut)
-	assert.NilError(c, err)
-	assert.Equal(c, "hello\n", string(content))
+	testdata := []struct {
+		path    string
+		mode    os.FileMode
+		content string
+	}{
+		{oneOut, 0640, "hi\n"},
+		{twoOut, 0644, "hello\n"},
+	}
+	for _, v := range testdata {
+		info, err := os.Stat(v.path)
+		assert.NilError(c, err)
+		assert.Equal(c, v.mode, info.Mode())
+		content, err := ioutil.ReadFile(v.path)
+		assert.NilError(c, err)
+		assert.Equal(c, v.content, string(content))
+	}
+}
+
+func (s *BasicSuite) TestRoutesInputsToProperOutputsWithChmod(c *C) {
+	oneOut := s.tmpDir.Join("one.out")
+	twoOut := s.tmpDir.Join("two.out")
+	result := icmd.RunCmd(icmd.Command(GomplateBin,
+		"-f", s.tmpDir.Join("one"),
+		"-f", s.tmpDir.Join("two"),
+		"-o", oneOut,
+		"-o", twoOut,
+		"--chmod", "0600"), func(cmd *icmd.Cmd) {
+		cmd.Stdin = bytes.NewBufferString("hello world")
+	})
+	result.Assert(c, icmd.Success)
+	fmt.Println(result.Combined())
+
+	testdata := []struct {
+		path    string
+		mode    os.FileMode
+		content string
+	}{
+		{oneOut, 0600, "hi\n"},
+		{twoOut, 0600, "hello\n"},
+	}
+	for _, v := range testdata {
+		info, err := os.Stat(v.path)
+		assert.NilError(c, err)
+		assert.Equal(c, v.mode, info.Mode())
+		content, err := ioutil.ReadFile(v.path)
+		assert.NilError(c, err)
+		assert.Equal(c, v.content, string(content))
+	}
+}
+
+func (s *BasicSuite) TestOverridesOutputModeWithChmod(c *C) {
+	out := s.tmpDir.Join("two")
+	result := icmd.RunCmd(icmd.Command(GomplateBin,
+		"-f", s.tmpDir.Join("one"),
+		"-o", out,
+		"--chmod", "0600"), func(cmd *icmd.Cmd) {
+		cmd.Stdin = bytes.NewBufferString("hello world")
+	})
+	result.Assert(c, icmd.Success)
+	fmt.Println(result.Combined())
+
+	testdata := []struct {
+		path    string
+		mode    os.FileMode
+		content string
+	}{
+		{out, 0600, "hi\n"},
+	}
+	for _, v := range testdata {
+		info, err := os.Stat(v.path)
+		assert.NilError(c, err)
+		assert.Equal(c, v.mode, info.Mode())
+		content, err := ioutil.ReadFile(v.path)
+		assert.NilError(c, err)
+		assert.Equal(c, v.content, string(content))
+	}
 }
 
 func (s *BasicSuite) TestFlagRules(c *C) {

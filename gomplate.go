@@ -3,6 +3,7 @@ package gomplate
 import (
 	"io"
 	"os"
+	"strconv"
 	"text/template"
 	"time"
 
@@ -18,12 +19,24 @@ type Config struct {
 	ExcludeGlob []string
 	OutputFiles []string
 	OutputDir   string
+	OutMode     string
 
 	DataSources       []string
 	DataSourceHeaders []string
 
 	LDelim string
 	RDelim string
+}
+
+// parse an os.FileMode out of the string, and let us know if it's an override or not...
+func (o *Config) getMode() (os.FileMode, bool, error) {
+	modeOverride := o.OutMode != ""
+	m, err := strconv.ParseUint("0"+o.OutMode, 8, 32)
+	if err != nil {
+		return 0, false, err
+	}
+	mode := os.FileMode(m)
+	return mode, modeOverride, nil
 }
 
 // gomplate -
