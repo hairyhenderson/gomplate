@@ -4,6 +4,7 @@ package gomplate
 
 import (
 	"bytes"
+	"io"
 	"io/ioutil"
 	"os"
 	"testing"
@@ -45,7 +46,7 @@ func TestOpenOutFile(t *testing.T) {
 	fs = afero.NewMemMapFs()
 	_ = fs.Mkdir("/tmp", 0777)
 
-	_, err := openOutFile("/tmp/foo", os.FileMode(0644))
+	_, err := openOutFile("/tmp/foo", 0644, false)
 	assert.NoError(t, err)
 	i, err := fs.Stat("/tmp/foo")
 	assert.NoError(t, err)
@@ -54,7 +55,7 @@ func TestOpenOutFile(t *testing.T) {
 	defer func() { Stdout = os.Stdout }()
 	Stdout = &nopWCloser{&bytes.Buffer{}}
 
-	f, err := openOutFile("-", os.FileMode(0644))
+	f, err := openOutFile("-", 0644, false)
 	assert.NoError(t, err)
 	assert.Equal(t, Stdout, f)
 }
@@ -94,7 +95,7 @@ func TestWalkDir(t *testing.T) {
 	defer func() { fs = origfs }()
 	fs = afero.NewMemMapFs()
 
-	_, err := walkDir("/indir", "/outdir", nil)
+	_, err := walkDir("/indir", "/outdir", nil, 0, false)
 	assert.Error(t, err)
 
 	_ = fs.MkdirAll("/indir/one", 0777)
@@ -103,7 +104,7 @@ func TestWalkDir(t *testing.T) {
 	afero.WriteFile(fs, "/indir/one/bar", []byte("bar"), 0644)
 	afero.WriteFile(fs, "/indir/two/baz", []byte("baz"), 0644)
 
-	templates, err := walkDir("/indir", "/outdir", []string{"/*/two"})
+	templates, err := walkDir("/indir", "/outdir", []string{"/*/two"}, 0, false)
 
 	assert.NoError(t, err)
 	assert.Equal(t, 2, len(templates))
@@ -141,7 +142,7 @@ func TestGatherTemplates(t *testing.T) {
 	origfs := fs
 	defer func() { fs = origfs }()
 	fs = afero.NewMemMapFs()
-	afero.WriteFile(fs, "foo", []byte("bar"), 0644)
+	afero.WriteFile(fs, "foo", []byte("bar"), 0600)
 
 	afero.WriteFile(fs, "in/1", []byte("foo"), 0644)
 	afero.WriteFile(fs, "in/2", []byte("bar"), 0644)
@@ -167,6 +168,10 @@ func TestGatherTemplates(t *testing.T) {
 	assert.Len(t, templates, 1)
 	assert.Equal(t, "out", templates[0].targetPath)
 	assert.Equal(t, os.FileMode(0644), templates[0].mode)
+	info, err := fs.Stat("out")
+	assert.NoError(t, err)
+	assert.Equal(t, os.FileMode(0644), info.Mode())
+	fs.Remove("out")
 
 	templates, err = gatherTemplates(&Config{
 		InputFiles:  []string{"foo"},
@@ -176,6 +181,26 @@ func TestGatherTemplates(t *testing.T) {
 	assert.Len(t, templates, 1)
 	assert.Equal(t, "bar", templates[0].contents)
 	assert.NotEqual(t, Stdout, templates[0].target)
+	assert.Equal(t, os.FileMode(0600), templates[0].mode)
+	info, err = fs.Stat("out")
+	assert.NoError(t, err)
+	assert.Equal(t, os.FileMode(0600), info.Mode())
+	fs.Remove("out")
+
+	templates, err = gatherTemplates(&Config{
+		InputFiles:  []string{"foo"},
+		OutputFiles: []string{"out"},
+		OutMode:     "755",
+	})
+	assert.NoError(t, err)
+	assert.Len(t, templates, 1)
+	assert.Equal(t, "bar", templates[0].contents)
+	assert.NotEqual(t, Stdout, templates[0].target)
+	assert.Equal(t, os.FileMode(0755), templates[0].mode)
+	info, err = fs.Stat("out")
+	assert.NoError(t, err)
+	assert.Equal(t, os.FileMode(0755), info.Mode())
+	fs.Remove("out")
 
 	templates, err = gatherTemplates(&Config{
 		InputDir:  "in",
@@ -184,4 +209,89 @@ func TestGatherTemplates(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Len(t, templates, 3)
 	assert.Equal(t, "foo", templates[0].contents)
+	fs.Remove("out")
+}
+
+func TestProcessTemplates(t *testing.T) {
+	origfs := fs
+	defer func() { fs = origfs }()
+	fs = afero.NewMemMapFs()
+	afero.WriteFile(fs, "foo", []byte("bar"), 0600)
+
+	afero.WriteFile(fs, "in/1", []byte("foo"), 0644)
+	afero.WriteFile(fs, "in/2", []byte("bar"), 0640)
+	afero.WriteFile(fs, "in/3", []byte("baz"), 0644)
+
+	afero.WriteFile(fs, "existing", []byte(""), 0644)
+
+	testdata := []struct {
+		templates []*tplate
+		contents  []string
+		modes     []os.FileMode
+		targets   []io.WriteCloser
+	}{
+		{},
+		{
+			templates: []*tplate{{name: "<arg>", contents: "foo", targetPath: "-", mode: 0644}},
+			contents:  []string{"foo"},
+			modes:     []os.FileMode{0644},
+			targets:   []io.WriteCloser{Stdout},
+		},
+		{
+			templates: []*tplate{{name: "<arg>", contents: "foo", targetPath: "out", mode: 0644}},
+			contents:  []string{"foo"},
+			modes:     []os.FileMode{0644},
+		},
+		{
+			templates: []*tplate{{name: "foo", targetPath: "out", mode: 0600}},
+			contents:  []string{"bar"},
+			modes:     []os.FileMode{0600},
+		},
+		{
+			templates: []*tplate{{name: "foo", targetPath: "out", mode: 0755}},
+			contents:  []string{"bar"},
+			modes:     []os.FileMode{0755},
+		},
+		{
+			templates: []*tplate{
+				{name: "in/1", targetPath: "out/1", mode: 0644},
+				{name: "in/2", targetPath: "out/2", mode: 0640},
+				{name: "in/3", targetPath: "out/3", mode: 0644},
+			},
+			contents: []string{"foo", "bar", "baz"},
+			modes:    []os.FileMode{0644, 0640, 0644},
+		},
+		{
+			templates: []*tplate{
+				{name: "foo", targetPath: "existing", mode: 0755},
+			},
+			contents: []string{"bar"},
+			modes:    []os.FileMode{0644},
+		},
+		{
+			templates: []*tplate{
+				{name: "foo", targetPath: "existing", mode: 0755, modeOverride: true},
+			},
+			contents: []string{"bar"},
+			modes:    []os.FileMode{0755},
+		},
+	}
+	for _, in := range testdata {
+		actual, err := processTemplates(in.templates)
+		assert.NoError(t, err)
+		assert.Len(t, actual, len(in.templates))
+		for i, a := range actual {
+			assert.Equal(t, in.contents[i], a.contents)
+			assert.Equal(t, in.templates[i].mode, a.mode)
+			if len(in.targets) > 0 {
+				assert.Equal(t, in.targets[i], a.target)
+			}
+			if in.templates[i].targetPath != "-" {
+				info, err := fs.Stat(in.templates[i].targetPath)
+				assert.NoError(t, err)
+				assert.Equal(t, os.FileMode(in.modes[i]), info.Mode())
+			}
+		}
+		fs.Remove("out")
+	}
 }

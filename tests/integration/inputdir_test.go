@@ -5,6 +5,7 @@ package integration
 
 import (
 	"io/ioutil"
+	"os"
 
 	. "gopkg.in/check.v1"
 
@@ -56,13 +57,57 @@ func (s *InputDirSuite) TestInputDir(c *C) {
 	assert.NilError(c, err)
 	tassert.Len(c, files, 1)
 
-	content, err := ioutil.ReadFile(s.tmpDir.Join("out", "eins.txt"))
-	assert.NilError(c, err)
-	assert.Equal(c, "eins", string(content))
+	testdata := []struct {
+		path    string
+		mode    os.FileMode
+		content string
+	}{
+		{s.tmpDir.Join("out", "eins.txt"), 0644, "eins"},
+		{s.tmpDir.Join("out", "inner", "deux.txt"), 0644, "deux"},
+	}
+	for _, v := range testdata {
+		info, err := os.Stat(v.path)
+		assert.NilError(c, err)
+		assert.Equal(c, v.mode, info.Mode())
+		content, err := ioutil.ReadFile(v.path)
+		assert.NilError(c, err)
+		assert.Equal(c, v.content, string(content))
+	}
+}
 
-	content, err = ioutil.ReadFile(s.tmpDir.Join("out", "inner", "deux.txt"))
+func (s *InputDirSuite) TestInputDirWithModeOverride(c *C) {
+	result := icmd.RunCommand(GomplateBin,
+		"--input-dir", s.tmpDir.Join("in"),
+		"--output-dir", s.tmpDir.Join("out"),
+		"--chmod", "0601",
+		"-d", "config="+s.tmpDir.Join("config.yml"),
+	)
+	result.Assert(c, icmd.Success)
+
+	files, err := ioutil.ReadDir(s.tmpDir.Join("out"))
 	assert.NilError(c, err)
-	assert.Equal(c, "deux", string(content))
+	tassert.Len(c, files, 2)
+
+	files, err = ioutil.ReadDir(s.tmpDir.Join("out", "inner"))
+	assert.NilError(c, err)
+	tassert.Len(c, files, 1)
+
+	testdata := []struct {
+		path    string
+		mode    os.FileMode
+		content string
+	}{
+		{s.tmpDir.Join("out", "eins.txt"), 0601, "eins"},
+		{s.tmpDir.Join("out", "inner", "deux.txt"), 0601, "deux"},
+	}
+	for _, v := range testdata {
+		info, err := os.Stat(v.path)
+		assert.NilError(c, err)
+		assert.Equal(c, v.mode, info.Mode())
+		content, err := ioutil.ReadFile(v.path)
+		assert.NilError(c, err)
+		assert.Equal(c, v.content, string(content))
+	}
 }
 
 func (s *InputDirSuite) TestDefaultOutputDir(c *C) {
