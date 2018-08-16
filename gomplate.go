@@ -70,7 +70,7 @@ func newGomplate(d *data.Data, leftDelim, rightDelim string) *gomplate {
 	return &gomplate{
 		leftDelim:  leftDelim,
 		rightDelim: rightDelim,
-		funcMap:    initFuncs(d),
+		funcMap:    Funcs(d),
 	}
 }
 
