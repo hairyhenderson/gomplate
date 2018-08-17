@@ -24,6 +24,10 @@ func (s *DatasourcesHTTPSuite) SetUpSuite(c *C) {
 	handle(c, err)
 
 	http.HandleFunc("/", mirrorHandler)
+	http.HandleFunc("/not.json", typeHandler("application/yaml", "value: notjson\n"))
+	http.HandleFunc("/foo", typeHandler("application/json", `{"value": "json"}`))
+	http.HandleFunc("/actually.json", typeHandler("", `{"value": "json"}`))
+	http.HandleFunc("/bogus.csv", typeHandler("text/plain", `{"value": "json"}`))
 	go http.Serve(s.l, nil)
 }
 
@@ -46,4 +50,26 @@ func (s *DatasourcesHTTPSuite) TestReportsVersion(c *C) {
 	result = icmd.RunCommand(GomplateBin,
 		"-i", "{{ $d := ds `http://"+s.l.Addr().String()+"/`}}{{ index (index $d.headers `Accept-Encoding`) 0 }}")
 	result.Assert(c, icmd.Expected{ExitCode: 0, Out: "gzip"})
+}
+
+func (s *DatasourcesHTTPSuite) TestTypeOverridePrecedence(c *C) {
+	result := icmd.RunCommand(GomplateBin,
+		"-d", "foo=http://"+s.l.Addr().String()+"/foo",
+		"-i", "{{ (ds `foo`).value }}")
+	result.Assert(c, icmd.Expected{ExitCode: 0, Out: "json"})
+
+	result = icmd.RunCommand(GomplateBin,
+		"-d", "foo=http://"+s.l.Addr().String()+"/not.json",
+		"-i", "{{ (ds `foo`).value }}")
+	result.Assert(c, icmd.Expected{ExitCode: 0, Out: "notjson"})
+
+	result = icmd.RunCommand(GomplateBin,
+		"-d", "foo=http://"+s.l.Addr().String()+"/actually.json",
+		"-i", "{{ (ds `foo`).value }}")
+	result.Assert(c, icmd.Expected{ExitCode: 0, Out: "json"})
+
+	result = icmd.RunCommand(GomplateBin,
+		"-d", "foo=http://"+s.l.Addr().String()+"/bogus.csv?type=application/json",
+		"-i", "{{ (ds `foo`).value }}")
+	result.Assert(c, icmd.Expected{ExitCode: 0, Out: "json"})
 }

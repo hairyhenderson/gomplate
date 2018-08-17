@@ -16,64 +16,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestNewSource(t *testing.T) {
-	s, err := NewSource("foo", &url.URL{
-		Scheme: "file",
-		Path:   "/foo.json",
-	})
-	assert.NoError(t, err)
-	assert.Equal(t, jsonMimetype, s.Type)
-	assert.Equal(t, ".json", s.Ext)
-
-	s, err = NewSource("foo", &url.URL{
-		Scheme: "file",
-		Path:   "/foo",
-	})
-	assert.NoError(t, err)
-	assert.Equal(t, textMimetype, s.Type)
-	assert.Equal(t, "", s.Ext)
-
-	s, err = NewSource("foo", &url.URL{
-		Scheme: "http",
-		Host:   "example.com",
-		Path:   "/foo.json",
-	})
-	assert.NoError(t, err)
-	assert.Equal(t, jsonMimetype, s.Type)
-	assert.Equal(t, ".json", s.Ext)
-
-	s, err = NewSource("foo", &url.URL{
-		Scheme: "ftp",
-		Host:   "example.com",
-		Path:   "/foo.json",
-	})
-	assert.NoError(t, err)
-	assert.Equal(t, jsonMimetype, s.Type)
-	assert.Equal(t, ".json", s.Ext)
-
-	s, err = NewSource("foo", &url.URL{
-		Scheme:   "ftp",
-		Host:     "example.com",
-		Path:     "/foo.blarb",
-		RawQuery: "type=application/json%3Bcharset=utf-8",
-	})
-	assert.NoError(t, err)
-	assert.Equal(t, jsonMimetype, s.Type)
-	assert.Equal(t, ".blarb", s.Ext)
-	assert.Equal(t, map[string]string{"charset": "utf-8"}, s.Params)
-
-	s, err = NewSource("foo", &url.URL{
-		Scheme:   "stdin",
-		Host:     "",
-		Path:     "",
-		RawQuery: "type=application/json",
-	})
-	assert.NoError(t, err)
-	assert.Equal(t, jsonMimetype, s.Type)
-	assert.Equal(t, "", s.Ext)
-	assert.Equal(t, map[string]string{}, s.Params)
-}
-
 func TestNewData(t *testing.T) {
 	d, err := NewData(nil, nil)
 	assert.NoError(t, err)
@@ -116,7 +58,6 @@ func TestParseSourceWithAlias(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, "data", s.Alias)
 	assert.Equal(t, "file", s.URL.Scheme)
-	assert.Equal(t, jsonMimetype, s.Type)
 	assert.True(t, s.URL.IsAbs())
 
 	s, err = ParseSource("data=/otherdir/foo.json")
@@ -417,7 +358,6 @@ func TestDefineDatasource(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, "data", s.Alias)
 	assert.Equal(t, "file", s.URL.Scheme)
-	assert.Equal(t, jsonMimetype, s.Type)
 	assert.True(t, s.URL.IsAbs())
 
 	d = &Data{}
@@ -445,4 +385,26 @@ func TestDefineDatasource(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, "data", s.Alias)
 	assert.Nil(t, s.URL)
+}
+
+func TestMimeType(t *testing.T) {
+	s := &Source{URL: mustParseURL("http://example.com/foo.json")}
+	mt, err := s.mimeType()
+	assert.NoError(t, err)
+	assert.Equal(t, jsonMimetype, mt)
+
+	s = &Source{URL: mustParseURL("http://example.com/foo.json"), Type: "text/foo"}
+	mt, err = s.mimeType()
+	assert.NoError(t, err)
+	assert.Equal(t, "text/foo", mt)
+
+	s = &Source{URL: mustParseURL("http://example.com/foo.json"), Type: "text/foo"}
+	mt, err = s.mimeType()
+	assert.NoError(t, err)
+	assert.Equal(t, "text/foo", mt)
+
+	s = &Source{URL: mustParseURL("http://example.com/foo.json?type=application/yaml"), Type: "text/foo"}
+	mt, err = s.mimeType()
+	assert.NoError(t, err)
+	assert.Equal(t, "application/yaml", mt)
 }
