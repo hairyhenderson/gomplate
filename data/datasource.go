@@ -113,17 +113,18 @@ type AWSSMPGetter interface {
 
 // Source - a data source
 type Source struct {
-	Alias  string
-	URL    *url.URL
-	Ext    string
-	Type   string
-	Params map[string]string
-	FS     vfs.Filesystem // used for file: URLs, nil otherwise
-	HC     *http.Client   // used for http[s]: URLs, nil otherwise
-	VC     *vault.Vault   // used for vault: URLs, nil otherwise
-	KV     *libkv.LibKV   // used for consul:, etcd:, zookeeper: & boltdb: URLs, nil otherwise
-	ASMPG  AWSSMPGetter   // used for aws+smp:, nil otherwise
-	Header http.Header    // used for http[s]: URLs, nil otherwise
+	Alias           string
+	URL             *url.URL
+	Ext             string
+	Type            string
+	IsTypeOverrided bool
+	Params          map[string]string
+	FS              vfs.Filesystem // used for file: URLs, nil otherwise
+	HC              *http.Client   // used for http[s]: URLs, nil otherwise
+	VC              *vault.Vault   // used for vault: URLs, nil otherwise
+	KV              *libkv.LibKV   // used for consul:, etcd:, zookeeper: & boltdb: URLs, nil otherwise
+	ASMPG           AWSSMPGetter   // used for aws+smp:, nil otherwise
+	Header          http.Header    // used for http[s]: URLs, nil otherwise
 }
 
 func (s *Source) cleanup() {
@@ -155,6 +156,7 @@ func NewSource(alias string, URL *url.URL) (*Source, error) {
 			return nil, err
 		}
 		s.Type = t
+		s.IsTypeOverrided = true
 		s.Params = params
 	}
 	if s.Type == "" {
@@ -397,7 +399,7 @@ func readHTTP(source *Source, args ...string) ([]byte, error) {
 		return nil, err
 	}
 	ctypeHdr := res.Header.Get("Content-Type")
-	if ctypeHdr != "" {
+	if ctypeHdr != "" && !source.IsTypeOverrided {
 		mediatype, params, e := mime.ParseMediaType(ctypeHdr)
 		if e != nil {
 			return nil, e
