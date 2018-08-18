@@ -24,25 +24,25 @@ func TestReadFile(t *testing.T) {
 	_, _ = vfs.Create(fs, "/tmp/partial/bar.txt")
 	_, _ = vfs.Create(fs, "/tmp/partial/baz.txt")
 
-	source, _ := NewSource("foo", mustParseURL("file:///tmp/foo"))
+	source := &Source{Alias: "foo", URL: mustParseURL("file:///tmp/foo")}
 	source.FS = fs
 
 	actual, err := readFile(source)
 	assert.NoError(t, err)
 	assert.Equal(t, content, actual)
 
-	source, _ = NewSource("bogus", mustParseURL("file:///bogus"))
+	source = &Source{Alias: "bogus", URL: mustParseURL("file:///bogus")}
 	source.FS = fs
 	_, err = readFile(source)
 	assert.Error(t, err)
 
-	source, _ = NewSource("partial", mustParseURL("file:///tmp/partial"))
+	source = &Source{Alias: "partial", URL: mustParseURL("file:///tmp/partial")}
 	source.FS = fs
 	actual, err = readFile(source, "foo.txt")
 	assert.NoError(t, err)
 	assert.Equal(t, content, actual)
 
-	source, _ = NewSource("dir", mustParseURL("file:///tmp/partial/"))
+	source = &Source{Alias: "dir", URL: mustParseURL("file:///tmp/partial/")}
 	source.FS = fs
 	actual, err = readFile(source)
 	assert.NoError(t, err)

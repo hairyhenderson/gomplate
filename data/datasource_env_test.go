@@ -20,31 +20,31 @@ func TestReadEnv(t *testing.T) {
 	os.Setenv("HELLO_UNIVERSE", "hello universe")
 	defer os.Unsetenv("HELLO_UNIVERSE")
 
-	source, _ := NewSource("foo", mustParseURL("env:HELLO_WORLD"))
+	source := &Source{Alias: "foo", URL: mustParseURL("env:HELLO_WORLD")}
 
 	actual, err := readEnv(source)
 	assert.NoError(t, err)
 	assert.Equal(t, content, actual)
 
-	source, _ = NewSource("foo", mustParseURL("env:/HELLO_WORLD"))
+	source = &Source{Alias: "foo", URL: mustParseURL("env:/HELLO_WORLD")}
 
 	actual, err = readEnv(source)
 	assert.NoError(t, err)
 	assert.Equal(t, content, actual)
 
-	source, _ = NewSource("foo", mustParseURL("env:///HELLO_WORLD"))
+	source = &Source{Alias: "foo", URL: mustParseURL("env:///HELLO_WORLD")}
 
 	actual, err = readEnv(source)
 	assert.NoError(t, err)
 	assert.Equal(t, content, actual)
 
-	source, _ = NewSource("foo", mustParseURL("env:HELLO_WORLD?foo=bar"))
+	source = &Source{Alias: "foo", URL: mustParseURL("env:HELLO_WORLD?foo=bar")}
 
 	actual, err = readEnv(source)
 	assert.NoError(t, err)
 	assert.Equal(t, content, actual)
 
-	source, _ = NewSource("foo", mustParseURL("env:///HELLO_WORLD?foo=bar"))
+	source = &Source{Alias: "foo", URL: mustParseURL("env:///HELLO_WORLD?foo=bar")}
 
 	actual, err = readEnv(source)
 	assert.NoError(t, err)
