@@ -92,7 +92,7 @@ These are the supported types:
 
 ### Overriding MIME Types
 
-On occasion it's necessary to override the detected MIME type. To accomplish this, gomplate supports a `type` query string parameter on datasource URLs. This can contain the same value as a standard [HTTP Content-Type][] header.
+On occasion it's necessary to override the detected (via file extension or `Contrent-Type` header) MIME type. To accomplish this, gomplate supports a `type` query string parameter on datasource URLs. This can contain the same value as a standard [HTTP Content-Type][] header.
 
 For example, to force a file named `data.txt` to be parsed as a JSON document:
 

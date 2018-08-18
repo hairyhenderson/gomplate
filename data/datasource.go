@@ -137,30 +137,48 @@ func (s *Source) cleanup() {
 
 // NewSource - builds a &Source
 func NewSource(alias string, URL *url.URL) (*Source, error) {
-	ext := filepath.Ext(URL.Path)
-
 	s := &Source{
 		Alias: alias,
 		URL:   URL,
-		Ext:   ext,
 	}
+
+	return s, nil
+}
+
+// mimeType returns the MIME type to use as a hint for parsing the datasource.
+// It's expected that the datasource will have already been read before
+// this function is called, and so the Source's Type property may be already set.
+//
+// The MIME type is determined by these rules:
+// 1. the 'type' URL query parameter is used if present
+// 2. otherwise, the Type property on the Source is used, if present
+// 3. otherwise, a MIME type is calculated from the file extension, if the extension is registered
+// 4. otherwise, the default type of 'text/plain' is used
+func (s *Source) mimeType() (mimeType string, err error) {
+	ext := filepath.Ext(s.URL.Path)
+	// TODO: stop modifying s, also Ext is unused
+	s.Ext = ext
 
 	mediatype := s.URL.Query().Get("type")
 	if mediatype == "" {
+		mediatype = s.Type
+	}
+	if mediatype == "" {
 		mediatype = mime.TypeByExtension(ext)
 	}
+
 	if mediatype != "" {
 		t, params, err := mime.ParseMediaType(mediatype)
 		if err != nil {
-			return nil, err
+			return "", err
 		}
-		s.Type = t
+		mediatype = t
+		// TODO: stop modifying s, also Params is unused
 		s.Params = params
+		return mediatype, nil
 	}
-	if s.Type == "" {
-		s.Type = textMimetype
-	}
-	return s, nil
+
+	return textMimetype, nil
 }
 
 // String is the method to format the flag's value, part of the flag.Value interface.
@@ -196,7 +214,7 @@ func ParseSource(value string) (*Source, error) {
 		}
 	}
 
-	return NewSource(alias, srcURL)
+	return &Source{Alias: alias, URL: srcURL}, nil
 }
 
 func parseSourceURL(value string) (*url.URL, error) {
@@ -245,15 +263,15 @@ func (d *Data) DefineDatasource(alias, value string) (*Source, error) {
 	if err != nil {
 		return nil, err
 	}
-	s, err := NewSource(alias, srcURL)
-	if err != nil {
-		return nil, err
+	s := &Source{
+		Alias:  alias,
+		URL:    srcURL,
+		Header: d.extraHeaders[alias],
 	}
-	s.Header = d.extraHeaders[s.Alias]
 	if d.Sources == nil {
 		d.Sources = make(map[string]*Source)
 	}
-	d.Sources[s.Alias] = s
+	d.Sources[alias] = s
 	return s, nil
 }
 
@@ -270,11 +288,11 @@ func (d *Data) lookupSource(alias string) (*Source, error) {
 		if err != nil || !srcURL.IsAbs() {
 			return nil, errors.Errorf("Undefined datasource '%s'", alias)
 		}
-		source, err = NewSource(alias, srcURL)
-		if err != nil {
-			return nil, err
+		source = &Source{
+			Alias:  alias,
+			URL:    srcURL,
+			Header: d.extraHeaders[alias],
 		}
-		source.Header = d.extraHeaders[alias]
 		d.Sources[alias] = source
 	}
 	return source, nil
@@ -290,9 +308,17 @@ func (d *Data) Datasource(alias string, args ...string) (interface{}, error) {
 	if err != nil {
 		return nil, errors.Wrapf(err, "Couldn't read datasource '%s'", alias)
 	}
-	s := string(b)
-	var out interface{}
-	switch source.Type {
+
+	mimeType, err := source.mimeType()
+	if err != nil {
+		return nil, err
+	}
+
+	return parseData(mimeType, string(b))
+}
+
+func parseData(mimeType, s string) (out interface{}, err error) {
+	switch mimeType {
 	case jsonMimetype:
 		out = JSON(s)
 	case jsonArrayMimetype:
@@ -306,7 +332,7 @@ func (d *Data) Datasource(alias string, args ...string) (interface{}, error) {
 	case textMimetype:
 		out = s
 	default:
-		return nil, errors.Errorf("Datasources of type %s not yet supported", source.Type)
+		return nil, errors.Errorf("Datasources of type %s not yet supported", mimeType)
 	}
 	return out, nil
 }
@@ -354,7 +380,7 @@ func (d *Data) ReadSource(source *Source, args ...string) ([]byte, error) {
 			return nil, err
 		}
 		d.cache[cacheKey] = data
-		return data, nil
+		return data, err
 	}
 
 	return nil, errors.Errorf("Datasources with scheme %s not yet supported", source.URL.Scheme)

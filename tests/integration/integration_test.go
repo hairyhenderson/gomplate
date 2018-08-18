@@ -49,6 +49,13 @@ func mirrorHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write(b)
 }
 
+func typeHandler(t, body string) func(http.ResponseWriter, *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", t)
+		w.Write([]byte(body))
+	}
+}
+
 // freeport - find a free TCP port for immediate use. No guarantees!
 func freeport() (port int, addr string) {
 	l, err := net.ListenTCP("tcp", &net.TCPAddr{IP: net.ParseIP("127.0.0.1")})
