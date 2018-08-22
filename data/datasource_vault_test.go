@@ -14,11 +14,10 @@ func TestReadVault(t *testing.T) {
 	defer server.Close()
 
 	source := &Source{
-		Alias: "foo",
-		URL:   &url.URL{Scheme: "vault", Path: "/secret/foo"},
-		Ext:   "",
-		Type:  textMimetype,
-		VC:    v,
+		Alias:     "foo",
+		URL:       &url.URL{Scheme: "vault", Path: "/secret/foo"},
+		mediaType: textMimetype,
+		vc:        v,
 	}
 
 	r, err := readVault(source)
@@ -39,7 +38,7 @@ func TestReadVault(t *testing.T) {
 	assert.Equal(t, []byte(expected), r)
 
 	expected = "[\"one\",\"two\"]\n"
-	server, source.VC = vault.MockServer(200, `{"data":{"keys":`+expected+`}}`)
+	server, source.vc = vault.MockServer(200, `{"data":{"keys":`+expected+`}}`)
 	defer server.Close()
 	source.URL, _ = url.Parse("vault:///secret/foo/")
 	r, err = readVault(source)

@@ -28,46 +28,46 @@ func TestNewData(t *testing.T) {
 	d, err = NewData([]string{"foo=http:///foo.json"}, []string{})
 	assert.NoError(t, err)
 	assert.Equal(t, "/foo.json", d.Sources["foo"].URL.Path)
-	assert.Empty(t, d.Sources["foo"].Header)
+	assert.Empty(t, d.Sources["foo"].header)
 
 	d, err = NewData([]string{"foo=http:///foo.json"}, []string{"bar=Accept: blah"})
 	assert.NoError(t, err)
 	assert.Equal(t, "/foo.json", d.Sources["foo"].URL.Path)
-	assert.Empty(t, d.Sources["foo"].Header)
+	assert.Empty(t, d.Sources["foo"].header)
 
 	d, err = NewData([]string{"foo=http:///foo.json"}, []string{"foo=Accept: blah"})
 	assert.NoError(t, err)
 	assert.Equal(t, "/foo.json", d.Sources["foo"].URL.Path)
-	assert.Equal(t, "blah", d.Sources["foo"].Header["Accept"][0])
+	assert.Equal(t, "blah", d.Sources["foo"].header["Accept"][0])
 }
 
 func TestParseSourceNoAlias(t *testing.T) {
-	s, err := ParseSource("foo.json")
+	s, err := parseSource("foo.json")
 	assert.NoError(t, err)
 	assert.Equal(t, "foo", s.Alias)
 
-	_, err = ParseSource("../foo.json")
+	_, err = parseSource("../foo.json")
 	assert.Error(t, err)
 
-	_, err = ParseSource("ftp://example.com/foo.yml")
+	_, err = parseSource("ftp://example.com/foo.yml")
 	assert.Error(t, err)
 }
 
 func TestParseSourceWithAlias(t *testing.T) {
-	s, err := ParseSource("data=foo.json")
+	s, err := parseSource("data=foo.json")
 	assert.NoError(t, err)
 	assert.Equal(t, "data", s.Alias)
 	assert.Equal(t, "file", s.URL.Scheme)
 	assert.True(t, s.URL.IsAbs())
 
-	s, err = ParseSource("data=/otherdir/foo.json")
+	s, err = parseSource("data=/otherdir/foo.json")
 	assert.NoError(t, err)
 	assert.Equal(t, "data", s.Alias)
 	assert.Equal(t, "file", s.URL.Scheme)
 	assert.True(t, s.URL.IsAbs())
 	assert.Equal(t, "/otherdir/foo.json", s.URL.Path)
 
-	s, err = ParseSource("data=sftp://example.com/blahblah/foo.json")
+	s, err = parseSource("data=sftp://example.com/blahblah/foo.json")
 	assert.NoError(t, err)
 	assert.Equal(t, "data", s.Alias)
 	assert.Equal(t, "sftp", s.URL.Scheme)
@@ -85,11 +85,10 @@ func TestDatasource(t *testing.T) {
 
 		sources := map[string]*Source{
 			"foo": {
-				Alias: "foo",
-				URL:   &url.URL{Scheme: "file", Path: "/tmp/" + fname},
-				Ext:   ext,
-				Type:  mime,
-				FS:    fs,
+				Alias:     "foo",
+				URL:       &url.URL{Scheme: "file", Path: "/tmp/" + fname},
+				mediaType: mime,
+				fs:        fs,
 			},
 		}
 		return &Data{Sources: sources}
@@ -123,16 +122,15 @@ func TestDatasourceReachable(t *testing.T) {
 
 	sources := map[string]*Source{
 		"foo": {
-			Alias: "foo",
-			URL:   &url.URL{Scheme: "file", Path: "/tmp/" + fname},
-			Ext:   "json",
-			Type:  jsonMimetype,
-			FS:    fs,
+			Alias:     "foo",
+			URL:       &url.URL{Scheme: "file", Path: "/tmp/" + fname},
+			mediaType: jsonMimetype,
+			fs:        fs,
 		},
 		"bar": {
 			Alias: "bar",
 			URL:   &url.URL{Scheme: "file", Path: "/bogus"},
-			FS:    fs,
+			fs:    fs,
 		},
 	}
 	data := &Data{Sources: sources}
@@ -186,7 +184,7 @@ func TestHTTPFile(t *testing.T) {
 			Host:   "example.com",
 			Path:   "/foo",
 		},
-		HC: client,
+		hc: client,
 	}
 	data := &Data{
 		Sources: sources,
@@ -217,8 +215,8 @@ func TestHTTPFileWithHeaders(t *testing.T) {
 			Host:   "example.com",
 			Path:   "/foo",
 		},
-		HC: client,
-		Header: http.Header{
+		hc: client,
+		header: http.Header{
 			"Foo":             {"bar"},
 			"foo":             {"baz"},
 			"User-Agent":      {},
@@ -305,11 +303,10 @@ func TestInclude(t *testing.T) {
 
 	sources := map[string]*Source{
 		"foo": {
-			Alias: "foo",
-			URL:   &url.URL{Scheme: "file", Path: "/tmp/" + fname},
-			Ext:   ext,
-			Type:  textMimetype,
-			FS:    fs,
+			Alias:     "foo",
+			URL:       &url.URL{Scheme: "file", Path: "/tmp/" + fname},
+			mediaType: textMimetype,
+			fs:        fs,
 		},
 	}
 	data := &Data{
@@ -393,17 +390,17 @@ func TestMimeType(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, jsonMimetype, mt)
 
-	s = &Source{URL: mustParseURL("http://example.com/foo.json"), Type: "text/foo"}
+	s = &Source{URL: mustParseURL("http://example.com/foo.json"), mediaType: "text/foo"}
 	mt, err = s.mimeType()
 	assert.NoError(t, err)
 	assert.Equal(t, "text/foo", mt)
 
-	s = &Source{URL: mustParseURL("http://example.com/foo.json"), Type: "text/foo"}
+	s = &Source{URL: mustParseURL("http://example.com/foo.json"), mediaType: "text/foo"}
 	mt, err = s.mimeType()
 	assert.NoError(t, err)
 	assert.Equal(t, "text/foo", mt)
 
-	s = &Source{URL: mustParseURL("http://example.com/foo.json?type=application/yaml"), Type: "text/foo"}
+	s = &Source{URL: mustParseURL("http://example.com/foo.json?type=application/yaml"), mediaType: "text/foo"}
 	mt, err = s.mimeType()
 	assert.NoError(t, err)
 	assert.Equal(t, "application/yaml", mt)
