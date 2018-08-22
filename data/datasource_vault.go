@@ -34,9 +34,9 @@ func parseVaultParams(sourceURL *url.URL, args []string) (params map[string]inte
 }
 
 func readVault(source *Source, args ...string) ([]byte, error) {
-	if source.VC == nil {
-		source.VC = vault.New(source.URL)
-		source.VC.Login()
+	if source.vc == nil {
+		source.vc = vault.New(source.URL)
+		source.vc.Login()
 	}
 
 	params, p, err := parseVaultParams(source.URL, args)
@@ -46,14 +46,14 @@ func readVault(source *Source, args ...string) ([]byte, error) {
 
 	var data []byte
 
-	source.Type = jsonMimetype
+	source.mediaType = jsonMimetype
 	if len(params) > 0 {
-		data, err = source.VC.Write(p, params)
+		data, err = source.vc.Write(p, params)
 	} else if strings.HasSuffix(p, "/") {
-		source.Type = jsonArrayMimetype
-		data, err = source.VC.List(p)
+		source.mediaType = jsonArrayMimetype
+		data, err = source.vc.List(p)
 	} else {
-		data, err = source.VC.Read(p)
+		data, err = source.vc.Read(p)
 	}
 	if err != nil {
 		return nil, err

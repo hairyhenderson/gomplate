@@ -16,8 +16,6 @@ import (
 
 	"github.com/pkg/errors"
 
-	"github.com/aws/aws-sdk-go/service/ssm"
-
 	"github.com/blang/vfs"
 	"github.com/hairyhenderson/gomplate/libkv"
 	"github.com/hairyhenderson/gomplate/vault"
@@ -83,18 +81,18 @@ func (d *Data) Cleanup() {
 }
 
 // NewData - constructor for Data
-func NewData(datasourceArgs []string, headerArgs []string) (*Data, error) {
+func NewData(datasourceArgs, headerArgs []string) (*Data, error) {
 	sources := make(map[string]*Source)
 	headers, err := parseHeaderArgs(headerArgs)
 	if err != nil {
 		return nil, err
 	}
 	for _, v := range datasourceArgs {
-		s, err := ParseSource(v)
+		s, err := parseSource(v)
 		if err != nil {
 			return nil, errors.Wrapf(err, "error parsing datasource")
 		}
-		s.Header = headers[s.Alias]
+		s.header = headers[s.Alias]
 		// pop the header out of the map, so we end up with only the unreferenced ones
 		delete(headers, s.Alias)
 
@@ -106,43 +104,26 @@ func NewData(datasourceArgs []string, headerArgs []string) (*Data, error) {
 	}, nil
 }
 
-// AWSSMPGetter - A subset of SSM API for use in unit testing
-type AWSSMPGetter interface {
-	GetParameter(*ssm.GetParameterInput) (*ssm.GetParameterOutput, error)
-}
-
 // Source - a data source
 type Source struct {
-	Alias  string
-	URL    *url.URL
-	Ext    string
-	Type   string
-	Params map[string]string
-	FS     vfs.Filesystem // used for file: URLs, nil otherwise
-	HC     *http.Client   // used for http[s]: URLs, nil otherwise
-	VC     *vault.Vault   // used for vault: URLs, nil otherwise
-	KV     *libkv.LibKV   // used for consul:, etcd:, zookeeper: & boltdb: URLs, nil otherwise
-	ASMPG  AWSSMPGetter   // used for aws+smp:, nil otherwise
-	Header http.Header    // used for http[s]: URLs, nil otherwise
+	Alias     string
+	URL       *url.URL
+	mediaType string
+	fs        vfs.Filesystem // used for file: URLs, nil otherwise
+	hc        *http.Client   // used for http[s]: URLs, nil otherwise
+	vc        *vault.Vault   // used for vault: URLs, nil otherwise
+	kv        *libkv.LibKV   // used for consul:, etcd:, zookeeper: & boltdb: URLs, nil otherwise
+	asmpg     awssmpGetter   // used for aws+smp:, nil otherwise
+	header    http.Header    // used for http[s]: URLs, nil otherwise
 }
 
 func (s *Source) cleanup() {
-	if s.VC != nil {
-		s.VC.Logout()
+	if s.vc != nil {
+		s.vc.Logout()
 	}
-	if s.KV != nil {
-		s.KV.Logout()
+	if s.kv != nil {
+		s.kv.Logout()
 	}
-}
-
-// NewSource - builds a &Source
-func NewSource(alias string, URL *url.URL) (*Source, error) {
-	s := &Source{
-		Alias: alias,
-		URL:   URL,
-	}
-
-	return s, nil
 }
 
 // mimeType returns the MIME type to use as a hint for parsing the datasource.
@@ -155,26 +136,21 @@ func NewSource(alias string, URL *url.URL) (*Source, error) {
 // 3. otherwise, a MIME type is calculated from the file extension, if the extension is registered
 // 4. otherwise, the default type of 'text/plain' is used
 func (s *Source) mimeType() (mimeType string, err error) {
-	ext := filepath.Ext(s.URL.Path)
-	// TODO: stop modifying s, also Ext is unused
-	s.Ext = ext
-
 	mediatype := s.URL.Query().Get("type")
 	if mediatype == "" {
-		mediatype = s.Type
+		mediatype = s.mediaType
 	}
 	if mediatype == "" {
+		ext := filepath.Ext(s.URL.Path)
 		mediatype = mime.TypeByExtension(ext)
 	}
 
 	if mediatype != "" {
-		t, params, err := mime.ParseMediaType(mediatype)
+		t, _, err := mime.ParseMediaType(mediatype)
 		if err != nil {
 			return "", err
 		}
 		mediatype = t
-		// TODO: stop modifying s, also Params is unused
-		s.Params = params
 		return mediatype, nil
 	}
 
@@ -184,37 +160,34 @@ func (s *Source) mimeType() (mimeType string, err error) {
 // String is the method to format the flag's value, part of the flag.Value interface.
 // The String method's output will be used in diagnostics.
 func (s *Source) String() string {
-	return fmt.Sprintf("%s=%s (%s)", s.Alias, s.URL.String(), s.Type)
+	return fmt.Sprintf("%s=%s (%s)", s.Alias, s.URL.String(), s.mediaType)
 }
 
-// ParseSource -
-func ParseSource(value string) (*Source, error) {
-	var (
-		alias  string
-		srcURL *url.URL
-		err    error
-	)
+// parseSource creates a *Source by parsing the value provided to the
+// --datasource/-d commandline flag
+func parseSource(value string) (source *Source, err error) {
+	source = &Source{}
 	parts := strings.SplitN(value, "=", 2)
 	if len(parts) == 1 {
 		f := parts[0]
-		alias = strings.SplitN(value, ".", 2)[0]
+		source.Alias = strings.SplitN(value, ".", 2)[0]
 		if path.Base(f) != f {
 			err = errors.Errorf("Invalid datasource (%s). Must provide an alias with files not in working directory", value)
 			return nil, err
 		}
-		srcURL, err = absURL(f)
+		source.URL, err = absURL(f)
 		if err != nil {
 			return nil, err
 		}
 	} else if len(parts) == 2 {
-		alias = parts[0]
-		srcURL, err = parseSourceURL(parts[1])
+		source.Alias = parts[0]
+		source.URL, err = parseSourceURL(parts[1])
 		if err != nil {
 			return nil, err
 		}
 	}
 
-	return &Source{Alias: alias, URL: srcURL}, nil
+	return source, nil
 }
 
 func parseSourceURL(value string) (*url.URL, error) {
@@ -266,7 +239,7 @@ func (d *Data) DefineDatasource(alias, value string) (*Source, error) {
 	s := &Source{
 		Alias:  alias,
 		URL:    srcURL,
-		Header: d.extraHeaders[alias],
+		header: d.extraHeaders[alias],
 	}
 	if d.Sources == nil {
 		d.Sources = make(map[string]*Source)
@@ -291,7 +264,7 @@ func (d *Data) lookupSource(alias string) (*Source, error) {
 		source = &Source{
 			Alias:  alias,
 			URL:    srcURL,
-			Header: d.extraHeaders[alias],
+			header: d.extraHeaders[alias],
 		}
 		d.Sources[alias] = source
 	}
@@ -304,7 +277,7 @@ func (d *Data) Datasource(alias string, args ...string) (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	b, err := d.ReadSource(source, args...)
+	b, err := d.readSource(source, args...)
 	if err != nil {
 		return nil, errors.Wrapf(err, "Couldn't read datasource '%s'", alias)
 	}
@@ -344,7 +317,7 @@ func (d *Data) DatasourceReachable(alias string, args ...string) bool {
 	if !ok {
 		return false
 	}
-	_, err := d.ReadSource(source, args...)
+	_, err := d.readSource(source, args...)
 	return err == nil
 }
 
@@ -354,15 +327,16 @@ func (d *Data) Include(alias string, args ...string) (string, error) {
 	if !ok {
 		return "", errors.Errorf("Undefined datasource '%s'", alias)
 	}
-	b, err := d.ReadSource(source, args...)
+	b, err := d.readSource(source, args...)
 	if err != nil {
 		return "", errors.Wrapf(err, "Couldn't read datasource '%s'", alias)
 	}
 	return string(b), nil
 }
 
-// ReadSource -
-func (d *Data) ReadSource(source *Source, args ...string) ([]byte, error) {
+// readSource returns the (possibly cached) data from the given source,
+// as referenced by the given args
+func (d *Data) readSource(source *Source, args ...string) ([]byte, error) {
 	if d.cache == nil {
 		d.cache = make(map[string][]byte)
 	}
@@ -398,15 +372,15 @@ func readStdin(source *Source, args ...string) ([]byte, error) {
 }
 
 func readHTTP(source *Source, args ...string) ([]byte, error) {
-	if source.HC == nil {
-		source.HC = &http.Client{Timeout: time.Second * 5}
+	if source.hc == nil {
+		source.hc = &http.Client{Timeout: time.Second * 5}
 	}
 	req, err := http.NewRequest("GET", source.URL.String(), nil)
 	if err != nil {
 		return nil, err
 	}
-	req.Header = source.Header
-	res, err := source.HC.Do(req)
+	req.Header = source.header
+	res, err := source.hc.Do(req)
 	if err != nil {
 		return nil, err
 	}
@@ -424,20 +398,19 @@ func readHTTP(source *Source, args ...string) ([]byte, error) {
 	}
 	ctypeHdr := res.Header.Get("Content-Type")
 	if ctypeHdr != "" {
-		mediatype, params, e := mime.ParseMediaType(ctypeHdr)
+		mediatype, _, e := mime.ParseMediaType(ctypeHdr)
 		if e != nil {
 			return nil, e
 		}
-		source.Type = mediatype
-		source.Params = params
+		source.mediaType = mediatype
 	}
 	return body, nil
 }
 
 func readConsul(source *Source, args ...string) ([]byte, error) {
-	if source.KV == nil {
-		source.KV = libkv.NewConsul(source.URL)
-		err := source.KV.Login()
+	if source.kv == nil {
+		source.kv = libkv.NewConsul(source.URL)
+		err := source.kv.Login()
 		if err != nil {
 			return nil, err
 		}
@@ -448,7 +421,7 @@ func readConsul(source *Source, args ...string) ([]byte, error) {
 		p = p + "/" + args[0]
 	}
 
-	data, err := source.KV.Read(p)
+	data, err := source.kv.Read(p)
 	if err != nil {
 		return nil, err
 	}
@@ -457,8 +430,8 @@ func readConsul(source *Source, args ...string) ([]byte, error) {
 }
 
 func readBoltDB(source *Source, args ...string) ([]byte, error) {
-	if source.KV == nil {
-		source.KV = libkv.NewBoltDB(source.URL)
+	if source.kv == nil {
+		source.kv = libkv.NewBoltDB(source.URL)
 	}
 
 	if len(args) != 1 {
@@ -466,7 +439,7 @@ func readBoltDB(source *Source, args ...string) ([]byte, error) {
 	}
 	p := args[0]
 
-	data, err := source.KV.Read(p)
+	data, err := source.kv.Read(p)
 	if err != nil {
 		return nil, err
 	}

@@ -10,6 +10,11 @@ import (
 	gaws "github.com/hairyhenderson/gomplate/aws"
 )
 
+// awssmpGetter - A subset of SSM API for use in unit testing
+type awssmpGetter interface {
+	GetParameter(*ssm.GetParameterInput) (*ssm.GetParameterOutput, error)
+}
+
 func parseAWSSMPArgs(origPath string, args ...string) (paramPath string, err error) {
 	paramPath = origPath
 	if len(args) >= 1 {
@@ -23,8 +28,8 @@ func parseAWSSMPArgs(origPath string, args ...string) (paramPath string, err err
 }
 
 func readAWSSMP(source *Source, args ...string) (output []byte, err error) {
-	if source.ASMPG == nil {
-		source.ASMPG = ssm.New(gaws.SDKSession())
+	if source.asmpg == nil {
+		source.asmpg = ssm.New(gaws.SDKSession())
 	}
 
 	paramPath, err := parseAWSSMPArgs(source.URL.Path, args...)
@@ -32,7 +37,7 @@ func readAWSSMP(source *Source, args ...string) (output []byte, err error) {
 		return nil, err
 	}
 
-	source.Type = jsonMimetype
+	source.mediaType = jsonMimetype
 	return readAWSSMPParam(source, paramPath)
 }
 
@@ -42,7 +47,7 @@ func readAWSSMPParam(source *Source, paramPath string) ([]byte, error) {
 		WithDecryption: aws.Bool(true),
 	}
 
-	response, err := source.ASMPG.GetParameter(input)
+	response, err := source.asmpg.GetParameter(input)
 
 	if err != nil {
 		return nil, errors.Wrapf(err, "Error reading aws+smp from AWS using GetParameter with input %v", input)

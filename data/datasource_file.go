@@ -15,8 +15,8 @@ import (
 )
 
 func readFile(source *Source, args ...string) ([]byte, error) {
-	if source.FS == nil {
-		source.FS = vfs.OS()
+	if source.fs == nil {
+		source.fs = vfs.OS()
 	}
 
 	p := filepath.FromSlash(source.URL.Path)
@@ -33,20 +33,20 @@ func readFile(source *Source, args ...string) ([]byte, error) {
 	}
 
 	// make sure we can access the file
-	i, err := source.FS.Stat(p)
+	i, err := source.fs.Stat(p)
 	if err != nil {
 		return nil, errors.Wrapf(err, "Can't stat %s", p)
 	}
 
 	if strings.HasSuffix(p, "/") {
-		source.Type = jsonArrayMimetype
+		source.mediaType = jsonArrayMimetype
 		if i.IsDir() {
 			return readFileDir(source, p)
 		}
 		return nil, errors.Errorf("%s is not a directory", p)
 	}
 
-	f, err := source.FS.OpenFile(p, os.O_RDONLY, 0)
+	f, err := source.fs.OpenFile(p, os.O_RDONLY, 0)
 	if err != nil {
 		return nil, errors.Wrapf(err, "Can't open %s", p)
 	}
@@ -59,7 +59,7 @@ func readFile(source *Source, args ...string) ([]byte, error) {
 }
 
 func readFileDir(source *Source, p string) ([]byte, error) {
-	names, err := source.FS.ReadDir(p)
+	names, err := source.fs.ReadDir(p)
 	if err != nil {
 		return nil, err
 	}

@@ -35,14 +35,14 @@ func (d DummyParamGetter) GetParameter(input *ssm.GetParameterInput) (*ssm.GetPa
 	}, nil
 }
 
-func simpleAWSSourceHelper(dummy AWSSMPGetter) *Source {
+func simpleAWSSourceHelper(dummy awssmpGetter) *Source {
 	return &Source{
 		Alias: "foo",
 		URL: &url.URL{
 			Scheme: "aws+smp",
 			Path:   "/foo",
 		},
-		ASMPG: dummy,
+		asmpg: dummy,
 	}
 }
 
@@ -106,7 +106,7 @@ func TestAWSSMP_GetParameterValidOutput(t *testing.T) {
 	err = json.Unmarshal(output, &actual)
 	assert.Nil(t, err)
 	assert.Equal(t, expected, actual)
-	assert.Equal(t, jsonMimetype, s.Type)
+	assert.Equal(t, jsonMimetype, s.mediaType)
 }
 
 func TestAWSSMP_GetParameterMissing(t *testing.T) {
