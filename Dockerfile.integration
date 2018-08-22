@@ -1,4 +1,4 @@
-FROM vault:0.10.1 AS vault
+FROM vault:0.10.4 AS vault
 
 FROM consul:1.0.7 AS consul
 
