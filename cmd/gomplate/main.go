@@ -14,6 +14,7 @@ import (
 
 var (
 	printVer bool
+	verbose  bool
 	opts     gomplate.Config
 )
 
@@ -42,7 +43,6 @@ func validateOpts(cmd *cobra.Command, args []string) error {
 }
 
 func printVersion(name string) {
-	// fmt.Printf("%s version %s, build %s\n", name, version.Version, version.GitCommit)
 	fmt.Printf("%s version %s\n", name, version.Version)
 }
 
@@ -80,10 +80,19 @@ func newGomplateCmd() *cobra.Command {
 				printVersion(cmd.Name())
 				return nil
 			}
+			if verbose {
+				fmt.Fprintf(os.Stderr, "%s version %s, build %s (%v)\nconfig is:\n%s\n\n",
+					cmd.Name(), version.Version, version.GitCommit, version.BuildDate,
+					&opts)
+			}
 
 			err := gomplate.RunTemplates(&opts)
 			cmd.SilenceErrors = true
 			cmd.SilenceUsage = true
+			if verbose {
+				fmt.Fprintf(os.Stderr, "rendered %d template(s) with %d error(s) in %v\n",
+					gomplate.Metrics.TemplatesProcessed, gomplate.Metrics.Errors, gomplate.Metrics.TotalRenderDuration)
+			}
 			return err
 		},
 		PostRunE: postRunExec,
@@ -112,6 +121,8 @@ func initFlags(command *cobra.Command) {
 	rdDefault := env.Getenv("GOMPLATE_RIGHT_DELIM", "}}")
 	command.Flags().StringVar(&opts.LDelim, "left-delim", ldDefault, "override the default left-`delimiter` [$GOMPLATE_LEFT_DELIM]")
 	command.Flags().StringVar(&opts.RDelim, "right-delim", rdDefault, "override the default right-`delimiter` [$GOMPLATE_RIGHT_DELIM]")
+
+	command.Flags().BoolVarP(&verbose, "verbose", "V", false, "output extra information about what gomplate is doing")
 
 	command.Flags().BoolVarP(&printVer, "version", "v", false, "print the version")
 }
