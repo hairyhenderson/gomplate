@@ -4,6 +4,7 @@ import (
 	"io"
 	"os"
 	"strconv"
+	"strings"
 	"text/template"
 	"time"
 
@@ -37,6 +38,48 @@ func (o *Config) getMode() (os.FileMode, bool, error) {
 	}
 	mode := os.FileMode(m)
 	return mode, modeOverride, nil
+}
+
+// nolint: gocyclo
+func (o *Config) String() string {
+	c := "input: "
+	if o.Input != "" {
+		c += "<arg>"
+	} else if o.InputDir != "" {
+		c += o.InputDir
+	} else if len(o.InputFiles) > 0 {
+		c += strings.Join(o.InputFiles, ", ")
+	}
+
+	if len(o.ExcludeGlob) > 0 {
+		c += "\nexclude: " + strings.Join(o.ExcludeGlob, ", ")
+	}
+
+	c += "\noutput: "
+	if o.OutputDir != "." {
+		c += o.OutputDir
+	} else if len(o.OutputFiles) > 0 {
+		c += strings.Join(o.OutputFiles, ", ")
+	}
+
+	if o.OutMode != "" {
+		c += "\nchmod: " + o.OutMode
+	}
+
+	if len(o.DataSources) > 0 {
+		c += "\ndatasources: " + strings.Join(o.DataSources, ", ")
+	}
+	if len(o.DataSourceHeaders) > 0 {
+		c += "\ndatasourceheaders: " + strings.Join(o.DataSourceHeaders, ", ")
+	}
+
+	if o.LDelim != "{{" {
+		c += "\nleft_delim: " + o.LDelim
+	}
+	if o.RDelim != "}}" {
+		c += "\nright_delim: " + o.RDelim
+	}
+	return c
 }
 
 // gomplate -
