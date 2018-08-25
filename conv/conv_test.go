@@ -9,19 +9,27 @@ import (
 )
 
 func TestBool(t *testing.T) {
-	assert.False(t, Bool(""))
-	assert.False(t, Bool("asdf"))
-	assert.False(t, Bool("1234"))
-	assert.False(t, Bool("False"))
-	assert.False(t, Bool("0"))
-	assert.False(t, Bool("false"))
-	assert.False(t, Bool("F"))
-	assert.False(t, Bool("f"))
-	assert.True(t, Bool("true"))
-	assert.True(t, Bool("True"))
-	assert.True(t, Bool("t"))
-	assert.True(t, Bool("T"))
-	assert.True(t, Bool("1"))
+	testdata := []struct {
+		in  string
+		out bool
+	}{
+		{"", false},
+		{"asdf", false},
+		{"1234", false},
+		{"False", false},
+		{"0", false},
+		{"false", false},
+		{"F", false},
+		{"f", false},
+		{"true", true},
+		{"True", true},
+		{"t", true},
+		{"T", true},
+		{"1", true},
+	}
+	for _, d := range testdata {
+		assert.Equal(t, d.out, Bool(d.in))
+	}
 }
 
 func TestSlice(t *testing.T) {
@@ -32,19 +40,29 @@ func TestSlice(t *testing.T) {
 }
 
 func TestJoin(t *testing.T) {
-
-	assert.Equal(t, "foo,bar", Join([]interface{}{"foo", "bar"}, ","))
-	assert.Equal(t, "foo,\nbar", Join([]interface{}{"foo", "bar"}, ",\n"))
-	// Join handles all kinds of scalar types too...
-	assert.Equal(t, "42-18446744073709551615", Join([]interface{}{42, uint64(18446744073709551615)}, "-"))
-	assert.Equal(t, "42,100", Join([]int{42, 100}, ","))
-	assert.Equal(t, "42,100", Join([]int64{42, 100}, ","))
-	assert.Equal(t, "42,100", Join([]uint64{42, 100}, ","))
-	assert.Equal(t, "true,false", Join([]bool{true, false}, ","))
-	assert.Equal(t, "1,2", Join([]float64{1, 2}, ","))
-	assert.Equal(t, "1,,true,3.14,foo,nil", Join([]interface{}{1, "", true, 3.14, "foo", nil}, ","))
-	// and best-effort with weird types
-	assert.Equal(t, "[foo],bar", Join([]interface{}{[]string{"foo"}, "bar"}, ","))
+	testdata := []struct {
+		in  interface{}
+		sep string
+		out string
+	}{
+		{[]interface{}{"foo", "bar"}, ",", "foo,bar"},
+		{[]interface{}{"foo", "bar"}, ",\n", "foo,\nbar"},
+		// Join handles all kinds of scalar types too...
+		{[]interface{}{42, uint64(18446744073709551615)}, "-", "42-18446744073709551615"},
+		{[]int{42, 100}, ",", "42,100"},
+		{[]int64{42, 100}, ",", "42,100"},
+		{[]uint64{42, 100}, ",", "42,100"},
+		{[]bool{true, false}, ",", "true,false"},
+		{[]float64{1, 2}, ",", "1,2"},
+		{[]interface{}{1, "", true, 3.14, "foo", nil}, ",", "1,,true,3.14,foo,nil"},
+		// and best-effort with weird types
+		{[]interface{}{[]string{"foo"}, "bar"}, ",", "[foo],bar"},
+	}
+	for _, d := range testdata {
+		out, err := Join(d.in, d.sep)
+		assert.NoError(t, err)
+		assert.Equal(t, d.out, out)
+	}
 }
 
 func TestHas(t *testing.T) {
@@ -56,13 +74,23 @@ func TestHas(t *testing.T) {
 		},
 	}
 
-	assert.True(t, Has(in, "foo"))
-	assert.False(t, Has(in, "bar"))
-	assert.True(t, Has(in["baz"], "qux"))
-	assert.True(t, Has([]string{"foo", "bar", "baz"}, "bar"))
-	assert.True(t, Has([]interface{}{"foo", "bar", "baz"}, "bar"))
-	assert.False(t, Has([]interface{}{"foo", "bar", "baz"}, 42))
-	assert.True(t, Has([]int{1, 2, 42}, 42))
+	testdata := []struct {
+		in  interface{}
+		key interface{}
+		out bool
+	}{
+		{in, "foo", true},
+		{in, "bar", false},
+		{in["baz"], "qux", true},
+		{[]string{"foo", "bar", "baz"}, "bar", true},
+		{[]interface{}{"foo", "bar", "baz"}, "bar", true},
+		{[]interface{}{"foo", "bar", "baz"}, 42, false},
+		{[]int{1, 2, 42}, 42, true},
+	}
+
+	for _, d := range testdata {
+		assert.Equal(t, d.out, Has(d.in, d.key))
+	}
 }
 
 func TestMustParseInt(t *testing.T) {
@@ -196,7 +224,7 @@ func TestToString(t *testing.T) {
 
 	var n *string
 
-	data := []struct {
+	testdata := []struct {
 		in  interface{}
 		out string
 	}{
@@ -219,48 +247,61 @@ func TestToString(t *testing.T) {
 		{n, "<nil>"},
 	}
 
-	for _, d := range data {
+	for _, d := range testdata {
 		t.Run(fmt.Sprintf("%T/%#v == %s", d.in, d.in, d.out), func(t *testing.T) {
-			assert.Equal(t, d.out, ToString(d.in))
+			out := ToString(d.in)
+			assert.Equal(t, d.out, out)
 		})
 	}
 }
 
 func TestToBool(t *testing.T) {
-	assert.True(t, ToBool(true))
-	assert.True(t, ToBool(1))
-	assert.True(t, ToBool(int8(1)))
-	assert.True(t, ToBool(uint8(1)))
-	assert.True(t, ToBool(int32(1)))
-	assert.True(t, ToBool(uint32(1)))
-	assert.True(t, ToBool(int64(1)))
-	assert.True(t, ToBool(uint64(1)))
-	assert.True(t, ToBool(float32(1)))
-	assert.True(t, ToBool(float64(1)))
-	assert.True(t, ToBool("1"))
-	assert.True(t, ToBool("0x1"))
-	assert.True(t, ToBool("1.0"))
-	assert.True(t, ToBool("01"))
-	assert.True(t, ToBool("true"))
-	assert.True(t, ToBool("True"))
-	assert.True(t, ToBool("T"))
-	assert.True(t, ToBool("t"))
-	assert.True(t, ToBool("TrUe"))
-	assert.True(t, ToBool("yes"))
-	assert.True(t, ToBool("YES"))
+	trueData := []interface{}{
+		true,
+		1,
+		int8(1),
+		uint8(1),
+		int32(1),
+		uint32(1),
+		int64(1),
+		uint64(1),
+		float32(1),
+		float64(1),
+		"1",
+		"0x1",
+		"1.0",
+		"01",
+		"true",
+		"True",
+		"T",
+		"t",
+		"TrUe",
+		"yes",
+		"YES",
+	}
+	for _, d := range trueData {
+		out := ToBool(d)
+		assert.True(t, out)
+	}
 
-	assert.False(t, ToBool(nil))
-	assert.False(t, ToBool(false))
-	assert.False(t, ToBool(42))
-	assert.False(t, ToBool(uint64(math.MaxUint64)))
-	assert.False(t, ToBool(uint8(math.MaxUint8)))
-	assert.False(t, ToBool(""))
-	assert.False(t, ToBool("false"))
-	assert.False(t, ToBool("foo"))
-	assert.False(t, ToBool("0xFFFF"))
-	assert.False(t, ToBool("010"))
-	assert.False(t, ToBool("4,096"))
-	assert.False(t, ToBool("-4,096.00"))
+	falseData := []interface{}{
+		nil,
+		false,
+		42,
+		uint64(math.MaxUint64),
+		uint8(math.MaxUint8),
+		"",
+		"false",
+		"foo",
+		"0xFFFF",
+		"010",
+		"4,096",
+		"-4,096.00",
+	}
+	for _, d := range falseData {
+		out := ToBool(d)
+		assert.False(t, out)
+	}
 }
 
 func TestDict(t *testing.T) {

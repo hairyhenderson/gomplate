@@ -1,3 +1,7 @@
+/*
+The gomplate command
+
+*/
 package main
 
 import (

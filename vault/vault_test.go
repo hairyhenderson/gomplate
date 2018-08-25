@@ -10,25 +10,30 @@ import (
 
 func TestNew(t *testing.T) {
 	os.Unsetenv("VAULT_ADDR")
-	v := New(nil)
+	v, err := New(nil)
+	assert.NoError(t, err)
 	assert.Equal(t, "https://127.0.0.1:8200", v.client.Address())
 
 	os.Setenv("VAULT_ADDR", "http://example.com:1234")
 	defer os.Unsetenv("VAULT_ADDR")
-	v = New(nil)
+	v, err = New(nil)
+	assert.NoError(t, err)
 	assert.Equal(t, "http://example.com:1234", v.client.Address())
 	os.Unsetenv("VAULT_ADDR")
 
 	u, _ := url.Parse("vault://vault.rocks:8200/secret/foo/bar")
-	v = New(u)
+	v, err = New(u)
+	assert.NoError(t, err)
 	assert.Equal(t, "https://vault.rocks:8200", v.client.Address())
 
 	u, _ = url.Parse("vault+https://vault.rocks:8200/secret/foo/bar")
-	v = New(u)
+	v, err = New(u)
+	assert.NoError(t, err)
 	assert.Equal(t, "https://vault.rocks:8200", v.client.Address())
 
 	u, _ = url.Parse("vault+http://vault.rocks:8200/secret/foo/bar")
-	v = New(u)
+	v, err = New(u)
+	assert.NoError(t, err)
 	assert.Equal(t, "http://vault.rocks:8200", v.client.Address())
 }
 

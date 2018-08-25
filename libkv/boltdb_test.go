@@ -1,7 +1,6 @@
 package libkv
 
 import (
-	"log"
 	"net/url"
 	"os"
 	"testing"
@@ -11,31 +10,13 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var spyLogFatalMsg string
-
-func restoreLogFatal() {
-	logFatal = log.Fatal
-}
-
-func mockLogFatal(args ...interface{}) {
-	spyLogFatalMsg = (args[0]).(string)
-	panic(spyLogFatalMsg)
-}
-
-func setupMockLogFatal() {
-	logFatal = mockLogFatal
-	spyLogFatalMsg = ""
-}
-
 func TestSetupBoltDB(t *testing.T) {
-	defer restoreLogFatal()
-	setupMockLogFatal()
-	assert.Panics(t, func() {
-		setupBoltDB("")
-	})
+	_, err := setupBoltDB("")
+	assert.Error(t, err)
 
 	expectedConfig := &store.Config{Bucket: "foo"}
-	actualConfig := setupBoltDB("foo")
+	actualConfig, err := setupBoltDB("foo")
+	assert.NoError(t, err)
 	assert.Equal(t, expectedConfig, actualConfig)
 
 	expectedConfig = &store.Config{
@@ -44,7 +25,8 @@ func TestSetupBoltDB(t *testing.T) {
 	}
 	os.Setenv("BOLTDB_TIMEOUT", "42")
 	defer os.Unsetenv("BOLTDB_TIMEOUT")
-	actualConfig = setupBoltDB("bar")
+	actualConfig, err = setupBoltDB("bar")
+	assert.NoError(t, err)
 	assert.Equal(t, expectedConfig, actualConfig)
 
 	expectedConfig = &store.Config{
@@ -54,15 +36,13 @@ func TestSetupBoltDB(t *testing.T) {
 	}
 	os.Setenv("BOLTDB_PERSIST", "true")
 	defer os.Unsetenv("BOLTDB_PERSIST")
-	actualConfig = setupBoltDB("bar")
+	actualConfig, err = setupBoltDB("bar")
+	assert.NoError(t, err)
 	assert.Equal(t, expectedConfig, actualConfig)
 }
 
 func TestNewBoltDB(t *testing.T) {
 	u, _ := url.Parse("boltdb:///bolt.db")
-	defer restoreLogFatal()
-	setupMockLogFatal()
-	assert.Panics(t, func() {
-		NewBoltDB(u)
-	})
+	_, err := NewBoltDB(u)
+	assert.Error(t, err)
 }

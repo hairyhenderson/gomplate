@@ -91,7 +91,9 @@ func TestSetupTLS(t *testing.T) {
 func TestConsulConfig(t *testing.T) {
 	expectedConfig := &store.Config{}
 
-	actualConfig := consulConfig(false)
+	actualConfig, err := consulConfig(false)
+	assert.NoError(t, err)
+
 	assert.Equal(t, expectedConfig, actualConfig)
 
 	defer os.Unsetenv("CONSUL_TIMEOUT")
@@ -100,7 +102,8 @@ func TestConsulConfig(t *testing.T) {
 		ConnectionTimeout: 10 * time.Second,
 	}
 
-	actualConfig = consulConfig(false)
+	actualConfig, err = consulConfig(false)
+	assert.NoError(t, err)
 	assert.Equal(t, expectedConfig, actualConfig)
 
 	os.Unsetenv("CONSUL_TIMEOUT")
@@ -108,7 +111,8 @@ func TestConsulConfig(t *testing.T) {
 		TLS: &tls.Config{},
 	}
 
-	actualConfig = consulConfig(true)
+	actualConfig, err = consulConfig(true)
+	assert.NoError(t, err)
 	assert.NotNil(t, actualConfig.TLS)
 	actualConfig.TLS = &tls.Config{}
 	assert.Equal(t, expectedConfig, actualConfig)

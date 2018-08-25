@@ -25,36 +25,45 @@ const (
 )
 
 // NewConsul - instantiate a new Consul datasource handler
-func NewConsul(u *url.URL) *LibKV {
+func NewConsul(u *url.URL) (*LibKV, error) {
 	consul.Register()
 	c, err := consulURL(u)
 	if err != nil {
-		logFatal(err)
+		return nil, err
 	}
-	config := consulConfig(c.Scheme == https)
+	config, err := consulConfig(c.Scheme == https)
+	if err != nil {
+		return nil, err
+	}
 	if role := env.Getenv("CONSUL_VAULT_ROLE", ""); role != "" {
 		mount := env.Getenv("CONSUL_VAULT_MOUNT", "consul")
 
-		client := vault.New(nil)
-		client.Login()
+		var client *vault.Vault
+		client, err = vault.New(nil)
+		if err != nil {
+			return nil, err
+		}
+		err = client.Login()
+		defer client.Logout()
+		if err != nil {
+			return nil, err
+		}
 
 		path := fmt.Sprintf("%s/creds/%s", mount, role)
 
 		var data []byte
 		data, err = client.Read(path)
 		if err != nil {
-			logFatal("vault consul auth failed", err)
+			return nil, errors.Wrapf(err, "vault consul auth failed")
 		}
 
 		decoded := make(map[string]interface{})
 		err = yaml.Unmarshal(data, &decoded)
 		if err != nil {
-			logFatal("Unable to unmarshal object", err)
+			return nil, errors.Wrapf(err, "Unable to unmarshal object")
 		}
 
 		token := decoded["token"].(string)
-
-		client.Logout()
 
 		// nolint: gosec
 		_ = os.Setenv("CONSUL_HTTP_TOKEN", token)
@@ -62,9 +71,9 @@ func NewConsul(u *url.URL) *LibKV {
 	var kv store.Store
 	kv, err = libkv.NewStore(store.CONSUL, []string{c.String()}, config)
 	if err != nil {
-		logFatal("Consul setup failed", err)
+		return nil, errors.Wrapf(err, "Consul setup failed")
 	}
-	return &LibKV{kv}
+	return &LibKV{kv}, nil
 }
 
 // -- converts a gomplate datasource URL into a usable Consul URL
@@ -99,7 +108,7 @@ func consulURL(u *url.URL) (*url.URL, error) {
 	return c, nil
 }
 
-func consulConfig(useTLS bool) *store.Config {
+func consulConfig(useTLS bool) (*store.Config, error) {
 	t := conv.MustAtoi(env.Getenv("CONSUL_TIMEOUT"))
 	config := &store.Config{
 		ConnectionTimeout: time.Duration(t) * time.Second,
@@ -109,10 +118,10 @@ func consulConfig(useTLS bool) *store.Config {
 		var err error
 		config.TLS, err = consulapi.SetupTLSConfig(tconf)
 		if err != nil {
-			logFatal("TLS Config setup failed", err)
+			return nil, errors.Wrapf(err, "TLS Config setup failed")
 		}
 	}
-	return config
+	return config, nil
 }
 
 func setupTLS(prefix string) *consulapi.TLSConfig {

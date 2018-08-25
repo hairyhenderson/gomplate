@@ -55,6 +55,6 @@ func readAWSSMPParam(source *Source, paramPath string) ([]byte, error) {
 
 	result := *response.Parameter
 
-	output := ToJSON(result)
-	return []byte(output), nil
+	output, err := ToJSON(result)
+	return []byte(output), err
 }

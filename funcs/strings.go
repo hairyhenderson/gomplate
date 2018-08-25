@@ -6,7 +6,6 @@ package funcs
 // in templates easier.
 
 import (
-	"log"
 	"sync"
 
 	"github.com/Masterminds/goutils"
@@ -177,7 +176,7 @@ func (f *StringFuncs) Trunc(length int, s interface{}) string {
 }
 
 // Indent -
-func (f *StringFuncs) Indent(args ...interface{}) string {
+func (f *StringFuncs) Indent(args ...interface{}) (string, error) {
 	input := conv.ToString(args[len(args)-1])
 	indent := " "
 	width := 1
@@ -188,21 +187,21 @@ func (f *StringFuncs) Indent(args ...interface{}) string {
 		if !ok {
 			width, ok = args[0].(int)
 			if !ok {
-				log.Fatal("Indent: invalid arguments")
+				return "", errors.New("Indent: invalid arguments")
 			}
 			indent = " "
 		}
 	case 3:
 		width, ok = args[0].(int)
 		if !ok {
-			log.Fatal("Indent: invalid arguments")
+			return "", errors.New("Indent: invalid arguments")
 		}
 		indent, ok = args[1].(string)
 		if !ok {
-			log.Fatal("Indent: invalid arguments")
+			return "", errors.New("Indent: invalid arguments")
 		}
 	}
-	return gompstrings.Indent(width, indent, input)
+	return gompstrings.Indent(width, indent, input), nil
 }
 
 // Slug -

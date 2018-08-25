@@ -3,7 +3,6 @@ package vault
 import (
 	"bytes"
 	"encoding/json"
-	"log"
 	"net/url"
 
 	"github.com/pkg/errors"
@@ -11,31 +10,28 @@ import (
 	vaultapi "github.com/hashicorp/vault/api"
 )
 
-// logFatal is defined so log.Fatal calls can be overridden for testing
-var logFatal = log.Fatal
-
 // Vault -
 type Vault struct {
 	client *vaultapi.Client
 }
 
 // New -
-func New(u *url.URL) *Vault {
+func New(u *url.URL) (*Vault, error) {
 	vaultConfig := vaultapi.DefaultConfig()
 
 	err := vaultConfig.ReadEnvironment()
 	if err != nil {
-		logFatal("Vault setup failed", err)
+		return nil, errors.Wrapf(err, "Vault setup failed")
 	}
 
 	setVaultURL(vaultConfig, u)
 
 	client, err := vaultapi.NewClient(vaultConfig)
 	if err != nil {
-		logFatal("Vault setup failed", err)
+		return nil, errors.Wrapf(err, "Vault setup failed")
 	}
 
-	return &Vault{client}
+	return &Vault{client}, nil
 }
 
 func setVaultURL(c *vaultapi.Config, u *url.URL) {
@@ -49,12 +45,18 @@ func setVaultURL(c *vaultapi.Config, u *url.URL) {
 }
 
 // Login -
-func (v *Vault) Login() {
-	v.client.SetToken(v.GetToken())
+func (v *Vault) Login() error {
+	token, err := v.GetToken()
+	if err != nil {
+		return err
+	}
+	v.client.SetToken(token)
+	return nil
 }
 
 // Logout -
 func (v *Vault) Logout() {
+	v.client.ClearToken()
 }
 
 // Read - returns the value of a given path. If no value is found at the given

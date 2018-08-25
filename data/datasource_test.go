@@ -148,6 +148,13 @@ func TestDatasourceExists(t *testing.T) {
 	assert.False(t, data.DatasourceExists("bar"))
 }
 
+func must(r interface{}, err error) interface{} {
+	if err != nil {
+		panic(err)
+	}
+	return r
+}
+
 func setupHTTP(code int, mimetype string, body string) (*httptest.Server, *http.Client) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
@@ -155,7 +162,7 @@ func setupHTTP(code int, mimetype string, body string) (*httptest.Server, *http.
 		w.WriteHeader(code)
 		if body == "" {
 			// mirror back the headers
-			fmt.Fprintln(w, marshalObj(r.Header, json.Marshal))
+			fmt.Fprintln(w, must(marshalObj(r.Header, json.Marshal)))
 		} else {
 			fmt.Fprintln(w, body)
 		}
@@ -196,11 +203,11 @@ func TestHTTPFile(t *testing.T) {
 
 	actual, err := data.Datasource("foo")
 	assert.NoError(t, err)
-	assert.Equal(t, marshalObj(expected, json.Marshal), marshalObj(actual, json.Marshal))
+	assert.Equal(t, must(marshalObj(expected, json.Marshal)), must(marshalObj(actual, json.Marshal)))
 
 	actual, err = data.Datasource(server.URL)
 	assert.NoError(t, err)
-	assert.Equal(t, marshalObj(expected, json.Marshal), marshalObj(actual, json.Marshal))
+	assert.Equal(t, must(marshalObj(expected, json.Marshal)), must(marshalObj(actual, json.Marshal)))
 }
 
 func TestHTTPFileWithHeaders(t *testing.T) {
@@ -232,7 +239,7 @@ func TestHTTPFileWithHeaders(t *testing.T) {
 	}
 	actual, err := data.Datasource("foo")
 	assert.NoError(t, err)
-	assert.Equal(t, marshalObj(expected, json.Marshal), marshalObj(actual, json.Marshal))
+	assert.Equal(t, must(marshalObj(expected, json.Marshal)), must(marshalObj(actual, json.Marshal)))
 
 	expected = http.Header{
 		"Accept-Encoding": {"test"},
@@ -245,7 +252,7 @@ func TestHTTPFileWithHeaders(t *testing.T) {
 	}
 	actual, err = data.Datasource(server.URL)
 	assert.NoError(t, err)
-	assert.Equal(t, marshalObj(expected, json.Marshal), marshalObj(actual, json.Marshal))
+	assert.Equal(t, must(marshalObj(expected, json.Marshal)), must(marshalObj(actual, json.Marshal)))
 }
 
 func TestParseHeaderArgs(t *testing.T) {

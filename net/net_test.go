@@ -6,27 +6,34 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func must(r interface{}, err error) interface{} {
+	if err != nil {
+		panic(err)
+	}
+	return r
+}
 func TestLookupIP(t *testing.T) {
-	assert.Equal(t, "127.0.0.1", LookupIP("localhost"))
-	assert.Equal(t, "169.254.255.254", LookupIP("hostlocal.io"))
-	assert.Equal(t, "93.184.216.34", LookupIP("example.com"))
-
+	assert.Equal(t, "127.0.0.1", must(LookupIP("localhost")))
+	assert.Equal(t, "169.254.255.254", must(LookupIP("hostlocal.io")))
+	assert.Equal(t, "93.184.216.34", must(LookupIP("example.com")))
 }
 
 func TestLookupIPs(t *testing.T) {
-	assert.Equal(t, "127.0.0.1", LookupIPs("localhost")[0])
-	assert.Equal(t, []string{"169.254.255.254"}, LookupIPs("hostlocal.io"))
-	assert.Equal(t, []string{"93.184.216.34"}, LookupIPs("example.com"))
+	assert.Equal(t, []string{"127.0.0.1"}, must(LookupIPs("localhost")))
+	assert.Equal(t, []string{"169.254.255.254"}, must(LookupIPs("hostlocal.io")))
+	assert.Equal(t, []string{"93.184.216.34"}, must(LookupIPs("example.com")))
 }
 
 func TestLookupTXT(t *testing.T) {
-	assert.NotEmpty(t, LookupTXT("example.com"))
+	assert.NotEmpty(t, must(LookupTXT("example.com")))
 }
 
 func TestLookupCNAME(t *testing.T) {
-	assert.Equal(t, "hairyhenderson.ca.", LookupCNAME("www.hairyhenderson.ca."))
+	assert.Equal(t, "hairyhenderson.ca.", must(LookupCNAME("www.hairyhenderson.ca.")))
 }
 
 func TestLookupSRV(t *testing.T) {
-	assert.Equal(t, uint16(5060), LookupSRV("_sip._udp.sip.voice.google.com").Port)
+	srv, err := LookupSRV("_sip._udp.sip.voice.google.com")
+	assert.NoError(t, err)
+	assert.Equal(t, uint16(5060), srv.Port)
 }

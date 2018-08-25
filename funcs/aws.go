@@ -42,25 +42,25 @@ type Funcs struct {
 }
 
 // EC2Region -
-func (a *Funcs) EC2Region(def ...string) string {
+func (a *Funcs) EC2Region(def ...string) (string, error) {
 	a.metaInit.Do(a.initMeta)
 	return a.meta.Region(def...)
 }
 
 // EC2Meta -
-func (a *Funcs) EC2Meta(key string, def ...string) string {
+func (a *Funcs) EC2Meta(key string, def ...string) (string, error) {
 	a.metaInit.Do(a.initMeta)
 	return a.meta.Meta(key, def...)
 }
 
 // EC2Dynamic -
-func (a *Funcs) EC2Dynamic(key string, def ...string) string {
+func (a *Funcs) EC2Dynamic(key string, def ...string) (string, error) {
 	a.metaInit.Do(a.initMeta)
 	return a.meta.Dynamic(key, def...)
 }
 
 // EC2Tag -
-func (a *Funcs) EC2Tag(tag string, def ...string) string {
+func (a *Funcs) EC2Tag(tag string, def ...string) (string, error) {
 	a.infoInit.Do(a.initInfo)
 	return a.info.Tag(tag, def...)
 }

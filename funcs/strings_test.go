@@ -17,10 +17,22 @@ func TestReplaceAll(t *testing.T) {
 
 func TestIndent(t *testing.T) {
 	sf := &StringFuncs{}
-	assert.Equal(t, " foo\n bar\n baz", sf.Indent("foo\nbar\nbaz"))
-	assert.Equal(t, "  foo\n  bar\n  baz", sf.Indent("  ", "foo\nbar\nbaz"))
-	assert.Equal(t, "---foo\n---bar\n---baz", sf.Indent(3, "-", "foo\nbar\nbaz"))
-	assert.Equal(t, "   foo\n   bar\n   baz", sf.Indent(3, "foo\nbar\nbaz"))
+
+	testdata := []struct {
+		args []interface{}
+		out  string
+	}{
+		{[]interface{}{"foo\nbar\nbaz"}, " foo\n bar\n baz"},
+		{[]interface{}{"  ", "foo\nbar\nbaz"}, "  foo\n  bar\n  baz"},
+		{[]interface{}{3, "-", "foo\nbar\nbaz"}, "---foo\n---bar\n---baz"},
+		{[]interface{}{3, "foo\nbar\nbaz"}, "   foo\n   bar\n   baz"},
+	}
+
+	for _, d := range testdata {
+		out, err := sf.Indent(d.args...)
+		assert.NoError(t, err)
+		assert.Equal(t, d.out, out)
+	}
 }
 
 func TestTrimPrefix(t *testing.T) {
@@ -86,9 +98,6 @@ func TestSlug(t *testing.T) {
 	assert.Equal(t, "100", s)
 }
 
-func must(in interface{}, err error) interface{} {
-	return in
-}
 func TestSort(t *testing.T) {
 	sf := &StringFuncs{}
 	in := []string{"foo", "bar", "baz"}

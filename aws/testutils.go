@@ -32,7 +32,7 @@ func MockServer(code int, body string) (*httptest.Server, *Ec2Meta) {
 func NewDummyEc2Info(metaClient *Ec2Meta) *Ec2Info {
 	i := &Ec2Info{
 		metaClient: metaClient,
-		describer:  func() InstanceDescriber { return DummyInstanceDescriber{} },
+		describer:  func() (InstanceDescriber, error) { return DummyInstanceDescriber{}, nil },
 	}
 	return i
 }
