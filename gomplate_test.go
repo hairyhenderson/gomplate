@@ -171,3 +171,25 @@ func TestRunTemplates(t *testing.T) {
 	assert.Equal(t, 1, Metrics.TemplatesProcessed)
 	assert.Equal(t, 0, Metrics.Errors)
 }
+
+func TestConfigString(t *testing.T) {
+	c := &Config{}
+
+	expected := `input: 
+output: 
+left_delim: 
+right_delim: `
+
+	assert.Equal(t, expected, c.String())
+
+	c = &Config{
+		LDelim:      "{{",
+		RDelim:      "}}",
+		Input:       "{{ foo }}",
+		OutputFiles: []string{"-"},
+	}
+	expected = `input: <arg>
+output: -`
+
+	assert.Equal(t, expected, c.String())
+}
