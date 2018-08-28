@@ -16,6 +16,7 @@ BUILD_DATE ?= `date -u +"%Y-%m-%dT%H:%M:%SZ"`
 
 COMMIT_FLAG := -X `go list ./version`.GitCommit=$(COMMIT)
 VERSION_FLAG := -X `go list ./version`.Version=$(VERSION)
+BUILD_DATE_FLAG := -X `go list ./version`.BuildDate=$(BUILD_DATE)
 
 GOOS ?= $(shell go version | sed 's/^.*\ \([a-z0-9]*\)\/\([a-z0-9]*\)/\1/')
 GOARCH ?= $(shell go version | sed 's/^.*\ \([a-z0-9]*\)\/\([a-z0-9]*\)/\2/')
@@ -70,7 +71,7 @@ docker-images: gomplate.iid gomplate-slim.iid
 $(PREFIX)/bin/$(PKG_NAME)_%: $(shell find $(PREFIX) -type f -name '*.go')
 	GOOS=$(shell echo $* | cut -f1 -d-) GOARCH=$(shell echo $* | cut -f2 -d- | cut -f1 -d.) CGO_ENABLED=0 \
 		$(GO) build \
-			-ldflags "-w -s $(COMMIT_FLAG) $(VERSION_FLAG)" \
+			-ldflags "-w -s $(COMMIT_FLAG) $(VERSION_FLAG) $(BUILD_DATE_FLAG)" \
 			-o $@ \
 			./cmd/gomplate
 
