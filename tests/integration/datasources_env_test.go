@@ -8,12 +8,10 @@ import (
 
 	. "gopkg.in/check.v1"
 
-	"github.com/gotestyourself/gotestyourself/fs"
 	"github.com/gotestyourself/gotestyourself/icmd"
 )
 
 type EnvDatasourcesSuite struct {
-	tmpDir *fs.Dir
 }
 
 var _ = Suite(&EnvDatasourcesSuite{})

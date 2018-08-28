@@ -13,6 +13,7 @@ import (
 func MockServer(code int, body string) (*httptest.Server, *Vault) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(code)
+		// nolint: errcheck
 		fmt.Fprintln(w, body)
 	}))
 
@@ -26,6 +27,7 @@ func MockServer(code int, body string) (*httptest.Server, *Vault) {
 		Address:    server.URL,
 		HttpClient: httpClient,
 	}
+	// nolint: gosec
 	c, _ := api.NewClient(config)
 	return server, &Vault{c}
 }

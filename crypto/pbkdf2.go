@@ -2,7 +2,7 @@ package crypto
 
 import (
 	"crypto"
-	"crypto/sha1"
+	"crypto/sha1" //nolint: gosec
 	"crypto/sha256"
 	"crypto/sha512"
 	"fmt"

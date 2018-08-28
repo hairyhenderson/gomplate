@@ -13,6 +13,7 @@ import (
 func MockServer(code int, body string) (*httptest.Server, *Ec2Meta) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(code)
+		// nolint: errcheck
 		fmt.Fprintln(w, body)
 	}))
 

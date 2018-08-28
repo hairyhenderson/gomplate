@@ -119,8 +119,7 @@ func Has(in interface{}, key interface{}) bool {
 	case reflect.Slice, reflect.Array:
 		l := av.Len()
 		for i := 0; i < l; i++ {
-			var v interface{}
-			v = av.Index(i).Interface()
+			v := av.Index(i).Interface()
 			if reflect.DeepEqual(v, key) {
 				return true
 			}
@@ -160,24 +159,28 @@ func ToStrings(in ...interface{}) []string {
 
 // MustParseInt - wrapper for strconv.ParseInt that returns 0 in the case of error
 func MustParseInt(s string, base, bitSize int) int64 {
+	// nolint: gosec
 	i, _ := strconv.ParseInt(s, base, bitSize)
 	return i
 }
 
 // MustParseFloat - wrapper for strconv.ParseFloat that returns 0 in the case of error
 func MustParseFloat(s string, bitSize int) float64 {
+	// nolint: gosec
 	i, _ := strconv.ParseFloat(s, bitSize)
 	return i
 }
 
 // MustParseUint - wrapper for strconv.ParseUint that returns 0 in the case of error
 func MustParseUint(s string, base, bitSize int) uint64 {
+	// nolint: gosec
 	i, _ := strconv.ParseUint(s, base, bitSize)
 	return i
 }
 
 // MustAtoi - wrapper for strconv.Atoi that returns 0 in the case of error
 func MustAtoi(s string) int {
+	// nolint: gosec
 	i, _ := strconv.Atoi(s)
 	return i
 }

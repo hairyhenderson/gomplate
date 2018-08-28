@@ -112,7 +112,7 @@ gomplate.png: gomplate.svg
 
 lint:
 	gometalinter --vendor --disable-all \
-		--enable=gas \
+		--enable=gosec \
 		--enable=goconst \
 		--enable=gocyclo \
 		--enable=golint \
