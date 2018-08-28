@@ -6,6 +6,8 @@ import (
 	"os"
 	"time"
 
+	"github.com/pkg/errors"
+
 	yaml "gopkg.in/yaml.v2"
 
 	"github.com/docker/libkv"
@@ -25,7 +27,10 @@ const (
 // NewConsul - instantiate a new Consul datasource handler
 func NewConsul(u *url.URL) *LibKV {
 	consul.Register()
-	c := consulURL(u)
+	c, err := consulURL(u)
+	if err != nil {
+		logFatal(err)
+	}
 	config := consulConfig(c.Scheme == https)
 	if role := env.Getenv("CONSUL_VAULT_ROLE", ""); role != "" {
 		mount := env.Getenv("CONSUL_VAULT_MOUNT", "consul")
@@ -35,7 +40,8 @@ func NewConsul(u *url.URL) *LibKV {
 
 		path := fmt.Sprintf("%s/creds/%s", mount, role)
 
-		data, err := client.Read(path)
+		var data []byte
+		data, err = client.Read(path)
 		if err != nil {
 			logFatal("vault consul auth failed", err)
 		}
@@ -50,9 +56,11 @@ func NewConsul(u *url.URL) *LibKV {
 
 		client.Logout()
 
+		// nolint: gosec
 		_ = os.Setenv("CONSUL_HTTP_TOKEN", token)
 	}
-	kv, err := libkv.NewStore(store.CONSUL, []string{c.String()}, config)
+	var kv store.Store
+	kv, err = libkv.NewStore(store.CONSUL, []string{c.String()}, config)
 	if err != nil {
 		logFatal("Consul setup failed", err)
 	}
@@ -60,8 +68,12 @@ func NewConsul(u *url.URL) *LibKV {
 }
 
 // -- converts a gomplate datasource URL into a usable Consul URL
-func consulURL(u *url.URL) *url.URL {
-	c, _ := url.Parse(env.Getenv("CONSUL_HTTP_ADDR"))
+func consulURL(u *url.URL) (*url.URL, error) {
+	addrEnv := env.Getenv("CONSUL_HTTP_ADDR")
+	c, err := url.Parse(addrEnv)
+	if err != nil {
+		return nil, errors.Wrapf(err, "invalid URL '%s' in CONSUL_HTTP_ADDR", addrEnv)
+	}
 	if c.Scheme == "" {
 		c.Scheme = u.Scheme
 	}
@@ -84,7 +96,7 @@ func consulURL(u *url.URL) *url.URL {
 		c.Host = u.Host
 	}
 
-	return c
+	return c, nil
 }
 
 func consulConfig(useTLS bool) *store.Config {

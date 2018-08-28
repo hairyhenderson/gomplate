@@ -2,7 +2,7 @@ package funcs
 
 import (
 	gcrypto "crypto"
-	"crypto/sha1"
+	"crypto/sha1" //nolint: gosec
 	"crypto/sha256"
 	"crypto/sha512"
 	"fmt"
@@ -62,9 +62,10 @@ func (f *CryptoFuncs) WPAPSK(ssid, password interface{}) (string, error) {
 	return f.PBKDF2(password, ssid, 4096, 32)
 }
 
-// SHA1 -
+// SHA1 - Note: SHA-1 is cryptographically broken and should not be used for secure applications.
 func (f *CryptoFuncs) SHA1(input interface{}) string {
 	in := toBytes(input)
+	// nolint: gosec
 	out := sha1.Sum(in)
 	return fmt.Sprintf("%02x", out)
 }

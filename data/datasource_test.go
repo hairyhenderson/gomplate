@@ -337,6 +337,7 @@ func TestReadStdin(t *testing.T) {
 	assert.Error(t, err)
 }
 
+// nolint: megacheck
 func TestDefineDatasource(t *testing.T) {
 	d := &Data{}
 	s, err := d.DefineDatasource("", "foo.json")

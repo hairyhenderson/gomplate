@@ -18,30 +18,42 @@ func TestConsulURL(t *testing.T) {
 
 	u, _ := url.Parse("consul://")
 	expected := &url.URL{Host: "localhost:8500", Scheme: "https"}
-	assert.Equal(t, expected, consulURL(u))
+	actual, err := consulURL(u)
+	assert.NoError(t, err)
+	assert.Equal(t, expected, actual)
 
 	u, _ = url.Parse("consul+http://myconsul.server")
 	expected = &url.URL{Host: "myconsul.server", Scheme: "http"}
-	assert.Equal(t, expected, consulURL(u))
+	actual, err = consulURL(u)
+	assert.NoError(t, err)
+	assert.Equal(t, expected, actual)
 
 	os.Setenv("CONSUL_HTTP_SSL", "false")
 	u, _ = url.Parse("consul+https://myconsul.server:1234")
 	expected = &url.URL{Host: "myconsul.server:1234", Scheme: "https"}
-	assert.Equal(t, expected, consulURL(u))
+	actual, err = consulURL(u)
+	assert.NoError(t, err)
+	assert.Equal(t, expected, actual)
 
 	os.Unsetenv("CONSUL_HTTP_SSL")
 	u, _ = url.Parse("consul://myconsul.server:2345")
 	expected = &url.URL{Host: "myconsul.server:2345", Scheme: "http"}
-	assert.Equal(t, expected, consulURL(u))
+	actual, err = consulURL(u)
+	assert.NoError(t, err)
+	assert.Equal(t, expected, actual)
 
 	u, _ = url.Parse("consul://myconsul.server:3456/foo/bar/baz")
 	expected = &url.URL{Host: "myconsul.server:3456", Scheme: "http"}
-	assert.Equal(t, expected, consulURL(u))
+	actual, err = consulURL(u)
+	assert.NoError(t, err)
+	assert.Equal(t, expected, actual)
 
 	defer os.Unsetenv("CONSUL_HTTP_ADDR")
 	os.Setenv("CONSUL_HTTP_ADDR", "https://foo:8500")
 	expected = &url.URL{Host: "foo:8500", Scheme: "https"}
-	assert.Equal(t, expected, consulURL(u))
+	actual, err = consulURL(u)
+	assert.NoError(t, err)
+	assert.Equal(t, expected, actual)
 }
 
 func TestSetupTLS(t *testing.T) {
