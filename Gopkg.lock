@@ -10,7 +10,7 @@
   version = "v1.0.1"
 
 [[projects]]
-  digest = "1:0cdcc052b645ec8303d0b92e4cad09f0417c55550b882bfad621943dae2a14b0"
+  digest = "1:cb97249d96f49b288823c3c82919aa389f1c1ab0a705c09976e9c09e2a8ad1a4"
   name = "github.com/aws/aws-sdk-go"
   packages = [
     "aws",
@@ -47,8 +47,8 @@
     "service/sts",
   ]
   pruneopts = "NUT"
-  revision = "8475c414b1bd58b8cc214873a8854e3a621e67d7"
-  version = "v1.15.0"
+  revision = "7715ed93fca215da2c707088a0cca5646ad91543"
+  version = "v1.15.24"
 
 [[projects]]
   digest = "1:27c31c51caa806074eca1038cbdc6a9c5b2eb202264b6bfb359eb441e2594268"
@@ -70,12 +70,12 @@
   version = "v1.3.1"
 
 [[projects]]
-  digest = "1:a2c1d0e43bd3baaa071d1b9ed72c27d78169b2b269f71c105ac4ba34b1be4a39"
+  digest = "1:ffe9824d294da03b391f44e1ae8281281b4afc1bdaa9588c9097785e3af10cec"
   name = "github.com/davecgh/go-spew"
   packages = ["spew"]
   pruneopts = "NUT"
-  revision = "346938d642f2ec3594ed81d874461961cd0faa76"
-  version = "v1.1.0"
+  revision = "8991bc29aa16c548c550c7ff78260e27b9ab7c73"
+  version = "v1.1.1"
 
 [[projects]]
   digest = "1:83c65120f4f8e429172fa29b128e63a398f0f24320fa38944022f8fa96502c06"
@@ -99,12 +99,12 @@
   revision = "8306686428a5fe132eac8cb7c4848af725098bd4"
 
 [[projects]]
-  digest = "1:f59266de09e138237bf9df9deb57b9ebbdb1e33b8399bb739c3745e7d3d2787b"
+  digest = "1:74d9b0a7b4107b41e0ade759fac64502876f82d29fb23d77b3dd24b194ee3dd5"
   name = "github.com/go-ini/ini"
   packages = ["."]
   pruneopts = "NUT"
-  revision = "358ee7663966325963d4e8b2e1fbd570c5195153"
-  version = "v1.38.1"
+  revision = "5cf292cae48347c2490ac1a58fe36735fb78df7e"
+  version = "v1.38.2"
 
 [[projects]]
   branch = "master"
@@ -128,12 +128,12 @@
   version = "v0.2.0"
 
 [[projects]]
-  digest = "1:4e771d1c6e15ca4516ad971c34205c822b5cff2747179679d7b321e4e1bfe431"
+  digest = "1:054eee1d0e46aac07290bb3b2d42f1e9fc302c4c430012ed5507e9f7eac89c12"
   name = "github.com/gosimple/slug"
   packages = ["."]
   pruneopts = "NUT"
-  revision = "e9f42fa127660e552d0ad2b589868d403a9be7c6"
-  version = "v1.1.1"
+  revision = "91d42f4c3433698e88e87b17a3efbfe40b67c323"
+  version = "v1.2.0"
 
 [[projects]]
   digest = "1:191c7fb2346ca251d648a938b003c3e75cef5c055f086c8e8a0776649badd662"
@@ -169,12 +169,12 @@
   version = "v1.2.2"
 
 [[projects]]
-  branch = "master"
   digest = "1:f0d9d74edbd40fdeada436d5ac9cb5197407899af3fef85ff0137077ffe8ae19"
   name = "github.com/hashicorp/errwrap"
   packages = ["."]
   pruneopts = "NUT"
-  revision = "d6c0cd88035724dd42e0f335ae30161c20575ecc"
+  revision = "8a6fb523712970c966eefc6b39ed2c5e74880354"
+  version = "v1.0.0"
 
 [[projects]]
   branch = "master"
@@ -185,12 +185,12 @@
   revision = "d5fe4b57a186c716b0e00b8c301cbd9b4182694d"
 
 [[projects]]
-  branch = "master"
   digest = "1:2ed138049ab373f696db2081ca48f15c5abdf20893803612a284f2bdce2bf443"
   name = "github.com/hashicorp/go-multierror"
   packages = ["."]
   pruneopts = "NUT"
-  revision = "3d5d8f294aa03d8e98859feac328afbdf1ae0703"
+  revision = "886a7fbe3eb1c874d46f623bfa70af45f425b3d1"
+  version = "v1.0.0"
 
 [[projects]]
   branch = "master"
@@ -220,7 +220,6 @@
   revision = "6d291a969b86c4b633730bfc6b8b9d64c3aafed9"
 
 [[projects]]
-  branch = "master"
   digest = "1:39f543569bf189e228c84a294c50aca8ea56c82b3d9df5c9b788249907d7049a"
   name = "github.com/hashicorp/hcl"
   packages = [
@@ -235,7 +234,8 @@
     "json/token",
   ]
   pruneopts = "NUT"
-  revision = "ef8a98b0bbce4a65b5aa4c368430a80ddc533168"
+  revision = "8cb6e5b959231cc1119e43259c4a608f9c51a241"
+  version = "v1.0.0"
 
 [[projects]]
   digest = "1:0dd7b7b01769f9df356dc99f9e4144bdbabf6c79041ea7c0892379c5737f3c44"
@@ -246,19 +246,20 @@
   version = "v0.8.1"
 
 [[projects]]
-  digest = "1:31e20c290aaed8b03e36350241a9f862e4fd53d11780a41d231771ace9a1be03"
+  digest = "1:dbef1dda9aa352f3e62bcaa87be4e33d5e1736416aec983a7868d219249e919d"
   name = "github.com/hashicorp/vault"
   packages = [
     "api",
     "helper/compressutil",
+    "helper/consts",
     "helper/hclutil",
     "helper/jsonutil",
     "helper/parseutil",
     "helper/strutil",
   ]
   pruneopts = "NUT"
-  revision = "e21712a687889de1125e0a12a980420b1a4f72d3"
-  version = "v0.10.4"
+  revision = "87492f9258e0227f3717e3883c6a8be5716bf564"
+  version = "v0.11.0"
 
 [[projects]]
   digest = "1:406338ad39ab2e37b7f4452906442a3dbf0eb3379dd1f06aafb5c07e769a5fbb"
@@ -292,20 +293,20 @@
   version = "v0.1.0"
 
 [[projects]]
-  branch = "master"
-  digest = "1:9db29b604bd78452d167abed82386ddd2f93973df3841896fb6ab8aff936f1d6"
+  digest = "1:a4df73029d2c42fabcb6b41e327d2f87e685284ec03edf76921c267d9cfc9c23"
   name = "github.com/mitchellh/go-homedir"
   packages = ["."]
   pruneopts = "NUT"
-  revision = "3864e76763d94a6df2f9960b16a20a33da9f9a66"
+  revision = "ae18d6b8b3205b561c79e8e5f69bff09736185f4"
+  version = "v1.0.0"
 
 [[projects]]
-  branch = "master"
   digest = "1:5fe20cfe4ef484c237cec9f947b2a6fa90bad4b8610fd014f0e4211e13d82d5d"
   name = "github.com/mitchellh/mapstructure"
   packages = ["."]
   pruneopts = "NUT"
-  revision = "f15292f7a699fcc1a38a80977f80a046874ba8ac"
+  revision = "fa473d140ef3c6adf42d6b391fe76707f1f243c8"
+  version = "v1.0.0"
 
 [[projects]]
   digest = "1:5cf3f025cbee5951a4ee961de067c8a89fc95a5adabead774f82822efabab121"
@@ -359,12 +360,12 @@
   version = "v0.0.3"
 
 [[projects]]
-  digest = "1:15e5c398fbd9d2c439b635a08ac161b13d04f0c2aa587fe256b65dc0c3efe8b7"
+  digest = "1:e3707aeaccd2adc89eba6c062fec72116fe1fc1ba71097da85b4d8ae1668a675"
   name = "github.com/spf13/pflag"
   packages = ["."]
   pruneopts = "NUT"
-  revision = "583c0c0531f06d5278b7d917446061adc344b5cd"
-  version = "v1.0.1"
+  revision = "9a97c102cda95a86cec2345a6f09f55a939babf5"
+  version = "v1.0.2"
 
 [[projects]]
   digest = "1:bacb8b590716ab7c33f2277240972c9582d389593ee8d66fc10074e0508b8126"
@@ -392,11 +393,11 @@
     "pbkdf2",
   ]
   pruneopts = "NUT"
-  revision = "c126467f60eb25f8f27e5a981f32a87e3965053f"
+  revision = "614d502a4dac94afa3a6ce146bd1736da82514c6"
 
 [[projects]]
   branch = "master"
-  digest = "1:7c335f12c7a49ee399afb1af500c6acd86857507848740836564e047a2bbd1b2"
+  digest = "1:8f47c747df6484e4e0913cda6100860530f12b4061ff970e1d19cd45756489e7"
   name = "golang.org/x/net"
   packages = [
     "context",
@@ -406,15 +407,15 @@
     "idna",
   ]
   pruneopts = "NUT"
-  revision = "c4299a1a0d8524c11563db160fbf9bddbceadb21"
+  revision = "8a410e7b638dca158bf9e766925842f6651ff828"
 
 [[projects]]
   branch = "master"
-  digest = "1:4e2f2863e989f3dd7f097ef62b19f016874b82a8f1684f651fd9a6d2803a24c5"
+  digest = "1:7e7f0804044e91c06a78a4d1b28f59b93d2d8edb78f5a97036f840cf82e41500"
   name = "golang.org/x/sys"
   packages = ["unix"]
   pruneopts = "NUT"
-  revision = "bd9dbc187b6e1dacfdd2722a87e83093c2d7bd6e"
+  revision = "d99a578cf41bfccdeaf48b0845c823a4b8b0ad5e"
 
 [[projects]]
   digest = "1:e7071ed636b5422cc51c0e3a6cebc229d6c9fffc528814b519a980641422d619"
