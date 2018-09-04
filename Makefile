@@ -69,7 +69,7 @@ build-release: artifacts.cid
 docker-images: gomplate.iid gomplate-slim.iid
 
 $(PREFIX)/bin/$(PKG_NAME)_%: $(shell find $(PREFIX) -type f -name '*.go')
-	GOOS=$(shell echo $* | cut -f1 -d-) GOARCH=$(shell echo $* | cut -f2 -d- | cut -f1 -d.) CGO_ENABLED=0 \
+	GOOS=$(shell echo $* | cut -f1 -d-) GOARCH=$(shell echo $* | cut -f2 -d- | cut -f1 -d.) CGO_ENABLED=1 \
 		$(GO) build \
 			-ldflags "-w -s $(COMMIT_FLAG) $(VERSION_FLAG) $(BUILD_DATE_FLAG)" \
 			-o $@ \
@@ -84,6 +84,7 @@ test:
 	$(GO) test -v -race -coverprofile=c.out ./...
 
 integration: ./bin/gomplate
+	$(GO) build -buildmode=plugin -i ./testPlugin/testPlugin.go
 	$(GO) test -v -tags=integration \
 		./tests/integration -check.v
 
@@ -92,6 +93,11 @@ integration.iid: Dockerfile.integration $(PREFIX)/bin/$(PKG_NAME)_linux-amd64$(c
 
 test-integration-docker: integration.iid
 	docker run -it --rm $(shell cat $<)
+
+test-plugin:
+	$(GO) build -buildmode=plugin -i ./testPlugin/testPlugin.go
+	$(GO) test -v -tags=integration \
+		./tests/integration -check.v
 
 gen-changelog:
 	docker run -it -v $(shell pwd):/app --workdir /app -e CHANGELOG_GITHUB_TOKEN hairyhenderson/github_changelog_generator \
@@ -146,6 +152,6 @@ slow-lint:
 			./tests/integration
 	megacheck -tags integration ./tests/integration
 
-.PHONY: gen-changelog clean test build-x compress-all build-release build test-integration-docker gen-docs lint clean-images clean-containers docker-images
+.PHONY: gen-changelog clean test build-x compress-all build-release build test-integration-docker build test-plugin gen-docs lint clean-images clean-containers docker-images
 .DELETE_ON_ERROR:
 .SECONDARY:
