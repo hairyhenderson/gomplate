@@ -17,25 +17,25 @@ import (
 )
 
 func TestNewData(t *testing.T) {
-	d, err := NewData(nil, nil)
+	d, err := NewData(nil, nil, nil)
 	assert.NoError(t, err)
 	assert.Len(t, d.Sources, 0)
 
-	d, err = NewData([]string{"foo=http:///foo.json"}, nil)
+	d, err = NewData([]string{"foo=http:///foo.json"}, nil, nil)
 	assert.NoError(t, err)
 	assert.Equal(t, "/foo.json", d.Sources["foo"].URL.Path)
 
-	d, err = NewData([]string{"foo=http:///foo.json"}, []string{})
-	assert.NoError(t, err)
-	assert.Equal(t, "/foo.json", d.Sources["foo"].URL.Path)
-	assert.Empty(t, d.Sources["foo"].header)
-
-	d, err = NewData([]string{"foo=http:///foo.json"}, []string{"bar=Accept: blah"})
+	d, err = NewData([]string{"foo=http:///foo.json"}, []string{}, nil)
 	assert.NoError(t, err)
 	assert.Equal(t, "/foo.json", d.Sources["foo"].URL.Path)
 	assert.Empty(t, d.Sources["foo"].header)
 
-	d, err = NewData([]string{"foo=http:///foo.json"}, []string{"foo=Accept: blah"})
+	d, err = NewData([]string{"foo=http:///foo.json"}, []string{"bar=Accept: blah"}, nil)
+	assert.NoError(t, err)
+	assert.Equal(t, "/foo.json", d.Sources["foo"].URL.Path)
+	assert.Empty(t, d.Sources["foo"].header)
+
+	d, err = NewData([]string{"foo=http:///foo.json"}, []string{"foo=Accept: blah"}, nil)
 	assert.NoError(t, err)
 	assert.Equal(t, "/foo.json", d.Sources["foo"].URL.Path)
 	assert.Equal(t, "blah", d.Sources["foo"].header["Accept"][0])

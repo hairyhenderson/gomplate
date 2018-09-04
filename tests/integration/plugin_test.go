@@ -18,7 +18,7 @@ func (s *EnvDatasourcesSuite) TestPlugin(c *C) {
 	result := icmd.RunCommand(GomplateBin,
 	"-p", "\"../testPlugin.so\"",
 		"-d", "foo=testname:../..",
-		"-i", `{{ ds "foo" }}`,
+		"-i", "\'{{ ds \"foo\" }}\'",
 	)
 	result.Assert(c, icmd.Expected{ExitCode: 0, Out: "bar"})
 }

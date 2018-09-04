@@ -480,61 +480,85 @@ func readBoltDB(source *Source, args ...string) ([]byte, error) {
 	return data, nil
 }
 
+func getPluginSchemeName(pluginArg string) (string, error){
+	p, err := plugin.Open(pluginArg)
+	if err != nil {
+		fmt.Println("pluginArg: ")
+		err = fmt.Errorf("Error occured opening plugin: " + pluginArg, ". Internal Error: " + err.Error())
+		return "", err
+	}
+	psm, err := p.Lookup(PluginSchemeFunction)
+	if err != nil {
+		err = fmt.Errorf("No Scheme function found in plugin: " + pluginArg, ". Internal Error: " + err.Error())
+		return "", err
+	}
+	psf, ok := psm.(func() (string, error));
+	if !ok{
+		err = fmt.Errorf("Scheme function contains unexpected format. Internal Error: " + err.Error())
+		return "", err
+	}
+	pluginSchemeName, err := psf()
+	return pluginSchemeName, err
+}
+
+func getPluginGetSymbol(pluginArg string)(plugin.Symbol, error) {
+	p, err := plugin.Open(pluginArg)
+	if err != nil {
+		err = fmt.Errorf("Error occured opening plugin: " + pluginArg, ". Internal Error: " + err.Error())
+		return nil, err
+	}
+	pgm, err := p.Lookup(PluginGetFunction)
+	if err != nil {
+		err = fmt.Errorf("No Get function found in plugin:  " + pluginArg)
+		err.Error()
+	}
+	return pgm, err
+}
+
+func getMediaType(pluginArg string)(string) {
+	p, err := plugin.Open(pluginArg)
+	gmtsymbol, err := p.Lookup(PluginGetMediaTypeFunction)
+	// if no getmimetype function exists, or function has unexpected format, or function errors itself...
+	// default to simple text type and return
+	if err != nil {
+		return textMimetype
+	}
+	mtf, ok := gmtsymbol.(func() (string, error))
+	if !ok{
+		return textMimetype
+	}
+	mt, err := mtf()
+	if err != nil {
+		return textMimetype
+	}
+	return mt
+}
+
 func parsePluginArgs(pluginArgs []string) (map[string]plugin.Symbol, map[string]string, error) {
 	plugins := make(map[string]plugin.Symbol)
 	mediaTypes := make(map[string]string)
+	hasError := false
+	err := errors.New("")
 	for _, v := range pluginArgs {
-		p, err := plugin.Open(v)
+		pluginSchemeName, err := getPluginSchemeName(v)
 		if err != nil {
-			err = fmt.Errorf("Error occured opening plugin: ", v)
-			err.Error()
-			return nil, nil, err
+			hasError = true
+			break
 		}
-		psm, err := p.Lookup(PluginSchemeFunction)
-		if err != nil {
-			err = fmt.Errorf("No Scheme function found in plugin: ", v)
-			err.Error()
-			return nil, nil, err
-		}
-		psf, ok := psm.(func() (string, error));
-		if !ok{
-			err = fmt.Errorf("Scheme function contains unexpected format. Internal Error: " + err.Error())
-			return nil, nil, err
-		}
-		pluginSchemeName, err := psf()
-		if err != nil {
-			err = fmt.Errorf("Error occured while using plugin scheme function. Internal Error: " + err.Error())
-			return nil, nil, err
-		}
-
 		// adding sourcereader here so it doesn't add overhead if user doesn't use a plugin
 		// and allows user to specify multiple plugins within a single call
 		addSourceReader(pluginSchemeName, readPlugin)
-		pgm, err := p.Lookup(PluginGetFunction)
+
+		pgm, err := getPluginGetSymbol(v)
 		if err != nil {
-			err = fmt.Errorf("No Get function found in plugin:  ", v)
-			err.Error()
-			return nil, nil, err
+			hasError = true
+			break
 		}
 		plugins[pluginSchemeName] = pgm
-		gmtsymbol, err := p.Lookup(PluginGetMediaTypeFunction)
-		// if no getmimetype function exists, or function has unexpected format, or function errors itself...
-		// default to simple text type and return
-		if err != nil {
-			mediaTypes[pluginSchemeName] = textMimetype
-			return plugins, mediaTypes, nil
-		}
-		mtf, ok := gmtsymbol.(func() (string, error))
-		if !ok{
-			mediaTypes[pluginSchemeName] = textMimetype
-			return plugins, mediaTypes, nil
-		}
-		mt, err := mtf()
-		if err != nil {
-			mediaTypes[pluginSchemeName] = textMimetype
-			return plugins, mediaTypes, nil
-		}
-		mediaTypes[pluginSchemeName] = mt
+		mediaTypes[pluginSchemeName] = getMediaType(v)
+	}
+	if hasError {
+		return nil, nil, err
 	}
 	return plugins, mediaTypes, nil
 }
