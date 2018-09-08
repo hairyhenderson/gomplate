@@ -5,7 +5,7 @@ menu: main
 ---
 
 The simplest usage of `gomplate` is to just replace environment
-variables. All environment variables are available by referencing [`.Env`](../syntax/#about-env)
+variables. All environment variables are available by referencing [`.Env`](../syntax/#env)
 (or [`getenv`](../functions/env/#getenv)) in the template.
 
 The template is read from standard in, and written to standard out.
