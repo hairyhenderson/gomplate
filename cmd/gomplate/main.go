@@ -81,6 +81,7 @@ func newGomplateCmd() *cobra.Command {
 				return nil
 			}
 			if verbose {
+				// nolint: errcheck
 				fmt.Fprintf(os.Stderr, "%s version %s, build %s (%v)\nconfig is:\n%s\n\n",
 					cmd.Name(), version.Version, version.GitCommit, version.BuildDate,
 					&opts)
@@ -90,6 +91,7 @@ func newGomplateCmd() *cobra.Command {
 			cmd.SilenceErrors = true
 			cmd.SilenceUsage = true
 			if verbose {
+				// nolint: errcheck
 				fmt.Fprintf(os.Stderr, "rendered %d template(s) with %d error(s) in %v\n",
 					gomplate.Metrics.TemplatesProcessed, gomplate.Metrics.Errors, gomplate.Metrics.TotalRenderDuration)
 			}
