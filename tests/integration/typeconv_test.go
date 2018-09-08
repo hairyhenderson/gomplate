@@ -85,3 +85,8 @@ qux = "quux"`+"`"+` | toml -}}
   [foo.bar]
     baz = "qux"`)
 }
+
+func (s *TypeconvSuite) TestDict(c *C) {
+	inOutTest(c, `{{ $d := dict true false "foo" "bar" }}{{ data.ToJSON $d }}`,
+		`{"foo":"bar","true":false}`)
+}

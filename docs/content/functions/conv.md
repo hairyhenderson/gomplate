@@ -48,6 +48,55 @@ $ gomplate -i '{{ "" | default "foo" }} {{ "bar" | default "baz" }}'
 foo bar
 ```
 
+## `conv.Dict`
+
+**Alias:** `dict`
+
+Dict is a convenience function that creates a map with string keys.
+Provide arguments as key/value pairs. If an odd number of arguments
+is provided, the last is used as the key, and an empty string is
+set as the value.
+
+All keys are converted to strings.
+
+This function is equivalent to [Sprig's `dict`](http://masterminds.github.io/sprig/dicts.html#dict)
+function, as used in [Helm templates](https://docs.helm.sh/chart_template_guide#template-functions-and-pipelines).
+
+For creating more complex maps or maps with non-`string` keys, see
+[`data.JSON`](../data/#data-json) or [`data.YAML`](../data/#data-yaml).
+
+For creating arrays, see [`conv.Slice`](#conv-slice).
+
+### Usage
+```go
+conv.Dict in... 
+```
+
+### Arguments
+
+| name | description |
+|------|-------------|
+| `in...` | _(required)_ The key/value pairs |
+
+### Examples
+
+```console
+$ gomplate -i '{{ conv.Dict "name" "Frank" "age" 42 | data.ToYAML }}'
+age: 42
+name: Frank
+$ gomplate -i '{{ dict 1 2 3 | toJSON }}'
+{"1":"2","3":""}
+```
+```console
+$ cat <<EOF| gomplate
+{{ define "T1" }}Hello {{ .thing }}!{{ end -}}
+{{ template "T1" (dict "thing" "world")}}
+{{ template "T1" (dict "thing" "everybody")}}
+EOF
+Hello world!
+Hello everybody!
+```
+
 ## `conv.Slice`
 
 **Alias:** `slice`
