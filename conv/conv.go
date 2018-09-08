@@ -307,3 +307,22 @@ func ToFloat64s(in ...interface{}) []float64 {
 	}
 	return out
 }
+
+// Dict is a convenience function that creates a map with string keys.
+// Provide arguments as key/value pairs. If an odd number of arguments
+// is provided, the last is used as the key, and an empty string is
+// set as the value.
+// All keys are converted to strings, regardless of input type.
+func Dict(v ...interface{}) (map[string]interface{}, error) {
+	dict := map[string]interface{}{}
+	lenv := len(v)
+	for i := 0; i < lenv; i += 2 {
+		key := ToString(v[i])
+		if i+1 >= lenv {
+			dict[key] = ""
+			continue
+		}
+		dict[key] = v[i+1]
+	}
+	return dict, nil
+}

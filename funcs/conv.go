@@ -29,6 +29,7 @@ func AddConvFuncs(f map[string]interface{}) {
 	f["slice"] = ConvNS().Slice
 	f["join"] = ConvNS().Join
 	f["default"] = ConvNS().Default
+	f["dict"] = ConvNS().Dict
 }
 
 // ConvFuncs -
@@ -135,4 +136,9 @@ func (f *ConvFuncs) Default(def, in interface{}) interface{} {
 		return in
 	}
 	return def
+}
+
+// Dict -
+func (f *ConvFuncs) Dict(in ...interface{}) (map[string]interface{}, error) {
+	return conv.Dict(in...)
 }
