@@ -1,12 +1,54 @@
 ns: conv
+title: conversion functions
 preamble: |
   These are a collection of functions that mostly help converting from one type
   to another - generally from a `string` to something else, and vice-versa.
 funcs:
   - name: conv.Bool
     alias: bool
+    description: |
+      **Note:** See also [`conv.ToBool`](#conv-tobool) for a more flexible variant.
+
+      Converts a true-ish string to a boolean. Can be used to simplify conditional statements based on environment variables or other text input.
+    pipeline: true
+    arguments:
+      - name: in
+        required: true
+        description: the input string
+    rawExamples:
+      - |
+        _`input.tmpl`:_
+        ```
+        {{if bool (getenv "FOO")}}foo{{else}}bar{{end}}
+        ```
+
+        ```console
+        $ gomplate < input.tmpl
+        bar
+        $ FOO=true gomplate < input.tmpl
+        foo
+        ```
   - name: conv.Default
     alias: default
+    description: |
+      Provides a default value given an empty input. Empty inputs are `0` for numeric
+      types, `""` for strings, `false` for booleans, empty arrays/maps, and `nil`.
+
+      Note that this will not provide a default for the case where the input is undefined
+      (i.e. referencing things like `.foo` where there is no `foo` field of `.`), but
+      [`conv.Has`](#conv-has) can be used for that.
+    pipeline: true
+    arguments:
+      - name: default
+        required: true
+        description: the default value
+      - name: in
+        required: true
+        description: the input
+    examples:
+      - |
+        $ gomplate -i '{{ "" | default "foo" }} {{ "bar" | default "baz" }}'
+        foo bar
   - name: conv.Dict
     alias: dict
     description: |
@@ -45,15 +87,158 @@ funcs:
         Hello everybody!
   - name: conv.Slice
     alias: slice
+    description: |
+      Creates a slice (like an array or list). Useful when needing to `range` over a bunch of variables.
+    pipeline: false
+    arguments:
+      - name: in...
+        required: true
+        description: the elements of the slice
+    examples:
+      - |
+        $ gomplate -i '{{ range slice "Bart" "Lisa" "Maggie" }}Hello, {{ . }}{{ end }}'
+        Hello, Bart
+        Hello, Lisa
+        Hello, Maggie
   - name: conv.Has
     alias: has
+    description: |
+      Reports whether a given object has a property with the given key, or whether a given array/slice contains the given value. Can be used with `if` to prevent the template from trying to access a non-existent property in an object.
+    pipeline: false
+    arguments:
+      - name: in
+        required: true
+        description: The object or list to search
+      - name: item
+        required: true
+        description: The item to search for
+    examples:
+      - |
+        $ gomplate -i '{{ $l := slice "foo" "bar" "baz" }}there is {{ if has $l "bar" }}a{{else}}no{{end}} bar'
+        there is a bar
+      - |
+        $ export DATA='{"foo": "bar"}'
+        $ gomplate -i '{{ $o := data.JSON (getenv "DATA") -}}
+        {{ if (has $o "foo") }}{{ $o.foo }}{{ else }}THERE IS NO FOO{{ end }}'
+        bar
+      - |
+        $ export DATA='{"baz": "qux"}'
+        $ gomplate -i '{{ $o := data.JSON (getenv "DATA") -}}
+        {{ if (has $o "foo") }}{{ $o.foo }}{{ else }}THERE IS NO FOO{{ end }}'
+        THERE IS NO FOO
   - name: conv.Join
     alias: join
+    description: |
+      Concatenates the elements of an array to create a string. The separator string `sep` is placed between elements in the resulting string.
+    arguments:
+      - name: in
+        required: true
+        description: the array or slice
+      - name: sep
+        required: true
+        description: the separator
+    examples:
+      - |
+        $ gomplate -i '{{ $a := slice 1 2 3 }}{{ join $a "-" }}'
+        1-2-3
   - name: conv.URL
+    alias: urlParse
+    description: |
+      Parses a string as a URL for later use. Equivalent to [url.Parse](https://golang.org/pkg/net/url/#Parse)
+    arguments:
+      - name: in
+        required: true
+        description: the URL string to parse
+    rawExamples:
+      - |
+        _`input.tmpl`:_
+        ```
+        {{ $u := conv.URL "https://example.com:443/foo/bar" }}
+        The scheme is {{ $u.Scheme }}
+        The host is {{ $u.Host }}
+        The path is {{ $u.Path }}
+        ```
+
+        ```console
+        $ gomplate < input.tmpl
+        The scheme is https
+        The host is example.com:443
+        The path is /foo/bar
+        ```
   - name: conv.ParseInt
+    description: |
+      _**Note:**_ See [`conv.ToInt64`](#conv-toint64) instead for a simpler and more flexible variant of this function.
+
+      Parses a string as an int64. Equivalent to [strconv.ParseInt](https://golang.org/pkg/strconv/#ParseInt)
+    rawExamples:
+      - |
+        _`input.tmpl`:_
+        ```
+        {{ $val := conv.ParseInt (getenv "HEXVAL") 16 32 }}
+        The value in decimal is {{ $val }}
+        ```
+
+        ```console
+        $ HEXVAL=7C0 gomplate < input.tmpl
+
+        The value in decimal is 1984
+        ```
   - name: conv.ParseFloat
+    description: |
+      _**Note:**_ See [`conv.ToFloat`](#conv-tofloat) instead for a simpler and more flexible variant of this function.
+
+      Parses a string as an float64 for later use. Equivalent to [strconv.ParseFloat](https://golang.org/pkg/strconv/#ParseFloat)
+    rawExamples:
+      - |
+        _`input.tmpl`:_
+        ```
+        {{ $pi := conv.ParseFloat (getenv "PI") 64 }}
+        {{- if (gt $pi 3.0) -}}
+        pi is greater than 3
+        {{- end }}
+        ```
+
+        ```console
+        $ PI=3.14159265359 gomplate < input.tmpl
+        pi is greater than 3
+        ```
   - name: conv.ParseUint
+    description: |
+      Parses a string as an uint64 for later use. Equivalent to [strconv.ParseUint](https://golang.org/pkg/strconv/#ParseUint)
+    rawExamples:
+      - |
+        _`input.tmpl`:_
+        ```
+        {{ conv.ParseInt (getenv "BIG") 16 64 }} is max int64
+        {{ conv.ParseUint (getenv "BIG") 16 64 }} is max uint64
+        ```
+
+        ```console
+        $ BIG=FFFFFFFFFFFFFFFF gomplate < input.tmpl
+        9223372036854775807 is max int64
+        18446744073709551615 is max uint64
+        ```
   - name: conv.Atoi
+    description: |
+      _**Note:**_ See [`conv.ToInt`](#conv-toint) and [`conv.ToInt64`](#conv-toint64) instead for simpler and more flexible variants of this function.
+
+      Parses a string as an int for later use. Equivalent to [strconv.Atoi](https://golang.org/pkg/strconv/#Atoi)
+    rawExamples:
+      - |
+        _`input.tmpl`:_
+        ```
+        {{ $number := conv.Atoi (getenv "NUMBER") }}
+        {{- if (gt $number 5) -}}
+        The number is greater than 5
+        {{- else -}}
+        The number is less than 5
+        {{- end }}
+        ```
+
+        ```console
+        $ NUMBER=21 gomplate < input.tmpl
+        The number is greater than 5
+        ```
   - name: conv.ToBool
     description: |
       Converts the input to a boolean value.
@@ -87,10 +272,135 @@ funcs:
         $ gomplate -i '{{ conv.ToBools false "blah" 0 }}'
         [false false false]
   - name: conv.ToInt64
+    description: |
+      Converts the input to an `int64` (64-bit signed integer).
+
+      This function attempts to convert most types of input (strings, numbers,
+      and booleans), but behaviour when the input can not be converted is
+      undefined and subject to change. Unconvertable inputs may result in
+      errors, or `0` or `-1`.
+
+      Floating-point numbers (with decimal points) are truncated.
+    arguments:
+      - name: in
+        required: true
+        description: the value to convert
+    examples:
+      - |
+        $ gomplate -i '{{conv.ToInt64 "9223372036854775807"}}'
+        9223372036854775807
+      - |
+        $ gomplate -i '{{conv.ToInt64 "0x42"}}'
+        66
+      - |
+        $ gomplate -i '{{conv.ToInt64 true }}'
+        1
   - name: conv.ToInt
+    description: |
+      Converts the input to an `int` (signed integer, 32- or 64-bit depending
+      on platform). This is similar to [`conv.ToInt64`](#conv-toint64) on 64-bit
+      platforms, but is useful when input to another function must be provided
+      as an `int`.
+
+      See also [`conv.ToInt64`](#conv-toint64).
+    arguments:
+      - name: in
+        required: true
+        description: the value to convert
+    examples:
+      - |
+        $ gomplate -i '{{conv.ToInt "9223372036854775807"}}'
+        9223372036854775807
+      - |
+        $ gomplate -i '{{conv.ToInt "0x42"}}'
+        66
+      - |
+        $ gomplate -i '{{conv.ToInt true }}'
+        1
   - name: conv.ToInt64s
+    description: |
+      Converts the inputs to an array of `int64`s.
+
+      This delegates to [`conv.ToInt64`](#conv-toint64) for each input argument.
+    arguments:
+      - name: in...
+        required: true
+        description: the inputs to be converted
+    examples:
+      - |
+        gomplate -i '{{ conv.ToInt64s true 0x42 "123,456.99" "1.2345e+3"}}'
+        [1 66 123456 1234]
   - name: conv.ToInts
+    description: |
+      Converts the inputs to an array of `int`s.
+
+      This delegates to [`conv.ToInt`](#conv-toint) for each input argument.
+    arguments:
+      - name: in...
+        required: true
+        description: the inputs to be converted
+    examples:
+      - |
+        gomplate -i '{{ conv.ToInts true 0x42 "123,456.99" "1.2345e+3"}}'
+        [1 66 123456 1234]
   - name: conv.ToFloat64
+    description: |
+      Converts the input to a `float64`.
+
+      This function attempts to convert most types of input (strings, numbers,
+      and booleans), but behaviour when the input can not be converted is
+      undefined and subject to change. Unconvertable inputs may result in
+      errors, or `0` or `-1`.
+    arguments:
+      - name: in
+        required: true
+        description: the value to convert
+    examples:
+      - |
+        $ gomplate -i '{{ conv.ToFloat64 "8.233e-1"}}'
+        0.8233
+        $ gomplate -i '{{ conv.ToFloat64 "9,000.09"}}'
+        9000.09
   - name: conv.ToFloat64s
+    description: |
+      Converts the inputs to an array of `float64`s.
+
+      This delegates to [`conv.ToFloat64`](#conv-tofloat64) for each input argument.
+    arguments:
+      - name: in...
+        required: true
+        description: the inputs to be converted
+    examples:
+      - |
+        $ gomplate -i '{{ conv.ToFloat64s true 0x42 "123,456.99" "1.2345e+3"}}'
+        [1 66 123456.99 1234.5]
   - name: conv.ToString
+    description: |
+      Converts the input (of any type) to a `string`.
+
+      The input will always be represented in _some_ way.
+    arguments:
+      - name: in
+        required: true
+        description: the value to convert
+    examples:
+      - |
+        $ gomplate -i '{{ conv.ToString 0xFF }}'
+        255
+        $ gomplate -i '{{ dict "foo" "bar" | conv.ToString}}'
+        map[foo:bar]
+        $ gomplate -i '{{ conv.ToString nil }}'
+        nil
   - name: conv.ToStrings
+    description: |
+      Converts the inputs (of any type) to an array of `string`s
+
+      This delegates to [`conv.ToString`](#conv-tostring) for each input argument.
+    arguments:
+      - name: in...
+        required: true
+        description: the inputs to be converted
+    examples:
+      - |
+        $ gomplate -i '{{ conv.ToStrings nil 42 true 0xF (slice 1 2 3) }}'
+        [nil 42 true 15 [1 2 3]]

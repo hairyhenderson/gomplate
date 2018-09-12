@@ -1,6 +1,6 @@
 {{ $data := ds "data" -}}
 ---
-title: {{ $data.ns }} functions
+title: {{ index $data "title" | default (print $data.ns " functions") }}
 menu:
   main:
     parent: functions
@@ -43,4 +43,8 @@ menu:
 ```console
 {{ . | strings.TrimSpace }}
 ```
-{{ end }}{{ end }}{{ end -}}
+{{ end }}{{ end -}}
+{{ if has $f "rawExamples" }}
+### Examples
+
+{{ range $f.rawExamples }}{{ . }}{{ end }}{{ end }}{{ end -}}
