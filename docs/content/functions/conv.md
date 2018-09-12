@@ -16,7 +16,22 @@ to another - generally from a `string` to something else, and vice-versa.
 
 Converts a true-ish string to a boolean. Can be used to simplify conditional statements based on environment variables or other text input.
 
-#### Example
+### Usage
+```go
+conv.Bool in 
+```
+
+```go
+in | conv.Bool  
+```
+
+### Arguments
+
+| name | description |
+|------|-------------|
+| `in` | _(required)_ the input string |
+
+### Examples
 
 _`input.tmpl`:_
 ```
@@ -41,7 +56,23 @@ Note that this will not provide a default for the case where the input is undefi
 (i.e. referencing things like `.foo` where there is no `foo` field of `.`), but
 [`conv.Has`](#conv-has) can be used for that.
 
-#### Example
+### Usage
+```go
+conv.Default default in 
+```
+
+```go
+in | conv.Default default  
+```
+
+### Arguments
+
+| name | description |
+|------|-------------|
+| `default` | _(required)_ the default value |
+| `in` | _(required)_ the input |
+
+### Examples
 
 ```console
 $ gomplate -i '{{ "" | default "foo" }} {{ "bar" | default "baz" }}'
@@ -101,19 +132,23 @@ Hello everybody!
 
 **Alias:** `slice`
 
-Creates a slice. Useful when needing to `range` over a bunch of variables.
+Creates a slice (like an array or list). Useful when needing to `range` over a bunch of variables.
 
-#### Example
+### Usage
+```go
+conv.Slice in... 
+```
 
-_`input.tmpl`:_
-```
-{{range slice "Bart" "Lisa" "Maggie"}}
-Hello, {{.}}
-{{- end}}
-```
+### Arguments
+
+| name | description |
+|------|-------------|
+| `in...` | _(required)_ the elements of the slice |
+
+### Examples
 
 ```console
-$ gomplate < input.tmpl
+$ gomplate -i '{{ range slice "Bart" "Lisa" "Maggie" }}Hello, {{ . }}{{ end }}'
 Hello, Bart
 Hello, Lisa
 Hello, Maggie
@@ -127,7 +162,7 @@ Reports whether a given object has a property with the given key, or whether a g
 
 ### Usage
 ```go
-conv.Has in item
+conv.Has in item 
 ```
 
 ### Arguments
@@ -140,18 +175,15 @@ conv.Has in item
 ### Examples
 
 ```console
-$ gomplate -i '{{ $l := slice "foo" "bar" "baz" -}}
-there is {{ if has $l "bar" }}a{{else}}no{{end}} bar'
+$ gomplate -i '{{ $l := slice "foo" "bar" "baz" }}there is {{ if has $l "bar" }}a{{else}}no{{end}} bar'
 there is a bar
 ```
-
 ```console
 $ export DATA='{"foo": "bar"}'
 $ gomplate -i '{{ $o := data.JSON (getenv "DATA") -}}
 {{ if (has $o "foo") }}{{ $o.foo }}{{ else }}THERE IS NO FOO{{ end }}'
 bar
 ```
-
 ```console
 $ export DATA='{"baz": "qux"}'
 $ gomplate -i '{{ $o := data.JSON (getenv "DATA") -}}
@@ -163,21 +195,26 @@ THERE IS NO FOO
 
 **Alias:** `join`
 
-Concatenates the elements of an array to create a string. The separator string sep is placed between elements in the resulting string.
+Concatenates the elements of an array to create a string. The separator string `sep` is placed between elements in the resulting string.
 
-#### Example
+### Usage
+```go
+conv.Join in sep 
+```
 
-_`input.tmpl`_
-```
-{{ $a := `[1, 2, 3]` | jsonArray }}
-{{ join $a "-" }}
-```
+### Arguments
+
+| name | description |
+|------|-------------|
+| `in` | _(required)_ the array or slice |
+| `sep` | _(required)_ the separator |
+
+### Examples
 
 ```console
-$ gomplate -f input.tmpl
+$ gomplate -i '{{ $a := slice 1 2 3 }}{{ join $a "-" }}'
 1-2-3
 ```
-
 
 ## `conv.URL`
 
@@ -185,7 +222,18 @@ $ gomplate -f input.tmpl
 
 Parses a string as a URL for later use. Equivalent to [url.Parse](https://golang.org/pkg/net/url/#Parse)
 
-#### Example
+### Usage
+```go
+conv.URL in 
+```
+
+### Arguments
+
+| name | description |
+|------|-------------|
+| `in` | _(required)_ the URL string to parse |
+
+### Examples
 
 _`input.tmpl`:_
 ```
@@ -204,9 +252,12 @@ The path is /foo/bar
 
 ## `conv.ParseInt`
 
-Parses a string as an int64 for later use. Equivalent to [strconv.ParseInt](https://golang.org/pkg/strconv/#ParseInt)
+_**Note:**_ See [`conv.ToInt64`](#conv-toint64) instead for a simpler and more flexible variant of this function.
 
-#### Example
+Parses a string as an int64. Equivalent to [strconv.ParseInt](https://golang.org/pkg/strconv/#ParseInt)
+
+
+### Examples
 
 _`input.tmpl`:_
 ```
@@ -222,9 +273,12 @@ The value in decimal is 1984
 
 ## `conv.ParseFloat`
 
+_**Note:**_ See [`conv.ToFloat`](#conv-tofloat) instead for a simpler and more flexible variant of this function.
+
 Parses a string as an float64 for later use. Equivalent to [strconv.ParseFloat](https://golang.org/pkg/strconv/#ParseFloat)
 
-#### Example
+
+### Examples
 
 _`input.tmpl`:_
 ```
@@ -243,6 +297,9 @@ pi is greater than 3
 
 Parses a string as an uint64 for later use. Equivalent to [strconv.ParseUint](https://golang.org/pkg/strconv/#ParseUint)
 
+
+### Examples
+
 _`input.tmpl`:_
 ```
 {{ conv.ParseInt (getenv "BIG") 16 64 }} is max int64
@@ -257,7 +314,12 @@ $ BIG=FFFFFFFFFFFFFFFF gomplate < input.tmpl
 
 ## `conv.Atoi`
 
+_**Note:**_ See [`conv.ToInt`](#conv-toint) and [`conv.ToInt64`](#conv-toint64) instead for simpler and more flexible variants of this function.
+
 Parses a string as an int for later use. Equivalent to [strconv.Atoi](https://golang.org/pkg/strconv/#Atoi)
+
+
+### Examples
 
 _`input.tmpl`:_
 ```
@@ -284,6 +346,7 @@ Possible `true` values are: `1` or the strings `"t"`, `"true"`, or `"yes"`
 ```go
 conv.ToBool input 
 ```
+
 ```go
 input | conv.ToBool  
 ```
@@ -335,42 +398,225 @@ $ gomplate -i '{{ conv.ToBools false "blah" 0 }}'
 
 ## `conv.ToInt64`
 
-Converts the input to an `int64`.
+Converts the input to an `int64` (64-bit signed integer).
+
+This function attempts to convert most types of input (strings, numbers,
+and booleans), but behaviour when the input can not be converted is
+undefined and subject to change. Unconvertable inputs may result in
+errors, or `0` or `-1`.
+
+Floating-point numbers (with decimal points) are truncated.
+
+### Usage
+```go
+conv.ToInt64 in 
+```
+
+### Arguments
+
+| name | description |
+|------|-------------|
+| `in` | _(required)_ the value to convert |
+
+### Examples
 
 ```console
 $ gomplate -i '{{conv.ToInt64 "9223372036854775807"}}'
 9223372036854775807
 ```
+```console
+$ gomplate -i '{{conv.ToInt64 "0x42"}}'
+66
+```
+```console
+$ gomplate -i '{{conv.ToInt64 true }}'
+1
+```
 
 ## `conv.ToInt`
 
-Converts the input to an `int`. This is similar to `conv.Atoi`, but handles booleans and numbers as well as strings.
+Converts the input to an `int` (signed integer, 32- or 64-bit depending
+on platform). This is similar to [`conv.ToInt64`](#conv-toint64) on 64-bit
+platforms, but is useful when input to another function must be provided
+as an `int`.
+
+See also [`conv.ToInt64`](#conv-toint64).
+
+### Usage
+```go
+conv.ToInt in 
+```
+
+### Arguments
+
+| name | description |
+|------|-------------|
+| `in` | _(required)_ the value to convert |
+
+### Examples
 
 ```console
-$ gomplate -i '{{conv.ToInt (gt 1 2)}}'
-0
+$ gomplate -i '{{conv.ToInt "9223372036854775807"}}'
+9223372036854775807
+```
+```console
+$ gomplate -i '{{conv.ToInt "0x42"}}'
+66
+```
+```console
+$ gomplate -i '{{conv.ToInt true }}'
+1
 ```
 
 ## `conv.ToInt64s`
 
-Converts the inputs to an array of `int64`s
+Converts the inputs to an array of `int64`s.
+
+This delegates to [`conv.ToInt64`](#conv-toint64) for each input argument.
+
+### Usage
+```go
+conv.ToInt64s in... 
+```
+
+### Arguments
+
+| name | description |
+|------|-------------|
+| `in...` | _(required)_ the inputs to be converted |
+
+### Examples
+
+```console
+gomplate -i '{{ conv.ToInt64s true 0x42 "123,456.99" "1.2345e+3"}}'
+[1 66 123456 1234]
+```
 
 ## `conv.ToInts`
 
-Converts the inputs to an array of `int`s
+Converts the inputs to an array of `int`s.
+
+This delegates to [`conv.ToInt`](#conv-toint) for each input argument.
+
+### Usage
+```go
+conv.ToInts in... 
+```
+
+### Arguments
+
+| name | description |
+|------|-------------|
+| `in...` | _(required)_ the inputs to be converted |
+
+### Examples
+
+```console
+gomplate -i '{{ conv.ToInts true 0x42 "123,456.99" "1.2345e+3"}}'
+[1 66 123456 1234]
+```
 
 ## `conv.ToFloat64`
 
-Converts the input to a `float64`
+Converts the input to a `float64`.
+
+This function attempts to convert most types of input (strings, numbers,
+and booleans), but behaviour when the input can not be converted is
+undefined and subject to change. Unconvertable inputs may result in
+errors, or `0` or `-1`.
+
+### Usage
+```go
+conv.ToFloat64 in 
+```
+
+### Arguments
+
+| name | description |
+|------|-------------|
+| `in` | _(required)_ the value to convert |
+
+### Examples
+
+```console
+$ gomplate -i '{{ conv.ToFloat64 "8.233e-1"}}'
+0.8233
+$ gomplate -i '{{ conv.ToFloat64 "9,000.09"}}'
+9000.09
+```
 
 ## `conv.ToFloat64s`
 
-Converts the inputs to an array of `float64`s
+Converts the inputs to an array of `float64`s.
+
+This delegates to [`conv.ToFloat64`](#conv-tofloat64) for each input argument.
+
+### Usage
+```go
+conv.ToFloat64s in... 
+```
+
+### Arguments
+
+| name | description |
+|------|-------------|
+| `in...` | _(required)_ the inputs to be converted |
+
+### Examples
+
+```console
+$ gomplate -i '{{ conv.ToFloat64s true 0x42 "123,456.99" "1.2345e+3"}}'
+[1 66 123456.99 1234.5]
+```
 
 ## `conv.ToString`
 
-Converts the input (of any type) to a `string`
+Converts the input (of any type) to a `string`.
+
+The input will always be represented in _some_ way.
+
+### Usage
+```go
+conv.ToString in 
+```
+
+### Arguments
+
+| name | description |
+|------|-------------|
+| `in` | _(required)_ the value to convert |
+
+### Examples
+
+```console
+$ gomplate -i '{{ conv.ToString 0xFF }}'
+255
+$ gomplate -i '{{ dict "foo" "bar" | conv.ToString}}'
+map[foo:bar]
+$ gomplate -i '{{ conv.ToString nil }}'
+nil
+```
 
 ## `conv.ToStrings`
 
 Converts the inputs (of any type) to an array of `string`s
+
+This delegates to [`conv.ToString`](#conv-tostring) for each input argument.
+
+### Usage
+```go
+conv.ToStrings in... 
+```
+
+### Arguments
+
+| name | description |
+|------|-------------|
+| `in...` | _(required)_ the inputs to be converted |
+
+### Examples
+
+```console
+$ gomplate -i '{{ conv.ToStrings nil 42 true 0xF (slice 1 2 3) }}'
+[nil 42 true 15 [1 2 3]]
+```
