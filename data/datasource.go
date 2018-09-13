@@ -11,6 +11,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"plugin"
 	"strings"
 	"time"
 
@@ -23,6 +24,11 @@ import (
 
 // stdin - for overriding in tests
 var stdin io.Reader
+
+// general plugin method names
+const PluginSchemeFunction string = "Scheme"
+const PluginGetFunction string = "Get"
+const PluginGetMediaTypeFunction string = "GetMediaType"
 
 func regExtension(ext, typ string) {
 	err := mime.AddExtensionType(ext, typ)
@@ -67,6 +73,7 @@ func addSourceReader(scheme string, readFunc func(*Source, ...string) ([]byte, e
 type Data struct {
 	Sources map[string]*Source
 	cache   map[string][]byte
+	plugins map[string]plugin.Symbol
 
 	// headers from the --datasource-header/-H option that don't reference datasources from the commandline
 	extraHeaders map[string]http.Header
@@ -81,9 +88,13 @@ func (d *Data) Cleanup() {
 }
 
 // NewData - constructor for Data
-func NewData(datasourceArgs, headerArgs []string) (*Data, error) {
+func NewData(datasourceArgs, headerArgs []string, pluginArgs []string) (*Data, error) {
 	sources := make(map[string]*Source)
 	headers, err := parseHeaderArgs(headerArgs)
+	if err != nil {
+		return nil, err
+	}
+	pluginFunctions, pluginMediaTypes, err := parsePluginArgs(pluginArgs)
 	if err != nil {
 		return nil, err
 	}
@@ -96,11 +107,19 @@ func NewData(datasourceArgs, headerArgs []string) (*Data, error) {
 		// pop the header out of the map, so we end up with only the unreferenced ones
 		delete(headers, s.Alias)
 
+		// if the scheme is in our plugins then add the plugin's get method to the source
+		if gf, ok := pluginFunctions[s.URL.Scheme]; ok {
+			s.gf = gf
+		}
+		if mt, ok := pluginMediaTypes[s.URL.Scheme]; ok {
+			s.mediaType = mt
+		}
 		sources[s.Alias] = s
 	}
 	return &Data{
 		Sources:      sources,
 		extraHeaders: headers,
+		plugins:      pluginFunctions,
 	}, nil
 }
 
@@ -113,6 +132,7 @@ type Source struct {
 	hc        *http.Client   // used for http[s]: URLs, nil otherwise
 	vc        *vault.Vault   // used for vault: URLs, nil otherwise
 	kv        *libkv.LibKV   // used for consul:, etcd:, zookeeper: & boltdb: URLs, nil otherwise
+	gf        plugin.Symbol  // used for plugins, the get function symbol for the sources plugin
 	asmpg     awssmpGetter   // used for aws+smp:, nil otherwise
 	header    http.Header    // used for http[s]: URLs, nil otherwise
 }
@@ -371,6 +391,19 @@ func readStdin(source *Source, args ...string) ([]byte, error) {
 	return b, nil
 }
 
+// readPlugin returns the plugin's get function
+// and throws an errors if the get functions does not exist
+func readPlugin(source *Source, args ...string) ([]byte, error) {
+	if source.gf == nil {
+		return nil, errors.Errorf("Datasource with %s is a plugin datasource but its plugin's get method is nil.", source.Alias)
+	}
+	gf, ok := source.gf.(func(url *url.URL, headers http.Header, args []string) ([]byte, error))
+	if ok {
+		return gf(source.URL, source.header, args)
+	}
+	return nil, fmt.Errorf("Error in finding the plugin's get function")
+}
+
 func readHTTP(source *Source, args ...string) ([]byte, error) {
 	if source.hc == nil {
 		source.hc = &http.Client{Timeout: time.Second * 5}
@@ -445,6 +478,89 @@ func readBoltDB(source *Source, args ...string) ([]byte, error) {
 	}
 
 	return data, nil
+}
+
+func getPluginSchemeName(pluginArg string) (string, error){
+	p, err := plugin.Open(pluginArg)
+	if err != nil {
+		fmt.Println("pluginArg: ")
+		err = fmt.Errorf("Error occured opening plugin: " + pluginArg, ". Internal Error: " + err.Error())
+		return "", err
+	}
+	psm, err := p.Lookup(PluginSchemeFunction)
+	if err != nil {
+		err = fmt.Errorf("No Scheme function found in plugin: " + pluginArg, ". Internal Error: " + err.Error())
+		return "", err
+	}
+	psf, ok := psm.(func() (string, error));
+	if !ok{
+		err = fmt.Errorf("Scheme function contains unexpected format. Internal Error: " + err.Error())
+		return "", err
+	}
+	pluginSchemeName, err := psf()
+	return pluginSchemeName, err
+}
+
+func getPluginGetSymbol(pluginArg string)(plugin.Symbol, error) {
+	p, err := plugin.Open(pluginArg)
+	if err != nil {
+		err = fmt.Errorf("Error occured opening plugin: " + pluginArg, ". Internal Error: " + err.Error())
+		return nil, err
+	}
+	pgm, err := p.Lookup(PluginGetFunction)
+	if err != nil {
+		err = fmt.Errorf("No Get function found in plugin:  " + pluginArg)
+		err.Error()
+	}
+	return pgm, err
+}
+
+func getMediaType(pluginArg string)(string) {
+	p, err := plugin.Open(pluginArg)
+	gmtsymbol, err := p.Lookup(PluginGetMediaTypeFunction)
+	// if no getmimetype function exists, or function has unexpected format, or function errors itself...
+	// default to simple text type and return
+	if err != nil {
+		return textMimetype
+	}
+	mtf, ok := gmtsymbol.(func() (string, error))
+	if !ok{
+		return textMimetype
+	}
+	mt, err := mtf()
+	if err != nil {
+		return textMimetype
+	}
+	return mt
+}
+
+func parsePluginArgs(pluginArgs []string) (map[string]plugin.Symbol, map[string]string, error) {
+	plugins := make(map[string]plugin.Symbol)
+	mediaTypes := make(map[string]string)
+	hasError := false
+	err := errors.New("")
+	for _, v := range pluginArgs {
+		pluginSchemeName, err := getPluginSchemeName(v)
+		if err != nil {
+			hasError = true
+			break
+		}
+		// adding sourcereader here so it doesn't add overhead if user doesn't use a plugin
+		// and allows user to specify multiple plugins within a single call
+		addSourceReader(pluginSchemeName, readPlugin)
+
+		pgm, err := getPluginGetSymbol(v)
+		if err != nil {
+			hasError = true
+			break
+		}
+		plugins[pluginSchemeName] = pgm
+		mediaTypes[pluginSchemeName] = getMediaType(v)
+	}
+	if hasError {
+		return nil, nil, err
+	}
+	return plugins, mediaTypes, nil
 }
 
 func parseHeaderArgs(headerArgs []string) (map[string]http.Header, error) {

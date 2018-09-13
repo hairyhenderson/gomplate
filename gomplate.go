@@ -25,6 +25,8 @@ type Config struct {
 	DataSources       []string
 	DataSourceHeaders []string
 
+	PluginSources []string
+
 	LDelim string
 	RDelim string
 }
@@ -121,7 +123,7 @@ func newGomplate(d *data.Data, leftDelim, rightDelim string) *gomplate {
 func RunTemplates(o *Config) error {
 	Metrics = newMetrics()
 	defer runCleanupHooks()
-	d, err := data.NewData(o.DataSources, o.DataSourceHeaders)
+	d, err := data.NewData(o.DataSources, o.DataSourceHeaders, o.PluginSources)
 	if err != nil {
 		return err
 	}
