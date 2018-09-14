@@ -340,26 +340,28 @@ func TestReadStdin(t *testing.T) {
 // nolint: megacheck
 func TestDefineDatasource(t *testing.T) {
 	d := &Data{}
-	s, err := d.DefineDatasource("", "foo.json")
+	_, err := d.DefineDatasource("", "foo.json")
 	assert.Error(t, err)
 
 	d = &Data{}
-	s, err = d.DefineDatasource("", "../foo.json")
+	_, err = d.DefineDatasource("", "../foo.json")
 	assert.Error(t, err)
 
 	d = &Data{}
-	s, err = d.DefineDatasource("", "ftp://example.com/foo.yml")
+	_, err = d.DefineDatasource("", "ftp://example.com/foo.yml")
 	assert.Error(t, err)
 
 	d = &Data{}
-	s, err = d.DefineDatasource("data", "foo.json")
+	_, err = d.DefineDatasource("data", "foo.json")
+	s := d.Sources["data"]
 	assert.NoError(t, err)
 	assert.Equal(t, "data", s.Alias)
 	assert.Equal(t, "file", s.URL.Scheme)
 	assert.True(t, s.URL.IsAbs())
 
 	d = &Data{}
-	s, err = d.DefineDatasource("data", "/otherdir/foo.json")
+	_, err = d.DefineDatasource("data", "/otherdir/foo.json")
+	s = d.Sources["data"]
 	assert.NoError(t, err)
 	assert.Equal(t, "data", s.Alias)
 	assert.Equal(t, "file", s.URL.Scheme)
@@ -367,7 +369,8 @@ func TestDefineDatasource(t *testing.T) {
 	assert.Equal(t, "/otherdir/foo.json", s.URL.Path)
 
 	d = &Data{}
-	s, err = d.DefineDatasource("data", "sftp://example.com/blahblah/foo.json")
+	_, err = d.DefineDatasource("data", "sftp://example.com/blahblah/foo.json")
+	s = d.Sources["data"]
 	assert.NoError(t, err)
 	assert.Equal(t, "data", s.Alias)
 	assert.Equal(t, "sftp", s.URL.Scheme)
@@ -379,7 +382,8 @@ func TestDefineDatasource(t *testing.T) {
 			"data": {Alias: "data"},
 		},
 	}
-	s, err = d.DefineDatasource("data", "/otherdir/foo.json")
+	_, err = d.DefineDatasource("data", "/otherdir/foo.json")
+	s = d.Sources["data"]
 	assert.NoError(t, err)
 	assert.Equal(t, "data", s.Alias)
 	assert.Nil(t, s.URL)
