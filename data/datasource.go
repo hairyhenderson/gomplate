@@ -225,16 +225,16 @@ func absURL(value string) (*url.URL, error) {
 }
 
 // DefineDatasource -
-func (d *Data) DefineDatasource(alias, value string) (*Source, error) {
+func (d *Data) DefineDatasource(alias, value string) (string, error) {
 	if alias == "" {
-		return nil, errors.New("datasource alias must be provided")
+		return "", errors.New("datasource alias must be provided")
 	}
 	if d.DatasourceExists(alias) {
-		return d.Sources[alias], nil
+		return "", nil
 	}
 	srcURL, err := parseSourceURL(value)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 	s := &Source{
 		Alias:  alias,
@@ -245,7 +245,7 @@ func (d *Data) DefineDatasource(alias, value string) (*Source, error) {
 		d.Sources = make(map[string]*Source)
 	}
 	d.Sources[alias] = s
-	return s, nil
+	return "", nil
 }
 
 // DatasourceExists -
