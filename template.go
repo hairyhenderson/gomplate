@@ -26,6 +26,8 @@ type tplate struct {
 	contents     string
 	mode         os.FileMode
 	modeOverride bool
+
+	additionalTemplates []string
 }
 
 func (t *tplate) toGoTemplate(g *gomplate) (*template.Template, error) {
@@ -33,7 +35,17 @@ func (t *tplate) toGoTemplate(g *gomplate) (*template.Template, error) {
 	tmpl.Option("missingkey=error")
 	tmpl.Funcs(g.funcMap)
 	tmpl.Delims(g.leftDelim, g.rightDelim)
-	return tmpl.Parse(t.contents)
+	tp, err := tmpl.Parse(t.contents)
+	if err != nil {
+		return tp, err
+	}
+	for _, k := range t.additionalTemplates {
+		tp, err = tmpl.New(k).ParseGlob(k)
+		if err != nil {
+			return tp, err
+		}
+	}
+	return tp, nil
 }
 
 // loadContents - reads the template in _once_ if it hasn't yet been read. Uses the name!
@@ -68,10 +80,11 @@ func gatherTemplates(o *Config) (templates []*tplate, err error) {
 			mode = 0644
 		}
 		templates = []*tplate{{
-			name:         "<arg>",
-			contents:     o.Input,
-			mode:         mode,
-			modeOverride: modeOverride,
+			name:                "<arg>",
+			contents:            o.Input,
+			mode:                mode,
+			modeOverride:        modeOverride,
+			additionalTemplates: o.AdditionalTemplates,
 		}}
 
 		if len(o.OutputFiles) == 1 {
@@ -81,14 +94,14 @@ func gatherTemplates(o *Config) (templates []*tplate, err error) {
 
 	// input dirs presume output dirs are set too
 	if o.InputDir != "" {
-		templates, err = walkDir(o.InputDir, o.OutputDir, o.ExcludeGlob, mode, modeOverride)
+		templates, err = walkDir(o.InputDir, o.OutputDir, o.ExcludeGlob, mode, modeOverride, o.AdditionalTemplates)
 		if err != nil {
 			return nil, err
 		}
 	} else if len(o.InputFiles) > 0 && o.Input == "" {
 		templates = make([]*tplate, len(o.InputFiles))
 		for i := range o.InputFiles {
-			templates[i], err = fileToTemplates(o.InputFiles[i], o.OutputFiles[i], mode, modeOverride)
+			templates[i], err = fileToTemplates(o.InputFiles[i], o.OutputFiles[i], mode, modeOverride, o.AdditionalTemplates)
 			if err != nil {
 				return nil, err
 			}
@@ -115,7 +128,7 @@ func processTemplates(templates []*tplate) ([]*tplate, error) {
 // walkDir - given an input dir `dir` and an output dir `outDir`, and a list
 // of exclude globs (if any), walk the input directory and create a list of
 // tplate objects, and an error, if any.
-func walkDir(dir, outDir string, excludeGlob []string, mode os.FileMode, modeOverride bool) ([]*tplate, error) {
+func walkDir(dir, outDir string, excludeGlob []string, mode os.FileMode, modeOverride bool, additionalTemplates []string) ([]*tplate, error) {
 	dir = filepath.Clean(dir)
 	outDir = filepath.Clean(outDir)
 	si, err := fs.Stat(dir)
@@ -147,7 +160,7 @@ func walkDir(dir, outDir string, excludeGlob []string, mode os.FileMode, modeOve
 		}
 
 		if entry.IsDir() {
-			t, err := walkDir(nextInPath, nextOutPath, excludes, mode, modeOverride)
+			t, err := walkDir(nextInPath, nextOutPath, excludes, mode, modeOverride, additionalTemplates)
 			if err != nil {
 				return nil, err
 			}
@@ -167,7 +180,7 @@ func walkDir(dir, outDir string, excludeGlob []string, mode os.FileMode, modeOve
 	return templates, nil
 }
 
-func fileToTemplates(inFile, outFile string, mode os.FileMode, modeOverride bool) (*tplate, error) {
+func fileToTemplates(inFile, outFile string, mode os.FileMode, modeOverride bool, additionalTemplates []string) (*tplate, error) {
 	if inFile != "-" {
 		si, err := fs.Stat(inFile)
 		if err != nil {
@@ -178,10 +191,11 @@ func fileToTemplates(inFile, outFile string, mode os.FileMode, modeOverride bool
 		}
 	}
 	tmpl := &tplate{
-		name:         inFile,
-		targetPath:   outFile,
-		mode:         mode,
-		modeOverride: modeOverride,
+		name:                inFile,
+		targetPath:          outFile,
+		mode:                mode,
+		modeOverride:        modeOverride,
+		additionalTemplates: additionalTemplates,
 	}
 
 	return tmpl, nil

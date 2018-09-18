@@ -116,6 +116,7 @@ func initFlags(command *cobra.Command) {
 	command.Flags().StringArrayVar(&opts.ExcludeGlob, "exclude", []string{}, "glob of files to not parse")
 
 	command.Flags().StringArrayVarP(&opts.OutputFiles, "out", "o", []string{"-"}, "output `file` name. Omit to use standard output.")
+	command.Flags().StringArrayVar(&opts.AdditionalTemplates, "templates", []string{}, "Additional template files (globs)")
 	command.Flags().StringVar(&opts.OutputDir, "output-dir", ".", "`directory` to store the processed templates. Only used for --input-dir")
 	command.Flags().StringVar(&opts.OutMode, "chmod", "", "set the mode for output file(s). Omit to inherit from input file(s)")
 

@@ -27,6 +27,8 @@ type Config struct {
 
 	LDelim string
 	RDelim string
+
+	AdditionalTemplates []string
 }
 
 // parse an os.FileMode out of the string, and let us know if it's an override or not...

@@ -95,7 +95,7 @@ func TestWalkDir(t *testing.T) {
 	defer func() { fs = origfs }()
 	fs = afero.NewMemMapFs()
 
-	_, err := walkDir("/indir", "/outdir", nil, 0, false)
+	_, err := walkDir("/indir", "/outdir", nil, 0, false, []string{})
 	assert.Error(t, err)
 
 	_ = fs.MkdirAll("/indir/one", 0777)
@@ -104,7 +104,7 @@ func TestWalkDir(t *testing.T) {
 	afero.WriteFile(fs, "/indir/one/bar", []byte("bar"), 0644)
 	afero.WriteFile(fs, "/indir/two/baz", []byte("baz"), 0644)
 
-	templates, err := walkDir("/indir", "/outdir", []string{"/*/two"}, 0, false)
+	templates, err := walkDir("/indir", "/outdir", []string{"/*/two"}, 0, false, []string{})
 
 	assert.NoError(t, err)
 	assert.Equal(t, 2, len(templates))
