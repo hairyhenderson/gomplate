@@ -1,8 +1,10 @@
 package gomplate
 
 import (
+	"fmt"
 	"io"
 	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"text/template"
@@ -81,14 +83,19 @@ func (o *Config) String() string {
 	if o.RDelim != "}}" {
 		c += "\nright_delim: " + o.RDelim
 	}
+
+	if len(o.AdditionalTemplates) > 0 {
+		c += "\ntemplates: " + strings.Join(o.AdditionalTemplates, ", ")
+	}
 	return c
 }
 
 // gomplate -
 type gomplate struct {
-	funcMap    template.FuncMap
-	leftDelim  string
-	rightDelim string
+	funcMap         template.FuncMap
+	leftDelim       string
+	rightDelim      string
+	templateAliases templateAliases
 }
 
 // runTemplate -
@@ -110,13 +117,58 @@ func (g *gomplate) runTemplate(t *tplate) error {
 	return err
 }
 
+type templateAliases map[string]string
+
 // newGomplate -
-func newGomplate(d *data.Data, leftDelim, rightDelim string) *gomplate {
+func newGomplate(d *data.Data, leftDelim, rightDelim string, ta templateAliases) *gomplate {
 	return &gomplate{
-		leftDelim:  leftDelim,
-		rightDelim: rightDelim,
-		funcMap:    Funcs(d),
+		leftDelim:       leftDelim,
+		rightDelim:      rightDelim,
+		funcMap:         Funcs(d),
+		templateAliases: ta,
 	}
+}
+
+func parseTemplateArgs(templateArgs []string) (templateAliases, error) {
+	ta := templateAliases{}
+	for _, templateArg := range templateArgs {
+		parts := strings.SplitN(templateArg, "=", 2)
+		alias := ""
+		path := ""
+		if len(parts) == 1 {
+			path = parts[0]
+			alias = filepath.Base(templateArg)
+		} else if len(parts) == 2 {
+			alias = parts[0]
+			path = parts[1]
+		}
+		fi, err := os.Stat(path)
+		switch {
+		case err != nil:
+			return ta, err
+		case fi.IsDir():
+			// it's a directory
+			err = filepath.Walk(path, func(innerPath string, info os.FileInfo, err error) error {
+				if err != nil {
+					return err
+				}
+				if info.IsDir() { // for now, just one dir only
+					if path == innerPath {
+						return nil
+					}
+					return filepath.SkipDir
+				}
+				ta[fmt.Sprintf("%s/%s", alias, filepath.Base(innerPath))] = innerPath
+				return nil
+			})
+			if err != nil {
+				return ta, err
+			}
+		default:
+			ta[alias] = path
+		}
+	}
+	return ta, nil
 }
 
 // RunTemplates - run all gomplate templates specified by the given configuration
@@ -128,8 +180,11 @@ func RunTemplates(o *Config) error {
 		return err
 	}
 	addCleanupHook(d.Cleanup)
-
-	g := newGomplate(d, o.LDelim, o.RDelim)
+	templates, err := parseTemplateArgs(o.AdditionalTemplates)
+	if err != nil {
+		return err
+	}
+	g := newGomplate(d, o.LDelim, o.RDelim, templates)
 
 	return g.runTemplates(o)
 }
