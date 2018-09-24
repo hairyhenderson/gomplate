@@ -2,7 +2,9 @@ package gomplate
 
 import (
 	"io"
+	"io/ioutil"
 	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"text/template"
@@ -27,6 +29,8 @@ type Config struct {
 
 	LDelim string
 	RDelim string
+
+	AdditionalTemplates []string
 }
 
 // parse an os.FileMode out of the string, and let us know if it's an override or not...
@@ -79,14 +83,19 @@ func (o *Config) String() string {
 	if o.RDelim != "}}" {
 		c += "\nright_delim: " + o.RDelim
 	}
+
+	if len(o.AdditionalTemplates) > 0 {
+		c += "\ntemplates: " + strings.Join(o.AdditionalTemplates, ", ")
+	}
 	return c
 }
 
 // gomplate -
 type gomplate struct {
-	funcMap    template.FuncMap
-	leftDelim  string
-	rightDelim string
+	funcMap         template.FuncMap
+	leftDelim       string
+	rightDelim      string
+	templateAliases templateAliases
 }
 
 // runTemplate -
@@ -104,17 +113,66 @@ func (g *gomplate) runTemplate(t *tplate) error {
 			defer t.target.(io.Closer).Close()
 		}
 	}
-	err = tmpl.Execute(t.target, context)
+	err = tmpl.ExecuteTemplate(t.target, t.name, context)
 	return err
 }
 
+type templateAliases map[string]string
+
 // newGomplate -
-func newGomplate(d *data.Data, leftDelim, rightDelim string) *gomplate {
+func newGomplate(d *data.Data, leftDelim, rightDelim string, ta templateAliases) *gomplate {
 	return &gomplate{
-		leftDelim:  leftDelim,
-		rightDelim: rightDelim,
-		funcMap:    Funcs(d),
+		leftDelim:       leftDelim,
+		rightDelim:      rightDelim,
+		funcMap:         Funcs(d),
+		templateAliases: ta,
 	}
+}
+
+func parseTemplateArgs(templateArgs []string) (templateAliases, error) {
+	ta := templateAliases{}
+	for _, templateArg := range templateArgs {
+		err := parseTemplateArg(templateArg, ta)
+		if err != nil {
+			return ta, err
+		}
+	}
+	return ta, nil
+}
+
+func parseTemplateArg(templateArg string, ta templateAliases) error {
+	parts := strings.SplitN(templateArg, "=", 2)
+	path := parts[0]
+	alias := ""
+	if len(parts) > 1 {
+		alias = parts[0]
+		path = parts[1]
+	}
+	switch fi, err := os.Stat(path); {
+	case err != nil:
+		return err
+	case fi.IsDir():
+		files, err := ioutil.ReadDir(path)
+		if err != nil {
+			return err
+		}
+		prefix := path
+		if alias != "" {
+			prefix = alias
+		}
+		for _, f := range files {
+			if !f.IsDir() { // one-level only
+				ta[filepath.Join(prefix, f.Name())] = filepath.Join(path, f.Name())
+			}
+		}
+	default:
+		if alias != "" {
+			ta[alias] = path
+		} else {
+			ta[path] = path
+		}
+	}
+	return nil
 }
 
 // RunTemplates - run all gomplate templates specified by the given configuration
@@ -126,8 +184,11 @@ func RunTemplates(o *Config) error {
 		return err
 	}
 	addCleanupHook(d.Cleanup)
-
-	g := newGomplate(d, o.LDelim, o.RDelim)
+	templates, err := parseTemplateArgs(o.AdditionalTemplates)
+	if err != nil {
+		return err
+	}
+	g := newGomplate(d, o.LDelim, o.RDelim, templates)
 
 	return g.runTemplates(o)
 }
