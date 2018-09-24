@@ -1,8 +1,8 @@
 package gomplate
 
 import (
-	"fmt"
 	"io"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -113,7 +113,7 @@ func (g *gomplate) runTemplate(t *tplate) error {
 			defer t.target.(io.Closer).Close()
 		}
 	}
-	err = tmpl.Execute(t.target, context)
+	err = tmpl.ExecuteTemplate(t.target, t.name, context)
 	return err
 }
 
@@ -132,43 +132,47 @@ func newGomplate(d *data.Data, leftDelim, rightDelim string, ta templateAliases)
 func parseTemplateArgs(templateArgs []string) (templateAliases, error) {
 	ta := templateAliases{}
 	for _, templateArg := range templateArgs {
-		parts := strings.SplitN(templateArg, "=", 2)
-		alias := ""
-		path := ""
-		if len(parts) == 1 {
-			path = parts[0]
-			alias = filepath.Base(templateArg)
-		} else if len(parts) == 2 {
-			alias = parts[0]
-			path = parts[1]
-		}
-		fi, err := os.Stat(path)
-		switch {
-		case err != nil:
+		err := parseTemplateArg(templateArg, ta)
+		if err != nil {
 			return ta, err
-		case fi.IsDir():
-			// it's a directory
-			err = filepath.Walk(path, func(innerPath string, info os.FileInfo, err error) error {
-				if err != nil {
-					return err
-				}
-				if info.IsDir() { // for now, just one dir only
-					if path == innerPath {
-						return nil
-					}
-					return filepath.SkipDir
-				}
-				ta[fmt.Sprintf("%s/%s", alias, filepath.Base(innerPath))] = innerPath
-				return nil
-			})
-			if err != nil {
-				return ta, err
-			}
-		default:
-			ta[alias] = path
 		}
 	}
 	return ta, nil
+}
+
+func parseTemplateArg(templateArg string, ta templateAliases) error {
+	parts := strings.SplitN(templateArg, "=", 2)
+	path := parts[0]
+	alias := ""
+	if len(parts) > 1 {
+		alias = parts[0]
+		path = parts[1]
+	}
+	switch fi, err := os.Stat(path); {
+	case err != nil:
+		return err
+	case fi.IsDir():
+		files, err := ioutil.ReadDir(path)
+		if err != nil {
+			return err
+		}
+		prefix := path
+		if alias != "" {
+			prefix = alias
+		}
+		for _, f := range files {
+			if !f.IsDir() { // one-level only
+				ta[filepath.Join(prefix, f.Name())] = filepath.Join(path, f.Name())
+			}
+		}
+	default:
+		if alias != "" {
+			ta[alias] = path
+		} else {
+			ta[path] = path
+		}
+	}
+	return nil
 }
 
 // RunTemplates - run all gomplate templates specified by the given configuration

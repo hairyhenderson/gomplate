@@ -40,6 +40,7 @@ func (t *tplate) toGoTemplate(g *gomplate) (*template.Template, error) {
 		return tp, err
 	}
 	for alias, path := range t.additionalTemplates {
+		// nolint: gosec
 		b, err := ioutil.ReadFile(path)
 		if err != nil {
 			return nil, err
