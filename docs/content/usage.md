@@ -82,6 +82,48 @@ A few different forms are valid:
 Sometimes it's necessary to override the default template delimiters (`{{`/`}}`).
 Use `--left-delim`/`--right-delim` or set `$GOMPLATE_LEFT_DELIM`/`$GOMPLATE_RIGHT_DELIM`.
 
+### `--template`/`-t`
+
+Add a nested template that can be referenced by the main input template(s) with the [`template`](https://golang.org/pkg/text/template/#hdr-Actions) built-in. Specify multiple times to add multiple template references.
+
+A few different forms are valid:
+
+- `--template mytemplate.t`
+  - References a file `mytemplate.t` in the current working directory.
+  - It will be available as a template named `mytemplate.t`:
+    ```console
+    $ gomplate --template helloworld.tmpl -i 'here are the contents of the template: [ {{ template "helloworld.tmpl" }} ]'
+    here are the contents of the template: [ hello, world! ]
+    ```
+- `--template path/to/mytemplate.t`
+  - References a file `mytemplate.t` in the path `path/to/`.
+  - It will be available as a template named `path/to/mytemplate.t`:
+    ```console
+    $ gomplate --template foo/bar/helloworld.tmpl -i 'here are the contents of the template: [ {{ template "foo/bar/helloworld.tmpl" }} ]'
+    here are the contents of the template: [ hello, world! ]
+    ```
+- `--template path/to/`
+  - Makes available all files in the path `path/to/`.
+  - Any files within this path can be referenced:
+    ```console
+    $ gomplate --template foo/bar/ -i 'here are the contents of the template: [ {{ template "foo/bar/helloworld.tmpl" }} ]'
+    here are the contents of the template: [ hello, world! ]
+    ```
+- `--template alias=path/to/mytemplate.t`
+  - References a file `mytemplate.t` in the path `path/to/`
+  - It will be available as a template named `alias`:
+    ```console
+    $ gomplate --template t=foo/bar/helloworld.tmpl -i 'here are the contents of the template: [ {{ template "t" }} ]'
+    here are the contents of the template: [ hello, world! ]
+    ```
+- `--template alias=path/to/`
+  - Makes available all files in the path `path/to/`.
+  - Any files within this path can be referenced, with the path replaced with `alias`:
+    ```console
+    $ gomplate --template dir=foo/bar/ -i 'here are the contents of the template: [ {{ template "dir/helloworld.tmpl" }} ]'
+    here are the contents of the template: [ hello, world! ]
+    ```
+
 ## Post-template command execution
 
 Gomplate can launch other commands when template execution is successful. Simply

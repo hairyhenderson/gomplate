@@ -2,15 +2,15 @@ package gomplate
 
 import (
 	"io"
-	"io/ioutil"
 	"os"
-	"path/filepath"
+	"path"
 	"strconv"
 	"strings"
 	"text/template"
 	"time"
 
 	"github.com/hairyhenderson/gomplate/data"
+	"github.com/spf13/afero"
 )
 
 // Config - values necessary for rendering templates with gomplate.
@@ -30,7 +30,7 @@ type Config struct {
 	LDelim string
 	RDelim string
 
-	AdditionalTemplates []string
+	Templates []string
 }
 
 // parse an os.FileMode out of the string, and let us know if it's an override or not...
@@ -84,8 +84,8 @@ func (o *Config) String() string {
 		c += "\nright_delim: " + o.RDelim
 	}
 
-	if len(o.AdditionalTemplates) > 0 {
-		c += "\ntemplates: " + strings.Join(o.AdditionalTemplates, ", ")
+	if len(o.Templates) > 0 {
+		c += "\ntemplates: " + strings.Join(o.Templates, ", ")
 	}
 	return c
 }
@@ -95,7 +95,7 @@ type gomplate struct {
 	funcMap         template.FuncMap
 	leftDelim       string
 	rightDelim      string
-	templateAliases templateAliases
+	nestedTemplates templateAliases
 }
 
 // runTemplate -
@@ -113,63 +113,64 @@ func (g *gomplate) runTemplate(t *tplate) error {
 			defer t.target.(io.Closer).Close()
 		}
 	}
-	err = tmpl.ExecuteTemplate(t.target, t.name, context)
+	err = tmpl.Execute(t.target, context)
 	return err
 }
 
 type templateAliases map[string]string
 
 // newGomplate -
-func newGomplate(d *data.Data, leftDelim, rightDelim string, ta templateAliases) *gomplate {
+func newGomplate(d *data.Data, leftDelim, rightDelim string, nested templateAliases) *gomplate {
 	return &gomplate{
 		leftDelim:       leftDelim,
 		rightDelim:      rightDelim,
 		funcMap:         Funcs(d),
-		templateAliases: ta,
+		nestedTemplates: nested,
 	}
 }
 
 func parseTemplateArgs(templateArgs []string) (templateAliases, error) {
-	ta := templateAliases{}
+	nested := templateAliases{}
 	for _, templateArg := range templateArgs {
-		err := parseTemplateArg(templateArg, ta)
+		err := parseTemplateArg(templateArg, nested)
 		if err != nil {
-			return ta, err
+			return nil, err
 		}
 	}
-	return ta, nil
+	return nested, nil
 }
 
 func parseTemplateArg(templateArg string, ta templateAliases) error {
 	parts := strings.SplitN(templateArg, "=", 2)
-	path := parts[0]
+	pth := parts[0]
 	alias := ""
 	if len(parts) > 1 {
 		alias = parts[0]
-		path = parts[1]
+		pth = parts[1]
 	}
-	switch fi, err := os.Stat(path); {
+
+	switch fi, err := fs.Stat(pth); {
 	case err != nil:
 		return err
 	case fi.IsDir():
-		files, err := ioutil.ReadDir(path)
+		files, err := afero.ReadDir(fs, pth)
 		if err != nil {
 			return err
 		}
-		prefix := path
+		prefix := pth
 		if alias != "" {
 			prefix = alias
 		}
 		for _, f := range files {
 			if !f.IsDir() { // one-level only
-				ta[filepath.Join(prefix, f.Name())] = filepath.Join(path, f.Name())
+				ta[path.Join(prefix, f.Name())] = path.Join(pth, f.Name())
 			}
 		}
 	default:
 		if alias != "" {
-			ta[alias] = path
+			ta[alias] = pth
 		} else {
-			ta[path] = path
+			ta[pth] = pth
 		}
 	}
 	return nil
@@ -184,11 +185,11 @@ func RunTemplates(o *Config) error {
 		return err
 	}
 	addCleanupHook(d.Cleanup)
-	templates, err := parseTemplateArgs(o.AdditionalTemplates)
+	nested, err := parseTemplateArgs(o.Templates)
 	if err != nil {
 		return err
 	}
-	g := newGomplate(d, o.LDelim, o.RDelim, templates)
+	g := newGomplate(d, o.LDelim, o.RDelim, nested)
 
 	return g.runTemplates(o)
 }

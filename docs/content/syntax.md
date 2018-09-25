@@ -137,6 +137,53 @@ Templates rendered by gomplate always have a _default_ context. In future, gompl
 context may expand (_watch this space!_), but currently, it contains one item: the
 system's environment variables, available as [`.Env`](#env).
 
+## Nested templates
+
+Gomplate supports nested templates, using Go's `template` action. These can be
+defined in-line with the `define` action, or external data can be used with the
+[`--template`/`-t`](../usage/#template-t) flag.
+
+Note that nested templates do _not_ have access to gomplate's default
+[context](#the-context) (though it can be explicitly provided to the `template`
+action).
+
+### In-line templates
+
+To define a nested template in-line, you can use the `define` action.
+
+```
+{{ define "T1" -}}
+Hello {{ . }}!
+{{- end -}}
+
+{{ template "T1" "World" }}
+{{ template "T1" }}
+{{ template "T1" "everybody" }}
+```
+
+This renders as:
+
+```
+Hello World!
+Hello <no value>!
+Hello everybody!
+```
+
+### External templates
+
+To define a nested template from an external source such as a file, use the
+[`--template`/`-t`](../usage/#template-t) flag.
+
+_hello.t:_
+```
+Hello {{ . }}!
+```
+
+```
+$ gomplate -t hello=hello.t -i '{{ template "hello" "World" }} {{ template "hello" .Env.USER }}"
+Hello World! Hello hairyhenderson!
+```
+
 ## `.Env`
 
 You can easily access environment variables with `.Env`, but there's a catch:

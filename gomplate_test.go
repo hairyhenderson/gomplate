@@ -7,6 +7,8 @@ import (
 	"os"
 	"testing"
 
+	"github.com/spf13/afero"
+
 	"text/template"
 
 	"github.com/hairyhenderson/gomplate/aws"
@@ -187,9 +189,76 @@ right_delim: `
 		RDelim:      "}}",
 		Input:       "{{ foo }}",
 		OutputFiles: []string{"-"},
+		Templates:   []string{"foo=foo.t", "bar=bar.t"},
 	}
 	expected = `input: <arg>
-output: -`
+output: -
+templates: foo=foo.t, bar=bar.t`
 
 	assert.Equal(t, expected, c.String())
+}
+
+func TestParseTemplateArg(t *testing.T) {
+	fs = afero.NewMemMapFs()
+	afero.WriteFile(fs, "foo.t", []byte("hi"), 0600)
+	_ = fs.MkdirAll("dir", 0755)
+	afero.WriteFile(fs, "dir/foo.t", []byte("hi"), 0600)
+	afero.WriteFile(fs, "dir/bar.t", []byte("hi"), 0600)
+
+	testdata := []struct {
+		arg      string
+		expected map[string]string
+		err      bool
+	}{
+		{"bogus.t", nil, true},
+		{"foo.t", map[string]string{"foo.t": "foo.t"}, false},
+		{"foo=foo.t", map[string]string{"foo": "foo.t"}, false},
+		{"dir/foo.t", map[string]string{"dir/foo.t": "dir/foo.t"}, false},
+		{"foo=dir/foo.t", map[string]string{"foo": "dir/foo.t"}, false},
+		{"dir/", map[string]string{"dir/foo.t": "dir/foo.t", "dir/bar.t": "dir/bar.t"}, false},
+		{"t=dir/", map[string]string{"t/foo.t": "dir/foo.t", "t/bar.t": "dir/bar.t"}, false},
+	}
+
+	for _, d := range testdata {
+		nested := templateAliases{}
+		err := parseTemplateArg(d.arg, nested)
+		if d.err {
+			assert.Error(t, err, d.arg)
+		} else {
+			assert.NoError(t, err, d.arg)
+			assert.Equal(t, templateAliases(d.expected), nested, d.arg)
+		}
+	}
+}
+
+func TestParseTemplateArgs(t *testing.T) {
+	fs = afero.NewMemMapFs()
+	afero.WriteFile(fs, "foo.t", []byte("hi"), 0600)
+	_ = fs.MkdirAll("dir", 0755)
+	afero.WriteFile(fs, "dir/foo.t", []byte("hi"), 0600)
+	afero.WriteFile(fs, "dir/bar.t", []byte("hi"), 0600)
+
+	args := []string{"foo.t",
+		"foo=foo.t",
+		"bar=dir/foo.t",
+		"dir/",
+		"t=dir/",
+	}
+
+	expected := map[string]string{
+		"foo.t":     "foo.t",
+		"foo":       "foo.t",
+		"bar":       "dir/foo.t",
+		"dir/foo.t": "dir/foo.t",
+		"dir/bar.t": "dir/bar.t",
+		"t/foo.t":   "dir/foo.t",
+		"t/bar.t":   "dir/bar.t",
+	}
+
+	nested, err := parseTemplateArgs(args)
+	assert.NoError(t, err)
+	assert.Equal(t, templateAliases(expected), nested)
+
+	_, err = parseTemplateArgs([]string{"bogus.t"})
+	assert.Error(t, err)
 }

@@ -26,8 +26,6 @@ type tplate struct {
 	contents     string
 	mode         os.FileMode
 	modeOverride bool
-
-	additionalTemplates templateAliases
 }
 
 func (t *tplate) toGoTemplate(g *gomplate) (*template.Template, error) {
@@ -35,22 +33,22 @@ func (t *tplate) toGoTemplate(g *gomplate) (*template.Template, error) {
 	tmpl.Option("missingkey=error")
 	tmpl.Funcs(g.funcMap)
 	tmpl.Delims(g.leftDelim, g.rightDelim)
-	tp, err := tmpl.Parse(t.contents)
+	_, err := tmpl.Parse(t.contents)
 	if err != nil {
-		return tp, err
+		return nil, err
 	}
-	for alias, path := range t.additionalTemplates {
+	for alias, path := range g.nestedTemplates {
 		// nolint: gosec
 		b, err := ioutil.ReadFile(path)
 		if err != nil {
 			return nil, err
 		}
-		tp, err = tp.New(alias).Parse(string(b))
+		_, err = tmpl.New(alias).Parse(string(b))
 		if err != nil {
-			return tp, err
+			return nil, err
 		}
 	}
-	return tp, nil
+	return tmpl, nil
 }
 
 // loadContents - reads the template in _once_ if it hasn't yet been read. Uses the name!
@@ -79,22 +77,16 @@ func gatherTemplates(o *Config) (templates []*tplate, err error) {
 		return nil, err
 	}
 
-	td, err := parseTemplateArgs(o.AdditionalTemplates)
-	if err != nil {
-		return nil, err
-	}
 	// the arg-provided input string gets a special name
 	if o.Input != "" {
 		if mode == 0 {
 			mode = 0644
 		}
-
 		templates = []*tplate{{
-			name:                "<arg>",
-			contents:            o.Input,
-			mode:                mode,
-			modeOverride:        modeOverride,
-			additionalTemplates: td,
+			name:         "<arg>",
+			contents:     o.Input,
+			mode:         mode,
+			modeOverride: modeOverride,
 		}}
 
 		if len(o.OutputFiles) == 1 {
@@ -104,14 +96,14 @@ func gatherTemplates(o *Config) (templates []*tplate, err error) {
 
 	// input dirs presume output dirs are set too
 	if o.InputDir != "" {
-		templates, err = walkDir(o.InputDir, o.OutputDir, o.ExcludeGlob, mode, modeOverride, td)
+		templates, err = walkDir(o.InputDir, o.OutputDir, o.ExcludeGlob, mode, modeOverride)
 		if err != nil {
 			return nil, err
 		}
 	} else if len(o.InputFiles) > 0 && o.Input == "" {
 		templates = make([]*tplate, len(o.InputFiles))
 		for i := range o.InputFiles {
-			templates[i], err = fileToTemplates(o.InputFiles[i], o.OutputFiles[i], mode, modeOverride, td)
+			templates[i], err = fileToTemplates(o.InputFiles[i], o.OutputFiles[i], mode, modeOverride)
 			if err != nil {
 				return nil, err
 			}
@@ -138,7 +130,7 @@ func processTemplates(templates []*tplate) ([]*tplate, error) {
 // walkDir - given an input dir `dir` and an output dir `outDir`, and a list
 // of exclude globs (if any), walk the input directory and create a list of
 // tplate objects, and an error, if any.
-func walkDir(dir, outDir string, excludeGlob []string, mode os.FileMode, modeOverride bool, td templateAliases) ([]*tplate, error) {
+func walkDir(dir, outDir string, excludeGlob []string, mode os.FileMode, modeOverride bool) ([]*tplate, error) {
 	dir = filepath.Clean(dir)
 	outDir = filepath.Clean(outDir)
 	si, err := fs.Stat(dir)
@@ -170,7 +162,7 @@ func walkDir(dir, outDir string, excludeGlob []string, mode os.FileMode, modeOve
 		}
 
 		if entry.IsDir() {
-			t, err := walkDir(nextInPath, nextOutPath, excludes, mode, modeOverride, td)
+			t, err := walkDir(nextInPath, nextOutPath, excludes, mode, modeOverride)
 			if err != nil {
 				return nil, err
 			}
@@ -190,7 +182,7 @@ func walkDir(dir, outDir string, excludeGlob []string, mode os.FileMode, modeOve
 	return templates, nil
 }
 
-func fileToTemplates(inFile, outFile string, mode os.FileMode, modeOverride bool, additionalTemplates templateAliases) (*tplate, error) {
+func fileToTemplates(inFile, outFile string, mode os.FileMode, modeOverride bool) (*tplate, error) {
 	if inFile != "-" {
 		si, err := fs.Stat(inFile)
 		if err != nil {
@@ -201,11 +193,10 @@ func fileToTemplates(inFile, outFile string, mode os.FileMode, modeOverride bool
 		}
 	}
 	tmpl := &tplate{
-		name:                inFile,
-		targetPath:          outFile,
-		mode:                mode,
-		modeOverride:        modeOverride,
-		additionalTemplates: additionalTemplates,
+		name:         inFile,
+		targetPath:   outFile,
+		mode:         mode,
+		modeOverride: modeOverride,
 	}
 
 	return tmpl, nil
