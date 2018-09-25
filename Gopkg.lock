@@ -10,7 +10,7 @@
   version = "v1.0.1"
 
 [[projects]]
-  digest = "1:cb97249d96f49b288823c3c82919aa389f1c1ab0a705c09976e9c09e2a8ad1a4"
+  digest = "1:77f2882e1578d22289f988ccbfb2c29195ff17b4d21cfb4be2cf768af47c2d25"
   name = "github.com/aws/aws-sdk-go"
   packages = [
     "aws",
@@ -47,8 +47,8 @@
     "service/sts",
   ]
   pruneopts = "NUT"
-  revision = "7715ed93fca215da2c707088a0cca5646ad91543"
-  version = "v1.15.24"
+  revision = "0d5157217e4c72d0fc7fabad8e0501d3d5cb768d"
+  version = "v1.15.41"
 
 [[projects]]
   digest = "1:27c31c51caa806074eca1038cbdc6a9c5b2eb202264b6bfb359eb441e2594268"
@@ -161,12 +161,12 @@
   revision = "d1df168234942b108d288625a58afe19791630bd"
 
 [[projects]]
-  digest = "1:8661c09343741bf091252e52828955317a0a5f5947399927739725e07a34aad5"
+  digest = "1:78db254ccce6bd2701d3a1eaac236fe0c19c79f5dc2ab8e753b704abc1340bd7"
   name = "github.com/hashicorp/consul"
   packages = ["api"]
   pruneopts = "NUT"
-  revision = "e716d1b5f8be252b3e53906c6d5632e0228f30fa"
-  version = "v1.2.2"
+  revision = "48d287ef690ada66634885640f3444dbf7b71d18"
+  version = "v1.2.3"
 
 [[projects]]
   digest = "1:f0d9d74edbd40fdeada436d5ac9cb5197407899af3fef85ff0137077ffe8ae19"
@@ -177,12 +177,12 @@
   version = "v1.0.0"
 
 [[projects]]
-  branch = "master"
   digest = "1:a5d940c38bf56f121721bfa747c66356df387cb9d5318c570c6d4170aab62862"
   name = "github.com/hashicorp/go-cleanhttp"
   packages = ["."]
   pruneopts = "NUT"
-  revision = "d5fe4b57a186c716b0e00b8c301cbd9b4182694d"
+  revision = "e8ab9daed8d1ddd2d3c4efba338fe2eeae2e4f18"
+  version = "v0.5.0"
 
 [[projects]]
   digest = "1:2ed138049ab373f696db2081ca48f15c5abdf20893803612a284f2bdce2bf443"
@@ -258,8 +258,8 @@
     "helper/strutil",
   ]
   pruneopts = "NUT"
-  revision = "87492f9258e0227f3717e3883c6a8be5716bf564"
-  version = "v0.11.0"
+  revision = "8575f8fedcf8f5a6eb2b4701cb527b99574b5286"
+  version = "v0.11.1"
 
 [[projects]]
   digest = "1:406338ad39ab2e37b7f4452906442a3dbf0eb3379dd1f06aafb5c07e769a5fbb"
@@ -348,8 +348,8 @@
     "mem",
   ]
   pruneopts = "NUT"
-  revision = "787d034dfe70e44075ccc060d346146ef53270ad"
-  version = "v1.1.1"
+  revision = "d40851caa0d747393da1ffb28f7f9d8b4eeffebd"
+  version = "v1.1.2"
 
 [[projects]]
   digest = "1:343d44e06621142ab09ae0c76c1799104cdfddd3ffb445d78b1adf8dc3ffaf3d"
@@ -393,7 +393,7 @@
     "pbkdf2",
   ]
   pruneopts = "NUT"
-  revision = "614d502a4dac94afa3a6ce146bd1736da82514c6"
+  revision = "0e37d006457bf46f9e6692014ba72ef82c33022c"
 
 [[projects]]
   branch = "master"
@@ -407,15 +407,15 @@
     "idna",
   ]
   pruneopts = "NUT"
-  revision = "8a410e7b638dca158bf9e766925842f6651ff828"
+  revision = "2f5d2388922f370f4355f327fcf4cfe9f5583908"
 
 [[projects]]
   branch = "master"
-  digest = "1:7e7f0804044e91c06a78a4d1b28f59b93d2d8edb78f5a97036f840cf82e41500"
+  digest = "1:c85846c49ae6dfe8f0737c9f40b058d5eb77ede8d0d0be61fc9e5b83148e09ad"
   name = "golang.org/x/sys"
   packages = ["unix"]
   pruneopts = "NUT"
-  revision = "d99a578cf41bfccdeaf48b0845c823a4b8b0ad5e"
+  revision = "90868a75fefd03942536221d7c0e2f84ec62a668"
 
 [[projects]]
   digest = "1:e7071ed636b5422cc51c0e3a6cebc229d6c9fffc528814b519a980641422d619"
