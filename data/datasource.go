@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
-	"log"
 	"mime"
 	"net/http"
 	"net/url"
@@ -27,7 +26,7 @@ var stdin io.Reader
 func regExtension(ext, typ string) {
 	err := mime.AddExtensionType(ext, typ)
 	if err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
 }
 
@@ -293,21 +292,21 @@ func (d *Data) Datasource(alias string, args ...string) (interface{}, error) {
 func parseData(mimeType, s string) (out interface{}, err error) {
 	switch mimeType {
 	case jsonMimetype:
-		out = JSON(s)
+		out, err = JSON(s)
 	case jsonArrayMimetype:
-		out = JSONArray(s)
+		out, err = JSONArray(s)
 	case yamlMimetype:
-		out = YAML(s)
+		out, err = YAML(s)
 	case csvMimetype:
-		out = CSV(s)
+		out, err = CSV(s)
 	case tomlMimetype:
-		out = TOML(s)
+		out, err = TOML(s)
 	case textMimetype:
 		out = s
 	default:
 		return nil, errors.Errorf("Datasources of type %s not yet supported", mimeType)
 	}
-	return out, nil
+	return out, err
 }
 
 // DatasourceReachable - Determines if the named datasource is reachable with
@@ -407,10 +406,13 @@ func readHTTP(source *Source, args ...string) ([]byte, error) {
 	return body, nil
 }
 
-func readConsul(source *Source, args ...string) ([]byte, error) {
+func readConsul(source *Source, args ...string) (data []byte, err error) {
 	if source.kv == nil {
-		source.kv = libkv.NewConsul(source.URL)
-		err := source.kv.Login()
+		source.kv, err = libkv.NewConsul(source.URL)
+		if err != nil {
+			return nil, err
+		}
+		err = source.kv.Login()
 		if err != nil {
 			return nil, err
 		}
@@ -421,7 +423,7 @@ func readConsul(source *Source, args ...string) ([]byte, error) {
 		p = p + "/" + args[0]
 	}
 
-	data, err := source.kv.Read(p)
+	data, err = source.kv.Read(p)
 	if err != nil {
 		return nil, err
 	}
@@ -429,9 +431,12 @@ func readConsul(source *Source, args ...string) ([]byte, error) {
 	return data, nil
 }
 
-func readBoltDB(source *Source, args ...string) ([]byte, error) {
+func readBoltDB(source *Source, args ...string) (data []byte, err error) {
 	if source.kv == nil {
-		source.kv = libkv.NewBoltDB(source.URL)
+		source.kv, err = libkv.NewBoltDB(source.URL)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	if len(args) != 1 {
@@ -439,7 +444,7 @@ func readBoltDB(source *Source, args ...string) ([]byte, error) {
 	}
 	p := args[0]
 
-	data, err := source.kv.Read(p)
+	data, err = source.kv.Read(p)
 	if err != nil {
 		return nil, err
 	}

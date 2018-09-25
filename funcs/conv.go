@@ -56,7 +56,7 @@ func (f *ConvFuncs) Slice(args ...interface{}) []interface{} {
 }
 
 // Join -
-func (f *ConvFuncs) Join(in interface{}, sep string) string {
+func (f *ConvFuncs) Join(in interface{}, sep string) (string, error) {
 	return conv.Join(in, sep)
 }
 

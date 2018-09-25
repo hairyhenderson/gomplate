@@ -4,6 +4,10 @@ import (
 	"testing"
 	"time"
 
+	"github.com/ugorji/go/codec"
+
+	"github.com/pkg/errors"
+
 	"github.com/stretchr/testify/assert"
 )
 
@@ -14,7 +18,8 @@ func TestUnmarshalObj(t *testing.T) {
 		"true": true,
 	}
 
-	test := func(actual map[string]interface{}) {
+	test := func(actual map[string]interface{}, err error) {
+		assert.NoError(t, err)
 		assert.Equal(t, expected["foo"], actual["foo"])
 		assert.Equal(t, expected["one"], actual["one"])
 		assert.Equal(t, expected["true"], actual["true"])
@@ -25,13 +30,20 @@ func TestUnmarshalObj(t *testing.T) {
 one: 1.0
 true: true
 `))
+
+	obj := make(map[string]interface{})
+	_, err := unmarshalObj(obj, "SOMETHING", func(in []byte, out interface{}) error {
+		return errors.New("fail")
+	})
+	assert.EqualError(t, err, "Unable to unmarshal object SOMETHING: fail")
 }
 
 func TestUnmarshalArray(t *testing.T) {
 
 	expected := []string{"foo", "bar"}
 
-	test := func(actual []interface{}) {
+	test := func(actual []interface{}, err error) {
+		assert.NoError(t, err)
 		assert.Equal(t, expected[0], actual[0])
 		assert.Equal(t, expected[1], actual[1])
 	}
@@ -40,6 +52,46 @@ func TestUnmarshalArray(t *testing.T) {
 - foo
 - bar
 `))
+
+	obj := make([]interface{}, 1)
+	_, err := unmarshalArray(obj, "SOMETHING", func(in []byte, out interface{}) error {
+		return errors.New("fail")
+	})
+	assert.EqualError(t, err, "Unable to unmarshal array SOMETHING: fail")
+}
+
+func TestMarshalObj(t *testing.T) {
+	expected := "foo"
+	actual, err := marshalObj(nil, func(in interface{}) ([]byte, error) {
+		return []byte("foo"), nil
+	})
+	assert.NoError(t, err)
+	assert.Equal(t, expected, actual)
+	_, err = marshalObj(nil, func(in interface{}) ([]byte, error) {
+		return nil, errors.New("fail")
+	})
+	assert.Error(t, err)
+}
+
+func TestToJSONBytes(t *testing.T) {
+	expected := []byte("null")
+	actual, err := toJSONBytes(nil)
+	assert.NoError(t, err)
+	assert.Equal(t, expected, actual)
+
+	_, err = toJSONBytes(&badObject{})
+	assert.Error(t, err)
+}
+
+type badObject struct {
+}
+
+func (b *badObject) CodecEncodeSelf(e *codec.Encoder) {
+	panic("boom")
+}
+
+func (b *badObject) CodecDecodeSelf(e *codec.Decoder) {
+
 }
 
 func TestToJSON(t *testing.T) {
@@ -56,7 +108,12 @@ func TestToJSON(t *testing.T) {
 			},
 		},
 	}
-	assert.Equal(t, expected, ToJSON(in))
+	out, err := ToJSON(in)
+	assert.NoError(t, err)
+	assert.Equal(t, expected, out)
+
+	_, err = ToJSON(&badObject{})
+	assert.Error(t, err)
 }
 
 func TestToJSONPretty(t *testing.T) {
@@ -84,7 +141,12 @@ func TestToJSONPretty(t *testing.T) {
 			},
 		},
 	}
-	assert.Equal(t, expected, ToJSONPretty("  ", in))
+	out, err := ToJSONPretty("  ", in)
+	assert.NoError(t, err)
+	assert.Equal(t, expected, out)
+
+	_, err = ToJSONPretty("  ", &badObject{})
+	assert.Error(t, err)
 }
 
 func TestToYAML(t *testing.T) {
@@ -110,29 +172,33 @@ key`: map[string]interface{}{
 		},
 		"d": time.Date(2006, time.January, 2, 15, 4, 5, 999999999, mst),
 	}
-	assert.Equal(t, expected, ToYAML(in))
+	out, err := ToYAML(in)
+	assert.NoError(t, err)
+	assert.Equal(t, expected, out)
 }
 
 func TestCSV(t *testing.T) {
-	in := "first,second,third\n1,2,3\n4,5,6"
 	expected := [][]string{
 		{"first", "second", "third"},
 		{"1", "2", "3"},
 		{"4", "5", "6"},
 	}
-	assert.Equal(t, expected, CSV(in))
+	testdata := []struct {
+		args []string
+		out  [][]string
+	}{
+		{[]string{"first,second,third\n1,2,3\n4,5,6"}, expected},
+		{[]string{";", "first;second;third\r\n1;2;3\r\n4;5;6\r\n"}, expected},
 
-	in = "first;second;third\r\n1;2;3\r\n4;5;6\r\n"
-	assert.Equal(t, expected, CSV(";", in))
-
-	in = ""
-	assert.Equal(t, [][]string{nil}, CSV(in))
-
-	in = "\n"
-	assert.Equal(t, [][]string{nil}, CSV(in))
-
-	in = "foo"
-	assert.Equal(t, [][]string{{"foo"}}, CSV(in))
+		{[]string{""}, [][]string{nil}},
+		{[]string{"\n"}, [][]string{nil}},
+		{[]string{"foo"}, [][]string{{"foo"}}},
+	}
+	for _, d := range testdata {
+		out, err := CSV(d.args...)
+		assert.NoError(t, err)
+		assert.Equal(t, d.out, out)
+	}
 }
 
 func TestCSVByRow(t *testing.T) {
@@ -149,59 +215,55 @@ func TestCSVByRow(t *testing.T) {
 			"third":  "6",
 		},
 	}
-	assert.Equal(t, expected, CSVByRow(in))
-
-	in = "1,2,3\n4,5,6"
-	assert.Equal(t, expected, CSVByRow("first,second,third", in))
-
-	in = "1;2;3\n4;5;6"
-	assert.Equal(t, expected, CSVByRow(";", "first;second;third", in))
-
-	in = "first;second;third\r\n1;2;3\r\n4;5;6"
-	assert.Equal(t, expected, CSVByRow(";", in))
-
-	expected = []map[string]string{
-		{"A": "1", "B": "2", "C": "3"},
-		{"A": "4", "B": "5", "C": "6"},
+	testdata := []struct {
+		args []string
+		out  []map[string]string
+	}{
+		{[]string{in}, expected},
+		{[]string{"first,second,third", "1,2,3\n4,5,6"}, expected},
+		{[]string{";", "first;second;third", "1;2;3\n4;5;6"}, expected},
+		{[]string{";", "first;second;third\r\n1;2;3\r\n4;5;6"}, expected},
+		{[]string{"", "1,2,3\n4,5,6"}, []map[string]string{
+			{"A": "1", "B": "2", "C": "3"},
+			{"A": "4", "B": "5", "C": "6"},
+		}},
+		{[]string{"", "1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1"}, []map[string]string{
+			{"A": "1", "B": "1", "C": "1", "D": "1", "E": "1", "F": "1", "G": "1", "H": "1", "I": "1", "J": "1", "K": "1", "L": "1", "M": "1", "N": "1", "O": "1", "P": "1", "Q": "1", "R": "1", "S": "1", "T": "1", "U": "1", "V": "1", "W": "1", "X": "1", "Y": "1", "Z": "1", "AA": "1", "BB": "1", "CC": "1", "DD": "1"},
+		}},
 	}
-
-	in = "1,2,3\n4,5,6"
-	assert.Equal(t, expected, CSVByRow("", in))
-
-	expected = []map[string]string{
-		{"A": "1", "B": "1", "C": "1", "D": "1", "E": "1", "F": "1", "G": "1", "H": "1", "I": "1", "J": "1", "K": "1", "L": "1", "M": "1", "N": "1", "O": "1", "P": "1", "Q": "1", "R": "1", "S": "1", "T": "1", "U": "1", "V": "1", "W": "1", "X": "1", "Y": "1", "Z": "1", "AA": "1", "BB": "1", "CC": "1", "DD": "1"},
+	for _, d := range testdata {
+		out, err := CSVByRow(d.args...)
+		assert.NoError(t, err)
+		assert.Equal(t, d.out, out)
 	}
-
-	in = "1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1"
-	assert.Equal(t, expected, CSVByRow("", in))
 }
 
 func TestCSVByColumn(t *testing.T) {
-	in := "first,second,third\n1,2,3\n4,5,6"
 	expected := map[string][]string{
 		"first":  {"1", "4"},
 		"second": {"2", "5"},
 		"third":  {"3", "6"},
 	}
-	assert.Equal(t, expected, CSVByColumn(in))
 
-	in = "1,2,3\n4,5,6"
-	assert.Equal(t, expected, CSVByColumn("first,second,third", in))
-
-	in = "1;2;3\n4;5;6"
-	assert.Equal(t, expected, CSVByColumn(";", "first;second;third", in))
-
-	in = "first;second;third\r\n1;2;3\r\n4;5;6"
-	assert.Equal(t, expected, CSVByColumn(";", in))
-
-	expected = map[string][]string{
-		"A": {"1", "4"},
-		"B": {"2", "5"},
-		"C": {"3", "6"},
+	testdata := []struct {
+		args []string
+		out  map[string][]string
+	}{
+		{[]string{"first,second,third\n1,2,3\n4,5,6"}, expected},
+		{[]string{"first,second,third", "1,2,3\n4,5,6"}, expected},
+		{[]string{";", "first;second;third", "1;2;3\n4;5;6"}, expected},
+		{[]string{";", "first;second;third\r\n1;2;3\r\n4;5;6"}, expected},
+		{[]string{"", "1,2,3\n4,5,6"}, map[string][]string{
+			"A": {"1", "4"},
+			"B": {"2", "5"},
+			"C": {"3", "6"},
+		}},
 	}
-
-	in = "1,2,3\n4,5,6"
-	assert.Equal(t, expected, CSVByColumn("", in))
+	for _, d := range testdata {
+		out, err := CSVByColumn(d.args...)
+		assert.NoError(t, err)
+		assert.Equal(t, d.out, out)
+	}
 }
 
 func TestAutoIndex(t *testing.T) {
@@ -222,11 +284,21 @@ func TestToCSV(t *testing.T) {
 	}
 	expected := "first,second,third\r\n1,2,3\r\n4,5,6\r\n"
 
-	assert.Equal(t, expected, ToCSV(in))
+	out, err := ToCSV(in)
+	assert.NoError(t, err)
+	assert.Equal(t, expected, out)
 
 	expected = "first;second;third\r\n1;2;3\r\n4;5;6\r\n"
 
-	assert.Equal(t, expected, ToCSV(";", in))
+	out, err = ToCSV(";", in)
+	assert.NoError(t, err)
+	assert.Equal(t, expected, out)
+
+	_, err = ToCSV(42, [][]int{{1, 2}})
+	assert.Error(t, err)
+
+	_, err = ToCSV([][]int{{1, 2}})
+	assert.Error(t, err)
 }
 
 func TestTOML(t *testing.T) {
@@ -299,7 +371,9 @@ hosts = [
 		},
 	}
 
-	assert.Equal(t, expected, TOML(in))
+	out, err := TOML(in)
+	assert.NoError(t, err)
+	assert.Equal(t, expected, out)
 }
 
 func TestToTOML(t *testing.T) {
@@ -324,5 +398,7 @@ true = true
 			},
 		},
 	}
-	assert.Equal(t, expected, ToTOML(in))
+	out, err := ToTOML(in)
+	assert.NoError(t, err)
+	assert.Equal(t, expected, out)
 }

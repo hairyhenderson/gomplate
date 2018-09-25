@@ -27,14 +27,15 @@ func AddBase64Funcs(f map[string]interface{}) {
 type Base64Funcs struct{}
 
 // Encode -
-func (f *Base64Funcs) Encode(in interface{}) string {
+func (f *Base64Funcs) Encode(in interface{}) (string, error) {
 	b := toBytes(in)
 	return base64.Encode(b)
 }
 
 // Decode -
-func (f *Base64Funcs) Decode(in interface{}) string {
-	return string(base64.Decode(conv.ToString(in)))
+func (f *Base64Funcs) Decode(in interface{}) (string, error) {
+	out, err := base64.Decode(conv.ToString(in))
+	return string(out), err
 }
 
 type byter interface {

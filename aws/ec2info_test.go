@@ -24,15 +24,15 @@ func TestTag_MissingKey(t *testing.T) {
 		},
 	}
 	e := &Ec2Info{
-		describer: func() InstanceDescriber {
-			return client
+		describer: func() (InstanceDescriber, error) {
+			return client, nil
 		},
 		metaClient: ec2meta,
 		cache:      make(map[string]interface{}),
 	}
 
-	assert.Empty(t, e.Tag("missing"))
-	assert.Equal(t, "default", e.Tag("missing", "default"))
+	assert.Empty(t, must(e.Tag("missing")))
+	assert.Equal(t, "default", must(e.Tag("missing", "default")))
 }
 
 func TestTag_ValidKey(t *testing.T) {
@@ -51,15 +51,15 @@ func TestTag_ValidKey(t *testing.T) {
 		},
 	}
 	e := &Ec2Info{
-		describer: func() InstanceDescriber {
-			return client
+		describer: func() (InstanceDescriber, error) {
+			return client, nil
 		},
 		metaClient: ec2meta,
 		cache:      make(map[string]interface{}),
 	}
 
-	assert.Equal(t, "bar", e.Tag("foo"))
-	assert.Equal(t, "bar", e.Tag("foo", "default"))
+	assert.Equal(t, "bar", must(e.Tag("foo")))
+	assert.Equal(t, "bar", must(e.Tag("foo", "default")))
 }
 
 func TestTag_NonEC2(t *testing.T) {
@@ -68,15 +68,15 @@ func TestTag_NonEC2(t *testing.T) {
 	defer server.Close()
 	client := DummyInstanceDescriber{}
 	e := &Ec2Info{
-		describer: func() InstanceDescriber {
-			return client
+		describer: func() (InstanceDescriber, error) {
+			return client, nil
 		},
 		metaClient: ec2meta,
 		cache:      make(map[string]interface{}),
 	}
 
-	assert.Equal(t, "", e.Tag("foo"))
-	assert.Equal(t, "default", e.Tag("foo", "default"))
+	assert.Equal(t, "", must(e.Tag("foo")))
+	assert.Equal(t, "default", must(e.Tag("foo", "default")))
 }
 
 func TestNewEc2Info(t *testing.T) {
@@ -95,11 +95,11 @@ func TestNewEc2Info(t *testing.T) {
 		},
 	}
 	e := NewEc2Info(ClientOptions{})
-	e.describer = func() InstanceDescriber {
-		return client
+	e.describer = func() (InstanceDescriber, error) {
+		return client, nil
 	}
 	e.metaClient = ec2meta
 
-	assert.Equal(t, "bar", e.Tag("foo"))
-	assert.Equal(t, "bar", e.Tag("foo", "default"))
+	assert.Equal(t, "bar", must(e.Tag("foo")))
+	assert.Equal(t, "bar", must(e.Tag("foo", "default")))
 }

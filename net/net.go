@@ -1,62 +1,69 @@
 package net
 
 import (
-	"log"
 	"net"
 )
 
 // LookupIP -
-func LookupIP(name string) string {
-	i := LookupIPs(name)
-	if len(i) == 0 {
-		return ""
+func LookupIP(name string) (string, error) {
+	i, err := LookupIPs(name)
+	if err != nil {
+		return "", err
 	}
-	return i[0]
+	if len(i) == 0 {
+		return "", nil
+	}
+	return i[0], nil
 }
 
 // LookupIPs -
-func LookupIPs(name string) []string {
+func LookupIPs(name string) ([]string, error) {
 	srcIPs, err := net.LookupIP(name)
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 	var ips []string
 	for _, v := range srcIPs {
-		if v.To4() != nil {
+		if v.To4() != nil && !contains(ips, v.String()) {
 			ips = append(ips, v.String())
 		}
 	}
-	return ips
+	return ips, nil
+}
+
+func contains(a []string, s string) bool {
+	for _, v := range a {
+		if v == s {
+			return true
+		}
+	}
+	return false
 }
 
 // LookupCNAME -
-func LookupCNAME(name string) string {
-	cname, err := net.LookupCNAME(name)
-	if err != nil {
-		log.Fatal(err)
-	}
-	return cname
+func LookupCNAME(name string) (string, error) {
+	return net.LookupCNAME(name)
 }
 
 // LookupTXT -
-func LookupTXT(name string) []string {
-	records, err := net.LookupTXT(name)
-	if err != nil {
-		log.Fatal(err)
-	}
-	return records
+func LookupTXT(name string) ([]string, error) {
+	return net.LookupTXT(name)
 }
 
 // LookupSRV -
-func LookupSRV(name string) *net.SRV {
-	return LookupSRVs(name)[0]
+func LookupSRV(name string) (*net.SRV, error) {
+	srvs, err := LookupSRVs(name)
+	if err != nil {
+		return nil, err
+	}
+	return srvs[0], nil
 }
 
 // LookupSRVs -
-func LookupSRVs(name string) []*net.SRV {
+func LookupSRVs(name string) ([]*net.SRV, error) {
 	_, addrs, err := net.LookupSRV("", "", name)
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
-	return addrs
+	return addrs, nil
 }

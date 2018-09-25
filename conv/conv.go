@@ -2,10 +2,11 @@ package conv
 
 import (
 	"fmt"
-	"log"
 	"reflect"
 	"strconv"
 	"strings"
+
+	"github.com/pkg/errors"
 )
 
 // Bool converts a string to a boolean value, using strconv.ParseBool under the covers.
@@ -71,35 +72,36 @@ func Slice(args ...interface{}) []interface{} {
 //
 // This is functionally identical to strings.Join, except that each element is
 // coerced to a string first
-func Join(in interface{}, sep string) string {
+func Join(in interface{}, sep string) (out string, err error) {
 	s, ok := in.([]string)
 	if ok {
-		return strings.Join(s, sep)
+		return strings.Join(s, sep), nil
 	}
 
 	var a []interface{}
 	a, ok = in.([]interface{})
 	if !ok {
-		var err error
 		a, err = interfaceSlice(in)
-		ok = err == nil
+		if err != nil {
+			return "", errors.Wrap(err, "Input to Join must be an array")
+		}
+		ok = true
 	}
 	if ok {
 		b := make([]string, len(a))
 		for i := range a {
 			b[i] = ToString(a[i])
 		}
-		return strings.Join(b, sep)
+		return strings.Join(b, sep), nil
 	}
 
-	log.Fatal("Input to Join must be an array")
-	return ""
+	return "", errors.New("Input to Join must be an array")
 }
 
 func interfaceSlice(slice interface{}) ([]interface{}, error) {
 	s := reflect.ValueOf(slice)
 	if s.Kind() != reflect.Slice {
-		return nil, fmt.Errorf("interfaceSlice given a non-slice type %T", s)
+		return nil, errors.Errorf("interfaceSlice given a non-slice type %T", s)
 	}
 	ret := make([]interface{}, s.Len())
 	for i := 0; i < s.Len(); i++ {

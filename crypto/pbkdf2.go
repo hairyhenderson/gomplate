@@ -5,8 +5,9 @@ import (
 	"crypto/sha1" //nolint: gosec
 	"crypto/sha256"
 	"crypto/sha512"
-	"fmt"
 	"hash"
+
+	"github.com/pkg/errors"
 
 	"golang.org/x/crypto/pbkdf2"
 )
@@ -42,7 +43,7 @@ func StrToHash(hash string) (crypto.Hash, error) {
 	case "SHA512_256", "SHA512/256", "SHA-512_256", "SHA-512/256":
 		return crypto.SHA512_256, nil
 	}
-	return 0, fmt.Errorf("no such hash %s", hash)
+	return 0, errors.Errorf("no such hash %s", hash)
 }
 
 // PBKDF2 - Run the Password-Based Key Derivation Function #2 as defined in
@@ -50,7 +51,7 @@ func StrToHash(hash string) (crypto.Hash, error) {
 func PBKDF2(password, salt []byte, iter, keylen int, hashFunc crypto.Hash) ([]byte, error) {
 	h, ok := hashFuncs[hashFunc]
 	if !ok {
-		return nil, fmt.Errorf("hashFunc not supported: %v", hashFunc)
+		return nil, errors.Errorf("hashFunc not supported: %v", hashFunc)
 	}
 	return pbkdf2.Key(password, salt, iter, keylen, h), nil
 }
