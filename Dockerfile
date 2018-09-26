@@ -3,7 +3,7 @@ FROM golang:1.11-alpine@sha256:bd64aa7911ce2d9f18d3bf1a7736f0b65fa5d41d8250eb1d2
 RUN apk add --no-cache \
     make \
     git \
-    upx
+    upx=3.94-r0
 
 RUN mkdir -p /go/src/github.com/hairyhenderson/gomplate
 WORKDIR /go/src/github.com/hairyhenderson/gomplate
