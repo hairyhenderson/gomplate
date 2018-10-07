@@ -26,5 +26,6 @@ func Funcs(d *data.Data) template.FuncMap {
 	funcs.AddPathFuncs(f)
 	funcs.AddSockaddrFuncs(f)
 	funcs.AddTestFuncs(f)
+	funcs.AddFakeFuncs(f)
 	return f
 }
