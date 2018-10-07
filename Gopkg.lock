@@ -70,6 +70,17 @@
   version = "v1.3.1"
 
 [[projects]]
+  digest = "1:2573a325074e749412b2134fddd990c4dd7d9ec64ed3481814ec666b7c073dfc"
+  name = "github.com/brianvoe/gofakeit"
+  packages = [
+    ".",
+    "data",
+  ]
+  pruneopts = "NUT"
+  revision = "df4975330df29aa30c268a4c16aabbbe6263fc2d"
+  version = "v3.12.1"
+
+[[projects]]
   digest = "1:ffe9824d294da03b391f44e1ae8281281b4afc1bdaa9588c9097785e3af10cec"
   name = "github.com/davecgh/go-spew"
   packages = ["spew"]
@@ -477,6 +488,7 @@
     "github.com/blang/vfs",
     "github.com/blang/vfs/memfs",
     "github.com/boltdb/bolt",
+    "github.com/brianvoe/gofakeit",
     "github.com/docker/libkv",
     "github.com/docker/libkv/store",
     "github.com/docker/libkv/store/boltdb",
