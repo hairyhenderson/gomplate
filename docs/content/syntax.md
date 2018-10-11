@@ -47,7 +47,7 @@ Goodbye, world.
 
 ## Indexing arrays and maps
 
-Occasionally, multi-dimensional data such as arrays (lists, slices) and maps (dictionaries) are used in templates, somtimes through the use of
+Occasionally, multi-dimensional data such as arrays (lists, slices) and maps (dictionaries) are used in templates, sometimes through the use of
 [data sources][]. Accessing values within these data can be done in a few
 ways which bear clarifying:
 
