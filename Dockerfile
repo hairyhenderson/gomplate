@@ -50,7 +50,7 @@ LABEL org.opencontainers.image.created=$BUILD_DATE \
 RUN apk add --no-cache ca-certificates
 COPY --from=artifacts /bin/gomplate_${OS}-${ARCH}-slim /bin/gomplate
 
-ENTRYPOINT [ "/gomplate" ]
+ENTRYPOINT [ "/bin/gomplate" ]
 
 CMD [ "--help" ]
 
