@@ -19,3 +19,13 @@ type KMS struct {
 func NewKMS(option ClientOptions) *KMS {
 	//return
 }
+
+// Encrypt plaintext using the specified key
+func (k *KMS) Encrypt(keyID string, plaintext string) (string, error) {
+
+}
+
+// Decrypt cyphertext
+func (k *KMS) Decrypt(cyphertext string) (string, error) {
+
+}
