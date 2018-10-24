@@ -70,13 +70,13 @@ func (a *Funcs) EC2Tag(tag string, def ...string) (string, error) {
 }
 
 // KMSEncrypt -
-func (a *Funcs) KMSEncrypt() {
+func (a *Funcs) KMSEncrypt(keyID string, plaintext string) (string, error) {
 	a.kmsInit.Do(a.initKMS)
 	return a.kms.Ciphertext()
 }
 
 // KMSDecrypt -
-func (a *Funcs) KMSDecrypt() {
+func (a *Funcs) KMSDecrypt(ciphertext string) (string, error) {
 	a.kmsInit.Do(a.initKMS)
 	return a.kms.Cleartext()
 }
