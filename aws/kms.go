@@ -10,7 +10,12 @@ import (
 	"github.com/pkg/errors"
 )
 
-// NewKMS -
-func NewKMS(option ClientOptions) {
+// KMS -
+type KMS struct {
+	Client *kms.KMS
+}
 
+// NewKMS -
+func NewKMS(option ClientOptions) *KMS {
+	//return
 }
