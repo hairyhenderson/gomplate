@@ -30,14 +30,18 @@ func AWSFuncs(f map[string]interface{}) {
 	f["ec2dynamic"] = AWSNS().EC2Dynamic
 	f["ec2tag"] = AWSNS().EC2Tag
 	f["ec2region"] = AWSNS().EC2Region
+	f["kmsencrypt"] = AWSNS().KMSEncrypt
+	f["kmsdecrypt"] = AWSNS().KMSDecrypt
 }
 
 // Funcs -
 type Funcs struct {
 	meta     *aws.Ec2Meta
 	info     *aws.Ec2Info
+	kms      *aws.KMS
 	metaInit sync.Once
 	infoInit sync.Once
+	kmsInit  sync.Once
 	awsopts  aws.ClientOptions
 }
 
@@ -65,6 +69,18 @@ func (a *Funcs) EC2Tag(tag string, def ...string) (string, error) {
 	return a.info.Tag(tag, def...)
 }
 
+// KMSEncrypt -
+func (a *Funcs) KMSEncrypt() {
+	a.kmsInit.Do(a.initKMS)
+	return a.kms.Ciphertext()
+}
+
+// KMSDecrypt -
+func (a *Funcs) KMSDecrypt() {
+	a.kmsInit.Do(a.initKMS)
+	return a.kms.Cleartext()
+}
+
 func (a *Funcs) initMeta() {
 	if a.meta == nil {
 		a.meta = aws.NewEc2Meta(a.awsopts)
@@ -74,5 +90,11 @@ func (a *Funcs) initMeta() {
 func (a *Funcs) initInfo() {
 	if a.info == nil {
 		a.info = aws.NewEc2Info(a.awsopts)
+	}
+}
+
+func (a *Funcs) initKMS() {
+	if a.kms == nil {
+		a.kms = aws.NewKMS(a.awsopts)
 	}
 }
