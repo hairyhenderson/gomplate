@@ -90,7 +90,7 @@ math.Ceil num
 
 | name | description |
 |------|-------------|
-| `num` | _(required)_ The input number. Will be converted to a `float64`, or `0` if not convertable |
+| `num` | _(required)_ The input number. Will be converted to a `float64`, or `0` if not convertible |
 
 ### Examples
 
