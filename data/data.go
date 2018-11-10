@@ -6,6 +6,9 @@ import (
 	"encoding/json"
 	"strings"
 
+	"github.com/Shopify/ejson"
+	ejsonJson "github.com/Shopify/ejson/json"
+	"github.com/hairyhenderson/gomplate/env"
 	// XXX: replace once https://github.com/BurntSushi/toml/pull/179 is merged
 	"github.com/hairyhenderson/toml"
 	"github.com/pkg/errors"
@@ -29,10 +32,39 @@ func unmarshalArray(obj []interface{}, in string, f func([]byte, interface{}) er
 	return obj, nil
 }
 
-// JSON - Unmarshal a JSON Object
+// JSON - Unmarshal a JSON Object. Can be ejson-encrypted.
 func JSON(in string) (map[string]interface{}, error) {
 	obj := make(map[string]interface{})
-	return unmarshalObj(obj, in, yaml.Unmarshal)
+	out, err := unmarshalObj(obj, in, yaml.Unmarshal)
+	if err != nil {
+		return out, err
+	}
+
+	_, ok := out[ejsonJson.PublicKeyField]
+	if ok {
+		out, err = decryptEJSON(in)
+	}
+	return out, err
+}
+
+// decryptEJSON - decrypts an ejson input, and unmarshals it, stripping the _public_key field.
+func decryptEJSON(in string) (map[string]interface{}, error) {
+	keyDir := env.Getenv("EJSON_KEYDIR", "/opt/ejson/keys")
+	key := env.Getenv("EJSON_KEY")
+
+	rIn := bytes.NewBufferString(in)
+	rOut := &bytes.Buffer{}
+	err := ejson.Decrypt(rIn, rOut, keyDir, key)
+	if err != nil {
+		return nil, errors.WithStack(err)
+	}
+	obj := make(map[string]interface{})
+	out, err := unmarshalObj(obj, rOut.String(), yaml.Unmarshal)
+	if err != nil {
+		return nil, errors.WithStack(err)
+	}
+	delete(out, ejsonJson.PublicKeyField)
+	return out, nil
 }
 
 // JSONArray - Unmarshal a JSON Array

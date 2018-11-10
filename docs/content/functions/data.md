@@ -158,7 +158,30 @@ $ gomplate -d person.json -f input.tmpl
 
 Converts a JSON string into an object. Only works for JSON Objects (not Arrays or other valid JSON types). This can be used to access properties of JSON objects.
 
-#### Example
+#### Encrypted JSON support (EJSON)
+
+If the input is in the [EJSON](https://github.com/Shopify/ejson) format (i.e. has a `_public_key` field), this function will attempt to decrypt the document first. A private key must be provided by one of these methods:
+
+- set the `EJSON_KEY` environment variable to the private key's value
+- set the `EJSON_KEY_FILE` environment variable to the path to a file containing the private key
+- set the `EJSON_KEYDIR` environment variable to the path to a directory containing private keys (filename must be the public key), just like [`ejson decrypt`'s `--keydir`](https://github.com/Shopify/ejson/blob/master/man/man1/ejson.1.ronn) flag. Defaults to `/opt/ejson/keys`.
+
+### Usage
+```go
+data.JSON in
+```
+
+```go
+in | data.JSON
+```
+
+### Arguments
+
+| name | description |
+|------|-------------|
+| `in` | _(required)_ the input string |
+
+### Examples
 
 _`input.tmpl`:_
 ```
