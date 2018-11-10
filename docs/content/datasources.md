@@ -8,7 +8,7 @@ Datasources are an optional, but central concept in gomplate. While the basic fl
 
 Some common use-cases include injecting sensitive material like passwords (which should not be stored in source-control with the templates), or providing simplified configuration formats that can be fed to a template to provide a much more complex output.
 
-Datasources can be defined with the [`--datasource`/`-d`][] commandline flag or the [`defineDatasource`][] function, and referenced via an _alias_ inside the template, using a function such as [`datasource`][] or [`include`][].
+Datasources can be defined with the [`--datasource`/`-d`][] command-line flag or the [`defineDatasource`][] function, and referenced via an _alias_ inside the template, using a function such as [`datasource`][] or [`include`][].
 
 Since datasources are defined separately from the template, the same templates can be used with different datasources and even different datasource types. For example, gomplate could be run on a developer machine with a `file` datasource pointing to a JSON file containing test data, where the same template could be used in a production environment using a `consul` datasource with the real production data.
 
@@ -51,7 +51,7 @@ Gomplate supports a number of datasources, each specified with a particular URL 
 ## Directory Datasources
 
 When the _path_ component of the URL ends with a `/` character, the datasource is read with _directory_ semantics. Not all datasource types support this, and for those that don't support the notion of a directory, the behaviour is currently undefined. See each documentation section for details.
-
+ 
 Currently the following datasources support directory semantics:
 
 - [File](#using-file-datasources)
@@ -84,7 +84,7 @@ These are the supported types:
 | Format | MIME Type | Extension(s) | Notes |
 |--------|-----------|-------|------|
 | CSV | `text/csv` | | Uses the [`data.CSV`][] function to present the file as a 2-dimensional row-first string array |
-| JSON | `application/json` | | [JSON][] _objects_ are assumed, and arrays or other values are not parsed with this type. Uses the [`data.JSON`][] function for parsing |
+| JSON | `application/json` | | [JSON][] _objects_ are assumed, and arrays or other values are not parsed with this type. Uses the [`data.JSON`][] function for parsing. [EJSON][] (encrypted JSON) is supported and will be decrypted. |
 | JSON Array | `application/array+json` | | A special type for parsing datasources containing just JSON arrays. Uses the [`data.JSONArray`][] function for parsing |
 | Plain Text | `text/plain` | | Unstructured, and as such only intended for use with the [`include`][] function |
 | TOML | `application/toml` | | Parses [TOML][] with the [`data.TOML`][] function |
@@ -104,9 +104,9 @@ bar
 
 ## Using `aws+smp` datasources
 
-The `aws+smp://` scheme can be used to retrieve data from the [AWS Systems Manager](https://aws.amazon.com/systems-manager/) (née AWS EC2 Simple  Systems Manager) [Parameter Store](https://aws.amazon.com/systems-manager/features/#Parameter_Store). This hierarchically organised key/value store allows you to store text, lists or encrypted secrets for easy retrieval by AWS resources. See [the AWS Systems Manager documentation](https://docs.aws.amazon.com/systems-manager/latest/userguide/sysman-paramstore-su-create.html#sysman-paramstore-su-create-about) for details on creating these parameters.
+The `aws+smp://` scheme can be used to retrieve data from the [AWS Systems Manager](https://aws.amazon.com/systems-manager/) (née AWS EC2 Simple  Systems Manager) [Parameter Store](https://aws.amazon.com/systems-manager/features/#Parameter_Store). This hierarchically organized key/value store allows you to store text, lists or encrypted secrets for easy retrieval by AWS resources. See [the AWS Systems Manager documentation](https://docs.aws.amazon.com/systems-manager/latest/userguide/sysman-paramstore-su-create.html#sysman-paramstore-su-create-about) for details on creating these parameters.
 
-You must grant `gomplate` permission via IAM credentials with the one of the methods supported by the [AWS SDK for Go][] (e.g. environment vars, `~/.aws/*` files, instance profiles) for the [`ssm:GetParameter` action](https://docs.aws.amazon.com/systems-manager/latest/userguide/auth-and-access-control-permissions-reference.html). <!-- List support further requires `ssm.GetParameters` permissions. -->
+You must grant `gomplate` permission via IAM credentials with the one of the methods supported by the [AWS SDK for Go][] (e.g. environment variables, `~/.aws/*` files, instance profiles) for the [`ssm:GetParameter` action](https://docs.aws.amazon.com/systems-manager/latest/userguide/auth-and-access-control-permissions-reference.html). <!-- List support further requires `ssm.GetParameters` permissions. -->
 
 ### URL Considerations
 
@@ -152,7 +152,7 @@ aaa
 
 [BoltDB](https://github.com/boltdb/bolt) is a simple local key/value store used by many Go tools. The `boltdb://` scheme can be used to access values stored in a BoltDB database file. The full path is provided in the URL, and the bucket name can be specified using a URL fragment (e.g. `boltdb:///tmp/database.db#bucket`).
 
-**Note:** Access is implemented through [libkv](https://github.com/docker/libkv), and as such, the first 8 bytes of all values are used as an incrementing last modified index value. All values must therefore be at least 9 bytes long, with the first 8 being ignored.
+**Note:** Access is implemented through [`libkv`](https://github.com/docker/libkv), and as such, the first 8 bytes of all values are used as an incrementing last modified index value. All values must therefore be at least 9 bytes long, with the first 8 being ignored.
 
 The following environment variables can be set:
 
@@ -165,7 +165,7 @@ The following environment variables can be set:
 
 For `boltdb`, the _scheme_, _path_, and _fragment_ are used.
 
-The _path_ must point to a BoltDB database on the local filesystem, while the _fragment_ must provide the name of the bucket to use.
+The _path_ must point to a BoltDB database on the local file system, while the _fragment_ must provide the name of the bucket to use.
 
 ### Example
 
@@ -204,7 +204,7 @@ The following optional environment variables are understood by the Consul dataso
 | `CONSUL_CLIENT_KEY` | Client key file for certificate authentication. If this is set, `$CONSUL_CLIENT_CERT` must also be set. |
 | `CONSUL_HTTP_SSL_VERIFY` | Set to `false` to disable Consul TLS certificate checking. Any value acceptable to [`strconv.ParseBool`](https://golang.org/pkg/strconv/#ParseBool) can be provided. <br/> _Recommended only for testing and development scenarios!_ |
 | `CONSUL_VAULT_ROLE` | Set to the name of the role to use for authenticating to Consul with [Vault's Consul secret backend](https://www.vaultproject.io/docs/secrets/consul/index.html). |
-| `CONSUL_VAULT_MOUNT` | Used to override the mount-point when using Vault's Consul secret backend for authentication. Defaults to `consul`. |
+| `CONSUL_VAULT_MOUNT` | Used to override the mount-point when using Vault's Consul secret back-end for authentication. Defaults to `consul`. |
 
 ### Authentication
 
@@ -335,7 +335,7 @@ two
 
 ## Using `vault` datasources
 
-Gomplate can retrieve secrets and other data from [Hashicorp Vault][].
+Gomplate can retrieve secrets and other data from [HashiCorp Vault][].
 
 ### URL Considerations
 
@@ -344,7 +344,7 @@ The _scheme_, _authority_, _path_, and _query_ URL components are used by this d
 - the _scheme_ must be one of `vault`, `vault+https` (same as `vault`), or `vault+http`. The latter can be used to access [dev mode](https://www.vaultproject.io/docs/concepts/dev-server.html) Vault servers, for test purposes. Otherwise, all connections to Vault are encrypted with TLS.
 - the _authority_ component can optionally be used to specify the Vault server's hostname and port. This overrides the value of `$VAULT_ADDR`.
 - the _path_ component can optionally be used to specify a full or partial path to a secret. The second argument to the [`datasource`][] function is appended to provide the full secret path. [Directory](#directory-datasources) semantics are available when the path ends with a `/` character.
-- the _query_ component is used to provide parameters to dynamic secret backends that require these. The values are included in the JSON body of the `PUT` request.
+- the _query_ component is used to provide parameters to dynamic secret back-ends that require these. The values are included in the JSON body of the `PUT` request.
 
 These are all valid `vault` URLs:
 
@@ -357,14 +357,14 @@ These are all valid `vault` URLs:
 
 This table describes the currently-supported authentication mechanisms and how to use them, in order of precedence:
 
-| auth backend | configuration |
+| auth back-end | configuration |
 |-------------:|---------------|
-| [`approle`](https://www.vaultproject.io/docs/auth/approle.html) | Environment variables `$VAULT_ROLE_ID` and `$VAULT_SECRET_ID` must be set to the appropriate values.<br/> If the backend is mounted to a different location, set `$VAULT_AUTH_APPROLE_MOUNT`. |
-| [`app-id`](https://www.vaultproject.io/docs/auth/app-id.html) | Environment variables `$VAULT_APP_ID` and `$VAULT_USER_ID` must be set to the appropriate values.<br/> If the backend is mounted to a different location, set `$VAULT_AUTH_APP_ID_MOUNT`. |
-| [`github`](https://www.vaultproject.io/docs/auth/github.html) | Environment variable `$VAULT_AUTH_GITHUB_TOKEN` must be set to an appropriate value.<br/> If the backend is mounted to a different location, set `$VAULT_AUTH_GITHUB_MOUNT`. |
-| [`userpass`](https://www.vaultproject.io/docs/auth/userpass.html) | Environment variables `$VAULT_AUTH_USERNAME` and `$VAULT_AUTH_PASSWORD` must be set to the appropriate values.<br/> If the backend is mounted to a different location, set `$VAULT_AUTH_USERPASS_MOUNT`. |
+| [`approle`](https://www.vaultproject.io/docs/auth/approle.html) | Environment variables `$VAULT_ROLE_ID` and `$VAULT_SECRET_ID` must be set to the appropriate values.<br/> If the back-end is mounted to a different location, set `$VAULT_AUTH_APPROLE_MOUNT`. |
+| [`app-id`](https://www.vaultproject.io/docs/auth/app-id.html) | Environment variables `$VAULT_APP_ID` and `$VAULT_USER_ID` must be set to the appropriate values.<br/> If the back-end is mounted to a different location, set `$VAULT_AUTH_APP_ID_MOUNT`. |
+| [`github`](https://www.vaultproject.io/docs/auth/github.html) | Environment variable `$VAULT_AUTH_GITHUB_TOKEN` must be set to an appropriate value.<br/> If the back-end is mounted to a different location, set `$VAULT_AUTH_GITHUB_MOUNT`. |
+| [`userpass`](https://www.vaultproject.io/docs/auth/userpass.html) | Environment variables `$VAULT_AUTH_USERNAME` and `$VAULT_AUTH_PASSWORD` must be set to the appropriate values.<br/> If the back-end is mounted to a different location, set `$VAULT_AUTH_USERPASS_MOUNT`. |
 | [`token`](https://www.vaultproject.io/docs/auth/token.html) | Determined from either the `$VAULT_TOKEN` environment variable, or read from the file `~/.vault-token` |
-| [`aws`](https://www.vaultproject.io/docs/auth/aws.html) | The env var  `$VAULT_AUTH_AWS_ROLE` defines the [role](https://www.vaultproject.io/api/auth/aws/index.html#role-4) to log in with - defaults to the AMI ID of the EC2 instance. Usually a [Client Nonce](https://www.vaultproject.io/docs/auth/aws.html#client-nonce) should be used as well. Set `$VAULT_AUTH_AWS_NONCE` to the nonce value. The nonce can be generated and stored by setting `$VAULT_AUTH_AWS_NONCE_OUTPUT` to a path on the local filesystem.<br/>If the backend is mounted to a different location, set `$VAULT_AUTH_AWS_MOUNT`.|
+| [`aws`](https://www.vaultproject.io/docs/auth/aws.html) | The env var  `$VAULT_AUTH_AWS_ROLE` defines the [role](https://www.vaultproject.io/api/auth/aws/index.html#role-4) to log in with - defaults to the AMI ID of the EC2 instance. Usually a [Client Nonce](https://www.vaultproject.io/docs/auth/aws.html#client-nonce) should be used as well. Set `$VAULT_AUTH_AWS_NONCE` to the nonce value. The nonce can be generated and stored by setting `$VAULT_AUTH_AWS_NONCE_OUTPUT` to a path on the local filesystem.<br/>If the back-end is mounted to a different location, set `$VAULT_AUTH_AWS_MOUNT`.|
 
 _**Note:**_ The secret values listed in the above table can either be set in environment variables or provided in files. This can increase security when using [Docker Swarm Secrets](https://docs.docker.com/engine/swarm/secrets/), for example. To use files, specify the filename by appending `_FILE` to the environment variable, (i.e. `VAULT_USER_ID_FILE`). If the non-file variable is set, this will override any `_FILE` variable and the secret file will be ignored.
 
@@ -417,7 +417,7 @@ $ gomplate -d vault=vault:/// -i 'otp={{(ds "vault" "ssh/creds/test?ip=10.1.2.3&
 otp=604a4bd5-7afd-30a2-d2d8-80c4aebc6183
 ```
 
-With the AWS auth backend:
+With the AWS auth back-end:
 
 ```console
 $ export VAULT_AUTH_AWS_NONCE_FILE=/tmp/vault-aws-nonce
@@ -435,6 +435,7 @@ The file `/tmp/vault-aws-nonce` will be created if it didn't already exist, and 
 [`include`]: ../functions/data/#include
 [`data.CSV`]: ../functions/data/#data-csv
 [`data.JSON`]: ../functions/data/#data-json
+[EJSON]: ../functions/data/#encrypted-json-support-ejson
 [`data.JSONArray`]: ../functions/data/#data-jsonarray
 [`data.TOML`]: ../functions/data/#data-toml
 [`data.YAML`]: ../functions/data/#data-yaml
@@ -448,4 +449,4 @@ The file `/tmp/vault-aws-nonce` will be created if it didn't already exist, and 
 [YAML]: http://yaml.org
 [HTTP Content-Type]: https://tools.ietf.org/html/rfc7231#section-3.1.1.1
 [URL]: https://tools.ietf.org/html/rfc3986
-[AWS SDG for Go]: https://docs.aws.amazon.com/sdk-for-go/api/
+[AWS SDK for Go]: https://docs.aws.amazon.com/sdk-for-go/api/

@@ -19,6 +19,10 @@ var _ = Suite(&FileDatasourcesSuite{})
 func (s *FileDatasourcesSuite) SetUpSuite(c *C) {
 	s.tmpDir = fs.NewDir(c, "gomplate-inttests",
 		fs.WithFile("config.json", `{"foo": {"bar": "baz"}}`),
+		fs.WithFile("encrypted.json", `{
+			"_public_key": "dfcf98785869cdfc4a59273bbdfe1bfcf6c44850a11ea9d84db21c89a802c057",
+			"password": "EJ[1:Cb1AY94Dl76xwHHrnJyh+Y+fAeovijPlFQZXSAuvZBc=:oCGZM6lbeXXOl2ONSKfLQ0AgaltrTpNU:VjegqQPPkOK1hSylMAbmcfusQImfkHCWZw==]"
+		}`),
 		fs.WithFile("config.yml", "foo:\n bar: baz\n"),
 		fs.WithFile("config2.yml", "foo: bar\n"),
 		fs.WithFile("foo.csv", `A,B
@@ -83,5 +87,15 @@ bar`})
 		"-d", "dir="+s.tmpDir.Path()+"/",
 		"-i", `{{ range (ds "dir") }}{{ . }} {{ end }}`,
 	)
-	result.Assert(c, icmd.Expected{ExitCode: 0, Out: `config.json config.yml config2.yml foo.csv`})
+	result.Assert(c, icmd.Expected{ExitCode: 0, Out: `config.json config.yml config2.yml encrypted.json foo.csv`})
+
+	result = icmd.RunCmd(icmd.Command(GomplateBin,
+		"-d", "enc="+s.tmpDir.Join("encrypted.json"),
+		"-i", `{{ (ds "enc").password }}`,
+	), func(c *icmd.Cmd) {
+		c.Env = []string{
+			"EJSON_KEY=553da5790efd7ddc0e4829b69069478eec9ddddb17b69eca9801da37445b62bf",
+		}
+	})
+	result.Assert(c, icmd.Expected{ExitCode: 0, Out: "swordfish"})
 }

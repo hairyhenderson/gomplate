@@ -42,7 +42,7 @@ $2a$04$zjba3N38sjyYsw0Y7IRCme1H4gD0MJxH8Ixai0/sgsrf7s1MFUK1C
 Run the Password-Based Key Derivation Function #2 as defined in
 [RFC 8018 (PKCS #5 v2.1)](https://tools.ietf.org/html/rfc8018#section-5.2).
 
-This function outputs the binary result as a hexidecimal string.
+This function outputs the binary result as a hexadecimal string.
 
 ### Usage
 ```
@@ -70,7 +70,7 @@ $ gomplate -i '{{ crypto.PBKDF2 "foo" "bar" 1024 8 }}'
 
 Compute a checksum with a SHA-1 or SHA-2 algorithm as defined in [RFC 3174](https://tools.ietf.org/html/rfc3174) (SHA-1) and [FIPS 180-4](http://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.180-4.pdf) (SHA-2).
 
-These function outputs the binary result as a hexidecimal string.
+These function outputs the binary result as a hexadecimal string.
 
 _Note: SHA-1 is cryptographically broken and should not be used for secure applications._
 

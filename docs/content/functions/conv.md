@@ -402,7 +402,7 @@ Converts the input to an `int64` (64-bit signed integer).
 
 This function attempts to convert most types of input (strings, numbers,
 and booleans), but behaviour when the input can not be converted is
-undefined and subject to change. Unconvertable inputs may result in
+undefined and subject to change. Nonconvertible inputs may result in
 errors, or `0` or `-1`.
 
 Floating-point numbers (with decimal points) are truncated.
@@ -522,7 +522,7 @@ Converts the input to a `float64`.
 
 This function attempts to convert most types of input (strings, numbers,
 and booleans), but behaviour when the input can not be converted is
-undefined and subject to change. Unconvertable inputs may result in
+undefined and subject to change. Nonconvertible inputs may result in
 errors, or `0` or `-1`.
 
 ### Usage
