@@ -10,6 +10,18 @@
   version = "v1.0.1"
 
 [[projects]]
+  digest = "1:6440a098b56f4ec9b29ad8091a5d22f4d66e48c00d0b59c54cdc0f94b9d0afe1"
+  name = "github.com/Shopify/ejson"
+  packages = [
+    ".",
+    "crypto",
+    "json",
+  ]
+  pruneopts = "NUT"
+  revision = "0cc33e3391c6feeb146327d76d307566e144f21d"
+  version = "v1.2.1"
+
+[[projects]]
   digest = "1:77f2882e1578d22289f988ccbfb2c29195ff17b4d21cfb4be2cf768af47c2d25"
   name = "github.com/aws/aws-sdk-go"
   packages = [
@@ -89,6 +101,14 @@
   pruneopts = "NUT"
   revision = "aabc039ad04deb721e234f99cd1b4aa28ac71a40"
   version = "v0.2.1"
+
+[[projects]]
+  branch = "master"
+  digest = "1:18dada2e1f10aa5ac585b227710e2d4ac44958c83a1de3675f9579f419564666"
+  name = "github.com/dustin/gojson"
+  packages = ["."]
+  pruneopts = "NUT"
+  revision = "2e71ec9dd5adce3b168cd0dbde03b5cc04951c30"
 
 [[projects]]
   branch = "master"
@@ -385,12 +405,18 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:318fbcf92cf6f5f01a8e28059612a09671e8d446c1be41020171dd3eeb3dfb9e"
+  digest = "1:7d6afbcfe734e72cb56ac89e0d4e9373d4566e4acba82dd2a4f3f5e0fa363850"
   name = "golang.org/x/crypto"
   packages = [
     "bcrypt",
     "blowfish",
+    "curve25519",
+    "internal/subtle",
+    "nacl/box",
+    "nacl/secretbox",
     "pbkdf2",
+    "poly1305",
+    "salsa20/salsa",
   ]
   pruneopts = "NUT"
   revision = "0e37d006457bf46f9e6692014ba72ef82c33022c"
@@ -469,6 +495,8 @@
   analyzer-version = 1
   input-imports = [
     "github.com/Masterminds/goutils",
+    "github.com/Shopify/ejson",
+    "github.com/Shopify/ejson/json",
     "github.com/aws/aws-sdk-go/aws",
     "github.com/aws/aws-sdk-go/aws/awserr",
     "github.com/aws/aws-sdk-go/aws/session",
