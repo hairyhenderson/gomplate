@@ -34,8 +34,6 @@ COPY --from=artifacts /bin/gomplate_${OS}-${ARCH} /gomplate
 
 ENTRYPOINT [ "/gomplate" ]
 
-CMD [ "--help" ]
-
 FROM alpine:3.8@sha256:7043076348bf5040220df6ad703798fd8593a0918d06d3ce30c6c93be117e430 AS gomplate-alpine
 
 ARG BUILD_DATE
@@ -52,8 +50,6 @@ COPY --from=artifacts /bin/gomplate_${OS}-${ARCH}-slim /bin/gomplate
 
 ENTRYPOINT [ "/bin/gomplate" ]
 
-CMD [ "--help" ]
-
 FROM scratch AS gomplate-slim
 
 ARG BUILD_DATE
@@ -69,5 +65,3 @@ COPY --from=artifacts /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certi
 COPY --from=artifacts /bin/gomplate_${OS}-${ARCH}-slim /gomplate
 
 ENTRYPOINT [ "/gomplate" ]
-
-CMD [ "--help" ]
