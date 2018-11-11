@@ -96,6 +96,7 @@ type gomplate struct {
 	leftDelim       string
 	rightDelim      string
 	nestedTemplates templateAliases
+	rootTemplate    *template.Template
 }
 
 // runTemplate -

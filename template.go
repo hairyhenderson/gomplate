@@ -28,12 +28,18 @@ type tplate struct {
 	modeOverride bool
 }
 
-func (t *tplate) toGoTemplate(g *gomplate) (*template.Template, error) {
-	tmpl := template.New(t.name)
+func (t *tplate) toGoTemplate(g *gomplate) (tmpl *template.Template, err error) {
+	if g.rootTemplate != nil {
+		tmpl = g.rootTemplate.New(t.name)
+	} else {
+		tmpl = template.New(t.name)
+		g.rootTemplate = tmpl
+	}
 	tmpl.Option("missingkey=error")
+	g.funcMap["tpl"] = g.tpl
 	tmpl.Funcs(g.funcMap)
 	tmpl.Delims(g.leftDelim, g.rightDelim)
-	_, err := tmpl.Parse(t.contents)
+	_, err = tmpl.Parse(t.contents)
 	if err != nil {
 		return nil, err
 	}
