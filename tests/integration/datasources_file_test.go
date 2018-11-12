@@ -37,6 +37,18 @@ func (s *FileDatasourcesSuite) TearDownSuite(c *C) {
 	s.tmpDir.Remove()
 }
 
+func (s *FileDatasourcesSuite) TestDefaultDatasource(c *C) {
+	result := icmd.RunCommand(GomplateBin,
+		"-d", "config="+s.tmpDir.Join("config.json"),
+		"--default-datasource", "config",
+		"-i", `{{.foo.bar}}`,
+	)
+
+	result.Assert(c, icmd.Expected{ExitCode: 0, Out: "baz"})
+
+
+}
+
 func (s *FileDatasourcesSuite) TestFileDatasources(c *C) {
 	result := icmd.RunCommand(GomplateBin,
 		"-d", "config="+s.tmpDir.Join("config.json"),

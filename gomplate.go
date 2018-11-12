@@ -23,7 +23,7 @@ type Config struct {
 	OutputFiles []string
 	OutputDir   string
 	OutMode     string
-
+	DefaultDataSource string
 	DataSources       []string
 	DataSourceHeaders []string
 
@@ -208,6 +208,9 @@ func (g *gomplate) runTemplates(o *Config) error {
 	defer func() { Metrics.TotalRenderDuration = time.Since(start) }()
 	for _, t := range tmpl {
 		tstart := time.Now()
+		if o.DefaultDataSource != "" {
+			t.contents = "{{ with datasource \"" + o.DefaultDataSource + "\" }}\n" + t.contents + "\n{{end}}"
+		}
 		err := g.runTemplate(t)
 		Metrics.RenderDuration[t.name] = time.Since(tstart)
 		if err != nil {
