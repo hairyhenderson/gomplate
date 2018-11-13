@@ -6,9 +6,9 @@ menu: main
 
 Datasources are an optional, but central concept in gomplate. While the basic flow of template rendering is taking an input template and rendering it into an output, there often is need to include data from one or more sources external to the template itself.
 
-Some common use-cases include injecting sensitive material like passwords (which should not be stored in source-control with the templates), or providing simplified configuration formats that can be fed to a template to provide a much more complex output.
+Some common use-cases include injecting sensitive material like passwords (which should not be stored unencrypted in source-control with the templates), or providing simplified configuration formats that can be fed to a template to provide a much more complex output.
 
-Datasources can be defined with the [`--datasource`/`-d`][] command-line flag or the [`defineDatasource`][] function, and referenced via an _alias_ inside the template, using a function such as [`datasource`][] or [`include`][].
+Datasources can be defined with the [`--datasource`/`-d`][] command-line flag or the [`defineDatasource`][] function, and referenced via an _alias_ inside the template, using a function such as [`datasource`][] or [`include`][]. Datasources can additionally be loaded into the [context][] with the [`--context`/`-c`][] command-line flag.
 
 Since datasources are defined separately from the template, the same templates can be used with different datasources and even different datasource types. For example, gomplate could be run on a developer machine with a `file` datasource pointing to a JSON file containing test data, where the same template could be used in a production environment using a `consul` datasource with the real production data.
 
@@ -432,6 +432,8 @@ $ gomplate -d vault=vault:///secret/foo -i '{{ (ds "vault").value }}'
 The file `/tmp/vault-aws-nonce` will be created if it didn't already exist, and further executions of `gomplate` can re-authenticate securely.
 
 [`--datasource`/`-d`]: ../usage/#datasource-d
+[`--context`/`-c`]: ../usage/#context-c
+[context]: ../syntax/#the-context
 [`--datasource-header`/`-H`]: ../usage/#datasource-header-h
 [`defineDatasource`]: ../functions/data/#definedatasource
 [`datasource`]: ../functions/data/#datasource

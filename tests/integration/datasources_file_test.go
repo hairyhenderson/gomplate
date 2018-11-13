@@ -62,6 +62,18 @@ func (s *FileDatasourcesSuite) TestFileDatasources(c *C) {
 	result.Assert(c, icmd.Expected{ExitCode: 0, Out: "bar"})
 
 	result = icmd.RunCommand(GomplateBin,
+		"-c", "config="+s.tmpDir.Join("config2.yml"),
+		"-i", `{{ .config.foo}}`,
+	)
+	result.Assert(c, icmd.Expected{ExitCode: 0, Out: "bar"})
+
+	result = icmd.RunCommand(GomplateBin,
+		"-c", ".="+s.tmpDir.Join("config2.yml"),
+		"-i", `{{ .foo}} {{ (ds ".").foo }}`,
+	)
+	result.Assert(c, icmd.Expected{ExitCode: 0, Out: "bar bar"})
+
+	result = icmd.RunCommand(GomplateBin,
 		"-d", "config="+s.tmpDir.Join("config2.yml"),
 		"-i", `{{ if (datasourceReachable "bogus") }}bogus!{{ end -}}
 {{ if (datasourceReachable "config") -}}
