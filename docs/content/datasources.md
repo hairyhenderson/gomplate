@@ -106,7 +106,10 @@ bar
 
 The `aws+smp://` scheme can be used to retrieve data from the [AWS Systems Manager](https://aws.amazon.com/systems-manager/) (née AWS EC2 Simple  Systems Manager) [Parameter Store](https://aws.amazon.com/systems-manager/features/#Parameter_Store). This hierarchically organized key/value store allows you to store text, lists or encrypted secrets for easy retrieval by AWS resources. See [the AWS Systems Manager documentation](https://docs.aws.amazon.com/systems-manager/latest/userguide/sysman-paramstore-su-create.html#sysman-paramstore-su-create-about) for details on creating these parameters.
 
-You must grant `gomplate` permission via IAM credentials with the one of the methods supported by the [AWS SDK for Go][] (e.g. environment variables, `~/.aws/*` files, instance profiles) for the [`ssm:GetParameter` action](https://docs.aws.amazon.com/systems-manager/latest/userguide/auth-and-access-control-permissions-reference.html). <!-- List support further requires `ssm.GetParameters` permissions. -->
+
+You must grant `gomplate` permission via IAM credentials for the [`ssm:GetParameter` action](https://docs.aws.amazon.com/systems-manager/latest/userguide/auth-and-access-control-permissions-reference.html). <!-- List support further requires `ssm.GetParameters` permissions. -->
+
+See details on how to configure gomplate's AWS support in [_Configuring AWS_](../functions/aws/#configuring-aws).
 
 ### URL Considerations
 
