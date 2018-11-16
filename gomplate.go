@@ -26,6 +26,7 @@ type Config struct {
 
 	DataSources       []string
 	DataSourceHeaders []string
+	Contexts          []string
 
 	LDelim string
 	RDelim string
@@ -76,6 +77,9 @@ func (o *Config) String() string {
 	if len(o.DataSourceHeaders) > 0 {
 		c += "\ndatasourceheaders: " + strings.Join(o.DataSourceHeaders, ", ")
 	}
+	if len(o.Contexts) > 0 {
+		c += "\ncontexts: " + strings.Join(o.Contexts, ", ")
+	}
 
 	if o.LDelim != "{{" {
 		c += "\nleft_delim: " + o.LDelim
@@ -97,11 +101,11 @@ type gomplate struct {
 	rightDelim      string
 	nestedTemplates templateAliases
 	rootTemplate    *template.Template
+	context         interface{}
 }
 
 // runTemplate -
 func (g *gomplate) runTemplate(t *tplate) error {
-	context := &context{}
 	tmpl, err := t.toGoTemplate(g)
 	if err != nil {
 		return err
@@ -114,19 +118,20 @@ func (g *gomplate) runTemplate(t *tplate) error {
 			defer t.target.(io.Closer).Close()
 		}
 	}
-	err = tmpl.Execute(t.target, context)
+	err = tmpl.Execute(t.target, g.context)
 	return err
 }
 
 type templateAliases map[string]string
 
 // newGomplate -
-func newGomplate(d *data.Data, leftDelim, rightDelim string, nested templateAliases) *gomplate {
+func newGomplate(d *data.Data, leftDelim, rightDelim string, nested templateAliases, context interface{}) *gomplate {
 	return &gomplate{
 		leftDelim:       leftDelim,
 		rightDelim:      rightDelim,
 		funcMap:         Funcs(d),
 		nestedTemplates: nested,
+		context:         context,
 	}
 }
 
@@ -181,7 +186,8 @@ func parseTemplateArg(templateArg string, ta templateAliases) error {
 func RunTemplates(o *Config) error {
 	Metrics = newMetrics()
 	defer runCleanupHooks()
-	d, err := data.NewData(o.DataSources, o.DataSourceHeaders)
+	ds := append(o.DataSources, o.Contexts...)
+	d, err := data.NewData(ds, o.DataSourceHeaders)
 	if err != nil {
 		return err
 	}
@@ -190,7 +196,11 @@ func RunTemplates(o *Config) error {
 	if err != nil {
 		return err
 	}
-	g := newGomplate(d, o.LDelim, o.RDelim, nested)
+	c, err := createContext(o.Contexts, d)
+	if err != nil {
+		return err
+	}
+	g := newGomplate(d, o.LDelim, o.RDelim, nested, c)
 
 	return g.runTemplates(o)
 }

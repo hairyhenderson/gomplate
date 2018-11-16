@@ -267,6 +267,9 @@ func (d *Data) lookupSource(alias string) (*Source, error) {
 		}
 		d.Sources[alias] = source
 	}
+	if source.Alias == "" {
+		source.Alias = alias
+	}
 	return source, nil
 }
 

@@ -133,9 +133,10 @@ $ gomplate -i '{{ with "foo" }}The context is {{ . }}{{ end }}'
 The context is foo
 ```
 
-Templates rendered by gomplate always have a _default_ context. In future, gomplate's
-context may expand (_watch this space!_), but currently, it contains one item: the
-system's environment variables, available as [`.Env`](#env).
+Templates rendered by gomplate always have a _default_ context. You can populate
+the default context from data sources with the [`--context`/`c`](../usage/#context-c)
+flag. The special context item [`.Env`](#env) is available for referencing the
+system's environment variables.
 
 ## Nested templates
 

@@ -77,6 +77,12 @@ A few different forms are valid:
 - `mydata.json`
   - This form infers the name from the file name (without extension). Only valid for files in the current directory.
 
+### `--context`/`c`
+
+Add a data source in `name=URL` form, and make it available in the [default context][] as `.<name>`. The special name `.` (period) can be used to override the entire default context.
+
+All other rules for the [`--datasource`/`-d`](#datasource-d) flag apply.
+
 ### Overriding the template delimiters
 
 Sometimes it's necessary to override the default template delimiters (`{{`/`}}`).
