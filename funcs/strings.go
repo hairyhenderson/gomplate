@@ -6,6 +6,7 @@ package funcs
 // in templates easier.
 
 import (
+	"fmt"
 	"sync"
 
 	"github.com/Masterminds/goutils"
@@ -40,6 +41,8 @@ func AddStringFuncs(f map[string]interface{}) {
 	f["trimSpace"] = StrNS().TrimSpace
 	f["indent"] = StrNS().Indent
 	f["sort"] = StrNS().Sort
+	f["quote"] = StrNS().Quote
+	f["squote"] = StrNS().Squote
 
 	// these are legacy aliases with non-pipelinable arg order
 	f["contains"] = strings.Contains
@@ -207,4 +210,16 @@ func (f *StringFuncs) Indent(args ...interface{}) (string, error) {
 // Slug -
 func (f *StringFuncs) Slug(in interface{}) string {
 	return slug.Make(conv.ToString(in))
+}
+
+// Quote -
+func (f *StringFuncs) Quote(in interface{}) string {
+	return fmt.Sprintf("%q", conv.ToString(in))
+}
+
+// Squote -
+func (f *StringFuncs) Squote(in interface{}) string {
+	s := conv.ToString(in)
+	s = strings.Replace(s, `'`, `''`, -1)
+	return fmt.Sprintf("'%s'", s)
 }
