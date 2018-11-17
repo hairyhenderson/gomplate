@@ -122,3 +122,43 @@ template: <arg>:1:25: executing "<arg>" at <required "The `confi...>: error call
 $ gomplate -d config=config.yaml -i '{{ (ds "config").bogus | required "The `config` datasource must have a value defined for `bogus`" }}'
 template: <arg>:1:7: executing "<arg>" at <"config">: map has no entry for key "bogus"
 ```
+
+## `test.Ternary`
+
+**Alias:** `ternary`
+
+Returns one of two values depending on whether the third is true. Note that the third value does not have to be a boolean - it is converted first by the [`conv.ToBool`](../conv/#conv-tobool) function (values like `true`, `1`, `"true"`, `"Yes"`, etc... are considered true).
+
+This is effectively a short-form of the following template:
+
+```
+{{ if conv.ToBool $condition }}{{ $truevalue }}{{ else }}{{ $falsevalue }}{{ end }}
+```
+
+Keep in mind that using an explicit `if`/`else` block is often easier to understand than ternary expressions!
+
+### Usage
+```go
+test.Ternary truevalue falsevalue condition 
+```
+
+```go
+condition | test.Ternary truevalue falsevalue  
+```
+
+### Arguments
+
+| name | description |
+|------|-------------|
+| `truevalue` | _(required)_ the value to return if `condition` is true |
+| `falsevalue` | _(required)_ the value to return if `condition` is false |
+| `condition` | _(required)_ the value to evaluate for truthiness |
+
+### Examples
+
+```console
+$ gomplate -i '{{ ternary "FOO" "BAR" false }}'
+BAR
+$ gomplate -i '{{ ternary "FOO" "BAR" "yes" }}'
+FOO
+```
