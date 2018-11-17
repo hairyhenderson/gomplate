@@ -63,3 +63,18 @@ func TestRequired(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, v, "foo")
 }
+
+func TestTernary(t *testing.T) {
+	f := TestNS()
+	testdata := []struct {
+		tval, fval, b interface{}
+		expected      interface{}
+	}{
+		{"foo", 42, false, 42},
+		{"foo", 42, "yes", "foo"},
+		{false, true, true, false},
+	}
+	for _, d := range testdata {
+		assert.Equal(t, d.expected, f.Ternary(d.tval, d.fval, d.b))
+	}
+}

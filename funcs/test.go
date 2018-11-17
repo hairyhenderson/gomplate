@@ -27,6 +27,7 @@ func AddTestFuncs(f map[string]interface{}) {
 	f["assert"] = TestNS().Assert
 	f["fail"] = TestNS().Fail
 	f["required"] = TestNS().Required
+	f["ternary"] = TestNS().Ternary
 }
 
 // TestFuncs -
@@ -75,4 +76,12 @@ func (f *TestFuncs) Required(args ...interface{}) (interface{}, error) {
 	default:
 		return nil, errors.Errorf("wrong number of args: want 1 or 2, got %d", len(args))
 	}
+}
+
+// Ternary -
+func (f *TestFuncs) Ternary(tval, fval, b interface{}) interface{} {
+	if conv.ToBool(b) {
+		return tval
+	}
+	return fval
 }
