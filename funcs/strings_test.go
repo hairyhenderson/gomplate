@@ -106,3 +106,41 @@ func TestSort(t *testing.T) {
 
 	assert.Equal(t, out, must(sf.Sort([]interface{}{"foo", "bar", "baz"})))
 }
+
+func TestQuote(t *testing.T) {
+	sf := &StringFuncs{}
+	testdata := []struct {
+		in  interface{}
+		out string
+	}{
+		{``, `""`},
+		{`foo`, `"foo"`},
+		{nil, `"nil"`},
+		{123.4, `"123.4"`},
+		{`hello "world"`, `"hello \"world\""`},
+		{`it's its`, `"it's its"`},
+	}
+
+	for _, d := range testdata {
+		assert.Equal(t, d.out, sf.Quote(d.in))
+	}
+}
+
+func TestSquote(t *testing.T) {
+	sf := &StringFuncs{}
+	testdata := []struct {
+		in  interface{}
+		out string
+	}{
+		{``, `''`},
+		{`foo`, `'foo'`},
+		{nil, `'nil'`},
+		{123.4, `'123.4'`},
+		{`hello "world"`, `'hello "world"'`},
+		{`it's its`, `'it''s its'`},
+	}
+
+	for _, d := range testdata {
+		assert.Equal(t, d.out, sf.Squote(d.in))
+	}
+}

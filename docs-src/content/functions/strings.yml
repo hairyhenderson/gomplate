@@ -1,6 +1,29 @@
 ns: strings
 preamble: ''
 funcs:
+  - name: strings.Quote
+    alias: quote
+    description: |
+      Surrounds an input string with double-quote characters (`"`). If the input is not a string, converts first.
+
+      `"` characters in the input are first escaped with a `\` character.
+
+      This is a convenience function which is equivalent to:
+
+      ```
+      {{ print "%q" "input string" }}
+      ```
+    pipeline: true
+    arguments:
+      - name: in
+        required: true
+        description: The input to quote
+    examples:
+      - |
+        $ gomplate -i '{{ "in" | quote }}'
+        "in"
+        $ gomplate -i '{{ strings.Quote 500 }}'
+        "500"
   - name: strings.Sort
     alias: sort
     description: |
@@ -14,3 +37,20 @@ funcs:
       - |
         $ gomplate -i '{{ (slice "foo" "bar" "baz") | sort }}'
         [bar baz foo]
+  - name: strings.Squote
+    alias: squote
+    description: |
+      Surrounds an input string with a single-quote (apostrophe) character (`'`). If the input is not a string, converts first.
+
+      `'` characters in the input are first escaped in the YAML-style (by repetition: `''`).
+    pipeline: true
+    arguments:
+      - name: in
+        required: true
+        description: The input to quote
+    examples:
+      - |
+        $ gomplate -i '{{ "in" | squote }}'
+        'in'
+        $ gomplate -i "{{ strings.Squote \"it's a banana\" }}"
+        'it''s a banana'

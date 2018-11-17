@@ -224,6 +224,44 @@ foo
 bar:baz
 ```
 
+## `strings.Quote`
+
+**Alias:** `quote`
+
+Surrounds an input string with double-quote characters (`"`). If the input is not a string, converts first.
+
+`"` characters in the input are first escaped with a `\` character.
+
+This is a convenience function which is equivalent to:
+
+```
+{{ print "%q" "input string" }}
+```
+
+### Usage
+```go
+strings.Quote in 
+```
+
+```go
+in | strings.Quote  
+```
+
+### Arguments
+
+| name | description |
+|------|-------------|
+| `in` | _(required)_ The input to quote |
+
+### Examples
+
+```console
+$ gomplate -i '{{ "in" | quote }}'
+"in"
+$ gomplate -i '{{ strings.Quote 500 }}'
+"500"
+```
+
 ## `strings.Repeat`
 
 Returns a new string consisting of `count` copies of the input string.
@@ -289,6 +327,38 @@ hello-world
 
 $ echo 'Rock & Roll @ Cafe Wha?' | gomplate -d in=stdin: -i '{{ strings.Slug (include "in") }}'
 rock-and-roll-at-cafe-wha
+```
+
+## `strings.Squote`
+
+**Alias:** `squote`
+
+Surrounds an input string with a single-quote (apostrophe) character (`'`). If the input is not a string, converts first.
+
+`'` characters in the input are first escaped in the YAML-style (by repetition: `''`).
+
+### Usage
+```go
+strings.Squote in 
+```
+
+```go
+in | strings.Squote  
+```
+
+### Arguments
+
+| name | description |
+|------|-------------|
+| `in` | _(required)_ The input to quote |
+
+### Examples
+
+```console
+$ gomplate -i '{{ "in" | squote }}'
+'in'
+$ gomplate -i "{{ strings.Squote \"it's a banana\" }}"
+'it''s a banana'
 ```
 
 ## `strings.Title`
