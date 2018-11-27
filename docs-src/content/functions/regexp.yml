@@ -1,0 +1,158 @@
+ns: regexp
+preamble: |
+  These functions allow user you to search and modify text with regular expressions.
+
+  The syntax of the regular expressions accepted is [Go's `regexp` syntax](https://golang.org/pkg/regexp/syntax/#hdr-Syntax),
+  and is the same general syntax used by Perl, Python, and other languages.
+funcs:
+  - name: regexp.Find
+    description: |
+      Returns a string holding the text of the leftmost match in `input`
+      of the regular expression `expression`.
+
+      This function provides the same behaviour as Go's
+      [`regexp.FindString`](https://golang.org/pkg/regexp/#Regexp.FindString) function.
+    pipeline: true
+    arguments:
+      - name: expression
+        required: true
+        description: The regular expression
+      - name: input
+        required: true
+        description: The input to search
+    examples:
+      - |
+        $ gomplate -i '{{ regexp.Find "[a-z]{3}" "foobar"}}'
+        foo
+      - |
+        $ gomplate -i 'no {{ "will not match" | regexp.Find "[0-9]" }}numbers'
+        no numbers
+  - name: regexp.FindAll
+    description: |
+      Returns a list of all successive matches of the regular expression.
+
+      This can be called with 2 or 3 arguments. When called with 2 arguments, the
+      `n` argument (number of matches) will be set to `-1`, causing all matches
+      to be returned.
+
+      This function provides the same behaviour as Go's
+      [`regexp.FindAllString`](https://golang.org/pkg/regexp/#Regexp.FindAllString) function.
+    pipeline: true
+    arguments:
+      - name: expression
+        required: true
+        description: The regular expression
+      - name: n
+        required: false
+        description: The number of matches to return
+      - name: input
+        required: true
+        description: The input to search
+    examples:
+      - |
+        $ gomplate -i '{{ regexp.FindAll "[a-z]{3}" "foobar" | toJSON}}'
+        ["foo", "bar"]
+      - |
+        $ gomplate -i '{{ "foo bar baz qux" | regexp.FindAll "[a-z]{3}" 3 | toJSON}}'
+        ["foo", "bar", "baz"]
+  - name: regexp.Match
+    description: |
+      Returns `true` if a given regular expression matches a given input.
+
+      This returns a boolean which can be used in an `if` condition, for example.
+    pipeline: true
+    arguments:
+      - name: expression
+        required: true
+        description: The regular expression
+      - name: input
+        required: true
+        description: The input to test
+    examples:
+      - |
+        $ gomplate -i '{{ if (.Env.USER | regexp.Match `^h`) }}username ({{.Env.USER}}) starts with h!{{end}}'
+        username (hairyhenderson) starts with h!
+  - name: regexp.Replace
+    description: |
+      Replaces matches of a regular expression with the replacement string.
+
+      The replacement is substituted after expanding variables beginning with `$`.
+
+      This function provides the same behaviour as Go's
+      [`regexp.ReplaceAllString`](https://golang.org/pkg/regexp/#Regexp.ReplaceAllString) function.
+    pipeline: true
+    arguments:
+      - name: expression
+        required: true
+        description: The regular expression string
+      - name: replacement
+        required: true
+        description: The replacement string
+      - name: input
+        required: true
+        description: The input string to operate on
+    examples:
+      - |
+        $ gomplate -i '{{ regexp.Replace "(foo)bar" "$1" "foobar"}}'
+        foo
+      - |
+        $ gomplate -i '{{ regexp.Replace "(?P<first>[a-zA-Z]+) (?P<last>[a-zA-Z]+)" "${last}, ${first}" "Alan Turing"}}'
+        Turing, Alan
+  - name: regexp.ReplaceLiteral
+    description: |
+      Replaces matches of a regular expression with the replacement string.
+
+      The replacement is substituted directly, without expanding variables
+      beginning with `$`.
+
+      This function provides the same behaviour as Go's
+      [`regexp.ReplaceAllLiteralString`](https://golang.org/pkg/regexp/#Regexp.ReplaceAllLiteralString) function.
+    pipeline: true
+    arguments:
+      - name: expression
+        required: true
+        description: The regular expression string
+      - name: replacement
+        required: true
+        description: The replacement string
+      - name: input
+        required: true
+        description: The input string to operate on
+    examples:
+      - |
+        $ gomplate -i '{{ regexp.ReplaceLiteral "(foo)bar" "$1" "foobar"}}'
+        $1
+      - |
+        $ gomplate -i '{{ `foo.bar,baz` | regexp.ReplaceLiteral `\W` `$` }}'
+        foo$bar$baz
+  - name: regexp.Split
+    description: |
+      Splits `input` into sub-strings, separated by the expression.
+
+      This can be called with 2 or 3 arguments. When called with 2 arguments, the
+      `n` argument (number of matches) will be set to `-1`, causing all sub-strings
+      to be returned.
+
+      This is equivalent to [`strings.SplitN`](../strings/#strings-splitn),
+      except that regular expressions are supported.
+
+      This function provides the same behaviour as Go's
+      [`regexp.Split`](https://golang.org/pkg/regexp/#Regexp.Split) function.
+    pipeline: true
+    arguments:
+      - name: expression
+        required: true
+        description: The regular expression
+      - name: n
+        required: false
+        description: The number of matches to return
+      - name: input
+        required: true
+        description: The input to search
+    examples:
+      - |
+        $ gomplate -i '{{ regexp.Split `[\s,.]` "foo bar,baz.qux" | toJSON}}'
+        ["foo","bar","baz","qux"]
+      - |
+        $ gomplate -i '{{ "foo bar.baz,qux" | regexp.Split `[\s,.]` 3 | toJSON}}'
+        ["foo","bar","baz"]
