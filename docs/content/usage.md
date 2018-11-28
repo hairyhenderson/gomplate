@@ -139,3 +139,14 @@ add the command to the command-line after a `--` argument:
 $ gomplate -i 'hello world' -o out.txt -- cat out.txt
 hello world
 ```
+
+## Suppressing empty output
+
+Sometimes it can be desirable to suppress empty output (i.e. output consisting of only whitespace). To do so, set `GOMPLATE_SUPPRESS_EMPTY=true` in your environment:
+
+```console
+$ export GOMPLATE_SUPPRESS_EMPTY=true
+$ gomplate -i '{{ print "   \n" }}' -o out
+$ cat out
+cat: out: No such file or directory
+```
