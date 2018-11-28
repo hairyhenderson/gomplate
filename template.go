@@ -1,12 +1,17 @@
 package gomplate
 
 import (
+	"bytes"
 	"fmt"
 	"io"
 	"io/ioutil"
 	"os"
 	"path/filepath"
 	"text/template"
+
+	"github.com/hairyhenderson/gomplate/conv"
+	"github.com/hairyhenderson/gomplate/env"
+	"github.com/pkg/errors"
 
 	"github.com/spf13/afero"
 )
@@ -219,9 +224,23 @@ func inList(list []string, entry string) bool {
 }
 
 func openOutFile(filename string, mode os.FileMode, modeOverride bool) (out io.WriteCloser, err error) {
+	if conv.ToBool(env.Getenv("GOMPLATE_SUPPRESS_EMPTY", "false")) {
+		out = newEmptySkipper(func() (io.WriteCloser, error) {
+			if filename == "-" {
+				return Stdout, nil
+			}
+			return createOutFile(filename, mode, modeOverride)
+		})
+		return out, nil
+	}
+
 	if filename == "-" {
 		return Stdout, nil
 	}
+	return createOutFile(filename, mode, modeOverride)
+}
+
+func createOutFile(filename string, mode os.FileMode, modeOverride bool) (out io.WriteCloser, err error) {
 	out, err = fs.OpenFile(filename, os.O_RDWR|os.O_CREATE|os.O_TRUNC, mode.Perm())
 	if err != nil {
 		return out, err
@@ -267,4 +286,68 @@ func executeCombinedGlob(globArray []string) ([]string, error) {
 	}
 
 	return combinedExcludes, nil
+}
+
+// emptySkipper is a io.WriteCloser wrapper that will only start writing once a
+// non-whitespace byte has been encountered. The writer must be provided by the
+// `open` func
+type emptySkipper struct {
+	open func() (io.WriteCloser, error)
+
+	// internal
+	w   io.WriteCloser
+	buf *bytes.Buffer
+	nw  bool
+}
+
+func newEmptySkipper(open func() (io.WriteCloser, error)) *emptySkipper {
+	return &emptySkipper{
+		w:    nil,
+		buf:  &bytes.Buffer{},
+		nw:   false,
+		open: open,
+	}
+}
+
+func (f *emptySkipper) Write(p []byte) (n int, err error) {
+	if !f.nw {
+		if allWhitespace(p) {
+			// buffer the whitespace
+			return f.buf.Write(p)
+		}
+
+		// first time around, so open the writer
+		f.nw = true
+		f.w, err = f.open()
+		if err != nil {
+			return 0, err
+		}
+		if f.w == nil {
+			return 0, errors.New("nil writer returned by open")
+		}
+		// empty the buffer into the wrapped writer
+		_, err = f.buf.WriteTo(f.w)
+		if err != nil {
+			return 0, err
+		}
+	}
+
+	return f.w.Write(p)
+}
+
+func (f *emptySkipper) Close() error {
+	if f.w != nil {
+		return f.w.Close()
+	}
+	return nil
+}
+
+func allWhitespace(p []byte) bool {
+	for _, b := range p {
+		if b == ' ' || b == '\t' || b == '\n' || b == '\r' || b == '\v' {
+			continue
+		}
+		return false
+	}
+	return true
 }

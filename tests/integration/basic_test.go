@@ -233,3 +233,19 @@ func (s *BasicSuite) TestExecCommand(c *C) {
 		Out:      "hello world",
 	})
 }
+
+func (s *BasicSuite) TestEmptyOutputSuppression(c *C) {
+	out := s.tmpDir.Join("out")
+	result := icmd.RunCmd(icmd.Command(GomplateBin,
+		"-i",
+		`{{print "\t  \n\n\r\n\t\t     \v\n"}}`,
+		"-o", out),
+		func(cmd *icmd.Cmd) {
+			cmd.Env = []string{
+				"GOMPLATE_SUPPRESS_EMPTY=true",
+			}
+		})
+	result.Assert(c, icmd.Expected{ExitCode: 0})
+	_, err := os.Stat(out)
+	assert.Equal(c, true, os.IsNotExist(err))
+}
