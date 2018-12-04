@@ -11,6 +11,13 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func must(r interface{}, err error) interface{} {
+	if err != nil {
+		panic(err)
+	}
+	return r
+}
+
 func setupHTTP(code int, mimetype string, body string) (*httptest.Server, *http.Client) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 

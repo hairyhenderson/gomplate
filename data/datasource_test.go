@@ -145,13 +145,6 @@ func TestDatasourceExists(t *testing.T) {
 	assert.False(t, data.DatasourceExists("bar"))
 }
 
-func must(r interface{}, err error) interface{} {
-	if err != nil {
-		panic(err)
-	}
-	return r
-}
-
 func TestInclude(t *testing.T) {
 	ext := "txt"
 	contents := "hello world"
