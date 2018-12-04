@@ -73,3 +73,10 @@ func (s *DatasourcesHTTPSuite) TestTypeOverridePrecedence(c *C) {
 		"-i", "{{ (ds `foo`).value }}")
 	result.Assert(c, icmd.Expected{ExitCode: 0, Out: "json"})
 }
+
+func (s *DatasourcesHTTPSuite) TestAppendQueryAfterSubPaths(c *C) {
+	result := icmd.RunCommand(GomplateBin,
+		"-d", "foo=http://"+s.l.Addr().String()+"/?type=application/json",
+		"-i", "{{ (ds `foo` `bogus.csv`).value }}")
+	result.Assert(c, icmd.Expected{ExitCode: 0, Out: "json"})
+}

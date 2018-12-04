@@ -3,10 +3,7 @@
 package data
 
 import (
-	"encoding/json"
 	"fmt"
-	"net/http"
-	"net/http/httptest"
 	"net/url"
 	"strings"
 	"testing"
@@ -148,157 +145,6 @@ func TestDatasourceExists(t *testing.T) {
 	assert.False(t, data.DatasourceExists("bar"))
 }
 
-func must(r interface{}, err error) interface{} {
-	if err != nil {
-		panic(err)
-	}
-	return r
-}
-
-func setupHTTP(code int, mimetype string, body string) (*httptest.Server, *http.Client) {
-	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-
-		w.Header().Set("Content-Type", mimetype)
-		w.WriteHeader(code)
-		if body == "" {
-			// mirror back the headers
-			fmt.Fprintln(w, must(marshalObj(r.Header, json.Marshal)))
-		} else {
-			fmt.Fprintln(w, body)
-		}
-	}))
-
-	client := &http.Client{
-		Transport: &http.Transport{
-			Proxy: func(req *http.Request) (*url.URL, error) {
-				return url.Parse(server.URL)
-			},
-		},
-	}
-
-	return server, client
-}
-
-func TestHTTPFile(t *testing.T) {
-	server, client := setupHTTP(200, "application/json; charset=utf-8", `{"hello": "world"}`)
-	defer server.Close()
-
-	sources := make(map[string]*Source)
-	sources["foo"] = &Source{
-		Alias: "foo",
-		URL: &url.URL{
-			Scheme: "http",
-			Host:   "example.com",
-			Path:   "/foo",
-		},
-		hc: client,
-	}
-	data := &Data{
-		Sources: sources,
-	}
-
-	expected := map[string]interface{}{
-		"hello": "world",
-	}
-
-	actual, err := data.Datasource("foo")
-	assert.NoError(t, err)
-	assert.Equal(t, must(marshalObj(expected, json.Marshal)), must(marshalObj(actual, json.Marshal)))
-
-	actual, err = data.Datasource(server.URL)
-	assert.NoError(t, err)
-	assert.Equal(t, must(marshalObj(expected, json.Marshal)), must(marshalObj(actual, json.Marshal)))
-}
-
-func TestHTTPFileWithHeaders(t *testing.T) {
-	server, client := setupHTTP(200, jsonMimetype, "")
-	defer server.Close()
-
-	sources := make(map[string]*Source)
-	sources["foo"] = &Source{
-		Alias: "foo",
-		URL: &url.URL{
-			Scheme: "http",
-			Host:   "example.com",
-			Path:   "/foo",
-		},
-		hc: client,
-		header: http.Header{
-			"Foo":             {"bar"},
-			"foo":             {"baz"},
-			"User-Agent":      {},
-			"Accept-Encoding": {"test"},
-		},
-	}
-	data := &Data{
-		Sources: sources,
-	}
-	expected := http.Header{
-		"Accept-Encoding": {"test"},
-		"Foo":             {"bar", "baz"},
-	}
-	actual, err := data.Datasource("foo")
-	assert.NoError(t, err)
-	assert.Equal(t, must(marshalObj(expected, json.Marshal)), must(marshalObj(actual, json.Marshal)))
-
-	expected = http.Header{
-		"Accept-Encoding": {"test"},
-		"Foo":             {"bar", "baz"},
-		"User-Agent":      {"Go-http-client/1.1"},
-	}
-	data = &Data{
-		Sources:      sources,
-		extraHeaders: map[string]http.Header{server.URL: expected},
-	}
-	actual, err = data.Datasource(server.URL)
-	assert.NoError(t, err)
-	assert.Equal(t, must(marshalObj(expected, json.Marshal)), must(marshalObj(actual, json.Marshal)))
-}
-
-func TestParseHeaderArgs(t *testing.T) {
-	args := []string{
-		"foo=Accept: application/json",
-		"bar=Authorization: Bearer supersecret",
-	}
-	expected := map[string]http.Header{
-		"foo": {
-			"Accept": {jsonMimetype},
-		},
-		"bar": {
-			"Authorization": {"Bearer supersecret"},
-		},
-	}
-	parsed, err := parseHeaderArgs(args)
-	assert.NoError(t, err)
-	assert.Equal(t, expected, parsed)
-
-	_, err = parseHeaderArgs([]string{"foo"})
-	assert.Error(t, err)
-
-	_, err = parseHeaderArgs([]string{"foo=bar"})
-	assert.Error(t, err)
-
-	args = []string{
-		"foo=Accept: application/json",
-		"foo=Foo: bar",
-		"foo=foo: baz",
-		"foo=fOO: qux",
-		"bar=Authorization: Bearer  supersecret",
-	}
-	expected = map[string]http.Header{
-		"foo": {
-			"Accept": {jsonMimetype},
-			"Foo":    {"bar", "baz", "qux"},
-		},
-		"bar": {
-			"Authorization": {"Bearer  supersecret"},
-		},
-	}
-	parsed, err = parseHeaderArgs(args)
-	assert.NoError(t, err)
-	assert.Equal(t, expected, parsed)
-}
-
 func TestInclude(t *testing.T) {
 	ext := "txt"
 	contents := "hello world"
@@ -416,4 +262,16 @@ func TestMimeType(t *testing.T) {
 	mt, err = s.mimeType()
 	assert.NoError(t, err)
 	assert.Equal(t, "application/yaml", mt)
+}
+
+func TestQueryParse(t *testing.T) {
+	expected := &url.URL{
+		Scheme:   "http",
+		Host:     "example.com",
+		Path:     "/foo.json",
+		RawQuery: "bar",
+	}
+	u, err := parseSourceURL("http://example.com/foo.json?bar")
+	assert.NoError(t, err)
+	assert.EqualValues(t, expected, u)
 }
