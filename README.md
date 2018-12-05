@@ -19,32 +19,82 @@ _Read the docs at [gomplate.hairyhenderson.ca][docs-url]._
 
 [![Install Docs][install-docs-image]][install-docs-url]
 
-A [Go template](https://golang.org/pkg/text/template/)-based CLI tool. `gomplate` can be used as an alternative to
-[`envsubst`](https://www.gnu.org/software/gettext/manual/html_node/envsubst-Invocation.html) but also supports
-additional template datasources such as: JSON, YAML, AWS EC2 metadata, [BoltDB](https://github.com/boltdb/bolt),
+`gomplate` is a template renderer which supports a growing list of datasources,
+such as: JSON (_including EJSON - encrypted JSON_), YAML, AWS EC2 metadata, [BoltDB](https://github.com/boltdb/bolt),
 [Hashicorp Consul](https://www.consul.io/) and [Hashicorp Vault](https://www.vaultproject.io/) secrets.
 
-I really like `envsubst` for use as a super-minimalist template processor. But its simplicity is also its biggest flaw: it's all-or-nothing with shell-like variables.
+Here are some hands-on examples of how `gomplate` works:
 
-Gomplate is an alternative that will let you process templates which also include shell-like variables. Also there are some useful built-in functions that can be used to make templates even more expressive.
+```console
+$ # at its most basic, gomplate can be used with environment variables...
+$ echo 'Hello, {{ .Env.USER }}' | gomplate
+Hello, hairyhenderson
 
-Read more documentation at [gomplate.hairyhenderson.ca][docs-url]!
+$ # but that's kind of boring. gomplate has tons of functions to do useful stuff, too
+$ gomplate -i 'the answer is: {{ mul 6 7 }}'
+the answer is: 42
+
+$ # and, since gomplate uses Go's templating syntax, you can do fun things like:
+$ gomplate -i '{{ range seq 5 1 }}{{ . }} {{ if eq . 1 }}{{ "blastoff" | toUpper }}{{ end }}{{ end }}'
+5 4 3 2 1 BLASTOFF
+
+$ # the real fun comes when you use datasources!
+$ cat ./config.yaml
+foo:
+  bar:
+    baz: qux
+$ gomplate -d config=./config.yaml -i 'the value we want is: {{ (datasource "config").foo.bar.baz }}'
+the value we want is: qux
+
+$ # datasources are defined by URLs, and gomplate is not limited to just file-based datasources:
+$ gomplate -d ip=https://ipinfo.io -i 'country code: {{ (ds "ip").country }}'
+country code: CA
+
+$ # standard input can be used as a datasource too:
+$ echo '{"cities":["London", "Johannesburg", "Windhoek"]}' | gomplate -d city=stdin:///in.json -i '{{ range (ds "city").cities }}{{.}}, {{end}}'
+London, Johannesburg, Windhoek, 
+
+$ # and here's something a little more complicated:
+$ export CITIES='city: [London, Johannesburg, Windhoek]'
+$ cat in.tmpl
+{{ range $i, $city := (ds "cities").city -}}
+{{ add 1 $i }}: {{ include "weather" (print $city "?0") }}
+{{ end }}
+$ gomplate -d 'cities=env:///CITIES?type=application/yaml' -d 'weather=https://wttr.in/?0' -H 'weather=User-Agent: curl' -f in.tmpl
+1: Weather report: London
+
+    \  /       Partly cloudy
+  _ /"".-.     4-7 °C
+    \_(   ).   ↑ 20 km/h
+    /(___(__)  10 km
+               0.0 mm
+
+2: Weather report: Johannesburg
+
+    \  /       Partly cloudy
+  _ /"".-.     15 °C
+    \_(   ).   ↘ 0 km/h
+    /(___(__)  10 km
+               2.2 mm
+
+3: Weather report: Windhoek
+
+    \  /       Partly cloudy
+  _ /"".-.     20 °C
+    \_(   ).   ↑ 6 km/h
+    /(___(__)  20 km
+               0.0 mm
+```
+
+Read the documentation at [gomplate.hairyhenderson.ca][docs-url]!
 
 _Please report any bugs found in the [issue tracker](https://github.com/hairyhenderson/gomplate/issues/)._
-
-## Releasing
-
-Right now the release process is semi-automatic.
-
-1. Create a release tag: `git tag -a v0.0.9 -m "Releasing v0.9.9" && git push --tags`
-2. Build binaries & compress most of them: `make build-release`
-3. Create a release in [github](https://github.com/hairyhenderson/gomplate/releases)!
 
 ## License
 
 [The MIT License](http://opensource.org/licenses/MIT)
 
-Copyright (c) 2016-2018 Dave Henderson
+Copyright (c) 2016-2019 Dave Henderson
 
 [circleci-image]: https://circleci.com/gh/hairyhenderson/gomplate/tree/master.svg?style=shield
 [circleci-url]: https://circleci.com/gh/hairyhenderson/gomplate/tree/master
