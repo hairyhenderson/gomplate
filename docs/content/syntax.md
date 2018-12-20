@@ -32,7 +32,7 @@ is rendered.
 By default, every line containing an action will render a newline. For example, the action block below:
 
 ```
-{{ range ( "Foo, bar, baz" | strings.Split "," ) }}
+{{ range slice "Foo" "bar" "baz" }}
 Hello, {{ . }}!
 {{ end }}
 ```
