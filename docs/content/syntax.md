@@ -51,7 +51,7 @@ Hello,  baz!
 
 This might not be desirable.
 
-You can suppress leading newlines (i.e. newlines that come before the action) by placing a minus sign in front of the first set of delimiters (`{{`). Putting the minus sign behind the trailing set of delimiters (`}}`) will suppress the newline _after_ the action. You can do both to suppress newlines entirely on that line.
+You can use [Golang template syntax](https://golang.org/pkg/text/template/#hdr-Text_and_spaces) to fix this. Leading newlines (i.e. newlines that come before the action) can be suppressed by placing a minus sign in front of the first set of delimiters (`{{`). Putting the minus sign behind the trailing set of delimiters (`}}`) will suppress the newline _after_ the action. You can do both to suppress newlines entirely on that line.
 
 Placing the minus sign within the context (i.e. inside of `{{.}}`) has no effect.
 
