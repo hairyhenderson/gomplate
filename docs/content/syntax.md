@@ -27,6 +27,88 @@ _real life_, but this conveys the basics, which is that _actions_ are  delimited
 by `{{` and `}}`, and are replaced with their output (if any) when the template
 is rendered.
 
+## Multi-line templates
+
+By default, every line containing an action will render a newline. For example, the action block below:
+
+```
+{{ range slice "Foo" "bar" "baz" }}
+Hello, {{ . }}!
+{{ end }}
+```
+
+will produce the output below:
+
+```
+
+Hello, Foo!
+
+Hello,  bar!
+
+Hello,  baz!
+
+```
+
+This might not be desirable.
+
+You can use [Golang template syntax](https://golang.org/pkg/text/template/#hdr-Text_and_spaces) to fix this. Leading newlines (i.e. newlines that come before the action) can be suppressed by placing a minus sign in front of the first set of delimiters (`{{`). Putting the minus sign behind the trailing set of delimiters (`}}`) will suppress the newline _after_ the action. You can do both to suppress newlines entirely on that line.
+
+Placing the minus sign within the context (i.e. inside of `{{.}}`) has no effect.
+
+Here are a few examples.
+
+### Suppressing leading newlines
+
+```
+{{- range slice "Foo" "bar" "baz" }}
+Hello, {{ . }}!
+{{- end }}
+```
+
+will produce this:
+
+```
+
+Hello, Foo!
+Hello,  bar!
+Hello,  baz!
+```
+
+### Suppressing trailling newlines
+
+This code:
+
+```
+{{ range slice "Foo" "bar" "baz" -}}
+Hello, {{ . }}!
+{{ end -}}
+```
+
+yields this:
+
+```
+Hello, Foo!
+Hello,  bar!
+Hello,  baz!
+```
+
+### Suppressing newlines altogether
+
+This code:
+
+```
+{{- range slice "Foo" "bar" "baz" -}}
+Hello, {{ . }}!
+{{- end -}}
+```
+
+Produces:
+
+```
+Hello, Foo!Hello,  bar!Hello,  baz!
+```
+
+
 ## Variables
 
 The result of an action can be assigned to a _variable_, which is denoted by a
