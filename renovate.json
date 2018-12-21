@@ -1,5 +1,25 @@
 {
   "extends": [
-    "config:base"
+    ":separateMajorReleases",
+    ":combinePatchMinorReleases",
+    ":ignoreUnstable",
+    ":prImmediately",
+    ":renovatePrefix",
+    ":semanticPrefixFixDepsChoreOthers",
+    ":updateNotScheduled",
+    ":automergeMinor",
+    ":ignoreModulesAndTests",
+    ":maintainLockFilesDisabled",
+    ":autodetectPinVersions",
+    ":prHourlyLimit4",
+    ":prConcurrentLimit20",
+    "docker:enableMajor"
+  ],
+  "docker": {
+    "fileMatch": ["(^|/)Dockerfile.*$"]
+  },
+  "rebaseStalePrs": true,
+  "labels": [
+    "dependencies"
   ]
 }
