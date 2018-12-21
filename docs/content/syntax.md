@@ -60,7 +60,7 @@ Here are a few examples.
 ### Suppressing leading newlines
 
 ```
-{{- range ( "Foo, bar, baz" | strings.Split "," ) }}
+{{- range slice "Foo" "bar" "baz" }}
 Hello, {{ . }}!
 {{- end }}
 ```
@@ -79,7 +79,7 @@ Hello,  baz!
 This code:
 
 ```
-{{ range ( "Foo, bar, baz" | strings.Split "," ) -}}
+{{ range slice "Foo" "bar" "baz" -}}
 Hello, {{ . }}!
 {{ end -}}
 ```
@@ -97,7 +97,7 @@ Hello,  baz!
 This code:
 
 ```
-{{- range ( "Foo, bar, baz" | strings.Split "," ) -}}
+{{- range slice "Foo" "bar" "baz" -}}
 Hello, {{ . }}!
 {{- end -}}
 ```
