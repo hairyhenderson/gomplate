@@ -1,24 +1,34 @@
 {
-  "extends": [
-    ":separateMajorReleases",
-    ":combinePatchMinorReleases",
-    ":ignoreUnstable",
-    ":prImmediately",
-    ":renovatePrefix",
-    ":semanticPrefixFixDepsChoreOthers",
-    ":updateNotScheduled",
-    ":automergeMinor",
-    ":ignoreModulesAndTests",
-    ":maintainLockFilesDisabled",
-    ":autodetectPinVersions",
-    ":prHourlyLimit4",
-    ":prConcurrentLimit20",
-    "docker:enableMajor"
-  ],
-  "docker": {
-    "fileMatch": ["(^|/)Dockerfile.*$"]
+  "extends": [],
+  "separatePatchReleases": false,
+  "prCreation": "immediate",
+  "branchPrefix": "renovate/",
+  "updateNotScheduled": true,
+  "minor": {
+    "automerge": true
   },
+  "patch": {
+    "automerge": true
+  },
+  "pin": {
+    "automerge": true
+  },
+  "lockFileMaintenance": {
+    "automerge": true
+  },
+  "docker": {
+    "fileMatch": ["(^|/)Dockerfile.*$"],
+    "major": {
+      "enabled": true
+    }
+  },
+  "ignorePaths": [
+    "vendor/**"
+  ],
+  "rangeStrategy": "auto",
   "rebaseStalePrs": true,
+  "prConcurrentLimit": 20,
+  "prHourlyLimit": 4,
   "labels": [
     "dependencies"
   ]
