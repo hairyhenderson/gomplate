@@ -76,7 +76,7 @@ funcs:
         age: 42
         name: Frank
         $ gomplate -i '{{ dict 1 2 3 | toJSON }}'
-        {"1":"2","3":""}
+        {"1":2,"3":""}
       - |
         $ cat <<EOF| gomplate
         {{ define "T1" }}Hello {{ .thing }}!{{ end -}}
