@@ -108,7 +108,6 @@ Produces:
 Hello, Foo!Hello,  bar!Hello,  baz!
 ```
 
-
 ## Variables
 
 The result of an action can be assigned to a _variable_, which is denoted by a
@@ -129,33 +128,67 @@ Goodbye, world.
 
 ## Indexing arrays and maps
 
-Occasionally, multi-dimensional data such as arrays (lists, slices) and maps (dictionaries) are used in templates, sometimes through the use of
-[data sources][]. Accessing values within these data can be done in a few
-ways which bear clarifying:
+Occasionally, multi-dimensional data such as arrays (lists, slices) and maps
+(dictionaries) are used in templates, sometimes through the use of
+[data sources][]. Accessing values within these data can be done in a few ways
+which bear clarifying.
 
-Arrays are always numerically-indexed, and so can be accessed with a `[n]` suffix:
+### Arrays
+
+Arrays are always numerically-indexed, and individual values can be accessed with the `index` function:
+
 ```
-{{ $array[0] }}
+{{ index $array 0 }}
 ```
 
-You can also loop through an array with `range`:
+To visit each value, you can loop through an array with `range`:
+
 ```
 {{ range $array }}
 do something with {{ . }}...
 {{ end }}
 ```
 
-For maps, access is done with the `.` operator. Given a map `$map` with a key `foo`, you could access it like:
+If you need to keep track of the index number, you can declare two variables, separated by a comma:
+
+```
+{{ range $index, $element := $array }}
+do something with {{ $element }}, which is number {{ $index }}
+{{ end }}
+```
+
+### Maps
+
+For maps, accessing values can be done with the `.` operator. Given a map `$map`
+with a key `foo`, you could access it like:
 
 ```
 {{ $map.foo }}
 ```
 
-However, if the key contains a non-alphanumeric character, you can use the `index`
-function:
+However, this kind of access is limited to keys which are strings and contain
+only characters in the set (`a`-`z`,`A`-`Z`,`_`,`1`-`9`), and which do not begin
+with a number. If the key doesn't conform to these rules, you can use the `index`
+function (like how arrays are accessed):
 
 ```
 {{ index $map "foo-bar" }}
+```
+
+And, similar to arrays, you can loop through a map with the `range`:
+
+```
+{{ range $map }}
+The value is {{ . }}
+{{ end }}
+```
+
+Or if you need keys as well:
+
+```
+{{ range $key, $value := $map }}
+{{ $key }}'s value is: {{ $value }}
+{{ end }}
 ```
 
 ## Functions
@@ -288,5 +321,5 @@ strings, this is a sure way to know that variables are missing!
 If you want different behaviour, try [`getenv`](../functions/env/#env-getenv).
 
 [`text/template`]: https://golang.org/pkg/text/template/
-[`base64.Encode`]: ./functions/base64#base64-encode
-[data sources]: ./datasources/
+[`base64.Encode`]: ../functions/base64#base64-encode
+[data sources]: ../datasources/
