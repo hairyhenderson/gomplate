@@ -22,10 +22,6 @@ var (
 	sdkSessionInit sync.Once
 )
 
-const (
-	unknown = "unknown"
-)
-
 // ClientOptions -
 type ClientOptions struct {
 	Timeout time.Duration
@@ -48,14 +44,16 @@ type InstanceDescriber interface {
 func GetClientOptions() ClientOptions {
 	coInit.Do(func() {
 		timeout := os.Getenv("AWS_TIMEOUT")
-		if timeout != "" {
-			t, err := strconv.Atoi(timeout)
-			if err != nil {
-				panic(errors.Wrapf(err, "Invalid AWS_TIMEOUT value '%s' - must be an integer\n", timeout))
-			}
-
-			co.Timeout = time.Duration(t) * time.Millisecond
+		if timeout == "" {
+			timeout = "500"
 		}
+
+		t, err := strconv.Atoi(timeout)
+		if err != nil {
+			panic(errors.Wrapf(err, "Invalid AWS_TIMEOUT value '%s' - must be an integer\n", timeout))
+		}
+
+		co.Timeout = time.Duration(t) * time.Millisecond
 	})
 	return co
 }
@@ -72,16 +70,17 @@ func SDKSession(region ...string) *session.Session {
 		config := aws.NewConfig()
 		config = config.WithHTTPClient(&http.Client{Timeout: timeout})
 
-		metaRegion := unknown
+		metaRegion := ""
 		if len(region) > 0 {
 			metaRegion = region[0]
+		} else {
+			var err error
+			metaRegion, err = getRegion()
+			if err != nil {
+				panic(errors.Wrap(err, "failed to determine EC2 region"))
+			}
 		}
-		// Waiting for https://github.com/aws/aws-sdk-go/issues/1103
-		_, default1 := os.LookupEnv("AWS_REGION")
-		_, default2 := os.LookupEnv("AWS_DEFAULT_REGION")
-		if metaRegion != unknown && !default1 && !default2 {
-			config = config.WithRegion(metaRegion)
-		}
+		config = config.WithRegion(metaRegion)
 
 		sdkSession = session.Must(session.NewSessionWithOptions(session.Options{
 			Config:            *config,
@@ -91,17 +90,39 @@ func SDKSession(region ...string) *session.Session {
 	return sdkSession
 }
 
+// Attempts to get the EC2 region to use. If we're running on an EC2 Instance
+// and neither AWS_REGION nor AWS_DEFAULT_REGION are set, we'll infer from EC2
+// metadata.
+// Once https://github.com/aws/aws-sdk-go/issues/1103 is resolve this should be
+// tidier!
+func getRegion(m ...*Ec2Meta) (string, error) {
+	region := ""
+	_, default1 := os.LookupEnv("AWS_REGION")
+	_, default2 := os.LookupEnv("AWS_DEFAULT_REGION")
+	if !default1 && !default2 {
+		// Maybe we're in EC2, let's try to read metadata
+		var metaClient *Ec2Meta
+		if len(m) > 0 {
+			metaClient = m[0]
+		} else {
+			metaClient = NewEc2Meta(GetClientOptions())
+		}
+		var err error
+		region, err = metaClient.Region()
+		if err != nil {
+			return "", errors.Wrap(err, "failed to determine EC2 region")
+		}
+	}
+	return region, nil
+}
+
 // NewEc2Info -
 func NewEc2Info(options ClientOptions) (info *Ec2Info) {
 	metaClient := NewEc2Meta(options)
 	return &Ec2Info{
 		describer: func() (InstanceDescriber, error) {
 			if describerClient == nil {
-				metaRegion, err := metaClient.Region()
-				if err != nil {
-					return nil, errors.Wrap(err, "failed to determine EC2 region")
-				}
-				session := SDKSession(metaRegion)
+				session := SDKSession()
 				describerClient = ec2.New(session)
 			}
 			return describerClient, nil

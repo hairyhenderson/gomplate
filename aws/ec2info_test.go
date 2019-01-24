@@ -1,7 +1,10 @@
 package aws
 
 import (
+	"os"
+	"sync"
 	"testing"
+	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
@@ -102,4 +105,67 @@ func TestNewEc2Info(t *testing.T) {
 
 	assert.Equal(t, "bar", must(e.Tag("foo")))
 	assert.Equal(t, "bar", must(e.Tag("foo", "default")))
+}
+
+func TestGetRegion(t *testing.T) {
+	oldReg, ok := os.LookupEnv("AWS_REGION")
+	if ok {
+		defer os.Setenv("AWS_REGION", oldReg)
+	}
+	oldDefReg, ok := os.LookupEnv("AWS_DEFAULT_REGION")
+	if ok {
+		defer os.Setenv("AWS_REGION", oldDefReg)
+	}
+
+	os.Setenv("AWS_REGION", "kalamazoo")
+	os.Unsetenv("AWS_DEFAULT_REGION")
+	region, err := getRegion()
+	assert.NoError(t, err)
+	assert.Empty(t, region)
+
+	os.Setenv("AWS_DEFAULT_REGION", "kalamazoo")
+	os.Unsetenv("AWS_REGION")
+	region, err = getRegion()
+	assert.NoError(t, err)
+	assert.Empty(t, region)
+
+	os.Unsetenv("AWS_DEFAULT_REGION")
+	metaClient := NewDummyEc2Meta()
+	region, err = getRegion(metaClient)
+	assert.NoError(t, err)
+	assert.Equal(t, "unknown", region)
+
+	server, ec2meta := MockServer(200, `{"region":"us-east-1"}`)
+	defer server.Close()
+	region, err = getRegion(ec2meta)
+	assert.NoError(t, err)
+	assert.Equal(t, "us-east-1", region)
+}
+
+func TestGetClientOptions(t *testing.T) {
+	oldVar, ok := os.LookupEnv("AWS_TIMEOUT")
+	if ok {
+		defer os.Setenv("AWS_TIMEOUT", oldVar)
+	}
+
+	co := GetClientOptions()
+	assert.Equal(t, ClientOptions{Timeout: 500 * time.Millisecond}, co)
+
+	os.Setenv("AWS_TIMEOUT", "42")
+	// reset the Once
+	coInit = sync.Once{}
+	co = GetClientOptions()
+	assert.Equal(t, ClientOptions{Timeout: 42 * time.Millisecond}, co)
+
+	os.Setenv("AWS_TIMEOUT", "123")
+	// without resetting the Once, expect to be reused
+	co = GetClientOptions()
+	assert.Equal(t, ClientOptions{Timeout: 42 * time.Millisecond}, co)
+
+	os.Setenv("AWS_TIMEOUT", "foo")
+	// reset the Once
+	coInit = sync.Once{}
+	assert.Panics(t, func() {
+		GetClientOptions()
+	})
 }
