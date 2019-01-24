@@ -15,6 +15,11 @@ import (
 // DefaultEndpoint -
 var DefaultEndpoint = "http://169.254.169.254"
 
+const (
+	// the default region
+	unknown = "unknown"
+)
+
 // Ec2Meta -
 type Ec2Meta struct {
 	Endpoint string
