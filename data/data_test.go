@@ -17,7 +17,7 @@ import (
 
 func TestUnmarshalObj(t *testing.T) {
 	expected := map[string]interface{}{
-		"foo":  map[interface{}]interface{}{"bar": "baz"},
+		"foo":  map[string]interface{}{"bar": "baz"},
 		"one":  1.0,
 		"true": true,
 	}
@@ -44,17 +44,27 @@ true: true
 
 func TestUnmarshalArray(t *testing.T) {
 
-	expected := []string{"foo", "bar"}
+	expected := []interface{}{"foo", "bar",
+		map[string]interface{}{
+			"baz":   map[string]interface{}{"qux": true},
+			"quux":  map[string]interface{}{"42": 18},
+			"corge": map[string]interface{}{"false": "blah"},
+		}}
 
 	test := func(actual []interface{}, err error) {
 		assert.NoError(t, err)
-		assert.Equal(t, expected[0], actual[0])
-		assert.Equal(t, expected[1], actual[1])
+		assert.EqualValues(t, expected, actual)
 	}
-	test(JSONArray(`["foo","bar"]`))
+	test(JSONArray(`["foo","bar",{"baz":{"qux": true},"quux":{"42":18},"corge":{"false":"blah"}}]`))
 	test(YAMLArray(`
 - foo
 - bar
+- baz:
+    qux: true
+  quux:
+    42: 18
+  corge:
+    false: blah
 `))
 
 	obj := make([]interface{}, 1)

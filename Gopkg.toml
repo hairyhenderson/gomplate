@@ -10,3 +10,7 @@
 [[constraint]]
   branch = "master"
   name = "github.com/hashicorp/go-sockaddr"
+
+[[constraint]]
+  branch = "v2"
+  name = "gopkg.in/hairyhenderson/yaml.v2"

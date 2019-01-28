@@ -15,6 +15,15 @@ import (
 	"sync"
 )
 
+// DefaultMapType contains the type that YAML maps are decoded to
+//
+// This is a hack that can be undone once gopkg.in/yaml.v3 is available
+// See https://github.com/go-yaml/yaml/issues/139
+// I stole this from github.com/superwhiskers/yaml
+// To use this:
+//    *yaml.DefaultMapType = reflect.TypeOf(map[string]interface{}{})
+var DefaultMapType = &defaultMapType
+
 // MapSlice encodes and decodes as a YAML map.
 // The order of keys is preserved when encoding and decoding.
 type MapSlice []MapItem
