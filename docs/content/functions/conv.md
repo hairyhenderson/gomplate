@@ -620,3 +620,71 @@ conv.ToStrings in...
 $ gomplate -i '{{ conv.ToStrings nil 42 true 0xF (slice 1 2 3) }}'
 [nil 42 true 15 [1 2 3]]
 ```
+
+## `conv.Keys`
+
+**Alias:** `keys`
+
+Return a list of keys in one or more maps.
+
+The keys will be ordered first by map position (if multiple maps are given),
+then alphabetically.
+
+See also [`conv.Values`](#conv-values).
+
+### Usage
+```go
+conv.Keys in... 
+```
+
+### Arguments
+
+| name | description |
+|------|-------------|
+| `in...` | _(required)_ the maps |
+
+### Examples
+
+```console
+$ gomplate -i '{{ $map := json `{"foo": 1, "bar": 2}` -}}
+  {{ conv.Keys $map }}'
+[bar foo]
+$ gomplate -i '{{ $map1 := json `{"foo": 1, "bar": 2}` -}}
+  {{ $map2 := json `{"baz": 3, "qux": 4}` -}}
+  {{ conv.Keys $map1 $map2 }}'
+[bar foo baz qux]
+```
+
+## `conv.Values`
+
+**Alias:** `values`
+
+Return a list of values in one or more maps.
+
+The values will be ordered first by map position (if multiple maps are given),
+then alphabetically by key.
+
+See also [`conv.Keys`](#conv-keys).
+
+### Usage
+```go
+conv.Values in... 
+```
+
+### Arguments
+
+| name | description |
+|------|-------------|
+| `in...` | _(required)_ the maps |
+
+### Examples
+
+```console
+$ gomplate -i '{{ $map := json `{"foo": 1, "bar": 2}` -}}
+  {{ conv.Values $map }}'
+[2 1]
+$ gomplate -i '{{ $map1 := json `{"foo": 1, "bar": 2}` -}}
+  {{ $map2 := json `{"baz": 3, "qux": 4}` -}}
+  {{ conv.Values $map1 $map2 }}'
+[2 1 3 4]
+```

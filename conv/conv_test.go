@@ -326,3 +326,71 @@ func TestDict(t *testing.T) {
 		assert.Equal(t, d.expected, actual)
 	}
 }
+
+func TestKeys(t *testing.T) {
+	_, err := Keys()
+	assert.Error(t, err)
+
+	in := map[string]interface{}{
+		"foo": 1,
+		"bar": 2,
+	}
+	expected := []string{"bar", "foo"}
+	keys, err := Keys(in)
+	assert.NoError(t, err)
+	assert.EqualValues(t, expected, keys)
+
+	in2 := map[string]interface{}{
+		"baz": 3,
+		"qux": 4,
+	}
+	expected = []string{"bar", "foo", "baz", "qux"}
+	keys, err = Keys(in, in2)
+	assert.NoError(t, err)
+	assert.EqualValues(t, expected, keys)
+
+	in3 := map[string]interface{}{
+		"Foo": 5,
+		"Bar": 6,
+		"foo": 7,
+		"bar": 8,
+	}
+	expected = []string{"bar", "foo", "baz", "qux", "Bar", "Foo", "bar", "foo"}
+	keys, err = Keys(in, in2, in3)
+	assert.NoError(t, err)
+	assert.EqualValues(t, expected, keys)
+}
+
+func TestValues(t *testing.T) {
+	_, err := Values()
+	assert.Error(t, err)
+
+	in := map[string]interface{}{
+		"foo": 1,
+		"bar": 2,
+	}
+	expected := []interface{}{2, 1}
+	values, err := Values(in)
+	assert.NoError(t, err)
+	assert.EqualValues(t, expected, values)
+
+	in2 := map[string]interface{}{
+		"baz": 3,
+		"qux": 4,
+	}
+	expected = []interface{}{2, 1, 3, 4}
+	values, err = Values(in, in2)
+	assert.NoError(t, err)
+	assert.EqualValues(t, expected, values)
+
+	in3 := map[string]interface{}{
+		"Foo": 5,
+		"Bar": 6,
+		"foo": 7,
+		"bar": 8,
+	}
+	expected = []interface{}{2, 1, 3, 4, 6, 5, 8, 7}
+	values, err = Values(in, in2, in3)
+	assert.NoError(t, err)
+	assert.EqualValues(t, expected, values)
+}

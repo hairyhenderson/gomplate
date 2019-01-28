@@ -3,6 +3,7 @@ package conv
 import (
 	"fmt"
 	"reflect"
+	"sort"
 	"strconv"
 	"strings"
 
@@ -327,4 +328,48 @@ func Dict(v ...interface{}) (map[string]interface{}, error) {
 		dict[key] = v[i+1]
 	}
 	return dict, nil
+}
+
+// Keys returns the list of keys in one or more maps. The returned list of keys
+// is ordered by map, each in sorted key order.
+func Keys(in ...map[string]interface{}) ([]string, error) {
+	if len(in) == 0 {
+		return nil, fmt.Errorf("conv.Keys needs at least one argument")
+	}
+	keys := []string{}
+	for _, m := range in {
+		k, _ := splitMap(m)
+		keys = append(keys, k...)
+	}
+	return keys, nil
+}
+
+func splitMap(m map[string]interface{}) ([]string, []interface{}) {
+	keys := make([]string, len(m))
+	values := make([]interface{}, len(m))
+	i := 0
+	for k := range m {
+		keys[i] = k
+		i++
+	}
+	sort.Strings(keys)
+	for i, k := range keys {
+		values[i] = m[k]
+	}
+	return keys, values
+}
+
+// Values returns the list of values in one or more maps. The returned list of values
+// is ordered by map, each in sorted key order. If the Keys function is called with
+// the same arguments, the key/value mappings will be maintained.
+func Values(in ...map[string]interface{}) ([]interface{}, error) {
+	if len(in) == 0 {
+		return nil, fmt.Errorf("conv.Values needs at least one argument")
+	}
+	values := []interface{}{}
+	for _, m := range in {
+		_, v := splitMap(m)
+		values = append(values, v...)
+	}
+	return values, nil
 }
