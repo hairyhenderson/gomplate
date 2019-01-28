@@ -8,7 +8,8 @@ import (
 
 	"github.com/pkg/errors"
 
-	yaml "gopkg.in/yaml.v2"
+	// XXX: replace once https://github.com/go-yaml/yaml/issues/139 is solved
+	yaml "gopkg.in/hairyhenderson/yaml.v2"
 
 	"github.com/docker/libkv"
 	"github.com/docker/libkv/store"

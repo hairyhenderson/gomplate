@@ -483,12 +483,12 @@
   revision = "788fd78401277ebd861206a03c884797c6ec5541"
 
 [[projects]]
-  digest = "1:7c95b35057a0ff2e19f707173cc1a947fa43a6eb5c4d300d196ece0334046082"
-  name = "gopkg.in/yaml.v2"
+  branch = "v2"
+  digest = "1:c66b26c0ed873eadbb4021036b7f9deceeb4832db9edd2ee7a4e52ab99aed150"
+  name = "gopkg.in/hairyhenderson/yaml.v2"
   packages = ["."]
   pruneopts = "NUT"
-  revision = "5420a8b6744d3b0345ab293f6fcba19c978f1183"
-  version = "v2.2.1"
+  revision = "252a03df762e6cc75ed23ccd28fed3c3bd19516f"
 
 [solve-meta]
   analyzer-name = "dep"
@@ -528,7 +528,7 @@
     "golang.org/x/crypto/bcrypt",
     "golang.org/x/crypto/pbkdf2",
     "gopkg.in/check.v1",
-    "gopkg.in/yaml.v2",
+    "gopkg.in/hairyhenderson/yaml.v2",
   ]
   solver-name = "gps-cdcl"
   solver-version = 1

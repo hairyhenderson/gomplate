@@ -4,17 +4,26 @@ import (
 	"bytes"
 	"encoding/csv"
 	"encoding/json"
+	"reflect"
 	"strings"
 
 	"github.com/Shopify/ejson"
 	ejsonJson "github.com/Shopify/ejson/json"
 	"github.com/hairyhenderson/gomplate/env"
+
 	// XXX: replace once https://github.com/BurntSushi/toml/pull/179 is merged
 	"github.com/hairyhenderson/toml"
 	"github.com/pkg/errors"
 	"github.com/ugorji/go/codec"
-	yaml "gopkg.in/yaml.v2"
+
+	// XXX: replace once https://github.com/go-yaml/yaml/issues/139 is solved
+	yaml "gopkg.in/hairyhenderson/yaml.v2"
 )
+
+func init() {
+	// XXX: remove once https://github.com/go-yaml/yaml/issues/139 is solved
+	*yaml.DefaultMapType = reflect.TypeOf(map[string]interface{}{})
+}
 
 func unmarshalObj(obj map[string]interface{}, in string, f func([]byte, interface{}) error) (map[string]interface{}, error) {
 	err := f([]byte(in), &obj)

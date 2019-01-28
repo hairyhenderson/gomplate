@@ -92,7 +92,7 @@ func TestDatasource(t *testing.T) {
 	}
 	test := func(ext, mime string, contents []byte) {
 		data := setup(ext, mime, contents)
-		expected := map[string]interface{}{"hello": map[interface{}]interface{}{"cruel": "world"}}
+		expected := map[string]interface{}{"hello": map[string]interface{}{"cruel": "world"}}
 		actual, err := data.Datasource("foo")
 		assert.NoError(t, err)
 		assert.Equal(t, expected, actual)
