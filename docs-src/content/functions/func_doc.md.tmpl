@@ -9,7 +9,8 @@ menu:
 {{ $data.preamble -}}
 
 {{ range $_, $f := $data.funcs }}
-## `{{ $f.name }}`
+## `{{ $f.name }}`{{ if has $f "deprecated" }} _(deprecated)_
+**Deprecation Notice:** {{ $f.deprecated }}{{ end }}
 {{ if has $f "alias" }}
 **Alias:** `{{$f.alias}}`
 {{ end }}

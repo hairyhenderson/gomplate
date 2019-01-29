@@ -5,6 +5,7 @@ import (
 	"sync"
 	"text/template"
 
+	"github.com/hairyhenderson/gomplate/coll"
 	"github.com/hairyhenderson/gomplate/conv"
 )
 
@@ -25,13 +26,8 @@ func AddConvFuncs(f map[string]interface{}) {
 
 	f["urlParse"] = ConvNS().URL
 	f["bool"] = ConvNS().Bool
-	f["has"] = ConvNS().Has
-	f["slice"] = ConvNS().Slice
 	f["join"] = ConvNS().Join
 	f["default"] = ConvNS().Default
-	f["dict"] = ConvNS().Dict
-	f["keys"] = ConvNS().Keys
-	f["values"] = ConvNS().Values
 }
 
 // ConvFuncs -
@@ -54,7 +50,7 @@ func (f *ConvFuncs) ToBools(in ...interface{}) []bool {
 
 // Slice -
 func (f *ConvFuncs) Slice(args ...interface{}) []interface{} {
-	return conv.Slice(args...)
+	return coll.Slice(args...)
 }
 
 // Join -
@@ -64,7 +60,7 @@ func (f *ConvFuncs) Join(in interface{}, sep string) (string, error) {
 
 // Has -
 func (f *ConvFuncs) Has(in interface{}, key string) bool {
-	return conv.Has(in, key)
+	return coll.Has(in, key)
 }
 
 // ParseInt -
@@ -142,15 +138,5 @@ func (f *ConvFuncs) Default(def, in interface{}) interface{} {
 
 // Dict -
 func (f *ConvFuncs) Dict(in ...interface{}) (map[string]interface{}, error) {
-	return conv.Dict(in...)
-}
-
-// Keys -
-func (f *ConvFuncs) Keys(in ...map[string]interface{}) ([]string, error) {
-	return conv.Keys(in...)
-}
-
-// Values -
-func (f *ConvFuncs) Values(in ...map[string]interface{}) ([]interface{}, error) {
-	return conv.Values(in...)
+	return coll.Dict(in...)
 }
