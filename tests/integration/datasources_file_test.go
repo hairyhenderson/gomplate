@@ -18,18 +18,38 @@ var _ = Suite(&FileDatasourcesSuite{})
 
 func (s *FileDatasourcesSuite) SetUpSuite(c *C) {
 	s.tmpDir = fs.NewDir(c, "gomplate-inttests",
-		fs.WithFile("config.json", `{"foo": {"bar": "baz"}}`),
-		fs.WithFile("encrypted.json", `{
-			"_public_key": "dfcf98785869cdfc4a59273bbdfe1bfcf6c44850a11ea9d84db21c89a802c057",
-			"password": "EJ[1:Cb1AY94Dl76xwHHrnJyh+Y+fAeovijPlFQZXSAuvZBc=:oCGZM6lbeXXOl2ONSKfLQ0AgaltrTpNU:VjegqQPPkOK1hSylMAbmcfusQImfkHCWZw==]"
-		}`),
-		fs.WithFile("config.yml", "foo:\n bar: baz\n"),
-		fs.WithFile("config2.yml", "foo: bar\n"),
-		fs.WithFile("foo.csv", `A,B
+		fs.WithFiles(map[string]string{
+			"config.json": `{"foo": {"bar": "baz"}}`,
+			"encrypted.json": `{
+  "_public_key": "dfcf98785869cdfc4a59273bbdfe1bfcf6c44850a11ea9d84db21c89a802c057",
+  "password": "EJ[1:Cb1AY94Dl76xwHHrnJyh+Y+fAeovijPlFQZXSAuvZBc=:oCGZM6lbeXXOl2ONSKfLQ0AgaltrTpNU:VjegqQPPkOK1hSylMAbmcfusQImfkHCWZw==]"
+}`,
+			"config.yml":  "foo:\n bar: baz\n",
+			"config2.yml": "foo: bar\n",
+			"foo.csv": `A,B
 A1,B1
 A2,"foo""
 bar"
-`),
+`,
+		}),
+		fs.WithDir("sortorder", fs.WithFiles(map[string]string{
+			"template": `aws_zones = {
+	{{- range $key, $value := (ds "core").cloud.aws.zones }}
+	{{ $key }} = "{{ $value }}"
+	{{- end }}
+}
+`,
+			"core.yaml": `cloud:
+  aws:
+    zones:
+      zonea: true
+      zoneb: false
+      zonec: true
+      zoned: true
+      zonee: false
+      zonef: false
+`,
+		})),
 	)
 }
 
@@ -110,4 +130,18 @@ bar`})
 		}
 	})
 	result.Assert(c, icmd.Expected{ExitCode: 0, Out: "swordfish"})
+
+	result = icmd.RunCommand(GomplateBin,
+		"-d", "core="+s.tmpDir.Join("sortorder", "core.yaml"),
+		"-f", s.tmpDir.Join("sortorder", "template"),
+	)
+	result.Assert(c, icmd.Expected{ExitCode: 0, Out: `aws_zones = {
+	zonea = "true"
+	zoneb = "false"
+	zonec = "true"
+	zoned = "true"
+	zonee = "false"
+	zonef = "false"
+}
+`})
 }

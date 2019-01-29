@@ -47,4 +47,22 @@ func TestReadFile(t *testing.T) {
 	actual, err = readFile(source)
 	assert.NoError(t, err)
 	assert.Equal(t, []byte(`["bar.txt","baz.txt","foo.txt"]`), actual)
+
+	source = &Source{Alias: "dir", URL: mustParseURL("file:///tmp/partial/?type=application/json")}
+	source.fs = fs
+	actual, err = readFile(source)
+	assert.NoError(t, err)
+	assert.Equal(t, []byte(`["bar.txt","baz.txt","foo.txt"]`), actual)
+	mime, err := source.mimeType()
+	assert.NoError(t, err)
+	assert.Equal(t, "application/json", mime)
+
+	source = &Source{Alias: "dir", URL: mustParseURL("file:///tmp/partial/?type=application/json")}
+	source.fs = fs
+	actual, err = readFile(source, "foo.txt")
+	assert.NoError(t, err)
+	assert.Equal(t, []byte(content), actual)
+	mime, err = source.mimeType()
+	assert.NoError(t, err)
+	assert.Equal(t, "application/json", mime)
 }

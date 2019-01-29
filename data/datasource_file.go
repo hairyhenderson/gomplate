@@ -28,7 +28,7 @@ func readFile(source *Source, args ...string) ([]byte, error) {
 		}
 
 		if parsed.Path != "" {
-			p = p + "/" + parsed.Path
+			p = filepath.Join(p, parsed.Path)
 		}
 	}
 
@@ -38,7 +38,7 @@ func readFile(source *Source, args ...string) ([]byte, error) {
 		return nil, errors.Wrapf(err, "Can't stat %s", p)
 	}
 
-	if strings.HasSuffix(p, "/") {
+	if strings.HasSuffix(p, string(filepath.Separator)) {
 		source.mediaType = jsonArrayMimetype
 		if i.IsDir() {
 			return readFileDir(source, p)
