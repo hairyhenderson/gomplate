@@ -36,35 +36,46 @@ func init() {
 	regExtension(".yaml", yamlMimetype)
 	regExtension(".csv", csvMimetype)
 	regExtension(".toml", tomlMimetype)
-
-	sourceReaders = make(map[string]func(*Source, ...string) ([]byte, error))
-
-	// Register our source-reader functions
-	addSourceReader("http", readHTTP)
-	addSourceReader("https", readHTTP)
-	addSourceReader("file", readFile)
-	addSourceReader("stdin", readStdin)
-	addSourceReader("vault", readVault)
-	addSourceReader("vault+http", readVault)
-	addSourceReader("vault+https", readVault)
-	addSourceReader("consul", readConsul)
-	addSourceReader("consul+http", readConsul)
-	addSourceReader("consul+https", readConsul)
-	addSourceReader("boltdb", readBoltDB)
-	addSourceReader("aws+smp", readAWSSMP)
 }
 
-var sourceReaders map[string]func(*Source, ...string) ([]byte, error)
+// registerReaders registers the source-reader functions
+func (d *Data) registerReaders() {
+	d.sourceReaders = make(map[string]func(*Source, ...string) ([]byte, error))
 
-// addSourceReader -
-func addSourceReader(scheme string, readFunc func(*Source, ...string) ([]byte, error)) {
-	sourceReaders[scheme] = readFunc
+	d.sourceReaders["aws+smp"] = readAWSSMP
+	d.sourceReaders["boltdb"] = readBoltDB
+	d.sourceReaders["consul"] = readConsul
+	d.sourceReaders["consul+http"] = readConsul
+	d.sourceReaders["consul+https"] = readConsul
+	d.sourceReaders["env"] = readEnv
+	d.sourceReaders["file"] = readFile
+	d.sourceReaders["http"] = readHTTP
+	d.sourceReaders["https"] = readHTTP
+	d.sourceReaders["merge"] = d.readMerge
+	d.sourceReaders["stdin"] = readStdin
+	d.sourceReaders["vault"] = readVault
+	d.sourceReaders["vault+http"] = readVault
+	d.sourceReaders["vault+https"] = readVault
+}
+
+// lookupReader - return the reader function for the given scheme
+func (d *Data) lookupReader(scheme string) (func(*Source, ...string) ([]byte, error), error) {
+	if d.sourceReaders == nil {
+		d.registerReaders()
+	}
+	r, ok := d.sourceReaders[scheme]
+	if !ok {
+		return nil, errors.Errorf("scheme %s not registered", scheme)
+	}
+	return r, nil
 }
 
 // Data -
 type Data struct {
 	Sources map[string]*Source
-	cache   map[string][]byte
+
+	sourceReaders map[string]func(*Source, ...string) ([]byte, error)
+	cache         map[string][]byte
 
 	// headers from the --datasource-header/-H option that don't reference datasources from the commandline
 	extraHeaders map[string]http.Header
@@ -80,11 +91,16 @@ func (d *Data) Cleanup() {
 
 // NewData - constructor for Data
 func NewData(datasourceArgs, headerArgs []string) (*Data, error) {
-	sources := make(map[string]*Source)
 	headers, err := parseHeaderArgs(headerArgs)
 	if err != nil {
 		return nil, err
 	}
+
+	data := &Data{
+		Sources:      make(map[string]*Source),
+		extraHeaders: headers,
+	}
+
 	for _, v := range datasourceArgs {
 		s, err := parseSource(v)
 		if err != nil {
@@ -94,12 +110,9 @@ func NewData(datasourceArgs, headerArgs []string) (*Data, error) {
 		// pop the header out of the map, so we end up with only the unreferenced ones
 		delete(headers, s.Alias)
 
-		sources[s.Alias] = s
+		data.Sources[s.Alias] = s
 	}
-	return &Data{
-		Sources:      sources,
-		extraHeaders: headers,
-	}, nil
+	return data, nil
 }
 
 // Source - a data source
@@ -113,6 +126,14 @@ type Source struct {
 	kv        *libkv.LibKV   // used for consul:, etcd:, zookeeper: & boltdb: URLs, nil otherwise
 	asmpg     awssmpGetter   // used for aws+smp:, nil otherwise
 	header    http.Header    // used for http[s]: URLs, nil otherwise
+}
+
+func (s *Source) inherit(parent *Source) {
+	s.fs = parent.fs
+	s.hc = parent.hc
+	s.vc = parent.vc
+	s.kv = parent.kv
+	s.asmpg = parent.asmpg
 }
 
 func (s *Source) cleanup() {
@@ -272,23 +293,37 @@ func (d *Data) lookupSource(alias string) (*Source, error) {
 	return source, nil
 }
 
-// Datasource -
-func (d *Data) Datasource(alias string, args ...string) (interface{}, error) {
+func (d *Data) readDataSource(alias string, args ...string) (data, mimeType string, err error) {
 	source, err := d.lookupSource(alias)
 	if err != nil {
-		return nil, err
+		return "", "", err
 	}
 	b, err := d.readSource(source, args...)
 	if err != nil {
-		return nil, errors.Wrapf(err, "Couldn't read datasource '%s'", alias)
+		return "", "", errors.Wrapf(err, "Couldn't read datasource '%s'", alias)
 	}
 
-	mimeType, err := source.mimeType()
+	mimeType, err = source.mimeType()
+	if err != nil {
+		return "", "", err
+	}
+	return string(b), mimeType, nil
+}
+
+// Include -
+func (d *Data) Include(alias string, args ...string) (string, error) {
+	data, _, err := d.readDataSource(alias, args...)
+	return data, err
+}
+
+// Datasource -
+func (d *Data) Datasource(alias string, args ...string) (interface{}, error) {
+	data, mimeType, err := d.readDataSource(alias, args...)
 	if err != nil {
 		return nil, err
 	}
 
-	return parseData(mimeType, string(b))
+	return parseData(mimeType, data)
 }
 
 func parseData(mimeType, s string) (out interface{}, err error) {
@@ -322,19 +357,6 @@ func (d *Data) DatasourceReachable(alias string, args ...string) bool {
 	return err == nil
 }
 
-// Include -
-func (d *Data) Include(alias string, args ...string) (string, error) {
-	source, ok := d.Sources[alias]
-	if !ok {
-		return "", errors.Errorf("Undefined datasource '%s'", alias)
-	}
-	b, err := d.readSource(source, args...)
-	if err != nil {
-		return "", errors.Wrapf(err, "Couldn't read datasource '%s'", alias)
-	}
-	return string(b), nil
-}
-
 // readSource returns the (possibly cached) data from the given source,
 // as referenced by the given args
 func (d *Data) readSource(source *Source, args ...string) ([]byte, error) {
@@ -349,16 +371,16 @@ func (d *Data) readSource(source *Source, args ...string) ([]byte, error) {
 	if ok {
 		return cached, nil
 	}
-	if r, ok := sourceReaders[source.URL.Scheme]; ok {
-		data, err := r(source, args...)
-		if err != nil {
-			return nil, err
-		}
-		d.cache[cacheKey] = data
-		return data, err
+	r, err := d.lookupReader(source.URL.Scheme)
+	if err != nil {
+		return nil, errors.Wrap(err, "Datasource not yet supported")
 	}
-
-	return nil, errors.Errorf("Datasources with scheme %s not yet supported", source.URL.Scheme)
+	data, err := r(source, args...)
+	if err != nil {
+		return nil, err
+	}
+	d.cache[cacheKey] = data
+	return data, nil
 }
 
 func readStdin(source *Source, args ...string) ([]byte, error) {

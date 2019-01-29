@@ -6,10 +6,6 @@ import (
 	"github.com/hairyhenderson/gomplate/env"
 )
 
-func init() {
-	addSourceReader("env", readEnv)
-}
-
 func readEnv(source *Source, args ...string) (b []byte, err error) {
 	n := source.URL.Path
 	n = strings.TrimPrefix(n, "/")

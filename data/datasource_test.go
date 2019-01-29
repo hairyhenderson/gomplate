@@ -70,6 +70,12 @@ func TestParseSourceWithAlias(t *testing.T) {
 	assert.Equal(t, "sftp", s.URL.Scheme)
 	assert.True(t, s.URL.IsAbs())
 	assert.Equal(t, "/blahblah/foo.json", s.URL.Path)
+
+	s, err = parseSource("merged=merge:./foo.yaml|http://example.com/bar.json%3Ffoo=bar")
+	assert.NoError(t, err)
+	assert.Equal(t, "merged", s.Alias)
+	assert.Equal(t, "merge", s.URL.Scheme)
+	assert.Equal(t, "./foo.yaml|http://example.com/bar.json%3Ffoo=bar", s.URL.Opaque)
 }
 
 func TestDatasource(t *testing.T) {
