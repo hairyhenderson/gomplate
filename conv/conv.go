@@ -3,7 +3,6 @@ package conv
 import (
 	"fmt"
 	"reflect"
-	"sort"
 	"strconv"
 	"strings"
 
@@ -101,14 +100,17 @@ func Join(in interface{}, sep string) (out string, err error) {
 
 func interfaceSlice(slice interface{}) ([]interface{}, error) {
 	s := reflect.ValueOf(slice)
-	if s.Kind() != reflect.Slice {
-		return nil, errors.Errorf("interfaceSlice given a non-slice type %T", s)
+	kind := s.Kind()
+	switch kind {
+	case reflect.Slice, reflect.Array:
+		ret := make([]interface{}, s.Len())
+		for i := 0; i < s.Len(); i++ {
+			ret[i] = s.Index(i).Interface()
+		}
+		return ret, nil
+	default:
+		return nil, errors.Errorf("expected an array or slice, but got a %T", s)
 	}
-	ret := make([]interface{}, s.Len())
-	for i := 0; i < s.Len(); i++ {
-		ret[i] = s.Index(i).Interface()
-	}
-	return ret, nil
 }
 
 // Has determines whether or not a given object has a property with the given key
@@ -328,48 +330,4 @@ func Dict(v ...interface{}) (map[string]interface{}, error) {
 		dict[key] = v[i+1]
 	}
 	return dict, nil
-}
-
-// Keys returns the list of keys in one or more maps. The returned list of keys
-// is ordered by map, each in sorted key order.
-func Keys(in ...map[string]interface{}) ([]string, error) {
-	if len(in) == 0 {
-		return nil, fmt.Errorf("conv.Keys needs at least one argument")
-	}
-	keys := []string{}
-	for _, m := range in {
-		k, _ := splitMap(m)
-		keys = append(keys, k...)
-	}
-	return keys, nil
-}
-
-func splitMap(m map[string]interface{}) ([]string, []interface{}) {
-	keys := make([]string, len(m))
-	values := make([]interface{}, len(m))
-	i := 0
-	for k := range m {
-		keys[i] = k
-		i++
-	}
-	sort.Strings(keys)
-	for i, k := range keys {
-		values[i] = m[k]
-	}
-	return keys, values
-}
-
-// Values returns the list of values in one or more maps. The returned list of values
-// is ordered by map, each in sorted key order. If the Keys function is called with
-// the same arguments, the key/value mappings will be maintained.
-func Values(in ...map[string]interface{}) ([]interface{}, error) {
-	if len(in) == 0 {
-		return nil, fmt.Errorf("conv.Values needs at least one argument")
-	}
-	values := []interface{}{}
-	for _, m := range in {
-		_, v := splitMap(m)
-		values = append(values, v...)
-	}
-	return values, nil
 }

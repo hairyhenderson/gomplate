@@ -50,6 +50,7 @@ funcs:
         $ gomplate -i '{{ "" | default "foo" }} {{ "bar" | default "baz" }}'
         foo bar
   - name: conv.Dict
+    deprecated: Renamed to [`coll.Dict`](#coll-dict)
     alias: dict
     description: |
       Dict is a convenience function that creates a map with string keys.
@@ -62,8 +63,7 @@ funcs:
       This function is equivalent to [Sprig's `dict`](http://masterminds.github.io/sprig/dicts.html#dict)
       function, as used in [Helm templates](https://docs.helm.sh/chart_template_guide#template-functions-and-pipelines).
 
-      For creating more complex maps or maps with non-`string` keys, see
-      [`data.JSON`](../data/#data-json) or [`data.YAML`](../data/#data-yaml).
+      For creating more complex maps, see [`data.JSON`](../data/#data-json) or [`data.YAML`](../data/#data-yaml).
 
       For creating arrays, see [`conv.Slice`](#conv-slice).
     arguments:
@@ -86,6 +86,7 @@ funcs:
         Hello world!
         Hello everybody!
   - name: conv.Slice
+    deprecated: Renamed to [`coll.Slice`](#coll-slice)
     alias: slice
     description: |
       Creates a slice (like an array or list). Useful when needing to `range` over a bunch of variables.
@@ -101,6 +102,7 @@ funcs:
         Hello, Lisa
         Hello, Maggie
   - name: conv.Has
+    deprecated: Renamed to [`coll.Has`](#coll-has)
     alias: has
     description: |
       Reports whether a given object has a property with the given key, or whether a given array/slice contains the given value. Can be used with `if` to prevent the template from trying to access a non-existent property in an object.
@@ -404,47 +406,3 @@ funcs:
       - |
         $ gomplate -i '{{ conv.ToStrings nil 42 true 0xF (slice 1 2 3) }}'
         [nil 42 true 15 [1 2 3]]
-  - name: conv.Keys
-    alias: keys
-    description: |
-      Return a list of keys in one or more maps.
-
-      The keys will be ordered first by map position (if multiple maps are given),
-      then alphabetically.
-
-      See also [`conv.Values`](#conv-values).
-    arguments:
-      - name: in...
-        required: true
-        description: the maps
-    examples:
-      - |
-        $ gomplate -i '{{ $map := json `{"foo": 1, "bar": 2}` -}}
-          {{ conv.Keys $map }}'
-        [bar foo]
-        $ gomplate -i '{{ $map1 := json `{"foo": 1, "bar": 2}` -}}
-          {{ $map2 := json `{"baz": 3, "qux": 4}` -}}
-          {{ conv.Keys $map1 $map2 }}'
-        [bar foo baz qux]
-  - name: conv.Values
-    alias: values
-    description: |
-      Return a list of values in one or more maps.
-
-      The values will be ordered first by map position (if multiple maps are given),
-      then alphabetically by key.
-
-      See also [`conv.Keys`](#conv-keys).
-    arguments:
-      - name: in...
-        required: true
-        description: the maps
-    examples:
-      - |
-        $ gomplate -i '{{ $map := json `{"foo": 1, "bar": 2}` -}}
-          {{ conv.Values $map }}'
-        [2 1]
-        $ gomplate -i '{{ $map1 := json `{"foo": 1, "bar": 2}` -}}
-          {{ $map2 := json `{"baz": 3, "qux": 4}` -}}
-          {{ conv.Values $map1 $map2 }}'
-        [2 1 3 4]

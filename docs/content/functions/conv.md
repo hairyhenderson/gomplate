@@ -79,7 +79,8 @@ $ gomplate -i '{{ "" | default "foo" }} {{ "bar" | default "baz" }}'
 foo bar
 ```
 
-## `conv.Dict`
+## `conv.Dict` _(deprecated)_
+**Deprecation Notice:** Renamed to [`coll.Dict`](#coll-dict)
 
 **Alias:** `dict`
 
@@ -93,8 +94,7 @@ All keys are converted to strings.
 This function is equivalent to [Sprig's `dict`](http://masterminds.github.io/sprig/dicts.html#dict)
 function, as used in [Helm templates](https://docs.helm.sh/chart_template_guide#template-functions-and-pipelines).
 
-For creating more complex maps or maps with non-`string` keys, see
-[`data.JSON`](../data/#data-json) or [`data.YAML`](../data/#data-yaml).
+For creating more complex maps, see [`data.JSON`](../data/#data-json) or [`data.YAML`](../data/#data-yaml).
 
 For creating arrays, see [`conv.Slice`](#conv-slice).
 
@@ -128,7 +128,8 @@ Hello world!
 Hello everybody!
 ```
 
-## `conv.Slice`
+## `conv.Slice` _(deprecated)_
+**Deprecation Notice:** Renamed to [`coll.Slice`](#coll-slice)
 
 **Alias:** `slice`
 
@@ -154,7 +155,8 @@ Hello, Lisa
 Hello, Maggie
 ```
 
-## `conv.Has`
+## `conv.Has` _(deprecated)_
+**Deprecation Notice:** Renamed to [`coll.Has`](#coll-has)
 
 **Alias:** `has`
 
@@ -619,72 +621,4 @@ conv.ToStrings in...
 ```console
 $ gomplate -i '{{ conv.ToStrings nil 42 true 0xF (slice 1 2 3) }}'
 [nil 42 true 15 [1 2 3]]
-```
-
-## `conv.Keys`
-
-**Alias:** `keys`
-
-Return a list of keys in one or more maps.
-
-The keys will be ordered first by map position (if multiple maps are given),
-then alphabetically.
-
-See also [`conv.Values`](#conv-values).
-
-### Usage
-```go
-conv.Keys in... 
-```
-
-### Arguments
-
-| name | description |
-|------|-------------|
-| `in...` | _(required)_ the maps |
-
-### Examples
-
-```console
-$ gomplate -i '{{ $map := json `{"foo": 1, "bar": 2}` -}}
-  {{ conv.Keys $map }}'
-[bar foo]
-$ gomplate -i '{{ $map1 := json `{"foo": 1, "bar": 2}` -}}
-  {{ $map2 := json `{"baz": 3, "qux": 4}` -}}
-  {{ conv.Keys $map1 $map2 }}'
-[bar foo baz qux]
-```
-
-## `conv.Values`
-
-**Alias:** `values`
-
-Return a list of values in one or more maps.
-
-The values will be ordered first by map position (if multiple maps are given),
-then alphabetically by key.
-
-See also [`conv.Keys`](#conv-keys).
-
-### Usage
-```go
-conv.Values in... 
-```
-
-### Arguments
-
-| name | description |
-|------|-------------|
-| `in...` | _(required)_ the maps |
-
-### Examples
-
-```console
-$ gomplate -i '{{ $map := json `{"foo": 1, "bar": 2}` -}}
-  {{ conv.Values $map }}'
-[2 1]
-$ gomplate -i '{{ $map1 := json `{"foo": 1, "bar": 2}` -}}
-  {{ $map2 := json `{"baz": 3, "qux": 4}` -}}
-  {{ conv.Values $map1 $map2 }}'
-[2 1 3 4]
 ```
