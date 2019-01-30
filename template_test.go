@@ -60,36 +60,6 @@ func TestOpenOutFile(t *testing.T) {
 	assert.Equal(t, Stdout, f)
 }
 
-func TestInList(t *testing.T) {
-	list := []string{}
-	assert.False(t, inList(list, ""))
-
-	list = nil
-	assert.False(t, inList(list, ""))
-
-	list = []string{"foo", "baz", "qux"}
-	assert.False(t, inList(list, "bar"))
-
-	list = []string{"foo", "bar", "baz"}
-	assert.True(t, inList(list, "bar"))
-}
-
-func TestExecuteCombinedGlob(t *testing.T) {
-	origfs := fs
-	defer func() { fs = origfs }()
-	fs = afero.NewMemMapFs()
-	_ = fs.MkdirAll("/tmp/one", 0777)
-	_ = fs.MkdirAll("/tmp/two", 0777)
-	_ = fs.MkdirAll("/tmp/three", 0777)
-	afero.WriteFile(fs, "/tmp/one/a", []byte("file a"), 0644)
-	afero.WriteFile(fs, "/tmp/two/b", []byte("file b"), 0644)
-	afero.WriteFile(fs, "/tmp/three/c", []byte("file c"), 0644)
-
-	excludes, err := executeCombinedGlob([]string{"/tmp/o*/*", "/*/*/b"})
-	assert.NoError(t, err)
-	assert.Equal(t, []string{"/tmp/one/a", "/tmp/two/b"}, excludes)
-}
-
 func TestWalkDir(t *testing.T) {
 	origfs := fs
 	defer func() { fs = origfs }()

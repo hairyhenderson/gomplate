@@ -173,8 +173,8 @@ func walkDir(dir, outDir string, excludeGlob []string, mode os.FileMode, modeOve
 		nextOutPath := filepath.Join(outDir, file)
 
 		if mode == 0 {
-			stat, err := fs.Stat(nextInPath)
-			if err == nil {
+			stat, perr := fs.Stat(nextInPath)
+			if perr == nil {
 				mode = stat.Mode()
 			} else {
 				mode = dirMode
