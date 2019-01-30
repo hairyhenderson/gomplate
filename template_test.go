@@ -74,7 +74,7 @@ func TestWalkDir(t *testing.T) {
 	afero.WriteFile(fs, "/indir/one/bar", []byte("bar"), 0644)
 	afero.WriteFile(fs, "/indir/two/baz", []byte("baz"), 0644)
 
-	templates, err := walkDir("/indir", "/outdir", []string{"/*/two"}, 0, false)
+	templates, err := walkDir("/indir", "/outdir", []string{"*/two"}, 0, false)
 
 	assert.NoError(t, err)
 	assert.Equal(t, 2, len(templates))
