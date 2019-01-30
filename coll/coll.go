@@ -5,6 +5,8 @@ import (
 	"reflect"
 	"sort"
 
+	"github.com/imdario/mergo"
+
 	"github.com/hairyhenderson/gomplate/conv"
 	"github.com/pkg/errors"
 )
@@ -161,4 +163,16 @@ func Reverse(list interface{}) ([]interface{}, error) {
 		l[left], l[right] = l[right], l[left]
 	}
 	return l, nil
+}
+
+// Merge source maps (srcs) into dst. Precedence is in left-to-right order, with
+// the left-most values taking precedence over the right-most.
+func Merge(dst map[string]interface{}, srcs ...map[string]interface{}) (map[string]interface{}, error) {
+	for _, src := range srcs {
+		err := mergo.Merge(&dst, src)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return dst, nil
 }

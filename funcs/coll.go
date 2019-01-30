@@ -30,6 +30,7 @@ func AddCollFuncs(f map[string]interface{}) {
 	f["prepend"] = CollNS().Prepend
 	f["uniq"] = CollNS().Uniq
 	f["reverse"] = CollNS().Reverse
+	f["merge"] = CollNS().Merge
 }
 
 // CollFuncs -
@@ -78,4 +79,9 @@ func (f *CollFuncs) Uniq(in interface{}) ([]interface{}, error) {
 // Reverse -
 func (f *CollFuncs) Reverse(in interface{}) ([]interface{}, error) {
 	return coll.Reverse(in)
+}
+
+// Merge -
+func (f *CollFuncs) Merge(dst map[string]interface{}, src ...map[string]interface{}) (map[string]interface{}, error) {
+	return coll.Merge(dst, src...)
 }
