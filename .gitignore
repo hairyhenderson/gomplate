@@ -1,4 +1,7 @@
 .git
 bin
 report.xml
-gomplate
+./gomplate
+*.cid
+*.iid
+*.out

@@ -8,5 +8,5 @@ import (
 
 func TestNetLookupIP(t *testing.T) {
 	n := &NetFuncs{}
-	assert.Equal(t, "127.0.0.1", n.LookupIP("localhost"))
+	assert.Equal(t, "127.0.0.1", must(n.LookupIP("localhost")))
 }

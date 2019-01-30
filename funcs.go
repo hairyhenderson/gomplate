@@ -1,4 +1,4 @@
-package main
+package gomplate
 
 import (
 	"text/template"
@@ -7,8 +7,8 @@ import (
 	"github.com/hairyhenderson/gomplate/funcs"
 )
 
-// initFuncs - The function mappings are defined here!
-func initFuncs(d *data.Data) template.FuncMap {
+// Funcs - The function mappings are defined here!
+func Funcs(d *data.Data) template.FuncMap {
 	f := template.FuncMap{}
 	funcs.AddDataFuncs(f, d)
 	funcs.AWSFuncs(f)
@@ -20,5 +20,12 @@ func initFuncs(d *data.Data) template.FuncMap {
 	funcs.AddConvFuncs(f)
 	funcs.AddTimeFuncs(f)
 	funcs.AddMathFuncs(f)
+	funcs.AddCryptoFuncs(f)
+	funcs.AddFileFuncs(f)
+	funcs.AddFilePathFuncs(f)
+	funcs.AddPathFuncs(f)
+	funcs.AddSockaddrFuncs(f)
+	funcs.AddTestFuncs(f)
+	funcs.AddCollFuncs(f)
 	return f
 }

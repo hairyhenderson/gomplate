@@ -9,12 +9,12 @@ import (
 
 func TestBase64Encode(t *testing.T) {
 	bf := &Base64Funcs{}
-	assert.Equal(t, "Zm9vYmFy", bf.Encode("foobar"))
+	assert.Equal(t, "Zm9vYmFy", must(bf.Encode("foobar")))
 }
 
 func TestBase64Decode(t *testing.T) {
 	bf := &Base64Funcs{}
-	assert.Equal(t, "foobar", bf.Decode("Zm9vYmFy"))
+	assert.Equal(t, "foobar", must(bf.Decode("Zm9vYmFy")))
 	// assert.Equal(t, "", bf.Decode(nil))
 }
 
@@ -27,4 +27,5 @@ func TestToBytes(t *testing.T) {
 
 	assert.Equal(t, []byte{}, toBytes(nil))
 
+	assert.Equal(t, []byte("42"), toBytes(42))
 }

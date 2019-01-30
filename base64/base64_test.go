@@ -6,22 +6,35 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func must(r interface{}, err error) interface{} {
+	if err != nil {
+		return err
+	}
+	return r
+}
+
 func TestEncode(t *testing.T) {
-	assert.Equal(t, "", Encode([]byte("")))
-	assert.Equal(t, "Zg==", Encode([]byte("f")))
-	assert.Equal(t, "Zm8=", Encode([]byte("fo")))
-	assert.Equal(t, "Zm9v", Encode([]byte("foo")))
-	assert.Equal(t, "Zm9vYg==", Encode([]byte("foob")))
-	assert.Equal(t, "Zm9vYmE=", Encode([]byte("fooba")))
-	assert.Equal(t, "Zm9vYmFy", Encode([]byte("foobar")))
+	assert.Equal(t, "", must(Encode([]byte(""))))
+	assert.Equal(t, "Zg==", must(Encode([]byte("f"))))
+	assert.Equal(t, "Zm8=", must(Encode([]byte("fo"))))
+	assert.Equal(t, "Zm9v", must(Encode([]byte("foo"))))
+	assert.Equal(t, "Zm9vYg==", must(Encode([]byte("foob"))))
+	assert.Equal(t, "Zm9vYmE=", must(Encode([]byte("fooba"))))
+	assert.Equal(t, "Zm9vYmFy", must(Encode([]byte("foobar"))))
+	assert.Equal(t, "A+B/", must(Encode([]byte{0x03, 0xe0, 0x7f})))
 }
 
 func TestDecode(t *testing.T) {
-	assert.Equal(t, []byte(""), Decode(""))
-	assert.Equal(t, []byte("f"), Decode("Zg=="))
-	assert.Equal(t, []byte("fo"), Decode("Zm8="))
-	assert.Equal(t, []byte("foo"), Decode("Zm9v"))
-	assert.Equal(t, []byte("foob"), Decode("Zm9vYg=="))
-	assert.Equal(t, []byte("fooba"), Decode("Zm9vYmE="))
-	assert.Equal(t, []byte("foobar"), Decode("Zm9vYmFy"))
+	assert.Equal(t, []byte(""), must(Decode("")))
+	assert.Equal(t, []byte("f"), must(Decode("Zg==")))
+	assert.Equal(t, []byte("fo"), must(Decode("Zm8=")))
+	assert.Equal(t, []byte("foo"), must(Decode("Zm9v")))
+	assert.Equal(t, []byte("foob"), must(Decode("Zm9vYg==")))
+	assert.Equal(t, []byte("fooba"), must(Decode("Zm9vYmE=")))
+	assert.Equal(t, []byte("foobar"), must(Decode("Zm9vYmFy")))
+	assert.Equal(t, []byte{0x03, 0xe0, 0x7f}, must(Decode("A+B/")))
+	assert.Equal(t, []byte{0x03, 0xe0, 0x7f}, must(Decode("A-B_")))
+
+	_, err := Decode("b.o.g.u.s")
+	assert.Error(t, err)
 }

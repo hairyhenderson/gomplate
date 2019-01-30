@@ -1,13 +1,8 @@
 package libkv
 
 import (
-	"log"
-
 	"github.com/docker/libkv/store"
 )
-
-// logFatal is defined so log.Fatal calls can be overridden for testing
-var logFatal = log.Fatal
 
 // LibKV -
 type LibKV struct {

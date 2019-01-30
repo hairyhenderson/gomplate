@@ -6,7 +6,10 @@ import (
 	"os"
 	"time"
 
-	yaml "gopkg.in/yaml.v2"
+	"github.com/pkg/errors"
+
+	// XXX: replace once https://github.com/go-yaml/yaml/issues/139 is solved
+	yaml "gopkg.in/hairyhenderson/yaml.v2"
 
 	"github.com/docker/libkv"
 	"github.com/docker/libkv/store"
@@ -17,59 +20,83 @@ import (
 	consulapi "github.com/hashicorp/consul/api"
 )
 
+const (
+	http  = "http"
+	https = "https"
+)
+
 // NewConsul - instantiate a new Consul datasource handler
-func NewConsul(u *url.URL) *LibKV {
+func NewConsul(u *url.URL) (*LibKV, error) {
 	consul.Register()
-	c := consulURL(u)
-	config := consulConfig(c.Scheme == "https")
+	c, err := consulURL(u)
+	if err != nil {
+		return nil, err
+	}
+	config, err := consulConfig(c.Scheme == https)
+	if err != nil {
+		return nil, err
+	}
 	if role := env.Getenv("CONSUL_VAULT_ROLE", ""); role != "" {
 		mount := env.Getenv("CONSUL_VAULT_MOUNT", "consul")
 
-		client := vault.New()
-		client.Login()
+		var client *vault.Vault
+		client, err = vault.New(nil)
+		if err != nil {
+			return nil, err
+		}
+		err = client.Login()
+		defer client.Logout()
+		if err != nil {
+			return nil, err
+		}
 
 		path := fmt.Sprintf("%s/creds/%s", mount, role)
 
-		data, err := client.Read(path)
+		var data []byte
+		data, err = client.Read(path)
 		if err != nil {
-			logFatal("vault consul auth failed", err)
+			return nil, errors.Wrapf(err, "vault consul auth failed")
 		}
 
 		decoded := make(map[string]interface{})
 		err = yaml.Unmarshal(data, &decoded)
 		if err != nil {
-			logFatal("Unable to unmarshal object", err)
+			return nil, errors.Wrapf(err, "Unable to unmarshal object")
 		}
 
-		var token = decoded["token"].(string)
+		token := decoded["token"].(string)
 
-		client.Logout()
-
-		os.Setenv("CONSUL_HTTP_TOKEN", token)
+		// nolint: gosec
+		_ = os.Setenv("CONSUL_HTTP_TOKEN", token)
 	}
-	kv, err := libkv.NewStore(store.CONSUL, []string{c.String()}, config)
+	var kv store.Store
+	kv, err = libkv.NewStore(store.CONSUL, []string{c.String()}, config)
 	if err != nil {
-		logFatal("Consul setup failed", err)
+		return nil, errors.Wrapf(err, "Consul setup failed")
 	}
-	return &LibKV{kv}
+	return &LibKV{kv}, nil
 }
 
 // -- converts a gomplate datasource URL into a usable Consul URL
-func consulURL(u *url.URL) *url.URL {
-	c, _ := url.Parse(env.Getenv("CONSUL_HTTP_ADDR"))
+func consulURL(u *url.URL) (*url.URL, error) {
+	addrEnv := env.Getenv("CONSUL_HTTP_ADDR")
+	c, err := url.Parse(addrEnv)
+	if err != nil {
+		return nil, errors.Wrapf(err, "invalid URL '%s' in CONSUL_HTTP_ADDR", addrEnv)
+	}
 	if c.Scheme == "" {
 		c.Scheme = u.Scheme
 	}
 	switch c.Scheme {
-	case "consul+http", "http":
-		c.Scheme = "http"
-	case "consul+https", "https":
-		c.Scheme = "https"
+	case "consul+http", http:
+		c.Scheme = http
+	case "consul+https", https:
+		c.Scheme = https
 	case "consul":
 		if conv.Bool(env.Getenv("CONSUL_HTTP_SSL")) {
-			c.Scheme = "https"
+			c.Scheme = https
 		} else {
-			c.Scheme = "http"
+			c.Scheme = http
 		}
 	}
 
@@ -79,10 +106,10 @@ func consulURL(u *url.URL) *url.URL {
 		c.Host = u.Host
 	}
 
-	return c
+	return c, nil
 }
 
-func consulConfig(useTLS bool) *store.Config {
+func consulConfig(useTLS bool) (*store.Config, error) {
 	t := conv.MustAtoi(env.Getenv("CONSUL_TIMEOUT"))
 	config := &store.Config{
 		ConnectionTimeout: time.Duration(t) * time.Second,
@@ -92,10 +119,10 @@ func consulConfig(useTLS bool) *store.Config {
 		var err error
 		config.TLS, err = consulapi.SetupTLSConfig(tconf)
 		if err != nil {
-			logFatal("TLS Config setup failed", err)
+			return nil, errors.Wrapf(err, "TLS Config setup failed")
 		}
 	}
-	return config
+	return config, nil
 }
 
 func setupTLS(prefix string) *consulapi.TLSConfig {

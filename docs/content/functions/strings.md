@@ -5,6 +5,37 @@ menu:
     parent: functions
 ---
 
+## `strings.Abbrev`
+
+Abbreviates a string using `...` (ellipses). Takes an optional offset from the beginning of the string, and a maximum final width (including added ellipses).
+
+_Also see [`strings.Trunc`](#strings-trunc)._
+
+### Usage
+```go
+strings.Abbrev [offset] width input
+```
+```go
+input | strings.Abbrev [offset] width
+```
+
+### Arguments
+
+| name   | description |
+|--------|-------|
+| `offset` | _(optional)_ offset from the start of the string. Must be `4` or greater for ellipses to be added. Defaults to `0` |
+| `width` | _(required)_ the desired maximum final width of the string, including ellipses |
+| `input` | _(required)_ the input string to abbreviate |
+
+### Example
+
+```console
+$ gomplate -i '{{ "foobarbazquxquux" | strings.Abbrev 9 }}'
+foobar...
+$ gomplate -i '{{ "foobarbazquxquux" | strings.Abbrev 6 9 }}'
+...baz...
+```
+
 ## `strings.Contains`
 
 Reports whether a substring is contained within a string.
@@ -122,6 +153,35 @@ foo:
     quuz: 42
 ```
 
+## `strings.Sort`
+
+**Alias:** `sort`
+
+Returns an alphanumerically-sorted copy of a given string list.
+
+
+### Usage
+```go
+strings.Sort list
+```
+
+```go
+list | strings.Sort
+```
+
+### Arguments
+
+| name | description |
+|------|-------------|
+| `list` | _(required)_ The list to sort |
+
+### Examples
+
+```console
+$ gomplate -i '{{ (slice "foo" "bar" "baz") | sort }}'
+[bar baz foo]
+```
+
 ## `strings.Split`
 
 Creates a slice by splitting a string on a given delimiter.
@@ -164,6 +224,67 @@ foo
 bar:baz
 ```
 
+## `strings.Quote`
+
+**Alias:** `quote`
+
+Surrounds an input string with double-quote characters (`"`). If the input is not a string, converts first.
+
+`"` characters in the input are first escaped with a `\` character.
+
+This is a convenience function which is equivalent to:
+
+```
+{{ print "%q" "input string" }}
+```
+
+### Usage
+```go
+strings.Quote in 
+```
+
+```go
+in | strings.Quote  
+```
+
+### Arguments
+
+| name | description |
+|------|-------------|
+| `in` | _(required)_ The input to quote |
+
+### Examples
+
+```console
+$ gomplate -i '{{ "in" | quote }}'
+"in"
+$ gomplate -i '{{ strings.Quote 500 }}'
+"500"
+```
+
+## `strings.Repeat`
+
+Returns a new string consisting of `count` copies of the input string.
+
+It errors if `count` is negative or if the length of `input` multiplied by `count` overflows.
+
+This wraps Go's [`strings.Repeat`](https://golang.org/pkg/strings/#Repeat).
+
+### Usage
+```go
+strings.Repeat count input
+```
+```go
+input | strings.Repeat count
+```
+
+#### Example
+
+```console
+$ gomplate -i '{{ "hello, world" | strings.Repeat "world" }}jello'
+hello, jello
+```
+
 ## `strings.ReplaceAll`
 
 **Alias:** `replaceAll`
@@ -185,6 +306,59 @@ $ gomplate -i '{{ strings.ReplaceAll "." "-" "172.21.1.42" }}'
 172-21-1-42
 $ gomplate -i '{{ "172.21.1.42" | strings.ReplaceAll "." "-" }}'
 172-21-1-42
+```
+
+## `strings.Slug`
+
+Creates a a "slug" from a given string - supports Unicode correctly. This wraps the [github.com/gosimple/slug](https://github.com/gosimple/slug) package. See [the github.com/gosimple/slug docs](https://godoc.org/github.com/gosimple/slug) for more information.
+
+### Usage
+```go
+strings.Slug input
+```
+```go
+input | strings.Slug
+```
+
+### Examples
+```console
+$ gomplate -i '{{ "Hello, world!" | strings.Slug }}'
+hello-world
+
+$ echo 'Rock & Roll @ Cafe Wha?' | gomplate -d in=stdin: -i '{{ strings.Slug (include "in") }}'
+rock-and-roll-at-cafe-wha
+```
+
+## `strings.Squote`
+
+**Alias:** `squote`
+
+Surrounds an input string with a single-quote (apostrophe) character (`'`). If the input is not a string, converts first.
+
+`'` characters in the input are first escaped in the YAML-style (by repetition: `''`).
+
+### Usage
+```go
+strings.Squote in 
+```
+
+```go
+in | strings.Squote  
+```
+
+### Arguments
+
+| name | description |
+|------|-------------|
+| `in` | _(required)_ The input to quote |
+
+### Examples
+
+```console
+$ gomplate -i '{{ "in" | squote }}'
+'in'
+$ gomplate -i "{{ strings.Squote \"it's a banana\" }}"
+'it''s a banana'
 ```
 
 ## `strings.Title`
@@ -270,6 +444,27 @@ $ gomplate -i '{{ "_-foo-_" | strings.Trim "_-" }}
 foo
 ```
 
+## `strings.TrimPrefix`
+
+Returns a string without the provided leading prefix string, if the prefix is present.
+
+This wraps Go's [`strings.TrimPrefix`](https://golang.org/pkg/strings/#TrimPrefix).
+
+### Usage
+```go
+strings.TrimPrefix prefix input
+```
+```go
+input | strings.TrimPrefix prefix
+```
+
+#### Example
+
+```console
+$ gomplate -i '{{ "hello, world" | strings.TrimPrefix "hello, " }}'
+world
+```
+
 ## `strings.TrimSpace`
 
 **Alias:** `trimSpace`
@@ -290,6 +485,49 @@ input | strings.TrimSpace
 ```console
 $ gomplate -i '{{ "  \n\t foo" | strings.TrimSpace }}'
 foo
+```
+
+
+## `strings.TrimSuffix`
+
+Returns a string without the provided trailing suffix string, if the suffix is present.
+
+This wraps Go's [`strings.TrimSuffix`](https://golang.org/pkg/strings/#TrimSuffix).
+
+### Usage
+```go
+strings.TrimSuffix suffix input
+```
+```go
+input | strings.TrimSuffix suffix
+```
+
+#### Example
+
+```console
+$ gomplate -i '{{ "hello, world" | strings.TrimSuffix "world" }}jello'
+hello, jello
+```
+
+## `strings.Trunc`
+
+Returns a string truncated to the given length.
+
+_Also see [`strings.Abbrev`](#strings-abbrev)._
+
+### Usage
+```go
+strings.Trunc length input
+```
+```go
+input | strings.Trunc length
+```
+
+#### Example
+
+```console
+$ gomplate -i '{{ "hello, world" | strings.Trunc 5 }}'
+hello
 ```
 
 ## `contains`

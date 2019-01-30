@@ -2,194 +2,112 @@ package xignore
 
 import (
 	"os"
-	"path/filepath"
-	"regexp"
-	"strings"
-	"text/scanner"
+	"sort"
+
+	"github.com/spf13/afero"
 )
 
-// IgnoreMatcher allows checking paths agaist a list of patterns
-type IgnoreMatcher struct {
-	patterns     []*Pattern
-	hasExclusion bool
+// Matcher xignore matcher
+type Matcher struct {
+	fs afero.Fs
 }
 
-// New creates a new matcher object for specific patterns that can
-// be used later to match against patterns against paths
-func New(patterns []string) *IgnoreMatcher {
-	im := &IgnoreMatcher{
-		patterns: make([]*Pattern, 0, len(patterns)),
-	}
-	for _, sp := range patterns {
-		sp = strings.TrimSpace(sp)
-		if sp == "" {
-			continue
-		}
-		sp = filepath.Clean(sp)
-		pattern := &Pattern{}
-		if sp[0] == '!' {
-			if len(sp) == 1 {
-				continue
-			}
-			pattern.exclusion = true
-			sp = sp[1:]
-			im.hasExclusion = true
-		}
-		if _, err := filepath.Match(sp, "."); err != nil {
-			continue
-		}
-		pattern.value = sp
-		pattern.dirs = strings.Split(sp, string(os.PathSeparator))
-		im.patterns = append(im.patterns, pattern)
-	}
-	return im
+// NewMatcher create matcher from custom filesystem
+func NewMatcher(fs afero.Fs) *Matcher {
+	return &Matcher{afero.NewReadOnlyFs(fs)}
 }
 
-// Matches matches path against all the patterns. Matches is not safe to be
-// called concurrently
-func (im *IgnoreMatcher) Matches(file string) (bool, error) {
-	file = filepath.FromSlash(file)
-	parentPath := filepath.Dir(file)
-	parentPathDirs := strings.Split(parentPath, string(os.PathSeparator))
+// NewSystemMatcher create matcher for system filesystem
+func NewSystemMatcher() *Matcher {
+	return &Matcher{afero.NewReadOnlyFs(afero.NewOsFs())}
+}
 
-	matched := false
-	for _, pattern := range im.patterns {
-		match, err := pattern.Match(file)
+// Matches returns matched files from dir files.
+func (m *Matcher) Matches(basedir string, options *MatchesOptions) (*MatchesResult, error) {
+	vfs := afero.NewBasePathFs(m.fs, basedir)
+	ignorefile := options.Ignorefile
+	if ok, err := afero.DirExists(vfs, "/"); !ok || err != nil {
+		if err == nil {
+			return nil, os.ErrNotExist
+		}
+		return nil, err
+	}
+
+	// Root filemap
+	rootMap := stateMap{}
+	files, err := collectFiles(vfs)
+	if err != nil {
+		return nil, err
+	}
+	// Init all files state
+	rootMap.mergeFiles(files, false)
+
+	// Apply before patterns
+	beforePatterns, err := makePatterns(options.BeforePatterns)
+	if err != nil {
+		return nil, err
+	}
+	err = rootMap.applyPatterns(vfs, files, beforePatterns)
+	if err != nil {
+		return nil, err
+	}
+
+	// Apply ignorefile patterns
+	err = rootMap.applyIgnorefile(vfs, ignorefile, options.Nested)
+	if err != nil {
+		return nil, err
+	}
+
+	// Apply after patterns
+	afterPatterns, err := makePatterns(options.AfterPatterns)
+	if err != nil {
+		return nil, err
+	}
+	err = rootMap.applyPatterns(vfs, files, afterPatterns)
+	if err != nil {
+		return nil, err
+	}
+
+	return makeResult(vfs, basedir, rootMap)
+}
+
+func makeResult(vfs afero.Fs, basedir string, fileMap stateMap) (*MatchesResult, error) {
+	matchedFiles := []string{}
+	unmatchedFiles := []string{}
+	matchedDirs := []string{}
+	unmatchedDirs := []string{}
+	for f, matched := range fileMap {
+		if f == "" {
+			continue
+		}
+		isDir, err := afero.IsDir(vfs, f)
 		if err != nil {
-			return false, err
+			return nil, err
 		}
-
-		if !match && parentPath != "." {
-			// Check to see if the pattern matches one of our parent dirs.
-			if len(pattern.dirs) <= len(parentPathDirs) {
-				match, _ = pattern.Match(
-					strings.Join(parentPathDirs[:len(pattern.dirs)],
-						string(os.PathSeparator)))
-			}
-		}
-
-		if match {
-			matched = !pattern.exclusion
-		}
-	}
-
-	return matched, nil
-}
-
-// HasExclusions returns true if any pattern define exclusion
-func (im *IgnoreMatcher) HasExclusions() bool {
-	return im.hasExclusion
-}
-
-// Patterns returns array of active patterns
-func (im *IgnoreMatcher) Patterns() []*Pattern {
-	return im.patterns
-}
-
-// Pattern defines a single regexp used used to filter file paths.
-type Pattern struct {
-	value     string
-	dirs      []string
-	regexp    *regexp.Regexp
-	exclusion bool
-}
-
-func (p *Pattern) String() string {
-	return p.value
-}
-
-// Exclusion returns true if this pattern defines exclusion
-func (p *Pattern) Exclusion() bool {
-	return p.exclusion
-}
-
-// Match match path
-func (p *Pattern) Match(path string) (bool, error) {
-	if p.regexp == nil {
-		if err := p.compile(); err != nil {
-			return false, filepath.ErrBadPattern
-		}
-	}
-
-	b := p.regexp.MatchString(path) || p.regexp.MatchString(filepath.Base(path))
-
-	return b, nil
-}
-
-func (p *Pattern) compile() error {
-	regStr := "^"
-	pattern := p.value
-	// Go through the pattern and convert it to a regexp.
-	// We use a scanner so we can support utf-8 chars.
-	var scan scanner.Scanner
-	scan.Init(strings.NewReader(pattern))
-
-	sl := string(os.PathSeparator)
-	escSL := sl
-	if sl == `\` {
-		escSL += `\`
-	}
-
-	for scan.Peek() != scanner.EOF {
-		ch := scan.Next()
-
-		if ch == '*' {
-			if scan.Peek() == '*' {
-				// is some flavor of "**"
-				scan.Next()
-
-				// Treat **/ as ** so eat the "/"
-				if string(scan.Peek()) == sl {
-					scan.Next()
-				}
-
-				if scan.Peek() == scanner.EOF {
-					// is "**EOF" - to align with .gitignore just accept all
-					regStr += ".*"
-				} else {
-					// is "**"
-					// Note that this allows for any # of /'s (even 0) because
-					// the .* will eat everything, even /'s
-					regStr += "(.*" + escSL + ")?"
-				}
+		if isDir {
+			if matched {
+				matchedDirs = append(matchedDirs, f)
 			} else {
-				// is "*" so map it to anything but "/"
-				regStr += "[^" + escSL + "]*"
-			}
-		} else if ch == '?' {
-			// "?" is any char except "/"
-			regStr += "[^" + escSL + "]"
-		} else if ch == '.' || ch == '$' {
-			// Escape some regexp special chars that have no meaning
-			// in golang's filepath.Match
-			regStr += `\` + string(ch)
-		} else if ch == '\\' {
-			// escape next char. Note that a trailing \ in the pattern
-			// will be left alone (but need to escape it)
-			if sl == `\` {
-				// On windows map "\" to "\\", meaning an escaped backslash,
-				// and then just continue because filepath.Match on
-				// Windows doesn't allow escaping at all
-				regStr += escSL
-				continue
-			}
-			if scan.Peek() != scanner.EOF {
-				regStr += `\` + string(scan.Next())
-			} else {
-				regStr += `\`
+				unmatchedDirs = append(unmatchedDirs, f)
 			}
 		} else {
-			regStr += string(ch)
+			if matched {
+				matchedFiles = append(matchedFiles, f)
+			} else {
+				unmatchedFiles = append(unmatchedFiles, f)
+			}
 		}
 	}
 
-	regStr += "$"
-
-	re, err := regexp.Compile(regStr)
-	if err != nil {
-		return err
-	}
-
-	p.regexp = re
-	return nil
+	sort.Strings(matchedFiles)
+	sort.Strings(unmatchedFiles)
+	sort.Strings(matchedDirs)
+	sort.Strings(unmatchedDirs)
+	return &MatchesResult{
+		BaseDir:        basedir,
+		MatchedFiles:   matchedFiles,
+		UnmatchedFiles: unmatchedFiles,
+		MatchedDirs:    matchedDirs,
+		UnmatchedDirs:  unmatchedDirs,
+	}, nil
 }

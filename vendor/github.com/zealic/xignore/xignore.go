@@ -1,19 +1,31 @@
 package xignore
 
-import (
-	"path/filepath"
-)
+// MatchesOptions matches options
+type MatchesOptions struct {
+	// Ignorefile name, similar '.gitignore', '.dockerignore', 'chefignore'
+	Ignorefile string
+	// Allow nested ignorefile
+	Nested bool
+	// apply patterns before all ignorefile
+	BeforePatterns []string
+	// apply patterns after all ignorefile
+	AfterPatterns []string
+}
 
-// IsMatch returns true if file matches any of the patterns
-// and isn't excluded by any of the subsequent patterns.
-func IsMatch(file string, patterns []string) (bool, error) {
-	im := New(patterns)
-	file = filepath.Clean(file)
+// MatchesResult matches result
+type MatchesResult struct {
+	BaseDir string
+	// ignorefile rules matched files
+	MatchedFiles []string
+	// ignorefile rules unmatched files
+	UnmatchedFiles []string
+	// ignorefile rules matched dirs
+	MatchedDirs []string
+	// ignorefile rules unmatched dirs
+	UnmatchedDirs []string
+}
 
-	if file == "." {
-		// Don't let them exclude everything, kind of silly.
-		return false, nil
-	}
-
-	return im.Matches(file)
+// DirMatches returns match result from basedir.
+func DirMatches(basedir string, options *MatchesOptions) (*MatchesResult, error) {
+	return NewSystemMatcher().Matches(basedir, options)
 }

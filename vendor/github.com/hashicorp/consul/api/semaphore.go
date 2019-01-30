@@ -198,12 +198,13 @@ WAIT:
 
 	// Handle the one-shot mode.
 	if s.opts.SemaphoreTryOnce && attempts > 0 {
-		elapsed := time.Now().Sub(start)
-		if elapsed > qOpts.WaitTime {
+		elapsed := time.Since(start)
+		if elapsed > s.opts.SemaphoreWaitTime {
 			return nil, nil
 		}
 
-		qOpts.WaitTime -= elapsed
+		// Query wait time should not exceed the semaphore wait time
+		qOpts.WaitTime = s.opts.SemaphoreWaitTime - elapsed
 	}
 	attempts++
 
@@ -492,7 +493,7 @@ RETRY:
 		// by doing retries. Note that we have to attempt the retry in a non-
 		// blocking fashion so that we have a clean place to reset the retry
 		// counter if service is restored.
-		if retries > 0 && IsServerError(err) {
+		if retries > 0 && IsRetryableError(err) {
 			time.Sleep(s.opts.MonitorRetryTime)
 			retries--
 			opts.WaitIndex = 0

@@ -3,16 +3,22 @@ package aws
 import (
 	"encoding/json"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"strings"
 	"time"
+
+	"github.com/pkg/errors"
 
 	"github.com/hairyhenderson/gomplate/env"
 )
 
 // DefaultEndpoint -
 var DefaultEndpoint = "http://169.254.169.254"
+
+const (
+	// the default region
+	unknown = "unknown"
+)
 
 // Ec2Meta -
 type Ec2Meta struct {
@@ -50,13 +56,15 @@ func unreachable(err error) bool {
 	return false
 }
 
-func (e *Ec2Meta) retrieveMetadata(url string, def ...string) string {
+// retrieve EC2 metadata, defaulting if we're not in EC2 or if there's a non-OK
+// response. If there is an OK response, but we can't parse it, this errors
+func (e *Ec2Meta) retrieveMetadata(url string, def ...string) (string, error) {
 	if value, ok := e.cache[url]; ok {
-		return value
+		return value, nil
 	}
 
 	if e.nonAWS {
-		return returnDefault(def)
+		return returnDefault(def), nil
 	}
 
 	if e.Client == nil {
@@ -71,26 +79,27 @@ func (e *Ec2Meta) retrieveMetadata(url string, def ...string) string {
 		if unreachable(err) {
 			e.nonAWS = true
 		}
-		return returnDefault(def)
+		return returnDefault(def), nil
 	}
 
+	// nolint: errcheck
 	defer resp.Body.Close()
 	if resp.StatusCode > 399 {
-		return returnDefault(def)
+		return returnDefault(def), nil
 	}
 
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		log.Fatalf("Failed to read response body from %s: %v", url, err)
+		return "", errors.Wrapf(err, "Failed to read response body from %s", url)
 	}
 	value := strings.TrimSpace(string(body))
 	e.cache[url] = value
 
-	return value
+	return value, nil
 }
 
 // Meta -
-func (e *Ec2Meta) Meta(key string, def ...string) string {
+func (e *Ec2Meta) Meta(key string, def ...string) (string, error) {
 	if e.Endpoint == "" {
 		e.Endpoint = DefaultEndpoint
 	}
@@ -100,7 +109,7 @@ func (e *Ec2Meta) Meta(key string, def ...string) string {
 }
 
 // Dynamic -
-func (e *Ec2Meta) Dynamic(key string, def ...string) string {
+func (e *Ec2Meta) Dynamic(key string, def ...string) (string, error) {
 	if e.Endpoint == "" {
 		e.Endpoint = DefaultEndpoint
 	}
@@ -110,21 +119,24 @@ func (e *Ec2Meta) Dynamic(key string, def ...string) string {
 }
 
 // Region -
-func (e *Ec2Meta) Region(def ...string) string {
+func (e *Ec2Meta) Region(def ...string) (string, error) {
 	defaultRegion := returnDefault(def)
 	if defaultRegion == "" {
-		defaultRegion = "unknown"
+		defaultRegion = unknown
 	}
 
-	doc := e.Dynamic("instance-identity/document", `{"region":"`+defaultRegion+`"}`)
+	doc, err := e.Dynamic("instance-identity/document", `{"region":"`+defaultRegion+`"}`)
+	if err != nil {
+		return "", err
+	}
 	obj := &InstanceDocument{
 		Region: defaultRegion,
 	}
-	err := json.Unmarshal([]byte(doc), &obj)
+	err = json.Unmarshal([]byte(doc), &obj)
 	if err != nil {
-		log.Fatalf("Unable to unmarshal JSON object %s: %v", doc, err)
+		return "", errors.Wrapf(err, "Unable to unmarshal JSON object %s", doc)
 	}
-	return obj.Region
+	return obj.Region, nil
 }
 
 // InstanceDocument -

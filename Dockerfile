@@ -1,53 +1,67 @@
-FROM golang:1.8-alpine AS build
+FROM golang:1.11.5-alpine@sha256:8dea7186cf96e6072c23bcbac842d140fe0186758bcc215acb1745f584984857 AS build
+
+RUN apk add --no-cache \
+    make \
+    git \
+    upx=3.94-r0
 
 RUN mkdir -p /go/src/github.com/hairyhenderson/gomplate
 WORKDIR /go/src/github.com/hairyhenderson/gomplate
 COPY . /go/src/github.com/hairyhenderson/gomplate
 
-RUN apk add --no-cache \
-    make \
-    git
+RUN make build-x compress-all
 
-RUN make build
+FROM scratch AS artifacts
 
-FROM debian:jessie AS compress
+COPY --from=build /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
+COPY --from=build /go/src/github.com/hairyhenderson/gomplate/bin/* /bin/
 
-RUN apt-get update -qq
-RUN DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -yq curl xz-utils ca-certificates
-RUN curl -fsSL -o /tmp/upx.tar.xz https://github.com/upx/upx/releases/download/v3.94/upx-3.94-amd64_linux.tar.xz \
-  && tar Jxv -C /tmp --strip-components=1 -f /tmp/upx.tar.xz
+CMD [ "/bin/gomplate_linux-amd64" ]
 
-COPY --from=build /go/src/github.com/hairyhenderson/gomplate/bin/gomplate /gomplate
-RUN /tmp/upx --lzma /gomplate -o /gomplate-slim
-
-FROM alpine:3.6 AS gomplate
+FROM scratch AS gomplate
 
 ARG BUILD_DATE
 ARG VCS_REF
+ARG OS=linux
+ARG ARCH=amd64
 
-LABEL org.label-schema.build-date=$BUILD_DATE \
-      org.label-schema.vcs-ref=$VCS_REF \
-      org.label-schema.vcs-url="https://github.com/hairyhenderson/gomplate"
+LABEL org.opencontainers.image.created=$BUILD_DATE \
+      org.opencontainers.image.revision=$VCS_REF \
+      org.opencontainers.image.source="https://github.com/hairyhenderson/gomplate"
 
-COPY --from=build /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt 
-COPY --from=build /go/src/github.com/hairyhenderson/gomplate/bin/gomplate /gomplate
+COPY --from=artifacts /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
+COPY --from=artifacts /bin/gomplate_${OS}-${ARCH} /gomplate
 
 ENTRYPOINT [ "/gomplate" ]
 
-CMD [ "--help" ]
-
-FROM alpine:3.6 AS gomplate-slim
+FROM alpine:3.8@sha256:46e71df1e5191ab8b8034c5189e325258ec44ea739bba1e5645cff83c9048ff1 AS gomplate-alpine
 
 ARG BUILD_DATE
 ARG VCS_REF
+ARG OS=linux
+ARG ARCH=amd64
 
-LABEL org.label-schema.build-date=$BUILD_DATE \
-      org.label-schema.vcs-ref=$VCS_REF \
-      org.label-schema.vcs-url="https://github.com/hairyhenderson/gomplate"
+LABEL org.opencontainers.image.created=$BUILD_DATE \
+      org.opencontainers.image.revision=$VCS_REF \
+      org.opencontainers.image.source="https://github.com/hairyhenderson/gomplate"
 
-COPY --from=build /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt 
-COPY --from=compress /gomplate-slim /gomplate
+RUN apk add --no-cache ca-certificates
+COPY --from=artifacts /bin/gomplate_${OS}-${ARCH}-slim /bin/gomplate
+
+ENTRYPOINT [ "/bin/gomplate" ]
+
+FROM scratch AS gomplate-slim
+
+ARG BUILD_DATE
+ARG VCS_REF
+ARG OS=linux
+ARG ARCH=amd64
+
+LABEL org.opencontainers.image.created=$BUILD_DATE \
+      org.opencontainers.image.revision=$VCS_REF \
+      org.opencontainers.image.source="https://github.com/hairyhenderson/gomplate"
+
+COPY --from=artifacts /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
+COPY --from=artifacts /bin/gomplate_${OS}-${ARCH}-slim /gomplate
 
 ENTRYPOINT [ "/gomplate" ]
-
-CMD [ "--help" ]

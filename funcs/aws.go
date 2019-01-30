@@ -1,11 +1,7 @@
 package funcs
 
 import (
-	"log"
-	"os"
-	"strconv"
 	"sync"
-	"time"
 
 	"github.com/hairyhenderson/gomplate/aws"
 )
@@ -18,20 +14,8 @@ var (
 // AWSNS - the aws namespace
 func AWSNS() *Funcs {
 	afInit.Do(func() {
-		timeout := os.Getenv("AWS_TIMEOUT")
-		if timeout != "" {
-			t, err := strconv.Atoi(timeout)
-			if err != nil {
-				log.Fatalf("Invalid AWS_TIMEOUT value '%s' - must be an integer\n", timeout)
-			}
-
-			af = &Funcs{
-				awsopts: aws.ClientOptions{
-					Timeout: (time.Duration(t) * time.Millisecond),
-				},
-			}
-		} else {
-			af = &Funcs{}
+		af = &Funcs{
+			awsopts: aws.GetClientOptions(),
 		}
 	})
 	return af
@@ -51,32 +35,32 @@ func AWSFuncs(f map[string]interface{}) {
 // Funcs -
 type Funcs struct {
 	meta     *aws.Ec2Meta
-	metaInit sync.Once
 	info     *aws.Ec2Info
+	metaInit sync.Once
 	infoInit sync.Once
 	awsopts  aws.ClientOptions
 }
 
 // EC2Region -
-func (a *Funcs) EC2Region(def ...string) string {
+func (a *Funcs) EC2Region(def ...string) (string, error) {
 	a.metaInit.Do(a.initMeta)
 	return a.meta.Region(def...)
 }
 
 // EC2Meta -
-func (a *Funcs) EC2Meta(key string, def ...string) string {
+func (a *Funcs) EC2Meta(key string, def ...string) (string, error) {
 	a.metaInit.Do(a.initMeta)
 	return a.meta.Meta(key, def...)
 }
 
 // EC2Dynamic -
-func (a *Funcs) EC2Dynamic(key string, def ...string) string {
+func (a *Funcs) EC2Dynamic(key string, def ...string) (string, error) {
 	a.metaInit.Do(a.initMeta)
 	return a.meta.Dynamic(key, def...)
 }
 
 // EC2Tag -
-func (a *Funcs) EC2Tag(tag string, def ...string) string {
+func (a *Funcs) EC2Tag(tag string, def ...string) (string, error) {
 	a.infoInit.Do(a.initInfo)
 	return a.info.Tag(tag, def...)
 }

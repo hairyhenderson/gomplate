@@ -2,20 +2,64 @@ package conv
 
 import (
 	"fmt"
-	"log"
 	"reflect"
 	"strconv"
 	"strings"
+
+	"github.com/pkg/errors"
 )
 
 // Bool converts a string to a boolean value, using strconv.ParseBool under the covers.
 // Possible true values are: 1, t, T, TRUE, true, True
 // All other values are considered false.
+//
+// See ToBool also for a more flexible version.
 func Bool(in string) bool {
 	if b, err := strconv.ParseBool(in); err == nil {
 		return b
 	}
 	return false
+}
+
+// ToBool converts an arbitrary input into a boolean.
+// Possible non-boolean true values are: 1 or the strings "t", "true", or "yes"
+// (any capitalizations)
+// All other values are considered false.
+func ToBool(in interface{}) bool {
+	if b, ok := in.(bool); ok {
+		return b
+	}
+
+	if str, ok := in.(string); ok {
+		str = strings.ToLower(str)
+		switch str {
+		case "1", "t", "true", "yes":
+			return true
+		default:
+			return strToFloat64(str) == 1
+		}
+	}
+
+	val := reflect.Indirect(reflect.ValueOf(in))
+	switch val.Kind() {
+	case reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64, reflect.Int:
+		return val.Int() == 1
+	case reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uint:
+		return val.Uint() == 1
+	case reflect.Float32, reflect.Float64:
+		return val.Float() == 1
+	default:
+		return false
+	}
+}
+
+// ToBools -
+func ToBools(in ...interface{}) []bool {
+	out := make([]bool, len(in))
+	for i, v := range in {
+		out[i] = ToBool(v)
+	}
+	return out
 }
 
 // Slice creates a slice from a bunch of arguments
@@ -28,101 +72,128 @@ func Slice(args ...interface{}) []interface{} {
 //
 // This is functionally identical to strings.Join, except that each element is
 // coerced to a string first
-func Join(in interface{}, sep string) string {
+func Join(in interface{}, sep string) (out string, err error) {
 	s, ok := in.([]string)
 	if ok {
-		return strings.Join(s, sep)
+		return strings.Join(s, sep), nil
 	}
 
 	var a []interface{}
 	a, ok = in.([]interface{})
+	if !ok {
+		a, err = interfaceSlice(in)
+		if err != nil {
+			return "", errors.Wrap(err, "Input to Join must be an array")
+		}
+		ok = true
+	}
 	if ok {
 		b := make([]string, len(a))
 		for i := range a {
-			b[i] = toString(a[i])
+			b[i] = ToString(a[i])
 		}
-		return strings.Join(b, sep)
+		return strings.Join(b, sep), nil
 	}
 
-	log.Fatal("Input to Join must be an array")
-	return ""
+	return "", errors.New("Input to Join must be an array")
+}
+
+func interfaceSlice(slice interface{}) ([]interface{}, error) {
+	s := reflect.ValueOf(slice)
+	kind := s.Kind()
+	switch kind {
+	case reflect.Slice, reflect.Array:
+		ret := make([]interface{}, s.Len())
+		for i := 0; i < s.Len(); i++ {
+			ret[i] = s.Index(i).Interface()
+		}
+		return ret, nil
+	default:
+		return nil, errors.Errorf("expected an array or slice, but got a %T", s)
+	}
 }
 
 // Has determines whether or not a given object has a property with the given key
-func Has(in interface{}, key string) bool {
+func Has(in interface{}, key interface{}) bool {
 	av := reflect.ValueOf(in)
-	kv := reflect.ValueOf(key)
 
-	if av.Kind() == reflect.Map {
+	switch av.Kind() {
+	case reflect.Map:
+		kv := reflect.ValueOf(key)
 		return av.MapIndex(kv).IsValid()
+	case reflect.Slice, reflect.Array:
+		l := av.Len()
+		for i := 0; i < l; i++ {
+			v := av.Index(i).Interface()
+			if reflect.DeepEqual(v, key) {
+				return true
+			}
+		}
 	}
 
 	return false
 }
 
-func toString(in interface{}) string {
+// ToString -
+func ToString(in interface{}) string {
+	if in == nil {
+		return "nil"
+	}
 	if s, ok := in.(string); ok {
 		return s
 	}
 	if s, ok := in.(fmt.Stringer); ok {
 		return s.String()
 	}
-	if i, ok := in.(int); ok {
-		return strconv.Itoa(i)
+
+	v, ok := printableValue(reflect.ValueOf(in))
+	if ok {
+		in = v
 	}
-	if u, ok := in.(uint64); ok {
-		return strconv.FormatUint(u, 10)
+	return fmt.Sprint(in)
+}
+
+// ToStrings -
+func ToStrings(in ...interface{}) []string {
+	out := make([]string, len(in))
+	for i, v := range in {
+		out[i] = ToString(v)
 	}
-	if f, ok := in.(float64); ok {
-		return strconv.FormatFloat(f, 'f', -1, 64)
-	}
-	if b, ok := in.(bool); ok {
-		return strconv.FormatBool(b)
-	}
-	if in == nil {
-		return "nil"
-	}
-	return fmt.Sprintf("%s", in)
+	return out
 }
 
 // MustParseInt - wrapper for strconv.ParseInt that returns 0 in the case of error
 func MustParseInt(s string, base, bitSize int) int64 {
+	// nolint: gosec
 	i, _ := strconv.ParseInt(s, base, bitSize)
 	return i
 }
 
 // MustParseFloat - wrapper for strconv.ParseFloat that returns 0 in the case of error
 func MustParseFloat(s string, bitSize int) float64 {
+	// nolint: gosec
 	i, _ := strconv.ParseFloat(s, bitSize)
 	return i
 }
 
 // MustParseUint - wrapper for strconv.ParseUint that returns 0 in the case of error
 func MustParseUint(s string, base, bitSize int) uint64 {
+	// nolint: gosec
 	i, _ := strconv.ParseUint(s, base, bitSize)
 	return i
 }
 
 // MustAtoi - wrapper for strconv.Atoi that returns 0 in the case of error
 func MustAtoi(s string) int {
+	// nolint: gosec
 	i, _ := strconv.Atoi(s)
 	return i
 }
 
-// ToInt64 - taken from github.com/Masterminds/sprig
+// ToInt64 - convert input to an int64, if convertible. Otherwise, returns 0.
 func ToInt64(v interface{}) int64 {
 	if str, ok := v.(string); ok {
-		iv, err := strconv.ParseInt(str, 0, 64)
-		if err != nil {
-			// maybe it's a float?
-			var fv float64
-			fv, err = strconv.ParseFloat(str, 64)
-			if err != nil {
-				return 0
-			}
-			return ToInt64(fv)
-		}
-		return iv
+		return strToInt64(str)
 	}
 
 	val := reflect.Indirect(reflect.ValueOf(v))
@@ -139,7 +210,7 @@ func ToInt64(v interface{}) int64 {
 	case reflect.Float32, reflect.Float64:
 		return int64(val.Float())
 	case reflect.Bool:
-		if val.Bool() == true {
+		if val.Bool() {
 			return 1
 		}
 		return 0
@@ -171,22 +242,10 @@ func ToInts(in ...interface{}) []int {
 	return out
 }
 
-// ToFloat64 - taken from github.com/Masterminds/sprig
+// ToFloat64 - convert input to a float64, if convertible. Otherwise, returns 0.
 func ToFloat64(v interface{}) float64 {
 	if str, ok := v.(string); ok {
-		// this is inefficient, but it's the only way I can think of to
-		// properly convert octal integers to floats
-		iv, err := strconv.ParseInt(str, 0, 64)
-		if err != nil {
-			// ok maybe it's a float?
-			var fv float64
-			fv, err = strconv.ParseFloat(str, 64)
-			if err != nil {
-				return 0
-			}
-			return fv
-		}
-		return float64(iv)
+		return strToFloat64(str)
 	}
 
 	val := reflect.Indirect(reflect.ValueOf(v))
@@ -200,13 +259,49 @@ func ToFloat64(v interface{}) float64 {
 	case reflect.Float32, reflect.Float64:
 		return val.Float()
 	case reflect.Bool:
-		if val.Bool() == true {
+		if val.Bool() {
 			return 1
 		}
 		return 0
 	default:
 		return 0
 	}
+}
+
+func strToInt64(str string) int64 {
+	if strings.Contains(str, ",") {
+		str = strings.Replace(str, ",", "", -1)
+	}
+	iv, err := strconv.ParseInt(str, 0, 64)
+	if err != nil {
+		// maybe it's a float?
+		var fv float64
+		fv, err = strconv.ParseFloat(str, 64)
+		if err != nil {
+			return 0
+		}
+		return ToInt64(fv)
+	}
+	return iv
+}
+
+func strToFloat64(str string) float64 {
+	if strings.Contains(str, ",") {
+		str = strings.Replace(str, ",", "", -1)
+	}
+	// this is inefficient, but it's the only way I can think of to
+	// properly convert octal integers to floats
+	iv, err := strconv.ParseInt(str, 0, 64)
+	if err != nil {
+		// ok maybe it's a float?
+		var fv float64
+		fv, err = strconv.ParseFloat(str, 64)
+		if err != nil {
+			return 0
+		}
+		return fv
+	}
+	return float64(iv)
 }
 
 // ToFloat64s -
@@ -216,4 +311,23 @@ func ToFloat64s(in ...interface{}) []float64 {
 		out[i] = ToFloat64(v)
 	}
 	return out
+}
+
+// Dict is a convenience function that creates a map with string keys.
+// Provide arguments as key/value pairs. If an odd number of arguments
+// is provided, the last is used as the key, and an empty string is
+// set as the value.
+// All keys are converted to strings, regardless of input type.
+func Dict(v ...interface{}) (map[string]interface{}, error) {
+	dict := map[string]interface{}{}
+	lenv := len(v)
+	for i := 0; i < lenv; i += 2 {
+		key := ToString(v[i])
+		if i+1 >= lenv {
+			dict[key] = ""
+			continue
+		}
+		dict[key] = v[i+1]
+	}
+	return dict, nil
 }

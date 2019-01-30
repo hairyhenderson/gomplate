@@ -2,11 +2,14 @@ package session
 
 import (
 	"os"
-	"path/filepath"
 	"strconv"
 
 	"github.com/aws/aws-sdk-go/aws/credentials"
+	"github.com/aws/aws-sdk-go/aws/defaults"
 )
+
+// EnvProviderName provides a name of the provider when config is loaded from environment.
+const EnvProviderName = "EnvConfigCredentials"
 
 // envConfig is a collection of environment values the SDK will read
 // setup config from. All environment values are optional. But some values
@@ -77,7 +80,7 @@ type envConfig struct {
 	SharedConfigFile string
 
 	// Sets the path to a custom Credentials Authroity (CA) Bundle PEM file
-	// that the SDK will use instead of the the system's root CA bundle.
+	// that the SDK will use instead of the system's root CA bundle.
 	// Only use this if you want to configure the SDK to use a custom set
 	// of CAs.
 	//
@@ -93,9 +96,23 @@ type envConfig struct {
 	//
 	//  AWS_CA_BUNDLE=$HOME/my_custom_ca_bundle
 	CustomCABundle string
+
+	csmEnabled  string
+	CSMEnabled  bool
+	CSMPort     string
+	CSMClientID string
 }
 
 var (
+	csmEnabledEnvKey = []string{
+		"AWS_CSM_ENABLED",
+	}
+	csmPortEnvKey = []string{
+		"AWS_CSM_PORT",
+	}
+	csmClientIDEnvKey = []string{
+		"AWS_CSM_CLIENT_ID",
+	}
 	credAccessEnvKey = []string{
 		"AWS_ACCESS_KEY_ID",
 		"AWS_ACCESS_KEY",
@@ -115,6 +132,12 @@ var (
 	profileEnvKeys = []string{
 		"AWS_PROFILE",
 		"AWS_DEFAULT_PROFILE", // Only read if AWS_SDK_LOAD_CONFIG is also set
+	}
+	sharedCredsFileEnvKey = []string{
+		"AWS_SHARED_CREDENTIALS_FILE",
+	}
+	sharedConfigFileEnvKey = []string{
+		"AWS_CONFIG_FILE",
 	}
 )
 
@@ -148,11 +171,17 @@ func envConfigLoad(enableSharedConfig bool) envConfig {
 	setFromEnvVal(&cfg.Creds.SecretAccessKey, credSecretEnvKey)
 	setFromEnvVal(&cfg.Creds.SessionToken, credSessionEnvKey)
 
+	// CSM environment variables
+	setFromEnvVal(&cfg.csmEnabled, csmEnabledEnvKey)
+	setFromEnvVal(&cfg.CSMPort, csmPortEnvKey)
+	setFromEnvVal(&cfg.CSMClientID, csmClientIDEnvKey)
+	cfg.CSMEnabled = len(cfg.csmEnabled) > 0
+
 	// Require logical grouping of credentials
 	if len(cfg.Creds.AccessKeyID) == 0 || len(cfg.Creds.SecretAccessKey) == 0 {
 		cfg.Creds = credentials.Value{}
 	} else {
-		cfg.Creds.ProviderName = "EnvConfigCredentials"
+		cfg.Creds.ProviderName = EnvProviderName
 	}
 
 	regionKeys := regionEnvKeys
@@ -165,8 +194,15 @@ func envConfigLoad(enableSharedConfig bool) envConfig {
 	setFromEnvVal(&cfg.Region, regionKeys)
 	setFromEnvVal(&cfg.Profile, profileKeys)
 
-	cfg.SharedCredentialsFile = sharedCredentialsFilename()
-	cfg.SharedConfigFile = sharedConfigFilename()
+	setFromEnvVal(&cfg.SharedCredentialsFile, sharedCredsFileEnvKey)
+	setFromEnvVal(&cfg.SharedConfigFile, sharedConfigFileEnvKey)
+
+	if len(cfg.SharedCredentialsFile) == 0 {
+		cfg.SharedCredentialsFile = defaults.SharedCredentialsFilename()
+	}
+	if len(cfg.SharedConfigFile) == 0 {
+		cfg.SharedConfigFile = defaults.SharedConfigFilename()
+	}
 
 	cfg.CustomCABundle = os.Getenv("AWS_CA_BUNDLE")
 
@@ -180,29 +216,4 @@ func setFromEnvVal(dst *string, keys []string) {
 			break
 		}
 	}
-}
-
-func sharedCredentialsFilename() string {
-	if name := os.Getenv("AWS_SHARED_CREDENTIALS_FILE"); len(name) > 0 {
-		return name
-	}
-
-	return filepath.Join(userHomeDir(), ".aws", "credentials")
-}
-
-func sharedConfigFilename() string {
-	if name := os.Getenv("AWS_CONFIG_FILE"); len(name) > 0 {
-		return name
-	}
-
-	return filepath.Join(userHomeDir(), ".aws", "config")
-}
-
-func userHomeDir() string {
-	homeDir := os.Getenv("HOME") // *nix
-	if len(homeDir) == 0 {       // windows
-		homeDir = os.Getenv("USERPROFILE")
-	}
-
-	return homeDir
 }

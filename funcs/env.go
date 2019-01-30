@@ -3,6 +3,7 @@ package funcs
 import (
 	"sync"
 
+	"github.com/hairyhenderson/gomplate/conv"
 	"github.com/hairyhenderson/gomplate/env"
 )
 
@@ -29,6 +30,11 @@ func AddEnvFuncs(f map[string]interface{}) {
 type EnvFuncs struct{}
 
 // Getenv -
-func (f *EnvFuncs) Getenv(key string, def ...string) string {
-	return env.Getenv(key, def...)
+func (f *EnvFuncs) Getenv(key interface{}, def ...string) string {
+	return env.Getenv(conv.ToString(key), def...)
+}
+
+// ExpandEnv -
+func (f *EnvFuncs) ExpandEnv(s interface{}) string {
+	return env.ExpandEnv(conv.ToString(s))
 }

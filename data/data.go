@@ -4,64 +4,126 @@ import (
 	"bytes"
 	"encoding/csv"
 	"encoding/json"
-	"log"
+	"reflect"
 	"strings"
+
+	"github.com/Shopify/ejson"
+	ejsonJson "github.com/Shopify/ejson/json"
+	"github.com/hairyhenderson/gomplate/env"
 
 	// XXX: replace once https://github.com/BurntSushi/toml/pull/179 is merged
 	"github.com/hairyhenderson/toml"
+	"github.com/pkg/errors"
 	"github.com/ugorji/go/codec"
-	yaml "gopkg.in/yaml.v2"
+
+	// XXX: replace once https://github.com/go-yaml/yaml/issues/139 is solved
+	yaml "gopkg.in/hairyhenderson/yaml.v2"
 )
 
-func unmarshalObj(obj map[string]interface{}, in string, f func([]byte, interface{}) error) map[string]interface{} {
-	err := f([]byte(in), &obj)
-	if err != nil {
-		log.Fatalf("Unable to unmarshal object %s: %v", in, err)
-	}
-	return obj
+func init() {
+	// XXX: remove once https://github.com/go-yaml/yaml/issues/139 is solved
+	*yaml.DefaultMapType = reflect.TypeOf(map[string]interface{}{})
 }
 
-func unmarshalArray(obj []interface{}, in string, f func([]byte, interface{}) error) []interface{} {
+func unmarshalObj(obj map[string]interface{}, in string, f func([]byte, interface{}) error) (map[string]interface{}, error) {
 	err := f([]byte(in), &obj)
 	if err != nil {
-		log.Fatalf("Unable to unmarshal array %s: %v", in, err)
+		return nil, errors.Wrapf(err, "Unable to unmarshal object %s", in)
 	}
-	return obj
+	return obj, nil
 }
 
-// JSON - Unmarshal a JSON Object
-func JSON(in string) map[string]interface{} {
+func unmarshalArray(obj []interface{}, in string, f func([]byte, interface{}) error) ([]interface{}, error) {
+	err := f([]byte(in), &obj)
+	if err != nil {
+		return nil, errors.Wrapf(err, "Unable to unmarshal array %s", in)
+	}
+	return obj, nil
+}
+
+// JSON - Unmarshal a JSON Object. Can be ejson-encrypted.
+func JSON(in string) (map[string]interface{}, error) {
 	obj := make(map[string]interface{})
-	return unmarshalObj(obj, in, yaml.Unmarshal)
+	out, err := unmarshalObj(obj, in, yaml.Unmarshal)
+	if err != nil {
+		return out, err
+	}
+
+	_, ok := out[ejsonJson.PublicKeyField]
+	if ok {
+		out, err = decryptEJSON(in)
+	}
+	return out, err
+}
+
+// decryptEJSON - decrypts an ejson input, and unmarshals it, stripping the _public_key field.
+func decryptEJSON(in string) (map[string]interface{}, error) {
+	keyDir := env.Getenv("EJSON_KEYDIR", "/opt/ejson/keys")
+	key := env.Getenv("EJSON_KEY")
+
+	rIn := bytes.NewBufferString(in)
+	rOut := &bytes.Buffer{}
+	err := ejson.Decrypt(rIn, rOut, keyDir, key)
+	if err != nil {
+		return nil, errors.WithStack(err)
+	}
+	obj := make(map[string]interface{})
+	out, err := unmarshalObj(obj, rOut.String(), yaml.Unmarshal)
+	if err != nil {
+		return nil, errors.WithStack(err)
+	}
+	delete(out, ejsonJson.PublicKeyField)
+	return out, nil
 }
 
 // JSONArray - Unmarshal a JSON Array
-func JSONArray(in string) []interface{} {
+func JSONArray(in string) ([]interface{}, error) {
 	obj := make([]interface{}, 1)
 	return unmarshalArray(obj, in, yaml.Unmarshal)
 }
 
 // YAML - Unmarshal a YAML Object
-func YAML(in string) map[string]interface{} {
+func YAML(in string) (map[string]interface{}, error) {
 	obj := make(map[string]interface{})
 	return unmarshalObj(obj, in, yaml.Unmarshal)
 }
 
 // YAMLArray - Unmarshal a YAML Array
-func YAMLArray(in string) []interface{} {
+func YAMLArray(in string) ([]interface{}, error) {
 	obj := make([]interface{}, 1)
 	return unmarshalArray(obj, in, yaml.Unmarshal)
 }
 
 // TOML - Unmarshal a TOML Object
-func TOML(in string) interface{} {
+func TOML(in string) (interface{}, error) {
 	obj := make(map[string]interface{})
 	return unmarshalObj(obj, in, toml.Unmarshal)
 }
 
-func parseCSV(args ...string) (records [][]string, hdr []string) {
-	delim := ","
-	var in string
+func parseCSV(args ...string) ([][]string, []string, error) {
+	in, delim, hdr := csvParseArgs(args...)
+	c := csv.NewReader(strings.NewReader(in))
+	c.Comma = rune(delim[0])
+	records, err := c.ReadAll()
+	if err != nil {
+		return nil, nil, err
+	}
+	if len(records) > 0 {
+		if hdr == nil {
+			hdr = records[0]
+			records = records[1:]
+		} else if len(hdr) == 0 {
+			hdr = make([]string, len(records[0]))
+			for i := range hdr {
+				hdr[i] = autoIndex(i)
+			}
+		}
+	}
+	return records, hdr, nil
+}
+
+func csvParseArgs(args ...string) (in, delim string, hdr []string) {
+	delim = ","
 	if len(args) == 1 {
 		in = args[0]
 	}
@@ -80,22 +142,7 @@ func parseCSV(args ...string) (records [][]string, hdr []string) {
 		hdr = strings.Split(args[1], delim)
 		in = args[2]
 	}
-	c := csv.NewReader(strings.NewReader(in))
-	c.Comma = rune(delim[0])
-	records, err := c.ReadAll()
-	if err != nil {
-		log.Fatal(err)
-	}
-	if hdr == nil {
-		hdr = records[0]
-		records = records[1:]
-	} else if len(hdr) == 0 {
-		hdr = make([]string, len(records[0]))
-		for i := range hdr {
-			hdr[i] = autoIndex(i)
-		}
-	}
-	return records, hdr
+	return in, delim, hdr
 }
 
 // autoIndex - calculates a default string column name given a numeric value
@@ -113,12 +160,15 @@ func autoIndex(i int) string {
 //     in - the CSV-format string to parse
 // returns:
 //  an array of rows, which are arrays of cells (strings)
-func CSV(args ...string) [][]string {
-	records, hdr := parseCSV(args...)
+func CSV(args ...string) ([][]string, error) {
+	records, hdr, err := parseCSV(args...)
+	if err != nil {
+		return nil, err
+	}
 	records = append(records, nil)
 	copy(records[1:], records)
 	records[0] = hdr
-	return records
+	return records, nil
 }
 
 // CSVByRow - Unmarshal CSV in a row-oriented form
@@ -130,8 +180,11 @@ func CSV(args ...string) [][]string {
 //     in - the CSV-format string to parse
 // returns:
 //  an array of rows, indexed by the header name
-func CSVByRow(args ...string) (rows []map[string]string) {
-	records, hdr := parseCSV(args...)
+func CSVByRow(args ...string) (rows []map[string]string, err error) {
+	records, hdr, err := parseCSV(args...)
+	if err != nil {
+		return nil, err
+	}
 	for _, record := range records {
 		m := make(map[string]string)
 		for i, v := range record {
@@ -139,7 +192,7 @@ func CSVByRow(args ...string) (rows []map[string]string) {
 		}
 		rows = append(rows, m)
 	}
-	return rows
+	return rows, nil
 }
 
 // CSVByColumn - Unmarshal CSV in a Columnar form
@@ -151,38 +204,37 @@ func CSVByRow(args ...string) (rows []map[string]string) {
 //     in - the CSV-format string to parse
 // returns:
 //  a map of columns, indexed by the header name. values are arrays of strings
-func CSVByColumn(args ...string) (cols map[string][]string) {
-	records, hdr := parseCSV(args...)
+func CSVByColumn(args ...string) (cols map[string][]string, err error) {
+	records, hdr, err := parseCSV(args...)
+	if err != nil {
+		return nil, err
+	}
 	cols = make(map[string][]string)
 	for _, record := range records {
 		for i, v := range record {
 			cols[hdr[i]] = append(cols[hdr[i]], v)
 		}
 	}
-	return cols
+	return cols, nil
 }
 
 // ToCSV -
-func ToCSV(args ...interface{}) string {
+func ToCSV(args ...interface{}) (string, error) {
 	delim := ","
 	var in [][]string
 	if len(args) == 2 {
-		d, ok := args[0].(string)
-		if ok {
-			delim = d
-		} else {
-			log.Fatalf("Can't parse ToCSV delimiter (%v) - must be string (is a %T)", args[0], args[0])
-		}
-		in, ok = args[1].([][]string)
+		var ok bool
+		delim, ok = args[0].(string)
 		if !ok {
-			log.Fatal("Can't parse ToCSV input - must be of type [][]string")
+			return "", errors.Errorf("Can't parse ToCSV delimiter (%v) - must be string (is a %T)", args[0], args[0])
 		}
+		args = args[1:]
 	}
 	if len(args) == 1 {
 		var ok bool
 		in, ok = args[0].([][]string)
 		if !ok {
-			log.Fatal("Can't parse ToCSV input - must be of type [][]string")
+			return "", errors.Errorf("Can't parse ToCSV input - must be of type [][]string")
 		}
 	}
 	b := &bytes.Buffer{}
@@ -192,59 +244,66 @@ func ToCSV(args ...interface{}) string {
 	c.UseCRLF = true
 	err := c.WriteAll(in)
 	if err != nil {
-		log.Fatal(err)
+		return "", err
 	}
-	return string(b.Bytes())
+	return b.String(), nil
 }
 
-func marshalObj(obj interface{}, f func(interface{}) ([]byte, error)) string {
+func marshalObj(obj interface{}, f func(interface{}) ([]byte, error)) (string, error) {
 	b, err := f(obj)
 	if err != nil {
-		log.Fatalf("Unable to marshal object %s: %v", obj, err)
+		return "", errors.Wrapf(err, "Unable to marshal object %s", obj)
 	}
 
-	return string(b)
+	return string(b), nil
 }
 
-func toJSONBytes(in interface{}) []byte {
+func toJSONBytes(in interface{}) ([]byte, error) {
 	h := &codec.JsonHandle{}
 	h.Canonical = true
 	buf := new(bytes.Buffer)
 	err := codec.NewEncoder(buf, h).Encode(in)
 	if err != nil {
-		log.Fatalf("Unable to marshal %s: %v", in, err)
+		return nil, errors.Wrapf(err, "Unable to marshal %s", in)
 	}
-	return buf.Bytes()
+	return buf.Bytes(), nil
 }
 
 // ToJSON - Stringify a struct as JSON
-func ToJSON(in interface{}) string {
-	return string(toJSONBytes(in))
+func ToJSON(in interface{}) (string, error) {
+	s, err := toJSONBytes(in)
+	if err != nil {
+		return "", err
+	}
+	return string(s), nil
 }
 
 // ToJSONPretty - Stringify a struct as JSON (indented)
-func ToJSONPretty(indent string, in interface{}) string {
+func ToJSONPretty(indent string, in interface{}) (string, error) {
 	out := new(bytes.Buffer)
-	b := toJSONBytes(in)
-	err := json.Indent(out, b, "", indent)
+	b, err := toJSONBytes(in)
 	if err != nil {
-		log.Fatalf("Unable to indent JSON %s: %v", b, err)
+		return "", err
+	}
+	err = json.Indent(out, b, "", indent)
+	if err != nil {
+		return "", errors.Wrapf(err, "Unable to indent JSON %s", b)
 	}
 
-	return string(out.Bytes())
+	return out.String(), nil
 }
 
 // ToYAML - Stringify a struct as YAML
-func ToYAML(in interface{}) string {
+func ToYAML(in interface{}) (string, error) {
 	return marshalObj(in, yaml.Marshal)
 }
 
 // ToTOML - Stringify a struct as TOML
-func ToTOML(in interface{}) string {
+func ToTOML(in interface{}) (string, error) {
 	buf := new(bytes.Buffer)
 	err := toml.NewEncoder(buf).Encode(in)
 	if err != nil {
-		log.Fatalf("Unable to marshal %s: %v", in, err)
+		return "", errors.Wrapf(err, "Unable to marshal %s", in)
 	}
-	return string(buf.Bytes())
+	return buf.String(), nil
 }

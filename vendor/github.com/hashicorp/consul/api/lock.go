@@ -180,12 +180,13 @@ WAIT:
 
 	// Handle the one-shot mode.
 	if l.opts.LockTryOnce && attempts > 0 {
-		elapsed := time.Now().Sub(start)
-		if elapsed > qOpts.WaitTime {
+		elapsed := time.Since(start)
+		if elapsed > l.opts.LockWaitTime {
 			return nil, nil
 		}
 
-		qOpts.WaitTime -= elapsed
+		// Query wait time should not exceed the lock wait time
+		qOpts.WaitTime = l.opts.LockWaitTime - elapsed
 	}
 	attempts++
 
@@ -370,7 +371,7 @@ RETRY:
 		// by doing retries. Note that we have to attempt the retry in a non-
 		// blocking fashion so that we have a clean place to reset the retry
 		// counter if service is restored.
-		if retries > 0 && IsServerError(err) {
+		if retries > 0 && IsRetryableError(err) {
 			time.Sleep(l.opts.MonitorRetryTime)
 			retries--
 			opts.WaitIndex = 0

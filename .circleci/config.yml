@@ -1,0 +1,25 @@
+version: 2.1
+jobs:
+  build:
+    docker:
+      - image: hairyhenderson/gomplate-ci-build:latest
+    environment:
+      - CIRCLE_TEST_REPORTS: /tmp/test-results
+    working_directory: /go/src/github.com/hairyhenderson/gomplate
+    steps:
+      - checkout
+      - run: make build
+      - run: cc-test-reporter before-build
+      - run:
+          name: make test
+          command: |
+            trap "go-junit-report < $CIRCLE_TEST_REPORTS/go-test.out > $CIRCLE_TEST_REPORTS/report.xml" EXIT
+            make test | tee $CIRCLE_TEST_REPORTS/go-test.out
+            cc-test-reporter after-build --exit-code $?
+      - run: make lint
+      - run: make integration
+      - store_artifacts:
+          path: bin
+          destination: binaries
+      - store_test_results:
+          path: /tmp/test-results

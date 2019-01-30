@@ -1,3 +1,7 @@
+<img src="docs/static/images/gomplate.png" width="512px" alt="gomplate logo"/>
+
+_Read the docs at [gomplate.hairyhenderson.ca][docs-url]._
+
 [![Build Status][circleci-image]][circleci-url]
 [![Windows Build][appveyor-image]][appveyor-url]
 [![Go Report Card][reportcard-image]][reportcard-url]
@@ -15,10 +19,6 @@
 
 [![Install Docs][install-docs-image]][install-docs-url]
 
-_Read the docs at [gomplate.hairyhenderson.ca][docs-url]._
-
-# gomplate
-
 A [Go template](https://golang.org/pkg/text/template/)-based CLI tool. `gomplate` can be used as an alternative to
 [`envsubst`](https://www.gnu.org/software/gettext/manual/html_node/envsubst-Invocation.html) but also supports
 additional template datasources such as: JSON, YAML, AWS EC2 metadata, [BoltDB](https://github.com/boltdb/bolt),
@@ -29,13 +29,6 @@ I really like `envsubst` for use as a super-minimalist template processor. But i
 Gomplate is an alternative that will let you process templates which also include shell-like variables. Also there are some useful built-in functions that can be used to make templates even more expressive.
 
 Read more documentation at [gomplate.hairyhenderson.ca][docs-url]!
-
-<!-- TOC depthFrom:2 depthTo:4 withLinks:1 updateOnSave:1 orderedList:0 -->
-
-- [Releasing](#releasing)
-- [License](#license)
-
-<!-- /TOC -->
 
 _Please report any bugs found in the [issue tracker](https://github.com/hairyhenderson/gomplate/issues/)._
 
@@ -51,10 +44,10 @@ Right now the release process is semi-automatic.
 
 [The MIT License](http://opensource.org/licenses/MIT)
 
-Copyright (c) 2016-2017 Dave Henderson
+Copyright (c) 2016-2018 Dave Henderson
 
-[circleci-image]: https://img.shields.io/circleci/project/hairyhenderson/gomplate.svg?style=flat
-[circleci-url]: https://circleci.com/gh/hairyhenderson/gomplate
+[circleci-image]: https://circleci.com/gh/hairyhenderson/gomplate/tree/master.svg?style=shield
+[circleci-url]: https://circleci.com/gh/hairyhenderson/gomplate/tree/master
 [appveyor-image]: https://ci.appveyor.com/api/projects/status/eymky02f5snclyxp/branch/master?svg=true
 [appveyor-url]: https://ci.appveyor.com/project/hairyhenderson/gomplate/branch/master
 [reportcard-image]: https://goreportcard.com/badge/github.com/hairyhenderson/gomplate

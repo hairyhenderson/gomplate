@@ -13,6 +13,7 @@ import (
 func MockServer(code int, body string) (*httptest.Server, *Ec2Meta) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(code)
+		// nolint: errcheck
 		fmt.Fprintln(w, body)
 	}))
 
@@ -31,7 +32,7 @@ func MockServer(code int, body string) (*httptest.Server, *Ec2Meta) {
 func NewDummyEc2Info(metaClient *Ec2Meta) *Ec2Info {
 	i := &Ec2Info{
 		metaClient: metaClient,
-		describer:  func() InstanceDescriber { return DummyInstanceDescriber{} },
+		describer:  func() (InstanceDescriber, error) { return DummyInstanceDescriber{}, nil },
 	}
 	return i
 }

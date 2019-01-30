@@ -22,6 +22,7 @@ func TestTokenLogin(t *testing.T) {
 	os.Setenv("VAULT_TOKEN", "foo")
 	defer os.Unsetenv("VAULT_TOKEN")
 
-	token := v.TokenLogin()
+	token, err := v.TokenLogin()
+	assert.NoError(t, err)
 	assert.Equal(t, "foo", token)
 }

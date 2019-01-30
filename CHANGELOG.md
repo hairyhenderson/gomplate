@@ -1,12 +1,219 @@
 # Change Log
 
-## [Unreleased](https://github.com/hairyhenderson/gomplate/tree/HEAD)
+## [v2.7.0](https://github.com/hairyhenderson/gomplate/tree/v2.7.0) (2018-07-27)
+[Full Changelog](https://github.com/hairyhenderson/gomplate/compare/v2.6.0...v2.7.0)
 
-[Full Changelog](https://github.com/hairyhenderson/gomplate/compare/v2.1.0...HEAD)
+**Implemented enhancements:**
+
+- Adding slice/array support to conv.Has [\#365](https://github.com/hairyhenderson/gomplate/pull/365) ([hairyhenderson](https://github.com/hairyhenderson))
+- Allowing datasources to be defined dynamically [\#357](https://github.com/hairyhenderson/gomplate/pull/357) ([hairyhenderson](https://github.com/hairyhenderson))
+
+**Fixed bugs:**
+
+- Require alias for defineDatasource [\#358](https://github.com/hairyhenderson/gomplate/pull/358) ([hairyhenderson](https://github.com/hairyhenderson))
+
+**Closed issues:**
+
+- Feature Request: Allow datasources to be defined dynamically [\#349](https://github.com/hairyhenderson/gomplate/issues/349)
+- Can't evaluate field Trunc in type \*funcs.StringFuncs [\#347](https://github.com/hairyhenderson/gomplate/issues/347)
+
+**Merged pull requests:**
+
+- Generating docs [\#366](https://github.com/hairyhenderson/gomplate/pull/366) ([hairyhenderson](https://github.com/hairyhenderson))
+- Adding new strings.Sort function [\#364](https://github.com/hairyhenderson/gomplate/pull/364) ([hairyhenderson](https://github.com/hairyhenderson))
+- Reducing output on template errors [\#362](https://github.com/hairyhenderson/gomplate/pull/362) ([hairyhenderson](https://github.com/hairyhenderson))
+- Move integration tests [\#361](https://github.com/hairyhenderson/gomplate/pull/361) ([hairyhenderson](https://github.com/hairyhenderson))
+- Adding fail and assert functions [\#360](https://github.com/hairyhenderson/gomplate/pull/360) ([hairyhenderson](https://github.com/hairyhenderson))
+- Adding conv.ToBool/conv.ToBools functions [\#359](https://github.com/hairyhenderson/gomplate/pull/359) ([hairyhenderson](https://github.com/hairyhenderson))
+- Adding new defineDatasource function [\#356](https://github.com/hairyhenderson/gomplate/pull/356) ([hairyhenderson](https://github.com/hairyhenderson))
+- New path/filepath function namespaces [\#355](https://github.com/hairyhenderson/gomplate/pull/355) ([hairyhenderson](https://github.com/hairyhenderson))
+- Add conv.ToStrings function [\#354](https://github.com/hairyhenderson/gomplate/pull/354) ([hairyhenderson](https://github.com/hairyhenderson))
+- Bump golang from 1.10-alpine to 1.10.3-alpine [\#353](https://github.com/hairyhenderson/gomplate/pull/353) ([dependabot[bot]](https://github.com/apps/dependabot))
+- Bump alpine from 3.7 to 3.8 [\#352](https://github.com/hairyhenderson/gomplate/pull/352) ([dependabot[bot]](https://github.com/apps/dependabot))
+- Update golang:1.10-alpine Docker digest to 1c53b8 [\#351](https://github.com/hairyhenderson/gomplate/pull/351) ([renovate[bot]](https://github.com/apps/renovate))
+- Update alpine:3.7 Docker digest to 5ce5f5 [\#350](https://github.com/hairyhenderson/gomplate/pull/350) ([renovate[bot]](https://github.com/apps/renovate))
+- Update golang:1.10-alpine Docker digest to 79d51d [\#348](https://github.com/hairyhenderson/gomplate/pull/348) ([renovate[bot]](https://github.com/apps/renovate))
+
+## [v2.6.0](https://github.com/hairyhenderson/gomplate/tree/v2.6.0) (2018-06-09)
+[Full Changelog](https://github.com/hairyhenderson/gomplate/compare/v2.5.0...v2.6.0)
+
+**Implemented enhancements:**
+
+- Directory datasource [\#215](https://github.com/hairyhenderson/gomplate/issues/215)
+
+**Fixed bugs:**
+
+- The `sockaddr.Include` and `sockaddr.Exclude` do not have "private" selector. [\#328](https://github.com/hairyhenderson/gomplate/issues/328)
+- Support commas in number conversion [\#345](https://github.com/hairyhenderson/gomplate/pull/345) ([hairyhenderson](https://github.com/hairyhenderson))
+
+**Closed issues:**
+
+- Add slugify [\#336](https://github.com/hairyhenderson/gomplate/issues/336)
+- Action Required: Fix Renovate Configuration [\#335](https://github.com/hairyhenderson/gomplate/issues/335)
+- Consider publishing sha256sums of release files [\#318](https://github.com/hairyhenderson/gomplate/issues/318)
+- Vault list support [\#229](https://github.com/hairyhenderson/gomplate/issues/229)
+
+**Merged pull requests:**
+
+- Update golang:1.10-alpine Docker digest to 56db23 [\#346](https://github.com/hairyhenderson/gomplate/pull/346) ([renovate[bot]](https://github.com/apps/renovate))
+- Update golang:1.10-alpine Docker digest to bb3108 [\#344](https://github.com/hairyhenderson/gomplate/pull/344) ([renovate[bot]](https://github.com/apps/renovate))
+- Adding env datasource [\#341](https://github.com/hairyhenderson/gomplate/pull/341) ([hairyhenderson](https://github.com/hairyhenderson))
+- Add strings.Slug function [\#339](https://github.com/hairyhenderson/gomplate/pull/339) ([hairyhenderson](https://github.com/hairyhenderson))
+- Updating vendored packages [\#338](https://github.com/hairyhenderson/gomplate/pull/338) ([hairyhenderson](https://github.com/hairyhenderson))
+- Adding directory support for file datasources [\#334](https://github.com/hairyhenderson/gomplate/pull/334) ([hairyhenderson](https://github.com/hairyhenderson))
+- Overhauling datasource documentation [\#333](https://github.com/hairyhenderson/gomplate/pull/333) ([hairyhenderson](https://github.com/hairyhenderson))
+- Adding vault list support [\#332](https://github.com/hairyhenderson/gomplate/pull/332) ([hairyhenderson](https://github.com/hairyhenderson))
+- Adding more math functions [\#331](https://github.com/hairyhenderson/gomplate/pull/331) ([hairyhenderson](https://github.com/hairyhenderson))
+- Add missing anchor for RFC 1918 link in sockaddr documentation. [\#330](https://github.com/hairyhenderson/gomplate/pull/330) ([kwilczynski](https://github.com/kwilczynski))
+- Remove notion of "private" selector from the Include/Exclude filter. [\#329](https://github.com/hairyhenderson/gomplate/pull/329) ([kwilczynski](https://github.com/kwilczynski))
+- Improving documentation around slim binaries [\#327](https://github.com/hairyhenderson/gomplate/pull/327) ([hairyhenderson](https://github.com/hairyhenderson))
+- Update golang:1.10-alpine Docker digest to 96e25c [\#325](https://github.com/hairyhenderson/gomplate/pull/325) ([renovate[bot]](https://github.com/apps/renovate))
+- Update alpine:3.7 Docker digest to 8c03bb [\#324](https://github.com/hairyhenderson/gomplate/pull/324) ([renovate[bot]](https://github.com/apps/renovate))
+- Adding strings.Trunc and strings.Abbrev [\#323](https://github.com/hairyhenderson/gomplate/pull/323) ([hairyhenderson](https://github.com/hairyhenderson))
+- Adding crypto.Bcrypt function [\#322](https://github.com/hairyhenderson/gomplate/pull/322) ([hairyhenderson](https://github.com/hairyhenderson))
+- Adding strings.TrimSuffix and strings.Repeat [\#321](https://github.com/hairyhenderson/gomplate/pull/321) ([hairyhenderson](https://github.com/hairyhenderson))
+- Adding missing docs for file.Walk and strings.TrimPrefix [\#320](https://github.com/hairyhenderson/gomplate/pull/320) ([hairyhenderson](https://github.com/hairyhenderson))
+- Add ability to generate checksums of binaries [\#319](https://github.com/hairyhenderson/gomplate/pull/319) ([hairyhenderson](https://github.com/hairyhenderson))
+- Update golang:1.10-alpine Docker digest to 9de80c [\#317](https://github.com/hairyhenderson/gomplate/pull/317) ([renovate[bot]](https://github.com/apps/renovate))
+
+## [v2.5.0](https://github.com/hairyhenderson/gomplate/tree/v2.5.0) (2018-05-04)
+[Full Changelog](https://github.com/hairyhenderson/gomplate/compare/v2.4.0...v2.5.0)
+
+**Implemented enhancements:**
+
+- Exec mode... [\#300](https://github.com/hairyhenderson/gomplate/issues/300)
+- Need a way to determine whether a datasource is reachable [\#286](https://github.com/hairyhenderson/gomplate/issues/286)
+- Add `go-sockaddr` functions [\#145](https://github.com/hairyhenderson/gomplate/issues/145)
+- Adding datasourceReachable function [\#315](https://github.com/hairyhenderson/gomplate/pull/315) ([hairyhenderson](https://github.com/hairyhenderson))
+- Execute additional command after -- [\#307](https://github.com/hairyhenderson/gomplate/pull/307) ([hairyhenderson](https://github.com/hairyhenderson))
+
+**Fixed bugs:**
+
+- panic when parsing an empty CSV as a datasource [\#311](https://github.com/hairyhenderson/gomplate/issues/311)
+- File mode is not preserved [\#296](https://github.com/hairyhenderson/gomplate/issues/296)
+- Fixing panic when parsing empty CSVs and CSVs containing only newlines [\#312](https://github.com/hairyhenderson/gomplate/pull/312) ([hairyhenderson](https://github.com/hairyhenderson))
+- Avoid closing stdout [\#306](https://github.com/hairyhenderson/gomplate/pull/306) ([hairyhenderson](https://github.com/hairyhenderson))
+- Writing output files from a stdin template requires permissions [\#305](https://github.com/hairyhenderson/gomplate/pull/305) ([benjdewan](https://github.com/benjdewan))
+- Linting subpackages too... [\#302](https://github.com/hairyhenderson/gomplate/pull/302) ([hairyhenderson](https://github.com/hairyhenderson))
+
+**Closed issues:**
+
+- Writing an output file from a template provided via --in sets no FileMode when run using Docker [\#304](https://github.com/hairyhenderson/gomplate/issues/304)
+- function "dict" not defined [\#291](https://github.com/hairyhenderson/gomplate/issues/291)
+- unexpected "|" in template clause [\#290](https://github.com/hairyhenderson/gomplate/issues/290)
+- Conditional statement as default value in getenv? [\#285](https://github.com/hairyhenderson/gomplate/issues/285)
+- Pull in sprig functions? [\#283](https://github.com/hairyhenderson/gomplate/issues/283)
+- Consider breaking the gomplate cmd into a sub-package [\#147](https://github.com/hairyhenderson/gomplate/issues/147)
+
+**Merged pull requests:**
+
+- Relaxing restriction on empty datasources [\#316](https://github.com/hairyhenderson/gomplate/pull/316) ([hairyhenderson](https://github.com/hairyhenderson))
+- Improving error handling for datasources [\#314](https://github.com/hairyhenderson/gomplate/pull/314) ([hairyhenderson](https://github.com/hairyhenderson))
+- Pin alpine Docker tag [\#309](https://github.com/hairyhenderson/gomplate/pull/309) ([renovate[bot]](https://github.com/apps/renovate))
+- Adding alpine Docker image variant [\#308](https://github.com/hairyhenderson/gomplate/pull/308) ([hairyhenderson](https://github.com/hairyhenderson))
+- Adding basic metrics around template rendering [\#303](https://github.com/hairyhenderson/gomplate/pull/303) ([hairyhenderson](https://github.com/hairyhenderson))
+- Preserve FileMode of input file when writing output file [\#301](https://github.com/hairyhenderson/gomplate/pull/301) ([djgilcrease](https://github.com/djgilcrease))
+- Exporting the writer used when templates are sent to Stdout [\#299](https://github.com/hairyhenderson/gomplate/pull/299) ([hairyhenderson](https://github.com/hairyhenderson))
+- Adding new conv.Default function [\#298](https://github.com/hairyhenderson/gomplate/pull/298) ([hairyhenderson](https://github.com/hairyhenderson))
+- Adding time.Since and time.Until funcs [\#295](https://github.com/hairyhenderson/gomplate/pull/295) ([hairyhenderson](https://github.com/hairyhenderson))
+- Adding time.ParseDuration function [\#294](https://github.com/hairyhenderson/gomplate/pull/294) ([hairyhenderson](https://github.com/hairyhenderson))
+- Relax inputs for many functions [\#293](https://github.com/hairyhenderson/gomplate/pull/293) ([hairyhenderson](https://github.com/hairyhenderson))
+- Adding conv.ToString function [\#292](https://github.com/hairyhenderson/gomplate/pull/292) ([hairyhenderson](https://github.com/hairyhenderson))
+- chore\(deps\): update golang:1.10-alpine docker digest to 356aea [\#289](https://github.com/hairyhenderson/gomplate/pull/289) ([renovate[bot]](https://github.com/apps/renovate))
+- meta: Add release for freebsd-amd64 [\#287](https://github.com/hairyhenderson/gomplate/pull/287) ([jen20](https://github.com/jen20))
+- New env.ExpandEnv function [\#284](https://github.com/hairyhenderson/gomplate/pull/284) ([hairyhenderson](https://github.com/hairyhenderson))
+- New function proposal: `strings.TrimPrefix` [\#282](https://github.com/hairyhenderson/gomplate/pull/282) ([christopher-avila](https://github.com/christopher-avila))
+- New function: `file.Walk` [\#281](https://github.com/hairyhenderson/gomplate/pull/281) ([christopher-avila](https://github.com/christopher-avila))
+- Update golang Docker image 1.10-alpine digest \(2d95d3\) [\#280](https://github.com/hairyhenderson/gomplate/pull/280) ([renovate[bot]](https://github.com/apps/renovate))
+- Update deps [\#273](https://github.com/hairyhenderson/gomplate/pull/273) ([hairyhenderson](https://github.com/hairyhenderson))
+- Putting main pkg in cmd subdirectory [\#264](https://github.com/hairyhenderson/gomplate/pull/264) ([hairyhenderson](https://github.com/hairyhenderson))
+
+## [v2.4.0](https://github.com/hairyhenderson/gomplate/tree/v2.4.0) (2018-03-04)
+[Full Changelog](https://github.com/hairyhenderson/gomplate/compare/v2.3.0...v2.4.0)
+
+**Implemented enhancements:**
+
+- Support setting Vault server URL in datasource URL [\#243](https://github.com/hairyhenderson/gomplate/issues/243)
+- Exclude option support [\#218](https://github.com/hairyhenderson/gomplate/issues/218)
+- Adding sockaddr namespace [\#271](https://github.com/hairyhenderson/gomplate/pull/271) ([hairyhenderson](https://github.com/hairyhenderson))
+- Adding file namespace [\#270](https://github.com/hairyhenderson/gomplate/pull/270) ([hairyhenderson](https://github.com/hairyhenderson))
+
+**Fixed bugs:**
+
+- Solaris build is broken 💥 [\#255](https://github.com/hairyhenderson/gomplate/issues/255)
+- strings.Indent should not indent when width is 0 [\#268](https://github.com/hairyhenderson/gomplate/pull/268) ([keitwb](https://github.com/keitwb))
+- Attempting to fix intermittent Integration Test failure [\#260](https://github.com/hairyhenderson/gomplate/pull/260) ([hairyhenderson](https://github.com/hairyhenderson))
+
+**Closed issues:**
+
+- docker run hairyhenderson/gomplate --version doesn't print version [\#266](https://github.com/hairyhenderson/gomplate/issues/266)
+
+**Merged pull requests:**
+
+- Log test output in CI [\#272](https://github.com/hairyhenderson/gomplate/pull/272) ([hairyhenderson](https://github.com/hairyhenderson))
+- Updating vendored dependencies [\#269](https://github.com/hairyhenderson/gomplate/pull/269) ([hairyhenderson](https://github.com/hairyhenderson))
+- Fix the example command in 'use with docker' section [\#267](https://github.com/hairyhenderson/gomplate/pull/267) ([yizhiheng](https://github.com/yizhiheng))
+- Migrate from bats to pure Go for integration tests [\#265](https://github.com/hairyhenderson/gomplate/pull/265) ([hairyhenderson](https://github.com/hairyhenderson))
+- Rebasing Docker images on `scratch` instead of alpine [\#261](https://github.com/hairyhenderson/gomplate/pull/261) ([hairyhenderson](https://github.com/hairyhenderson))
+- Building with Go 1.10 [\#258](https://github.com/hairyhenderson/gomplate/pull/258) ([hairyhenderson](https://github.com/hairyhenderson))
+
+## [v2.3.0](https://github.com/hairyhenderson/gomplate/tree/v2.3.0) (2018-02-12)
+[Full Changelog](https://github.com/hairyhenderson/gomplate/compare/v2.2.0...v2.3.0)
+
+**Implemented enhancements:**
+
+- Enable reading from AWS SSM Parameter Store? [\#245](https://github.com/hairyhenderson/gomplate/issues/245)
+- Can we specify stdin as a datasource? [\#230](https://github.com/hairyhenderson/gomplate/issues/230)
+- Trade the dependency on `aws-sdk-go` for something smaller [\#47](https://github.com/hairyhenderson/gomplate/issues/47)
+- Allow vault address to be specified in the vault:// URL [\#251](https://github.com/hairyhenderson/gomplate/pull/251) ([hairyhenderson](https://github.com/hairyhenderson))
+- Add AWS SSM Parameter support [\#248](https://github.com/hairyhenderson/gomplate/pull/248) ([tyrken](https://github.com/tyrken))
+- Add crypto namespace [\#236](https://github.com/hairyhenderson/gomplate/pull/236) ([hairyhenderson](https://github.com/hairyhenderson))
+- Support setting MIME type with URL query string [\#234](https://github.com/hairyhenderson/gomplate/pull/234) ([hairyhenderson](https://github.com/hairyhenderson))
+- Adding support for stdin: scheme for datasources [\#233](https://github.com/hairyhenderson/gomplate/pull/233) ([hairyhenderson](https://github.com/hairyhenderson))
+- Can now pass --exclude as a flag [\#220](https://github.com/hairyhenderson/gomplate/pull/220) ([Gman98ish](https://github.com/Gman98ish))
+
+**Fixed bugs:**
+
+- "unexpected {{end}}" error that only happens when using --input-dir [\#238](https://github.com/hairyhenderson/gomplate/issues/238)
+
+**Closed issues:**
+
+- gomplate should output which template was being parsed when an error is encountered [\#239](https://github.com/hairyhenderson/gomplate/issues/239)
+- function "math" not defined [\#224](https://github.com/hairyhenderson/gomplate/issues/224)
+
+**Merged pull requests:**
+
+- new logo [\#253](https://github.com/hairyhenderson/gomplate/pull/253) ([hairyhenderson](https://github.com/hairyhenderson))
+- bind test binaries explicitly to 127.0.0.1 [\#252](https://github.com/hairyhenderson/gomplate/pull/252) ([hairyhenderson](https://github.com/hairyhenderson))
+- Updating github.com/aws/aws-sdk-go to v1.12.70 [\#247](https://github.com/hairyhenderson/gomplate/pull/247) ([hairyhenderson](https://github.com/hairyhenderson))
+- Updating for dep 0.4.0 and revendoring [\#246](https://github.com/hairyhenderson/gomplate/pull/246) ([hairyhenderson](https://github.com/hairyhenderson))
+- Increase gometalinter timeout and make it go faster locally [\#244](https://github.com/hairyhenderson/gomplate/pull/244) ([hairyhenderson](https://github.com/hairyhenderson))
+- Refactoring template processing [\#241](https://github.com/hairyhenderson/gomplate/pull/241) ([hairyhenderson](https://github.com/hairyhenderson))
+- Naming template after input filename [\#240](https://github.com/hairyhenderson/gomplate/pull/240) ([hairyhenderson](https://github.com/hairyhenderson))
+- Pruning dependencies with `dep prune` [\#237](https://github.com/hairyhenderson/gomplate/pull/237) ([hairyhenderson](https://github.com/hairyhenderson))
+
+## [v2.2.0](https://github.com/hairyhenderson/gomplate/tree/v2.2.0) (2017-11-03)
+[Full Changelog](https://github.com/hairyhenderson/gomplate/compare/v2.1.0...v2.2.0)
 
 **Implemented enhancements:**
 
 - Add some time-related functions [\#199](https://github.com/hairyhenderson/gomplate/issues/199)
+- Adding math.Seq function [\#227](https://github.com/hairyhenderson/gomplate/pull/227) ([hairyhenderson](https://github.com/hairyhenderson))
+- Add time.ParseLocal and time.ParseInLocation functions [\#223](https://github.com/hairyhenderson/gomplate/pull/223) ([hairyhenderson](https://github.com/hairyhenderson))
+- Adding time.ZoneOffset function [\#222](https://github.com/hairyhenderson/gomplate/pull/222) ([hairyhenderson](https://github.com/hairyhenderson))
+- Adding conv.ToInt64, conv.ToFloat64, and others... [\#216](https://github.com/hairyhenderson/gomplate/pull/216) ([hairyhenderson](https://github.com/hairyhenderson))
+- Adding math functions [\#214](https://github.com/hairyhenderson/gomplate/pull/214) ([hairyhenderson](https://github.com/hairyhenderson))
+
+**Fixed bugs:**
+
+- Fixing conv.Join to handle non-interface{} arrays [\#226](https://github.com/hairyhenderson/gomplate/pull/226) ([hairyhenderson](https://github.com/hairyhenderson))
+- Fixing bugs in ToInt64/ToFloat64 [\#217](https://github.com/hairyhenderson/gomplate/pull/217) ([hairyhenderson](https://github.com/hairyhenderson))
+
+**Merged pull requests:**
+
+- Using Go 1.9.x now - go test ignores vendor on its own now [\#228](https://github.com/hairyhenderson/gomplate/pull/228) ([hairyhenderson](https://github.com/hairyhenderson))
+- Stabilizing integration tests a bit [\#221](https://github.com/hairyhenderson/gomplate/pull/221) ([hairyhenderson](https://github.com/hairyhenderson))
+- Don't panic on template errors [\#219](https://github.com/hairyhenderson/gomplate/pull/219) ([hairyhenderson](https://github.com/hairyhenderson))
 
 ## [v2.1.0](https://github.com/hairyhenderson/gomplate/tree/v2.1.0) (2017-10-14)
 [Full Changelog](https://github.com/hairyhenderson/gomplate/compare/v2.0.1...v2.1.0)

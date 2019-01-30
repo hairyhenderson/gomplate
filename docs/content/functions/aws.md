@@ -9,11 +9,17 @@ The functions in the `aws` namespace interface with various Amazon Web Services
 APIs to make it possible for a template to render differently based on the AWS
 environment and metadata.
 
-#### `AWS_TIMEOUT` variable
+### Configuring AWS
 
-In some cases AWS APIs may be slower to respond. The timeout for these requests
-can be adjusted by setting the `AWS_TIMEOUT` environment variable. The value
-must be in milliseconds, and defaults to 500 milliseconds.
+A number of environment variables can be used to control how gomplate communicates
+with AWS APIs. A few are documented here for convenience. See [the `aws-sdk-go` documentation](https://docs.aws.amazon.com/sdk-for-go/v1/developer-guide/configuring-sdk.html)
+for details.
+
+| Environment Variable | Description |
+| -------------------- | ----------- |
+| `AWS_TIMEOUT` | _(Default `500`)_ Adjusts timeout for API requests, in milliseconds. Not part of the AWS SDK. |
+| `AWS_PROFILE` | Profile name the SDK should use when loading shared config from the configuration files. If not provided `default` will be used as the profile name. |
+| `AWS_REGION` | Specifies where to send requests. See [this list](https://docs.aws.amazon.com/general/latest/gr/rande.html). Note that the region must be set for AWS functions to work correctly, either through this variable, or a configuration profile. |
 
 ## `aws.EC2Meta`
 

@@ -1,15 +1,23 @@
 #!/bin/bash
+set -exuo pipefail
 
 export DOCKER_REPO=${DOCKER_REPO:-hairyhenderson/gomplate}
 export DOCKER_TAG=${DOCKER_TAG:-latest}
 export IMAGE_NAME=${IMAGE_NAME:-${DOCKER_REPO}:${DOCKER_TAG}}
+
+docker push ${DOCKER_REPO}:artifacts
+
 if [ "$DOCKER_TAG" == "latest" ]; then
   export SLIM_TAG="slim"
+  export ALPINE_TAG="alpine"
 else
   export SLIM_TAG="${DOCKER_TAG}-slim"
+  export ALPINE_TAG="${DOCKER_TAG}-alpine"
 fi
-# Need to push the slim image too
+
+# Need to push the other images too
 docker push $DOCKER_REPO:${SLIM_TAG}
+docker push $DOCKER_REPO:${ALPINE_TAG}
 
 # This magic figures out if we're currently on a tag (i.e. a release).
 # We only want to have special tags for releases.
@@ -17,6 +25,8 @@ if (git describe --abbrev=0 --exact-match &>/dev/null); then
   tag=$(git describe --abbrev=0 --exact-match)
   docker tag $IMAGE_NAME $DOCKER_REPO:$tag
   docker tag $DOCKER_REPO:${SLIM_TAG} $DOCKER_REPO:${tag}-slim
+  docker tag $DOCKER_REPO:${ALPINE_TAG} $DOCKER_REPO:${tag}-alpine
   docker push $DOCKER_REPO:$tag
   docker push $DOCKER_REPO:${tag}-slim
+  docker push $DOCKER_REPO:${tag}-alpine
 fi

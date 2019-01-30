@@ -9,195 +9,36 @@ A collection of functions that retrieve, parse, and convert structured data.
 
 ## `datasource`
 
-Parses a given datasource (provided by the [`--datasource/-d`](#--datasource-d) argument).
+Parses a given datasource (provided by the [`--datasource/-d`](#--datasource-d) argument or [`defineDatasource`](#definedatasource)).
 
-Currently, `file://`, `http://`, `https://`, and `vault://` URLs are supported.
+If the `alias` is undefined, but is a valid URL, `datasource` will dynamically read from that URL. 
 
-Currently-supported formats are JSON, YAML, TOML, and CSV.
+See [Datasources](../../datasources) for (much!) more information.
 
-### Basic usage
+### Usage
+
+```go
+datasource alias [subpath]
+```
+
+### Arguments
+
+| name   | description |
+|--------|-------|
+| `alias` | the datasource alias (or a URL for dynamic use) |
+| `subpath` | _(optional)_ the subpath to use, if supported by the datasource |
+
+### Examples
 
 _`person.json`:_
 ```json
-{
-  "name": "Dave"
-}
-```
-
-_`input.tmpl`:_
-```
-Hello {{ (datasource "person").name }}
+{ "name": "Dave" }
 ```
 
 ```console
-$ gomplate -d person.json < input.tmpl
+$ gomplate -d person.json -i 'Hello {{ (datasource "person").name }}'
 Hello Dave
 ```
-
-### Usage with HTTP data
-
-```console
-$ echo 'Hello there, {{(datasource "foo").headers.Host}}...' | gomplate -d foo=https://httpbin.org/get
-Hello there, httpbin.org...
-```
-
-Additional headers can be provided with the `--datasource-header`/`-H` option:
-
-```console
-$ gomplate -d foo=https://httpbin.org/get -H 'foo=Foo: bar' -i '{{(datasource "foo").headers.Foo}}'
-bar
-```
-
-### Usage with Consul data
-
-There are three supported URL schemes to retrieve data from [Consul](https://consul.io/).
-The `consul://` (or `consul+http://`) scheme can optionally be used with a hostname and port to specify a server (e.g. `consul://localhost:8500`).
-By default HTTP will be used, but the `consul+https://` form can be used to use HTTPS, alternatively `$CONSUL_HTTP_SSL` can be used.
-
-If the server address isn't part of the datasource URL, `$CONSUL_HTTP_ADDR` will be checked.
-
-The following optional environment variables can be set:
-
-| name | usage |
-|------|-------|
-| `CONSUL_HTTP_ADDR` | Hostname and optional port for connecting to Consul. Defaults to `http://localhost:8500` |
-| `CONSUL_TIMEOUT` | Timeout (in seconds) when communicating to Consul. Defaults to 10 seconds. |
-| `CONSUL_HTTP_TOKEN` | The Consul token to use when connecting to the server. |
-| `CONSUL_HTTP_AUTH` | Should be specified as `<username>:<password>`. Used to authenticate to the server. |
-| `CONSUL_HTTP_SSL` | Force HTTPS if set to `true` value. Disables if set to `false`. Any value acceptable to [`strconv.ParseBool`](https://golang.org/pkg/strconv/#ParseBool) can be provided. |
-| `CONSUL_TLS_SERVER_NAME` | The server name to use as the SNI host when connecting to Consul via TLS. |
-| `CONSUL_CACERT` | Path to CA file for verifying Consul server using TLS. |
-| `CONSUL_CAPATH` | Path to directory of CA files for verifying Consul server using TLS. |
-| `CONSUL_CLIENT_CERT` | Client certificate file for certificate authentication. If this is set, `$CONSUL_CLIENT_KEY` must also be set. |
-| `CONSUL_CLIENT_KEY` | Client key file for certificate authentication. If this is set, `$CONSUL_CLIENT_CERT` must also be set. |
-| `CONSUL_HTTP_SSL_VERIFY` | Set to `false` to disable Consul TLS certificate checking. Any value acceptable to [`strconv.ParseBool`](https://golang.org/pkg/strconv/#ParseBool) can be provided. <br/> _Recommended only for testing and development scenarios!_ |
-| `CONSUL_VAULT_ROLE` | Set to the name of the role to use for authenticating to Consul with [Vault's Consul secret backend](https://www.vaultproject.io/docs/secrets/consul/index.html). |
-| `CONSUL_VAULT_MOUNT` | Used to override the mount-point when using Vault's Consul secret backend for authentication. Defaults to `consul`. |
-
-If a path is included it is used as a prefix for all uses of the datasource.
-
-#### Example
-
-```console
-$ gomplate -d consul=consul:// -i '{{(datasource "consul" "foo")}}'
-value for foo key
-```
-
-```console
-$ gomplate -d consul=consul+https://my-consul-server.com:8533/foo -i '{{(datasource "consul" "bar")}}'
-value for foo/bar key
-```
-
-```console
-$ gomplate -d consul=consul:///foo -i '{{(datasource "consul" "bar/baz")}}'
-value for foo/bar/baz key
-```
-
-Instead of using a non-authenticated Consul connection or connecting using the token set with the
-`CONSUL_HTTP_TOKEN` environment variable, it is possible to authenticate using a dynamically generated
-token fetched from Vault. This requires Vault to be configured to use the [Consul secret backend](https://www.vaultproject.io/docs/secrets/consul/index.html) and
-is enabled by passing the name of the role to use in the `CONSUL_VAULT_ROLE` environment variable.
-
-### Usage with BoltDB data
-
-[BoltDB](https://github.com/boltdb/bolt) is a simple local key/value store used
-by many Go tools. The `boltdb://` scheme can be used to access values stored in
-a BoltDB database file. The full path is provided in the URL, and the bucket name
-can be specified using a URL fragment (e.g. `boltdb:///tmp/database.db#bucket`).
-
-Access is implemented through [libkv](https://github.com/docker/libkv), and as
-such, the first 8 bytes of all values are used as an incrementing last modified
-index value. All values must therefore be at least 9 bytes long, with the first
-8 being ignored.
-
-The following environment variables can be set:
-
-| name | usage |
-|------|-------|
-| `BOLTDB_TIMEOUT` | Timeout (in seconds) to wait for a lock on the database file when opening. |
-| `BOLTDB_PERSIST` | If set keep the database open instead of closing after each read. Any value acceptable to [`strconv.ParseBool`](https://golang.org/pkg/strconv/#ParseBool) can be provided. |
-
-### Example
-
-```console
-$ gomplate -d config=boltdb:///tmp/config.db#Bucket1 -i '{{(datasource "config" "foo")}}'
-bar
-```
-
-### Usage with Vault data
-
-The special `vault://` URL scheme can be used to retrieve data from [Hashicorp
-Vault](https://vaultproject.io). To use this, you must put the Vault server's
-URL in the `$VAULT_ADDR` environment variable.
-
-This table describes the currently-supported authentication mechanisms and how to use them, in order of precedence:
-
-| auth backend | configuration |
-|-------------: |---------------|
-| [`approle`](https://www.vaultproject.io/docs/auth/approle.html) | Environment variables `$VAULT_ROLE_ID` and `$VAULT_SECRET_ID` must be set to the appropriate values.<br/> If the backend is mounted to a different location, set `$VAULT_AUTH_APPROLE_MOUNT`. |
-| [`app-id`](https://www.vaultproject.io/docs/auth/app-id.html) | Environment variables `$VAULT_APP_ID` and `$VAULT_USER_ID` must be set to the appropriate values.<br/> If the backend is mounted to a different location, set `$VAULT_AUTH_APP_ID_MOUNT`. |
-| [`github`](https://www.vaultproject.io/docs/auth/github.html) | Environment variable `$VAULT_AUTH_GITHUB_TOKEN` must be set to an appropriate value.<br/> If the backend is mounted to a different location, set `$VAULT_AUTH_GITHUB_MOUNT`. |
-| [`userpass`](https://www.vaultproject.io/docs/auth/userpass.html) | Environment variables `$VAULT_AUTH_USERNAME` and `$VAULT_AUTH_PASSWORD` must be set to the appropriate values.<br/> If the backend is mounted to a different location, set `$VAULT_AUTH_USERPASS_MOUNT`. |
-| [`token`](https://www.vaultproject.io/docs/auth/token.html) | Determined from either the `$VAULT_TOKEN` environment variable, or read from the file `~/.vault-token` |
-| [`aws`](https://www.vaultproject.io/docs/auth/aws.html) | As a final option authentication will be attempted using the AWS auth backend. See below for more details. |
-
-_**Note:**_ The secret values listed in the above table can either be set in environment
-variables or provided in files. This can increase security when using
-[Docker Swarm Secrets](https://docs.docker.com/engine/swarm/secrets/), for example.
-To use files, specify the filename by appending `_FILE` to the environment variable,
-(i.e. `VAULT_USER_ID_FILE`). If the non-file variable is set, this will override
-any `_FILE` variable and the secret file will be ignored.
-
-To use a Vault datasource with a single secret, just use a URL of
-`vault:///secret/mysecret`. Note the 3 `/`s - the host portion of the URL is left
-empty.
-
-```console
-$ echo 'My voice is my passport. {{(datasource "vault").value}}' \
-  | gomplate -d vault=vault:///secret/sneakers
-My voice is my passport. Verify me.
-```
-
-You can also specify the secret path in the template by using a URL of `vault://`
-(or `vault:///`, or `vault:`):
-```console
-$ echo 'My voice is my passport. {{(datasource "vault" "secret/sneakers").value}}' \
-  | gomplate -d vault=vault://
-My voice is my passport. Verify me.
-```
-
-And the two can be mixed to scope secrets to a specific namespace:
-
-```console
-$ echo 'db_password={{(datasource "vault" "db/pass").value}}' \
-  | gomplate -d vault=vault:///secret/production
-db_password=prodsecret
-```
-
-It is also possible to use dynamic secrets by using the write capability of the datasource. To use,
-add a URL query to the optional path (i.e. `"key?name=value&name=value"`). These values are then
-included within the JSON body of the request.
-
-```console
-$ echo 'otp={{(datasource "vault" "ssh/creds/test?ip=10.1.2.3&username=user").key}}' \
-  | gomplate -d vault=vault:///
-otp=604a4bd5-7afd-30a2-d2d8-80c4aebc6183
-```
-
-#### Authentication using AWS details
-
-If running on an EC2 instance authentication will be attempted using the AWS auth backend. The
-optional `VAULT_AUTH_AWS_MOUNT` environment variable can be used to set the mount point to use if
-it differs from the default of `aws`. Additionally `AWS_TIMEOUT` can be set (in seconds) to a value
-to wait for AWS to respond before skipping the attempt.
-
-If set, the `VAULT_AUTH_AWS_ROLE` environment variable will be used to specify the role to authenticate
-using. If not set the AMI ID of the EC2 instance will be used by Vault.
-
-If you want to allow multiple authentications using AWS EC2 auth (i.e. run gomplate multiple times) you
-will need to pass the same nonce each time. This can be sent using `VAULT_AUTH_AWS_NONCE`. If not set once
-will automatically be generated by AWS. The nonce used can be stored by setting `VAULT_AUTH_AWS_NONCE_OUTPUT`
-to a filename. If the file doesn't exist it is created with 0600 permission.
 
 ## `datasourceExists`
 
@@ -208,11 +49,59 @@ defined.
 
 Note: this does _not_ verify if the datasource is reachable.
 
-Useful when used in an `if`/`else` block
+Useful when used in an `if`/`else` block.
 
 ```console
 $ echo '{{if (datasourceExists "test")}}{{datasource "test"}}{{else}}no worries{{end}}' | gomplate
 no worries
+```
+
+## `datasourceReachable`
+
+Tests whether or not a given datasource is defined and reachable, where the definition of "reachable" differs by datasource, but generally means the data is able to be read successfully.
+
+Useful when used in an `if`/`else` block.
+
+```console
+$ gomplate -i '{{if (datasourceReachable "test")}}{{datasource "test"}}{{else}}no worries{{end}}' -d test=https://bogus.example.com/wontwork.json
+no worries
+```
+
+## `defineDatasource`
+
+Define a datasource alias with target URL inside the template. Overridden by the [`--datasource/-d`](#--datasource-d) flag.
+
+Note: once a datasource is defined, it can not be redefined (i.e. if this function is called twice with the same alias, only the first applies).
+
+This function can provide a good way to set a default datasource when sharing templates.
+
+See [Datasources](../../datasources) for (much!) more information.
+
+### Usage
+
+```go
+defineDatasource alias url
+```
+
+### Arguments
+
+| name   | description |
+|--------|-------|
+| `alias` | the datasource alias |
+| `url` | the datasource's URL |
+
+### Examples
+
+_`person.json`:_
+```json
+{ "name": "Dave" }
+```
+
+```console
+$ gomplate -i '{{ defineDatasource "person" "person.json" }}Hello {{ (ds "person").name }}'
+Hello Dave
+$ FOO='{"name": "Daisy"}' gomplate -d person=env:///FOO -i '{{ defineDatasource "person" "person.json" }}Hello {{ (ds "person").name }}'
+Hello Daisy
 ```
 
 ## `ds`
@@ -223,8 +112,7 @@ Alias to [`datasource`](#datasource)
 
 Includes the content of a given datasource (provided by the [`--datasource/-d`](../usage/#datasource-d) argument).
 
-This is similar to [`datasource`](#datasource),
-except that the data is not parsed.
+This is similar to [`datasource`](#datasource), except that the data is not parsed. There is no restriction on the type of data included, except that it should be textual.
 
 ### Usage
 
@@ -270,7 +158,30 @@ $ gomplate -d person.json -f input.tmpl
 
 Converts a JSON string into an object. Only works for JSON Objects (not Arrays or other valid JSON types). This can be used to access properties of JSON objects.
 
-#### Example
+#### Encrypted JSON support (EJSON)
+
+If the input is in the [EJSON](https://github.com/Shopify/ejson) format (i.e. has a `_public_key` field), this function will attempt to decrypt the document first. A private key must be provided by one of these methods:
+
+- set the `EJSON_KEY` environment variable to the private key's value
+- set the `EJSON_KEY_FILE` environment variable to the path to a file containing the private key
+- set the `EJSON_KEYDIR` environment variable to the path to a directory containing private keys (filename must be the public key), just like [`ejson decrypt`'s `--keydir`](https://github.com/Shopify/ejson/blob/master/man/man1/ejson.1.ronn) flag. Defaults to `/opt/ejson/keys`.
+
+### Usage
+```go
+data.JSON in
+```
+
+```go
+in | data.JSON
+```
+
+### Arguments
+
+| name | description |
+|------|-------------|
+| `in` | _(required)_ the input string |
+
+### Examples
 
 _`input.tmpl`:_
 ```

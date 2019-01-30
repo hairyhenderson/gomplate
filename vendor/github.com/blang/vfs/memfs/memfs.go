@@ -229,13 +229,9 @@ func (fs *MemFS) OpenFile(name string, flag int, perm os.FileMode) (vfs.File, er
 		return nil, &os.PathError{"open", name, err}
 	}
 
-	if hasFlag(os.O_CREATE, flag) {
-		if fiNode != nil {
-
-			// If O_TRUNC is set, existing file is overwritten
-			if !hasFlag(os.O_TRUNC, flag) {
-				return nil, &os.PathError{"open", name, os.ErrExist}
-			}
+	if fiNode == nil {
+		if !hasFlag(os.O_CREATE, flag) {
+			return nil, &os.PathError{"open", name, os.ErrNotExist}
 		}
 		fiNode = &fileInfo{
 			name:    base,
@@ -246,14 +242,15 @@ func (fs *MemFS) OpenFile(name string, flag int, perm os.FileMode) (vfs.File, er
 			fs:      fs,
 		}
 		fiParent.childs[base] = fiNode
-	} else { // find existing
-		if fiNode == nil {
-			return nil, &os.PathError{"open", name, os.ErrNotExist}
+	} else { // file exists
+		if hasFlag(os.O_CREATE|os.O_EXCL, flag) {
+			return nil, &os.PathError{"open", name, os.ErrExist}
 		}
 		if fiNode.dir {
 			return nil, &os.PathError{"open", name, ErrIsDirectory}
 		}
 	}
+
 	if !hasFlag(os.O_RDONLY, flag) {
 		fiNode.modTime = time.Now()
 	}

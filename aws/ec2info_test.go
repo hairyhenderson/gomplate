@@ -1,7 +1,10 @@
 package aws
 
 import (
+	"os"
+	"sync"
 	"testing"
+	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
@@ -24,15 +27,15 @@ func TestTag_MissingKey(t *testing.T) {
 		},
 	}
 	e := &Ec2Info{
-		describer: func() InstanceDescriber {
-			return client
+		describer: func() (InstanceDescriber, error) {
+			return client, nil
 		},
 		metaClient: ec2meta,
 		cache:      make(map[string]interface{}),
 	}
 
-	assert.Empty(t, e.Tag("missing"))
-	assert.Equal(t, "default", e.Tag("missing", "default"))
+	assert.Empty(t, must(e.Tag("missing")))
+	assert.Equal(t, "default", must(e.Tag("missing", "default")))
 }
 
 func TestTag_ValidKey(t *testing.T) {
@@ -51,15 +54,15 @@ func TestTag_ValidKey(t *testing.T) {
 		},
 	}
 	e := &Ec2Info{
-		describer: func() InstanceDescriber {
-			return client
+		describer: func() (InstanceDescriber, error) {
+			return client, nil
 		},
 		metaClient: ec2meta,
 		cache:      make(map[string]interface{}),
 	}
 
-	assert.Equal(t, "bar", e.Tag("foo"))
-	assert.Equal(t, "bar", e.Tag("foo", "default"))
+	assert.Equal(t, "bar", must(e.Tag("foo")))
+	assert.Equal(t, "bar", must(e.Tag("foo", "default")))
 }
 
 func TestTag_NonEC2(t *testing.T) {
@@ -68,15 +71,15 @@ func TestTag_NonEC2(t *testing.T) {
 	defer server.Close()
 	client := DummyInstanceDescriber{}
 	e := &Ec2Info{
-		describer: func() InstanceDescriber {
-			return client
+		describer: func() (InstanceDescriber, error) {
+			return client, nil
 		},
 		metaClient: ec2meta,
 		cache:      make(map[string]interface{}),
 	}
 
-	assert.Equal(t, "", e.Tag("foo"))
-	assert.Equal(t, "default", e.Tag("foo", "default"))
+	assert.Equal(t, "", must(e.Tag("foo")))
+	assert.Equal(t, "default", must(e.Tag("foo", "default")))
 }
 
 func TestNewEc2Info(t *testing.T) {
@@ -95,11 +98,74 @@ func TestNewEc2Info(t *testing.T) {
 		},
 	}
 	e := NewEc2Info(ClientOptions{})
-	e.describer = func() InstanceDescriber {
-		return client
+	e.describer = func() (InstanceDescriber, error) {
+		return client, nil
 	}
 	e.metaClient = ec2meta
 
-	assert.Equal(t, "bar", e.Tag("foo"))
-	assert.Equal(t, "bar", e.Tag("foo", "default"))
+	assert.Equal(t, "bar", must(e.Tag("foo")))
+	assert.Equal(t, "bar", must(e.Tag("foo", "default")))
+}
+
+func TestGetRegion(t *testing.T) {
+	oldReg, ok := os.LookupEnv("AWS_REGION")
+	if ok {
+		defer os.Setenv("AWS_REGION", oldReg)
+	}
+	oldDefReg, ok := os.LookupEnv("AWS_DEFAULT_REGION")
+	if ok {
+		defer os.Setenv("AWS_REGION", oldDefReg)
+	}
+
+	os.Setenv("AWS_REGION", "kalamazoo")
+	os.Unsetenv("AWS_DEFAULT_REGION")
+	region, err := getRegion()
+	assert.NoError(t, err)
+	assert.Empty(t, region)
+
+	os.Setenv("AWS_DEFAULT_REGION", "kalamazoo")
+	os.Unsetenv("AWS_REGION")
+	region, err = getRegion()
+	assert.NoError(t, err)
+	assert.Empty(t, region)
+
+	os.Unsetenv("AWS_DEFAULT_REGION")
+	metaClient := NewDummyEc2Meta()
+	region, err = getRegion(metaClient)
+	assert.NoError(t, err)
+	assert.Equal(t, "unknown", region)
+
+	server, ec2meta := MockServer(200, `{"region":"us-east-1"}`)
+	defer server.Close()
+	region, err = getRegion(ec2meta)
+	assert.NoError(t, err)
+	assert.Equal(t, "us-east-1", region)
+}
+
+func TestGetClientOptions(t *testing.T) {
+	oldVar, ok := os.LookupEnv("AWS_TIMEOUT")
+	if ok {
+		defer os.Setenv("AWS_TIMEOUT", oldVar)
+	}
+
+	co := GetClientOptions()
+	assert.Equal(t, ClientOptions{Timeout: 500 * time.Millisecond}, co)
+
+	os.Setenv("AWS_TIMEOUT", "42")
+	// reset the Once
+	coInit = sync.Once{}
+	co = GetClientOptions()
+	assert.Equal(t, ClientOptions{Timeout: 42 * time.Millisecond}, co)
+
+	os.Setenv("AWS_TIMEOUT", "123")
+	// without resetting the Once, expect to be reused
+	co = GetClientOptions()
+	assert.Equal(t, ClientOptions{Timeout: 42 * time.Millisecond}, co)
+
+	os.Setenv("AWS_TIMEOUT", "foo")
+	// reset the Once
+	coInit = sync.Once{}
+	assert.Panics(t, func() {
+		GetClientOptions()
+	})
 }

@@ -5,7 +5,7 @@ import (
 )
 
 const (
-	// ACLCLientType is the client type token
+	// ACLClientType is the client type token
 	ACLClientType = "client"
 
 	// ACLManagementType is the management type token
@@ -40,6 +40,24 @@ type ACL struct {
 // ACL returns a handle to the ACL endpoints
 func (c *Client) ACL() *ACL {
 	return &ACL{c}
+}
+
+// Bootstrap is used to perform a one-time ACL bootstrap operation on a cluster
+// to get the first management token.
+func (a *ACL) Bootstrap() (string, *WriteMeta, error) {
+	r := a.c.newRequest("PUT", "/v1/acl/bootstrap")
+	rtt, resp, err := requireOK(a.c.doRequest(r))
+	if err != nil {
+		return "", nil, err
+	}
+	defer resp.Body.Close()
+
+	wm := &WriteMeta{RequestTime: rtt}
+	var out struct{ ID string }
+	if err := decodeBody(resp, &out); err != nil {
+		return "", nil, err
+	}
+	return out.ID, wm, nil
 }
 
 // Create is used to generate a new token with the given parameters
