@@ -412,6 +412,14 @@
   version = "v1.1.1"
 
 [[projects]]
+  digest = "1:d20e51da623873bae22e9e1dd0e01f8d480e84f9827debe612c244aa5db68448"
+  name = "github.com/zealic/xignore"
+  packages = ["."]
+  pruneopts = "NUT"
+  revision = "2609b888e68727e4434567ef4eb57e9e65a39160"
+  version = "v0.3.1"
+
+[[projects]]
   branch = "master"
   digest = "1:7d6afbcfe734e72cb56ac89e0d4e9373d4566e4acba82dd2a4f3f5e0fa363850"
   name = "golang.org/x/crypto"
@@ -534,6 +542,7 @@
     "github.com/spf13/cobra",
     "github.com/stretchr/testify/assert",
     "github.com/ugorji/go/codec",
+    "github.com/zealic/xignore",
     "golang.org/x/crypto/bcrypt",
     "golang.org/x/crypto/pbkdf2",
     "gopkg.in/check.v1",

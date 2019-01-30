@@ -14,7 +14,11 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/spf13/afero"
+	"github.com/zealic/xignore"
 )
+
+// Gomplateignore ignore file name, like .gitignore
+const Gomplateignore = ".gomplateignore"
 
 // for overriding in tests
 var stdin io.ReadCloser = os.Stdin
@@ -139,57 +143,62 @@ func processTemplates(templates []*tplate) ([]*tplate, error) {
 }
 
 // walkDir - given an input dir `dir` and an output dir `outDir`, and a list
-// of exclude globs (if any), walk the input directory and create a list of
+// of .gomplateignore and exclude globs (if any), walk the input directory and create a list of
 // tplate objects, and an error, if any.
 func walkDir(dir, outDir string, excludeGlob []string, mode os.FileMode, modeOverride bool) ([]*tplate, error) {
 	dir = filepath.Clean(dir)
 	outDir = filepath.Clean(outDir)
-	si, err := fs.Stat(dir)
+
+	dirStat, err := fs.Stat(dir)
 	if err != nil {
 		return nil, err
 	}
-
-	entries, err := afero.ReadDir(fs, dir)
-	if err != nil {
-		return nil, err
-	}
-
-	if err = fs.MkdirAll(outDir, si.Mode()); err != nil {
-		return nil, err
-	}
+	dirMode := dirStat.Mode()
 
 	excludes, err := executeCombinedGlob(excludeGlob)
+
+	templates := make([]*tplate, 0)
+	matcher := xignore.NewMatcher(fs)
+	matches, err := matcher.Matches(dir, &xignore.MatchesOptions{
+		Ignorefile:     Gomplateignore,
+		Nested:         true, // allow nested ignorefile
+		BeforePatterns: excludeGlob,
+	})
 	if err != nil {
 		return nil, err
 	}
 
-	templates := make([]*tplate, 0)
-	for _, entry := range entries {
-		nextInPath := filepath.Join(dir, entry.Name())
-		nextOutPath := filepath.Join(outDir, entry.Name())
-
+	// Unmatched ignore rule files
+	files := matches.UnmatchedFiles
+	for _, file := range files {
+		nextInPath := filepath.Join(dir, file)
+		nextOutPath := filepath.Join(outDir, file)
 		if inList(excludes, nextInPath) {
 			continue
 		}
 
-		if entry.IsDir() {
-			t, err := walkDir(nextInPath, nextOutPath, excludes, mode, modeOverride)
-			if err != nil {
-				return nil, err
+		if mode == 0 {
+			stat, err := fs.Stat(nextInPath)
+			if err == nil {
+				mode = stat.Mode()
+			} else {
+				mode = dirMode
 			}
-			templates = append(templates, t...)
-		} else {
-			if mode == 0 {
-				mode = entry.Mode()
-			}
-			templates = append(templates, &tplate{
-				name:         nextInPath,
-				targetPath:   nextOutPath,
-				mode:         mode,
-				modeOverride: modeOverride,
-			})
 		}
+
+		// Ensure file parent dirs
+		if err = fs.MkdirAll(filepath.Dir(nextOutPath), dirMode); err != nil {
+			return nil, err
+		}
+
+		templates = append(templates, &tplate{
+			name:         nextInPath,
+			targetPath:   nextOutPath,
+			mode:         mode,
+			modeOverride: modeOverride,
+		})
 	}
+
 	return templates, nil
 }
 

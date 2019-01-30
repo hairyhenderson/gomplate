@@ -14,3 +14,7 @@
 [[constraint]]
   branch = "v2"
   name = "gopkg.in/hairyhenderson/yaml.v2"
+
+[[constraint]]
+  name = "github.com/zealic/xignore"
+  version = "0.3.1"
