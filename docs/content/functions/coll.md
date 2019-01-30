@@ -319,3 +319,48 @@ list | coll.Reverse
 $ gomplate -i '{{ slice 4 3 2 1 | reverse }}'
 [1 2 3 4]
 ```
+
+## `coll.Merge`
+
+**Alias:** `merge`
+
+Merge maps together by overriding src with dst.
+
+In other words, the src map can be configured the "default" map, whereas the dst
+map can be configured the "overrides".
+
+Many source maps can be provided. Precedence is in left-to-right order.
+
+Note that this function _changes_ the destination map.
+
+### Usage
+```go
+coll.Merge dst srcs... 
+```
+
+```go
+srcs... | coll.Merge dst  
+```
+
+### Arguments
+
+| name | description |
+|------|-------------|
+| `dst` | _(required)_ the map to merge _into_ |
+| `srcs...` | _(required)_ the map (or maps) to merge _from_ |
+
+### Examples
+
+```console
+$ gomplate -i '{{ $default := dict "foo" 1 "bar" 2}}
+{{ $config := dict "foo" 8 }}
+{{ merge $config $default }}'
+map[bar:2 foo:8]
+```
+```console
+$ gomplate -i '{{ $dst := dict "foo" 1 "bar" 2 }}
+{{ $src1 := dict "foo" 8 "baz" 4 }}
+{{ $src2 := dict "foo" 3 "bar" 5 }}
+{{ coll.Merge $dst $src1 $src2 }}'
+map[foo:1 bar:5 baz:4]
+```

@@ -197,3 +197,34 @@ func TestReverse(t *testing.T) {
 	assert.NoError(t, err)
 	assert.EqualValues(t, []interface{}{4, 3, 2, 1}, out)
 }
+
+func TestMerge(t *testing.T) {
+	dst := map[string]interface{}{}
+	src := map[string]interface{}{}
+	expected := map[string]interface{}{}
+
+	out, err := Merge(dst, src)
+	assert.NoError(t, err)
+	assert.EqualValues(t, expected, out)
+
+	dst = map[string]interface{}{"a": 4, "c": 5}
+	src = map[string]interface{}{"a": 1, "b": 2, "c": 3}
+	expected = map[string]interface{}{
+		"a": dst["a"], "b": src["b"], "c": dst["c"],
+	}
+
+	out, err = Merge(dst, src)
+	assert.NoError(t, err)
+	assert.EqualValues(t, expected, out)
+
+	dst = map[string]interface{}{"a": 4, "c": 5}
+	src = map[string]interface{}{"a": 1, "b": 2, "c": 3}
+	src2 := map[string]interface{}{"a": 1, "b": 2, "c": 3, "d": 4}
+	expected = map[string]interface{}{
+		"a": dst["a"], "b": src["b"], "c": dst["c"], "d": src2["d"],
+	}
+
+	out, err = Merge(dst, src, src2)
+	assert.NoError(t, err)
+	assert.EqualValues(t, expected, out)
+}
