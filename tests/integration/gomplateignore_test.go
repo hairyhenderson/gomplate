@@ -231,3 +231,34 @@ func (s *GomplateignoreSuite) TestGomplateignore_LeadingSpace(c *C) {
 	tassert.Equal(c, []string{
 		"inner/  dart.log", "inner/  what.txt"}, files)
 }
+
+func (s *GomplateignoreSuite) TestGomplateignore_WithExcludes(c *C) {
+	s.executeOpts(c, `.gomplateignore
+*.log
+`, []string{
+		"--exclude", "crash.bin",
+		"--exclude", "rules/*.txt",
+		"--exclude", "sprites/*.ini",
+	},
+		fs.WithDir("logs",
+			fs.WithFile("archive.zip", ""),
+			fs.WithFile("engine.log", ""),
+			fs.WithFile("skills.log", "")),
+		fs.WithDir("rules",
+			fs.WithFile("index.csv", ""),
+			fs.WithFile("fire.txt", ""),
+			fs.WithFile("earth.txt", "")),
+		fs.WithDir("sprites",
+			fs.WithFile("human.csv", ""),
+			fs.WithFile("demon.xml", ""),
+			fs.WithFile("alien.ini", "")),
+		fs.WithFile("manifest.json", ""),
+		fs.WithFile("crash.bin", ""),
+	)
+
+	files, err := s.collectOutFiles()
+	tassert.NoError(c, err)
+	tassert.Equal(c, []string{
+		"logs/archive.zip", "manifest.json", "rules/index.csv",
+		"sprites/demon.xml", "sprites/human.csv"}, files)
+}

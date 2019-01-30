@@ -35,8 +35,6 @@ You can specify multiple `--file` and `--out` arguments. The same number of each
 
 For processing multiple templates in a directory you can use `--input-dir` and `--output-dir` together. In this case all files in input directory will be processed as templates and the resulting files stored in `--output-dir`. The output directory will be created if it does not exist and the directory structure of the input directory will be preserved.  
 
-You can use `.gomplateignore` ignore some files, have the similar behavior to the [.gitignore](https://git-scm.com/docs/gitignore) file.
-
 Example:
 
 ```bash
@@ -44,6 +42,13 @@ Example:
  # and store the files with the same directory structure in "config"
 gomplate --input-dir=templates --output-dir=config --datasource config=config.yaml
 ```
+
+### Ignorefile
+
+You can use ignore file `.gomplateignore` to ignore some files, have the similar behavior to the [.gitignore](https://git-scm.com/docs/gitignore) file.  
+Nested ignorefile are supported, you can use ignorefile on any sub directroy.
+
+Ignorefile only support `--input-dir` option.
 
 ### `--chmod`
 
@@ -64,6 +69,9 @@ $ gomplate --exclude example/** --exclude *.png
 This will stop all files in the example folder from being processed, as well as all `.png` files in the current folder.
 
 You can also chain the flag to build up a series of globs to be excluded.
+
+The `--exclude` option compatible [.gomplateignore](#ignorefile), exclude rules will effective after [.gomplateignore](#ignorefile).
+
 
 ### `--datasource`/`-d`
 

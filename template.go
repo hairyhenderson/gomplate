@@ -155,26 +155,22 @@ func walkDir(dir, outDir string, excludeGlob []string, mode os.FileMode, modeOve
 	}
 	dirMode := dirStat.Mode()
 
-	excludes, err := executeCombinedGlob(excludeGlob)
-
 	templates := make([]*tplate, 0)
 	matcher := xignore.NewMatcher(fs)
 	matches, err := matcher.Matches(dir, &xignore.MatchesOptions{
-		Ignorefile: Gomplateignore,
-		Nested:     true, // allow nested ignorefile
+		Ignorefile:    Gomplateignore,
+		Nested:        true, // allow nested ignorefile
+		AfterPatterns: excludeGlob,
 	})
 	if err != nil {
 		return nil, err
 	}
 
-	// Unmatched ignore rule files
+	// Unmatched ignorefile rules's files
 	files := matches.UnmatchedFiles
 	for _, file := range files {
 		nextInPath := filepath.Join(dir, file)
 		nextOutPath := filepath.Join(outDir, file)
-		if inList(excludes, nextInPath) {
-			continue
-		}
 
 		if mode == 0 {
 			stat, err := fs.Stat(nextInPath)
@@ -219,16 +215,6 @@ func fileToTemplates(inFile, outFile string, mode os.FileMode, modeOverride bool
 	}
 
 	return tmpl, nil
-}
-
-func inList(list []string, entry string) bool {
-	for _, file := range list {
-		if file == entry {
-			return true
-		}
-	}
-
-	return false
 }
 
 func openOutFile(filename string, mode os.FileMode, modeOverride bool) (out io.WriteCloser, err error) {
@@ -278,22 +264,6 @@ func readInput(filename string) (string, error) {
 		return "", err
 	}
 	return string(bytes), nil
-}
-
-// takes an array of glob strings and executes it as a whole,
-// returning a merged list of globbed files
-func executeCombinedGlob(globArray []string) ([]string, error) {
-	var combinedExcludes []string
-	for _, glob := range globArray {
-		excludeList, err := afero.Glob(fs, glob)
-		if err != nil {
-			return nil, err
-		}
-
-		combinedExcludes = append(combinedExcludes, excludeList...)
-	}
-
-	return combinedExcludes, nil
 }
 
 // emptySkipper is a io.WriteCloser wrapper that will only start writing once a
