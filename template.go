@@ -160,9 +160,8 @@ func walkDir(dir, outDir string, excludeGlob []string, mode os.FileMode, modeOve
 	templates := make([]*tplate, 0)
 	matcher := xignore.NewMatcher(fs)
 	matches, err := matcher.Matches(dir, &xignore.MatchesOptions{
-		Ignorefile:     Gomplateignore,
-		Nested:         true, // allow nested ignorefile
-		BeforePatterns: excludeGlob,
+		Ignorefile: Gomplateignore,
+		Nested:     true, // allow nested ignorefile
 	})
 	if err != nil {
 		return nil, err

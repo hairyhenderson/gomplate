@@ -2,6 +2,7 @@ package xignore
 
 import (
 	"os"
+	"path/filepath"
 	"regexp"
 	"strings"
 	"text/scanner"
@@ -38,9 +39,6 @@ func (p *Pattern) String() string {
 	if p.IsExclusion() {
 		strPattern = "!" + strPattern
 	}
-	if p.IsExclusion() {
-		strPattern = "!" + strPattern
-	}
 	return p.value
 }
 
@@ -69,7 +67,7 @@ func (p *Pattern) Match(path string) bool {
 		path = "/" + path
 	}
 
-	return p.regexp.MatchString(path)
+	return p.regexp.MatchString(path) || p.regexp.MatchString(filepath.Base(path))
 }
 
 // Matches match paths

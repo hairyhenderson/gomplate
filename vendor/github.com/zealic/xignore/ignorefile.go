@@ -42,7 +42,7 @@ func (f *Ignorefile) FromReader(reader io.Reader) error {
 		if strings.HasPrefix(pattern, "#") {
 			continue
 		}
-		pattern = strings.TrimSpace(pattern)
+		pattern = strings.TrimRight(pattern, " ")
 		if pattern == "" {
 			continue
 		}
@@ -50,7 +50,7 @@ func (f *Ignorefile) FromReader(reader io.Reader) error {
 		// (taking care of '!' prefix)
 		invert := pattern[0] == '!'
 		if invert {
-			pattern = strings.TrimSpace(pattern[1:])
+			pattern = strings.TrimRight(pattern[1:], " ")
 		}
 		if len(pattern) > 0 {
 			pattern = filepath.Clean(pattern)
