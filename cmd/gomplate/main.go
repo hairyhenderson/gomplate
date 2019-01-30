@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"os/signal"
 
 	"github.com/hairyhenderson/gomplate"
 	"github.com/hairyhenderson/gomplate/env"
@@ -60,6 +61,21 @@ func postRunExec(cmd *cobra.Command, args []string) error {
 		c.Stdin = os.Stdin
 		c.Stderr = os.Stderr
 		c.Stdout = os.Stdout
+
+		// make sure all signals are propagated
+		sigs := make(chan os.Signal, 1)
+		signal.Notify(sigs)
+		go func() {
+			// Pass signals to the sub-process
+			select {
+			case sig := <-sigs:
+				if c.Process != nil {
+					// nolint: gosec
+					c.Process.Signal(sig)
+				}
+			}
+		}()
+
 		return c.Run()
 	}
 	return nil
