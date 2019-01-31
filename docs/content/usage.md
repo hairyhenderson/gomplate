@@ -35,7 +35,7 @@ You can specify multiple `--file` and `--out` arguments. The same number of each
 
 For processing multiple templates in a directory you can use `--input-dir` and `--output-dir` together. In this case all files in input directory will be processed as templates and the resulting files stored in `--output-dir`. The output directory will be created if it does not exist and the directory structure of the input directory will be preserved.  
 
-You can use `.gomplateignore` ignore some files, have the similar behavior to the [.gitignore](https://git-scm.com/docs/gitignore) file.
+You can use `.gomplateignore` to ignore some files in the input directory, with similar syntax and behaviour to [.gitignore](https://git-scm.com/docs/gitignore) files.
 
 Example:
 
