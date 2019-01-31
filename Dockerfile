@@ -34,7 +34,7 @@ COPY --from=artifacts /bin/gomplate_${OS}-${ARCH} /gomplate
 
 ENTRYPOINT [ "/gomplate" ]
 
-FROM alpine:3.8@sha256:46e71df1e5191ab8b8034c5189e325258ec44ea739bba1e5645cff83c9048ff1 AS gomplate-alpine
+FROM alpine:3.9@sha256:b3dbf31b77fd99d9c08f780ce6f5282aba076d70a513a8be859d8d3a4d0c92b8 AS gomplate-alpine
 
 ARG BUILD_DATE
 ARG VCS_REF
