@@ -33,6 +33,22 @@ For our purposes, the _scheme_ and the _path_ components are especially importan
 | _query_ | Used rarely for datasources where information must be provided in order to get a reasonable reply (such as generating dynamic secrets with Vault), or for [overriding MIME types](#overriding-mime-types) |
 | _fragment_ | Used rarely for accessing a subset of the given path (such as a bucket name in a BoltDB database) |
 
+### Opaque URIs
+
+For some more advanced datasources, such as the [`merge` scheme](#using-merge-datasources), opaque URIs are used (rather than a hierarchical URL):
+
+```pre
+scheme                   path        query   fragment
+   |   _____________________|__   _______|_   _|
+  / \ /                        \ /         \ /  \
+  urn:example:animal:ferret:nose?name=ferret#nose
+```
+
+The semantics of the different URI components are essentially the same as for hierarchical URLs (see above),
+but the _path_ component may not start with a `/` character. In gomplate's usage, opaque URIs sometimes contain
+characters such as `|`, which require escaping with most shells. You may need to surround the datasource definition
+in quotes, or use the `\` escape character.
+
 ## Supported datasources
 
 Gomplate supports a number of datasources, each specified with a particular URL scheme. The table below describes these datasources. The names in the _Type_ column link to further documentation for each specific datasource.
@@ -45,6 +61,7 @@ Gomplate supports a number of datasources, each specified with a particular URL 
 | [Environment](#using-env-datasources) | `env` | Environment variables can be used as datasources - useful for testing |
 | [File](#using-file-datasources) | `file` | Files can be read in any of the [supported formats](#mime-types), including by piping through standard input (`Stdin`). [Directories](#directory-datasources) are also supported. |
 | [HTTP](#using-http-datasources) | `http`, `https` | Data can be sourced from HTTP/HTTPS sites in many different formats. Arbitrary HTTP headers can be set with the [`--datasource-header`/`-H`][] flag |
+| [Merged Datasources](#using-merge-datasources) | `merge` | Merge two or more datasources together to produce the final value - useful for resolving defaults. |
 | [Stdin](#using-stdin-datasources) | `stdin` | A special case of the `file` datasource; allows piping through standard input (`Stdin`) |
 | [Vault](#using-vault-datasources) | `vault`, `vault+http`, `vault+https` | [HashiCorp Vault][] is an industry-leading open-source secret management tool. [List support](#directory-datasources) is also available. |
 
@@ -319,6 +336,50 @@ bar
 
 This can be useful for providing API tokens to authenticated HTTP-based APIs.
 
+## Using `merge` datasources
+
+The `merge` scheme can be used to merge two or more other datasources together.
+
+`merge:` uses an [_opaque_ URI](#opaque-uris) format, where the _path_ component
+is a list of datasource aliases or URLs, separated by the `|` character. The
+datasources are read and merged together from right to left (i.e. the left-most
+datasource values _override_ those to the right).
+
+Multiple different formats can be mixed, as long as they produce maps with string
+keys as their data type.
+
+### Merging separately-defined datasources
+
+Consider this example:
+
+```console
+$ gomplate -d "foo=merge:foo|bar|baz" -d foo=... -d bar=... -d baz=... ...
+```
+
+This will read the `foo`, `bar`, and `baz` datasources (which must be otherwise
+defined), and then overlay `bar`'s values on top of `baz`'s, then `foo`'s values
+on top of those.
+
+The disadvantage with this option is verbosity, but the advantage is that the
+individual datasources can still be referenced.
+
+### Merging datasources defined in-line
+
+Here's an example using URLs instead of aliases:
+
+```console
+$ gomplate -d "foo=merge:./config/main.yaml|http://example.com/defaults.json" ...
+```
+
+This has the advantage of being slightly less verbose. Note that relative URLs
+in a subdirectory are supported in this context, as well as any other supported
+datasource URL.
+
+A caveat to defining datasources in-line is that the _query_ and _fragment_
+components of the URI are interpreted as part of the `merge:` URI. To merge
+datasources with query strings or fragments, define separate sources first and
+use the aliases. Similarly, extra HTTP headers can only be defined for separately-
+defined datasources.
 
 ## Using `stdin` datasources
 
