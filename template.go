@@ -14,7 +14,11 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/spf13/afero"
+	"github.com/zealic/xignore"
 )
+
+// ignorefile name, like .gitignore
+const gomplateignore = ".gomplateignore"
 
 // for overriding in tests
 var stdin io.ReadCloser = os.Stdin
@@ -139,57 +143,57 @@ func processTemplates(templates []*tplate) ([]*tplate, error) {
 }
 
 // walkDir - given an input dir `dir` and an output dir `outDir`, and a list
-// of exclude globs (if any), walk the input directory and create a list of
+// of .gomplateignore and exclude globs (if any), walk the input directory and create a list of
 // tplate objects, and an error, if any.
 func walkDir(dir, outDir string, excludeGlob []string, mode os.FileMode, modeOverride bool) ([]*tplate, error) {
 	dir = filepath.Clean(dir)
 	outDir = filepath.Clean(outDir)
-	si, err := fs.Stat(dir)
+
+	dirStat, err := fs.Stat(dir)
 	if err != nil {
 		return nil, err
 	}
-
-	entries, err := afero.ReadDir(fs, dir)
-	if err != nil {
-		return nil, err
-	}
-
-	if err = fs.MkdirAll(outDir, si.Mode()); err != nil {
-		return nil, err
-	}
-
-	excludes, err := executeCombinedGlob(excludeGlob)
-	if err != nil {
-		return nil, err
-	}
+	dirMode := dirStat.Mode()
 
 	templates := make([]*tplate, 0)
-	for _, entry := range entries {
-		nextInPath := filepath.Join(dir, entry.Name())
-		nextOutPath := filepath.Join(outDir, entry.Name())
-
-		if inList(excludes, nextInPath) {
-			continue
-		}
-
-		if entry.IsDir() {
-			t, err := walkDir(nextInPath, nextOutPath, excludes, mode, modeOverride)
-			if err != nil {
-				return nil, err
-			}
-			templates = append(templates, t...)
-		} else {
-			if mode == 0 {
-				mode = entry.Mode()
-			}
-			templates = append(templates, &tplate{
-				name:         nextInPath,
-				targetPath:   nextOutPath,
-				mode:         mode,
-				modeOverride: modeOverride,
-			})
-		}
+	matcher := xignore.NewMatcher(fs)
+	matches, err := matcher.Matches(dir, &xignore.MatchesOptions{
+		Ignorefile:    gomplateignore,
+		Nested:        true, // allow nested ignorefile
+		AfterPatterns: excludeGlob,
+	})
+	if err != nil {
+		return nil, err
 	}
+
+	// Unmatched ignorefile rules's files
+	files := matches.UnmatchedFiles
+	for _, file := range files {
+		nextInPath := filepath.Join(dir, file)
+		nextOutPath := filepath.Join(outDir, file)
+
+		if mode == 0 {
+			stat, perr := fs.Stat(nextInPath)
+			if perr == nil {
+				mode = stat.Mode()
+			} else {
+				mode = dirMode
+			}
+		}
+
+		// Ensure file parent dirs
+		if err = fs.MkdirAll(filepath.Dir(nextOutPath), dirMode); err != nil {
+			return nil, err
+		}
+
+		templates = append(templates, &tplate{
+			name:         nextInPath,
+			targetPath:   nextOutPath,
+			mode:         mode,
+			modeOverride: modeOverride,
+		})
+	}
+
 	return templates, nil
 }
 
@@ -211,16 +215,6 @@ func fileToTemplates(inFile, outFile string, mode os.FileMode, modeOverride bool
 	}
 
 	return tmpl, nil
-}
-
-func inList(list []string, entry string) bool {
-	for _, file := range list {
-		if file == entry {
-			return true
-		}
-	}
-
-	return false
 }
 
 func openOutFile(filename string, mode os.FileMode, modeOverride bool) (out io.WriteCloser, err error) {
@@ -270,22 +264,6 @@ func readInput(filename string) (string, error) {
 		return "", err
 	}
 	return string(bytes), nil
-}
-
-// takes an array of glob strings and executes it as a whole,
-// returning a merged list of globbed files
-func executeCombinedGlob(globArray []string) ([]string, error) {
-	var combinedExcludes []string
-	for _, glob := range globArray {
-		excludeList, err := afero.Glob(fs, glob)
-		if err != nil {
-			return nil, err
-		}
-
-		combinedExcludes = append(combinedExcludes, excludeList...)
-	}
-
-	return combinedExcludes, nil
 }
 
 // emptySkipper is a io.WriteCloser wrapper that will only start writing once a
