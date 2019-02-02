@@ -17,8 +17,8 @@ import (
 	"github.com/zealic/xignore"
 )
 
-// Gomplateignore ignore file name, like .gitignore
-const Gomplateignore = ".gomplateignore"
+// ignorefile name, like .gitignore
+const gomplateignore = ".gomplateignore"
 
 // for overriding in tests
 var stdin io.ReadCloser = os.Stdin
@@ -158,7 +158,7 @@ func walkDir(dir, outDir string, excludeGlob []string, mode os.FileMode, modeOve
 	templates := make([]*tplate, 0)
 	matcher := xignore.NewMatcher(fs)
 	matches, err := matcher.Matches(dir, &xignore.MatchesOptions{
-		Ignorefile:    Gomplateignore,
+		Ignorefile:    gomplateignore,
 		Nested:        true, // allow nested ignorefile
 		AfterPatterns: excludeGlob,
 	})
