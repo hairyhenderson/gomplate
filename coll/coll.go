@@ -176,3 +176,82 @@ func Merge(dst map[string]interface{}, srcs ...map[string]interface{}) (map[stri
 	}
 	return dst, nil
 }
+
+// Sort a given array or slice. Uses natural sort order if possible. If a
+// non-empty key is given and the list elements are maps, this will attempt to
+// sort by the values of those entries.
+//
+// Does not modify the input list.
+func Sort(key string, list interface{}) (out []interface{}, err error) {
+	if list == nil {
+		return nil, nil
+	}
+
+	ia, err := interfaceSlice(list)
+	if err != nil {
+		return nil, err
+	}
+	// if the types are all the same, we can sort the slice
+	if sameTypes(ia) {
+		s := make([]interface{}, len(ia))
+		// make a copy so the original is unmodified
+		copy(s, ia)
+		sort.SliceStable(s, func(i, j int) bool {
+			return lessThan(key)(s[i], s[j])
+		})
+		return s, nil
+	}
+	return ia, nil
+}
+
+// lessThan - compare two values of the same type
+func lessThan(key string) func(left, right interface{}) bool {
+	return func(left, right interface{}) bool {
+		val := reflect.Indirect(reflect.ValueOf(left))
+		rval := reflect.Indirect(reflect.ValueOf(right))
+		switch val.Kind() {
+		case reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64, reflect.Int:
+			return val.Int() < rval.Int()
+		case reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint, reflect.Uint64:
+			return val.Uint() < rval.Uint()
+		case reflect.Float32, reflect.Float64:
+			return val.Float() < rval.Float()
+		case reflect.String:
+			return val.String() < rval.String()
+		case reflect.MapOf(
+			reflect.TypeOf(reflect.String),
+			reflect.TypeOf(reflect.Interface),
+		).Kind():
+			kval := reflect.ValueOf(key)
+			if !val.MapIndex(kval).IsValid() {
+				return false
+			}
+			newleft := val.MapIndex(kval).Interface()
+			newright := rval.MapIndex(kval).Interface()
+			return lessThan("")(newleft, newright)
+		case reflect.Struct:
+			if !val.FieldByName(key).IsValid() {
+				return false
+			}
+			newleft := val.FieldByName(key).Interface()
+			newright := rval.FieldByName(key).Interface()
+			return lessThan("")(newleft, newright)
+		default:
+			// it's not really comparable, so...
+			return false
+		}
+	}
+}
+
+func sameTypes(a []interface{}) bool {
+	var t reflect.Type
+	for _, v := range a {
+		if t == nil {
+			t = reflect.TypeOf(v)
+		}
+		if reflect.ValueOf(v).Kind() != t.Kind() {
+			return false
+		}
+	}
+	return true
+}

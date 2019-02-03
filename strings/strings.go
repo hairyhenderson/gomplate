@@ -38,6 +38,8 @@ func Trunc(length int, s string) string {
 }
 
 // Sort - return an alphanumerically-sorted list of strings
+//
+// Deprecated: use coll.Sort instead
 func Sort(list []string) []string {
 	sorted := sort.StringSlice(list)
 	sorted.Sort()

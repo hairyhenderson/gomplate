@@ -1,6 +1,7 @@
 package coll
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -227,4 +228,182 @@ func TestMerge(t *testing.T) {
 	out, err = Merge(dst, src, src2)
 	assert.NoError(t, err)
 	assert.EqualValues(t, expected, out)
+}
+
+type coords struct {
+	X, Y int
+}
+
+func TestSameTypes(t *testing.T) {
+	data := []struct {
+		in  []interface{}
+		out bool
+	}{
+		{[]interface{}{}, true},
+		{[]interface{}{"a", "b"}, true},
+		{[]interface{}{1.0, 3.14}, true},
+		{[]interface{}{1, 3}, true},
+		{[]interface{}{true, false}, true},
+		{[]interface{}{1, 3.0}, false},
+		{[]interface{}{"a", nil}, false},
+		{[]interface{}{"a", true}, false},
+		{[]interface{}{coords{2, 3}, coords{3, 4}}, true},
+		{[]interface{}{coords{2, 3}, &coords{3, 4}}, false},
+	}
+
+	for _, d := range data {
+		assert.Equal(t, d.out, sameTypes(d.in))
+	}
+}
+
+func TestLessThan(t *testing.T) {
+	data := []struct {
+		key         string
+		left, right interface{}
+		out         bool
+	}{
+		{"", nil, nil, false},
+		{"", "a", "b", true},
+		{"", "a", "a", false},
+		{"", "b", "a", false},
+		{"", 1.00, 3.14, true},
+		{"", 'a', 'A', false},
+		{"", 'a', 'b', true},
+		{"", uint(0xff), uint(0x32), false},
+		{"", 1, 3, true},
+		{"", true, false, false},
+		{"", map[string]interface{}{"foo": 1}, map[string]interface{}{"foo": 2}, false},
+		{"foo", map[string]interface{}{"foo": 1}, map[string]interface{}{"foo": 2}, true},
+		{"bar", map[string]interface{}{"foo": 1}, map[string]interface{}{"foo": 2}, false},
+		{"X", coords{}, coords{-1, 2}, false},
+		{"Y", &coords{1, 1}, &coords{-1, 2}, true},
+		{"", &coords{1, 1}, &coords{-1, 2}, false},
+		{"foo", &coords{1, 1}, &coords{-1, 2}, false},
+	}
+
+	for _, d := range data {
+		t.Run(fmt.Sprintf(`LessThan("%s")(<%T>%#v,%#v)==%v`, d.key, d.left, d.left, d.right, d.out), func(t *testing.T) {
+			assert.Equal(t, d.out, lessThan(d.key)(d.left, d.right))
+		})
+	}
+}
+
+func TestSort(t *testing.T) {
+	out, err := Sort("", 42)
+	assert.Error(t, err)
+	assert.Nil(t, out)
+
+	data := []struct {
+		key string
+		in  interface{}
+		out []interface{}
+	}{
+		{
+			key: "",
+			in:  []string{"b", "c", "a", "d"},
+			out: []interface{}{"a", "b", "c", "d"},
+		},
+		{
+			key: "",
+			in:  []interface{}{"b", "c", "a", "d"},
+			out: []interface{}{"a", "b", "c", "d"},
+		},
+		{
+			key: "",
+			in:  []interface{}{"c", "a", "b", 3, 1, 2},
+			out: []interface{}{"c", "a", "b", 3, 1, 2},
+		},
+		{
+			key: "",
+			in:  nil,
+			out: nil,
+		},
+
+		{
+			key: "",
+			in: []map[string]interface{}{
+				{"name": "Bart", "age": 12},
+				{"age": 1, "name": "Maggie"},
+				{"name": "Lisa", "age": 6},
+			},
+			out: []interface{}{
+				map[string]interface{}{"name": "Bart", "age": 12},
+				map[string]interface{}{"age": 1, "name": "Maggie"},
+				map[string]interface{}{"name": "Lisa", "age": 6},
+			},
+		},
+		{
+			key: "name",
+			in: []map[string]interface{}{
+				{"name": "Bart", "age": 12},
+				{"age": 1, "name": "Maggie"},
+				{"name": "Lisa", "age": 6},
+			},
+			out: []interface{}{
+				map[string]interface{}{"name": "Bart", "age": 12},
+				map[string]interface{}{"name": "Lisa", "age": 6},
+				map[string]interface{}{"age": 1, "name": "Maggie"},
+			},
+		},
+		{
+			key: "age",
+			in: []map[string]interface{}{
+				{"name": "Bart", "age": 12},
+				{"age": 1, "name": "Maggie"},
+				{"name": "Lisa", "age": 6},
+			},
+			out: []interface{}{
+				map[string]interface{}{"age": 1, "name": "Maggie"},
+				map[string]interface{}{"name": "Lisa", "age": 6},
+				map[string]interface{}{"name": "Bart", "age": 12},
+			},
+		},
+		{
+			key: "y",
+			in: []map[string]int{
+				{"x": 54, "y": 6},
+				{"x": 13, "y": -8},
+				{"x": 1, "y": 0},
+			},
+			out: []interface{}{
+				map[string]int{"x": 13, "y": -8},
+				map[string]int{"x": 1, "y": 0},
+				map[string]int{"x": 54, "y": 6},
+			},
+		},
+		{
+			key: "X",
+			in: []coords{
+				{2, 4},
+				{3, 3},
+				{1, 5},
+			},
+			out: []interface{}{
+				coords{1, 5},
+				coords{2, 4},
+				coords{3, 3},
+			},
+		},
+		{
+			key: "X",
+			in: []*coords{
+				{2, 4},
+				{3, 3},
+				{1, 5},
+			},
+			out: []interface{}{
+				&coords{1, 5},
+				&coords{2, 4},
+				&coords{3, 3},
+			},
+		},
+	}
+
+	for _, d := range data {
+		t.Run(fmt.Sprintf(`Sort("%s",<%T>)==%#v`, d.key, d.in, d.out), func(t *testing.T) {
+			out, err := Sort(d.key, d.in)
+			assert.NoError(t, err)
+			assert.EqualValues(t, d.out, out)
+		})
+	}
 }

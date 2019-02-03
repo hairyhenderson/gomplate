@@ -40,7 +40,6 @@ func AddStringFuncs(f map[string]interface{}) {
 	f["toLower"] = StrNS().ToLower
 	f["trimSpace"] = StrNS().TrimSpace
 	f["indent"] = StrNS().Indent
-	f["sort"] = StrNS().Sort
 	f["quote"] = StrNS().Quote
 	f["squote"] = StrNS().Squote
 
@@ -112,6 +111,8 @@ func (f *StringFuncs) Repeat(count int, s interface{}) (string, error) {
 }
 
 // Sort -
+//
+// Deprecated: use coll.Sort instead
 func (f *StringFuncs) Sort(list interface{}) ([]string, error) {
 	switch v := list.(type) {
 	case []string:

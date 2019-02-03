@@ -320,6 +320,54 @@ $ gomplate -i '{{ slice 4 3 2 1 | reverse }}'
 [1 2 3 4]
 ```
 
+## `coll.Sort`
+
+**Alias:** `sort`
+
+Sort a given list. Uses the natural sort order if possible. For inputs
+that are not sortable (either because the elements are of different types,
+or of an un-sortable type), the input will simply be returned, unmodified.
+
+Maps and structs can be sorted by a named key.
+
+_Note that this function does not modify the input._
+
+### Usage
+```go
+coll.Sort [key] list 
+```
+
+```go
+list | coll.Sort [key]  
+```
+
+### Arguments
+
+| name | description |
+|------|-------------|
+| `key` | _(optional)_ the key to sort by, for lists of maps or structs |
+| `list` | _(required)_ the slice or array to sort |
+
+### Examples
+
+```console
+$ gomplate -i '{{ slice "foo" "bar" "baz" | coll.Sort }}'
+[bar baz foo]
+```
+```console
+$ gomplate -i '{{ sort (slice 3 4 1 2 5) }}'
+[1 2 3 4 5]
+```
+```console
+$ cat <<EOF > in.json
+[{"a": "foo", "b": 1}, {"a": "bar", "b": 8}, {"a": "baz", "b": 3}]
+EOF
+$ gomplate -d in.json -i '{{ range (include "in" | jsonArray | coll.Sort "b") }}{{ print .a "\n" }}{{ end }}'
+foo
+baz
+bar
+```
+
 ## `coll.Merge`
 
 **Alias:** `merge`
