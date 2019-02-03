@@ -153,12 +153,10 @@ foo:
     quuz: 42
 ```
 
-## `strings.Sort`
-
-**Alias:** `sort`
+## `strings.Sort` _(deprecated)_
+**Deprecation Notice:** Use [`coll.Sort`](../coll/#coll-sort) instead
 
 Returns an alphanumerically-sorted copy of a given string list.
-
 
 ### Usage
 ```go
@@ -178,7 +176,7 @@ list | strings.Sort
 ### Examples
 
 ```console
-$ gomplate -i '{{ (slice "foo" "bar" "baz") | sort }}'
+$ gomplate -i '{{ (slice "foo" "bar" "baz") | strings.Sort }}'
 [bar baz foo]
 ```
 

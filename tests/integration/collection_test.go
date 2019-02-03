@@ -62,3 +62,28 @@ func (s *CollSuite) TestMerge(c *C) {
   two: 2
 `})
 }
+
+func (s *CollSuite) TestSort(c *C) {
+	result := icmd.RunCmd(icmd.Command(GomplateBin,
+		"-i", `{{ $maps := jsonArray "[{\"a\": \"foo\", \"b\": 1}, {\"a\": \"bar\", \"b\": 8}, {\"a\": \"baz\", \"b\": 3}]" -}}
+{{ range coll.Sort "b" $maps -}}
+{{ .a }}
+{{ end -}}
+`))
+	result.Assert(c, icmd.Expected{ExitCode: 0, Out: "foo\nbaz\nbar\n"})
+
+	result = icmd.RunCmd(icmd.Command(GomplateBin,
+		"-i", `
+{{- coll.Sort (slice "b" "a" "c" "aa") }}
+{{ coll.Sort (slice "b" 14 "c" "aa") }}
+{{ coll.Sort (slice 3.14 3.0 4.0) }}
+{{ coll.Sort "Scheme" (coll.Slice (conv.URL "zzz:///") (conv.URL "https:///") (conv.URL "http:///")) }}
+`))
+	result.Assert(c, icmd.Expected{ExitCode: 0,
+		Out: `[a aa b c]
+[b 14 c aa]
+[3 3.14 4]
+[http:/// https:/// zzz:///]
+`,
+	})
+}

@@ -25,7 +25,7 @@ funcs:
         $ gomplate -i '{{ strings.Quote 500 }}'
         "500"
   - name: strings.Sort
-    alias: sort
+    deprecated: Use [`coll.Sort`](../coll/#coll-sort) instead
     description: |
       Returns an alphanumerically-sorted copy of a given string list.
     pipeline: true

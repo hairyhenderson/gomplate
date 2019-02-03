@@ -3,7 +3,10 @@ package funcs
 import (
 	"sync"
 
+	"github.com/hairyhenderson/gomplate/conv"
+
 	"github.com/hairyhenderson/gomplate/coll"
+	"github.com/pkg/errors"
 )
 
 var (
@@ -31,6 +34,7 @@ func AddCollFuncs(f map[string]interface{}) {
 	f["uniq"] = CollNS().Uniq
 	f["reverse"] = CollNS().Reverse
 	f["merge"] = CollNS().Merge
+	f["sort"] = CollNS().Sort
 }
 
 // CollFuncs -
@@ -84,4 +88,23 @@ func (f *CollFuncs) Reverse(in interface{}) ([]interface{}, error) {
 // Merge -
 func (f *CollFuncs) Merge(dst map[string]interface{}, src ...map[string]interface{}) (map[string]interface{}, error) {
 	return coll.Merge(dst, src...)
+}
+
+// Sort -
+func (f *CollFuncs) Sort(args ...interface{}) ([]interface{}, error) {
+	var (
+		key  string
+		list interface{}
+	)
+	if len(args) == 0 || len(args) > 2 {
+		return nil, errors.Errorf("wrong number of args: wanted 1 or 2, got %d", len(args))
+	}
+	if len(args) == 1 {
+		list = args[0]
+	}
+	if len(args) == 2 {
+		key = conv.ToString(args[0])
+		list = args[1]
+	}
+	return coll.Sort(key, list)
 }
