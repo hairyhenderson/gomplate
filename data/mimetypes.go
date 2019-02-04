@@ -7,4 +7,5 @@ const (
 	jsonArrayMimetype = "application/array+json"
 	tomlMimetype      = "application/toml"
 	yamlMimetype      = "application/yaml"
+	envMimetype       = "application/x-env"
 )

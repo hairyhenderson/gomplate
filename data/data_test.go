@@ -460,3 +460,25 @@ func TestDecryptEJSON(t *testing.T) {
 	assert.NoError(t, err)
 	assert.EqualValues(t, expected, actual)
 }
+
+func TestDotEnv(t *testing.T) {
+	in := `FOO=a regular unquoted value
+export BAR=another value, exports are ignored
+
+# comments are totally ignored, as are blank lines
+FOO.BAR = "values can be double-quoted, and shell\nescapes are supported"
+
+BAZ = "variable expansion: ${FOO}"
+QUX='single quotes ignore $variables'
+`
+	expected := map[string]string{
+		"FOO":     "a regular unquoted value",
+		"BAR":     "another value, exports are ignored",
+		"FOO.BAR": "values can be double-quoted, and shell\nescapes are supported",
+		"BAZ":     "variable expansion: a regular unquoted value",
+		"QUX":     "single quotes ignore $variables",
+	}
+	out, err := dotEnv(in)
+	assert.NoError(t, err)
+	assert.EqualValues(t, expected, out)
+}

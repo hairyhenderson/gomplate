@@ -100,12 +100,13 @@ These are the supported types:
 
 | Format | MIME Type | Extension(s) | Notes |
 |--------|-----------|-------|------|
-| CSV | `text/csv` | | Uses the [`data.CSV`][] function to present the file as a 2-dimensional row-first string array |
-| JSON | `application/json` | | [JSON][] _objects_ are assumed, and arrays or other values are not parsed with this type. Uses the [`data.JSON`][] function for parsing. [EJSON][] (encrypted JSON) is supported and will be decrypted. |
+| CSV | `text/csv` | `.csv` | Uses the [`data.CSV`][] function to present the file as a 2-dimensional row-first string array |
+| JSON | `application/json` | `.json` | [JSON][] _objects_ are assumed, and arrays or other values are not parsed with this type. Uses the [`data.JSON`][] function for parsing. [EJSON][] (encrypted JSON) is supported and will be decrypted. |
 | JSON Array | `application/array+json` | | A special type for parsing datasources containing just JSON arrays. Uses the [`data.JSONArray`][] function for parsing |
 | Plain Text | `text/plain` | | Unstructured, and as such only intended for use with the [`include`][] function |
-| TOML | `application/toml` | | Parses [TOML][] with the [`data.TOML`][] function |
-| YAML | `application/yaml` | | Parses [YAML][] with the [`data.YAML`][] function |
+| TOML | `application/toml` | `.toml` | Parses [TOML][] with the [`data.TOML`][] function |
+| YAML | `application/yaml` | `.yml`, `.yaml` | Parses [YAML][] with the [`data.YAML`][] function |
+| [.env](#the-env-file-format) | `application/x-env` | `.env` | Basically just a file of `key=value` pairs separated by newlines, usually intended for sourcing into a shell. Common in [Docker Compose](https://docs.docker.com/compose/env-file/), [Ruby](https://github.com/bkeepers/dotenv), and [Node.js](https://github.com/motdotla/dotenv) applications. See [below](#the-env-file-format) for more information. |
 
 ### Overriding MIME Types
 
@@ -118,6 +119,28 @@ $ echo '{"foo": "bar"}' > /tmp/data.txt
 $ gomplate -d data=file:///tmp/data.txt?type=application/json -i '{{ (ds "data").foo }}'
 bar
 ```
+
+### The `.env` file format
+
+Many applications and frameworks support the use of a ".env" file for providing environment variables. It can also be considerd a simple key/value file format, and as such can be used as a datasource in gomplate.
+
+To [override](#overriding-mime-types), use the unregistered `application/x-env` MIME type.
+
+Here's a sample explaining the syntax:
+
+```bash
+FOO=a regular unquoted value
+export BAR=another value, exports are ignored
+
+# comments are totally ignored, as are blank lines
+FOO.BAR = "values can be double-quoted, and\tshell\nescapes are supported"
+
+BAZ="variable expansion: ${FOO}"
+QUX='single quotes ignore $variables and newlines'
+```
+
+The [`github.com/joho/godotenv`](https://github.com/joho/godotenv) package is used for parsing - see the full details there.
+
 
 ## Using `aws+smp` datasources
 

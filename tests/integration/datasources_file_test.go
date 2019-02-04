@@ -31,6 +31,15 @@ A1,B1
 A2,"foo""
 bar"
 `,
+			"test.env": `FOO=a regular unquoted value
+export BAR=another value, exports are ignored
+
+# comments are totally ignored, as are blank lines
+FOO.BAR = "values can be double-quoted, and shell\nescapes are supported"
+
+BAZ = "variable expansion: ${FOO}"
+QUX='single quotes ignore $variables'
+`,
 		}),
 		fs.WithDir("sortorder", fs.WithFiles(map[string]string{
 			"template": `aws_zones = {
@@ -144,4 +153,15 @@ bar`})
 	zonef = "false"
 }
 `})
+	result = icmd.RunCommand(GomplateBin,
+		"-d", "envfile="+s.tmpDir.Join("test.env"),
+		"-i", `{{ (ds "envfile") | data.ToJSONPretty "  " }}`,
+	)
+	result.Assert(c, icmd.Expected{ExitCode: 0, Out: `{
+  "BAR": "another value, exports are ignored",
+  "BAZ": "variable expansion: a regular unquoted value",
+  "FOO": "a regular unquoted value",
+  "FOO.BAR": "values can be double-quoted, and shell\nescapes are supported",
+  "QUX": "single quotes ignore $variables"
+}`})
 }
