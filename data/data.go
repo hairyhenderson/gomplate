@@ -7,6 +7,8 @@ import (
 	"reflect"
 	"strings"
 
+	"github.com/joho/godotenv"
+
 	"github.com/Shopify/ejson"
 	ejsonJson "github.com/Shopify/ejson/json"
 	"github.com/hairyhenderson/gomplate/env"
@@ -98,6 +100,11 @@ func YAMLArray(in string) ([]interface{}, error) {
 func TOML(in string) (interface{}, error) {
 	obj := make(map[string]interface{})
 	return unmarshalObj(obj, in, toml.Unmarshal)
+}
+
+// dotEnv - Unmarshal a dotenv file
+func dotEnv(in string) (interface{}, error) {
+	return godotenv.Unmarshal(in)
 }
 
 func parseCSV(args ...string) ([][]string, []string, error) {

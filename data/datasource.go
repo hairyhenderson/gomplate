@@ -36,6 +36,7 @@ func init() {
 	regExtension(".yaml", yamlMimetype)
 	regExtension(".csv", csvMimetype)
 	regExtension(".toml", tomlMimetype)
+	regExtension(".env", envMimetype)
 }
 
 // registerReaders registers the source-reader functions
@@ -338,6 +339,8 @@ func parseData(mimeType, s string) (out interface{}, err error) {
 		out, err = CSV(s)
 	case tomlMimetype:
 		out, err = TOML(s)
+	case envMimetype:
+		out, err = dotEnv(s)
 	case textMimetype:
 		out = s
 	default:
