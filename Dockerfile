@@ -1,9 +1,14 @@
+FROM alpine:3.8 AS upx
+RUN apk add --no-cache upx=3.94-r0
+
 FROM golang:1.11.5-alpine@sha256:a6435c88400d0d25955ccdea235d2b2bd72650bbab45e102e4ae31a0359dbfb2 AS build
 
 RUN apk add --no-cache \
     make \
-    git \
-    upx=3.94-r0
+    libgcc libstdc++ ucl \
+    git
+
+COPY --from=upx /usr/bin/upx /usr/bin/upx
 
 RUN mkdir -p /go/src/github.com/hairyhenderson/gomplate
 WORKDIR /go/src/github.com/hairyhenderson/gomplate

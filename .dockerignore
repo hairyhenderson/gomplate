@@ -3,3 +3,7 @@ Dockerfile
 *.md
 *.cid
 *.iid
+bin/
+coverage/
+Dockerfile
+Dockerfile.integration
