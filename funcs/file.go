@@ -69,3 +69,13 @@ func (f *FileFuncs) Walk(path interface{}) ([]string, error) {
 	})
 	return files, err
 }
+
+// Write -
+func (f *FileFuncs) Write(path interface{}, data interface{}) (s string, err error) {
+	if b, ok := data.([]byte); ok {
+		err = file.Write(conv.ToString(path), b)
+	} else {
+		err = file.Write(conv.ToString(path), []byte(conv.ToString(data)))
+	}
+	return "", err
+}

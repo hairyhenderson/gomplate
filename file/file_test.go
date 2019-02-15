@@ -1,8 +1,12 @@
 package file
 
 import (
+	"io/ioutil"
+	"os"
+	"path/filepath"
 	"testing"
 
+	tfs "github.com/gotestyourself/gotestyourself/fs"
 	"github.com/spf13/afero"
 	"github.com/stretchr/testify/assert"
 )
@@ -40,4 +44,65 @@ func TestReadDir(t *testing.T) {
 
 	_, err = ReadDir("/tmp/foo")
 	assert.Error(t, err)
+}
+
+func TestWrite(t *testing.T) {
+	oldwd, _ := os.Getwd()
+	defer os.Chdir(oldwd)
+
+	rootDir := tfs.NewDir(t, "gomplate-test")
+	defer rootDir.Remove()
+
+	newwd := rootDir.Join("the", "path", "we", "want")
+	badwd := rootDir.Join("some", "other", "dir")
+	fs.MkdirAll(newwd, 0755)
+	fs.MkdirAll(badwd, 0755)
+	newwd, _ = filepath.EvalSymlinks(newwd)
+	badwd, _ = filepath.EvalSymlinks(badwd)
+
+	err := os.Chdir(newwd)
+	assert.NoError(t, err)
+
+	err = Write("/foo", []byte("Hello world"))
+	assert.Error(t, err)
+
+	rel, err := filepath.Rel(newwd, badwd)
+	assert.NoError(t, err)
+	err = Write(rel, []byte("Hello world"))
+	assert.Error(t, err)
+
+	foopath := filepath.Join(newwd, "foo")
+	err = Write(foopath, []byte("Hello world"))
+	assert.NoError(t, err)
+
+	out, err := ioutil.ReadFile(foopath)
+	assert.NoError(t, err)
+	assert.Equal(t, "Hello world", string(out))
+}
+
+func TestAssertPathInWD(t *testing.T) {
+	oldwd, _ := os.Getwd()
+	defer os.Chdir(oldwd)
+
+	err := assertPathInWD("/tmp")
+	assert.Error(t, err)
+
+	err = assertPathInWD(filepath.Join(oldwd, "subpath"))
+	assert.NoError(t, err)
+
+	err = assertPathInWD("subpath")
+	assert.NoError(t, err)
+
+	err = assertPathInWD("./subpath")
+	assert.NoError(t, err)
+
+	err = assertPathInWD(filepath.Join("..", "bogus"))
+	assert.Error(t, err)
+
+	err = assertPathInWD(filepath.Join("..", "..", "bogus"))
+	assert.Error(t, err)
+
+	base := filepath.Base(oldwd)
+	err = assertPathInWD(filepath.Join("..", base))
+	assert.NoError(t, err)
 }

@@ -5,16 +5,27 @@ menu:
     parent: functions
 ---
 
+
 ## `file.Exists`
 
 Reports whether a file or directory exists at the given path.
 
 ### Usage
 ```go
-file.Exists path
+file.Exists path 
 ```
 
-### Example
+```go
+path | file.Exists  
+```
+
+### Arguments
+
+| name | description |
+|------|-------------|
+| `path` | _(required)_ The path |
+
+### Examples
 
 _`input.tmpl`:_
 ```
@@ -35,10 +46,20 @@ Reports whether a given path is a directory.
 
 ### Usage
 ```go
-file.IsDir path
+file.IsDir path 
 ```
 
-### Example
+```go
+path | file.IsDir  
+```
+
+### Arguments
+
+| name | description |
+|------|-------------|
+| `path` | _(required)_ The path |
+
+### Examples
 
 _`input.tmpl`:_
 ```
@@ -58,13 +79,22 @@ yes
 
 ## `file.Read`
 
-Reads a given file _as text_. Note that this will succeed if the given file
-is binary, but 
+Reads a given file _as text_. Note that this will succeed if the given file is binary, but the output may be gibberish.
 
 ### Usage
 ```go
-file.Read path
+file.Read path 
 ```
+
+```go
+path | file.Read  
+```
+
+### Arguments
+
+| name | description |
+|------|-------------|
+| `path` | _(required)_ The path |
 
 ### Examples
 
@@ -80,8 +110,18 @@ Reads a directory and lists the files and directories contained within.
 
 ### Usage
 ```go
-file.ReadDir path
+file.ReadDir path 
 ```
+
+```go
+path | file.ReadDir  
+```
+
+### Arguments
+
+| name | description |
+|------|-------------|
+| `path` | _(required)_ The path |
 
 ### Examples
 
@@ -98,14 +138,24 @@ d
 
 ## `file.Stat`
 
-Returns a [`os.FileInfo`](https://golang.org/pkg/os/#FileInfo) describing
-the named path. 
+Returns a [`os.FileInfo`](https://golang.org/pkg/os/#FileInfo) describing the named path. 
+
 Essentially a wrapper for Go's [`os.Stat`](https://golang.org/pkg/os/#Stat) function.
 
 ### Usage
 ```go
-file.Stat path
+file.Stat path 
 ```
+
+```go
+path | file.Stat  
+```
+
+### Arguments
+
+| name | description |
+|------|-------------|
+| `path` | _(required)_ The path |
 
 ### Examples
 
@@ -126,10 +176,19 @@ Walk does not follow symbolic links.
 Similar to Go's [`filepath.Walk`](https://golang.org/pkg/path/filepath/#Walk) function.
 
 ### Usage
+```go
+file.Walk path 
+```
 
 ```go
-file.Walk path
+path | file.Walk  
 ```
+
+### Arguments
+
+| name | description |
+|------|-------------|
+| `path` | _(required)_ The path |
 
 ### Examples
 
@@ -150,4 +209,36 @@ $ gomplate -i '{{ range file.Walk "/tmp/foo" }}{{ if not (file.IsDir .) }}{{.}} 
 /tmp/foo/sub/two is a file
 /tmp/foo/three is a file
 /tmp/foo/two is a file
+```
+
+## `file.Write`
+
+Write the given data to the given file. If the file exists, it will be overwritten.
+
+For increased security, `file.Write` will only write to files which are contained within the current working directory. Attempts to write elsewhere will fail with an error.
+
+If the data is a byte array (`[]byte`), it will be written as-is. Otherwise, it will be converted to a string before being written.
+
+### Usage
+```go
+file.Write filename data 
+```
+
+```go
+data | file.Write filename  
+```
+
+### Arguments
+
+| name | description |
+|------|-------------|
+| `filename` | _(required)_ The name of the file to write to |
+| `data` | _(required)_ The data to write |
+
+### Examples
+
+```console
+$ gomplate -i '{{ file.Write "/tmp/foo" "hello world" }}'
+$ cat /tmp/foo
+hello world
 ```
