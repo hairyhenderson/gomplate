@@ -3,6 +3,26 @@ title: template functions
 preamble: |
   Functions for defining or executing templates.
 funcs:
+  - name: tmpl.Exec
+    description: |
+      Execute (render) the named template. This is equivalent to using the [`template`](https://golang.org/pkg/text/template/#hdr-Actions) action, except the result is returned as a string.
+
+      This allows for post-processing of templates.
+    pipeline: true
+    arguments:
+      - name: name
+        required: true
+        description: The template's name.
+      - name: context
+        required: false
+        description: The context to use.
+    examples:
+      - |
+        $ gomplate -i '{{define "T1"}}hello, world!{{end}}{{ tmpl.Exec "T1" | strings.ToUpper }}'
+        HELLO, WORLD!
+      - |
+        $ gomplate -i '{{define "T1"}}hello, {{.}}{{end}}{{ tmpl.Exec "T1" "world!" | strings.Title }}'
+        Hello, World!
   - name: tmpl.Inline
     alias: tpl
     description: |

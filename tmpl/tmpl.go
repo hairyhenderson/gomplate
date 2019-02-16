@@ -30,12 +30,33 @@ func (t *Template) Inline(args ...interface{}) (string, error) {
 	if err != nil {
 		return "", err
 	}
+	return t.inline(name, in, ctx)
+}
+
+func (t *Template) inline(name, in string, ctx interface{}) (string, error) {
 	tmpl, err := t.root.New(name).Parse(in)
 	if err != nil {
 		return "", err
 	}
+	return render(tmpl, ctx)
+}
+
+// Exec - execute (render) a template - this is the built-in `template` action, except with output...
+func (t *Template) Exec(name string, context ...interface{}) (string, error) {
+	ctx := t.defaultCtx
+	if len(context) == 1 {
+		ctx = context[0]
+	}
+	tmpl := t.root.Lookup(name)
+	if tmpl == nil {
+		return "", errors.Errorf(`template "%s" not defined`, name)
+	}
+	return render(tmpl, ctx)
+}
+
+func render(tmpl *template.Template, ctx interface{}) (string, error) {
 	out := &bytes.Buffer{}
-	err = tmpl.Execute(out, ctx)
+	err := tmpl.Execute(out, ctx)
 	if err != nil {
 		return "", err
 	}
