@@ -5,6 +5,7 @@ menu:
     parent: functions
 ---
 
+Functions for working with files.
 
 ## `file.Exists`
 
@@ -138,7 +139,7 @@ d
 
 ## `file.Stat`
 
-Returns a [`os.FileInfo`](https://golang.org/pkg/os/#FileInfo) describing the named path. 
+Returns a [`os.FileInfo`](https://golang.org/pkg/os/#FileInfo) describing the named path.
 
 Essentially a wrapper for Go's [`os.Stat`](https://golang.org/pkg/os/#Stat) function.
 
@@ -167,7 +168,7 @@ $ gomplate -i '{{ $s := file.Stat "/tmp/foo" }}{{ $s.Mode }} {{ $s.Size }} {{ $s
 
 ## `file.Walk`
 
-Like a recursive [`file.ReadDir`](#file-readdir), recursively walks the file tree rooted at `path`, and returns an array of all files and directories contained within. 
+Like a recursive [`file.ReadDir`](#file-readdir), recursively walks the file tree rooted at `path`, and returns an array of all files and directories contained within.
 
 The files are walked in lexical order, which makes the output deterministic but means that for very large directories can be inefficient.
 
@@ -203,7 +204,7 @@ $ tree /tmp/foo
 └── two
 
 1 directory, 5 files
-$ gomplate -i '{{ range file.Walk "/tmp/foo" }}{{ if not (file.IsDir .) }}{{.}} is a file{{"\n"}}{{end}}{{end}}' 
+$ gomplate -i '{{ range file.Walk "/tmp/foo" }}{{ if not (file.IsDir .) }}{{.}} is a file{{"\n"}}{{end}}{{end}}'
 /tmp/foo/one is a file
 /tmp/foo/sub/one is a file
 /tmp/foo/sub/two is a file
@@ -216,6 +217,8 @@ $ gomplate -i '{{ range file.Walk "/tmp/foo" }}{{ if not (file.IsDir .) }}{{.}} 
 Write the given data to the given file. If the file exists, it will be overwritten.
 
 For increased security, `file.Write` will only write to files which are contained within the current working directory. Attempts to write elsewhere will fail with an error.
+
+Non-existing directories in the output path will be created.
 
 If the data is a byte array (`[]byte`), it will be written as-is. Otherwise, it will be converted to a string before being written.
 

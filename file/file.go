@@ -61,6 +61,10 @@ func Write(filename string, content []byte) error {
 	if fi != nil {
 		mode = fi.Mode()
 	}
+	err = fs.MkdirAll(filepath.Dir(filename), 0755)
+	if err != nil {
+		return errors.Wrapf(err, "failed to make dirs for %s", filename)
+	}
 	inFile, err := fs.OpenFile(filename, os.O_RDWR|os.O_CREATE, mode)
 	if err != nil {
 		return errors.Wrapf(err, "failed to open %s", filename)
