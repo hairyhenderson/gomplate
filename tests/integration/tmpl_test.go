@@ -6,11 +6,11 @@ import (
 	. "gopkg.in/check.v1"
 )
 
-type TplSuite struct{}
+type TmplSuite struct{}
 
-var _ = Suite(&TplSuite{})
+var _ = Suite(&TmplSuite{})
 
-func (s *TplSuite) TestTime(c *C) {
+func (s *TmplSuite) TestInline(c *C) {
 	inOutTest(c, `
 		{{- $nums := dict "first" 5 "second" 10 }}
 		{{- tpl "{{ add .first .second }}" $nums }}`,
@@ -19,7 +19,7 @@ func (s *TplSuite) TestTime(c *C) {
 	inOutTest(c, `
 		{{- $nums := dict "first" 5 "second" 10 }}
 		{{- $othernums := dict "first" 18 "second" -8 }}
-		{{- tpl "T" "{{ add .first .second }}" $nums }}
+		{{- tmpl.Inline "T" "{{ add .first .second }}" $nums }}
 		{{- template "T" $othernums }}`,
 		"1510")
 }

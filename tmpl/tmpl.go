@@ -1,37 +1,50 @@
-package gomplate
+package tmpl
 
 import (
 	"bytes"
+	"text/template"
 
 	"github.com/pkg/errors"
 )
 
-// tpl - a template function to do inline template processing
+// Template -
+type Template struct {
+	root       *template.Template
+	defaultCtx interface{}
+}
+
+// New -
+func New(root *template.Template, ctx interface{}) *Template {
+	return &Template{root, ctx}
+}
+
+// Inline - a template function to do inline template processing
+//
 // Can be called 4 ways:
-// {{ tpl "inline template" }} - unnamed (single-use) template with default context
-// {{ tpl "name" "inline template" }} - named template with default context
-// {{ tpl "inline template" $foo }} - unnamed (single-use) template with given context
-// {{ tpl "name" "inline template" $foo }} - named template with given context
-func (g *gomplate) tpl(args ...interface{}) (string, error) {
-	name, in, ctx, err := parseArgs(args...)
+// {{ tmpl.Inline "inline template" }} - unnamed (single-use) template with default context
+// {{ tmpl.Inline "name" "inline template" }} - named template with default context
+// {{ tmpl.Inline "inline template" $foo }} - unnamed (single-use) template with given context
+// {{ tmpl.Inline "name" "inline template" $foo }} - named template with given context
+func (t *Template) Inline(args ...interface{}) (string, error) {
+	name, in, ctx, err := t.parseArgs(args...)
 	if err != nil {
 		return "", err
 	}
-	t, err := g.rootTemplate.New(name).Parse(in)
+	tmpl, err := t.root.New(name).Parse(in)
 	if err != nil {
 		return "", err
 	}
 	out := &bytes.Buffer{}
-	err = t.Execute(out, ctx)
+	err = tmpl.Execute(out, ctx)
 	if err != nil {
 		return "", err
 	}
 	return out.String(), nil
 }
 
-func parseArgs(args ...interface{}) (name, in string, ctx interface{}, err error) {
+func (t *Template) parseArgs(args ...interface{}) (name, in string, ctx interface{}, err error) {
 	name = "<inline>"
-	ctx = &context{}
+	ctx = t.defaultCtx
 
 	if len(args) == 0 || len(args) > 3 {
 		return "", "", nil, errors.Errorf("wrong number of args for tpl: want 1, 2, or 3 - got %d", len(args))

@@ -9,6 +9,8 @@ import (
 	"path/filepath"
 	"text/template"
 
+	"github.com/hairyhenderson/gomplate/tmpl"
+
 	"github.com/hairyhenderson/gomplate/conv"
 	"github.com/hairyhenderson/gomplate/env"
 	"github.com/pkg/errors"
@@ -37,6 +39,13 @@ type tplate struct {
 	modeOverride bool
 }
 
+func addTmplFuncs(f template.FuncMap, root *template.Template, ctx interface{}) {
+	t := tmpl.New(root, ctx)
+	tns := func() *tmpl.Template { return t }
+	f["tmpl"] = tns
+	f["tpl"] = t.Inline
+}
+
 func (t *tplate) toGoTemplate(g *gomplate) (tmpl *template.Template, err error) {
 	if g.rootTemplate != nil {
 		tmpl = g.rootTemplate.New(t.name)
@@ -45,7 +54,8 @@ func (t *tplate) toGoTemplate(g *gomplate) (tmpl *template.Template, err error) 
 		g.rootTemplate = tmpl
 	}
 	tmpl.Option("missingkey=error")
-	g.funcMap["tpl"] = g.tpl
+	// the "tmpl" funcs get added here because they need access to the root template and context
+	addTmplFuncs(g.funcMap, g.rootTemplate, g.context)
 	tmpl.Funcs(g.funcMap)
 	tmpl.Delims(g.leftDelim, g.rightDelim)
 	_, err = tmpl.Parse(t.contents)

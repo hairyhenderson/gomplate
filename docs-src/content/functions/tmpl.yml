@@ -1,9 +1,10 @@
-ns: _
-title: Other functions
+ns: tmpl
+title: template functions
 preamble: |
-  Miscellaneous functions that aren't part of a specific namespace. Most of these are fairly special-purpose.
+  Functions for defining or executing templates.
 funcs:
-  - name: tpl
+  - name: tmpl.Inline
+    alias: tpl
     description: |
       Render the given string as a template, just like a nested template.
 
@@ -23,7 +24,7 @@ funcs:
         description: The context to use when rendering - this becomes `.` inside the template.
     examples:
       - |
-        $ gomplate -i '{{ tpl "{{print `hello world`}}" }}'
+        $ gomplate -i '{{ tmpl.Inline "{{print `hello world`}}" }}'
         hello world
       - |
         $ gomplate -i '
