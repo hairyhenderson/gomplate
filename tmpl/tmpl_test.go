@@ -67,3 +67,24 @@ func TestParseArgs(t *testing.T) {
 	assert.Equal(t, "bar", in)
 	assert.Equal(t, c, ctx)
 }
+
+func TestExec(t *testing.T) {
+	root := template.New("root")
+	t1 := root.New("T1")
+	t1.Parse("hello, {{ . }}")
+	tmpl := &Template{
+		defaultCtx: map[string]string{"foo": "bar"},
+		root:       root,
+	}
+
+	out, err := tmpl.Exec("T1")
+	assert.NoError(t, err)
+	assert.Equal(t, "hello, map[foo:bar]", out)
+
+	out, err = tmpl.Exec("T1", "world")
+	assert.NoError(t, err)
+	assert.Equal(t, "hello, world", out)
+
+	_, err = tmpl.Exec("bogus")
+	assert.Error(t, err)
+}
