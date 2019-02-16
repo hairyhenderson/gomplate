@@ -42,7 +42,7 @@ funcs:
     description: |
       Surrounds an input string with a single-quote (apostrophe) character (`'`). If the input is not a string, converts first.
 
-      `'` characters in the input are first escaped in the YAML-style (by repetition: `''`).
+      `'` characters in the input are first escaped in the YAML-style (by repetition: `''`).<!-- ' -->
     pipeline: true
     arguments:
       - name: in
@@ -52,5 +52,63 @@ funcs:
       - |
         $ gomplate -i '{{ "in" | squote }}'
         'in'
+      - |
         $ gomplate -i "{{ strings.Squote \"it's a banana\" }}"
         'it''s a banana'
+  - name: strings.CamelCase
+    description: |
+      Converts a sentence to CamelCase, i.e. `The quick brown fox` becomes `TheQuickBrownFox`.
+
+      All non-alphanumeric characters are stripped, and the beginnings of words are upper-cased. If the input begins with a lower-case letter, the result will also begin with a lower-case letter.
+
+      See [CamelCase on Wikipedia](https://en.wikipedia.org/wiki/Camel_case) for more details.
+    pipeline: true
+    arguments:
+      - name: in
+        required: true
+        description: The input
+    examples:
+      - |
+        $ gomplate -i '{{ "Hello, World!" | strings.CamelCase }}'
+        HelloWorld
+      - |
+        $ gomplate -i '{{ "hello jello" | strings.CamelCase }}'
+        helloJello
+  - name: strings.SnakeCase
+    description: |
+      Converts a sentence to snake_case, i.e. `The quick brown fox` becomes `The_quick_brown_fox`.
+
+      All non-alphanumeric characters are stripped, and spaces are replaced with an underscore (`_`). If the input begins with a lower-case letter, the result will also begin with a lower-case letter.
+
+      See [Snake Case on Wikipedia](https://en.wikipedia.org/wiki/Snake_case) for more details.
+    pipeline: true
+    arguments:
+      - name: in
+        required: true
+        description: The input
+    examples:
+      - |
+        $ gomplate -i '{{ "Hello, World!" | strings.SnakeCase }}'
+        Hello_world
+      - |
+        $ gomplate -i '{{ "hello jello" | strings.SnakeCase }}'
+        hello_jello
+  - name: strings.KebabCase
+    description: |
+      Converts a sentence to kebab-case, i.e. `The quick brown fox` becomes `The-quick-brown-fox`.
+
+      All non-alphanumeric characters are stripped, and spaces are replaced with a hyphen (`-`). If the input begins with a lower-case letter, the result will also begin with a lower-case letter.
+
+      See [Kebab Case on Wikipedia](https://en.wikipedia.org/wiki/Kebab_case) for more details.
+    pipeline: true
+    arguments:
+      - name: in
+        required: true
+        description: The input
+    examples:
+      - |
+        $ gomplate -i '{{ "Hello, World!" | strings.KebabCase }}'
+        Hello-world
+      - |
+        $ gomplate -i '{{ "hello jello" | strings.KebabCase }}'
+        hello-jello

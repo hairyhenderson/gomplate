@@ -224,3 +224,18 @@ func (f *StringFuncs) Squote(in interface{}) string {
 	s = strings.Replace(s, `'`, `''`, -1)
 	return fmt.Sprintf("'%s'", s)
 }
+
+// SnakeCase -
+func (f *StringFuncs) SnakeCase(in interface{}) (string, error) {
+	return gompstrings.SnakeCase(conv.ToString(in)), nil
+}
+
+// CamelCase -
+func (f *StringFuncs) CamelCase(in interface{}) (string, error) {
+	return gompstrings.CamelCase(conv.ToString(in)), nil
+}
+
+// KebabCase -
+func (f *StringFuncs) KebabCase(in interface{}) (string, error) {
+	return gompstrings.KebabCase(conv.ToString(in)), nil
+}

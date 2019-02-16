@@ -160,11 +160,11 @@ Returns an alphanumerically-sorted copy of a given string list.
 
 ### Usage
 ```go
-strings.Sort list
+strings.Sort list 
 ```
 
 ```go
-list | strings.Sort
+list | strings.Sort  
 ```
 
 ### Arguments
@@ -355,6 +355,8 @@ in | strings.Squote
 ```console
 $ gomplate -i '{{ "in" | squote }}'
 'in'
+```
+```console
 $ gomplate -i "{{ strings.Squote \"it's a banana\" }}"
 'it''s a banana'
 ```
@@ -526,6 +528,108 @@ input | strings.Trunc length
 ```console
 $ gomplate -i '{{ "hello, world" | strings.Trunc 5 }}'
 hello
+```
+
+## `strings.CamelCase`
+
+Converts a sentence to CamelCase, i.e. `The quick brown fox` becomes `TheQuickBrownFox`.
+
+All non-alphanumeric characters are stripped, and the beginnings of words are upper-cased. If the input begins with a lower-case letter, the result will also begin with a lower-case letter.
+
+See [CamelCase on Wikipedia](https://en.wikipedia.org/wiki/Camel_case) for more details.
+
+### Usage
+```go
+strings.CamelCase in 
+```
+
+```go
+in | strings.CamelCase  
+```
+
+### Arguments
+
+| name | description |
+|------|-------------|
+| `in` | _(required)_ The input |
+
+### Examples
+
+```console
+$ gomplate -i '{{ "Hello, World!" | strings.CamelCase }}'
+HelloWorld
+```
+```console
+$ gomplate -i '{{ "hello jello" | strings.CamelCase }}'
+helloJello
+```
+
+## `strings.SnakeCase`
+
+Converts a sentence to snake_case, i.e. `The quick brown fox` becomes `The_quick_brown_fox`.
+
+All non-alphanumeric characters are stripped, and spaces are replaced with an underscore (`_`). If the input begins with a lower-case letter, the result will also begin with a lower-case letter.
+
+See [Snake Case on Wikipedia](https://en.wikipedia.org/wiki/Snake_case) for more details.
+
+### Usage
+```go
+strings.SnakeCase in 
+```
+
+```go
+in | strings.SnakeCase  
+```
+
+### Arguments
+
+| name | description |
+|------|-------------|
+| `in` | _(required)_ The input |
+
+### Examples
+
+```console
+$ gomplate -i '{{ "Hello, World!" | strings.SnakeCase }}'
+Hello_world
+```
+```console
+$ gomplate -i '{{ "hello jello" | strings.SnakeCase }}'
+hello_jello
+```
+
+## `strings.KebabCase`
+
+Converts a sentence to kebab-case, i.e. `The quick brown fox` becomes `The-quick-brown-fox`.
+
+All non-alphanumeric characters are stripped, and spaces are replaced with a hyphen (`-`). If the input begins with a lower-case letter, the result will also begin with a lower-case letter.
+
+See [Kebab Case on Wikipedia](https://en.wikipedia.org/wiki/Kebab_case) for more details.
+
+### Usage
+```go
+strings.KebabCase in 
+```
+
+```go
+in | strings.KebabCase  
+```
+
+### Arguments
+
+| name | description |
+|------|-------------|
+| `in` | _(required)_ The input |
+
+### Examples
+
+```console
+$ gomplate -i '{{ "Hello, World!" | strings.KebabCase }}'
+Hello-world
+```
+```console
+$ gomplate -i '{{ "hello jello" | strings.KebabCase }}'
+hello-jello
 ```
 
 ## `contains`
