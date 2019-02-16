@@ -39,3 +39,18 @@ func TestSort(t *testing.T) {
 	expected = []string{"18", "42", "45"}
 	assert.EqualValues(t, expected, Sort(in))
 }
+
+func TestCaseFuncs(t *testing.T) {
+	testdata := []struct{ in, s, k, c string }{
+		{"  Foo bar ", "Foo_bar", "Foo-bar", "FooBar"},
+		{"foo  bar", "foo_bar", "foo-bar", "fooBar"},
+		{" baz\tqux  ", "baz_qux", "baz-qux", "bazQux"},
+		{"Hello, World!", "Hello_world", "Hello-world", "HelloWorld"},
+		{"grüne | Straße", "grüne_straße", "grüne-straße", "grüneStraße"},
+	}
+	for _, d := range testdata {
+		assert.Equal(t, d.s, SnakeCase(d.in))
+		assert.Equal(t, d.k, KebabCase(d.in))
+		assert.Equal(t, d.c, CamelCase(d.in))
+	}
+}

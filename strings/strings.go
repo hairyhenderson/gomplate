@@ -1,6 +1,7 @@
 package strings
 
 import (
+	"regexp"
 	"sort"
 	"strings"
 )
@@ -44,4 +45,39 @@ func Sort(list []string) []string {
 	sorted := sort.StringSlice(list)
 	sorted.Sort()
 	return sorted
+}
+
+var (
+	spaces      = regexp.MustCompile(`\s+`)
+	nonAlphaNum = regexp.MustCompile(`[^\pL\pN]+`)
+)
+
+// SnakeCase -
+func SnakeCase(in string) string {
+	s := casePrepare(in)
+	return spaces.ReplaceAllString(s, "_")
+}
+
+// KebabCase -
+func KebabCase(in string) string {
+	s := casePrepare(in)
+	return spaces.ReplaceAllString(s, "-")
+}
+
+func casePrepare(in string) string {
+	in = strings.TrimSpace(in)
+	s := strings.ToLower(in)
+	// make sure the first letter remains lower- or upper-cased
+	s = strings.Replace(s, string(s[0]), string(in[0]), 1)
+	s = nonAlphaNum.ReplaceAllString(s, " ")
+	return strings.TrimSpace(s)
+}
+
+// CamelCase -
+func CamelCase(in string) string {
+	in = strings.TrimSpace(in)
+	s := strings.Title(in)
+	// make sure the first letter remains lower- or upper-cased
+	s = strings.Replace(s, string(s[0]), string(in[0]), 1)
+	return nonAlphaNum.ReplaceAllString(s, "")
 }

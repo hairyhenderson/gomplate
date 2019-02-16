@@ -49,3 +49,14 @@ func (s *StringsSuite) TestSlug(c *C) {
 		`{{ strings.Slug "Hellö, Wôrld! Free @ last..." }}`)
 	result.Assert(c, icmd.Expected{ExitCode: 0, Out: `hello-world-free-at-last`})
 }
+
+func (s *StringsSuite) TestCaseFuncs(c *C) {
+	result := icmd.RunCommand(GomplateBin, "-i",
+		`{{ strings.CamelCase "Hellö, Wôrld! Free @ last..." }}
+{{ strings.SnakeCase "Hellö, Wôrld! Free @ last..." }}
+{{ strings.KebabCase "Hellö, Wôrld! Free @ last..." }}`)
+	result.Assert(c, icmd.Expected{ExitCode: 0, Out: `HellöWôrldFreeLast
+Hellö_wôrld_free_last
+Hellö-wôrld-free-last`})
+
+}
