@@ -78,6 +78,14 @@ func TestWrite(t *testing.T) {
 	out, err := ioutil.ReadFile(foopath)
 	assert.NoError(t, err)
 	assert.Equal(t, "Hello world", string(out))
+
+	foopath = filepath.Join(newwd, "nonexistant", "subdir", "foo")
+	err = Write(foopath, []byte("Hello subdirranean world!"))
+	assert.NoError(t, err)
+
+	out, err = ioutil.ReadFile(foopath)
+	assert.NoError(t, err)
+	assert.Equal(t, "Hello subdirranean world!", string(out))
 }
 
 func TestAssertPathInWD(t *testing.T) {
