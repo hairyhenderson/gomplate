@@ -1,4 +1,4 @@
-package gomplate
+package tmpl
 
 import (
 	"testing"
@@ -7,60 +7,61 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestTplFunc(t *testing.T) {
-	g := &gomplate{
-		leftDelim:  "{{",
-		rightDelim: "}}",
-		funcMap:    template.FuncMap{},
-	}
-	tmpl := &tplate{name: "root", contents: "foo"}
-	tmpl.toGoTemplate(g)
-
+func TestInline(t *testing.T) {
 	testdata := []string{
 		"{{ print `hello world`}}",
 		"{{ tpl \"{{ print `hello world`}}\"}}",
 		"{{ tpl \"{{ tpl \\\"{{ print `hello world`}}\\\"}}\"}}",
 	}
+	tmpl := &Template{
+		defaultCtx: map[string]string{},
+		root:       template.New("root"),
+	}
+	tmpl.root.Funcs(template.FuncMap{
+		"tpl": tmpl.Inline,
+	})
 	for _, d := range testdata {
-		out, err := g.tpl(d)
+		out, err := tmpl.Inline(d)
 		assert.NoError(t, err, d)
 		assert.Equal(t, "hello world", out)
 	}
 }
 
 func TestParseArgs(t *testing.T) {
-	name, in, ctx, err := parseArgs("foo")
+	defaultCtx := map[string]string{"hello": "world"}
+	tmpl := New(nil, defaultCtx)
+	name, in, ctx, err := tmpl.parseArgs("foo")
 	assert.NoError(t, err)
 	assert.Equal(t, "<inline>", name)
 	assert.Equal(t, "foo", in)
-	assert.EqualValues(t, &context{}, ctx)
+	assert.Equal(t, defaultCtx, ctx)
 
-	_, _, _, err = parseArgs(42)
+	_, _, _, err = tmpl.parseArgs(42)
 	assert.Error(t, err)
 
-	_, _, _, err = parseArgs()
+	_, _, _, err = tmpl.parseArgs()
 	assert.Error(t, err)
 
-	_, _, _, err = parseArgs("", "", 42, "")
+	_, _, _, err = tmpl.parseArgs("", "", 42, "")
 	assert.Error(t, err)
 
-	_, _, _, err = parseArgs("", 42, 42)
+	_, _, _, err = tmpl.parseArgs("", 42, 42)
 	assert.Error(t, err)
 
-	name, in, ctx, err = parseArgs("foo", "bar")
+	name, in, ctx, err = tmpl.parseArgs("foo", "bar")
 	assert.NoError(t, err)
 	assert.Equal(t, "foo", name)
 	assert.Equal(t, "bar", in)
-	assert.EqualValues(t, &context{}, ctx)
+	assert.Equal(t, defaultCtx, ctx)
 
 	c := map[string]string{"one": "two"}
-	name, in, ctx, err = parseArgs("foo", c)
+	name, in, ctx, err = tmpl.parseArgs("foo", c)
 	assert.NoError(t, err)
 	assert.Equal(t, "<inline>", name)
 	assert.Equal(t, "foo", in)
 	assert.Equal(t, c, ctx)
 
-	name, in, ctx, err = parseArgs("foo", "bar", c)
+	name, in, ctx, err = tmpl.parseArgs("foo", "bar", c)
 	assert.NoError(t, err)
 	assert.Equal(t, "foo", name)
 	assert.Equal(t, "bar", in)

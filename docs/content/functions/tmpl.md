@@ -1,13 +1,15 @@
 ---
-title: Other functions
+title: template functions
 menu:
   main:
     parent: functions
 ---
 
-Miscellaneous functions that aren't part of a specific namespace. Most of these are fairly special-purpose.
+Functions for defining or executing templates.
 
-## `tpl`
+## `tmpl.Inline`
+
+**Alias:** `tpl`
 
 Render the given string as a template, just like a nested template.
 
@@ -17,7 +19,7 @@ A context can be provided, otherwise the default gomplate context will be used.
 
 ### Usage
 ```go
-tpl [name] in [context] 
+tmpl.Inline [name] in [context] 
 ```
 
 ### Arguments
@@ -31,7 +33,7 @@ tpl [name] in [context]
 ### Examples
 
 ```console
-$ gomplate -i '{{ tpl "{{print `hello world`}}" }}'
+$ gomplate -i '{{ tmpl.Inline "{{print `hello world`}}" }}'
 hello world
 ```
 ```console
