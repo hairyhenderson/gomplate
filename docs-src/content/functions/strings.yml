@@ -112,3 +112,35 @@ funcs:
       - |
         $ gomplate -i '{{ "hello jello" | strings.KebabCase }}'
         hello-jello
+  - name: strings.WordWrap
+    description: |
+      Inserts new line breaks into the input string so it ends up with lines that are at most `width` characters wide.
+
+      The line-breaking algorithm is _naïve_ and _greedy_: lines are only broken between words (i.e. on whitespace characters), and no effort is made to "smooth" the line endings.
+
+      When words that are longer than the desired width are encountered (e.g. long URLs), they are not broken up. Correctness is valued above line length.
+
+      The line-break sequence defaults to `\n` (i.e. the LF/Line Feed character), regardless of OS.
+    pipeline: true
+    arguments:
+      - name: width
+        required: false
+        description: The desired maximum line length (number of characters - defaults to `80`)
+      - name: lbseq
+        required: false
+        description: The line-break sequence to use (defaults to `\n`)
+      - name: in
+        required: true
+        description: The input
+    examples:
+      - |
+        $ gomplate -i '{{ "Hello, World!" | strings.WordWrap 7 }}'
+        Hello,
+        World!
+      - |
+        $ gomplate -i '{{ strings.WordWrap 20 "\\\n" "a string with a long url http://example.com/a/very/long/url which should not be broken" }}'
+        a string with a long
+        url
+        http://example.com/a/very/long/url
+        which should not be
+        broken

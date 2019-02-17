@@ -239,3 +239,26 @@ func (f *StringFuncs) CamelCase(in interface{}) (string, error) {
 func (f *StringFuncs) KebabCase(in interface{}) (string, error) {
 	return gompstrings.KebabCase(conv.ToString(in)), nil
 }
+
+// WordWrap -
+func (f *StringFuncs) WordWrap(args ...interface{}) (string, error) {
+	if len(args) == 0 || len(args) > 3 {
+		return "", errors.Errorf("expected 1, 2, or 3 args, got %d", len(args))
+	}
+	in := conv.ToString(args[len(args)-1])
+
+	opts := gompstrings.WordWrapOpts{}
+	if len(args) == 2 {
+		switch a := (args[0]).(type) {
+		case string:
+			opts.LBSeq = a
+		default:
+			opts.Width = uint(conv.ToInt(a))
+		}
+	}
+	if len(args) == 3 {
+		opts.Width = uint(conv.ToInt(args[0]))
+		opts.LBSeq = conv.ToString(args[1])
+	}
+	return gompstrings.WordWrap(in, opts), nil
+}

@@ -4,6 +4,8 @@
 package integration
 
 import (
+	"strings"
+
 	. "gopkg.in/check.v1"
 
 	"github.com/gotestyourself/gotestyourself/icmd"
@@ -58,5 +60,15 @@ func (s *StringsSuite) TestCaseFuncs(c *C) {
 	result.Assert(c, icmd.Expected{ExitCode: 0, Out: `HellöWôrldFreeLast
 Hellö_wôrld_free_last
 Hellö-wôrld-free-last`})
+}
 
+func (s *StringsSuite) TestWordWrap(c *C) {
+	out := `There shouldn't be any wrapping of long words or URLs because that would break
+things very badly. To wit:
+https://example.com/a/super-long/url/that-shouldnt-be?wrapped=for+fear+of#the-breaking-of-functionality
+should appear on its own line, regardless of the desired word-wrapping width
+that has been set.`
+	text := strings.Replace(out, "\n", " ", -1)
+	in := `{{ print "` + text + `" | strings.WordWrap 80 }}`
+	inOutTest(c, in, out)
 }
