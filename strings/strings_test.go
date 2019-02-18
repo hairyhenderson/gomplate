@@ -1,6 +1,7 @@
 package strings
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -53,4 +54,64 @@ func TestCaseFuncs(t *testing.T) {
 		assert.Equal(t, d.k, KebabCase(d.in))
 		assert.Equal(t, d.c, CamelCase(d.in))
 	}
+}
+
+func TestWordWrap(t *testing.T) {
+	in := "a short line that needs no wrapping"
+	assert.Equal(t, in, WordWrap(in, WordWrapOpts{Width: 40}))
+
+	in = "a short line that needs wrapping"
+	out := `a short
+line that
+needs
+wrapping`
+
+	assert.Equal(t, out, WordWrap(in, WordWrapOpts{Width: 9}))
+	in = "a short line that needs wrapping"
+	out = `a short \
+line that \
+needs \
+wrapping`
+	assert.Equal(t, out, WordWrap(in, WordWrapOpts{Width: 9, LBSeq: " \\\n"}))
+
+	out = `There shouldn't be any wrapping of long words or URLs because that would break
+things very badly. To wit:
+https://example.com/a/super-long/url/that-shouldnt-be?wrapped=for+fear+of#the-breaking-of-functionality
+should appear on its own line, regardless of the desired word-wrapping width
+that has been set.`
+	in = strings.Replace(out, "\n", " ", -1)
+	assert.Equal(t, out, WordWrap(in, WordWrapOpts{}))
+
+	// TODO: get these working - need to switch to a word-wrapping package that
+	// can handle multi-byte characters!
+	//
+	// 	out = `ΤΟΙΣ πᾶσι χρόνος καὶ καιρὸς τῷ παντὶ πράγματι ὑπὸ τὸν οὐρανόν. καιρὸς τοῦ
+	// τεκεῖν καὶ καιρὸς τοῦ ἀποθανεῖν, καιρὸς τοῦ φυτεῦσαι καὶ καιρὸς τοῦ ἐκτῖλαι τὸ
+	// πεφυτευμένον, καιρὸς τοῦ ἀποκτεῖναι καὶ καιρὸς τοῦ ἰάσασθαι, καιρὸς τοῦ
+	// καθελεῖν καὶ καιρὸς τοῦ οἰκοδομεῖν, καιρὸς τοῦ κλαῦσαι καὶ καιρὸς τοῦ γελάσαι,
+	// καιρὸς τοῦ κόψασθαι καὶ καιρὸς τοῦ ὀρχήσασθαι, καιρὸς τοῦ βαλεῖν λίθους καὶ
+	// καιρὸς τοῦ συναγαγεῖν λίθους, καιρὸς τοῦ περιλαβεῖν καὶ καιρὸς τοῦ μακρυνθῆναι
+	// ἀπὸ περιλήψεως, καιρὸς τοῦ ζητῆσαι καὶ καιρὸς τοῦ ἀπολέσαι, καιρὸς τοῦ φυλάξαι
+	// καὶ καιρὸς τοῦ ἐκβαλεῖν, καιρὸς τοῦ ρῆξαι καὶ καιρὸς τοῦ ράψαι, καιρὸς τοῦ
+	// σιγᾶν καὶ καιρὸς τοῦ λαλεῖν, καιρὸς τοῦ φιλῆσαι καὶ καιρὸς τοῦ μισῆσαι, καιρὸς
+	// πολέμου καὶ καιρὸς εἰρήνης.`
+	// 	in = strings.Replace(out, "\n", " ", -1)
+	// 	assert.Equal(t, out, WordWrap(in, WordWrapOpts{}))
+
+	// TODO: get these working - need to switch to a word-wrapping package that
+	// understands multi-byte and correctly identifies line-breaking opportunities
+	// for non-latin languages.
+	//
+	// 	out = `何事にも定まった時があります。
+	// 生まれる時、死ぬ時、植える時、収穫の時、
+	// 殺す時、病気が治る時、壊す時、やり直す時、
+	// 泣く時、笑う時、悲しむ時、踊る時、
+	// 石をばらまく時、石をかき集める時、
+	// 抱きしめる時、抱きしめない時、
+	// 何かを見つける時、物を失う時、
+	// 大切にしまっておく時、遠くに投げ捨てる時、
+	// 引き裂く時、修理する時、黙っている時、口を開く時、
+	// 愛する時、憎む時、戦う時、和解する時。`
+	// 	in = strings.Replace(out, "\n", " ", -1)
+	// 	assert.Equal(t, out, WordWrap(in, WordWrapOpts{Width: 100}))
 }

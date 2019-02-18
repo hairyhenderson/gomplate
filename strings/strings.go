@@ -4,6 +4,8 @@ import (
 	"regexp"
 	"sort"
 	"strings"
+
+	"github.com/Masterminds/goutils"
 )
 
 // Indent - indent each line of the string with the given indent string
@@ -80,4 +82,31 @@ func CamelCase(in string) string {
 	// make sure the first letter remains lower- or upper-cased
 	s = strings.Replace(s, string(s[0]), string(in[0]), 1)
 	return nonAlphaNum.ReplaceAllString(s, "")
+}
+
+// WordWrapOpts defines the options to apply to the WordWrap function
+type WordWrapOpts struct {
+	// The desired maximum line length in characters (defaults to 80)
+	Width uint
+
+	// Line-break sequence to insert (defaults to "\n")
+	LBSeq string
+}
+
+// applies default options
+func wwDefaults(opts WordWrapOpts) WordWrapOpts {
+	if opts.Width == 0 {
+		opts.Width = 80
+	}
+	if opts.LBSeq == "" {
+		opts.LBSeq = "\n"
+	}
+	return opts
+}
+
+// WordWrap - insert line-breaks into the string, before it reaches the given
+// width.
+func WordWrap(in string, opts WordWrapOpts) string {
+	opts = wwDefaults(opts)
+	return goutils.WrapCustom(in, int(opts.Width), opts.LBSeq, false)
 }

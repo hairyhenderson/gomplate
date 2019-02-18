@@ -632,6 +632,49 @@ $ gomplate -i '{{ "hello jello" | strings.KebabCase }}'
 hello-jello
 ```
 
+## `strings.WordWrap`
+
+Inserts new line breaks into the input string so it ends up with lines that are at most `width` characters wide.
+
+The line-breaking algorithm is _naïve_ and _greedy_: lines are only broken between words (i.e. on whitespace characters), and no effort is made to "smooth" the line endings.
+
+When words that are longer than the desired width are encountered (e.g. long URLs), they are not broken up. Correctness is valued above line length.
+
+The line-break sequence defaults to `\n` (i.e. the LF/Line Feed character), regardless of OS. 
+
+### Usage
+```go
+strings.WordWrap [width] [lbseq] in 
+```
+
+```go
+in | strings.WordWrap [width] [lbseq]  
+```
+
+### Arguments
+
+| name | description |
+|------|-------------|
+| `width` | _(optional)_ The desired maximum line length (number of characters - defaults to `80`) |
+| `lbseq` | _(optional)_ The line-break sequence to use (defaults to `\n`) |
+| `in` | _(required)_ The input |
+
+### Examples
+
+```console
+$ gomplate -i '{{ "Hello, World!" | strings.WordWrap 7 }}'
+Hello,
+World!
+```
+```console
+$ gomplate -i '{{ strings.WordWrap 20 "\\\n" "a string with a long url http://example.com/a/very/long/url which should not be broken" }}'
+a string with a long
+url
+http://example.com/a/very/long/url
+which should not be
+broken
+```
+
 ## `contains`
 
 **See [`strings.Contains](#strings-contains) for a pipeline-compatible version**
