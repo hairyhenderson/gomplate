@@ -677,7 +677,7 @@ broken
 
 ## `contains`
 
-**See [`strings.Contains](#strings-contains) for a pipeline-compatible version**
+**See [`strings.Contains`](#strings-contains) for a pipeline-compatible version**
 
 Contains reports whether the second string is contained within the first. Equivalent to
 [strings.Contains](https://golang.org/pkg/strings#Contains)
@@ -698,7 +698,7 @@ no
 
 ## `hasPrefix`
 
-**See [`strings.HasPrefix](#strings-hasprefix) for a pipeline-compatible version**
+**See [`strings.HasPrefix`](#strings-hasprefix) for a pipeline-compatible version**
 
 Tests whether the string begins with a certain substring. Equivalent to
 [strings.HasPrefix](https://golang.org/pkg/strings#HasPrefix)
@@ -719,7 +719,7 @@ foo
 
 ## `hasSuffix`
 
-**See [`strings.HasSuffix](#strings-hassuffix) for a pipeline-compatible version**
+**See [`strings.HasSuffix`](#strings-hassuffix) for a pipeline-compatible version**
 
 Tests whether the string ends with a certain substring. Equivalent to
 [strings.HasSuffix](https://golang.org/pkg/strings#HasSuffix)
@@ -738,7 +738,7 @@ http://example.com:80
 
 ## `split`
 
-**See [`strings.Split](#strings-split) for a pipeline-compatible version**
+**See [`strings.Split`](#strings-split) for a pipeline-compatible version**
 
 Creates a slice by splitting a string on a given delimiter. Equivalent to
 [strings.Split](https://golang.org/pkg/strings#Split)
@@ -754,7 +754,7 @@ Hello, Maggie
 
 ## `splitN`
 
-**See [`strings.SplitN](#strings-splitn) for a pipeline-compatible version**
+**See [`strings.SplitN`](#strings-splitn) for a pipeline-compatible version**
 
 Creates a slice by splitting a string on a given delimiter. The count determines
 the number of substrings to return. Equivalent to [strings.SplitN](https://golang.org/pkg/strings#SplitN)
@@ -769,7 +769,7 @@ bar:baz
 
 ## `trim`
 
-**See [`strings.Trim](#strings-trim) for a pipeline-compatible version**
+**See [`strings.Trim`](#strings-trim) for a pipeline-compatible version**
 
 Trims a string by removing the given characters from the beginning and end of
 the string. Equivalent to [strings.Trim](https://golang.org/pkg/strings/#Trim)
