@@ -21,7 +21,7 @@ func NewKMS(option ClientOptions) *KMS {
 
 // Encrypt plaintext using the specified key.
 // Returns a base64 encoded ciphertext
-func (k *KMS) Encrypt(keyID string, plaintext string) (string, error) {
+func (k *KMS) Encrypt(keyID, plaintext string) (string, error) {
 	input := &kms.EncryptInput{
 		KeyId:     &keyID,
 		Plaintext: []byte(plaintext),
