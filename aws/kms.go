@@ -2,12 +2,8 @@ package aws
 
 import (
 	"encoding/base64"
-	"strings"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/kms"
-	"github.com/pkg/errors"
 )
 
 // KMS -
@@ -15,17 +11,41 @@ type KMS struct {
 	Client *kms.KMS
 }
 
-// NewKMS -
+// NewKMS - Create new KMS client
 func NewKMS(option ClientOptions) *KMS {
-	//return
+	client := kms.New(SDKSession())
+	return &KMS{
+		Client: client,
+	}
 }
 
-// Encrypt plaintext using the specified key
+// Encrypt plaintext using the specified key.
+// Returns a base64 encoded ciphertext
 func (k *KMS) Encrypt(keyID string, plaintext string) (string, error) {
-
+	input := &kms.EncryptInput{
+		KeyId:     &keyID,
+		Plaintext: []byte(plaintext),
+	}
+	output, err := k.Client.Encrypt(input)
+	if err != nil {
+		return "", err
+	}
+	ciphertext := base64.StdEncoding.EncodeToString(output.CiphertextBlob)
+	return ciphertext, nil
 }
 
-// Decrypt cyphertext
-func (k *KMS) Decrypt(cyphertext string) (string, error) {
-
+// Decrypt a base64 encoded cyphertext
+func (k *KMS) Decrypt(ciphertext string) (string, error) {
+	ciphertextBlob, err := base64.StdEncoding.DecodeString(ciphertext)
+	if err != nil {
+		return "", err
+	}
+	input := &kms.DecryptInput{
+		CiphertextBlob: []byte(ciphertextBlob),
+	}
+	output, err := k.Client.Decrypt(input)
+	if err != nil {
+		return "", err
+	}
+	return string(output.Plaintext), nil
 }

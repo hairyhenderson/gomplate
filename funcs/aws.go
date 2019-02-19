@@ -30,8 +30,8 @@ func AWSFuncs(f map[string]interface{}) {
 	f["ec2dynamic"] = AWSNS().EC2Dynamic
 	f["ec2tag"] = AWSNS().EC2Tag
 	f["ec2region"] = AWSNS().EC2Region
-	f["kmsencrypt"] = AWSNS().KMSEncrypt
-	f["kmsdecrypt"] = AWSNS().KMSDecrypt
+	f["kmsEncrypt"] = AWSNS().KMSEncrypt
+	f["kmsDecrypt"] = AWSNS().KMSDecrypt
 }
 
 // Funcs -
@@ -72,7 +72,7 @@ func (a *Funcs) EC2Tag(tag string, def ...string) (string, error) {
 // KMSEncrypt -
 func (a *Funcs) KMSEncrypt(keyID string, plaintext string) (string, error) {
 	a.kmsInit.Do(a.initKMS)
-	return a.kms.Encrypt(keyID, string)
+	return a.kms.Encrypt(keyID, plaintext)
 }
 
 // KMSDecrypt -
