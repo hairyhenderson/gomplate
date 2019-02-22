@@ -5,6 +5,7 @@ menu:
     parent: functions
 ---
 
+
 ## `strings.Abbrev`
 
 Abbreviates a string using `...` (ellipses). Takes an optional offset from the beginning of the string, and a maximum final width (including added ellipses).
@@ -13,21 +14,22 @@ _Also see [`strings.Trunc`](#strings-trunc)._
 
 ### Usage
 ```go
-strings.Abbrev [offset] width input
+strings.Abbrev [offset] width input 
 ```
+
 ```go
-input | strings.Abbrev [offset] width
+input | strings.Abbrev [offset] width  
 ```
 
 ### Arguments
 
-| name   | description |
-|--------|-------|
+| name | description |
+|------|-------------|
 | `offset` | _(optional)_ offset from the start of the string. Must be `4` or greater for ellipses to be added. Defaults to `0` |
 | `width` | _(required)_ the desired maximum final width of the string, including ellipses |
 | `input` | _(required)_ the input string to abbreviate |
 
-### Example
+### Examples
 
 ```console
 $ gomplate -i '{{ "foobarbazquxquux" | strings.Abbrev 9 }}'
@@ -42,13 +44,21 @@ Reports whether a substring is contained within a string.
 
 ### Usage
 ```go
-strings.Contains substr input
-```
-```go
-input | strings.Contains substr
+strings.Contains substr input 
 ```
 
-### Example
+```go
+input | strings.Contains substr  
+```
+
+### Arguments
+
+| name | description |
+|------|-------------|
+| `substr` | _(required)_ the substring to search for |
+| `input` | _(required)_ the input to search |
+
+### Examples
 
 _`input.tmpl`:_
 ```
@@ -68,13 +78,21 @@ Tests whether a string begins with a certain prefix.
 
 ### Usage
 ```go
-strings.HasPrefix prefix input
-```
-```go
-input | strings.HasPrefix prefix
+strings.HasPrefix prefix input 
 ```
 
-#### Example
+```go
+input | strings.HasPrefix prefix  
+```
+
+### Arguments
+
+| name | description |
+|------|-------------|
+| `prefix` | _(required)_ the prefix to search for |
+| `input` | _(required)_ the input to search |
+
+### Examples
 
 ```console
 $ URL=http://example.com gomplate -i '{{if .Env.URL | strings.HasPrefix "https"}}foo{{else}}bar{{end}}'
@@ -89,11 +107,19 @@ Tests whether a string ends with a certain suffix.
 
 ### Usage
 ```go
-strings.HasSuffix suffix input
+strings.HasSuffix suffix input 
 ```
+
 ```go
-input | strings.HasSuffix suffix
+input | strings.HasSuffix suffix  
 ```
+
+### Arguments
+
+| name | description |
+|------|-------------|
+| `suffix` | _(required)_ the suffix to search for |
+| `input` | _(required)_ the input to search |
 
 ### Examples
 
@@ -115,21 +141,22 @@ Indents a string. If the input string has multiple lines, each line will be inde
 
 ### Usage
 ```go
-strings.Indent [width] [indent] input
+strings.Indent [width] [indent] input 
 ```
+
 ```go
-input | strings.Indent [width] [indent]
+input | strings.Indent [width] [indent]  
 ```
 
 ### Arguments
 
-| name   | description |
-|--------|-------|
+| name | description |
+|------|-------------|
 | `width` | _(optional)_ number of times to repeat the `indent` string. Default: `1` |
 | `indent` | _(optional)_ the string to indent with. Default: `" "` |
-| `input` | the string to indent |
+| `input` | _(required)_ the string to indent |
 
-### Example
+### Examples
 
 This function can be especially useful when adding YAML snippets into other YAML documents, where indentation is important:
 
@@ -149,7 +176,7 @@ foo:
     baz: 2
   qux: true
 
-  quux: 
+  quux:
     quuz: 42
 ```
 
@@ -186,11 +213,19 @@ Creates a slice by splitting a string on a given delimiter.
 
 ### Usage
 ```go
-strings.Split separator input
+strings.Split separator input 
 ```
+
 ```go
-input | strings.Split separator
+input | strings.Split separator  
 ```
+
+### Arguments
+
+| name | description |
+|------|-------------|
+| `separator` | _(required)_ the string sequence to split |
+| `input` | _(required)_ the input string |
 
 ### Examples
 
@@ -208,13 +243,22 @@ the number of substrings to return.
 
 ### Usage
 ```go
-strings.SplitN separator count input
-```
-```go
-input | strings.SplitN separator count
+strings.SplitN separator count input 
 ```
 
-#### Example
+```go
+input | strings.SplitN separator count  
+```
+
+### Arguments
+
+| name | description |
+|------|-------------|
+| `separator` | _(required)_ the string sequence to split |
+| `count` | _(required)_ the maximum number of substrings to return |
+| `input` | _(required)_ the input string |
+
+### Examples
 
 ```console
 $ gomplate -i '{{ range ("foo:bar:baz" | strings.SplitN ":" 2) }}{{.}}{{end}}'
@@ -270,17 +314,25 @@ This wraps Go's [`strings.Repeat`](https://golang.org/pkg/strings/#Repeat).
 
 ### Usage
 ```go
-strings.Repeat count input
-```
-```go
-input | strings.Repeat count
+strings.Repeat count input 
 ```
 
-#### Example
+```go
+input | strings.Repeat count  
+```
+
+### Arguments
+
+| name | description |
+|------|-------------|
+| `count` | _(required)_ the number of times to repeat the input |
+| `input` | _(required)_ the input to repeat |
+
+### Examples
 
 ```console
-$ gomplate -i '{{ "hello, world" | strings.Repeat "world" }}jello'
-hello, jello
+$ gomplate -i '{{ "hello " | strings.Repeat 5 }}'
+hello hello hello hello hello
 ```
 
 ## `strings.ReplaceAll`
@@ -291,11 +343,20 @@ Replaces all occurrences of a given string with another.
 
 ### Usage
 ```go
-strings.ReplaceAll old new input
+strings.ReplaceAll old new input 
 ```
+
 ```go
-input | strings.ReplaceAll old new
+input | strings.ReplaceAll old new  
 ```
+
+### Arguments
+
+| name | description |
+|------|-------------|
+| `old` | _(required)_ the text to replace |
+| `new` | _(required)_ the new text to replace with |
+| `input` | _(required)_ the input to modify |
 
 ### Examples
 
@@ -312,17 +373,26 @@ Creates a a "slug" from a given string - supports Unicode correctly. This wraps 
 
 ### Usage
 ```go
-strings.Slug input
-```
-```go
-input | strings.Slug
+strings.Slug input 
 ```
 
+```go
+input | strings.Slug  
+```
+
+### Arguments
+
+| name | description |
+|------|-------------|
+| `input` | _(required)_ the input to "slugify" |
+
 ### Examples
+
 ```console
 $ gomplate -i '{{ "Hello, world!" | strings.Slug }}'
 hello-world
-
+```
+```console
 $ echo 'Rock & Roll @ Cafe Wha?' | gomplate -d in=stdin: -i '{{ strings.Slug (include "in") }}'
 rock-and-roll-at-cafe-wha
 ```
@@ -333,7 +403,7 @@ rock-and-roll-at-cafe-wha
 
 Surrounds an input string with a single-quote (apostrophe) character (`'`). If the input is not a string, converts first.
 
-`'` characters in the input are first escaped in the YAML-style (by repetition: `''`).
+`'` characters in the input are first escaped in the YAML-style (by repetition: `''`).<!-- ' -->
 
 ### Usage
 ```go
@@ -369,13 +439,20 @@ Convert to title-case.
 
 ### Usage
 ```go
-strings.Title input
-```
-```go
-input | strings.Title
+strings.Title input 
 ```
 
-### Example
+```go
+input | strings.Title  
+```
+
+### Arguments
+
+| name | description |
+|------|-------------|
+| `input` | _(required)_ the input |
+
+### Examples
 
 ```console
 $ gomplate -i '{{strings.Title "hello, world!"}}'
@@ -390,13 +467,20 @@ Convert to lower-case.
 
 ### Usage
 ```go
-strings.ToLower input
-```
-```go
-input | strings.ToLower
+strings.ToLower input 
 ```
 
-#### Example
+```go
+input | strings.ToLower  
+```
+
+### Arguments
+
+| name | description |
+|------|-------------|
+| `input` | _(required)_ the input |
+
+### Examples
 
 ```console
 $ echo '{{strings.ToLower "HELLO, WORLD!"}}' | gomplate
@@ -411,13 +495,20 @@ Convert to upper-case.
 
 ### Usage
 ```go
-strings.ToUpper input
-```
-```go
-input | strings.ToUpper
+strings.ToUpper input 
 ```
 
-#### Example
+```go
+input | strings.ToUpper  
+```
+
+### Arguments
+
+| name | description |
+|------|-------------|
+| `input` | _(required)_ the input |
+
+### Examples
 
 ```console
 $ gomplate -i '{{strings.ToUpper "hello, world!"}}'
@@ -431,13 +522,21 @@ the string.
 
 ### Usage
 ```go
-strings.Trim cutset input
-```
-```go
-input | strings.Trim cutset
+strings.Trim cutset input 
 ```
 
-#### Example
+```go
+input | strings.Trim cutset  
+```
+
+### Arguments
+
+| name | description |
+|------|-------------|
+| `cutset` | _(required)_ the set of characters to cut |
+| `input` | _(required)_ the input |
+
+### Examples
 
 ```console
 $ gomplate -i '{{ "_-foo-_" | strings.Trim "_-" }}
@@ -452,13 +551,21 @@ This wraps Go's [`strings.TrimPrefix`](https://golang.org/pkg/strings/#TrimPrefi
 
 ### Usage
 ```go
-strings.TrimPrefix prefix input
-```
-```go
-input | strings.TrimPrefix prefix
+strings.TrimPrefix prefix input 
 ```
 
-#### Example
+```go
+input | strings.TrimPrefix prefix  
+```
+
+### Arguments
+
+| name | description |
+|------|-------------|
+| `prefix` | _(required)_ the prefix to trim |
+| `input` | _(required)_ the input |
+
+### Examples
 
 ```console
 $ gomplate -i '{{ "hello, world" | strings.TrimPrefix "hello, " }}'
@@ -474,19 +581,25 @@ the string.
 
 ### Usage
 ```go
-strings.TrimSpace input
-```
-```go
-input | strings.TrimSpace
+strings.TrimSpace input 
 ```
 
-#### Example
+```go
+input | strings.TrimSpace  
+```
+
+### Arguments
+
+| name | description |
+|------|-------------|
+| `input` | _(required)_ the input |
+
+### Examples
 
 ```console
 $ gomplate -i '{{ "  \n\t foo" | strings.TrimSpace }}'
 foo
 ```
-
 
 ## `strings.TrimSuffix`
 
@@ -496,13 +609,21 @@ This wraps Go's [`strings.TrimSuffix`](https://golang.org/pkg/strings/#TrimSuffi
 
 ### Usage
 ```go
-strings.TrimSuffix suffix input
-```
-```go
-input | strings.TrimSuffix suffix
+strings.TrimSuffix suffix input 
 ```
 
-#### Example
+```go
+input | strings.TrimSuffix suffix  
+```
+
+### Arguments
+
+| name | description |
+|------|-------------|
+| `suffix` | _(required)_ the suffix to trim |
+| `input` | _(required)_ the input |
+
+### Examples
 
 ```console
 $ gomplate -i '{{ "hello, world" | strings.TrimSuffix "world" }}jello'
@@ -517,13 +638,21 @@ _Also see [`strings.Abbrev`](#strings-abbrev)._
 
 ### Usage
 ```go
-strings.Trunc length input
-```
-```go
-input | strings.Trunc length
+strings.Trunc length input 
 ```
 
-#### Example
+```go
+input | strings.Trunc length  
+```
+
+### Arguments
+
+| name | description |
+|------|-------------|
+| `length` | _(required)_ the maximum length of the output |
+| `input` | _(required)_ the input |
+
+### Examples
 
 ```console
 $ gomplate -i '{{ "hello, world" | strings.Trunc 5 }}'
@@ -640,7 +769,7 @@ The line-breaking algorithm is _naïve_ and _greedy_: lines are only broken betw
 
 When words that are longer than the desired width are encountered (e.g. long URLs), they are not broken up. Correctness is valued above line length.
 
-The line-break sequence defaults to `\n` (i.e. the LF/Line Feed character), regardless of OS. 
+The line-break sequence defaults to `\n` (i.e. the LF/Line Feed character), regardless of OS.
 
 ### Usage
 ```go
@@ -682,7 +811,19 @@ broken
 Contains reports whether the second string is contained within the first. Equivalent to
 [strings.Contains](https://golang.org/pkg/strings#Contains)
 
-### Example
+### Usage
+```go
+contains input substring 
+```
+
+### Arguments
+
+| name | description |
+|------|-------------|
+| `input` | _(required)_ the string to search |
+| `substring` | _(required)_ the string to search for |
+
+### Examples
 
 _`input.tmpl`:_
 ```
@@ -703,7 +844,19 @@ no
 Tests whether the string begins with a certain substring. Equivalent to
 [strings.HasPrefix](https://golang.org/pkg/strings#HasPrefix)
 
-#### Example
+### Usage
+```go
+hasPrefix input prefix 
+```
+
+### Arguments
+
+| name | description |
+|------|-------------|
+| `input` | _(required)_ the string to search |
+| `prefix` | _(required)_ the prefix to search for |
+
+### Examples
 
 _`input.tmpl`:_
 ```
@@ -724,7 +877,19 @@ foo
 Tests whether the string ends with a certain substring. Equivalent to
 [strings.HasSuffix](https://golang.org/pkg/strings#HasSuffix)
 
-#### Example
+### Usage
+```go
+hasSuffix input suffix 
+```
+
+### Arguments
+
+| name | description |
+|------|-------------|
+| `input` | _(required)_ the input to search |
+| `suffix` | _(required)_ the suffix to search for |
+
+### Examples
 
 _`input.tmpl`:_
 ```
@@ -743,7 +908,19 @@ http://example.com:80
 Creates a slice by splitting a string on a given delimiter. Equivalent to
 [strings.Split](https://golang.org/pkg/strings#Split)
 
-#### Example
+### Usage
+```go
+split input separator 
+```
+
+### Arguments
+
+| name | description |
+|------|-------------|
+| `input` | _(required)_ the input string |
+| `separator` | _(required)_ the string sequence to split |
+
+### Examples
 
 ```console
 $ gomplate -i '{{range split "Bart,Lisa,Maggie" ","}}Hello, {{.}}{{end}}'
@@ -759,7 +936,20 @@ Hello, Maggie
 Creates a slice by splitting a string on a given delimiter. The count determines
 the number of substrings to return. Equivalent to [strings.SplitN](https://golang.org/pkg/strings#SplitN)
 
-#### Example
+### Usage
+```go
+splitN input separator count 
+```
+
+### Arguments
+
+| name | description |
+|------|-------------|
+| `input` | _(required)_ the input string |
+| `separator` | _(required)_ the string sequence to split |
+| `count` | _(required)_ the maximum number of substrings to return |
+
+### Examples
 
 ```console
 $ gomplate -i '{{ range splitN "foo:bar:baz" ":" 2 }}{{.}}{{end}}'
@@ -774,7 +964,19 @@ bar:baz
 Trims a string by removing the given characters from the beginning and end of
 the string. Equivalent to [strings.Trim](https://golang.org/pkg/strings/#Trim)
 
-#### Example
+### Usage
+```go
+trim input cutset 
+```
+
+### Arguments
+
+| name | description |
+|------|-------------|
+| `input` | _(required)_ the input |
+| `cutset` | _(required)_ the set of characters to cut |
+
+### Examples
 
 _`input.tmpl`:_
 ```
