@@ -1,3 +1,19 @@
+{{ define "argName" }}{{ if not .required }}[{{ .name }}]{{else}}{{ .name }}{{end}}{{ end }}
+
+{{- define "usage" }}### Usage
+{{- $arguments := index . "arguments" | default slice }}
+{{ if has . "rawUsage" }}{{ .rawUsage | strings.TrimSpace }}{{ else }}
+```go
+{{ .name }}{{ range $a := $arguments }} {{template "argName" $a }}{{end}}
+```
+{{- if (index . "pipeline" | default false) }}
+```go
+{{ $last := (sub (len $arguments) 1) -}}
+{{ (index $arguments $last).name }} | {{ .name }}{{ range $i, $a := $arguments }}{{if not (eq $i $last)}} {{template "argName" $a }}{{end}}{{end}}
+```
+{{- end }}{{ end -}}
+{{ end -}}
+
 {{ $data := ds "data" -}}
 ---
 title: {{ index $data "title" | default (print $data.ns " functions") }}
@@ -9,8 +25,8 @@ menu:
 {{ $data.preamble -}}
 
 {{ range $_, $f := $data.funcs }}
-## `{{ $f.name }}`{{ if has $f "deprecated" }} _(deprecated)_
-**Deprecation Notice:** {{ $f.deprecated }}{{ end }}
+## {{ if has $f "rawName" }}{{ $f.rawName }}{{ else }}`{{ $f.name }}`{{ if has $f "deprecated" }} _(deprecated)_
+**Deprecation Notice:** {{ $f.deprecated }}{{ end }}{{ end }}
 {{ if has $f "alias" }}
 **Alias:** `{{$f.alias}}`
 {{ end }}
@@ -19,17 +35,9 @@ menu:
 {{ $f.description }}
 {{ end -}}
 
+{{ template "usage" $f }}
+
 {{ if has $f "arguments" -}}
-### Usage
-```go
-{{ $f.name }} {{ range $f.arguments -}} {{ if not .required }}[{{ .name }}]{{else}}{{ .name }}{{end}} {{end}}
-```
-{{ if has $f "pipeline" }}{{ if $f.pipeline }}
-```go
-{{ $last := (sub (len $f.arguments) 1) -}}
-{{ (index $f.arguments $last).name }} | {{ $f.name }} {{ range $i, $a := $f.arguments -}} {{if not (eq $i $last)}}{{ if not $a.required }}[{{ .name }}]{{else}}{{ .name }}{{end}}{{end}} {{end}}
-```
-{{ end }}{{ end }}
 ### Arguments
 
 | name | description |

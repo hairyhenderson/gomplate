@@ -6,7 +6,7 @@ menu:
 ---
 
 This namespace wraps Go's [`time` package](https://golang.org/pkg/time/), and a
-few of the functions return a `time.Time` value. All of the 
+few of the functions return a `time.Time` value. All of the
 [`time.Time` functions](https://golang.org/pkg/time/#Time) can then be used to
 convert, adjust, or format the time in your template.
 
@@ -25,7 +25,7 @@ Mon Jan 2 15:04:05 -0700 MST 2006
 
 ### Constants
 
-#### format layouts 
+#### format layouts
 
 Some pre-defined layouts have been provided for convenience:
 
@@ -51,7 +51,7 @@ See below for examples of how these layouts can be used.
 
 #### durations
 
-Some operations (such as [`Time.Add`](https://golang.org/pkg/time/#Time.Add) and 
+Some operations (such as [`Time.Add`](https://golang.org/pkg/time/#Time.Add) and
 [`Time.Round`](https://golang.org/pkg/time/#Time.Round)) require a
 [`Duration`](https://golang.org/pkg/time/#Duration) value. These can be created
 conveniently with the following functions:
@@ -81,9 +81,11 @@ Returns the current local time, as a `time.Time`. This wraps [`time.Now`](https:
 Usually, further functions are called using the value returned by `Now`.
 
 ### Usage
+
 ```go
 time.Now
 ```
+
 
 ### Examples
 
@@ -92,7 +94,6 @@ Usage with [`UTC`](https://golang.org/pkg/time/#Time.UTC) and [`Format`](https:/
 $ gomplate -i '{{ (time.Now).UTC.Format "Day 2 of month 1 in year 2006 (timezone MST)" }}'
 Day 14 of month 10 in year 2017 (timezone UTC)
 ```
-
 Usage with [`AddDate`](https://golang.org/pkg/time/#Time.AddDate):
 ```console
 $ date
@@ -116,16 +117,20 @@ other functions.
 _Note: In the absence of a time zone indicator, `time.Parse` returns a time in UTC._
 
 ### Usage
+
 ```go
 time.Parse layout timestamp
+```
+```go
+timestamp | time.Parse layout
 ```
 
 ### Arguments
 
-| name   | description |
-|--------|-------|
-| `layout` | The layout string to parse with|
-| `timestamp` | The timestamp to parse |
+| name | description |
+|------|-------------|
+| `layout` | _(required)_ The layout string to parse with |
+| `timestamp` | _(required)_ The timestamp to parse |
 
 ### Examples
 
@@ -144,12 +149,19 @@ optional fraction and a unit suffix, such as `300ms`, `-1.5h` or `2h45m`. Valid
 time units are `ns`, `us` (or `µs`), `ms`, `s`, `m`, `h`.
 
 ### Usage
+
 ```go
 time.ParseDuration duration
 ```
 ```go
 duration | time.ParseDuration
 ```
+
+### Arguments
+
+| name | description |
+|------|-------------|
+| `duration` | _(required)_ The duration string to parse |
 
 ### Examples
 
@@ -166,16 +178,20 @@ Same as [`time.Parse`](#time-parse), except that in the absence of a time zone
 indicator, the timestamp wil be parsed in the local timezone.
 
 ### Usage
+
 ```go
 time.ParseLocal layout timestamp
+```
+```go
+timestamp | time.ParseLocal layout
 ```
 
 ### Arguments
 
-| name   | description |
-|--------|-------|
-| `layout` | The layout string to parse with|
-| `timestamp` | The timestamp to parse |
+| name | description |
+|------|-------------|
+| `layout` | _(required)_ The layout string to parse with |
+| `timestamp` | _(required)_ The timestamp to parse |
 
 ### Examples
 
@@ -192,17 +208,21 @@ Same as [`time.Parse`](#time-parse), except that the time is parsed in the given
 This wraps [`time.ParseInLocation`](https://golang.org/pkg/time/#ParseInLocation).
 
 ### Usage
+
 ```go
 time.ParseInLocation layout location timestamp
+```
+```go
+timestamp | time.ParseInLocation layout location
 ```
 
 ### Arguments
 
-| name   | description |
-|--------|-------|
-| `layout` | The layout string to parse with |
-| `location` | The location to parse in |
-| `timestamp` | The timestamp to parse |
+| name | description |
+|------|-------------|
+| `layout` | _(required)_ The layout string to parse with |
+| `location` | _(required)_ The location to parse in |
+| `timestamp` | _(required)_ The timestamp to parse |
 
 ### Examples
 
@@ -219,21 +239,25 @@ Returns the time elapsed since a given time. This wraps [`time.Since`](https://g
 It is shorthand for `time.Now.Sub t`.
 
 ### Usage
+
 ```go
 time.Since t
+```
+```go
+t | time.Since
 ```
 
 ### Arguments
 
-| name   | description |
-|--------|-------------|
-| `t`    | the `Time` to calculate since |
+| name | description |
+|------|-------------|
+| `t` | _(required)_ the `Time` to calculate since |
 
 ### Examples
 
 ```console
-$ gomplate -i '{{ $t := time.Parse time.RFC3339 "1970-01-01T00:00:00Z" }}time since the epoch: {{ time.Since $t }}'
-time since the epoch: 423365h0m24.353828924s
+$ gomplate -i '{{ $t := time.Parse time.RFC3339 "1970-01-01T00:00:00Z" }}time since the epoch:{{ time.Since $t }}'
+time since the epoch:423365h0m24.353828924s
 ```
 
 ## `time.Unix`
@@ -243,11 +267,21 @@ January 1, 1970 UTC. Note that fractional seconds can be used to denote
 milliseconds, but must be specified as a string, not a floating point number.
 
 ### Usage
+
 ```go
 time.Unix time
 ```
+```go
+time | time.Unix
+```
 
-### Example
+### Arguments
+
+| name | description |
+|------|-------------|
+| `time` | _(required)_ the time to parse |
+
+### Examples
 
 _with whole seconds:_
 ```console
@@ -268,15 +302,19 @@ Returns the duration until a given time. This wraps [`time.Until`](https://golan
 It is shorthand for `$t.Sub time.Now`.
 
 ### Usage
+
 ```go
 time.Until t
+```
+```go
+t | time.Until
 ```
 
 ### Arguments
 
-| name   | description |
-|--------|-------------|
-| `t`    | the `Time` to calculate until |
+| name | description |
+|------|-------------|
+| `t` | _(required)_ the `Time` to calculate until |
 
 ### Examples
 
@@ -296,11 +334,13 @@ only 14923h0m0s to go...
 Return the local system's time zone's name.
 
 ### Usage
+
 ```go
 time.ZoneName
 ```
 
-### Example
+
+### Examples
 
 ```console
 $ gomplate -i '{{time.ZoneName}}'
@@ -312,11 +352,13 @@ EDT
 Return the local system's time zone offset, in seconds east of UTC.
 
 ### Usage
+
 ```go
 time.ZoneOffset
 ```
 
-### Example
+
+### Examples
 
 ```console
 $ gomplate -i '{{time.ZoneOffset}}'

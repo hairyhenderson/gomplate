@@ -16,12 +16,12 @@ Asserts that the given expression or value is `true`. If it is not, causes
 template generation to fail immediately with an optional message.
 
 ### Usage
-```go
-test.Assert [message] value 
-```
 
 ```go
-value | test.Assert [message]  
+test.Assert [message] value
+```
+```go
+value | test.Assert [message]
 ```
 
 ### Arguments
@@ -47,12 +47,12 @@ template: <arg>:1:3: executing "<arg>" at <assert "something ho...>: error calli
 Cause template generation to fail immediately, with an optional message.
 
 ### Usage
-```go
-test.Fail [message] 
-```
 
 ```go
-message | test.Fail  
+test.Fail [message]
+```
+```go
+message | test.Fail
 ```
 
 ### Arguments
@@ -87,12 +87,12 @@ cases where a referenced _key_ is missing, and this function will have no
 effect.
 
 ### Usage
-```go
-test.Required [message] value 
-```
 
 ```go
-value | test.Required [message]  
+test.Required [message] value
+```
+```go
+value | test.Required [message]
 ```
 
 ### Arguments
@@ -138,12 +138,12 @@ This is effectively a short-form of the following template:
 Keep in mind that using an explicit `if`/`else` block is often easier to understand than ternary expressions!
 
 ### Usage
-```go
-test.Ternary truevalue falsevalue condition 
-```
 
 ```go
-condition | test.Ternary truevalue falsevalue  
+test.Ternary truevalue falsevalue condition
+```
+```go
+condition | test.Ternary truevalue falsevalue
 ```
 
 ### Arguments

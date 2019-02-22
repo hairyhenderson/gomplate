@@ -9,9 +9,11 @@ A collection of functions that retrieve, parse, and convert structured data.
 
 ## `datasource`
 
+**Alias:** `ds`
+
 Parses a given datasource (provided by the [`--datasource/-d`](#--datasource-d) argument or [`defineDatasource`](#definedatasource)).
 
-If the `alias` is undefined, but is a valid URL, `datasource` will dynamically read from that URL. 
+If the `alias` is undefined, but is a valid URL, `datasource` will dynamically read from that URL.
 
 See [Datasources](../../datasources) for (much!) more information.
 
@@ -23,9 +25,9 @@ datasource alias [subpath]
 
 ### Arguments
 
-| name   | description |
-|--------|-------|
-| `alias` | the datasource alias (or a URL for dynamic use) |
+| name | description |
+|------|-------------|
+| `alias` | _(required)_ the datasource alias (or a URL for dynamic use) |
 | `subpath` | _(optional)_ the subpath to use, if supported by the datasource |
 
 ### Examples
@@ -51,6 +53,20 @@ Note: this does _not_ verify if the datasource is reachable.
 
 Useful when used in an `if`/`else` block.
 
+### Usage
+
+```go
+datasourceExists alias
+```
+
+### Arguments
+
+| name | description |
+|------|-------------|
+| `alias` | _(required)_ the datasource alias |
+
+### Examples
+
 ```console
 $ echo '{{if (datasourceExists "test")}}{{datasource "test"}}{{else}}no worries{{end}}' | gomplate
 no worries
@@ -61,6 +77,20 @@ no worries
 Tests whether or not a given datasource is defined and reachable, where the definition of "reachable" differs by datasource, but generally means the data is able to be read successfully.
 
 Useful when used in an `if`/`else` block.
+
+### Usage
+
+```go
+datasourceReachable alias
+```
+
+### Arguments
+
+| name | description |
+|------|-------------|
+| `alias` | _(required)_ the datasource alias |
+
+### Examples
 
 ```console
 $ gomplate -i '{{if (datasourceReachable "test")}}{{datasource "test"}}{{else}}no worries{{end}}' -d test=https://bogus.example.com/wontwork.json
@@ -85,10 +115,10 @@ defineDatasource alias url
 
 ### Arguments
 
-| name   | description |
-|--------|-------|
-| `alias` | the datasource alias |
-| `url` | the datasource's URL |
+| name | description |
+|------|-------------|
+| `alias` | _(required)_ the datasource alias |
+| `url` | _(required)_ the datasource's URL |
 
 ### Examples
 
@@ -104,10 +134,6 @@ $ FOO='{"name": "Daisy"}' gomplate -d person=env:///FOO -i '{{ defineDatasource 
 Hello Daisy
 ```
 
-## `ds`
-
-Alias to [`datasource`](#datasource)
-
 ## `include`
 
 Includes the content of a given datasource (provided by the [`--datasource/-d`](../usage/#datasource-d) argument).
@@ -122,9 +148,9 @@ include alias [subpath]
 
 ### Arguments
 
-| name   | description |
-|--------|-------|
-| `alias` | the datasource alias, as provided by [`--datasource/-d`](../usage/#datasource-d) |
+| name | description |
+|------|-------------|
+| `alias` | _(required)_ the datasource alias, as provided by [`--datasource/-d`](../usage/#datasource-d) |
 | `subpath` | _(optional)_ the subpath to use, if supported by the datasource |
 
 ### Examples
@@ -167,10 +193,10 @@ If the input is in the [EJSON](https://github.com/Shopify/ejson) format (i.e. ha
 - set the `EJSON_KEYDIR` environment variable to the path to a directory containing private keys (filename must be the public key), just like [`ejson decrypt`'s `--keydir`](https://github.com/Shopify/ejson/blob/master/man/man1/ejson.1.ronn) flag. Defaults to `/opt/ejson/keys`.
 
 ### Usage
+
 ```go
 data.JSON in
 ```
-
 ```go
 in | data.JSON
 ```
@@ -200,7 +226,22 @@ Hello world
 
 Converts a JSON string into a slice. Only works for JSON Arrays.
 
-#### Example
+### Usage
+
+```go
+data.JSONArray in
+```
+```go
+in | data.JSONArray
+```
+
+### Arguments
+
+| name | description |
+|------|-------------|
+| `in` | _(required)_ the input string |
+
+### Examples
 
 _`input.tmpl`:_
 ```
@@ -219,7 +260,22 @@ Hello world
 
 Converts a YAML string into an object. Only works for YAML Objects (not Arrays or other valid YAML types). This can be used to access properties of YAML objects.
 
-#### Example
+### Usage
+
+```go
+data.YAML in
+```
+```go
+in | data.YAML
+```
+
+### Arguments
+
+| name | description |
+|------|-------------|
+| `in` | _(required)_ the input string |
+
+### Examples
 
 _`input.tmpl`:_
 ```
@@ -238,7 +294,22 @@ Hello world
 
 Converts a YAML string into a slice. Only works for YAML Arrays.
 
-#### Example
+### Usage
+
+```go
+data.YAMLArray in
+```
+```go
+in | data.YAMLArray
+```
+
+### Arguments
+
+| name | description |
+|------|-------------|
+| `in` | _(required)_ the input string |
+
+### Examples
 
 _`input.tmpl`:_
 ```
@@ -263,21 +334,19 @@ Compatible with [TOML v0.4.0](https://github.com/toml-lang/toml/blob/master/vers
 ### Usage
 
 ```go
-toml input
+data.TOML input
 ```
-
-Can also be used in a pipeline:
 ```go
-input | toml
+input | data.TOML
 ```
 
 ### Arguments
 
-| name   | description |
-|--------|-------|
-| `input` | the TOML document to parse |
+| name | description |
+|------|-------------|
+| `input` | _(required)_ the TOML document to parse |
 
-#### Example
+### Examples
 
 _`input.tmpl`:_
 ```
@@ -303,22 +372,20 @@ supported, but any single-character delimiter can be specified.
 ### Usage
 
 ```go
-csv [delim] input
+data.CSV [delim] input
 ```
-
-Can also be used in a pipeline:
 ```go
-input | csv [delim]
+input | data.CSV [delim]
 ```
 
 ### Arguments
 
-| name   | description |
-|--------|-------|
+| name | description |
+|------|-------------|
 | `delim` | _(optional)_ the (single-character!) field delimiter, defaults to `","` |
-| `input` | the CSV-format string to parse |
+| `input` | _(required)_ the CSV-format string to parse |
 
-### Example
+### Examples
 
 _`input.tmpl`:_
 ```
@@ -350,27 +417,24 @@ Also by default, the first line of the string will be assumed to be the header,
 but this can be overridden by providing an explicit header, or auto-indexing
 can be used.
 
-
 ### Usage
 
 ```go
-csv [delim] [header] input
+data.CSVByRow [delim] [header] input
 ```
-
-Can also be used in a pipeline:
 ```go
-input | csv [delim] [header]
+input | data.CSVByRow [delim] [header]
 ```
 
 ### Arguments
 
-| name   | description |
-|--------|-------|
+| name | description |
+|------|-------------|
 | `delim` | _(optional)_ the (single-character!) field delimiter, defaults to `","` |
-| `header`| _(optional)_ comma-separated list of column names, set to `""` to get auto-named columns (A-Z), defaults to using the first line of `input` |
-| `input` | the CSV-format string to parse |
+| `header` | _(optional)_ comma-separated list of column names, set to `""` to get auto-named columns (A-Z), defaults to using the first line of `input` |
+| `input` | _(required)_ the CSV-format string to parse |
 
-### Example
+### Examples
 
 _`input.tmpl`:_
 ```
@@ -397,7 +461,24 @@ COBOL has 357 keywords.
 Like [`csvByRow`](#csvByRow), except that the data is presented as a columnar
 (column-oriented) map.
 
-### Example
+### Usage
+
+```go
+data.CSVByColumn [delim] [header] input
+```
+```go
+input | data.CSVByColumn [delim] [header]
+```
+
+### Arguments
+
+| name | description |
+|------|-------------|
+| `delim` | _(optional)_ the (single-character!) field delimiter, defaults to `","` |
+| `header` | _(optional)_ comma-separated list of column names, set to `""` to get auto-named columns (A-Z), defaults to using the first line of `input` |
+| `input` | _(required)_ the CSV-format string to parse |
+
+### Examples
 
 _`input.tmpl`:_
 ```
@@ -422,7 +503,22 @@ COBOL
 
 Converts an object to a JSON document. Input objects may be the result of `json`, `yaml`, `jsonArray`, or `yamlArray` functions, or they could be provided by a `datasource`.
 
-#### Example
+### Usage
+
+```go
+data.ToJSON obj
+```
+```go
+obj | data.ToJSON
+```
+
+### Arguments
+
+| name | description |
+|------|-------------|
+| `obj` | _(required)_ the object to marshal |
+
+### Examples
 
 _This is obviously contrived - `json` is used to create an object._
 
@@ -447,7 +543,23 @@ by a [`datasource`](../general/datasource).
 
 The indent string must be provided as an argument.
 
-#### Example
+### Usage
+
+```go
+data.ToJSONPretty indent obj
+```
+```go
+obj | data.ToJSONPretty indent
+```
+
+### Arguments
+
+| name | description |
+|------|-------------|
+| `indent` | _(required)_ the string to use for indentation |
+| `obj` | _(required)_ the object to marshal |
+
+### Examples
 
 _`input.tmpl`:_
 ```
@@ -469,7 +581,22 @@ Converts an object to a YAML document. Input objects may be the result of
 `data.JSON`, `data.YAML`, `data.JSONArray`, or `data.YAMLArray` functions,
 or they could be provided by a [`datasource`](../general/datasource).
 
-#### Example
+### Usage
+
+```go
+data.ToYAML obj
+```
+```go
+obj | data.ToYAML
+```
+
+### Arguments
+
+| name | description |
+|------|-------------|
+| `obj` | _(required)_ the object to marshal |
+
+### Examples
 
 _This is obviously contrived - `data.JSON` is used to create an object._
 
@@ -494,19 +621,17 @@ Converts an object to a [TOML](https://github.com/toml-lang/toml) document.
 ```go
 data.ToTOML obj
 ```
-
-Can also be used in a pipeline:
 ```go
 obj | data.ToTOML
 ```
 
 ### Arguments
 
-| name   | description |
-|--------|-------|
-| `obj`  | the object to marshal as a TOML document |
+| name | description |
+|------|-------------|
+| `obj` | _(required)_ the object to marshal as a TOML document |
 
-#### Example
+### Examples
 
 ```console
 $ gomplate -i '{{ `{"foo":"bar"}` | data.JSON | data.ToTOML }}'
@@ -532,18 +657,16 @@ you require `LF` (UNIX format, or `\n`), the output can be piped through
 ```go
 data.ToCSV [delim] input
 ```
-
-Can also be used in a pipeline:
 ```go
 input | data.ToCSV [delim]
 ```
 
 ### Arguments
 
-| name   | description |
-|--------|-------|
+| name | description |
+|------|-------------|
 | `delim` | _(optional)_ the (single-character!) field delimiter, defaults to `","` |
-| `input` | the object to convert to a CSV |
+| `input` | _(required)_ the object to convert to a CSV |
 
 ### Examples
 

@@ -12,7 +12,7 @@ interfaces.
 These functions are _partly_ documented here for convenience, but the canonical
 documentation is at https://godoc.org/github.com/hashicorp/go-sockaddr.
 
-Aside from some convenience functions, the general method of working with these 
+Aside from some convenience functions, the general method of working with these
 functions is through a _pipeline_. There are _source_ functions, which select
 interfaces ([`IfAddr`](https://godoc.org/github.com/hashicorp/go-sockaddr#IfAddr)),
 and there are functions to further filter, refine, and finally to select
@@ -29,6 +29,9 @@ $ gomplate -i '{{ range (sockaddr.GetAllInterfaces | sockaddr.Include "type" "ip
 132.79.79.79
 ```
 
+[RFC 1918]: http://tools.ietf.org/html/rfc1918
+[RFC 6890]: http://tools.ietf.org/html/rfc6890
+
 ## `sockaddr.GetAllInterfaces`
 
 Iterates over all available network interfaces and finds all available IP
@@ -37,11 +40,25 @@ the result as an array of `IfAddr`.
 
 Should be piped through a further function to refine and extract attributes.
 
+### Usage
+
+```go
+sockaddr.GetAllInterfaces
+```
+
+
 ## `sockaddr.GetDefaultInterfaces`
 
 Returns `IfAddrs` of the addresses attached to the default route.
 
 Should be piped through a further function to refine and extract attributes.
+
+### Usage
+
+```go
+sockaddr.GetDefaultInterfaces
+```
+
 
 ## `sockaddr.GetPrivateInterfaces`
 
@@ -56,6 +73,13 @@ address also excludes non-forwardable IP addresses (as defined by the IETF).
 
 Should be piped through a further function to refine and extract attributes.
 
+### Usage
+
+```go
+sockaddr.GetPrivateInterfaces
+```
+
+
 ## `sockaddr.GetPublicInterfaces`
 
 Returns an array of `IfAddr`s that do not match [RFC 6890][],
@@ -63,16 +87,17 @@ are attached to the default route, and are forwardable.
 
 Should be piped through a further function to refine and extract attributes.
 
+### Usage
+
+```go
+sockaddr.GetPublicInterfaces
+```
+
+
 ## `sockaddr.Sort`
 
 Returns an array of `IfAddr`s sorted based on the given selector. Multiple sort
 clauses can be passed in as a comma-delimited list without whitespace.
-
-### Usage
-
-```
-<array-of-IfAddrs> | sockaddr.Sort selector
-```
 
 ### Selectors
 
@@ -94,6 +119,22 @@ to make explicit that the sort is ascending.
 `IfAddr`s that are not comparable will be at the end of the list and in a
 non-deterministic order.
 
+### Usage
+
+```go
+sockaddr.Sort selector <array-of-IfAddrs>
+```
+```go
+<array-of-IfAddrs> | sockaddr.Sort selector
+```
+
+### Arguments
+
+| name | description |
+|------|-------------|
+| `selector` | _(required)_ which selector to use (see above for values) |
+| `<array-of-IfAddrs>` | _(required)_ the array of `IfAddr`s to sort |
+
 ### Examples
 
 To sort first by interface name, then by address (descending):
@@ -106,12 +147,6 @@ $ gomplate -i '{{ sockaddr.GetAllInterfaces | sockaddr.Sort "name,-address" }}'
 Returns an array of `IfAddr`s filtered by interfaces that do not match the given
 selector's value.
 
-### Usage
-
-```
-<array-of-IfAddrs> | sockaddr.Exclude selector value
-```
-
 ### Selectors
 
 The valid selectors are:
@@ -123,7 +158,7 @@ The valid selectors are:
 | `name` | the interface name |
 | `network` | being part of the given IP network (in net/mask format) |
 | `port` | the port, if included in the `IfAddr` |
-| `rfc` | being included in networks defined by the given RFC. See [the source code](https://github.com/hashicorp/go-sockaddr/blob/master/rfc.go#L38) for a list of valid RFCs | 
+| `rfc` | being included in networks defined by the given RFC. See [the source code](https://github.com/hashicorp/go-sockaddr/blob/master/rfc.go#L38) for a list of valid RFCs |
 | `size` | the size of the network mask, as number of bits (e.g. `"24"` for a /24) |
 | `type` | the type of the `IfAddr`. `unix`, `ipv4`, or `ipv6` |
 
@@ -133,6 +168,23 @@ These flags are supported by the `flag` selector:
 `broadcast`, `down`, `forwardable`, `global unicast`, `interface-local multicast`,
 `link-local multicast`, `link-local unicast`, `loopback`, `multicast`, `point-to-point`,
 `unspecified`, `up`
+
+### Usage
+
+```go
+sockaddr.Exclude selector value <array-of-IfAddrs>
+```
+```go
+<array-of-IfAddrs> | sockaddr.Exclude selector value
+```
+
+### Arguments
+
+| name | description |
+|------|-------------|
+| `selector` | _(required)_ which selector to use (see above for values) |
+| `value` | _(required)_ the selector value to exclude |
+| `<array-of-IfAddrs>` | _(required)_ the array of `IfAddr`s to consider |
 
 ### Examples
 
@@ -148,15 +200,42 @@ selector's value.
 
 This is the inverse of `sockaddr.Exclude`. See [`sockaddr.Exclude`](#sockaddr.Exclude) for details.
 
+### Usage
+
+```go
+sockaddr.Include selector value <array-of-IfAddrs>
+```
+```go
+<array-of-IfAddrs> | sockaddr.Include selector value
+```
+
+### Arguments
+
+| name | description |
+|------|-------------|
+| `selector` | _(required)_ which selector to use (see above for values) |
+| `value` | _(required)_ the selector value to include |
+| `<array-of-IfAddrs>` | _(required)_ the array of `IfAddr`s to consider |
+
 ## `sockaddr.Attr`
 
 Returns the named attribute as a string.
 
 ### Usage
 
+```go
+sockaddr.Attr selector <array-of-IfAddrs>
 ```
+```go
 <array-of-IfAddrs> | sockaddr.Attr selector
 ```
+
+### Arguments
+
+| name | description |
+|------|-------------|
+| `selector` | _(required)_ the attribute to return |
+| `<array-of-IfAddrs>` | _(required)_ the array of `IfAddr`s to inspect |
 
 ### Examples
 
@@ -172,9 +251,20 @@ the results with the given separator.
 
 ### Usage
 
+```go
+sockaddr.Join selector separator <array-of-IfAddrs>
 ```
+```go
 <array-of-IfAddrs> | sockaddr.Join selector separator
 ```
+
+### Arguments
+
+| name | description |
+|------|-------------|
+| `selector` | _(required)_ the attribute to select |
+| `separator` | _(required)_ the separator |
+| `<array-of-IfAddrs>` | _(required)_ the array of `IfAddr`s to join |
 
 ### Examples
 
@@ -189,9 +279,19 @@ Returns a slice of `IfAddr`s based on the specified limit.
 
 ### Usage
 
+```go
+sockaddr.Limit limit <array-of-IfAddrs>
 ```
+```go
 <array-of-IfAddrs> | sockaddr.Limit limit
 ```
+
+### Arguments
+
+| name | description |
+|------|-------------|
+| `limit` | _(required)_ the maximum number of `IfAddrs` |
+| `<array-of-IfAddrs>` | _(required)_ the array of `IfAddr`s |
 
 ### Examples
 
@@ -206,9 +306,19 @@ Returns a slice of `IfAddr`s based on the specified offset.
 
 ### Usage
 
+```go
+sockaddr.Offset offset <array-of-IfAddrs>
 ```
+```go
 <array-of-IfAddrs> | sockaddr.Offset offset
 ```
+
+### Arguments
+
+| name | description |
+|------|-------------|
+| `offset` | _(required)_ the offset |
+| `<array-of-IfAddrs>` | _(required)_ the array of `IfAddr`s |
 
 ### Examples
 
@@ -224,9 +334,19 @@ already been sorted.
 
 ### Usage
 
+```go
+sockaddr.Unique selector <array-of-IfAddrs>
 ```
+```go
 <array-of-IfAddrs> | sockaddr.Unique selector
 ```
+
+### Arguments
+
+| name | description |
+|------|-------------|
+| `selector` | _(required)_ the attribute to select |
+| `<array-of-IfAddrs>` | _(required)_ the array of `IfAddr`s |
 
 ### Examples
 
@@ -244,9 +364,20 @@ for details.
 
 ### Usage
 
+```go
+sockaddr.Math selector operation <array-of-IfAddrs>
 ```
-<array-of-IfAddrs> | sockaddr.Math operation value
+```go
+<array-of-IfAddrs> | sockaddr.Math selector operation
 ```
+
+### Arguments
+
+| name | description |
+|------|-------------|
+| `selector` | _(required)_ the attribute to operate on |
+| `operation` | _(required)_ the operation |
+| `<array-of-IfAddrs>` | _(required)_ the array of `IfAddr`s |
 
 ### Examples
 
@@ -263,9 +394,10 @@ IP address, an empty string will be returned instead.
 
 ### Usage
 
-```
+```go
 sockaddr.GetPrivateIP
 ```
+
 
 ### Examples
 
@@ -283,9 +415,10 @@ returned instead.
 
 ### Usage
 
-```
+```go
 sockaddr.GetPrivateIPs
 ```
+
 
 ### Examples
 
@@ -302,9 +435,10 @@ non-[RFC 6890][] IP address, an empty string will be returned instead.
 
 ### Usage
 
-```
+```go
 sockaddr.GetPublicIP
 ```
+
 
 ### Examples
 
@@ -322,9 +456,10 @@ empty string will be returned instead.
 
 ### Usage
 
-```
+```go
 sockaddr.GetPublicIPs
 ```
+
 
 ### Examples
 
@@ -340,9 +475,15 @@ Returns a string with a single IP address sorted by the size of the network
 
 ### Usage
 
-```
+```go
 sockaddr.GetInterfaceIP name
 ```
+
+### Arguments
+
+| name | description |
+|------|-------------|
+| `name` | _(required)_ the interface name |
 
 ### Examples
 
@@ -359,9 +500,15 @@ named interface.
 
 ### Usage
 
-```
+```go
 sockaddr.GetInterfaceIPs name
 ```
+
+### Arguments
+
+| name | description |
+|------|-------------|
+| `name` | _(required)_ the interface name |
 
 ### Examples
 
@@ -369,6 +516,3 @@ sockaddr.GetInterfaceIPs name
 $ gomplate -i '{{ sockaddr.GetInterfaceIPs "en0" }}'
 10.0.0.28 fe80::1f9a:5582:4b41:bd18
 ```
-
-[RFC 1918]: http://tools.ietf.org/html/rfc1918
-[RFC 6890]: http://tools.ietf.org/html/rfc6890

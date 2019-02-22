@@ -30,8 +30,9 @@ For creating more complex maps, see [`data.JSON`](../data/#data-json) or [`data.
 For creating arrays, see [`coll.Slice`](#coll-slice).
 
 ### Usage
+
 ```go
-coll.Dict in... 
+coll.Dict in...
 ```
 
 ### Arguments
@@ -66,8 +67,9 @@ Hello everybody!
 Creates a slice (like an array or list). Useful when needing to `range` over a bunch of variables.
 
 ### Usage
+
 ```go
-coll.Slice in... 
+coll.Slice in...
 ```
 
 ### Arguments
@@ -92,8 +94,9 @@ Hello, Maggie
 Reports whether a given object has a property with the given key, or whether a given array/slice contains the given value. Can be used with `if` to prevent the template from trying to access a non-existent property in an object.
 
 ### Usage
+
 ```go
-coll.Has in item 
+coll.Has in item
 ```
 
 ### Arguments
@@ -134,12 +137,12 @@ then alphabetically.
 See also [`coll.Values`](#coll-values).
 
 ### Usage
-```go
-coll.Keys in... 
-```
 
 ```go
-in... | coll.Keys  
+coll.Keys in...
+```
+```go
+in... | coll.Keys
 ```
 
 ### Arguments
@@ -169,12 +172,12 @@ then alphabetically by key.
 See also [`coll.Keys`](#coll-keys).
 
 ### Usage
-```go
-coll.Values in... 
-```
 
 ```go
-in... | coll.Values  
+coll.Values in...
+```
+```go
+in... | coll.Values
 ```
 
 ### Arguments
@@ -203,12 +206,12 @@ _Note that this function does not change the given list; it always produces a ne
 See also [`coll.Prepend`](#coll-prepend).
 
 ### Usage
-```go
-coll.Append value list... 
-```
 
 ```go
-list... | coll.Append value  
+coll.Append value list...
+```
+```go
+list... | coll.Append value
 ```
 
 ### Arguments
@@ -236,12 +239,12 @@ _Note that this function does not change the given list; it always produces a ne
 See also [`coll.Append`](#coll-append).
 
 ### Usage
-```go
-coll.Prepend value list... 
-```
 
 ```go
-list... | coll.Prepend value  
+coll.Prepend value list...
+```
+```go
+list... | coll.Prepend value
 ```
 
 ### Arguments
@@ -269,12 +272,12 @@ _Note that this function does not change the given list; it always produces a ne
 See also [`coll.Append`](#coll-append).
 
 ### Usage
-```go
-coll.Uniq list 
-```
 
 ```go
-list | coll.Uniq  
+coll.Uniq list
+```
+```go
+list | coll.Uniq
 ```
 
 ### Arguments
@@ -299,12 +302,12 @@ Reverse a list.
 _Note that this function does not change the given list; it always produces a new one._
 
 ### Usage
-```go
-coll.Reverse list 
-```
 
 ```go
-list | coll.Reverse  
+coll.Reverse list
+```
+```go
+list | coll.Reverse
 ```
 
 ### Arguments
@@ -333,12 +336,12 @@ Maps and structs can be sorted by a named key.
 _Note that this function does not modify the input._
 
 ### Usage
-```go
-coll.Sort [key] list 
-```
 
 ```go
-list | coll.Sort [key]  
+coll.Sort [key] list
+```
+```go
+list | coll.Sort [key]
 ```
 
 ### Arguments
@@ -382,12 +385,12 @@ Many source maps can be provided. Precedence is in left-to-right order.
 Note that this function _changes_ the destination map.
 
 ### Usage
-```go
-coll.Merge dst srcs... 
-```
 
 ```go
-srcs... | coll.Merge dst  
+coll.Merge dst srcs...
+```
+```go
+srcs... | coll.Merge dst
 ```
 
 ### Arguments
