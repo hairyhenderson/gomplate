@@ -30,8 +30,6 @@ func AWSFuncs(f map[string]interface{}) {
 	f["ec2dynamic"] = AWSNS().EC2Dynamic
 	f["ec2tag"] = AWSNS().EC2Tag
 	f["ec2region"] = AWSNS().EC2Region
-	f["kmsEncrypt"] = AWSNS().KMSEncrypt
-	f["kmsDecrypt"] = AWSNS().KMSDecrypt
 }
 
 // Funcs -
