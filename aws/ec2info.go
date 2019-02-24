@@ -39,7 +39,7 @@ type InstanceDescriber interface {
 	DescribeInstances(*ec2.DescribeInstancesInput) (*ec2.DescribeInstancesOutput, error)
 }
 
-// GetClientOptions - Centralized reading of AWS_TIMEOUT
+// GetClientOptions - Centralised reading of AWS_TIMEOUT
 // ... but cannot use in vault/auth.go as different strconv.Atoi error handling
 func GetClientOptions() ClientOptions {
 	coInit.Do(func() {
