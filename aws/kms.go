@@ -30,7 +30,10 @@ func (k *KMS) Encrypt(keyID, plaintext string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	ciphertext, _ := b64.Encode(output.CiphertextBlob)
+	ciphertext, err := b64.Encode(output.CiphertextBlob)
+	if err != nil {
+		return "", err
+	}
 	return ciphertext, nil
 }
 
