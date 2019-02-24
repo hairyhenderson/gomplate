@@ -4,6 +4,7 @@ import (
 	"sync"
 
 	"github.com/hairyhenderson/gomplate/aws"
+	"github.com/hairyhenderson/gomplate/conv"
 )
 
 var (
@@ -68,15 +69,15 @@ func (a *Funcs) EC2Tag(tag string, def ...string) (string, error) {
 }
 
 // KMSEncrypt -
-func (a *Funcs) KMSEncrypt(keyID, plaintext string) (string, error) {
+func (a *Funcs) KMSEncrypt(keyID, plaintext interface{}) (string, error) {
 	a.kmsInit.Do(a.initKMS)
-	return a.kms.Encrypt(keyID, plaintext)
+	return a.kms.Encrypt(conv.ToString(keyID), conv.ToString(plaintext))
 }
 
 // KMSDecrypt -
-func (a *Funcs) KMSDecrypt(ciphertext string) (string, error) {
+func (a *Funcs) KMSDecrypt(ciphertext interface{}) (string, error) {
 	a.kmsInit.Do(a.initKMS)
-	return a.kms.Decrypt(ciphertext)
+	return a.kms.Decrypt(conv.ToString(ciphertext))
 }
 
 func (a *Funcs) initMeta() {
