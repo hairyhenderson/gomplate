@@ -1,7 +1,7 @@
 package aws
 
 import (
-	"encoding/base64"
+	b64 "github.com/hairyhenderson/gomplate/base64"
 
 	"github.com/aws/aws-sdk-go/service/kms"
 )
@@ -30,13 +30,13 @@ func (k *KMS) Encrypt(keyID, plaintext string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	ciphertext := base64.StdEncoding.EncodeToString(output.CiphertextBlob)
+	ciphertext, _ := b64.Encode(output.CiphertextBlob)
 	return ciphertext, nil
 }
 
 // Decrypt a base64 encoded cyphertext
 func (k *KMS) Decrypt(ciphertext string) (string, error) {
-	ciphertextBlob, err := base64.StdEncoding.DecodeString(ciphertext)
+	ciphertextBlob, err := b64.Decode(ciphertext)
 	if err != nil {
 		return "", err
 	}
