@@ -5,24 +5,26 @@ menu:
     parent: functions
 ---
 
+
 ## `net.LookupIP`
 
 Resolve an IPv4 address for a given host name. When multiple IP addresses
 are resolved, the first one is returned.
-
-**Note:** Unresolvable hostnames will result in an error, and `gomplate` will panic.
 
 ### Usage
 
 ```go
 net.LookupIP name
 ```
+```go
+name | net.LookupIP
+```
 
 ### Arguments
 
-| name   | description |
-|--------|-------|
-| `name` | The hostname to look up. This can be a simple hostname, or a fully-qualified domain name. |
+| name | description |
+|------|-------------|
+| `name` | _(required)_ The hostname to look up. This can be a simple hostname, or a fully-qualified domain name. |
 
 ### Examples
 
@@ -35,24 +37,25 @@ $ gomplate -i '{{ net.LookupIP "example.com" }}'
 
 Resolve all IPv4 addresses for a given host name. Returns an array of strings.
 
-**Note:** Unresolvable hostnames will result in an error, and `gomplate` will panic.
-
 ### Usage
 
 ```go
 net.LookupIPs name
 ```
+```go
+name | net.LookupIPs
+```
 
 ### Arguments
 
-| name   | description |
-|--------|-------|
-| `name` | The hostname to look up. This can be a simple hostname, or a fully-qualified domain name. |
+| name | description |
+|------|-------------|
+| `name` | _(required)_ The hostname to look up. This can be a simple hostname, or a fully-qualified domain name. |
 
 ### Examples
 
 ```console
-$ gomplate -i '{{ join (net.LookupIPs "twitter.com") "," }}'  
+$ gomplate -i '{{ join (net.LookupIPs "twitter.com") "," }}'
 104.244.42.65,104.244.42.193
 ```
 
@@ -62,24 +65,25 @@ Resolve the canonical name for a given host name. This does a DNS lookup for the
 `CNAME` record type. If no `CNAME` is present, a canonical form of the given name
 is returned -- e.g. `net.LookupCNAME "localhost"` will return `"localhost."`.
 
-**Note:** Unresolvable hostnames will result in an error, and `gomplate` will panic.
-
 ### Usage
 
 ```go
 net.LookupCNAME name
 ```
+```go
+name | net.LookupCNAME
+```
 
 ### Arguments
 
-| name   | description |
-|--------|-------|
-| `name` | The hostname to look up. This can be a simple hostname, or a fully-qualified domain name. |
+| name | description |
+|------|-------------|
+| `name` | _(required)_ The hostname to look up. This can be a simple hostname, or a fully-qualified domain name. |
 
 ### Examples
 
 ```console
-$ gomplate -i '{{ net.LookupCNAME "www.amazon.com" }}'  
+$ gomplate -i '{{ net.LookupCNAME "www.amazon.com" }}'
 d3ag4hukkh62yn.cloudfront.net.
 ```
 
@@ -98,25 +102,25 @@ following properties are available:
 - `Port` - _(uint16)_ the service's port
 - `Priority`, `Weight` - see [RFC2782](https://tools.ietf.org/html/rfc2782) for details
 
-**Note:** Unresolvable hostnames will result in an error, and `gomplate` will panic.
-
 ### Usage
 
 ```go
 net.LookupSRV name
 ```
+```go
+name | net.LookupSRV
+```
 
 ### Arguments
 
-| name   | description |
-|--------|-------|
-| `name` | The service name to look up |
+| name | description |
+|------|-------------|
+| `name` | _(required)_ The service name to look up |
 
 ### Examples
 
 ```console
-$ gomplate -i '{{ net.LookupSRV "_sip._udp.sip.voice.google.com" | toJSONPretty "  " }}
-'
+$ gomplate -i '{{ net.LookupSRV "_sip._udp.sip.voice.google.com" | toJSONPretty "  " }}'
 {
   "Port": 5060,
   "Priority": 10,
@@ -140,19 +144,20 @@ returned. For each element, the following properties are available:
 - `Port` - _(uint16)_ the service's port
 - `Priority`, `Weight` - see [RFC2782](https://tools.ietf.org/html/rfc2782) for details
 
-**Note:** Unresolvable hostnames will result in an error, and `gomplate` will panic.
-
 ### Usage
 
 ```go
 net.LookupSRVs name
 ```
+```go
+name | net.LookupSRVs
+```
 
 ### Arguments
 
-| name   | description |
-|--------|-------|
-| `name` | The service name to look up |
+| name | description |
+|------|-------------|
+| `name` | _(required)_ The hostname to look up. This can be a simple hostname, or a fully-qualified domain name. |
 
 ### Examples
 
@@ -175,26 +180,26 @@ Resolve a DNS [`TXT` record](https://en.wikipedia.org/wiki/SRV_record).
 
 This function returns all available TXT records as an array of strings.
 
-**Note:** Unresolvable hostnames will result in an error, and `gomplate` will panic.
-
 ### Usage
 
 ```go
 net.LookupTXT name
 ```
+```go
+name | net.LookupTXT
+```
 
 ### Arguments
 
-| name   | description |
-|--------|-------|
-| `name` | The host name to look up |
+| name | description |
+|------|-------------|
+| `name` | _(required)_ The host name to look up |
 
 ### Examples
 
 ```console
-$ gomplate -i '{{net.LookupTXT "example.com" | toJSONPretty "\t" }}'
+$ gomplate -i '{{net.LookupTXT "example.com" | data.ToJSONPretty "  " }}'
 [
-	"$Id: example.com 4415 2015-08-24 20:12:23Z davids $",
-	"v=spf1 -all"
+  "v=spf1 -all"
 ]
 ```

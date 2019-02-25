@@ -34,8 +34,9 @@ $ gomplate -i '{{ add 2.5 2.5 }}'
 Returns the absolute value of a given number. When the input is an integer, the result will be an `int64`, otherwise it will be a `float64`.
 
 ### Usage
+
 ```go
-math.Abs num 
+math.Abs num
 ```
 
 ### Arguments
@@ -58,8 +59,9 @@ $ gomplate -i '{{ math.Abs -3.5 }} {{ math.Abs 3.5 }} {{ math.Abs -42 }}'
 Adds all given operators. When one of the inputs is a floating-point number, the result will be a `float64`, otherwise it will be an `int64`.
 
 ### Usage
+
 ```go
-math.Add n... 
+math.Add n...
 ```
 
 ### Arguments
@@ -82,8 +84,9 @@ Returns the least integer value greater than or equal to a given floating-point 
 **Note:** the return value of this function is a `float64` so that the special-cases `NaN` and `Inf` can be returned appropriately.
 
 ### Usage
+
 ```go
-math.Ceil num 
+math.Ceil num
 ```
 
 ### Arguments
@@ -112,12 +115,12 @@ ceil "-0" = 0
 Divide the first number by the second. Division by zero is disallowed. The result will be a `float64`.
 
 ### Usage
-```go
-math.Div a b 
-```
 
 ```go
-b | math.Div a  
+math.Div a b
+```
+```go
+b | math.Div a
 ```
 
 ### Arguments
@@ -141,8 +144,9 @@ Returns the greatest integer value less than or equal to a given floating-point 
 **Note:** the return value of this function is a `float64` so that the special-cases `NaN` and `Inf` can be returned appropriately.
 
 ### Usage
+
 ```go
-math.Floor num 
+math.Floor num
 ```
 
 ### Arguments
@@ -171,8 +175,9 @@ Returns whether or not the given number can be interpreted as a floating-point l
 **Note:** If a decimal point is part of the input number, it will be considered a floating-point number, even if the decimal is `0`.
 
 ### Usage
+
 ```go
-math.IsFloat num 
+math.IsFloat num
 ```
 
 ### Arguments
@@ -198,8 +203,9 @@ Inf is a float
 Returns whether or not the given number is an integer.
 
 ### Usage
+
 ```go
-math.IsInt num 
+math.IsInt num
 ```
 
 ### Arguments
@@ -222,8 +228,9 @@ $ gomplate -i '{{ range (slice 1.0 "-1.0" 5.1 42 "3.14" "foo" "0xFF" "NaN" "Inf"
 Returns whether the given input is a number. Useful for `if` conditions.
 
 ### Usage
+
 ```go
-math.IsNum in 
+math.IsNum in
 ```
 
 ### Arguments
@@ -244,8 +251,9 @@ false true
 Returns the largest number provided. If any values are floating-point numbers, a `float64` is returned, otherwise an `int64` is returned. The same special-cases as Go's [`math.Max`](https://golang.org/pkg/math/#Max) are followed.
 
 ### Usage
+
 ```go
-math.Max nums... 
+math.Max nums...
 ```
 
 ### Arguments
@@ -266,8 +274,9 @@ $ gomplate -i '{{ math.Max 0 8.0 4.5 "-1.5e-11" }}'
 Returns the smallest number provided. If any values are floating-point numbers, a `float64` is returned, otherwise an `int64` is returned. The same special-cases as Go's [`math.Min`](https://golang.org/pkg/math/#Min) are followed.
 
 ### Usage
+
 ```go
-math.Min nums... 
+math.Min nums...
 ```
 
 ### Arguments
@@ -290,8 +299,9 @@ $ gomplate -i '{{ math.Min 0 8 4.5 "-1.5e-11" }}'
 Multiply all given operators together.
 
 ### Usage
+
 ```go
-math.Mul n... 
+math.Mul n...
 ```
 
 ### Arguments
@@ -314,8 +324,9 @@ $ gomplate -i '{{ math.Mul 8 8 2 }}'
 Calculate an exponent - _b<sup>n</sup>_. This wraps Go's [`math.Pow`](https://golang.org/pkg/math/#Pow). If any values are floating-point numbers, a `float64` is returned, otherwise an `int64` is returned.
 
 ### Usage
+
 ```go
-math.Pow b n 
+math.Pow b n
 ```
 
 ### Arguments
@@ -343,12 +354,12 @@ $ gomplate -i '{{ math.Pow 1.5 2 }}'
 Return the remainder from an integer division operation.
 
 ### Usage
-```go
-math.Rem a b 
-```
 
 ```go
-b | math.Rem a  
+math.Rem a b
+```
+```go
+b | math.Rem a
 ```
 
 ### Arguments
@@ -374,8 +385,9 @@ Returns the nearest integer, rounding half away from zero.
 **Note:** the return value of this function is a `float64` so that the special-cases `NaN` and `Inf` can be returned appropriately.
 
 ### Usage
+
 ```go
-math.Round num 
+math.Round num
 ```
 
 ### Arguments
@@ -405,8 +417,9 @@ down as well as up, including with negative numbers.
 Note that the sequence _may_ not end at `end`, if `end` is not divisible by `step`.
 
 ### Usage
+
 ```go
-math.Seq [start] end [step] 
+math.Seq [start] end [step]
 ```
 
 ### Arguments
@@ -435,12 +448,12 @@ $ gomplate -i '{{ conv.Join (math.Seq 10 -3 2) ", " }}'
 Subtract the second from the first of the given operators.  When one of the inputs is a floating-point number, the result will be a `float64`, otherwise it will be an `int64`.
 
 ### Usage
-```go
-math.Sub a b 
-```
 
 ```go
-b | math.Sub a  
+math.Sub a b
+```
+```go
+b | math.Sub a
 ```
 
 ### Arguments

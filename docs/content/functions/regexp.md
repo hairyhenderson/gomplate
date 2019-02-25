@@ -19,12 +19,12 @@ This function provides the same behaviour as Go's
 [`regexp.FindString`](https://golang.org/pkg/regexp/#Regexp.FindString) function.
 
 ### Usage
-```go
-regexp.Find expression input 
-```
 
 ```go
-input | regexp.Find expression  
+regexp.Find expression input
+```
+```go
+input | regexp.Find expression
 ```
 
 ### Arguments
@@ -57,12 +57,12 @@ This function provides the same behaviour as Go's
 [`regexp.FindAllString`](https://golang.org/pkg/regexp/#Regexp.FindAllString) function.
 
 ### Usage
-```go
-regexp.FindAll expression [false] input 
-```
 
 ```go
-input | regexp.FindAll expression [false]  
+regexp.FindAll expression [false] input
+```
+```go
+input | regexp.FindAll expression [false]
 ```
 
 ### Arguments
@@ -91,12 +91,12 @@ Returns `true` if a given regular expression matches a given input.
 This returns a boolean which can be used in an `if` condition, for example.
 
 ### Usage
-```go
-regexp.Match expression input 
-```
 
 ```go
-input | regexp.Match expression  
+regexp.Match expression input
+```
+```go
+input | regexp.Match expression
 ```
 
 ### Arguments
@@ -123,12 +123,12 @@ This function provides the same behaviour as Go's
 [`regexp.ReplaceAllString`](https://golang.org/pkg/regexp/#Regexp.ReplaceAllString) function.
 
 ### Usage
-```go
-regexp.Replace expression replacement input 
-```
 
 ```go
-input | regexp.Replace expression replacement  
+regexp.Replace expression replacement input
+```
+```go
+input | regexp.Replace expression replacement
 ```
 
 ### Arguments
@@ -161,12 +161,12 @@ This function provides the same behaviour as Go's
 [`regexp.ReplaceAllLiteralString`](https://golang.org/pkg/regexp/#Regexp.ReplaceAllLiteralString) function.
 
 ### Usage
-```go
-regexp.ReplaceLiteral expression replacement input 
-```
 
 ```go
-input | regexp.ReplaceLiteral expression replacement  
+regexp.ReplaceLiteral expression replacement input
+```
+```go
+input | regexp.ReplaceLiteral expression replacement
 ```
 
 ### Arguments
@@ -203,12 +203,12 @@ This function provides the same behaviour as Go's
 [`regexp.Split`](https://golang.org/pkg/regexp/#Regexp.Split) function.
 
 ### Usage
-```go
-regexp.Split expression [false] input 
-```
 
 ```go
-input | regexp.Split expression [false]  
+regexp.Split expression [false] input
+```
+```go
+input | regexp.Split expression [false]
 ```
 
 ### Arguments

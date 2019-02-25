@@ -1,0 +1,479 @@
+ns: data
+preamble: |
+  A collection of functions that retrieve, parse, and convert structured data.
+funcs:
+  - name: datasource
+    alias: ds
+    description: |
+      Parses a given datasource (provided by the [`--datasource/-d`](#--datasource-d) argument or [`defineDatasource`](#definedatasource)).
+
+      If the `alias` is undefined, but is a valid URL, `datasource` will dynamically read from that URL.
+
+      See [Datasources](../../datasources) for (much!) more information.
+    pipeline: false
+    arguments:
+      - name: alias
+        required: true
+        description: the datasource alias (or a URL for dynamic use)
+      - name: subpath
+        required: false
+        description: the subpath to use, if supported by the datasource
+    rawExamples:
+      - |
+        _`person.json`:_
+        ```json
+        { "name": "Dave" }
+        ```
+
+        ```console
+        $ gomplate -d person.json -i 'Hello {{ (datasource "person").name }}'
+        Hello Dave
+        ```
+  - name: datasourceExists
+    description: |
+      Tests whether or not a given datasource was defined on the commandline (with the
+      [`--datasource/-d`](#--datasource-d) argument). This is intended mainly to allow
+      a template to be rendered differently whether or not a given datasource was
+      defined.
+
+      Note: this does _not_ verify if the datasource is reachable.
+
+      Useful when used in an `if`/`else` block.
+    pipeline: false
+    arguments:
+      - name: alias
+        required: true
+        description: the datasource alias
+    examples:
+      - |
+        $ echo '{{if (datasourceExists "test")}}{{datasource "test"}}{{else}}no worries{{end}}' | gomplate
+        no worries
+  - name: datasourceReachable
+    description: |
+      Tests whether or not a given datasource is defined and reachable, where the definition of "reachable" differs by datasource, but generally means the data is able to be read successfully.
+
+      Useful when used in an `if`/`else` block.
+    pipeline: false
+    arguments:
+      - name: alias
+        required: true
+        description: the datasource alias
+    examples:
+      - |
+        $ gomplate -i '{{if (datasourceReachable "test")}}{{datasource "test"}}{{else}}no worries{{end}}' -d test=https://bogus.example.com/wontwork.json
+        no worries
+  - name: defineDatasource
+    description: |
+      Define a datasource alias with target URL inside the template. Overridden by the [`--datasource/-d`](#--datasource-d) flag.
+
+      Note: once a datasource is defined, it can not be redefined (i.e. if this function is called twice with the same alias, only the first applies).
+
+      This function can provide a good way to set a default datasource when sharing templates.
+
+      See [Datasources](../../datasources) for (much!) more information.
+    pipeline: false
+    arguments:
+      - name: alias
+        required: true
+        description: the datasource alias
+      - name: url
+        required: true
+        description: the datasource's URL
+    rawExamples:
+      - |
+        _`person.json`:_
+        ```json
+        { "name": "Dave" }
+        ```
+
+        ```console
+        $ gomplate -i '{{ defineDatasource "person" "person.json" }}Hello {{ (ds "person").name }}'
+        Hello Dave
+        $ FOO='{"name": "Daisy"}' gomplate -d person=env:///FOO -i '{{ defineDatasource "person" "person.json" }}Hello {{ (ds "person").name }}'
+        Hello Daisy
+        ```
+  - name: include
+    description: |
+      Includes the content of a given datasource (provided by the [`--datasource/-d`](../usage/#datasource-d) argument).
+
+      This is similar to [`datasource`](#datasource), except that the data is not parsed. There is no restriction on the type of data included, except that it should be textual.
+    pipeline: false
+    arguments:
+      - name: alias
+        required: true
+        description: the datasource alias, as provided by [`--datasource/-d`](../usage/#datasource-d)
+      - name: subpath
+        required: false
+        description: the subpath to use, if supported by the datasource
+    rawExamples:
+      - |
+        _`person.json`:_
+        ```json
+        { "name": "Dave" }
+        ```
+
+        _`input.tmpl`:_
+        ```go
+        {
+          "people": [
+            {{ include "person" }}
+          ]
+        }
+        ```
+
+        ```console
+        $ gomplate -d person.json -f input.tmpl
+        {
+          "people": [
+            { "name": "Dave" }
+          ]
+        }
+        ```
+  - name: data.JSON
+    alias: json
+    description: |
+      Converts a JSON string into an object. Only works for JSON Objects (not Arrays or other valid JSON types). This can be used to access properties of JSON objects.
+
+      #### Encrypted JSON support (EJSON)
+
+      If the input is in the [EJSON](https://github.com/Shopify/ejson) format (i.e. has a `_public_key` field), this function will attempt to decrypt the document first. A private key must be provided by one of these methods:
+
+      - set the `EJSON_KEY` environment variable to the private key's value
+      - set the `EJSON_KEY_FILE` environment variable to the path to a file containing the private key
+      - set the `EJSON_KEYDIR` environment variable to the path to a directory containing private keys (filename must be the public key), just like [`ejson decrypt`'s `--keydir`](https://github.com/Shopify/ejson/blob/master/man/man1/ejson.1.ronn) flag. Defaults to `/opt/ejson/keys`.
+    pipeline: true
+    arguments:
+      - name: in
+        required: true
+        description: the input string
+    rawExamples:
+      - |
+        _`input.tmpl`:_
+        ```
+        Hello {{ (getenv "FOO" | json).hello }}
+        ```
+
+        ```console
+        $ export FOO='{"hello":"world"}'
+        $ gomplate < input.tmpl
+        Hello world
+        ```
+  - name: data.JSONArray
+    alias: jsonArray
+    description: |
+      Converts a JSON string into a slice. Only works for JSON Arrays.
+    pipeline: true
+    arguments:
+      - name: in
+        required: true
+        description: the input string
+    rawExamples:
+      - |
+        _`input.tmpl`:_
+        ```
+        Hello {{ index (getenv "FOO" | jsonArray) 1 }}
+        ```
+
+        ```console
+        $ export FOO='[ "you", "world" ]'
+        $ gomplate < input.tmpl
+        Hello world
+        ```
+  - name: data.YAML
+    alias: yaml
+    description: |
+      Converts a YAML string into an object. Only works for YAML Objects (not Arrays or other valid YAML types). This can be used to access properties of YAML objects.
+    pipeline: true
+    arguments:
+      - name: in
+        required: true
+        description: the input string
+    rawExamples:
+      - |
+        _`input.tmpl`:_
+        ```
+        Hello {{ (getenv "FOO" | yaml).hello }}
+        ```
+
+        ```console
+        $ export FOO='hello: world'
+        $ gomplate < input.tmpl
+        Hello world
+        ```
+  - name: data.YAMLArray
+    alias: yamlArray
+    description: |
+      Converts a YAML string into a slice. Only works for YAML Arrays.
+    pipeline: true
+    arguments:
+      - name: in
+        required: true
+        description: the input string
+    rawExamples:
+      - |
+        _`input.tmpl`:_
+        ```
+        Hello {{ index (getenv "FOO" | yamlArray) 1 }}
+        ```
+
+        ```console
+        $ export FOO='[ "you", "world" ]'
+        $ gomplate < input.tmpl
+        Hello world
+        ```
+  - name: data.TOML
+    alias: toml
+    description: |
+      Converts a [TOML](https://github.com/toml-lang/toml) document into an object.
+      This can be used to access properties of TOML documents.
+
+      Compatible with [TOML v0.4.0](https://github.com/toml-lang/toml/blob/master/versions/en/toml-v0.4.0.md).
+    pipeline: true
+    arguments:
+      - name: input
+        required: true
+        description: the TOML document to parse
+    rawExamples:
+      - |
+        _`input.tmpl`:_
+        ```
+        {{ $t := `[data]
+        hello = "world"` -}}
+        Hello {{ (toml $t).hello }}
+        ```
+
+        ```console
+        $ gomplate -f input.tmpl
+        Hello world
+        ```
+  - name: data.CSV
+    alias: csv
+    description: |
+      Converts a CSV-format string into a 2-dimensional string array.
+
+      By default, the [RFC 4180](https://tools.ietf.org/html/rfc4180) format is
+      supported, but any single-character delimiter can be specified.
+    pipeline: true
+    arguments:
+      - name: delim
+        required: false
+        description: the (single-character!) field delimiter, defaults to `","`
+      - name: input
+        required: true
+        description: the CSV-format string to parse
+    rawExamples:
+      - |
+        _`input.tmpl`:_
+        ```
+        {{ $c := `C,32
+        Go,25
+        COBOL,357` -}}
+        {{ range ($c | csv) -}}
+        {{ index . 0 }} has {{ index . 1 }} keywords.
+        {{ end }}
+        ```
+
+        ```console
+        $ gomplate < input.tmpl
+        C has 32 keywords.
+        Go has 25 keywords.
+        COBOL has 357 keywords.
+        ```
+  - name: data.CSVByRow
+    alias: csvByRow
+    description: |
+      Converts a CSV-format string into a slice of maps.
+
+      By default, the [RFC 4180](https://tools.ietf.org/html/rfc4180) format is
+      supported, but any single-character delimiter can be specified.
+
+      Also by default, the first line of the string will be assumed to be the header,
+      but this can be overridden by providing an explicit header, or auto-indexing
+      can be used.
+    pipeline: true
+    arguments:
+      - name: delim
+        required: false
+        description: the (single-character!) field delimiter, defaults to `","`
+      - name: header
+        required: false
+        description: comma-separated list of column names, set to `""` to get auto-named columns (A-Z), defaults to using the first line of `input`
+      - name: input
+        required: true
+        description: the CSV-format string to parse
+    rawExamples:
+      - |
+        _`input.tmpl`:_
+        ```
+        {{ $c := `lang,keywords
+        C,32
+        Go,25
+        COBOL,357` -}}
+        {{ range ($c | csvByRow) -}}
+        {{ .lang }} has {{ .keywords }} keywords.
+        {{ end }}
+        ```
+
+        ```console
+        $ gomplate < input.tmpl
+        C has 32 keywords.
+        Go has 25 keywords.
+        COBOL has 357 keywords.
+        ```
+  - name: data.CSVByColumn
+    alias: csvByColumn
+    description: |
+      Like [`csvByRow`](#csvByRow), except that the data is presented as a columnar
+      (column-oriented) map.
+    pipeline: true
+    arguments:
+      - name: delim
+        required: false
+        description: the (single-character!) field delimiter, defaults to `","`
+      - name: header
+        required: false
+        description: comma-separated list of column names, set to `""` to get auto-named columns (A-Z), defaults to using the first line of `input`
+      - name: input
+        required: true
+        description: the CSV-format string to parse
+    rawExamples:
+      - |
+        _`input.tmpl`:_
+        ```
+        {{ $c := `C;32
+        Go;25
+        COBOL;357` -}}
+        {{ $langs := ($c | csvByColumn ";" "lang,keywords").lang -}}
+        {{ range $langs }}{{ . }}
+        {{ end -}}
+        ```
+
+        ```console
+        $ gomplate < input.tmpl
+        C
+        Go
+        COBOL
+        ```
+  - name: data.ToJSON
+    alias: toJSON
+    description: |
+      Converts an object to a JSON document. Input objects may be the result of `json`, `yaml`, `jsonArray`, or `yamlArray` functions, or they could be provided by a `datasource`.
+    pipeline: true
+    arguments:
+      - name: obj
+        required: true
+        description: the object to marshal
+    rawExamples:
+      - |
+        _This is obviously contrived - `json` is used to create an object._
+
+        _`input.tmpl`:_
+        ```
+        {{ (`{"foo":{"hello":"world"}}` | json).foo | toJSON }}
+        ```
+
+        ```console
+        $ gomplate < input.tmpl
+        {"hello":"world"}
+        ```
+  - name: data.ToJSONPretty
+    alias: toJSONPretty
+    description: |
+      Converts an object to a pretty-printed (or _indented_) JSON document.
+      Input objects may be the result of functions like `data.JSON`, `data.YAML`,
+      `data.JSONArray`, or `data.YAMLArray` functions, or they could be provided
+      by a [`datasource`](../general/datasource).
+
+      The indent string must be provided as an argument.
+    pipeline: true
+    arguments:
+      - name: indent
+        required: true
+        description: the string to use for indentation
+      - name: obj
+        required: true
+        description: the object to marshal
+    rawExamples:
+      - |
+        _`input.tmpl`:_
+        ```
+        {{ `{"hello":"world"}` | data.JSON | data.ToJSONPretty "  " }}
+        ```
+
+        ```console
+        $ gomplate < input.tmpl
+        {
+          "hello": "world"
+        }
+        ```
+  - name: data.ToYAML
+    alias: toYAML
+    description: |
+      Converts an object to a YAML document. Input objects may be the result of
+      `data.JSON`, `data.YAML`, `data.JSONArray`, or `data.YAMLArray` functions,
+      or they could be provided by a [`datasource`](../general/datasource).
+    pipeline: true
+    arguments:
+      - name: obj
+        required: true
+        description: the object to marshal
+    rawExamples:
+      - |
+        _This is obviously contrived - `data.JSON` is used to create an object._
+
+        _`input.tmpl`:_
+        ```
+        {{ (`{"foo":{"hello":"world"}}` | data.JSON).foo | data.ToYAML }}
+        ```
+
+        ```console
+        $ gomplate < input.tmpl
+        hello: world
+        ```
+  - name: data.ToTOML
+    alias: toTOML
+    description: |
+      Converts an object to a [TOML](https://github.com/toml-lang/toml) document.
+    pipeline: true
+    arguments:
+      - name: obj
+        required: true
+        description: the object to marshal as a TOML document
+    examples:
+      - |
+        $ gomplate -i '{{ `{"foo":"bar"}` | data.JSON | data.ToTOML }}'
+        foo = "bar"
+  - name: data.ToCSV
+    alias: toCSV
+    description: |
+      Converts an object to a CSV document. The input object must be a 2-dimensional
+      array of strings (a `[][]string`). Objects produced by [`data.CSVByRow`](#conv-csvbyrow)
+      and [`data.CSVByColumn`](#conv-csvbycolumn) cannot yet be converted back to CSV documents.
+
+      **Note:** With the exception that a custom delimiter can be used, `data.ToCSV`
+      outputs according to the [RFC 4180](https://tools.ietf.org/html/rfc4180) format,
+      which means that line terminators are `CRLF` (Windows format, or `\r\n`). If
+      you require `LF` (UNIX format, or `\n`), the output can be piped through
+      [`strings.ReplaceAll`](../strings/#strings-replaceall) to replace `"\r\n"` with `"\n"`.
+    pipeline: true
+    arguments:
+      - name: delim
+        required: false
+        description: the (single-character!) field delimiter, defaults to `","`
+      - name: input
+        required: true
+        description: the object to convert to a CSV
+    rawExamples:
+      - |
+        _`input.tmpl`:_
+        ```go
+        {{ $rows := (jsonArray `[["first","second"],["1","2"],["3","4"]]`) -}}
+        {{ data.ToCSV ";" $rows }}
+        ```
+
+        ```console
+        $ gomplate -f input.tmpl
+        first,second
+        1,2
+        3,4
+        ```

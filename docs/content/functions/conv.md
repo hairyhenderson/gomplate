@@ -17,12 +17,12 @@ to another - generally from a `string` to something else, and vice-versa.
 Converts a true-ish string to a boolean. Can be used to simplify conditional statements based on environment variables or other text input.
 
 ### Usage
-```go
-conv.Bool in 
-```
 
 ```go
-in | conv.Bool  
+conv.Bool in
+```
+```go
+in | conv.Bool
 ```
 
 ### Arguments
@@ -57,12 +57,12 @@ Note that this will not provide a default for the case where the input is undefi
 [`conv.Has`](#conv-has) can be used for that.
 
 ### Usage
-```go
-conv.Default default in 
-```
 
 ```go
-in | conv.Default default  
+conv.Default default in
+```
+```go
+in | conv.Default default
 ```
 
 ### Arguments
@@ -99,8 +99,9 @@ For creating more complex maps, see [`data.JSON`](../data/#data-json) or [`data.
 For creating arrays, see [`conv.Slice`](#conv-slice).
 
 ### Usage
+
 ```go
-conv.Dict in... 
+conv.Dict in...
 ```
 
 ### Arguments
@@ -136,8 +137,9 @@ Hello everybody!
 Creates a slice (like an array or list). Useful when needing to `range` over a bunch of variables.
 
 ### Usage
+
 ```go
-conv.Slice in... 
+conv.Slice in...
 ```
 
 ### Arguments
@@ -163,8 +165,9 @@ Hello, Maggie
 Reports whether a given object has a property with the given key, or whether a given array/slice contains the given value. Can be used with `if` to prevent the template from trying to access a non-existent property in an object.
 
 ### Usage
+
 ```go
-conv.Has in item 
+conv.Has in item
 ```
 
 ### Arguments
@@ -200,8 +203,9 @@ THERE IS NO FOO
 Concatenates the elements of an array to create a string. The separator string `sep` is placed between elements in the resulting string.
 
 ### Usage
+
 ```go
-conv.Join in sep 
+conv.Join in sep
 ```
 
 ### Arguments
@@ -225,8 +229,9 @@ $ gomplate -i '{{ $a := slice 1 2 3 }}{{ join $a "-" }}'
 Parses a string as a URL for later use. Equivalent to [url.Parse](https://golang.org/pkg/net/url/#Parse)
 
 ### Usage
+
 ```go
-conv.URL in 
+conv.URL in
 ```
 
 ### Arguments
@@ -258,6 +263,12 @@ _**Note:**_ See [`conv.ToInt64`](#conv-toint64) instead for a simpler and more f
 
 Parses a string as an int64. Equivalent to [strconv.ParseInt](https://golang.org/pkg/strconv/#ParseInt)
 
+### Usage
+
+```go
+conv.ParseInt
+```
+
 
 ### Examples
 
@@ -279,6 +290,12 @@ _**Note:**_ See [`conv.ToFloat`](#conv-tofloat) instead for a simpler and more f
 
 Parses a string as an float64 for later use. Equivalent to [strconv.ParseFloat](https://golang.org/pkg/strconv/#ParseFloat)
 
+### Usage
+
+```go
+conv.ParseFloat
+```
+
 
 ### Examples
 
@@ -298,6 +315,12 @@ pi is greater than 3
 ## `conv.ParseUint`
 
 Parses a string as an uint64 for later use. Equivalent to [strconv.ParseUint](https://golang.org/pkg/strconv/#ParseUint)
+
+### Usage
+
+```go
+conv.ParseUint
+```
 
 
 ### Examples
@@ -319,6 +342,12 @@ $ BIG=FFFFFFFFFFFFFFFF gomplate < input.tmpl
 _**Note:**_ See [`conv.ToInt`](#conv-toint) and [`conv.ToInt64`](#conv-toint64) instead for simpler and more flexible variants of this function.
 
 Parses a string as an int for later use. Equivalent to [strconv.Atoi](https://golang.org/pkg/strconv/#Atoi)
+
+### Usage
+
+```go
+conv.Atoi
+```
 
 
 ### Examples
@@ -345,12 +374,12 @@ Possible `true` values are: `1` or the strings `"t"`, `"true"`, or `"yes"`
 (any capitalizations). All other values are considered `false`.
 
 ### Usage
-```go
-conv.ToBool input 
-```
 
 ```go
-input | conv.ToBool  
+conv.ToBool input
+```
+```go
+input | conv.ToBool
 ```
 
 ### Arguments
@@ -375,12 +404,12 @@ Possible `true` values are: `1` or the strings `"t"`, `"true"`, or `"yes"`
 (any capitalizations). All other values are considered `false`.
 
 ### Usage
-```go
-conv.ToBools input 
-```
 
 ```go
-input | conv.ToBools  
+conv.ToBools input
+```
+```go
+input | conv.ToBools
 ```
 
 ### Arguments
@@ -410,8 +439,9 @@ errors, or `0` or `-1`.
 Floating-point numbers (with decimal points) are truncated.
 
 ### Usage
+
 ```go
-conv.ToInt64 in 
+conv.ToInt64 in
 ```
 
 ### Arguments
@@ -445,8 +475,9 @@ as an `int`.
 See also [`conv.ToInt64`](#conv-toint64).
 
 ### Usage
+
 ```go
-conv.ToInt in 
+conv.ToInt in
 ```
 
 ### Arguments
@@ -477,8 +508,9 @@ Converts the inputs to an array of `int64`s.
 This delegates to [`conv.ToInt64`](#conv-toint64) for each input argument.
 
 ### Usage
+
 ```go
-conv.ToInt64s in... 
+conv.ToInt64s in...
 ```
 
 ### Arguments
@@ -501,8 +533,9 @@ Converts the inputs to an array of `int`s.
 This delegates to [`conv.ToInt`](#conv-toint) for each input argument.
 
 ### Usage
+
 ```go
-conv.ToInts in... 
+conv.ToInts in...
 ```
 
 ### Arguments
@@ -528,8 +561,9 @@ undefined and subject to change. Unconvertable inputs may result in
 errors, or `0` or `-1`.
 
 ### Usage
+
 ```go
-conv.ToFloat64 in 
+conv.ToFloat64 in
 ```
 
 ### Arguments
@@ -554,8 +588,9 @@ Converts the inputs to an array of `float64`s.
 This delegates to [`conv.ToFloat64`](#conv-tofloat64) for each input argument.
 
 ### Usage
+
 ```go
-conv.ToFloat64s in... 
+conv.ToFloat64s in...
 ```
 
 ### Arguments
@@ -578,8 +613,9 @@ Converts the input (of any type) to a `string`.
 The input will always be represented in _some_ way.
 
 ### Usage
+
 ```go
-conv.ToString in 
+conv.ToString in
 ```
 
 ### Arguments
@@ -606,8 +642,9 @@ Converts the inputs (of any type) to an array of `string`s
 This delegates to [`conv.ToString`](#conv-tostring) for each input argument.
 
 ### Usage
+
 ```go
-conv.ToStrings in... 
+conv.ToStrings in...
 ```
 
 ### Arguments

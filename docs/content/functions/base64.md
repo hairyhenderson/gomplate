@@ -5,6 +5,7 @@ menu:
     parent: functions
 ---
 
+
 ## `base64.Encode`
 
 Encode data as a Base64 string. Specifically, this uses the standard Base64 encoding as defined in [RFC4648 &sect;4](https://tools.ietf.org/html/rfc4648#section-4) (and _not_ the URL-safe encoding).
@@ -17,9 +18,9 @@ base64.Encode input
 
 ### Arguments
 
-| name   | description |
-|--------|-------|
-| `input` | The data to encode. Can be a string, a byte array, or a buffer. Other types will be converted to strings first. |
+| name | description |
+|------|-------------|
+| `input` | _(required)_ The data to encode. Can be a string, a byte array, or a buffer. Other types will be converted to strings first. |
 
 ### Examples
 
@@ -27,7 +28,6 @@ base64.Encode input
 $ gomplate -i '{{ base64.Encode "hello world" }}'
 aGVsbG8gd29ybGQ=
 ```
-
 ```console
 $ gomplate -i '{{ "hello world" | base64.Encode }}'
 aGVsbG8gd29ybGQ=
@@ -47,9 +47,9 @@ base64.Decode input
 
 ### Arguments
 
-| name   | description |
-|--------|-------|
-| `input` | The base64 string to decode |
+| name | description |
+|------|-------------|
+| `input` | _(required)_ The base64 string to decode |
 
 ### Examples
 
@@ -57,7 +57,6 @@ base64.Decode input
 $ gomplate -i '{{ base64.Decode "aGVsbG8gd29ybGQ=" }}'
 hello world
 ```
-
 ```console
 $ gomplate -i '{{ "aGVsbG8gd29ybGQ=" | base64.Decode }}'
 hello world

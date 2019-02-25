@@ -14,12 +14,12 @@ Execute (render) the named template. This is equivalent to using the [`template`
 This allows for post-processing of templates.
 
 ### Usage
-```go
-tmpl.Exec name [context] 
-```
 
 ```go
-context | tmpl.Exec name  
+tmpl.Exec name [context]
+```
+```go
+context | tmpl.Exec name
 ```
 
 ### Arguments
@@ -51,8 +51,9 @@ If the template is given a name (see `name` argument below), it can be re-used l
 A context can be provided, otherwise the default gomplate context will be used.
 
 ### Usage
+
 ```go
-tmpl.Inline [name] in [context] 
+tmpl.Inline [name] in [context]
 ```
 
 ### Arguments

@@ -20,12 +20,12 @@ Returns the last element of path. Trailing slashes are removed before extracting
 A wrapper for Go's [`path.Base`](https://golang.org/pkg/path/#Base) function.
 
 ### Usage
-```go
-path.Base path 
-```
 
 ```go
-path | path.Base  
+path.Base path
+```
+```go
+path | path.Base
 ```
 
 ### Arguments
@@ -48,12 +48,12 @@ Clean returns the shortest path name equivalent to path by purely lexical proces
 A wrapper for Go's [`path.Clean`](https://golang.org/pkg/path/#Clean) function.
 
 ### Usage
-```go
-path.Clean path 
-```
 
 ```go
-path | path.Clean  
+path.Clean path
+```
+```go
+path | path.Clean
 ```
 
 ### Arguments
@@ -76,12 +76,12 @@ Returns all but the last element of path, typically the path's directory.
 A wrapper for Go's [`path.Dir`](https://golang.org/pkg/path/#Dir) function.
 
 ### Usage
-```go
-path.Dir path 
-```
 
 ```go
-path | path.Dir  
+path.Dir path
+```
+```go
+path | path.Dir
 ```
 
 ### Arguments
@@ -104,12 +104,12 @@ Returns the file name extension used by path.
 A wrapper for Go's [`path.Ext`](https://golang.org/pkg/path/#Ext) function.
 
 ### Usage
-```go
-path.Ext path 
-```
 
 ```go
-path | path.Ext  
+path.Ext path
+```
+```go
+path | path.Ext
 ```
 
 ### Arguments
@@ -132,12 +132,12 @@ Reports whether the path is absolute.
 A wrapper for Go's [`path.IsAbs`](https://golang.org/pkg/path/#IsAbs) function.
 
 ### Usage
-```go
-path.IsAbs path 
-```
 
 ```go
-path | path.IsAbs  
+path.IsAbs path
+```
+```go
+path | path.IsAbs
 ```
 
 ### Arguments
@@ -162,8 +162,9 @@ Joins any number of path elements into a single path, adding a separating slash 
 A wrapper for Go's [`path.Join`](https://golang.org/pkg/path/#Join) function.
 
 ### Usage
+
 ```go
-path.Join elem... 
+path.Join elem...
 ```
 
 ### Arguments
@@ -186,8 +187,9 @@ Reports whether name matches the shell file name pattern.
 A wrapper for Go's [`path.Match`](https://golang.org/pkg/path/#Match) function.
 
 ### Usage
+
 ```go
-path.Match pattern path 
+path.Match pattern path
 ```
 
 ### Arguments
@@ -213,12 +215,12 @@ The function returns an array with two values, the first being the directory, an
 A wrapper for Go's [`path.Split`](https://golang.org/pkg/path/#Split) function.
 
 ### Usage
-```go
-path.Split path 
-```
 
 ```go
-path | path.Split  
+path.Split path
+```
+```go
+path | path.Split
 ```
 
 ### Arguments

@@ -55,7 +55,7 @@ funcs:
     arguments:
       - name: num
         required: true
-        description: The input number. Will be converted to a `float64`, or `0` if not convertable
+        description: The input number. Will be converted to a `float64`, or `0` if not convertible
     examples:
       - |
         $ gomplate -i '{{ range (slice 5.1 42 "3.14" "0xFF" "NaN" "Inf" "-0") }}ceil {{ printf "%#v" . }} = {{ math.Ceil . }}{{"\n"}}{{ end }}'

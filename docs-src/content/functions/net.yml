@@ -1,0 +1,119 @@
+ns: net
+preamble: ''
+funcs:
+  - name: net.LookupIP
+    description: |
+      Resolve an IPv4 address for a given host name. When multiple IP addresses
+      are resolved, the first one is returned.
+    pipeline: true
+    arguments:
+      - name: name
+        required: true
+        description: The hostname to look up. This can be a simple hostname, or a fully-qualified domain name.
+    examples:
+      - |
+        $ gomplate -i '{{ net.LookupIP "example.com" }}'
+        93.184.216.34
+  - name: net.LookupIPs
+    description: |
+      Resolve all IPv4 addresses for a given host name. Returns an array of strings.
+    pipeline: true
+    arguments:
+      - name: name
+        required: true
+        description: The hostname to look up. This can be a simple hostname, or a fully-qualified domain name.
+    examples:
+      - |
+        $ gomplate -i '{{ join (net.LookupIPs "twitter.com") "," }}'
+        104.244.42.65,104.244.42.193
+  - name: net.LookupCNAME
+    description: |
+      Resolve the canonical name for a given host name. This does a DNS lookup for the
+      `CNAME` record type. If no `CNAME` is present, a canonical form of the given name
+      is returned -- e.g. `net.LookupCNAME "localhost"` will return `"localhost."`.
+    pipeline: true
+    arguments:
+      - name: name
+        required: true
+        description: The hostname to look up. This can be a simple hostname, or a fully-qualified domain name.
+    examples:
+      - |
+        $ gomplate -i '{{ net.LookupCNAME "www.amazon.com" }}'
+        d3ag4hukkh62yn.cloudfront.net.
+  - name: net.LookupSRV
+    description: |
+      Resolve a DNS [`SRV` service record](https://en.wikipedia.org/wiki/SRV_record).
+      This implementation supports the canonical [RFC2782](https://tools.ietf.org/html/rfc2782)
+      form (i.e. `_Service._Proto.Name`), but other forms are also supported, such as
+      those served by [Consul's DNS interface](https://www.consul.io/docs/agent/dns.html#standard-lookup).
+
+      When multiple records are returned, this function returns the first.
+
+      A [`net.SRV`](https://golang.org/pkg/net/#SRV) data structure is returned. The
+      following properties are available:
+      - `Target` - _(string)_ the hostname where the service can be reached
+      - `Port` - _(uint16)_ the service's port
+      - `Priority`, `Weight` - see [RFC2782](https://tools.ietf.org/html/rfc2782) for details
+    pipeline: true
+    arguments:
+      - name: name
+        required: true
+        description: The service name to look up
+    examples:
+      - |
+        $ gomplate -i '{{ net.LookupSRV "_sip._udp.sip.voice.google.com" | toJSONPretty "  " }}'
+        {
+          "Port": 5060,
+          "Priority": 10,
+          "Target": "sip-anycast-1.voice.google.com.",
+          "Weight": 1
+        }
+  - name: net.LookupSRVs
+    description: |
+      Resolve a DNS [`SRV` service record](https://en.wikipedia.org/wiki/SRV_record).
+      This implementation supports the canonical [RFC2782](https://tools.ietf.org/html/rfc2782)
+      form (i.e. `_Service._Proto.Name`), but other forms are also supported, such as
+      those served by [Consul's DNS interface](https://www.consul.io/docs/agent/dns.html#standard-lookup).
+
+      This function returns all available SRV records.
+
+      An array of [`net.SRV`](https://golang.org/pkg/net/#SRV) data structures is
+      returned. For each element, the following properties are available:
+      - `Target` - _(string)_ the hostname where the service can be reached
+      - `Port` - _(uint16)_ the service's port
+      - `Priority`, `Weight` - see [RFC2782](https://tools.ietf.org/html/rfc2782) for details
+    pipeline: true
+    arguments:
+      - name: name
+        required: true
+        description: The hostname to look up. This can be a simple hostname, or a fully-qualified domain name.
+    rawExamples:
+      - |
+        _input.tmpl:_
+        ```
+        {{ range (net.LookupSRVs "_sip._udp.sip.voice.google.com") -}}
+        priority={{.Priority}}/port={{.Port}}
+        {{- end }}
+        ```
+
+        ```console
+        $ gomplate -f input.tmpl
+        priority=10/port=5060
+        priority=20/port=5060
+        ```
+  - name: net.LookupTXT
+    description: |
+      Resolve a DNS [`TXT` record](https://en.wikipedia.org/wiki/SRV_record).
+
+      This function returns all available TXT records as an array of strings.
+    pipeline: true
+    arguments:
+      - name: name
+        required: true
+        description: The host name to look up
+    examples:
+      - |
+        $ gomplate -i '{{net.LookupTXT "example.com" | data.ToJSONPretty "  " }}'
+        [
+          "v=spf1 -all"
+        ]

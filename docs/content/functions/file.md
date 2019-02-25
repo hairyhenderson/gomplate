@@ -12,12 +12,12 @@ Functions for working with files.
 Reports whether a file or directory exists at the given path.
 
 ### Usage
-```go
-file.Exists path 
-```
 
 ```go
-path | file.Exists  
+file.Exists path
+```
+```go
+path | file.Exists
 ```
 
 ### Arguments
@@ -46,12 +46,12 @@ yes
 Reports whether a given path is a directory.
 
 ### Usage
-```go
-file.IsDir path 
-```
 
 ```go
-path | file.IsDir  
+file.IsDir path
+```
+```go
+path | file.IsDir
 ```
 
 ### Arguments
@@ -83,12 +83,12 @@ yes
 Reads a given file _as text_. Note that this will succeed if the given file is binary, but the output may be gibberish.
 
 ### Usage
-```go
-file.Read path 
-```
 
 ```go
-path | file.Read  
+file.Read path
+```
+```go
+path | file.Read
 ```
 
 ### Arguments
@@ -110,12 +110,12 @@ hello world
 Reads a directory and lists the files and directories contained within.
 
 ### Usage
-```go
-file.ReadDir path 
-```
 
 ```go
-path | file.ReadDir  
+file.ReadDir path
+```
+```go
+path | file.ReadDir
 ```
 
 ### Arguments
@@ -144,12 +144,12 @@ Returns a [`os.FileInfo`](https://golang.org/pkg/os/#FileInfo) describing the na
 Essentially a wrapper for Go's [`os.Stat`](https://golang.org/pkg/os/#Stat) function.
 
 ### Usage
-```go
-file.Stat path 
-```
 
 ```go
-path | file.Stat  
+file.Stat path
+```
+```go
+path | file.Stat
 ```
 
 ### Arguments
@@ -177,12 +177,12 @@ Walk does not follow symbolic links.
 Similar to Go's [`filepath.Walk`](https://golang.org/pkg/path/filepath/#Walk) function.
 
 ### Usage
-```go
-file.Walk path 
-```
 
 ```go
-path | file.Walk  
+file.Walk path
+```
+```go
+path | file.Walk
 ```
 
 ### Arguments
@@ -223,12 +223,12 @@ Non-existing directories in the output path will be created.
 If the data is a byte array (`[]byte`), it will be written as-is. Otherwise, it will be converted to a string before being written.
 
 ### Usage
-```go
-file.Write filename data 
-```
 
 ```go
-data | file.Write filename  
+file.Write filename data
+```
+```go
+data | file.Write filename
 ```
 
 ### Arguments
