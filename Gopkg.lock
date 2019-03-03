@@ -30,7 +30,7 @@
   revision = "f0300d1749da6fa982027e449ec0c7a145510c3c"
 
 [[projects]]
-  digest = "1:9ebb446eacc1947b088a1d91619efa17fe1ad3d59bbeba9a9a5d940c40983b1b"
+  digest = "1:0aaf3b498668e7caad9e572daaf1866562412b1477e67de06d5afe594b439c62"
   name = "github.com/aws/aws-sdk-go"
   packages = [
     "aws",
@@ -69,8 +69,8 @@
     "service/sts",
   ]
   pruneopts = "NUT"
-  revision = "130e7e7f5cfa00e267b884bd2772ae986f9e8273"
-  version = "v1.16.30"
+  revision = "f2bb620afb315242706942e6ca4c7d26ee5ed627"
+  version = "v1.17.9"
 
 [[projects]]
   digest = "1:27c31c51caa806074eca1038cbdc6a9c5b2eb202264b6bfb359eb441e2594268"
@@ -129,12 +129,12 @@
   revision = "8306686428a5fe132eac8cb7c4848af725098bd4"
 
 [[projects]]
-  branch = "master"
   digest = "1:7f114b78210bf5b75f307fc97cff293633c835bab1e0ea8a744a44b39c042dfe"
   name = "github.com/golang/snappy"
   packages = ["."]
   pruneopts = "NUT"
-  revision = "2e65f85255dbc3072edf28d6b5b8efc472979f5a"
+  revision = "2a8bb927dd31d8daada140a5d09578521ce5c36a"
+  version = "v0.0.1"
 
 [[projects]]
   digest = "1:2e3c336fc7fde5c984d2841455a658a6d626450b1754a854b3b32e7a8f49a07a"
@@ -254,8 +254,8 @@
   name = "github.com/hashicorp/golang-lru"
   packages = ["simplelru"]
   pruneopts = "NUT"
-  revision = "20f1fb78b0740ba8c3cb143a61e86ba5c8669768"
-  version = "v0.5.0"
+  revision = "7087cb70de9f7a8bc0a10c375cb0d2280a8edf9c"
+  version = "v0.5.1"
 
 [[projects]]
   digest = "1:39f543569bf189e228c84a294c50aca8ea56c82b3d9df5c9b788249907d7049a"
@@ -284,7 +284,7 @@
   version = "v0.8.2"
 
 [[projects]]
-  digest = "1:5b9aac5494a84e9e098d31ae0b6ef87983998b500f8bb08de0656712e7f81b1d"
+  digest = "1:dc8b504ab398bfdb0f085321c572465aec1def1a7e8f8ae6fe2b3309d7d9e30f"
   name = "github.com/hashicorp/vault"
   packages = [
     "api",
@@ -296,8 +296,8 @@
     "helper/strutil",
   ]
   pruneopts = "NUT"
-  revision = "37a1dc9c477c1c68c022d2084550f25bf20cac33"
-  version = "v1.0.2"
+  revision = "85909e3373aa743c34a6a0ab59131f61fd9e8e43"
+  version = "v1.0.3"
 
 [[projects]]
   digest = "1:aaa38889f11896ee3644d77e17dc7764cc47f5f3d3b488268df2af2b52541c5f"
@@ -363,15 +363,15 @@
   version = "v1.1.2"
 
 [[projects]]
-  digest = "1:530b2462573028ba6e63aa9749ce1fed4b03aaf1ee04e7cda6d893caa729a1ee"
+  digest = "1:ed0716cbfa65d10a68d062ecbf9fae082d78cdcbe18bc3acb44c42e52edb0f9a"
   name = "github.com/pierrec/lz4"
   packages = [
     ".",
     "internal/xxh32",
   ]
   pruneopts = "NUT"
-  revision = "473cd7ce01a1113208073166464b98819526150e"
-  version = "v2.0.8"
+  revision = "062282ea0dcff40c9fb8525789eef9644b1fbd6e"
+  version = "v2.1.0"
 
 [[projects]]
   digest = "1:14715f705ff5dfe0ffd6571d7d201dd8e921030f8070321a79380d8ca4ec1a24"
@@ -458,7 +458,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:7d6afbcfe734e72cb56ac89e0d4e9373d4566e4acba82dd2a4f3f5e0fa363850"
+  digest = "1:4419bb834eb714223ab5029e808cb38c74c158967a5a5e47f95d36c54751ae31"
   name = "golang.org/x/crypto"
   packages = [
     "bcrypt",
@@ -472,11 +472,11 @@
     "salsa20/salsa",
   ]
   pruneopts = "NUT"
-  revision = "b8fe1690c61389d7d2a8074a507d1d40c5d30448"
+  revision = "8dd112bcdc25174059e45e07517d9fc663123347"
 
 [[projects]]
   branch = "master"
-  digest = "1:48b50a7276a3a2032afd0d43dbbc25c4b8ec43ad704bb42f19bb1b2ae0047ddc"
+  digest = "1:18108bc7e384e395b4805632a637405a3df71fa518e22f9b39b0c08b89a52b96"
   name = "golang.org/x/net"
   packages = [
     "http/httpguts",
@@ -485,15 +485,18 @@
     "idna",
   ]
   pruneopts = "NUT"
-  revision = "65e2d4e15006aab9813ff8769e768bbf4bb667a0"
+  revision = "16b79f2e4e95ea23b2bf9903c9809ff7b013ce85"
 
 [[projects]]
   branch = "master"
-  digest = "1:46a9ac711b02534a076654f721b3fcec4afa658dce559762177b1508b52578b9"
+  digest = "1:df1c009f04947d93faf4ead7c5bf593d450295f28341e1511f9ac41b39f167de"
   name = "golang.org/x/sys"
-  packages = ["unix"]
+  packages = [
+    "cpu",
+    "unix",
+  ]
   pruneopts = "NUT"
-  revision = "41f3e6584952bb034a481797859f6ab34b6803bd"
+  revision = "d455e41777fca6e8a5a79e34a14b8368bc11d9ba"
 
 [[projects]]
   digest = "1:e7071ed636b5422cc51c0e3a6cebc229d6c9fffc528814b519a980641422d619"
