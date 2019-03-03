@@ -1,7 +1,7 @@
 FROM alpine:3.8 AS upx
 RUN apk add --no-cache upx=3.94-r0
 
-FROM golang:1.12.0-alpine@sha256:8cc1c0f534c0fef088f8fe09edc404f6ff4f729745b85deae5510bfd4c157fb2 AS build
+FROM golang:1.12.0-alpine AS build
 
 RUN apk add --no-cache \
     make \
@@ -39,7 +39,7 @@ COPY --from=artifacts /bin/gomplate_${OS}-${ARCH} /gomplate
 
 ENTRYPOINT [ "/gomplate" ]
 
-FROM alpine:3.8@sha256:46e71df1e5191ab8b8034c5189e325258ec44ea739bba1e5645cff83c9048ff1 AS gomplate-alpine
+FROM alpine:3.9 AS gomplate-alpine
 
 ARG BUILD_DATE
 ARG VCS_REF
