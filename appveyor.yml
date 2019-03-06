@@ -18,3 +18,4 @@ deploy: false
 test_script:
   - go build github.com/hairyhenderson/gomplate
   - go test -v ./... & IF ERRORLEVEL == 1 EXIT 1
+  - go test -v -tags=integration ./tests/integration -check.v
