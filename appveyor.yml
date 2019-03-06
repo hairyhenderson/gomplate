@@ -17,5 +17,6 @@ deploy: false
 
 test_script:
   - go build -o bin/gomplate github.com/hairyhenderson/gomplate
+  - dir bin
   - go test -v ./... & IF ERRORLEVEL == 1 EXIT 1
   - go test -v -tags=integration ./tests/integration -check.v
