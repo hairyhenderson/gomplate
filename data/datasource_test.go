@@ -98,14 +98,24 @@ func TestDatasource(t *testing.T) {
 	setup := func(ext, mime string, contents []byte) *Data {
 		fname := "foo." + ext
 		fs := memfs.Create()
-		_ = fs.Mkdir("/tmp", 0777)
-		f, _ := vfs.Create(fs, "/tmp/"+fname)
+		var uPath string
+		var f vfs.File
+		if runtime.GOOS == "windows" {
+			_ = fs.Mkdir("C:\\tmp", 0777)
+			f, _ = vfs.Create(fs, "C:\\tmp\\"+fname)
+			_, _ = f.Write(contents)
+			uPath = "C:/tmp/" + fname
+		} else {
+			_ = fs.Mkdir("/tmp", 0777)
+			f, _ = vfs.Create(fs, "/tmp/"+fname)
+			uPath = "/tmp/" + fname
+		}
 		_, _ = f.Write(contents)
 
 		sources := map[string]*Source{
 			"foo": {
 				Alias:     "foo",
-				URL:       &url.URL{Scheme: "file", Path: "/tmp/" + fname},
+				URL:       &url.URL{Scheme: "file", Path: uPath},
 				mediaType: mime,
 				fs:        fs,
 			},
@@ -135,14 +145,23 @@ func TestDatasource(t *testing.T) {
 func TestDatasourceReachable(t *testing.T) {
 	fname := "foo.json"
 	fs := memfs.Create()
-	_ = fs.Mkdir("/tmp", 0777)
-	f, _ := vfs.Create(fs, "/tmp/"+fname)
+	var uPath string
+	var f vfs.File
+	if runtime.GOOS == "windows" {
+		_ = fs.Mkdir("C:\\tmp", 0777)
+		f, _ = vfs.Create(fs, "C:\\tmp\\"+fname)
+		uPath = "C:/tmp/" + fname
+	} else {
+		_ = fs.Mkdir("/tmp", 0777)
+		f, _ = vfs.Create(fs, "/tmp/"+fname)
+		uPath = "/tmp/" + fname
+	}
 	_, _ = f.Write([]byte("{}"))
 
 	sources := map[string]*Source{
 		"foo": {
 			Alias:     "foo",
-			URL:       &url.URL{Scheme: "file", Path: "/tmp/" + fname},
+			URL:       &url.URL{Scheme: "file", Path: uPath},
 			mediaType: jsonMimetype,
 			fs:        fs,
 		},
@@ -172,14 +191,27 @@ func TestInclude(t *testing.T) {
 	contents := "hello world"
 	fname := "foo." + ext
 	fs := memfs.Create()
-	_ = fs.Mkdir("/tmp", 0777)
-	f, _ := vfs.Create(fs, "/tmp/"+fname)
+	// _ = fs.Mkdir("/tmp", 0777)
+	// f, _ := vfs.Create(fs, "/tmp/"+fname)
+	// _, _ = f.Write([]byte(contents))
+
+	var uPath string
+	var f vfs.File
+	if runtime.GOOS == "windows" {
+		_ = fs.Mkdir("C:\\tmp", 0777)
+		f, _ = vfs.Create(fs, "C:\\tmp\\"+fname)
+		uPath = "C:/tmp/" + fname
+	} else {
+		_ = fs.Mkdir("/tmp", 0777)
+		f, _ = vfs.Create(fs, "/tmp/"+fname)
+		uPath = "/tmp/" + fname
+	}
 	_, _ = f.Write([]byte(contents))
 
 	sources := map[string]*Source{
 		"foo": {
 			Alias:     "foo",
-			URL:       &url.URL{Scheme: "file", Path: "/tmp/" + fname},
+			URL:       &url.URL{Scheme: "file", Path: uPath},
 			mediaType: textMimetype,
 			fs:        fs,
 		},
