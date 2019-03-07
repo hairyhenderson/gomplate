@@ -240,8 +240,8 @@ func parseSourceURL(value string) (*url.URL, error) {
 	}
 
 	if volName != "" {
-		match, _ := regexp.MatchString("^/[a-zA-Z]:.*$", srcURL.Path)
-		if match {
+		p := regexp.MustCompile("^/[a-zA-Z]:.*$")
+		if p.MatchString(srcURL.Path) {
 			srcURL.Path = trimLeftChar(srcURL.Path)
 		}
 	}
