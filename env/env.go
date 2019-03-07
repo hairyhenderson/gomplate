@@ -5,7 +5,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/blang/vfs"
+	"github.com/spf13/afero"
 )
 
 // Getenv - retrieves the value of the environment variable named by the key.
@@ -13,23 +13,23 @@ import (
 // referenced file will be read into the value.
 // Otherwise the provided default (or an emptry string) is returned.
 func Getenv(key string, def ...string) string {
-	return GetenvVFS(vfs.OS(), key, def...)
+	return getenvVFS(afero.NewOsFs(), key, def...)
 }
 
 // ExpandEnv - like os.ExpandEnv, except supports `_FILE` vars as well
 func ExpandEnv(s string) string {
-	return expandEnvVFS(vfs.OS(), s)
+	return expandEnvVFS(afero.NewOsFs(), s)
 }
 
 // expandEnvVFS -
-func expandEnvVFS(fs vfs.Filesystem, s string) string {
+func expandEnvVFS(fs afero.Fs, s string) string {
 	return os.Expand(s, func(s string) string {
-		return GetenvVFS(fs, s)
+		return getenvVFS(fs, s)
 	})
 }
 
-// GetenvVFS - a convenience function intended for internal use only!
-func GetenvVFS(fs vfs.Filesystem, key string, def ...string) string {
+// getenvVFS - a convenience function intended for internal use only!
+func getenvVFS(fs afero.Fs, key string, def ...string) string {
 	val := getenvFile(fs, key)
 	if val == "" && len(def) > 0 {
 		return def[0]
@@ -38,7 +38,7 @@ func GetenvVFS(fs vfs.Filesystem, key string, def ...string) string {
 	return val
 }
 
-func getenvFile(fs vfs.Filesystem, key string) string {
+func getenvFile(fs afero.Fs, key string) string {
 	val := os.Getenv(key)
 	if val != "" {
 		return val
@@ -56,7 +56,7 @@ func getenvFile(fs vfs.Filesystem, key string) string {
 	return ""
 }
 
-func readFile(fs vfs.Filesystem, p string) (string, error) {
+func readFile(fs afero.Fs, p string) (string, error) {
 	f, err := fs.OpenFile(p, os.O_RDONLY, 0)
 	if err != nil {
 		return "", err

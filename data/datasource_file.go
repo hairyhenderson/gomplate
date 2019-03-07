@@ -9,14 +9,14 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/pkg/errors"
+	"github.com/spf13/afero"
 
-	"github.com/blang/vfs"
+	"github.com/pkg/errors"
 )
 
 func readFile(source *Source, args ...string) ([]byte, error) {
 	if source.fs == nil {
-		source.fs = vfs.OS()
+		source.fs = afero.NewOsFs()
 	}
 
 	p := filepath.FromSlash(source.URL.Path)
@@ -59,7 +59,7 @@ func readFile(source *Source, args ...string) ([]byte, error) {
 }
 
 func readFileDir(source *Source, p string) ([]byte, error) {
-	names, err := source.fs.ReadDir(p)
+	names, err := afero.ReadDir(source.fs, p)
 	if err != nil {
 		return nil, err
 	}

@@ -13,9 +13,10 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/spf13/afero"
+
 	"github.com/pkg/errors"
 
-	"github.com/blang/vfs"
 	"github.com/hairyhenderson/gomplate/libkv"
 	"github.com/hairyhenderson/gomplate/vault"
 )
@@ -122,12 +123,12 @@ type Source struct {
 	Alias     string
 	URL       *url.URL
 	mediaType string
-	fs        vfs.Filesystem // used for file: URLs, nil otherwise
-	hc        *http.Client   // used for http[s]: URLs, nil otherwise
-	vc        *vault.Vault   // used for vault: URLs, nil otherwise
-	kv        *libkv.LibKV   // used for consul:, etcd:, zookeeper: & boltdb: URLs, nil otherwise
-	asmpg     awssmpGetter   // used for aws+smp:, nil otherwise
-	header    http.Header    // used for http[s]: URLs, nil otherwise
+	fs        afero.Fs     // used for file: URLs, nil otherwise
+	hc        *http.Client // used for http[s]: URLs, nil otherwise
+	vc        *vault.Vault // used for vault: URLs, nil otherwise
+	kv        *libkv.LibKV // used for consul:, etcd:, zookeeper: & boltdb: URLs, nil otherwise
+	asmpg     awssmpGetter // used for aws+smp:, nil otherwise
+	header    http.Header  // used for http[s]: URLs, nil otherwise
 }
 
 func (s *Source) inherit(parent *Source) {

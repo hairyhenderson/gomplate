@@ -8,7 +8,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/blang/vfs"
 	"github.com/hairyhenderson/gomplate/aws"
 	"github.com/hairyhenderson/gomplate/conv"
 	"github.com/hairyhenderson/gomplate/env"
@@ -170,8 +169,7 @@ func (v *Vault) EC2Login() (string, error) {
 		if val, ok := secret.Auth.Metadata["nonce"]; ok {
 			nonce = val
 		}
-		fs := vfs.OS()
-		f, err := fs.OpenFile(output, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, os.FileMode(0600))
+		f, err := os.OpenFile(output, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, os.FileMode(0600))
 		if err != nil {
 			return "", errors.Wrapf(err, "Error opening nonce output file")
 		}
@@ -219,12 +217,11 @@ func (v *Vault) TokenLogin() (string, error) {
 	if token := env.Getenv("VAULT_TOKEN"); token != "" {
 		return token, nil
 	}
-	fs := vfs.OS()
 	homeDir, err := homeDir()
 	if err != nil {
 		return "", err
 	}
-	f, err := fs.OpenFile(path.Join(homeDir, ".vault-token"), os.O_RDONLY, 0)
+	f, err := os.OpenFile(path.Join(homeDir, ".vault-token"), os.O_RDONLY, 0)
 	if err != nil {
 		return "", nil
 	}
