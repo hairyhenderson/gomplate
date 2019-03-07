@@ -1,10 +1,9 @@
-// +build !windows
-
 package data
 
 import (
 	"fmt"
 	"net/url"
+	"runtime"
 	"strings"
 	"testing"
 
@@ -63,6 +62,23 @@ func TestParseSourceWithAlias(t *testing.T) {
 	assert.Equal(t, "file", s.URL.Scheme)
 	assert.True(t, s.URL.IsAbs())
 	assert.Equal(t, "/otherdir/foo.json", s.URL.Path)
+
+	if runtime.GOOS == "windows" {
+		s, err = parseSource("data=C:\\windowsdir\\foo.json")
+		assert.NoError(t, err)
+		assert.Equal(t, "data", s.Alias)
+		assert.Equal(t, "file", s.URL.Scheme)
+		assert.True(t, s.URL.IsAbs())
+		assert.Equal(t, "C:/windowsdir/foo.json", s.URL.Path)
+
+		s, err = parseSource("data=\\\\somehost\\share\\foo.json")
+		assert.NoError(t, err)
+		assert.Equal(t, "data", s.Alias)
+		assert.Equal(t, "file", s.URL.Scheme)
+		assert.Equal(t, "somehost", s.URL.Host)
+		assert.True(t, s.URL.IsAbs())
+		assert.Equal(t, "/share/foo.json", s.URL.Path)
+	}
 
 	s, err = parseSource("data=sftp://example.com/blahblah/foo.json")
 	assert.NoError(t, err)
