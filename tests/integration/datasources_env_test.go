@@ -1,10 +1,10 @@
 //+build integration
-//+build !windows
 
 package integration
 
 import (
 	"os"
+	"runtime"
 
 	. "gopkg.in/check.v1"
 
@@ -35,7 +35,12 @@ func (s *EnvDatasourcesSuite) TestEnvDatasources(c *C) {
 		"-d", "foo=env:FOO",
 		"-i", `{{ ds "foo" }}`,
 	)
-	result.Assert(c, icmd.Expected{ExitCode: 0, Out: "bar"})
+	// Windows envvars are case-insensitive
+	if runtime.GOOS == "windows" {
+		result.Assert(c, icmd.Expected{ExitCode: 0, Out: "baz"})
+	} else {
+		result.Assert(c, icmd.Expected{ExitCode: 0, Out: "bar"})
+	}
 
 	result = icmd.RunCommand(GomplateBin,
 		"-d", "foo=env:///foo",

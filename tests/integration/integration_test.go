@@ -7,6 +7,7 @@ import (
 	"log"
 	"net"
 	"net/http"
+	"path/filepath"
 	"testing"
 	"time"
 
@@ -16,7 +17,7 @@ import (
 )
 
 var (
-	GomplateBin = build.Default.GOPATH + "/src/github.com/hairyhenderson/gomplate/bin/gomplate"
+	GomplateBin = filepath.Join(build.Default.GOPATH, "src", "github.com", "hairyhenderson", "gomplate", "bin", "gomplate")
 )
 
 // Hook up gocheck into the "go test" runner.

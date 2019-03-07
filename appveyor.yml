@@ -16,5 +16,6 @@ build: false
 deploy: false
 
 test_script:
-  - go build github.com/hairyhenderson/gomplate
+  - go build -o bin/gomplate.exe github.com/hairyhenderson/gomplate/cmd/gomplate
+  - go test -v -tags=integration -ldflags "-X github.com/hairyhenderson/gomplate/tests/integration.GomplateBin=c:/gopath/src/github.com/hairyhenderson/gomplate/bin/gomplate.exe" ./tests/integration -check.v
   - go test -v ./... & IF ERRORLEVEL == 1 EXIT 1

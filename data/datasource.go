@@ -10,6 +10,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"regexp"
 	"strings"
 
 	"github.com/pkg/errors"
@@ -210,13 +211,39 @@ func parseSource(value string) (source *Source, err error) {
 	return source, nil
 }
 
+func trimLeftChar(s string) string {
+	for i := range s {
+		if i > 0 {
+			return s[i:]
+		}
+	}
+	return s[:0]
+}
+
 func parseSourceURL(value string) (*url.URL, error) {
 	if value == "-" {
 		value = "stdin://"
 	}
+	// handle absolute Windows paths
+	volName := ""
+	if volName = filepath.VolumeName(value); volName != "" {
+		// handle UNCs
+		if len(volName) > 2 {
+			value = "file:" + filepath.ToSlash(value)
+		} else {
+			value = "file:///" + filepath.ToSlash(value)
+		}
+	}
 	srcURL, err := url.Parse(value)
 	if err != nil {
 		return nil, err
+	}
+
+	if volName != "" {
+		p := regexp.MustCompile("^/[a-zA-Z]:.*$")
+		if p.MatchString(srcURL.Path) {
+			srcURL.Path = trimLeftChar(srcURL.Path)
+		}
 	}
 
 	if !srcURL.IsAbs() {
