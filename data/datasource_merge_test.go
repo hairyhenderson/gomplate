@@ -6,8 +6,8 @@ import (
 	"net/url"
 	"testing"
 
-	"github.com/blang/vfs"
-	"github.com/blang/vfs/memfs"
+	"github.com/spf13/afero"
+
 	"github.com/stretchr/testify/assert"
 )
 
@@ -18,16 +18,16 @@ func TestReadMerge(t *testing.T) {
 
 	mergedContent := []byte("goodnight: moon\nhello: world\n")
 
-	fs := memfs.Create()
+	fs := afero.NewMemMapFs()
 
 	_ = fs.Mkdir("/tmp", 0777)
-	f, _ := vfs.Create(fs, "/tmp/jsonfile.json")
+	f, _ := fs.Create("/tmp/jsonfile.json")
 	_, _ = f.Write(jsonContent)
-	f, _ = vfs.Create(fs, "/tmp/array.json")
+	f, _ = fs.Create("/tmp/array.json")
 	_, _ = f.Write(arrayContent)
-	f, _ = vfs.Create(fs, "/tmp/yamlfile.yaml")
+	f, _ = fs.Create("/tmp/yamlfile.yaml")
 	_, _ = f.Write(yamlContent)
-	f, _ = vfs.Create(fs, "/tmp/textfile.txt")
+	f, _ = fs.Create("/tmp/textfile.txt")
 	_, _ = f.Write([]byte(`plain text...`))
 
 	source := &Source{Alias: "foo", URL: mustParseURL("merge:file:///tmp/jsonfile.json|file:///tmp/yamlfile.yaml")}

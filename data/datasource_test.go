@@ -7,8 +7,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/blang/vfs"
-	"github.com/blang/vfs/memfs"
+	"github.com/spf13/afero"
+
 	"github.com/stretchr/testify/assert"
 )
 
@@ -97,17 +97,17 @@ func TestParseSourceWithAlias(t *testing.T) {
 func TestDatasource(t *testing.T) {
 	setup := func(ext, mime string, contents []byte) *Data {
 		fname := "foo." + ext
-		fs := memfs.Create()
+		fs := afero.NewMemMapFs()
 		var uPath string
-		var f vfs.File
+		var f afero.File
 		if runtime.GOOS == "windows" {
 			_ = fs.Mkdir("C:\\tmp", 0777)
-			f, _ = vfs.Create(fs, "C:\\tmp\\"+fname)
+			f, _ = fs.Create("C:\\tmp\\" + fname)
 			_, _ = f.Write(contents)
 			uPath = "C:/tmp/" + fname
 		} else {
 			_ = fs.Mkdir("/tmp", 0777)
-			f, _ = vfs.Create(fs, "/tmp/"+fname)
+			f, _ = fs.Create("/tmp/" + fname)
 			uPath = "/tmp/" + fname
 		}
 		_, _ = f.Write(contents)
@@ -144,16 +144,16 @@ func TestDatasource(t *testing.T) {
 
 func TestDatasourceReachable(t *testing.T) {
 	fname := "foo.json"
-	fs := memfs.Create()
+	fs := afero.NewMemMapFs()
 	var uPath string
-	var f vfs.File
+	var f afero.File
 	if runtime.GOOS == "windows" {
 		_ = fs.Mkdir("C:\\tmp", 0777)
-		f, _ = vfs.Create(fs, "C:\\tmp\\"+fname)
+		f, _ = fs.Create("C:\\tmp\\" + fname)
 		uPath = "C:/tmp/" + fname
 	} else {
 		_ = fs.Mkdir("/tmp", 0777)
-		f, _ = vfs.Create(fs, "/tmp/"+fname)
+		f, _ = fs.Create("/tmp/" + fname)
 		uPath = "/tmp/" + fname
 	}
 	_, _ = f.Write([]byte("{}"))
@@ -190,20 +190,17 @@ func TestInclude(t *testing.T) {
 	ext := "txt"
 	contents := "hello world"
 	fname := "foo." + ext
-	fs := memfs.Create()
-	// _ = fs.Mkdir("/tmp", 0777)
-	// f, _ := vfs.Create(fs, "/tmp/"+fname)
-	// _, _ = f.Write([]byte(contents))
+	fs := afero.NewMemMapFs()
 
 	var uPath string
-	var f vfs.File
+	var f afero.File
 	if runtime.GOOS == "windows" {
 		_ = fs.Mkdir("C:\\tmp", 0777)
-		f, _ = vfs.Create(fs, "C:\\tmp\\"+fname)
+		f, _ = fs.Create("C:\\tmp\\" + fname)
 		uPath = "C:/tmp/" + fname
 	} else {
 		_ = fs.Mkdir("/tmp", 0777)
-		f, _ = vfs.Create(fs, "/tmp/"+fname)
+		f, _ = fs.Create("/tmp/" + fname)
 		uPath = "/tmp/" + fname
 	}
 	_, _ = f.Write([]byte(contents))

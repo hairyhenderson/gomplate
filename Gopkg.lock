@@ -73,17 +73,6 @@
   version = "v1.17.9"
 
 [[projects]]
-  digest = "1:27c31c51caa806074eca1038cbdc6a9c5b2eb202264b6bfb359eb441e2594268"
-  name = "github.com/blang/vfs"
-  packages = [
-    ".",
-    "memfs",
-  ]
-  pruneopts = "NUT"
-  revision = "2c3e2278e174a74f31ff8bf6f47b43ecb358a870"
-  version = "v1.0.0"
-
-[[projects]]
   digest = "1:a12d94258c5298ead75e142e8001224bf029f302fed9e96cd39c0eaf90f3954d"
   name = "github.com/boltdb/bolt"
   packages = ["."]
@@ -557,8 +546,6 @@
     "github.com/aws/aws-sdk-go/aws/session",
     "github.com/aws/aws-sdk-go/service/ec2",
     "github.com/aws/aws-sdk-go/service/ssm",
-    "github.com/blang/vfs",
-    "github.com/blang/vfs/memfs",
     "github.com/boltdb/bolt",
     "github.com/docker/libkv",
     "github.com/docker/libkv/store",

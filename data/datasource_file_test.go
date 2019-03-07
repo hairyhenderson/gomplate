@@ -5,24 +5,24 @@ package data
 import (
 	"testing"
 
-	"github.com/blang/vfs"
-	"github.com/blang/vfs/memfs"
+	"github.com/spf13/afero"
+
 	"github.com/stretchr/testify/assert"
 )
 
 func TestReadFile(t *testing.T) {
 	content := []byte(`hello world`)
-	fs := memfs.Create()
+	fs := afero.NewMemMapFs()
 
 	_ = fs.Mkdir("/tmp", 0777)
-	f, _ := vfs.Create(fs, "/tmp/foo")
+	f, _ := fs.Create("/tmp/foo")
 	_, _ = f.Write(content)
 
 	_ = fs.Mkdir("/tmp/partial", 0777)
-	f, _ = vfs.Create(fs, "/tmp/partial/foo.txt")
+	f, _ = fs.Create("/tmp/partial/foo.txt")
 	_, _ = f.Write(content)
-	_, _ = vfs.Create(fs, "/tmp/partial/bar.txt")
-	_, _ = vfs.Create(fs, "/tmp/partial/baz.txt")
+	_, _ = fs.Create("/tmp/partial/bar.txt")
+	_, _ = fs.Create("/tmp/partial/baz.txt")
 
 	source := &Source{Alias: "foo", URL: mustParseURL("file:///tmp/foo")}
 	source.fs = fs

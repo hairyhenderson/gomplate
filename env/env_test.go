@@ -5,8 +5,8 @@ import (
 	"os"
 	"testing"
 
-	"github.com/blang/vfs"
-	"github.com/blang/vfs/memfs"
+	"github.com/spf13/afero"
+
 	"github.com/stretchr/testify/assert"
 )
 
@@ -17,22 +17,22 @@ func TestGetenv(t *testing.T) {
 }
 
 func TestGetenvFile(t *testing.T) {
-	fs := newMemFS()
+	fs := afero.NewMemMapFs()
 	_ = fs.Mkdir("/tmp", 0777)
-	f, _ := vfs.Create(fs, "/tmp/foo")
+	f, _ := fs.Create("/tmp/foo")
 	_, _ = f.Write([]byte("foo"))
 
 	defer os.Unsetenv("FOO_FILE")
 	os.Setenv("FOO_FILE", "/tmp/foo")
-	assert.Equal(t, "foo", GetenvVFS(fs, "FOO", "bar"))
+	assert.Equal(t, "foo", getenvVFS(fs, "FOO", "bar"))
 
 	os.Setenv("FOO_FILE", "/tmp/missing")
-	assert.Equal(t, "bar", GetenvVFS(fs, "FOO", "bar"))
+	assert.Equal(t, "bar", getenvVFS(fs, "FOO", "bar"))
 
-	_, _ = vfs.Create(fs, "/tmp/unreadable")
-	fs = WriteOnly(fs)
+	_, _ = fs.Create("/tmp/unreadable")
+	fs = writeOnly(fs)
 	os.Setenv("FOO_FILE", "/tmp/unreadable")
-	assert.Equal(t, "bar", GetenvVFS(fs, "FOO", "bar"))
+	assert.Equal(t, "bar", getenvVFS(fs, "FOO", "bar"))
 }
 
 func TestExpandEnv(t *testing.T) {
@@ -44,9 +44,9 @@ func TestExpandEnv(t *testing.T) {
 }
 
 func TestExpandEnvFile(t *testing.T) {
-	fs := newMemFS()
+	fs := afero.NewMemMapFs()
 	_ = fs.Mkdir("/tmp", 0777)
-	f, _ := vfs.Create(fs, "/tmp/foo")
+	f, _ := fs.Create("/tmp/foo")
 	_, _ = f.Write([]byte("foo"))
 
 	defer os.Unsetenv("FOO_FILE")
@@ -56,68 +56,56 @@ func TestExpandEnvFile(t *testing.T) {
 	os.Setenv("FOO_FILE", "/tmp/missing")
 	assert.Equal(t, "empty", expandEnvVFS(fs, "${FOO}empty"))
 
-	_, _ = vfs.Create(fs, "/tmp/unreadable")
-	fs = WriteOnly(fs)
+	_, _ = fs.Create("/tmp/unreadable")
+	fs = writeOnly(fs)
 	os.Setenv("FOO_FILE", "/tmp/unreadable")
 	assert.Equal(t, "", expandEnvVFS(fs, "${FOO}"))
 }
 
 // Maybe extract this into a separate package sometime...
-// WriteOnly - represents a filesystem that's writeable, but read operations fail
-func WriteOnly(fs vfs.Filesystem) vfs.Filesystem {
-	return &WoFS{fs}
+// writeOnly - represents a filesystem that's writeable, but read operations fail
+func writeOnly(fs afero.Fs) afero.Fs {
+	return &woFS{fs}
 }
 
-func newMemFS() vfs.Filesystem {
-	return memfs.Create()
+type woFS struct {
+	afero.Fs
 }
 
-type WoFS struct {
-	vfs.Filesystem
+func (fs woFS) Remove(name string) error {
+	return fs.Fs.Remove(name)
 }
 
-func (fs WoFS) Remove(name string) error {
-	return fs.Filesystem.Remove(name)
+func (fs woFS) Rename(oldpath, newpath string) error {
+	return fs.Fs.Rename(oldpath, newpath)
 }
 
-func (fs WoFS) Rename(oldpath, newpath string) error {
-	return fs.Filesystem.Rename(oldpath, newpath)
+func (fs woFS) Mkdir(name string, perm os.FileMode) error {
+	return fs.Fs.Mkdir(name, perm)
 }
 
-func (fs WoFS) Mkdir(name string, perm os.FileMode) error {
-	return fs.Filesystem.Mkdir(name, perm)
-}
-
-func (fs WoFS) OpenFile(name string, flag int, perm os.FileMode) (vfs.File, error) {
-	f, err := fs.Filesystem.OpenFile(name, flag, perm)
+func (fs woFS) OpenFile(name string, flag int, perm os.FileMode) (afero.File, error) {
+	f, err := fs.Fs.OpenFile(name, flag, perm)
 	if err != nil {
-		return WriteOnlyFile(f), err
+		return writeOnlyFile(f), err
 	}
-	return WriteOnlyFile(f), nil
+	return writeOnlyFile(f), nil
 }
 
-func (fs WoFS) Lstat(name string) (os.FileInfo, error) {
-	return fs.Filesystem.Lstat(name)
-}
-
-func (fs WoFS) PathSeparator() uint8 {
-	return fs.Filesystem.PathSeparator()
-}
-
-func (fs WoFS) ReadDir(path string) ([]os.FileInfo, error) {
+func (fs woFS) ReadDir(path string) ([]os.FileInfo, error) {
 	return nil, ErrWriteOnly
 }
 
-func (fs WoFS) Stat(name string) (os.FileInfo, error) {
+func (fs woFS) Stat(name string) (os.FileInfo, error) {
 	return nil, ErrWriteOnly
 }
 
-func WriteOnlyFile(f vfs.File) vfs.File {
+func writeOnlyFile(f afero.File) afero.File {
 	return &woFile{f}
 }
 
 type woFile struct {
-	vfs.File
+	afero.File
 }
 
 // Write is disabled and returns ErrWriteOnly
