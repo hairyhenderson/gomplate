@@ -33,6 +33,8 @@ func (s *MergeDatasourceSuite) SetUpSuite(c *C) {
 	handle(c, err)
 
 	http.HandleFunc("/foo.json", typeHandler("application/json", `{"foo": "bar"}`))
+	http.HandleFunc("/1.env", typeHandler("application/x-env", "FOO=1\nBAR=2\n"))
+	http.HandleFunc("/2.env", typeHandler("application/x-env", "FOO=3\n"))
 	go http.Serve(s.l, nil)
 }
 
@@ -63,4 +65,10 @@ func (s *MergeDatasourceSuite) TestMergeDatasource(c *C) {
 		"-i", `{{ ds "config" | toJSON }}`,
 	)
 	result.Assert(c, icmd.Expected{ExitCode: 0, Out: `{"foo":"bar","other":true}`})
+
+	result = icmd.RunCommand(GomplateBin,
+		"-c", "merged=merge:http://"+s.l.Addr().String()+"/2.env|http://"+s.l.Addr().String()+"/1.env",
+		"-i", `FOO is {{ .merged.FOO }}`,
+	)
+	result.Assert(c, icmd.Expected{ExitCode: 0, Out: `FOO is 3`})
 }

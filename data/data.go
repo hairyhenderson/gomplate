@@ -104,7 +104,15 @@ func TOML(in string) (interface{}, error) {
 
 // dotEnv - Unmarshal a dotenv file
 func dotEnv(in string) (interface{}, error) {
-	return godotenv.Unmarshal(in)
+	env, err := godotenv.Unmarshal(in)
+	if err != nil {
+		return nil, err
+	}
+	out := make(map[string]interface{})
+	for k, v := range env {
+		out[k] = v
+	}
+	return out, nil
 }
 
 func parseCSV(args ...string) ([][]string, []string, error) {
