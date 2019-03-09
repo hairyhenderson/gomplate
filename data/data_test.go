@@ -471,7 +471,7 @@ FOO.BAR = "values can be double-quoted, and shell\nescapes are supported"
 BAZ = "variable expansion: ${FOO}"
 QUX='single quotes ignore $variables'
 `
-	expected := map[string]string{
+	expected := map[string]interface{}{
 		"FOO":     "a regular unquoted value",
 		"BAR":     "another value, exports are ignored",
 		"FOO.BAR": "values can be double-quoted, and shell\nescapes are supported",
