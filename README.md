@@ -1,6 +1,6 @@
 <img src="docs/static/images/gomplate.png" width="512px" alt="gomplate logo"/>
 
-_Read the docs at [gomplate.hairyhenderson.ca][docs-url]._
+_Read the docs at [gomplate.hairyhenderson.ca][docs-url], chat with developers and community in the [#gomplate channel][] on [Gophers Slack][]_
 
 [![Build Status][circleci-image]][circleci-url]
 [![Windows Build][appveyor-image]][appveyor-url]
@@ -18,6 +18,7 @@ _Read the docs at [gomplate.hairyhenderson.ca][docs-url]._
 [![DockerHub Latest Commit][microbadger-commit-image]][microbadger-url]
 
 [![Install Docs][install-docs-image]][install-docs-url]
+[![Slack][slack-image]][slack-url]
 
 `gomplate` is a template renderer which supports a growing list of datasources,
 such as: JSON (_including EJSON - encrypted JSON_), YAML, AWS EC2 metadata, [BoltDB](https://github.com/boltdb/bolt),
@@ -96,7 +97,7 @@ _Please report any bugs found in the [issue tracker](https://github.com/hairyhen
 
 Copyright (c) 2016-2019 Dave Henderson
 
-[circleci-image]: https://circleci.com/gh/hairyhenderson/gomplate/tree/master.svg?style=shield
+[circleci-image]: https://img.shields.io/circleci/project/github/hairyhenderson/gomplate/master.svg?logo=circleci
 [circleci-url]: https://circleci.com/gh/hairyhenderson/gomplate/tree/master
 [appveyor-image]: https://ci.appveyor.com/api/projects/status/eymky02f5snclyxp/branch/master?svg=true
 [appveyor-url]: https://ci.appveyor.com/project/hairyhenderson/gomplate/branch/master
@@ -125,5 +126,11 @@ Copyright (c) 2016-2019 Dave Henderson
 [docs-url]: https://gomplate.hairyhenderson.ca
 [install-docs-image]: https://img.shields.io/badge/install-docs-blue.svg
 [install-docs-url]: https://gomplate.hairyhenderson.ca/installing
+
+[Gophers Slack]: https://invite.slack.golangbridge.org
+[#gomplate channel]: https://gophers.slack.com/messages/CGTR16RM2/
+
+[slack-image]: https://img.shields.io/badge/slack-gophers/%23gomplate-00ADD8.svg?logo=slack
+[slack-url]: https://gophers.slack.com/messages/CGTR16RM2/
 
 [![Analytics](https://ga-beacon.appspot.com/UA-82637990-1/gomplate/README.md?pixel)](https://github.com/igrigorik/ga-beacon)
