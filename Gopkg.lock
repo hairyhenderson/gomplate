@@ -229,14 +229,14 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:1a27446d162ffed250fd55df0941f5a8b3c95690fbd4b857d7a563c7c61aa948"
+  digest = "1:18287c50542f2746b80357a151e096e781f8d5937f1393b38a023dfe86e1c40a"
   name = "github.com/hashicorp/go-sockaddr"
   packages = [
     ".",
     "template",
   ]
   pruneopts = "NUT"
-  revision = "3aed17b5ee41761cc2b04f2a94c7107d428967e5"
+  revision = "c7188e74f6acae5a989bdc959aa779f8b9f42faf"
 
 [[projects]]
   digest = "1:67474f760e9ac3799f740db2c489e6423a4cde45520673ec123ac831ad849cb8"
