@@ -65,7 +65,7 @@ func Write(filename string, content []byte) error {
 	if err != nil {
 		return errors.Wrapf(err, "failed to make dirs for %s", filename)
 	}
-	inFile, err := fs.OpenFile(filename, os.O_RDWR|os.O_CREATE, mode)
+	inFile, err := fs.OpenFile(filename, os.O_RDWR|os.O_CREATE|os.O_TRUNC, mode)
 	if err != nil {
 		return errors.Wrapf(err, "failed to open %s", filename)
 	}

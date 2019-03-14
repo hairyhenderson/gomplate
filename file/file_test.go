@@ -79,6 +79,13 @@ func TestWrite(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, "Hello world", string(out))
 
+	err = Write(foopath, []byte("truncate"))
+	assert.NoError(t, err)
+
+	out, err = ioutil.ReadFile(foopath)
+	assert.NoError(t, err)
+	assert.Equal(t, "truncate", string(out))
+
 	foopath = filepath.Join(newwd, "nonexistant", "subdir", "foo")
 	err = Write(foopath, []byte("Hello subdirranean world!"))
 	assert.NoError(t, err)
