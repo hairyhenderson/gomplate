@@ -38,9 +38,11 @@ type Funcs struct {
 	meta     *aws.Ec2Meta
 	info     *aws.Ec2Info
 	kms      *aws.KMS
+	sts      *aws.STS
 	metaInit sync.Once
 	infoInit sync.Once
 	kmsInit  sync.Once
+	stsInit  sync.Once
 	awsopts  aws.ClientOptions
 }
 
@@ -80,6 +82,29 @@ func (a *Funcs) KMSDecrypt(ciphertext interface{}) (string, error) {
 	return a.kms.Decrypt(conv.ToString(ciphertext))
 }
 
+// UserID - Gets the unique identifier of the calling entity. The exact value
+// depends on the type of entity making the call. The values returned are those
+// listed in the aws:userid column in the Principal table
+// (http://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_variables.html#principaltable)
+// found on the Policy Variables reference page in the IAM User Guide.
+func (a *Funcs) UserID() (string, error) {
+	a.stsInit.Do(a.initSTS)
+	return a.sts.UserID()
+}
+
+// Account - Gets the AWS account ID number of the account that owns or
+// contains the calling entity.
+func (a *Funcs) Account() (string, error) {
+	a.stsInit.Do(a.initSTS)
+	return a.sts.Account()
+}
+
+// ARN - Gets the AWS ARN associated with the calling entity
+func (a *Funcs) ARN() (string, error) {
+	a.stsInit.Do(a.initSTS)
+	return a.sts.Arn()
+}
+
 func (a *Funcs) initMeta() {
 	if a.meta == nil {
 		a.meta = aws.NewEc2Meta(a.awsopts)
@@ -95,5 +120,11 @@ func (a *Funcs) initInfo() {
 func (a *Funcs) initKMS() {
 	if a.kms == nil {
 		a.kms = aws.NewKMS(a.awsopts)
+	}
+}
+
+func (a *Funcs) initSTS() {
+	if a.sts == nil {
+		a.sts = aws.NewSTS(a.awsopts)
 	}
 }
