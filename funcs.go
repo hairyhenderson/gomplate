@@ -27,5 +27,6 @@ func Funcs(d *data.Data) template.FuncMap {
 	funcs.AddSockaddrFuncs(f)
 	funcs.AddTestFuncs(f)
 	funcs.AddCollFuncs(f)
+	funcs.AddUUIDFuncs(f)
 	return f
 }
