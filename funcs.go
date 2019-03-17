@@ -28,5 +28,6 @@ func Funcs(d *data.Data) template.FuncMap {
 	funcs.AddTestFuncs(f)
 	funcs.AddCollFuncs(f)
 	funcs.AddUUIDFuncs(f)
+	funcs.AddRandomFuncs(f)
 	return f
 }
