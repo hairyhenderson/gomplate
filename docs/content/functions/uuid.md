@@ -1,5 +1,5 @@
 ---
-title: UUID functions
+title: uuid functions
 menu:
   main:
     parent: functions

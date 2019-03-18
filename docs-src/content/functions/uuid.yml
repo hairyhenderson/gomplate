@@ -1,5 +1,5 @@
 ns: uuid
-title: UUID functions
+title: uuid functions
 preamble: |
   Functions for generating, parsing, and manipulating UUIDs.
 
