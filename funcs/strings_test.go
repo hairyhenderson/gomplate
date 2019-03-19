@@ -144,3 +144,31 @@ func TestSquote(t *testing.T) {
 		assert.Equal(t, d.out, sf.Squote(d.in))
 	}
 }
+
+func TestRuneCount(t *testing.T) {
+	sf := &StringFuncs{}
+
+	n, err := sf.RuneCount("")
+	assert.NoError(t, err)
+	assert.Equal(t, 0, n)
+
+	n, err = sf.RuneCount("foo")
+	assert.NoError(t, err)
+	assert.Equal(t, 3, n)
+
+	n, err = sf.RuneCount("foo", "bar")
+	assert.NoError(t, err)
+	assert.Equal(t, 6, n)
+
+	n, err = sf.RuneCount(42, true)
+	assert.NoError(t, err)
+	assert.Equal(t, 6, n)
+
+	n, err = sf.RuneCount("😂\U0001F602")
+	assert.NoError(t, err)
+	assert.Equal(t, 2, n)
+
+	n, err = sf.RuneCount("\U0001F600", 3.14)
+	assert.NoError(t, err)
+	assert.Equal(t, 5, n)
+}
