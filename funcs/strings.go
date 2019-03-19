@@ -8,6 +8,7 @@ package funcs
 import (
 	"fmt"
 	"sync"
+	"unicode/utf8"
 
 	"github.com/Masterminds/goutils"
 	"github.com/hairyhenderson/gomplate/conv"
@@ -261,4 +262,13 @@ func (f *StringFuncs) WordWrap(args ...interface{}) (string, error) {
 		opts.LBSeq = conv.ToString(args[1])
 	}
 	return gompstrings.WordWrap(in, opts), nil
+}
+
+// RuneCount - like len(s), but for runes
+func (f *StringFuncs) RuneCount(args ...interface{}) (int, error) {
+	s := ""
+	for _, arg := range args {
+		s += conv.ToString(arg)
+	}
+	return utf8.RuneCountInString(s), nil
 }
