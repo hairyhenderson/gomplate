@@ -6,12 +6,18 @@ import (
 	"github.com/aws/aws-sdk-go/service/kms"
 )
 
-// KMS -
-type KMS struct {
-	Client *kms.KMS
+// KMSAPI is a subset of kmsiface.KMSAPI
+type KMSAPI interface {
+	Encrypt(input *kms.EncryptInput) (*kms.EncryptOutput, error)
+	Decrypt(input *kms.DecryptInput) (*kms.DecryptOutput, error)
 }
 
-// NewKMS - Create new KMS client
+// KMS is an AWS KMS client
+type KMS struct {
+	Client KMSAPI
+}
+
+// NewKMS - Create new AWS KMS client using an SDKSession
 func NewKMS(option ClientOptions) *KMS {
 	client := kms.New(SDKSession())
 	return &KMS{
