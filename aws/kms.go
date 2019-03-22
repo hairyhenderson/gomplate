@@ -43,7 +43,7 @@ func (k *KMS) Encrypt(keyID, plaintext string) (string, error) {
 	return ciphertext, nil
 }
 
-// Decrypt a base64 encoded cyphertext
+// Decrypt a base64 encoded ciphertext
 func (k *KMS) Decrypt(ciphertext string) (string, error) {
 	ciphertextBlob, err := b64.Decode(ciphertext)
 	if err != nil {
