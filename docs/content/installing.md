@@ -100,6 +100,17 @@ $ gomplate --help
 ...
 ```
 
+## install with `npm`
+
+For some users, especially Node.js developers, using `npm` may be a natural fit.
+Even though `gomplate` is written in Go and not Node.js, it can still be installed
+with `npm`:
+
+```console
+$ npm install -g gomplate
+...
+```
+
 ## Slim binaries
 
 As a convenience, self-extracting compressed `gomplate` binaries are available from the [releases][] page. These are named with `-slim` as a suffix (or `-slim.exe`). They are compressed with [UPX][].
