@@ -1,6 +1,6 @@
 <img src="docs/static/images/gomplate.png" width="512px" alt="gomplate logo"/>
 
-_Read the docs at [gomplate.hairyhenderson.ca][docs-url], chat with developers and community in the [#gomplate channel][] on [Gophers Slack][]_
+_Read the docs at [docs.gomplate.ca][docs-url], chat with developers and community in the [#gomplate channel][] on [Gophers Slack][]_
 
 [![Build Status][circleci-image]][circleci-url]
 [![Windows Build][appveyor-image]][appveyor-url]
@@ -87,7 +87,7 @@ $ gomplate -d 'cities=env:///CITIES?type=application/yaml' -d 'weather=https://w
                0.0 mm
 ```
 
-Read the documentation at [gomplate.hairyhenderson.ca][docs-url]!
+Read the documentation at [docs.gomplate.ca][docs-url]!
 
 _Please report any bugs found in the [issue tracker](https://github.com/hairyhenderson/gomplate/issues/)._
 
@@ -123,9 +123,9 @@ Copyright (c) 2016-2019 Dave Henderson
 [microbadger-commit-image]: https://images.microbadger.com/badges/commit/hairyhenderson/gomplate.svg
 [microbadger-url]: https://microbadger.com/image/hairyhenderson/gomplate
 
-[docs-url]: https://gomplate.hairyhenderson.ca
+[docs-url]: https://docs.gomplate.ca
 [install-docs-image]: https://img.shields.io/badge/install-docs-blue.svg
-[install-docs-url]: https://gomplate.hairyhenderson.ca/installing
+[install-docs-url]: https://docs.gomplate.ca/installing
 
 [Gophers Slack]: https://invite.slack.golangbridge.org
 [#gomplate channel]: https://gophers.slack.com/messages/CGTR16RM2/
