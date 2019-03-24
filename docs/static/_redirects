@@ -1,5 +1,5 @@
 # Redirect domain aliases to primary domain
-https://docs.gomplate.ca/* https://gomplate.hairyhenderson.ca/:splat 301!
+https://gomplate.hairyhenderson.ca/* https://docs.gomplate.ca/:splat 301!
 
 # Optional: Redirect default Netlify subdomain to primary domain
-https://gomplate.netlify.com/* https://gomplate.hairyhenderson.ca/:splat 301!
+https://gomplate-docs.netlify.com/* https://docs.gomplate.ca/:splat 301!
