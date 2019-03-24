@@ -141,3 +141,83 @@ foo
 $ echo 'I am a {{ aws.EC2Tag "classification" "meat popsicle" }}.' | ./gomplate
 I am a meat popsicle.
 ```
+
+## `aws.KMSEncrypt`
+
+Encrypt an input string with the AWS Key Management Service (KMS).
+
+At most 4kb (4096 bytes) of data may be encrypted.
+
+The resulting ciphertext will be base-64 encoded.
+
+The `keyID` parameter is used to reference the Customer Master Key to use,
+and can be:
+
+- the key's ID (e.g. `1234abcd-12ab-34cd-56ef-1234567890ab`)
+- the key's ARN (e.g. `arn:aws:kms:us-east-2:111122223333:key/1234abcd-12ab-34cd-56ef-1234567890ab`)
+- the alias name (aliases must be prefixed with `alias/`, e.g. `alias/ExampleAlias`)
+- the alias ARN (e.g. `arn:aws:kms:us-east-2:111122223333:alias/ExampleAlias`)
+
+For information on creating keys, see [_Creating Keys_](https://docs.aws.amazon.com/kms/latest/developerguide/create-keys.html)
+
+See [the AWS documentation](https://docs.aws.amazon.com/kms/latest/developerguide/overview.html)
+for more details.
+
+See also [`aws.KMSDecrypt`](#aws-kmsdecrypt).
+
+### Usage
+
+```go
+aws.KMSEncrypt keyID input
+```
+```go
+input | aws.KMSEncrypt keyID
+```
+
+### Arguments
+
+| name | description |
+|------|-------------|
+| `keyID` | _(required)_ the ID of the Customer Master Key (CMK) to use for encryption |
+| `input` | _(required)_ the string to encrypt |
+
+### Examples
+
+```console
+$ export CIPHER=$(gomplate -i '{{ aws.KMSEncrypt "alias/gomplate" "hello world" }}')
+$ gomplate -i '{{ env.Getenv "CIPHER" | aws.KMSDecrypt }}'
+```
+
+## `aws.KMSDecrypt`
+
+Decrypt ciphertext that was encrypted with the AWS Key Management Service
+(KMS).
+
+The ciphertext must be base-64 encoded.
+
+See [the AWS documentation](https://docs.aws.amazon.com/kms/latest/developerguide/overview.html)
+for more details.
+
+See also [`aws.KMSEncrypt`](#aws-kmsencrypt).
+
+### Usage
+
+```go
+aws.KMSDecrypt input
+```
+```go
+input | aws.KMSDecrypt
+```
+
+### Arguments
+
+| name | description |
+|------|-------------|
+| `input` | _(required)_ the base-64 encoded ciphertext to decrypt |
+
+### Examples
+
+```console
+$ export CIPHER=$(gomplate -i '{{ aws.KMSEncrypt "alias/gomplate" "hello world" }}')
+$ gomplate -i '{{ env.Getenv "CIPHER" | aws.KMSDecrypt }}'
+```
