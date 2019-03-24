@@ -30,7 +30,7 @@
   revision = "f0300d1749da6fa982027e449ec0c7a145510c3c"
 
 [[projects]]
-  digest = "1:0aaf3b498668e7caad9e572daaf1866562412b1477e67de06d5afe594b439c62"
+  digest = "1:21d05df076b6b49d1226c6edf002a6ab62354b1c06d02f70bc22fe082f6b965f"
   name = "github.com/aws/aws-sdk-go"
   packages = [
     "aws",
@@ -65,6 +65,7 @@
     "private/protocol/rest",
     "private/protocol/xml/xmlutil",
     "service/ec2",
+    "service/kms",
     "service/ssm",
     "service/sts",
   ]
@@ -553,6 +554,7 @@
     "github.com/aws/aws-sdk-go/aws/awserr",
     "github.com/aws/aws-sdk-go/aws/session",
     "github.com/aws/aws-sdk-go/service/ec2",
+    "github.com/aws/aws-sdk-go/service/kms",
     "github.com/aws/aws-sdk-go/service/ssm",
     "github.com/boltdb/bolt",
     "github.com/docker/libkv",

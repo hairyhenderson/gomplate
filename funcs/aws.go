@@ -4,6 +4,7 @@ import (
 	"sync"
 
 	"github.com/hairyhenderson/gomplate/aws"
+	"github.com/hairyhenderson/gomplate/conv"
 )
 
 var (
@@ -36,8 +37,10 @@ func AWSFuncs(f map[string]interface{}) {
 type Funcs struct {
 	meta     *aws.Ec2Meta
 	info     *aws.Ec2Info
+	kms      *aws.KMS
 	metaInit sync.Once
 	infoInit sync.Once
+	kmsInit  sync.Once
 	awsopts  aws.ClientOptions
 }
 
@@ -65,6 +68,18 @@ func (a *Funcs) EC2Tag(tag string, def ...string) (string, error) {
 	return a.info.Tag(tag, def...)
 }
 
+// KMSEncrypt -
+func (a *Funcs) KMSEncrypt(keyID, plaintext interface{}) (string, error) {
+	a.kmsInit.Do(a.initKMS)
+	return a.kms.Encrypt(conv.ToString(keyID), conv.ToString(plaintext))
+}
+
+// KMSDecrypt -
+func (a *Funcs) KMSDecrypt(ciphertext interface{}) (string, error) {
+	a.kmsInit.Do(a.initKMS)
+	return a.kms.Decrypt(conv.ToString(ciphertext))
+}
+
 func (a *Funcs) initMeta() {
 	if a.meta == nil {
 		a.meta = aws.NewEc2Meta(a.awsopts)
@@ -74,5 +89,11 @@ func (a *Funcs) initMeta() {
 func (a *Funcs) initInfo() {
 	if a.info == nil {
 		a.info = aws.NewEc2Info(a.awsopts)
+	}
+}
+
+func (a *Funcs) initKMS() {
+	if a.kms == nil {
+		a.kms = aws.NewKMS(a.awsopts)
 	}
 }
