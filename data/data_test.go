@@ -29,6 +29,8 @@ func TestUnmarshalObj(t *testing.T) {
 		assert.Equal(t, expected["true"], actual["true"])
 	}
 	test(JSON(`{"foo":{"bar":"baz"},"one":1.0,"true":true}`))
+	x, err := XML(`<root><foo><bar>baz</bar></foo><one>1.0</one><true>true</true></root>`)
+	test(x["root"].(map[string]interface{}), err)
 	test(YAML(`foo:
   bar: baz
 one: 1.0
@@ -36,7 +38,7 @@ true: true
 `))
 
 	obj := make(map[string]interface{})
-	_, err := unmarshalObj(obj, "SOMETHING", func(in []byte, out interface{}) error {
+	_, err = unmarshalObj(obj, "SOMETHING", func(in []byte, out interface{}) error {
 		return errors.New("fail")
 	})
 	assert.EqualError(t, err, "Unable to unmarshal object SOMETHING: fail")

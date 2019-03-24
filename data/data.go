@@ -7,6 +7,8 @@ import (
 	"reflect"
 	"strings"
 
+	"github.com/clbanning/mxj"
+
 	"github.com/joho/godotenv"
 
 	"github.com/Shopify/ejson"
@@ -100,6 +102,15 @@ func YAMLArray(in string) ([]interface{}, error) {
 func TOML(in string) (interface{}, error) {
 	obj := make(map[string]interface{})
 	return unmarshalObj(obj, in, toml.Unmarshal)
+}
+
+// XML - Unmarshal a XML Object
+func XML(in string) (map[string]interface{}, error) {
+	m, err := mxj.NewMapXml([]byte(in), true)
+	if err != nil {
+		return nil, err
+	}
+	return m, nil
 }
 
 // dotEnv - Unmarshal a dotenv file

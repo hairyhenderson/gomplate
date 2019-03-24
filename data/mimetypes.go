@@ -8,4 +8,5 @@ const (
 	tomlMimetype      = "application/toml"
 	yamlMimetype      = "application/yaml"
 	envMimetype       = "application/x-env"
+	xmlMimetype       = "text/xml"
 )
