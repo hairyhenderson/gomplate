@@ -1,14 +1,38 @@
 version: 2.1
-jobs:
-  build:
+
+references:
+  workspace_root: &workspace_root
+    /go/src/github.com/hairyhenderson/gomplate
+  attach_workspace: &attach_workspace
+    attach_workspace:
+      at: *workspace_root
+
+executors:
+  ci-executor:
     docker:
       - image: hairyhenderson/gomplate-ci-build:latest
     environment:
-      - CIRCLE_TEST_REPORTS: /tmp/test-results
-    working_directory: /go/src/github.com/hairyhenderson/gomplate
+      CIRCLE_TEST_REPORTS: /tmp/test-results
+    working_directory: *workspace_root
+
+jobs:
+  build:
+    executor: ci-executor
     steps:
       - checkout
       - run: make build
+      - store_artifacts:
+          path: bin
+          destination: binaries
+      - persist_to_workspace:
+          root: *workspace_root
+          # Must be relative path from root
+          paths:
+            - ./
+  test:
+    executor: ci-executor
+    steps:
+      - checkout
       - run: cc-test-reporter before-build
       - run:
           name: make test
@@ -16,10 +40,25 @@ jobs:
             trap "go-junit-report < $CIRCLE_TEST_REPORTS/go-test.out > $CIRCLE_TEST_REPORTS/report.xml" EXIT
             make test | tee $CIRCLE_TEST_REPORTS/go-test.out
             cc-test-reporter after-build --exit-code $?
-      - run: make lint
-      - run: make integration
-      - store_artifacts:
-          path: bin
-          destination: binaries
       - store_test_results:
           path: /tmp/test-results
+  lint:
+    executor: ci-executor
+    steps:
+      - checkout
+      - run: make lint
+  integration:
+    executor: ci-executor
+    steps:
+      - checkout
+      - *attach_workspace
+      - run: make integration
+
+workflows:
+  version: 2
+  build:
+    jobs:
+      - build
+      - test
+      - lint
+      - integration
