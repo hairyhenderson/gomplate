@@ -137,7 +137,7 @@ func TestNumber(t *testing.T) {
 	f := &RandomFuncs{}
 	n, err := f.Number()
 	assert.NoError(t, err)
-	assert.True(t, 0 < n && n < 100)
+	assert.True(t, 0 < n && n <= 100, n)
 
 	_, err = f.Number(-1)
 	assert.Error(t, err)
