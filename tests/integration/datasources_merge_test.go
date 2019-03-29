@@ -1,5 +1,4 @@
 //+build integration
-//+build !windows
 
 package integration
 
@@ -55,7 +54,7 @@ func (s *MergeDatasourceSuite) TestMergeDatasource(c *C) {
 	result = icmd.RunCommand(GomplateBin,
 		"-d", "default="+s.tmpDir.Join("default.yml"),
 		"-d", "config=merge:user|default",
-		"-i", `{{ defineDatasource "user" "`+s.tmpDir.Join("config.json")+`" }}{{ ds "config" | toJSON }}`,
+		"-i", `{{ defineDatasource "user" `+"`"+s.tmpDir.Join("config.json")+"`"+` }}{{ ds "config" | toJSON }}`,
 	)
 	result.Assert(c, icmd.Expected{ExitCode: 0, Out: `{"foo":{"bar":"baz"},"other":true}`})
 

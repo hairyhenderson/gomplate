@@ -3,7 +3,6 @@ package data
 import (
 	"net/url"
 	"os"
-	"regexp"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -11,10 +10,6 @@ import (
 
 func mustParseURL(in string) *url.URL {
 	u, _ := url.Parse(in)
-	p := regexp.MustCompile("^/[a-zA-Z]:.*$")
-	if p.MatchString(u.Path) {
-		u.Path = trimLeftChar(u.Path)
-	}
 	return u
 }
 

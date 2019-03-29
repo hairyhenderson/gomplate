@@ -1,3 +1,5 @@
+image:
+  - Visual Studio 2015
 version: "{build}"
 
 clone_folder: c:\gopath\src\github.com\hairyhenderson\gomplate

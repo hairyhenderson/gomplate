@@ -72,6 +72,22 @@ func (s *FileDatasourcesSuite) TestFileDatasources(c *C) {
 	)
 	result.Assert(c, icmd.Expected{ExitCode: 0, Out: "baz"})
 
+	result = icmd.RunCmd(icmd.Command(GomplateBin,
+		"-d", "config=config.json",
+		"-i", `{{ (ds "config").foo.bar }}`,
+	), func(c *icmd.Cmd) {
+		c.Dir = s.tmpDir.Path()
+	})
+	result.Assert(c, icmd.Expected{ExitCode: 0, Out: "baz"})
+
+	result = icmd.RunCmd(icmd.Command(GomplateBin,
+		"-d", "config.json",
+		"-i", `{{ (ds "config").foo.bar }}`,
+	), func(c *icmd.Cmd) {
+		c.Dir = s.tmpDir.Path()
+	})
+	result.Assert(c, icmd.Expected{ExitCode: 0, Out: "baz"})
+
 	result = icmd.RunCommand(GomplateBin,
 		"-i", `foo{{defineDatasource "config" `+"`"+s.tmpDir.Join("config.json")+"`"+`}}bar{{(datasource "config").foo.bar}}`,
 	)

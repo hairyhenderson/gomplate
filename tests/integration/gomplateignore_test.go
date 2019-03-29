@@ -1,10 +1,10 @@
 //+build integration
-//+build !windows
 
 package integration
 
 import (
 	"os"
+	"path/filepath"
 	"sort"
 
 	. "gopkg.in/check.v1"
@@ -85,6 +85,13 @@ func (s *GomplateignoreSuite) TestGomplateignore_Simple(c *C) {
 	tassert.Equal(c, []string{"rain.txt"}, files)
 }
 
+func fromSlashes(paths ...string) []string {
+	for i, v := range paths {
+		paths[i] = filepath.FromSlash(v)
+	}
+	return paths
+}
+
 func (s *GomplateignoreSuite) TestGomplateignore_Folder(c *C) {
 	s.execute(c, `.gomplateignore
 f[o]o/bar
@@ -104,8 +111,8 @@ f[o]o/bar
 
 	files, err := s.collectOutFiles()
 	tassert.NoError(c, err)
-	tassert.Equal(c, []string{
-		"foo/bar/tool/lex.txt", "foo/tar/2.txt"}, files)
+	tassert.Equal(c, fromSlashes(
+		"foo/bar/tool/lex.txt", "foo/tar/2.txt"), files)
 }
 
 func (s *GomplateignoreSuite) TestGomplateignore_Root(c *C) {
@@ -120,8 +127,8 @@ func (s *GomplateignoreSuite) TestGomplateignore_Root(c *C) {
 
 	files, err := s.collectOutFiles()
 	tassert.NoError(c, err)
-	tassert.Equal(c, []string{
-		"sub/1.txt", "sub/2.txt"}, files)
+	tassert.Equal(c, fromSlashes(
+		"sub/1.txt", "sub/2.txt"), files)
 }
 
 func (s *GomplateignoreSuite) TestGomplateignore_Exclusion(c *C) {
@@ -143,8 +150,8 @@ en/e3.txt
 
 	files, err := s.collectOutFiles()
 	tassert.NoError(c, err)
-	tassert.Equal(c, []string{
-		"!", "e2.txt", "en/e1.txt", "en/e2.txt"}, files)
+	tassert.Equal(c, fromSlashes(
+		"!", "e2.txt", "en/e1.txt", "en/e2.txt"), files)
 }
 
 func (s *GomplateignoreSuite) TestGomplateignore_Nested(c *C) {
@@ -163,10 +170,10 @@ func (s *GomplateignoreSuite) TestGomplateignore_Nested(c *C) {
 
 	files, err := s.collectOutFiles()
 	tassert.NoError(c, err)
-	tassert.Equal(c, []string{".gomplateignore", "1.txt",
+	tassert.Equal(c, fromSlashes(".gomplateignore", "1.txt",
 		"inner/.gomplateignore",
 		"inner/inner2/.gomplateignore",
-		"inner/inner2/jess.ini"}, files)
+		"inner/inner2/jess.ini"), files)
 }
 
 func (s *GomplateignoreSuite) TestGomplateignore_ByName(c *C) {
@@ -190,9 +197,9 @@ world.txt`,
 
 	files, err := s.collectOutFiles()
 	tassert.NoError(c, err)
-	tassert.Equal(c, []string{
+	tassert.Equal(c, fromSlashes(
 		"aa/a1/a2/hello.txt", "aa/a1/hello.txt",
-		"aa/hello.txt", "bb/hello.txt", "hello.txt"}, files)
+		"aa/hello.txt", "bb/hello.txt", "hello.txt"), files)
 }
 
 func (s *GomplateignoreSuite) TestGomplateignore_BothName(c *C) {
@@ -210,8 +217,8 @@ loss.txt
 
 	files, err := s.collectOutFiles()
 	tassert.NoError(c, err)
-	tassert.Equal(c, []string{
-		"foo/bare.txt", "loss.txt/2.log"}, files)
+	tassert.Equal(c, fromSlashes(
+		"foo/bare.txt", "loss.txt/2.log"), files)
 }
 
 func (s *GomplateignoreSuite) TestGomplateignore_LeadingSpace(c *C) {
@@ -231,8 +238,8 @@ func (s *GomplateignoreSuite) TestGomplateignore_LeadingSpace(c *C) {
 
 	files, err := s.collectOutFiles()
 	tassert.NoError(c, err)
-	tassert.Equal(c, []string{
-		"inner/  dart.log", "inner/  what.txt"}, files)
+	tassert.Equal(c, fromSlashes(
+		"inner/  dart.log", "inner/  what.txt"), files)
 }
 
 func (s *GomplateignoreSuite) TestGomplateignore_WithExcludes(c *C) {
@@ -261,7 +268,7 @@ func (s *GomplateignoreSuite) TestGomplateignore_WithExcludes(c *C) {
 
 	files, err := s.collectOutFiles()
 	tassert.NoError(c, err)
-	tassert.Equal(c, []string{
+	tassert.Equal(c, fromSlashes(
 		"logs/archive.zip", "manifest.json", "rules/index.csv",
-		"sprites/demon.xml", "sprites/human.csv"}, files)
+		"sprites/demon.xml", "sprites/human.csv"), files)
 }

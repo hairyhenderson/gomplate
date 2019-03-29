@@ -1,11 +1,11 @@
 //+build integration
-//+build !windows
 
 package integration
 
 import (
 	"io/ioutil"
 	"os"
+	"runtime"
 
 	. "gopkg.in/check.v1"
 
@@ -25,9 +25,9 @@ func (s *InputDirSuite) SetUpTest(c *C) {
 	s.tmpDir = fs.NewDir(c, "gomplate-inttests",
 		fs.WithFile("config.yml", "one: eins\ntwo: deux\n"),
 		fs.WithDir("in",
-			fs.WithFile("eins.txt", `{{ (ds "config").one }}`),
+			fs.WithFile("eins.txt", `{{ (ds "config").one }}`, fs.WithMode(0644)),
 			fs.WithDir("inner",
-				fs.WithFile("deux.txt", `{{ (ds "config").two }}`),
+				fs.WithFile("deux.txt", `{{ (ds "config").two }}`, fs.WithMode(0444)),
 			),
 		),
 		fs.WithDir("out"),
@@ -68,7 +68,10 @@ func (s *InputDirSuite) TestInputDir(c *C) {
 	for _, v := range testdata {
 		info, err := os.Stat(v.path)
 		assert.NilError(c, err)
-		assert.Equal(c, v.mode, info.Mode())
+		// chmod support on Windows is pretty weak for now
+		if runtime.GOOS != "windows" {
+			assert.Equal(c, v.mode, info.Mode())
+		}
 		content, err := ioutil.ReadFile(v.path)
 		assert.NilError(c, err)
 		assert.Equal(c, v.content, string(content))
@@ -103,7 +106,10 @@ func (s *InputDirSuite) TestInputDirWithModeOverride(c *C) {
 	for _, v := range testdata {
 		info, err := os.Stat(v.path)
 		assert.NilError(c, err)
-		assert.Equal(c, v.mode, info.Mode())
+		// chmod support on Windows is pretty weak for now
+		if runtime.GOOS != "windows" {
+			assert.Equal(c, v.mode, info.Mode())
+		}
 		content, err := ioutil.ReadFile(v.path)
 		assert.NilError(c, err)
 		assert.Equal(c, v.content, string(content))
