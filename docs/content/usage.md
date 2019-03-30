@@ -58,6 +58,8 @@ By default, output files are created with the same file mode (permissions) as in
 
 The value must be an octal integer in the standard UNIX `chmod` format, i.e. `644` to indicate that owner gets read+write, group gets read-only, and others get read-only permissions. See the [`chmod(1)` man page](https://linux.die.net/man/1/chmod) for more details.
 
+**Note:** `--chmod` is not currently supported on Windows. Behaviour is undefined, but will likely not change file permissions at all.
+
 ### `--exclude`
 
 To prevent certain files from being processed, you can use `--exclude`. It takes a glob, and any files matching that glob will not be included.

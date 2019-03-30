@@ -24,6 +24,9 @@ func NewPattern(strPattern string) *Pattern {
 		return &Pattern{value: ""} // empty
 	}
 
+	// Normlize pattern path with OS, see issue #1
+	strPattern = filepath.FromSlash(strPattern)
+
 	if strPattern[0] == '!' {
 		if len(strPattern) == 1 {
 			return &Pattern{value: ""} // empty
@@ -64,7 +67,7 @@ func (p *Pattern) Match(path string) bool {
 	}
 
 	if !strings.HasPrefix(path, string(os.PathSeparator)) {
-		path = "/" + path
+		path = string(os.PathSeparator) + path
 	}
 
 	return p.regexp.MatchString(path) || p.regexp.MatchString(filepath.Base(path))

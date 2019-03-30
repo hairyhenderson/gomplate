@@ -30,7 +30,7 @@
   revision = "f0300d1749da6fa982027e449ec0c7a145510c3c"
 
 [[projects]]
-  digest = "1:21d05df076b6b49d1226c6edf002a6ab62354b1c06d02f70bc22fe082f6b965f"
+  digest = "1:319be7951b73cbd2788a8d34be7cf9a6471b4fe1e30ca4db7e521713df1b4cd6"
   name = "github.com/aws/aws-sdk-go"
   packages = [
     "aws",
@@ -447,12 +447,12 @@
   version = "v1.1.2"
 
 [[projects]]
-  digest = "1:e64931f43ab49e31f06c800d2ed6900e5c0d9af16a5ac9b32a4dd224d1e2ddaf"
+  digest = "1:9e4f30fec20838825756c20b38935a711419c1b9d7cb2a7e98b77d4c80ac099f"
   name = "github.com/zealic/xignore"
   packages = ["."]
   pruneopts = "NUT"
-  revision = "a3a6e1eee5b33815a1a4abe4ed629ca237ce77d7"
-  version = "v0.3.2"
+  revision = "d72c65dd16ee9819723913f04e3438b08db3e447"
+  version = "v0.3.3"
 
 [[projects]]
   branch = "master"

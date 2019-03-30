@@ -1,5 +1,4 @@
 //+build integration
-//+build !windows
 
 package integration
 
@@ -33,7 +32,7 @@ func (s *FileSuite) TearDownSuite(c *C) {
 }
 
 func (s *FileSuite) TestReadsFile(c *C) {
-	inOutTest(c, `{{ file.Read "`+s.tmpDir.Join("one")+`"}}`, "hi")
+	inOutTest(c, "{{ file.Read `"+s.tmpDir.Join("one")+"`}}", "hi")
 }
 
 func (s *FileSuite) TestWrite(c *C) {

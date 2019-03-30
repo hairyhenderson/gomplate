@@ -1,9 +1,9 @@
 //+build integration
-//+build !windows
 
 package integration
 
 import (
+	"runtime"
 	"time"
 
 	"github.com/gotestyourself/gotestyourself/icmd"
@@ -20,17 +20,19 @@ func (s *TimeSuite) TestTime(c *C) {
 	inOutTest(c, `{{ (time.Parse "`+f+`" "`+i+`").Format "2006-01-02 15 -0700" }}`,
 		"2009-02-13 23 +0000")
 
-	result := icmd.RunCmd(icmd.Command(GomplateBin, "-i",
-		`{{ (time.ParseLocal time.Kitchen "6:00AM").Format "15:04 MST" }}`), func(cmd *icmd.Cmd) {
-		cmd.Env = []string{"TZ=Africa/Luanda"}
-	})
-	result.Assert(c, icmd.Expected{ExitCode: 0, Out: "06:00 LMT"})
+	if runtime.GOOS != "windows" {
+		result := icmd.RunCmd(icmd.Command(GomplateBin, "-i",
+			`{{ (time.ParseLocal time.Kitchen "6:00AM").Format "15:04 MST" }}`), func(cmd *icmd.Cmd) {
+			cmd.Env = []string{"TZ=Africa/Luanda"}
+		})
+		result.Assert(c, icmd.Expected{ExitCode: 0, Out: "06:00 LMT"})
 
-	result = icmd.RunCmd(icmd.Command(GomplateBin, "-i",
-		`{{ time.ZoneOffset }}`), func(cmd *icmd.Cmd) {
-		cmd.Env = []string{"TZ=UTC"}
-	})
-	result.Assert(c, icmd.Expected{ExitCode: 0, Out: "0"})
+		result = icmd.RunCmd(icmd.Command(GomplateBin, "-i",
+			`{{ time.ZoneOffset }}`), func(cmd *icmd.Cmd) {
+			cmd.Env = []string{"TZ=UTC"}
+		})
+		result.Assert(c, icmd.Expected{ExitCode: 0, Out: "0"})
+	}
 
 	zname, _ := time.Now().Zone()
 	inOutTest(c, `{{ time.ZoneName }}`, zname)

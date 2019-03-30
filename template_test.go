@@ -1,5 +1,3 @@
-// +build !windows
-
 package gomplate
 
 import (
@@ -58,30 +56,6 @@ func TestOpenOutFile(t *testing.T) {
 	f, err := openOutFile("-", 0644, false)
 	assert.NoError(t, err)
 	assert.Equal(t, Stdout, f)
-}
-
-func TestWalkDir(t *testing.T) {
-	origfs := fs
-	defer func() { fs = origfs }()
-	fs = afero.NewMemMapFs()
-
-	_, err := walkDir("/indir", "/outdir", nil, 0, false)
-	assert.Error(t, err)
-
-	_ = fs.MkdirAll("/indir/one", 0777)
-	_ = fs.MkdirAll("/indir/two", 0777)
-	afero.WriteFile(fs, "/indir/one/foo", []byte("foo"), 0644)
-	afero.WriteFile(fs, "/indir/one/bar", []byte("bar"), 0644)
-	afero.WriteFile(fs, "/indir/two/baz", []byte("baz"), 0644)
-
-	templates, err := walkDir("/indir", "/outdir", []string{"*/two"}, 0, false)
-
-	assert.NoError(t, err)
-	assert.Equal(t, 2, len(templates))
-	assert.Equal(t, "/indir/one/bar", templates[0].name)
-	assert.Equal(t, "/outdir/one/bar", templates[0].targetPath)
-	assert.Equal(t, "/indir/one/foo", templates[1].name)
-	assert.Equal(t, "/outdir/one/foo", templates[1].targetPath)
 }
 
 func TestLoadContents(t *testing.T) {

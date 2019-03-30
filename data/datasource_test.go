@@ -64,6 +64,17 @@ func TestParseSourceWithAlias(t *testing.T) {
 	assert.Equal(t, "/otherdir/foo.json", s.URL.Path)
 
 	if runtime.GOOS == "windows" {
+		s, err = parseSource("data=foo.json")
+		assert.NoError(t, err)
+		assert.Equalf(t, byte(':'), s.URL.Path[1], "Path was %s", s.URL.Path)
+
+		s, err = parseSource(`data=\otherdir\foo.json`)
+		assert.NoError(t, err)
+		assert.Equal(t, "data", s.Alias)
+		assert.Equal(t, "file", s.URL.Scheme)
+		assert.True(t, s.URL.IsAbs())
+		assert.Equal(t, `/otherdir/foo.json`, s.URL.Path)
+
 		s, err = parseSource("data=C:\\windowsdir\\foo.json")
 		assert.NoError(t, err)
 		assert.Equal(t, "data", s.Alias)

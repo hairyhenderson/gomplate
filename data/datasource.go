@@ -10,7 +10,6 @@ import (
 	"os"
 	"path"
 	"path/filepath"
-	"regexp"
 	"strings"
 
 	"github.com/spf13/afero"
@@ -212,27 +211,19 @@ func parseSource(value string) (source *Source, err error) {
 	return source, nil
 }
 
-func trimLeftChar(s string) string {
-	for i := range s {
-		if i > 0 {
-			return s[i:]
-		}
-	}
-	return s[:0]
-}
-
 func parseSourceURL(value string) (*url.URL, error) {
 	if value == "-" {
 		value = "stdin://"
 	}
+	value = filepath.ToSlash(value)
 	// handle absolute Windows paths
 	volName := ""
 	if volName = filepath.VolumeName(value); volName != "" {
 		// handle UNCs
 		if len(volName) > 2 {
-			value = "file:" + filepath.ToSlash(value)
+			value = "file:" + value
 		} else {
-			value = "file:///" + filepath.ToSlash(value)
+			value = "file:///" + value
 		}
 	}
 	srcURL, err := url.Parse(value)
@@ -241,9 +232,8 @@ func parseSourceURL(value string) (*url.URL, error) {
 	}
 
 	if volName != "" {
-		p := regexp.MustCompile("^/[a-zA-Z]:.*$")
-		if p.MatchString(srcURL.Path) {
-			srcURL.Path = trimLeftChar(srcURL.Path)
+		if strings.HasPrefix(srcURL.Path, "/") && srcURL.Path[2] == ':' {
+			srcURL.Path = srcURL.Path[1:]
 		}
 	}
 
@@ -261,7 +251,7 @@ func absURL(value string) (*url.URL, error) {
 	if err != nil {
 		return nil, errors.Wrapf(err, "can't get working directory")
 	}
-	urlCwd := strings.Replace(cwd, string(os.PathSeparator), "/", -1)
+	urlCwd := filepath.ToSlash(cwd)
 	baseURL := &url.URL{
 		Scheme: "file",
 		Path:   urlCwd + "/",
@@ -269,7 +259,12 @@ func absURL(value string) (*url.URL, error) {
 	relURL := &url.URL{
 		Path: value,
 	}
-	return baseURL.ResolveReference(relURL), nil
+	resolved := baseURL.ResolveReference(relURL)
+	// deal with Windows drive letters
+	if !strings.HasPrefix(urlCwd, "/") && resolved.Path[2] == ':' {
+		resolved.Path = resolved.Path[1:]
+	}
+	return resolved, nil
 }
 
 // DefineDatasource -
