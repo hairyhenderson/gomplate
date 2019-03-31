@@ -4,7 +4,6 @@ import (
 	"io"
 	"os"
 	"path"
-	"strconv"
 	"strings"
 	"text/template"
 	"time"
@@ -12,87 +11,6 @@ import (
 	"github.com/hairyhenderson/gomplate/data"
 	"github.com/spf13/afero"
 )
-
-// Config - values necessary for rendering templates with gomplate.
-// Mainly for use by the CLI
-type Config struct {
-	Input       string
-	InputFiles  []string
-	InputDir    string
-	ExcludeGlob []string
-	OutputFiles []string
-	OutputDir   string
-	OutMode     string
-
-	DataSources       []string
-	DataSourceHeaders []string
-	Contexts          []string
-
-	LDelim string
-	RDelim string
-
-	Templates []string
-}
-
-// parse an os.FileMode out of the string, and let us know if it's an override or not...
-func (o *Config) getMode() (os.FileMode, bool, error) {
-	modeOverride := o.OutMode != ""
-	m, err := strconv.ParseUint("0"+o.OutMode, 8, 32)
-	if err != nil {
-		return 0, false, err
-	}
-	mode := os.FileMode(m)
-	return mode, modeOverride, nil
-}
-
-// nolint: gocyclo
-func (o *Config) String() string {
-	c := "input: "
-	if o.Input != "" {
-		c += "<arg>"
-	} else if o.InputDir != "" {
-		c += o.InputDir
-	} else if len(o.InputFiles) > 0 {
-		c += strings.Join(o.InputFiles, ", ")
-	}
-
-	if len(o.ExcludeGlob) > 0 {
-		c += "\nexclude: " + strings.Join(o.ExcludeGlob, ", ")
-	}
-
-	c += "\noutput: "
-	if o.InputDir != "" && o.OutputDir != "." {
-		c += o.OutputDir
-	} else if len(o.OutputFiles) > 0 {
-		c += strings.Join(o.OutputFiles, ", ")
-	}
-
-	if o.OutMode != "" {
-		c += "\nchmod: " + o.OutMode
-	}
-
-	if len(o.DataSources) > 0 {
-		c += "\ndatasources: " + strings.Join(o.DataSources, ", ")
-	}
-	if len(o.DataSourceHeaders) > 0 {
-		c += "\ndatasourceheaders: " + strings.Join(o.DataSourceHeaders, ", ")
-	}
-	if len(o.Contexts) > 0 {
-		c += "\ncontexts: " + strings.Join(o.Contexts, ", ")
-	}
-
-	if o.LDelim != "{{" {
-		c += "\nleft_delim: " + o.LDelim
-	}
-	if o.RDelim != "}}" {
-		c += "\nright_delim: " + o.RDelim
-	}
-
-	if len(o.Templates) > 0 {
-		c += "\ntemplates: " + strings.Join(o.Templates, ", ")
-	}
-	return c
-}
 
 // gomplate -
 type gomplate struct {
@@ -186,6 +104,8 @@ func parseTemplateArg(templateArg string, ta templateAliases) error {
 func RunTemplates(o *Config) error {
 	Metrics = newMetrics()
 	defer runCleanupHooks()
+	// make sure config is sane
+	o.defaults()
 	ds := append(o.DataSources, o.Contexts...)
 	d, err := data.NewData(ds, o.DataSourceHeaders)
 	if err != nil {

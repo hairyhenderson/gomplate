@@ -97,6 +97,7 @@ func (t *tplate) addTarget() (err error) {
 // gatherTemplates - gather and prepare input template(s) and output file(s) for rendering
 // nolint: gocyclo
 func gatherTemplates(o *Config) (templates []*tplate, err error) {
+	o.defaults()
 	mode, modeOverride, err := o.getMode()
 	if err != nil {
 		return nil, err
@@ -104,19 +105,13 @@ func gatherTemplates(o *Config) (templates []*tplate, err error) {
 
 	// the arg-provided input string gets a special name
 	if o.Input != "" {
-		if mode == 0 {
-			mode = 0644
-		}
 		templates = []*tplate{{
 			name:         "<arg>",
 			contents:     o.Input,
 			mode:         mode,
 			modeOverride: modeOverride,
+			targetPath:   o.OutputFiles[0],
 		}}
-
-		if len(o.OutputFiles) == 1 {
-			templates[0].targetPath = o.OutputFiles[0]
-		}
 	}
 
 	// input dirs presume output dirs are set too
@@ -125,7 +120,7 @@ func gatherTemplates(o *Config) (templates []*tplate, err error) {
 		if err != nil {
 			return nil, err
 		}
-	} else if len(o.InputFiles) > 0 && o.Input == "" {
+	} else if o.Input == "" {
 		templates = make([]*tplate, len(o.InputFiles))
 		for i := range o.InputFiles {
 			templates[i], err = fileToTemplates(o.InputFiles[i], o.OutputFiles[i], mode, modeOverride)
