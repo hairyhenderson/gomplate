@@ -150,3 +150,42 @@ funcs:
       - |
         $ export CIPHER=$(gomplate -i '{{ aws.KMSEncrypt "alias/gomplate" "hello world" }}')
         $ gomplate -i '{{ env.Getenv "CIPHER" | aws.KMSDecrypt }}'
+  - name: aws.Account
+    description: |
+      Returns the currently-authenticated AWS account ID number.
+
+      Wraps the [STS GetCallerIdentity API](https://docs.aws.amazon.com/STS/latest/APIReference/API_GetCallerIdentity.html)
+
+      See also [`aws.UserID`](#aws-userid) and [`aws.ARN`](#aws-arn).
+    pipeline: false
+    examples:
+      - |
+        $ gomplate -i 'My account is {{ aws.Account }}'
+        My account is 123456789012
+  - name: aws.ARN
+    description: |
+      Returns the AWS ARN (Amazon Resource Name) associated with the current authentication credentials.
+
+      Wraps the [STS GetCallerIdentity API](https://docs.aws.amazon.com/STS/latest/APIReference/API_GetCallerIdentity.html)
+
+      See also [`aws.UserID`](#aws-userid) and [`aws.Account`](#aws-account).
+    pipeline: false
+    examples:
+      - |
+        $ gomplate -i 'Calling from {{ aws.ARN }}'
+        Calling from arn:aws:iam::123456789012:user/Alice
+  - name: aws.UserID
+    description: |
+      Returns the unique identifier of the calling entity. The exact value
+      depends on the type of entity making the call. The values returned are those
+      listed in the `aws:userid` column in the [Principal table](http://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_variables.html#principaltable)
+      found on the Policy Variables reference page in the IAM User Guide.
+
+      Wraps the [STS GetCallerIdentity API](https://docs.aws.amazon.com/STS/latest/APIReference/API_GetCallerIdentity.html)
+
+      See also [`aws.ARN`](#aws-arn) and [`aws.Account`](#aws-account).
+    pipeline: false
+    examples:
+      - |
+        $ gomplate -i 'I am {{ aws.UserID }}'
+        I am AIDACKCEVSQ6C2EXAMPLE

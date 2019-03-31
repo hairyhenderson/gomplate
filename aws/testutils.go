@@ -11,6 +11,14 @@ import (
 
 // MockServer -
 func MockServer(code int, body string) (*httptest.Server, *Ec2Meta) {
+	server, httpClient := MockHTTPServer(code, body)
+
+	client := &Ec2Meta{server.URL + "/", httpClient, false, make(map[string]string), ClientOptions{}}
+	return server, client
+}
+
+// MockHTTPServer -
+func MockHTTPServer(code int, body string) (*httptest.Server, *http.Client) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(code)
 		// nolint: errcheck
@@ -23,9 +31,7 @@ func MockServer(code int, body string) (*httptest.Server, *Ec2Meta) {
 		},
 	}
 	httpClient := &http.Client{Transport: tr}
-
-	client := &Ec2Meta{server.URL + "/", httpClient, false, make(map[string]string), ClientOptions{}}
-	return server, client
+	return server, httpClient
 }
 
 // NewDummyEc2Info -
