@@ -94,7 +94,7 @@ func TestGatherTemplates(t *testing.T) {
 
 	templates, err := gatherTemplates(&Config{})
 	assert.NoError(t, err)
-	assert.Len(t, templates, 0)
+	assert.Len(t, templates, 1)
 
 	templates, err = gatherTemplates(&Config{
 		Input: "foo",

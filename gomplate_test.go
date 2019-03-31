@@ -165,37 +165,13 @@ func TestRunTemplates(t *testing.T) {
 	defer func() { Stdout = os.Stdout }()
 	buf := &bytes.Buffer{}
 	Stdout = &nopWCloser{buf}
-	config := &Config{Input: "foo"}
+	config := &Config{Input: "foo", OutputFiles: []string{"-"}}
 	err := RunTemplates(config)
 	assert.NoError(t, err)
 	assert.Equal(t, "foo", buf.String())
 	assert.Equal(t, 1, Metrics.TemplatesGathered)
 	assert.Equal(t, 1, Metrics.TemplatesProcessed)
 	assert.Equal(t, 0, Metrics.Errors)
-}
-
-func TestConfigString(t *testing.T) {
-	c := &Config{}
-
-	expected := `input: 
-output: 
-left_delim: 
-right_delim: `
-
-	assert.Equal(t, expected, c.String())
-
-	c = &Config{
-		LDelim:      "{{",
-		RDelim:      "}}",
-		Input:       "{{ foo }}",
-		OutputFiles: []string{"-"},
-		Templates:   []string{"foo=foo.t", "bar=bar.t"},
-	}
-	expected = `input: <arg>
-output: -
-templates: foo=foo.t, bar=bar.t`
-
-	assert.Equal(t, expected, c.String())
 }
 
 func TestParseTemplateArg(t *testing.T) {
