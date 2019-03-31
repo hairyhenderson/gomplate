@@ -140,6 +140,12 @@ func (s *BasicSuite) TestFlagRules(c *C) {
 		ExitCode: 1,
 		Err:      "--output-dir can not be used together with --out",
 	})
+
+	result = icmd.RunCommand(GomplateBin, "--output-map", ".", "--out", "param")
+	result.Assert(c, icmd.Expected{
+		ExitCode: 1,
+		Err:      "--output-map can not be used together with --out or --output-dir",
+	})
 }
 
 func (s *BasicSuite) TestDelimsChangedThroughOpts(c *C) {

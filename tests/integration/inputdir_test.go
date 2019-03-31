@@ -24,6 +24,11 @@ var _ = Suite(&InputDirSuite{})
 func (s *InputDirSuite) SetUpTest(c *C) {
 	s.tmpDir = fs.NewDir(c, "gomplate-inttests",
 		fs.WithFile("config.yml", "one: eins\ntwo: deux\n"),
+		fs.WithFile("filemap.json", `{"eins.txt":"uno","deux.txt":"dos"}`),
+		fs.WithFile("out.t", `{{- /* .in may contain a directory name - we want to preserve that */ -}}
+{{ $f := filepath.Base .in -}}
+out/{{ .in | strings.ReplaceAll $f (index .filemap $f) }}.out
+`),
 		fs.WithDir("in",
 			fs.WithFile("eins.txt", `{{ (ds "config").one }}`, fs.WithMode(0644)),
 			fs.WithDir("inner",
@@ -102,6 +107,86 @@ func (s *InputDirSuite) TestInputDirWithModeOverride(c *C) {
 	}{
 		{s.tmpDir.Join("out", "eins.txt"), 0601, "eins"},
 		{s.tmpDir.Join("out", "inner", "deux.txt"), 0601, "deux"},
+	}
+	for _, v := range testdata {
+		info, err := os.Stat(v.path)
+		assert.NilError(c, err)
+		// chmod support on Windows is pretty weak for now
+		if runtime.GOOS != "windows" {
+			assert.Equal(c, v.mode, info.Mode())
+		}
+		content, err := ioutil.ReadFile(v.path)
+		assert.NilError(c, err)
+		assert.Equal(c, v.content, string(content))
+	}
+}
+
+func (s *InputDirSuite) TestOutputMapInline(c *C) {
+	result := icmd.RunCmd(icmd.Command(GomplateBin,
+		"--input-dir", s.tmpDir.Join("in"),
+		"--output-map", `OUT/{{ strings.ToUpper .in }}`,
+		"-d", "config.yml",
+	), func(c *icmd.Cmd) {
+		c.Dir = s.tmpDir.Path()
+	})
+	result.Assert(c, icmd.Success)
+
+	files, err := ioutil.ReadDir(s.tmpDir.Join("OUT"))
+	assert.NilError(c, err)
+	tassert.Len(c, files, 2)
+
+	files, err = ioutil.ReadDir(s.tmpDir.Join("OUT", "INNER"))
+	assert.NilError(c, err)
+	tassert.Len(c, files, 1)
+
+	testdata := []struct {
+		path    string
+		mode    os.FileMode
+		content string
+	}{
+		{s.tmpDir.Join("OUT", "EINS.TXT"), 0644, "eins"},
+		{s.tmpDir.Join("OUT", "INNER", "DEUX.TXT"), 0644, "deux"},
+	}
+	for _, v := range testdata {
+		info, err := os.Stat(v.path)
+		assert.NilError(c, err)
+		// chmod support on Windows is pretty weak for now
+		if runtime.GOOS != "windows" {
+			assert.Equal(c, v.mode, info.Mode())
+		}
+		content, err := ioutil.ReadFile(v.path)
+		assert.NilError(c, err)
+		assert.Equal(c, v.content, string(content))
+	}
+}
+
+func (s *InputDirSuite) TestOutputMapExternal(c *C) {
+	result := icmd.RunCmd(icmd.Command(GomplateBin,
+		"--input-dir", s.tmpDir.Join("in"),
+		"--output-map", `{{ template "out" . }}`,
+		"-t", "out=out.t",
+		"-c", "filemap.json",
+		"-d", "config.yml",
+	), func(c *icmd.Cmd) {
+		c.Dir = s.tmpDir.Path()
+	})
+	result.Assert(c, icmd.Success)
+
+	files, err := ioutil.ReadDir(s.tmpDir.Join("out"))
+	assert.NilError(c, err)
+	tassert.Len(c, files, 2)
+
+	files, err = ioutil.ReadDir(s.tmpDir.Join("out", "inner"))
+	assert.NilError(c, err)
+	tassert.Len(c, files, 1)
+
+	testdata := []struct {
+		path    string
+		mode    os.FileMode
+		content string
+	}{
+		{s.tmpDir.Join("out", "uno.out"), 0644, "eins"},
+		{s.tmpDir.Join("out", "inner", "dos.out"), 0644, "deux"},
 	}
 	for _, v := range testdata {
 		info, err := os.Stat(v.path)

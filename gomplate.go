@@ -1,14 +1,17 @@
 package gomplate
 
 import (
+	"bytes"
 	"io"
 	"os"
 	"path"
+	"path/filepath"
 	"strings"
 	"text/template"
 	"time"
 
 	"github.com/hairyhenderson/gomplate/data"
+	"github.com/pkg/errors"
 	"github.com/spf13/afero"
 )
 
@@ -127,7 +130,7 @@ func RunTemplates(o *Config) error {
 
 func (g *gomplate) runTemplates(o *Config) error {
 	start := time.Now()
-	tmpl, err := gatherTemplates(o)
+	tmpl, err := gatherTemplates(o, chooseNamer(o, g))
 	Metrics.GatherDuration = time.Since(start)
 	if err != nil {
 		Metrics.Errors++
@@ -147,4 +150,51 @@ func (g *gomplate) runTemplates(o *Config) error {
 		Metrics.TemplatesProcessed++
 	}
 	return nil
+}
+
+func chooseNamer(o *Config, g *gomplate) func(string) (string, error) {
+	if o.OutputMap == "" {
+		return simpleNamer(o.OutputDir)
+	}
+	return mappingNamer(o.OutputMap, g)
+}
+
+func simpleNamer(outDir string) func(inPath string) (string, error) {
+	return func(inPath string) (string, error) {
+		outPath := filepath.Join(outDir, inPath)
+		return filepath.Clean(outPath), nil
+	}
+}
+
+func mappingNamer(outMap string, g *gomplate) func(string) (string, error) {
+	return func(inPath string) (string, error) {
+		out := &bytes.Buffer{}
+		t := &tplate{
+			name:     "<OutputMap>",
+			contents: outMap,
+			target:   out,
+		}
+		tpl, err := t.toGoTemplate(g)
+		if err != nil {
+			return "", err
+		}
+		ctx := &context{}
+		switch c := g.context.(type) {
+		case *context:
+			for k, v := range *c {
+				if k != "in" && k != "ctx" {
+					(*ctx)[k] = v
+				}
+			}
+		}
+		(*ctx)["ctx"] = g.context
+		(*ctx)["in"] = inPath
+
+		err = tpl.Execute(t.target, ctx)
+		if err != nil {
+			return "", errors.Wrapf(err, "failed to render outputMap with ctx %+v and inPath %s", ctx, inPath)
+		}
+
+		return filepath.Clean(strings.TrimSpace(out.String())), nil
+	}
 }

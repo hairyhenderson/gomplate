@@ -15,6 +15,7 @@ type Config struct {
 	ExcludeGlob []string
 	OutputFiles []string
 	OutputDir   string
+	OutputMap   string
 	OutMode     string
 
 	DataSources       []string
@@ -81,6 +82,8 @@ func (o *Config) String() string {
 	c += "\noutput: "
 	if o.InputDir != "" && o.OutputDir != "." {
 		c += o.OutputDir
+	} else if o.OutputMap != "" {
+		c += o.OutputMap
 	} else {
 		c += strings.Join(o.OutputFiles, ", ")
 	}
