@@ -61,7 +61,7 @@ Gomplate supports a number of datasources, each specified with a particular URL 
 | [Environment](#using-env-datasources) | `env` | Environment variables can be used as datasources - useful for testing |
 | [File](#using-file-datasources) | `file` | Files can be read in any of the [supported formats](#mime-types), including by piping through standard input (`Stdin`). [Directories](#directory-datasources) are also supported. |
 | [HTTP](#using-http-datasources) | `http`, `https` | Data can be sourced from HTTP/HTTPS sites in many different formats. Arbitrary HTTP headers can be set with the [`--datasource-header`/`-H`][] flag |
-| [Merged Datasources](#using-merge-datasources) | `merge` | Merge two or more datasources together to produce the final value - useful for resolving defaults. |
+| [Merged Datasources](#using-merge-datasources) | `merge` | Merge two or more datasources together to produce the final value - useful for resolving defaults. Uses [`coll.Merge`][] for merging. |
 | [Stdin](#using-stdin-datasources) | `stdin` | A special case of the `file` datasource; allows piping through standard input (`Stdin`) |
 | [Vault](#using-vault-datasources) | `vault`, `vault+http`, `vault+https` | [HashiCorp Vault][] is an industry-leading open-source secret management tool. [List support](#directory-datasources) is also available. |
 
@@ -371,6 +371,8 @@ datasource values _override_ those to the right).
 Multiple different formats can be mixed, as long as they produce maps with string
 keys as their data type.
 
+The [`coll.Merge`][] function is used to perform the merge operation.
+
 ### Merging separately-defined datasources
 
 Consider this example:
@@ -528,6 +530,7 @@ The file `/tmp/vault-aws-nonce` will be created if it didn't already exist, and 
 [`data.JSONArray`]: ../functions/data/#data-jsonarray
 [`data.TOML`]: ../functions/data/#data-toml
 [`data.YAML`]: ../functions/data/#data-yaml
+[`coll.Merge`]: ../functions/coll/#coll-merge
 
 [AWS SMP]: https://aws.amazon.com/systems-manager/features#Parameter_Store
 [BoltDB]: https://github.com/boltdb/bolt

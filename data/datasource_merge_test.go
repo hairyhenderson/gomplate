@@ -10,23 +10,23 @@ import (
 )
 
 func TestReadMerge(t *testing.T) {
-	jsonContent := []byte(`{"hello": "world"}`)
-	yamlContent := []byte("hello: earth\ngoodnight: moon\n")
-	arrayContent := []byte(`["hello", "world"]`)
+	jsonContent := `{"hello": "world"}`
+	yamlContent := "hello: earth\ngoodnight: moon\n"
+	arrayContent := `["hello", "world"]`
 
-	mergedContent := []byte("goodnight: moon\nhello: world\n")
+	mergedContent := "goodnight: moon\nhello: world\n"
 
 	fs := afero.NewMemMapFs()
 
 	_ = fs.Mkdir("/tmp", 0777)
 	f, _ := fs.Create("/tmp/jsonfile.json")
-	_, _ = f.Write(jsonContent)
+	_, _ = f.WriteString(jsonContent)
 	f, _ = fs.Create("/tmp/array.json")
-	_, _ = f.Write(arrayContent)
+	_, _ = f.WriteString(arrayContent)
 	f, _ = fs.Create("/tmp/yamlfile.yaml")
-	_, _ = f.Write(yamlContent)
+	_, _ = f.WriteString(yamlContent)
 	f, _ = fs.Create("/tmp/textfile.txt")
-	_, _ = f.Write([]byte(`plain text...`))
+	_, _ = f.WriteString(`plain text...`)
 
 	source := &Source{Alias: "foo", URL: mustParseURL("merge:file:///tmp/jsonfile.json|file:///tmp/yamlfile.yaml")}
 	source.fs = fs
@@ -44,12 +44,12 @@ func TestReadMerge(t *testing.T) {
 
 	actual, err := d.readMerge(source)
 	assert.NoError(t, err)
-	assert.Equal(t, mergedContent, actual)
+	assert.Equal(t, mergedContent, string(actual))
 
 	source.URL = mustParseURL("merge:bar|baz")
 	actual, err = d.readMerge(source)
 	assert.NoError(t, err)
-	assert.Equal(t, mergedContent, actual)
+	assert.Equal(t, mergedContent, string(actual))
 
 	source.URL = mustParseURL("merge:file:///tmp/jsonfile.json")
 	_, err = d.readMerge(source)
@@ -70,4 +70,62 @@ func TestReadMerge(t *testing.T) {
 	source.URL = mustParseURL("merge:file:///tmp/jsonfile.json|array")
 	_, err = d.readMerge(source)
 	assert.Error(t, err)
+}
+
+func TestMergeData(t *testing.T) {
+	def := map[string]interface{}{
+		"f": true,
+		"t": false,
+		"z": "def",
+	}
+	out, err := mergeData([]map[string]interface{}{def})
+	assert.NoError(t, err)
+	assert.Equal(t, "f: true\nt: false\nz: def\n", string(out))
+
+	over := map[string]interface{}{
+		"f": false,
+		"t": true,
+		"z": "over",
+	}
+	out, err = mergeData([]map[string]interface{}{over, def})
+	assert.NoError(t, err)
+	assert.Equal(t, "f: false\nt: true\nz: over\n", string(out))
+
+	over = map[string]interface{}{
+		"f": false,
+		"t": true,
+		"z": "over",
+		"m": map[string]interface{}{
+			"a": "aaa",
+		},
+	}
+	out, err = mergeData([]map[string]interface{}{over, def})
+	assert.NoError(t, err)
+	assert.Equal(t, "f: false\nm:\n  a: aaa\nt: true\nz: over\n", string(out))
+
+	uber := map[string]interface{}{
+		"z": "über",
+	}
+	out, err = mergeData([]map[string]interface{}{uber, over, def})
+	assert.NoError(t, err)
+	assert.Equal(t, "f: false\nm:\n  a: aaa\nt: true\nz: über\n", string(out))
+
+	uber = map[string]interface{}{
+		"m": "notamap",
+		"z": map[string]interface{}{
+			"b": "bbb",
+		},
+	}
+	out, err = mergeData([]map[string]interface{}{uber, over, def})
+	assert.NoError(t, err)
+	assert.Equal(t, "f: false\nm: notamap\nt: true\nz:\n  b: bbb\n", string(out))
+
+	uber = map[string]interface{}{
+		"m": map[string]interface{}{
+			"b": "bbb",
+		},
+	}
+	out, err = mergeData([]map[string]interface{}{uber, over, def})
+	assert.NoError(t, err)
+	assert.Equal(t, "f: false\nm:\n  a: aaa\n  b: bbb\nt: true\nz: over\n", string(out))
 }

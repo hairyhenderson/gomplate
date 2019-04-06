@@ -298,14 +298,6 @@
   version = "v1.0.3"
 
 [[projects]]
-  digest = "1:aaa38889f11896ee3644d77e17dc7764cc47f5f3d3b488268df2af2b52541c5f"
-  name = "github.com/imdario/mergo"
-  packages = ["."]
-  pruneopts = "NUT"
-  revision = "7c29201646fa3de8506f701213473dd407f19646"
-  version = "v0.3.7"
-
-[[projects]]
   digest = "1:406338ad39ab2e37b7f4452906442a3dbf0eb3379dd1f06aafb5c07e769a5fbb"
   name = "github.com/inconshreveable/mousetrap"
   packages = ["."]
@@ -556,6 +548,7 @@
     "github.com/aws/aws-sdk-go/service/ec2",
     "github.com/aws/aws-sdk-go/service/kms",
     "github.com/aws/aws-sdk-go/service/ssm",
+    "github.com/aws/aws-sdk-go/service/sts",
     "github.com/boltdb/bolt",
     "github.com/docker/libkv",
     "github.com/docker/libkv/store",
@@ -573,7 +566,6 @@
     "github.com/hashicorp/go-sockaddr",
     "github.com/hashicorp/go-sockaddr/template",
     "github.com/hashicorp/vault/api",
-    "github.com/imdario/mergo",
     "github.com/joho/godotenv",
     "github.com/pkg/errors",
     "github.com/spf13/afero",

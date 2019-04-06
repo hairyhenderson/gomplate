@@ -382,7 +382,7 @@ map can be configured the "overrides".
 
 Many source maps can be provided. Precedence is in left-to-right order.
 
-Note that this function _changes_ the destination map.
+_Note that this function does not modify the input._
 
 ### Usage
 

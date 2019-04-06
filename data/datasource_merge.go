@@ -3,7 +3,7 @@ package data
 import (
 	"strings"
 
-	"github.com/imdario/mergo"
+	"github.com/hairyhenderson/gomplate/coll"
 
 	"github.com/pkg/errors"
 )
@@ -63,14 +63,13 @@ func (d *Data) readMerge(source *Source, args ...string) ([]byte, error) {
 	return b, nil
 }
 
-func mergeData(data []map[string]interface{}) ([]byte, error) {
+func mergeData(data []map[string]interface{}) (out []byte, err error) {
 	dst := data[0]
 	data = data[1:]
-	for _, datum := range data {
-		err := mergo.Merge(&dst, datum)
-		if err != nil {
-			return nil, errors.Wrap(err, "failed to merge datasources")
-		}
+
+	dst, err = coll.Merge(dst, data...)
+	if err != nil {
+		return nil, err
 	}
 
 	s, err := ToYAML(dst)
