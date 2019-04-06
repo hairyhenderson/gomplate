@@ -40,6 +40,14 @@ FOO.BAR = "values can be double-quoted, and shell\nescapes are supported"
 BAZ = "variable expansion: ${FOO}"
 QUX='single quotes ignore $variables'
 `,
+			"multidoc.yaml": `---
+# empty document
+---
+foo: bar
+---
+foo: baz
+...
+`,
 		}),
 		fs.WithDir("sortorder", fs.WithFiles(map[string]string{
 			"template": `aws_zones = {
@@ -191,4 +199,12 @@ bar`})
   "FOO.BAR": "values can be double-quoted, and shell\nescapes are supported",
   "QUX": "single quotes ignore $variables"
 }`})
+
+	result = icmd.RunCmd(icmd.Command(GomplateBin,
+		"-c=multidoc.yaml",
+		"-i", `{{ .multidoc.foo }}`,
+	), func(c *icmd.Cmd) {
+		c.Dir = s.tmpDir.Path()
+	})
+	result.Assert(c, icmd.Expected{ExitCode: 0, Out: "bar"})
 }

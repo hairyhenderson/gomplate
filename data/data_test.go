@@ -65,7 +65,7 @@ func TestUnmarshalArray(t *testing.T) {
 		assert.EqualValues(t, expected, actual)
 	}
 	test(JSONArray(`["foo","bar",{"baz":{"qux": true},"quux":{"42":18},"corge":{"false":"blah"}}]`))
-	test(YAMLArray(`
+	test(YAMLArray(`---
 - foo
 - bar
 - baz:
