@@ -5,8 +5,6 @@ import (
 	"reflect"
 	"sort"
 
-	"github.com/imdario/mergo"
-
 	"github.com/hairyhenderson/gomplate/conv"
 	"github.com/pkg/errors"
 )
@@ -169,12 +167,46 @@ func Reverse(list interface{}) ([]interface{}, error) {
 // the left-most values taking precedence over the right-most.
 func Merge(dst map[string]interface{}, srcs ...map[string]interface{}) (map[string]interface{}, error) {
 	for _, src := range srcs {
-		err := mergo.Merge(&dst, src)
-		if err != nil {
-			return nil, err
-		}
+		dst = mergeValues(src, dst)
 	}
 	return dst, nil
+}
+
+func copyMap(m map[string]interface{}) map[string]interface{} {
+	n := map[string]interface{}{}
+	for k, v := range m {
+		n[k] = v
+	}
+	return n
+}
+
+// Merges a default and override map
+func mergeValues(d map[string]interface{}, o map[string]interface{}) map[string]interface{} {
+	def := copyMap(d)
+	over := copyMap(o)
+	for k, v := range over {
+		// If the key doesn't exist already, then just set the key to that value
+		if _, exists := def[k]; !exists {
+			def[k] = v
+			continue
+		}
+		nextMap, ok := v.(map[string]interface{})
+		// If it isn't another map, overwrite the value
+		if !ok {
+			def[k] = v
+			continue
+		}
+		// Edge case: If the key exists in the default, but isn't a map
+		defMap, isMap := def[k].(map[string]interface{})
+		// If the override map has a map for this key, prefer it
+		if !isMap {
+			def[k] = v
+			continue
+		}
+		// If we got to this point, it is a map in both, so merge them
+		def[k] = mergeValues(defMap, nextMap)
+	}
+	return def
 }
 
 // Sort a given array or slice. Uses natural sort order if possible. If a

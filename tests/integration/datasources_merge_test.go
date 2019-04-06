@@ -22,8 +22,8 @@ var _ = Suite(&MergeDatasourceSuite{})
 func (s *MergeDatasourceSuite) SetUpSuite(c *C) {
 	s.tmpDir = fs.NewDir(c, "gomplate-inttests",
 		fs.WithFiles(map[string]string{
-			"config.json": `{"foo": {"bar": "baz"}}`,
-			"default.yml": "foo:\n  bar: qux\nother: true\n",
+			"config.json": `{"foo": {"bar": "baz"}, "isDefault": false, "isOverride": true}`,
+			"default.yml": "foo:\n  bar: qux\nother: true\nisDefault: true\nisOverride: false\n",
 		}),
 	)
 
@@ -49,21 +49,21 @@ func (s *MergeDatasourceSuite) TestMergeDatasource(c *C) {
 		"-d", "config=merge:user|default",
 		"-i", `{{ ds "config" | toJSON }}`,
 	)
-	result.Assert(c, icmd.Expected{ExitCode: 0, Out: `{"foo":{"bar":"baz"},"other":true}`})
+	result.Assert(c, icmd.Expected{ExitCode: 0, Out: `{"foo":{"bar":"baz"},"isDefault":false,"isOverride":true,"other":true}`})
 
 	result = icmd.RunCommand(GomplateBin,
 		"-d", "default="+s.tmpDir.Join("default.yml"),
 		"-d", "config=merge:user|default",
 		"-i", `{{ defineDatasource "user" `+"`"+s.tmpDir.Join("config.json")+"`"+` }}{{ ds "config" | toJSON }}`,
 	)
-	result.Assert(c, icmd.Expected{ExitCode: 0, Out: `{"foo":{"bar":"baz"},"other":true}`})
+	result.Assert(c, icmd.Expected{ExitCode: 0, Out: `{"foo":{"bar":"baz"},"isDefault":false,"isOverride":true,"other":true}`})
 
 	result = icmd.RunCommand(GomplateBin,
 		"-d", "default="+s.tmpDir.Join("default.yml"),
 		"-d", "config=merge:http://"+s.l.Addr().String()+"/foo.json|default",
 		"-i", `{{ ds "config" | toJSON }}`,
 	)
-	result.Assert(c, icmd.Expected{ExitCode: 0, Out: `{"foo":"bar","other":true}`})
+	result.Assert(c, icmd.Expected{ExitCode: 0, Out: `{"foo":"bar","isDefault":true,"isOverride":false,"other":true}`})
 
 	result = icmd.RunCommand(GomplateBin,
 		"-c", "merged=merge:http://"+s.l.Addr().String()+"/2.env|http://"+s.l.Addr().String()+"/1.env",

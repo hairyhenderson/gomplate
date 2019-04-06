@@ -228,6 +228,56 @@ func TestMerge(t *testing.T) {
 	out, err = Merge(dst, src, src2)
 	assert.NoError(t, err)
 	assert.EqualValues(t, expected, out)
+
+	dst = map[string]interface{}{"a": false, "c": 5}
+	src = map[string]interface{}{"a": true, "b": 2, "c": 3}
+	src2 = map[string]interface{}{"a": true, "b": 2, "c": 3, "d": 4}
+	expected = map[string]interface{}{
+		"a": dst["a"], "b": src["b"], "c": dst["c"], "d": src2["d"],
+	}
+
+	out, err = Merge(dst, src, src2)
+	assert.NoError(t, err)
+	assert.EqualValues(t, expected, out)
+
+	dst = map[string]interface{}{"a": true, "c": 5}
+	src = map[string]interface{}{"a": false,
+		"b": map[string]interface{}{
+			"ca": "foo",
+		},
+	}
+	src2 = map[string]interface{}{"a": false, "b": 2, "c": 3, "d": 4}
+	expected = map[string]interface{}{
+		"a": dst["a"], "b": src["b"], "c": dst["c"], "d": src2["d"],
+	}
+
+	out, err = Merge(dst, src, src2)
+	assert.NoError(t, err)
+	assert.EqualValues(t, expected, out)
+
+	dst = map[string]interface{}{
+		"a": true,
+		"b": map[string]interface{}{
+			"ca": "foo",
+			"cb": "bar",
+		},
+		"c": 5}
+	src = map[string]interface{}{
+		"a": false,
+		"b": map[string]interface{}{
+			"ca": 8,
+		},
+	}
+	expected = map[string]interface{}{
+		"a": dst["a"], "b": map[string]interface{}{
+			"ca": "foo",
+			"cb": "bar",
+		}, "c": dst["c"],
+	}
+
+	out, err = Merge(dst, src)
+	assert.NoError(t, err)
+	assert.EqualValues(t, expected, out)
 }
 
 type coords struct {
