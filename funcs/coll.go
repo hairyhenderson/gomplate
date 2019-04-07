@@ -35,6 +35,7 @@ func AddCollFuncs(f map[string]interface{}) {
 	f["reverse"] = CollNS().Reverse
 	f["merge"] = CollNS().Merge
 	f["sort"] = CollNS().Sort
+	f["jsonpath"] = CollNS().JSONPath
 }
 
 // CollFuncs -
@@ -107,4 +108,9 @@ func (f *CollFuncs) Sort(args ...interface{}) ([]interface{}, error) {
 		list = args[1]
 	}
 	return coll.Sort(key, list)
+}
+
+// JSONPath -
+func (f *CollFuncs) JSONPath(p string, in interface{}) (interface{}, error) {
+	return coll.JSONPath(p, in)
 }

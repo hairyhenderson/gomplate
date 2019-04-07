@@ -125,6 +125,41 @@ $ gomplate -i '{{ $o := data.JSON (getenv "DATA") -}}
 THERE IS NO FOO
 ```
 
+## `conv.JSONPath`
+
+**Alias:** `jsonpath`
+
+Extracts portions of an input object or list using a [JSONPath][] expression.
+
+Any object or list may be used as input. The output depends somewhat on the expression; if multiple items are matched, an array is returned.
+
+JSONPath expressions can be validated at https://jsonpath.com
+
+[JSONPath]: https://goessner.net/articles/JsonPath
+
+### Usage
+
+```go
+conv.JSONPath expression in
+```
+```go
+in | conv.JSONPath expression
+```
+
+### Arguments
+
+| name | description |
+|------|-------------|
+| `expression` | _(required)_ The JSONPath expression |
+| `in` | _(required)_ The object or list to query |
+
+### Examples
+
+```console
+$ gomplate -i '{{ .books | jsonpath `$..works[?( @.edition_count > 400 )].title` }}' -c books=https://openlibrary.org/subjects/fantasy.json
+[Alice's Adventures in Wonderland Gulliver's Travels]
+```
+
 ## `coll.Keys`
 
 **Alias:** `keys`

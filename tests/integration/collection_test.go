@@ -87,3 +87,15 @@ func (s *CollSuite) TestSort(c *C) {
 `,
 	})
 }
+
+func (s *CollSuite) TestJSONPath(c *C) {
+	result := icmd.RunCmd(icmd.Command(GomplateBin,
+		"-c", "config="+s.tmpDir.Join("config.json"),
+		"-i", `{{ .config | jsonpath ".*.three" }}`))
+	result.Assert(c, icmd.Expected{ExitCode: 0, Out: `[5 6 7]`})
+
+	result = icmd.RunCmd(icmd.Command(GomplateBin,
+		"-c", "config="+s.tmpDir.Join("config.json"),
+		"-i", `{{ .config | coll.JSONPath ".values..a" }}`))
+	result.Assert(c, icmd.Expected{ExitCode: 0, Out: `eh?`})
+}

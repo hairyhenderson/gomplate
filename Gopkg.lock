@@ -535,6 +535,17 @@
   pruneopts = "NUT"
   revision = "252a03df762e6cc75ed23ccd28fed3c3bd19516f"
 
+[[projects]]
+  digest = "1:c3c645369d12dc28c9119d974127bc0fa849b5608e06bab83d0c9a2254289574"
+  name = "k8s.io/client-go"
+  packages = [
+    "third_party/forked/golang/template",
+    "util/jsonpath",
+  ]
+  pruneopts = "NUT"
+  revision = "6ee68ca5fd8355d024d02f9db0b3b667e8357a0f"
+  version = "v11.0.0"
+
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
@@ -577,6 +588,7 @@
     "golang.org/x/crypto/pbkdf2",
     "gopkg.in/check.v1",
     "gopkg.in/hairyhenderson/yaml.v2",
+    "k8s.io/client-go/util/jsonpath",
   ]
   solver-name = "gps-cdcl"
   solver-version = 1
