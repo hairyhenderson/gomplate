@@ -92,13 +92,13 @@ func TestGatherTemplates(t *testing.T) {
 	afero.WriteFile(fs, "in/2", []byte("bar"), 0644)
 	afero.WriteFile(fs, "in/3", []byte("baz"), 0644)
 
-	templates, err := gatherTemplates(&Config{})
+	templates, err := gatherTemplates(&Config{}, nil)
 	assert.NoError(t, err)
 	assert.Len(t, templates, 1)
 
 	templates, err = gatherTemplates(&Config{
 		Input: "foo",
-	})
+	}, nil)
 	assert.NoError(t, err)
 	assert.Len(t, templates, 1)
 	assert.Equal(t, "foo", templates[0].contents)
@@ -107,7 +107,7 @@ func TestGatherTemplates(t *testing.T) {
 	templates, err = gatherTemplates(&Config{
 		Input:       "foo",
 		OutputFiles: []string{"out"},
-	})
+	}, nil)
 	assert.NoError(t, err)
 	assert.Len(t, templates, 1)
 	assert.Equal(t, "out", templates[0].targetPath)
@@ -120,7 +120,7 @@ func TestGatherTemplates(t *testing.T) {
 	templates, err = gatherTemplates(&Config{
 		InputFiles:  []string{"foo"},
 		OutputFiles: []string{"out"},
-	})
+	}, nil)
 	assert.NoError(t, err)
 	assert.Len(t, templates, 1)
 	assert.Equal(t, "bar", templates[0].contents)
@@ -135,7 +135,7 @@ func TestGatherTemplates(t *testing.T) {
 		InputFiles:  []string{"foo"},
 		OutputFiles: []string{"out"},
 		OutMode:     "755",
-	})
+	}, nil)
 	assert.NoError(t, err)
 	assert.Len(t, templates, 1)
 	assert.Equal(t, "bar", templates[0].contents)
@@ -149,7 +149,7 @@ func TestGatherTemplates(t *testing.T) {
 	templates, err = gatherTemplates(&Config{
 		InputDir:  "in",
 		OutputDir: "out",
-	})
+	}, simpleNamer("out"))
 	assert.NoError(t, err)
 	assert.Len(t, templates, 3)
 	assert.Equal(t, "foo", templates[0].contents)

@@ -23,6 +23,7 @@ var (
 	opts     gomplate.Config
 )
 
+// nolint: gocyclo
 func validateOpts(cmd *cobra.Command, args []string) error {
 	if cmd.Flag("in").Changed && cmd.Flag("file").Changed {
 		return errors.New("--in and --file may not be used together")
@@ -42,6 +43,15 @@ func validateOpts(cmd *cobra.Command, args []string) error {
 		}
 		if !cmd.Flag("input-dir").Changed {
 			return errors.New("--input-dir must be set when --output-dir is set")
+		}
+	}
+
+	if cmd.Flag("output-map").Changed {
+		if cmd.Flag("out").Changed || cmd.Flag("output-dir").Changed {
+			return errors.New("--output-map can not be used together with --out or --output-dir")
+		}
+		if !cmd.Flag("input-dir").Changed {
+			return errors.New("--input-dir must be set when --output-map is set")
 		}
 	}
 	return nil
@@ -140,6 +150,7 @@ func initFlags(command *cobra.Command) {
 	command.Flags().StringArrayVarP(&opts.OutputFiles, "out", "o", []string{"-"}, "output `file` name. Omit to use standard output.")
 	command.Flags().StringArrayVarP(&opts.Templates, "template", "t", []string{}, "Additional template file(s)")
 	command.Flags().StringVar(&opts.OutputDir, "output-dir", ".", "`directory` to store the processed templates. Only used for --input-dir")
+	command.Flags().StringVar(&opts.OutputMap, "output-map", "", "Template `string` to map the input file to an output path")
 	command.Flags().StringVar(&opts.OutMode, "chmod", "", "set the mode for output file(s). Omit to inherit from input file(s)")
 
 	ldDefault := env.Getenv("GOMPLATE_LEFT_DELIM", "{{")

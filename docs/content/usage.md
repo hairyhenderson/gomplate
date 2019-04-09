@@ -33,16 +33,54 @@ You can specify multiple `--file` and `--out` arguments. The same number of each
 
 ### `--input-dir` and `--output-dir`
 
-For processing multiple templates in a directory you can use `--input-dir` and `--output-dir` together. In this case all files in input directory will be processed as templates and the resulting files stored in `--output-dir`. The output directory will be created if it does not exist and the directory structure of the input directory will be preserved.  
+For processing multiple templates in a directory you can use `--input-dir` and `--output-dir` together. In this case all files in input directory will be processed as templates and the resulting files stored in `--output-dir`. The output directory will be created if it does not exist and the directory structure of the input directory will be preserved.
 
 You can use `.gomplateignore` to ignore some files in the input directory, with similar syntax and behaviour to [.gitignore](https://git-scm.com/docs/gitignore) files.
 
 Example:
 
 ```bash
- # Process all files in directory "templates" with the datasource given
- # and store the files with the same directory structure in "config"
+# Process all files in directory "templates" with the datasource given
+# and store the files with the same directory structure in "config"
 gomplate --input-dir=templates --output-dir=config --datasource config=config.yaml
+```
+
+### `--output-map`
+
+Sometimes a 1-to-1 mapping betwen input filenames and output filenames is not desirable. For these cases, you can supply a template string as the argument to `--output-map`. The template string is interpreted as a regular gomplate template, and all datasources and external nested templates are available to the output map template.
+
+A new [context][] is provided, with the input filename is available at `.in`, and the original context is available at `.ctx`. For convenience, any context keys not conflicting with `in` or `ctx` are also copied.
+
+All whitespace on the left or right sides of the output is trimmed.
+
+For example, given an input directory `in/` containing files with the extension `.yaml.tmpl`, if we want to rename those to `.yaml`:
+
+```console
+$ gomplate --input-dir=in/ --output-map='out/{{ .in | strings.ReplaceAll ".yaml.tmpl" ".yaml" }}'
+```
+
+#### Referencing complex output map template files
+
+It may be useful to store more complex output map templates in a file. This can be done with [external templates][].
+
+Consider a template `out.t`:
+
+```
+{{- /* .in may contain a directory name - we want to preserve that */ -}}
+{{ $f := filepath.Base .in -}}
+out/{{ .in | strings.ReplaceAll $f (index .filemap $f) }}.out
+```
+
+And a datasource `filemap.json`:
+
+```json
+{ "eins.txt": "uno", "deux.txt": "dos" }
+```
+
+We can blend these two together:
+
+```console
+$ gomplate -t out=out.t -c filemap.json --input-dir=in --output-map='{{ template "out" }}'
 ```
 
 ### Ignorefile
@@ -104,7 +142,7 @@ Use `--left-delim`/`--right-delim` or set `$GOMPLATE_LEFT_DELIM`/`$GOMPLATE_RIGH
 
 ### `--template`/`-t`
 
-Add a nested template that can be referenced by the main input template(s) with the [`template`](https://golang.org/pkg/text/template/#hdr-Actions) built-in. Specify multiple times to add multiple template references.
+Add a nested template that can be referenced by the main input template(s) with the [`template`](https://golang.org/pkg/text/template/#hdr-Actions) built-in or the functions in the [`tmpl`](../functions/tmpl/) namespace. Specify multiple times to add multiple template references.
 
 A few different forms are valid:
 
@@ -164,3 +202,7 @@ $ gomplate -i '{{ print "   \n" }}' -o out
 $ cat out
 cat: out: No such file or directory
 ```
+
+[default context]: ../syntax/#the-context
+[context]: ../syntax/#the-context
+[external templates]: ../syntax/#external-templates
