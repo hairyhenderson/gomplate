@@ -257,6 +257,10 @@ type DecodeOptions struct {
 	// If true, we will delete the mapping of the key.
 	// Else, just set the mapping to the zero value of the type.
 	DeleteOnNilMapValue bool
+
+	// RawToString controls how raw bytes in a stream are decoded into a nil interface{}.
+	// By default, they are decoded as []byte, but can be decoded as string (if configured).
+	RawToString bool
 }
 
 // ------------------------------------------------
@@ -553,19 +557,31 @@ type bufioDecReader struct {
 
 	// err error
 
-	_ [2]uint64 // padding
+	// Extensions can call Decode() within a current Decode() call.
+	// We need to know when the top level Decode() call returns,
+	// so we can decide whether to Release() or not.
+	calls uint16 // what depth in mustDecode are we in now.
+
+	_ [6]uint8 // padding
+
+	_ [1]uint64 // padding
 }
 
 func (z *bufioDecReader) reset(r io.Reader, bufsize int) {
 	z.ioDecReaderCommon.reset(r)
 	z.c = 0
+	z.calls = 0
 	if cap(z.buf) >= bufsize {
 		z.buf = z.buf[:0]
 	} else {
-		z.bytesBufPooler.end() // potentially return old one to pool
 		z.buf = z.bytesBufPooler.get(bufsize)[:0]
 		// z.buf = make([]byte, 0, bufsize)
 	}
+}
+
+func (z *bufioDecReader) release() {
+	z.buf = nil
+	z.bytesBufPooler.end()
 }
 
 func (z *bufioDecReader) readb(p []byte) {
@@ -2294,12 +2310,7 @@ type Decoder struct {
 	depth    int16
 	maxdepth int16
 
-	// Extensions can call Decode() within a current Decode() call.
-	// We need to know when the top level Decode() call returns,
-	// so we can decide whether to Release() or not.
-	calls uint16 // what depth in mustDecode are we in now.
-
-	_ [2]uint8 // padding
+	_ [4]uint8 // padding
 
 	is map[string]string // used for interning strings
 
@@ -2359,7 +2370,6 @@ func (d *Decoder) resetCommon() {
 	// d.r = &d.decReaderSwitch
 	d.d.reset()
 	d.err = nil
-	d.calls = 0
 	d.depth = 0
 	d.maxdepth = d.h.MaxDepth
 	if d.maxdepth <= 0 {
@@ -2523,16 +2533,21 @@ func (d *Decoder) MustDecode(v interface{}) {
 // This provides insight to the code location that triggered the error.
 func (d *Decoder) mustDecode(v interface{}) {
 	// TODO: Top-level: ensure that v is a pointer and not nil.
-	d.calls++
 	if d.d.TryDecodeAsNil() {
 		setZero(v)
-	} else {
-		d.decode(v)
+		return
 	}
+	if d.bi == nil {
+		d.decode(v)
+		return
+	}
+
+	d.bi.calls++
+	d.decode(v)
 	// xprintf(">>>>>>>> >>>>>>>> num decFns: %v\n", d.cf.sn)
-	d.calls--
-	if !d.h.ExplicitRelease && d.calls == 0 {
-		d.Release()
+	d.bi.calls--
+	if !d.h.ExplicitRelease && d.bi.calls == 0 {
+		d.bi.release()
 	}
 }
 
@@ -2558,12 +2573,8 @@ func (d *Decoder) finalize() {
 //
 // By default, Release() is automatically called unless the option ExplicitRelease is set.
 func (d *Decoder) Release() {
-	if useFinalizers && removeFinalizerOnRelease {
-		runtime.SetFinalizer(d, nil)
-	}
-	if d.bi != nil && d.bi.bytesBufPooler.pool != nil {
-		d.bi.buf = nil
-		d.bi.bytesBufPooler.end()
+	if d.bi != nil {
+		d.bi.release()
 	}
 	// d.decNakedPooler.end()
 }
@@ -3085,4 +3096,14 @@ func decReadFull(r io.Reader, bs []byte) (n uint, err error) {
 	// do not do this - it serves no purpose
 	// if n != len(bs) && err == io.EOF { err = io.ErrUnexpectedEOF }
 	return
+}
+
+func decNakedReadRawBytes(dr decDriver, d *Decoder, n *decNaked, rawToString bool) {
+	if rawToString {
+		n.v = valueTypeString
+		n.s = string(dr.DecodeBytes(d.b[:], true))
+	} else {
+		n.v = valueTypeBytes
+		n.l = dr.DecodeBytes(nil, false)
+	}
 }
