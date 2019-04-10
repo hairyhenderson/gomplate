@@ -127,7 +127,7 @@ const (
 
 	// arrayCacheLen is the length of the cache used in encoder or decoder for
 	// allowing zero-alloc initialization.
-	arrayCacheLen = 8
+	// arrayCacheLen = 8
 
 	// size of the cacheline: defaulting to value for archs: amd64, arm64, 386
 	// should use "runtime/internal/sys".CacheLineSize, but that is not exposed.
@@ -149,8 +149,7 @@ const (
 	// explicitly call SetFinalizer themselves e.g.
 	//    runtime.SetFinalizer(e, (*Encoder).Release)
 	//    runtime.SetFinalizer(d, (*Decoder).Release)
-	useFinalizers            = false
-	removeFinalizerOnRelease = false
+	useFinalizers = false
 )
 
 var oneByteArr [1]byte
@@ -2543,6 +2542,12 @@ func (z *bytesBufPooler) end() {
 }
 
 func (z *bytesBufPooler) get(bufsize int) (buf []byte) {
+	// ensure an end is called first (if necessary)
+	if z.pool != nil {
+		z.pool.Put(z.poolbuf)
+		z.pool, z.poolbuf = nil, nil
+	}
+
 	// // Try to use binary search.
 	// // This is not optimal, as most folks select 1k or 2k buffers
 	// // so a linear search is better (sequence of if/else blocks)

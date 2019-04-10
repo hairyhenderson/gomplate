@@ -932,8 +932,7 @@ func (d *bincDecDriver) DecodeNaked() {
 		n.v = valueTypeString
 		n.s = d.DecodeString()
 	case bincVdByteArray:
-		n.v = valueTypeBytes
-		n.l = d.DecodeBytes(nil, false)
+		decNakedReadRawBytes(d, d.d, n, d.h.RawToString)
 	case bincVdTimestamp:
 		n.v = valueTypeTime
 		tt, err := bincDecodeTime(d.r.readx(uint(d.vs)))
