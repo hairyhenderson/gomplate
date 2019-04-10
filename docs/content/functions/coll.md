@@ -125,7 +125,7 @@ $ gomplate -i '{{ $o := data.JSON (getenv "DATA") -}}
 THERE IS NO FOO
 ```
 
-## `conv.JSONPath`
+## `coll.JSONPath`
 
 **Alias:** `jsonpath`
 
@@ -140,10 +140,10 @@ JSONPath expressions can be validated at https://jsonpath.com
 ### Usage
 
 ```go
-conv.JSONPath expression in
+coll.JSONPath expression in
 ```
 ```go
-in | conv.JSONPath expression
+in | coll.JSONPath expression
 ```
 
 ### Arguments

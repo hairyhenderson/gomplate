@@ -83,7 +83,7 @@ funcs:
         $ gomplate -i '{{ $o := data.JSON (getenv "DATA") -}}
         {{ if (has $o "foo") }}{{ $o.foo }}{{ else }}THERE IS NO FOO{{ end }}'
         THERE IS NO FOO
-  - name: conv.JSONPath
+  - name: coll.JSONPath
     alias: jsonpath
     description: |
       Extracts portions of an input object or list using a [JSONPath][] expression.
