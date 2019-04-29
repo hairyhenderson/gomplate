@@ -21,7 +21,7 @@ func TestWalkDir(t *testing.T) {
 	_ = fs.MkdirAll("/indir/one", 0777)
 	_ = fs.MkdirAll("/indir/two", 0777)
 	afero.WriteFile(fs, "/indir/one/foo", []byte("foo"), 0644)
-	afero.WriteFile(fs, "/indir/one/bar", []byte("bar"), 0644)
+	afero.WriteFile(fs, "/indir/one/bar", []byte("bar"), 0664)
 	afero.WriteFile(fs, "/indir/two/baz", []byte("baz"), 0644)
 
 	templates, err := walkDir("/indir", simpleNamer("/outdir"), []string{"*/two"}, 0, false)
@@ -31,7 +31,7 @@ func TestWalkDir(t *testing.T) {
 		{
 			name:       "/indir/one/bar",
 			targetPath: "/outdir/one/bar",
-			mode:       0644,
+			mode:       0664,
 		},
 		{
 			name:       "/indir/one/foo",

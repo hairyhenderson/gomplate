@@ -177,12 +177,13 @@ func walkDir(dir string, outFileNamer func(string) (string, error), excludeGlob 
 			return nil, err
 		}
 
+		fMode := mode
 		if mode == 0 {
 			stat, perr := fs.Stat(nextInPath)
 			if perr == nil {
-				mode = stat.Mode()
+				fMode = stat.Mode()
 			} else {
-				mode = dirMode
+				fMode = dirMode
 			}
 		}
 
@@ -194,7 +195,7 @@ func walkDir(dir string, outFileNamer func(string) (string, error), excludeGlob 
 		templates = append(templates, &tplate{
 			name:         nextInPath,
 			targetPath:   nextOutPath,
-			mode:         mode,
+			mode:         fMode,
 			modeOverride: modeOverride,
 		})
 	}
