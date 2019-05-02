@@ -117,39 +117,32 @@ gomplate.png: gomplate.svg
 	cloudconvert -f png -c density=288 $^
 
 lint:
-	gometalinter --vendor --disable-all \
-		--enable=gosec \
-		--enable=goconst \
-		--enable=gocyclo \
-		--enable=golint \
-		--enable=gotypex \
-		--enable=ineffassign \
-		--enable=vet \
-		--enable=vetshadow \
-		--enable=misspell \
-		--enable=goimports \
-		--enable=gofmt \
-		./...
-	gometalinter --vendor --skip tests --disable-all \
-		--enable=deadcode \
-		./...
+	golangci-lint run --tests --disable-all \
+	    --enable gosec \
+        --enable goconst \
+        --enable gocyclo \
+        --enable golint \
+        --enable ineffassign \
+        --enable govet \
+        --enable misspell \
+        --enable goimports \
+        --enable gofmt
+	golangci-lint run --tests=false --disable-all \
+		--enable deadcode
 
 slow-lint:
-	gometalinter -j $(LINT_PROCS) --vendor --skip tests --deadline 120s \
-		--disable gotype \
+	golangci-lint run --concurrency $(LINT_PROCS) --tests=false --deadline 120s \
 		--enable gofmt \
 		--enable goimports \
-		--enable misspell \
-			./...
-	gometalinter -j $(LINT_PROCS) --vendor --deadline 120s \
-		--disable gotype \
-		--disable megacheck \
+		--enable misspell
+	golangci-lint run --concurrency $(LINT_PROCS) --tests --deadline 120s \
 		--disable deadcode \
+		--disable errcheck \
+		--disable unused \
 		--enable gofmt \
 		--enable goimports \
 		--enable misspell \
-			./tests/integration
-	megacheck -tags integration ./tests/integration
+			tests/integration
 
 .PHONY: gen-changelog clean test build-x compress-all build-release build test-integration-docker gen-docs lint clean-images clean-containers docker-images
 .DELETE_ON_ERROR:

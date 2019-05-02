@@ -77,12 +77,10 @@ func postRunExec(cmd *cobra.Command, args []string) error {
 		signal.Notify(sigs)
 		go func() {
 			// Pass signals to the sub-process
-			select {
-			case sig := <-sigs:
-				if c.Process != nil {
-					// nolint: gosec
-					c.Process.Signal(sig)
-				}
+			sig := <-sigs
+			if c.Process != nil {
+				// nolint: gosec
+				_ = c.Process.Signal(sig)
 			}
 		}()
 
