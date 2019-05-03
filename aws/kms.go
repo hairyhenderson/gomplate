@@ -50,7 +50,7 @@ func (k *KMS) Decrypt(ciphertext string) (string, error) {
 		return "", err
 	}
 	input := &kms.DecryptInput{
-		CiphertextBlob: []byte(ciphertextBlob),
+		CiphertextBlob: ciphertextBlob,
 	}
 	output, err := k.Client.Decrypt(input)
 	if err != nil {

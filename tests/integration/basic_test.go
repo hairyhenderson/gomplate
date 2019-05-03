@@ -74,7 +74,7 @@ func (s *BasicSuite) TestErrorsWithInputOutputImbalance(c *C) {
 	})
 	result.Assert(c, icmd.Expected{
 		ExitCode: 1,
-		Err:      "Must provide same number of --out (1) as --file (2) options",
+		Err:      "must provide same number of --out (1) as --file (2) options",
 	})
 }
 

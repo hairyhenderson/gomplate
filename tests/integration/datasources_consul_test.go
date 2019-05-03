@@ -124,7 +124,7 @@ func (s *ConsulDatasourcesSuite) TearDownSuite(c *C) {
 	}
 }
 
-func (s *ConsulDatasourcesSuite) consulPut(c *C, k string, v string) {
+func (s *ConsulDatasourcesSuite) consulPut(c *C, k, v string) {
 	result := icmd.RunCmd(icmd.Command("consul", "kv", "put", k, v),
 		func(c *icmd.Cmd) {
 			c.Env = []string{"CONSUL_HTTP_ADDR=http://" + s.consulAddr}
@@ -141,36 +141,39 @@ func (s *ConsulDatasourcesSuite) consulDelete(c *C, k string) {
 }
 
 func (s *ConsulDatasourcesSuite) TestConsulDatasource(c *C) {
-	s.consulPut(c, "foo", "bar")
-	defer s.consulDelete(c, "foo")
+	s.consulPut(c, "foo1", "bar")
+	defer s.consulDelete(c, "foo1")
 	result := icmd.RunCmd(icmd.Command(GomplateBin,
 		"-d", "consul=consul://",
-		"-i", `{{(ds "consul" "foo")}}`,
+		"-i", `{{(ds "consul" "foo1")}}`,
 	), func(c *icmd.Cmd) {
 		c.Env = []string{"CONSUL_HTTP_ADDR=http://" + s.consulAddr}
 	})
 	result.Assert(c, icmd.Expected{ExitCode: 0, Out: "bar"})
 
-	s.consulPut(c, "foo", `{"bar": "baz"}`)
+	s.consulPut(c, "foo2", `{"bar": "baz"}`)
+	defer s.consulDelete(c, "foo2")
 	result = icmd.RunCmd(icmd.Command(GomplateBin,
 		"-d", "consul=consul://?type=application/json",
-		"-i", `{{(ds "consul" "foo").bar}}`,
+		"-i", `{{(ds "consul" "foo2").bar}}`,
 	), func(c *icmd.Cmd) {
 		c.Env = []string{"CONSUL_HTTP_ADDR=http://" + s.consulAddr}
 	})
 	result.Assert(c, icmd.Expected{ExitCode: 0, Out: "baz"})
 
-	s.consulPut(c, "foo", `bar`)
+	s.consulPut(c, "foo2", `bar`)
+	defer s.consulDelete(c, "foo2")
 	result = icmd.RunCmd(icmd.Command(GomplateBin,
 		"-d", "consul=consul://"+s.consulAddr,
-		"-i", `{{(ds "consul" "foo")}}`,
+		"-i", `{{(ds "consul" "foo2")}}`,
 	))
 	result.Assert(c, icmd.Expected{ExitCode: 0, Out: "bar"})
 
-	s.consulPut(c, "foo", `bar`)
+	s.consulPut(c, "foo3", `bar`)
+	defer s.consulDelete(c, "foo3")
 	result = icmd.RunCmd(icmd.Command(GomplateBin,
 		"-d", "consul=consul+http://"+s.consulAddr,
-		"-i", `{{(ds "consul" "foo")}}`,
+		"-i", `{{(ds "consul" "foo3")}}`,
 	))
 	result.Assert(c, icmd.Expected{ExitCode: 0, Out: "bar"})
 }

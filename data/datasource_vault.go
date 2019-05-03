@@ -51,17 +51,19 @@ func readVault(source *Source, args ...string) (data []byte, err error) {
 	}
 
 	source.mediaType = jsonMimetype
-	if len(params) > 0 {
+	switch {
+	case len(params) > 0:
 		data, err = source.vc.Write(p, params)
-	} else if strings.HasSuffix(p, "/") {
+	case strings.HasSuffix(p, "/"):
 		source.mediaType = jsonArrayMimetype
 		data, err = source.vc.List(p)
-	} else {
+	default:
 		data, err = source.vc.Read(p)
 	}
 	if err != nil {
 		return nil, err
 	}
+
 	if len(data) == 0 {
 		return nil, errors.Errorf("no value found for path %s", p)
 	}

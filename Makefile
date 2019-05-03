@@ -117,32 +117,66 @@ gomplate.png: gomplate.svg
 	cloudconvert -f png -c density=288 $^
 
 lint:
-	golangci-lint run --tests --disable-all \
-	    --enable gosec \
-        --enable goconst \
-        --enable gocyclo \
-        --enable golint \
-        --enable ineffassign \
-        --enable govet \
-        --enable misspell \
-        --enable goimports \
-        --enable gofmt
-	golangci-lint run --tests=false --disable-all \
-		--enable deadcode
-
-slow-lint:
-	golangci-lint run --concurrency $(LINT_PROCS) --tests=false --deadline 120s \
+	golangci-lint run --disable-all \
+		--enable depguard \
+		--enable dupl \
+		--enable goconst \
+		--enable gocritic \
+		--enable gocyclo \
 		--enable gofmt \
 		--enable goimports \
-		--enable misspell
-	golangci-lint run --concurrency $(LINT_PROCS) --tests --deadline 120s \
-		--disable deadcode \
-		--disable errcheck \
-		--disable unused \
-		--enable gofmt \
-		--enable goimports \
+		--enable golint \
+		--enable gosec \
+		--enable gosimple \
+		--enable govet \
+		--enable ineffassign \
+		--enable maligned \
 		--enable misspell \
-			tests/integration
+		--enable nakedret \
+		--enable prealloc \
+		--enable staticcheck \
+		--enable structcheck \
+		--enable stylecheck \
+		--enable typecheck \
+		--enable unconvert \
+		--enable varcheck
+
+	golangci-lint run --tests false --disable-all \
+		--enable deadcode \
+		--enable errcheck \
+		--enable interfacer \
+		--enable scopelint \
+		--enable unused
+
+	golangci-lint run --build-tags integration \
+		--disable-all \
+		--enable deadcode \
+		--enable depguard \
+		--enable dupl \
+		--enable gochecknoinits \
+		--enable gocritic \
+		--enable gocyclo \
+		--enable gofmt \
+		--enable goimports \
+		--enable golint \
+		--enable gosec \
+		--enable gosimple \
+		--enable govet \
+		--enable ineffassign \
+		--enable maligned \
+		--enable misspell \
+		--enable nakedret \
+		--enable prealloc \
+		--enable scopelint \
+		--enable staticcheck \
+		--enable structcheck \
+		--enable stylecheck \
+		--enable typecheck \
+		--enable unconvert \
+		--enable unparam \
+		--enable unused \
+		--enable varcheck \
+			./tests/integration
 
 .PHONY: gen-changelog clean test build-x compress-all build-release build test-integration-docker gen-docs lint clean-images clean-containers docker-images
 .DELETE_ON_ERROR:
