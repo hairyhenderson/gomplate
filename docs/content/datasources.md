@@ -213,13 +213,13 @@ Given your [AWS account's Secret Manager](https://eu-central-1.console.aws.amazo
 $ echo '{{ ds "foo" }}' | gomplate -d foo=aws+secretsmanager:///foo/first/password
 map[ARN:arn:aws:secretsmanager:eu-central-1:XXX:secret:/foo/first/password-LWS3cp CreatedDate:2019-04-27T22:42:39Z Name:/foo/first/password SecretBinary:<nil> SecretString:super-secret VersionId:eae59873-0ded-4fdd-ad85-24a5af755b01 VersionStages:[AWSCURRENT]]
 
-$ echo '{{ (ds "foo").Value }}' | gomplate -d foo=aws+secretsmanager:///foo/first/password
+$ echo '{{ (ds "foo").SecretString }}' | gomplate -d foo=aws+secretsmanager:///foo/first/password
 super-secret
 
-$ echo '{{ (ds "foo" "/foo/first/others").Value }}' | gomplate -d foo=aws+secretsmanager:
+$ echo '{{ (ds "foo" "/foo/first/others").SecretString }}' | gomplate -d foo=aws+secretsmanager:
 Bill,Ben
 
-$ echo '{{ (ds "foo" "/second/p1").Value }}' | gomplate -d foo=aws+secretsmanager:///foo/
+$ echo '{{ (ds "foo" "/second/p1").SecretString }}' | gomplate -d foo=aws+secretsmanager:///foo/
 aaa
 ```
 
