@@ -30,7 +30,7 @@
   revision = "f0300d1749da6fa982027e449ec0c7a145510c3c"
 
 [[projects]]
-  digest = "1:c6ace1fedb0c03d8132231d55f41b0615ab1dac9e534403e08a0ddd3122b0565"
+  digest = "1:2736e2755508c39b30367719443b3b28c068cbea1bd7e0f56031404ffc7bdf93"
   name = "github.com/aws/aws-sdk-go"
   packages = [
     "aws",
@@ -66,6 +66,7 @@
     "private/protocol/xml/xmlutil",
     "service/ec2",
     "service/kms",
+    "service/secretsmanager",
     "service/ssm",
     "service/sts",
   ]
@@ -558,6 +559,7 @@
     "github.com/aws/aws-sdk-go/aws/session",
     "github.com/aws/aws-sdk-go/service/ec2",
     "github.com/aws/aws-sdk-go/service/kms",
+    "github.com/aws/aws-sdk-go/service/secretsmanager",
     "github.com/aws/aws-sdk-go/service/ssm",
     "github.com/aws/aws-sdk-go/service/sts",
     "github.com/boltdb/bolt",

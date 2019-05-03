@@ -11,15 +11,15 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-// DummyParamGetter - test double
-type DummyParamGetter struct {
+// DummyAWSSSMParamGetter - test double
+type DummyAWSSSMParamGetter struct {
 	t                *testing.T
 	param            *ssm.Parameter
 	err              awserr.Error
 	mockGetParameter func(*ssm.GetParameterInput) (*ssm.GetParameterOutput, error)
 }
 
-func (d DummyParamGetter) GetParameter(input *ssm.GetParameterInput) (*ssm.GetParameterOutput, error) {
+func (d DummyAWSSSMParamGetter) GetParameter(input *ssm.GetParameterInput) (*ssm.GetParameterOutput, error) {
 	if d.mockGetParameter != nil {
 		output, err := d.mockGetParameter(input)
 		return output, err
@@ -33,7 +33,7 @@ func (d DummyParamGetter) GetParameter(input *ssm.GetParameterInput) (*ssm.GetPa
 	}, nil
 }
 
-func simpleAWSSourceHelper(dummy awssmpGetter) *Source {
+func simpleAWSSMPSourceHelper(dummy awssmpGetter) *Source {
 	return &Source{
 		Alias: "foo",
 		URL: &url.URL{
@@ -69,7 +69,7 @@ func TestAWSSMP_ParseArgsTooMany(t *testing.T) {
 
 func TestAWSSMP_GetParameterSetup(t *testing.T) {
 	calledOk := false
-	s := simpleAWSSourceHelper(DummyParamGetter{
+	s := simpleAWSSMPSourceHelper(DummyAWSSSMParamGetter{
 		t: t,
 		mockGetParameter: func(input *ssm.GetParameterInput) (*ssm.GetParameterOutput, error) {
 			assert.Equal(t, "/foo/bar", *input.Name)
@@ -93,7 +93,7 @@ func TestAWSSMP_GetParameterValidOutput(t *testing.T) {
 		Value:   aws.String("val"),
 		Version: aws.Int64(1),
 	}
-	s := simpleAWSSourceHelper(DummyParamGetter{
+	s := simpleAWSSMPSourceHelper(DummyAWSSSMParamGetter{
 		t:     t,
 		param: expected,
 	})
@@ -109,7 +109,7 @@ func TestAWSSMP_GetParameterValidOutput(t *testing.T) {
 
 func TestAWSSMP_GetParameterMissing(t *testing.T) {
 	expectedErr := awserr.New("ParameterNotFound", "Test of error message", nil)
-	s := simpleAWSSourceHelper(DummyParamGetter{
+	s := simpleAWSSMPSourceHelper(DummyAWSSSMParamGetter{
 		t:   t,
 		err: expectedErr,
 	})

@@ -56,6 +56,7 @@ Gomplate supports a number of datasources, each specified with a particular URL 
 | Type | URL Scheme(s) | Description |
 |------|---------------|-------------|
 | [AWS Systems Manager Parameter Store](#using-aws-smp-datasources) | `aws+smp` | [AWS Systems Manager Parameter Store][AWS SMP] is a hierarchically-organized key/value store which allows storage of text, lists, or encrypted secrets for retrieval by AWS resources |
+| [AWS Secrets Manager](#using-aws-secretsmanager-datasource) | `aws+secretsmanager` | [AWS Secrets Manager][] helps you protect secrets needed to access your applications, services, and IT resources. |
 | [BoltDB](#using-boltdb-datasources) | `boltdb` | [BoltDB][] is a simple local key/value store used by many Go tools |
 | [Consul](#using-consul-datasources) | `consul`, `consul+http`, `consul+https` | [HashiCorp Consul][] provides (among many other features) a key/value store |
 | [Environment](#using-env-datasources) | `env` | Environment variables can be used as datasources - useful for testing |
@@ -144,7 +145,7 @@ The [`github.com/joho/godotenv`](https://github.com/joho/godotenv) package is us
 
 ## Using `aws+smp` datasources
 
-The `aws+smp://` scheme can be used to retrieve data from the [AWS Systems Manager](https://aws.amazon.com/systems-manager/) (née AWS EC2 Simple  Systems Manager) [Parameter Store](https://aws.amazon.com/systems-manager/features/#Parameter_Store). This hierarchically organized key/value store allows you to store text, lists or encrypted secrets for easy retrieval by AWS resources. See [the AWS Systems Manager documentation](https://docs.aws.amazon.com/systems-manager/latest/userguide/sysman-paramstore-su-create.html#sysman-paramstore-su-create-about) for details on creating these parameters.
+The `aws+smp://` scheme can be used to retrieve data from the [AWS Systems Manager](https://aws.amazon.com/systems-manager/) (née AWS EC2 Simple Systems Manager) [Parameter Store](https://aws.amazon.com/systems-manager/features/#Parameter_Store). This hierarchically organized key/value store allows you to store text, lists or encrypted secrets for easy retrieval by AWS resources. See [the AWS Systems Manager documentation](https://docs.aws.amazon.com/systems-manager/latest/userguide/sysman-paramstore-su-create.html#sysman-paramstore-su-create-about) for details on creating these parameters.
 
 
 You must grant `gomplate` permission via IAM credentials for the [`ssm:GetParameter` action](https://docs.aws.amazon.com/systems-manager/latest/userguide/auth-and-access-control-permissions-reference.html). <!-- List support further requires `ssm.GetParameters` permissions. -->
@@ -188,6 +189,37 @@ $ echo '{{ (ds "foo" "/foo/first/others").Value }}' | gomplate -d foo=aws+smp:
 Bill,Ben
 
 $ echo '{{ (ds "foo" "/second/p1").Value }}' | gomplate -d foo=aws+smp:///foo/
+aaa
+```
+
+## Using `aws+secretsmanager` datasource
+
+### URL Considerations
+For `aws+secretsmanager`, only the _scheme_ and _path_ components are necessary to be defined. Other URL components are ignored.
+
+### Output
+
+The output will be a single `GetSecretValueOutput` object from the [AWS SDK for Go](https://docs.aws.amazon.com/sdk-for-go/api/service/secretsmanager/#GetSecretValueOutput)
+
+### Examples
+
+Given your [AWS account's Secret Manager](https://eu-central-1.console.aws.amazon.com/secretsmanager/home?region=eu-central-1#/listSecrets) has the following data:
+
+- `/foo/first/others` - `Bill,Ben` (a StringList)
+- `/foo/first/password` - `super-secret` (a SecureString)
+- `/foo/second/p1` - `aaa`
+
+```console
+$ echo '{{ ds "foo" }}' | gomplate -d foo=aws+secretsmanager:///foo/first/password
+map[ARN:arn:aws:secretsmanager:eu-central-1:XXX:secret:/foo/first/password-LWS3cp CreatedDate:2019-04-27T22:42:39Z Name:/foo/first/password SecretBinary:<nil> SecretString:super-secret VersionId:eae59873-0ded-4fdd-ad85-24a5af755b01 VersionStages:[AWSCURRENT]]
+
+$ echo '{{ (ds "foo").Value }}' | gomplate -d foo=aws+secretsmanager:///foo/first/password
+super-secret
+
+$ echo '{{ (ds "foo" "/foo/first/others").Value }}' | gomplate -d foo=aws+secretsmanager:
+Bill,Ben
+
+$ echo '{{ (ds "foo" "/second/p1").Value }}' | gomplate -d foo=aws+secretsmanager:///foo/
 aaa
 ```
 
@@ -533,6 +565,7 @@ The file `/tmp/vault-aws-nonce` will be created if it didn't already exist, and 
 [`coll.Merge`]: ../functions/coll/#coll-merge
 
 [AWS SMP]: https://aws.amazon.com/systems-manager/features#Parameter_Store
+[AWS Secrets Manager]: https://aws.amazon.com/secrets-manager
 [BoltDB]: https://github.com/boltdb/bolt
 [HashiCorp Consul]: https://consul.io
 [HashiCorp Vault]: https://vaultproject.io

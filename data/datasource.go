@@ -45,6 +45,7 @@ func (d *Data) registerReaders() {
 	d.sourceReaders = make(map[string]func(*Source, ...string) ([]byte, error))
 
 	d.sourceReaders["aws+smp"] = readAWSSMP
+	d.sourceReaders["aws+secretsmanager"] = readAWSSecretsManager
 	d.sourceReaders["boltdb"] = readBoltDB
 	d.sourceReaders["consul"] = readConsul
 	d.sourceReaders["consul+http"] = readConsul
@@ -119,15 +120,16 @@ func NewData(datasourceArgs, headerArgs []string) (*Data, error) {
 
 // Source - a data source
 type Source struct {
-	Alias     string
-	URL       *url.URL
-	mediaType string
-	fs        afero.Fs     // used for file: URLs, nil otherwise
-	hc        *http.Client // used for http[s]: URLs, nil otherwise
-	vc        *vault.Vault // used for vault: URLs, nil otherwise
-	kv        *libkv.LibKV // used for consul:, etcd:, zookeeper: & boltdb: URLs, nil otherwise
-	asmpg     awssmpGetter // used for aws+smp:, nil otherwise
-	header    http.Header  // used for http[s]: URLs, nil otherwise
+	Alias             string
+	URL               *url.URL
+	mediaType         string
+	fs                afero.Fs                // used for file: URLs, nil otherwise
+	hc                *http.Client            // used for http[s]: URLs, nil otherwise
+	vc                *vault.Vault            // used for vault: URLs, nil otherwise
+	kv                *libkv.LibKV            // used for consul:, etcd:, zookeeper: & boltdb: URLs, nil otherwise
+	asmpg             awssmpGetter            // used for aws+smp:, nil otherwise
+	awsSecretsManager awsSecretsManagerGetter // used for aws+secretsmanager, nil otherwise
+	header            http.Header             // used for http[s]: URLs, nil otherwise
 }
 
 func (s *Source) inherit(parent *Source) {
