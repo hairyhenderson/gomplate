@@ -12,6 +12,8 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+const osWindows = "windows"
+
 func TestNewData(t *testing.T) {
 	d, err := NewData(nil, nil)
 	assert.NoError(t, err)
@@ -63,7 +65,7 @@ func TestParseSourceWithAlias(t *testing.T) {
 	assert.True(t, s.URL.IsAbs())
 	assert.Equal(t, "/otherdir/foo.json", s.URL.Path)
 
-	if runtime.GOOS == "windows" {
+	if runtime.GOOS == osWindows {
 		s, err = parseSource("data=foo.json")
 		assert.NoError(t, err)
 		assert.Equalf(t, byte(':'), s.URL.Path[1], "Path was %s", s.URL.Path)
@@ -111,7 +113,7 @@ func TestDatasource(t *testing.T) {
 		fs := afero.NewMemMapFs()
 		var uPath string
 		var f afero.File
-		if runtime.GOOS == "windows" {
+		if runtime.GOOS == osWindows {
 			_ = fs.Mkdir("C:\\tmp", 0777)
 			f, _ = fs.Create("C:\\tmp\\" + fname)
 			_, _ = f.Write(contents)
@@ -158,7 +160,7 @@ func TestDatasourceReachable(t *testing.T) {
 	fs := afero.NewMemMapFs()
 	var uPath string
 	var f afero.File
-	if runtime.GOOS == "windows" {
+	if runtime.GOOS == osWindows {
 		_ = fs.Mkdir("C:\\tmp", 0777)
 		f, _ = fs.Create("C:\\tmp\\" + fname)
 		uPath = "C:/tmp/" + fname
@@ -205,7 +207,7 @@ func TestInclude(t *testing.T) {
 
 	var uPath string
 	var f afero.File
-	if runtime.GOOS == "windows" {
+	if runtime.GOOS == osWindows {
 		_ = fs.Mkdir("C:\\tmp", 0777)
 		f, _ = fs.Create("C:\\tmp\\" + fname)
 		uPath = "C:/tmp/" + fname

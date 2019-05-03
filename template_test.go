@@ -233,7 +233,7 @@ func TestProcessTemplates(t *testing.T) {
 			if in.templates[i].targetPath != "-" {
 				info, err := fs.Stat(in.templates[i].targetPath)
 				assert.NoError(t, err)
-				assert.Equal(t, os.FileMode(in.modes[i]), info.Mode())
+				assert.Equal(t, in.modes[i], info.Mode())
 			}
 		}
 		fs.Remove("out")

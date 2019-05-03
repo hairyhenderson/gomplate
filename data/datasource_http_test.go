@@ -162,37 +162,6 @@ func TestParseHeaderArgs(t *testing.T) {
 	assert.Equal(t, expected, parsed)
 }
 
-func TestHTTPFileWithSubPath(t *testing.T) {
-	server, client := setupHTTP(200, "application/json; charset=utf-8", `{"hello": "world"}`)
-	defer server.Close()
-
-	sources := make(map[string]*Source)
-	sources["foo"] = &Source{
-		Alias: "foo",
-		URL: &url.URL{
-			Scheme: "http",
-			Host:   "example.com",
-			Path:   "/foo",
-		},
-		hc: client,
-	}
-	data := &Data{
-		Sources: sources,
-	}
-
-	expected := map[string]interface{}{
-		"hello": "world",
-	}
-
-	actual, err := data.Datasource("foo")
-	assert.NoError(t, err)
-	assert.Equal(t, must(marshalObj(expected, json.Marshal)), must(marshalObj(actual, json.Marshal)))
-
-	actual, err = data.Datasource(server.URL)
-	assert.NoError(t, err)
-	assert.Equal(t, must(marshalObj(expected, json.Marshal)), must(marshalObj(actual, json.Marshal)))
-}
-
 func TestBuildURL(t *testing.T) {
 	expected := "https://example.com/index.html"
 	base := mustParseURL(expected)

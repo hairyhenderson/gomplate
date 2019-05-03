@@ -141,7 +141,7 @@ func (f *MathFuncs) Div(a, b interface{}) (interface{}, error) {
 	divisor := conv.ToFloat64(a)
 	dividend := conv.ToFloat64(b)
 	if dividend == 0 {
-		return 0, fmt.Errorf("Error: division by 0")
+		return 0, fmt.Errorf("error: division by 0")
 	}
 	return divisor / dividend, nil
 }

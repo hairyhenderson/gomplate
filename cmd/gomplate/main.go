@@ -30,7 +30,7 @@ func validateOpts(cmd *cobra.Command, args []string) error {
 	}
 
 	if len(opts.InputFiles) != len(opts.OutputFiles) {
-		return fmt.Errorf("Must provide same number of --out (%d) as --file (%d) options", len(opts.OutputFiles), len(opts.InputFiles))
+		return fmt.Errorf("must provide same number of --out (%d) as --file (%d) options", len(opts.OutputFiles), len(opts.InputFiles))
 	}
 
 	if cmd.Flag("input-dir").Changed && (cmd.Flag("in").Changed || cmd.Flag("file").Changed) {
@@ -77,12 +77,10 @@ func postRunExec(cmd *cobra.Command, args []string) error {
 		signal.Notify(sigs)
 		go func() {
 			// Pass signals to the sub-process
-			select {
-			case sig := <-sigs:
-				if c.Process != nil {
-					// nolint: gosec
-					c.Process.Signal(sig)
-				}
+			sig := <-sigs
+			if c.Process != nil {
+				// nolint: gosec
+				_ = c.Process.Signal(sig)
 			}
 		}()
 

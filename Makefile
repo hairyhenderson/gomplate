@@ -117,39 +117,66 @@ gomplate.png: gomplate.svg
 	cloudconvert -f png -c density=288 $^
 
 lint:
-	gometalinter --vendor --disable-all \
-		--enable=gosec \
-		--enable=goconst \
-		--enable=gocyclo \
-		--enable=golint \
-		--enable=gotypex \
-		--enable=ineffassign \
-		--enable=vet \
-		--enable=vetshadow \
-		--enable=misspell \
-		--enable=goimports \
-		--enable=gofmt \
-		./...
-	gometalinter --vendor --skip tests --disable-all \
-		--enable=deadcode \
-		./...
+	golangci-lint run --disable-all \
+		--enable depguard \
+		--enable dupl \
+		--enable goconst \
+		--enable gocritic \
+		--enable gocyclo \
+		--enable gofmt \
+		--enable goimports \
+		--enable golint \
+		--enable gosec \
+		--enable gosimple \
+		--enable govet \
+		--enable ineffassign \
+		--enable maligned \
+		--enable misspell \
+		--enable nakedret \
+		--enable prealloc \
+		--enable staticcheck \
+		--enable structcheck \
+		--enable stylecheck \
+		--enable typecheck \
+		--enable unconvert \
+		--enable varcheck
 
-slow-lint:
-	gometalinter -j $(LINT_PROCS) --vendor --skip tests --deadline 120s \
-		--disable gotype \
+	golangci-lint run --tests false --disable-all \
+		--enable deadcode \
+		--enable errcheck \
+		--enable interfacer \
+		--enable scopelint \
+		--enable unused
+
+	golangci-lint run --build-tags integration \
+		--disable-all \
+		--enable deadcode \
+		--enable depguard \
+		--enable dupl \
+		--enable gochecknoinits \
+		--enable gocritic \
+		--enable gocyclo \
 		--enable gofmt \
 		--enable goimports \
+		--enable golint \
+		--enable gosec \
+		--enable gosimple \
+		--enable govet \
+		--enable ineffassign \
+		--enable maligned \
 		--enable misspell \
-			./...
-	gometalinter -j $(LINT_PROCS) --vendor --deadline 120s \
-		--disable gotype \
-		--disable megacheck \
-		--disable deadcode \
-		--enable gofmt \
-		--enable goimports \
-		--enable misspell \
+		--enable nakedret \
+		--enable prealloc \
+		--enable scopelint \
+		--enable staticcheck \
+		--enable structcheck \
+		--enable stylecheck \
+		--enable typecheck \
+		--enable unconvert \
+		--enable unparam \
+		--enable unused \
+		--enable varcheck \
 			./tests/integration
-	megacheck -tags integration ./tests/integration
 
 .PHONY: gen-changelog clean test build-x compress-all build-release build test-integration-docker gen-docs lint clean-images clean-containers docker-images
 .DELETE_ON_ERROR:

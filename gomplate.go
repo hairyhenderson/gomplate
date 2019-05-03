@@ -32,6 +32,7 @@ func (g *gomplate) runTemplate(t *tplate) error {
 		return err
 	}
 
+	// nolint: gocritic
 	switch t.target.(type) {
 	case io.Closer:
 		if t.target != os.Stdout {
@@ -179,6 +180,7 @@ func mappingNamer(outMap string, g *gomplate) func(string) (string, error) {
 			return "", err
 		}
 		ctx := &context{}
+		// nolint: gocritic
 		switch c := g.context.(type) {
 		case *context:
 			for k, v := range *c {

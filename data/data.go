@@ -139,20 +139,20 @@ func parseCSV(args ...string) ([][]string, []string, error) {
 
 func csvParseArgs(args ...string) (in, delim string, hdr []string) {
 	delim = ","
-	if len(args) == 1 {
+	switch len(args) {
+	case 1:
 		in = args[0]
-	}
-	if len(args) == 2 {
+	case 2:
 		in = args[1]
-		if len(args[0]) == 1 {
+		switch len(args[0]) {
+		case 1:
 			delim = args[0]
-		} else if len(args[0]) == 0 {
+		case 0:
 			hdr = []string{}
-		} else {
+		default:
 			hdr = strings.Split(args[0], delim)
 		}
-	}
-	if len(args) == 3 {
+	case 3:
 		delim = args[0]
 		hdr = strings.Split(args[1], delim)
 		in = args[2]

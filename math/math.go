@@ -34,7 +34,7 @@ func Seq(start, end, step int64) []int64 {
 	}
 
 	// adjust the end so it aligns exactly (avoids infinite loop!)
-	end = end - (end-start)%step
+	end -= (end - start) % step
 
 	seq := []int64{start}
 	last := start

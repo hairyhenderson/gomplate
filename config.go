@@ -67,11 +67,12 @@ func (o *Config) String() string {
 	o.defaults()
 
 	c := "input: "
-	if o.Input != "" {
+	switch {
+	case o.Input != "":
 		c += "<arg>"
-	} else if o.InputDir != "" {
+	case o.InputDir != "":
 		c += o.InputDir
-	} else {
+	default:
 		c += strings.Join(o.InputFiles, ", ")
 	}
 
@@ -80,11 +81,12 @@ func (o *Config) String() string {
 	}
 
 	c += "\noutput: "
-	if o.InputDir != "" && o.OutputDir != "." {
+	switch {
+	case o.InputDir != "" && o.OutputDir != ".":
 		c += o.OutputDir
-	} else if o.OutputMap != "" {
+	case o.OutputMap != "":
 		c += o.OutputMap
-	} else {
+	default:
 		c += strings.Join(o.OutputFiles, ", ")
 	}
 

@@ -118,4 +118,4 @@ func (f woFile) Read([]byte) (n int, err error) {
 	return 0, ErrWriteOnly
 }
 
-var ErrWriteOnly = errors.New("Filesystem is write-only")
+var ErrWriteOnly = errors.New("filesystem is write-only")

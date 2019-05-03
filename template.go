@@ -103,8 +103,9 @@ func gatherTemplates(o *Config, outFileNamer func(string) (string, error)) (temp
 		return nil, err
 	}
 
+	switch {
 	// the arg-provided input string gets a special name
-	if o.Input != "" {
+	case o.Input != "":
 		templates = []*tplate{{
 			name:         "<arg>",
 			contents:     o.Input,
@@ -112,13 +113,13 @@ func gatherTemplates(o *Config, outFileNamer func(string) (string, error)) (temp
 			modeOverride: modeOverride,
 			targetPath:   o.OutputFiles[0],
 		}}
-	} else if o.InputDir != "" {
+	case o.InputDir != "":
 		// input dirs presume output dirs are set too
 		templates, err = walkDir(o.InputDir, outFileNamer, o.ExcludeGlob, mode, modeOverride)
 		if err != nil {
 			return nil, err
 		}
-	} else if o.Input == "" {
+	case o.Input == "":
 		templates = make([]*tplate, len(o.InputFiles))
 		for i := range o.InputFiles {
 			templates[i], err = fileToTemplates(o.InputFiles[i], o.OutputFiles[i], mode, modeOverride)

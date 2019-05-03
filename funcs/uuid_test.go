@@ -8,7 +8,6 @@ import (
 )
 
 const (
-	uuidPattern   = "^[[:xdigit:]]{8}-(?:[[:xdigit:]]{4}-){3}[[:xdigit:]]{12}$"
 	uuidV1Pattern = "^[[:xdigit:]]{8}-[[:xdigit:]]{4}-1[[:xdigit:]]{3}-[89ab][[:xdigit:]]{3}-[[:xdigit:]]{12}$"
 	uuidV4Pattern = "^[[:xdigit:]]{8}-[[:xdigit:]]{4}-4[[:xdigit:]]{3}-[89ab][[:xdigit:]]{3}-[[:xdigit:]]{12}$"
 )
@@ -36,8 +35,7 @@ func TestNil(t *testing.T) {
 
 func TestIsValid(t *testing.T) {
 	u := UUIDNS()
-	var in interface{}
-	in = false
+	in := interface{}(false)
 	i, err := u.IsValid(in)
 	assert.NoError(t, err)
 	assert.False(t, i)
@@ -63,8 +61,7 @@ func TestIsValid(t *testing.T) {
 
 func TestParse(t *testing.T) {
 	u := UUIDNS()
-	var in interface{}
-	in = false
+	in := interface{}(false)
 	_, err := u.Parse(in)
 	assert.Error(t, err)
 
