@@ -3,6 +3,12 @@ extension = $(patsubst windows,.exe,$(filter windows,$(1)))
 GO := go
 PKG_NAME := gomplate
 PREFIX := .
+DOCKER_LINUX_PLATFORMS ?= linux/amd64,linux/arm64,linux/arm/v6,linux/arm/v7
+DOCKER_PLATFORMS ?= $(DOCKER_LINUX_PLATFORMS),windows/amd64
+# DOCKER_LINUX_PLATFORMS ?= linux_amd64 linux_arm64 linux_arm_v6 linux_arm_v7
+# DOCKER_PLATFORMS ?= $(DOCKER_LINUX_PLATFORMS) windows_amd64
+
+GOARM=$(subst v,,$(TARGETVARIANT))
 
 ifeq ("$(CI)","true")
 LINT_PROCS ?= 1
@@ -50,12 +56,56 @@ $(PREFIX)/%.signed: $(PREFIX)/%
 compress: $(PREFIX)/bin/$(PKG_NAME)_$(GOOS)-$(GOARCH)-slim$(call extension,$(GOOS))
 	cp $< $(PREFIX)/bin/$(PKG_NAME)-slim$(call extension,$(GOOS))
 
+# docker-all: docker-gomplate-all docker-gomplate-slim docker-gomplate-alpine-all
+# docker-gomplate-all: $(patsubst %,$(PREFIX)/images/gomplate_%.iid,$(DOCKER_PLATFORMS))
+# docker-gomplate-slim-all: $(patsubst %,$(PREFIX)/images/gomplate-slim_%.iid,$(DOCKER_PLATFORMS))
+# docker-gomplate-alpine-all: $(patsubst %,$(PREFIX)/images/gomplate-alpine_%.iid,$(DOCKER_LINUX_PLATFORMS))
+
+# # call as 'make images/target_os_arch[_variant].iid'
+# # i.e. 'make images/gomplate-slim_linux_arm_v7.iid'
+# # i.e. 'make images/gomplate-slim_linux_amd64.iid'
+# $(PREFIX)/images/%.iid: Dockerfile
+# 	mkdir -p images/
+# 	docker build \
+# 		--build-arg VCS_REF=$(COMMIT) \
+# 		--build-arg TARGETOS=$(shell echo $* | cut -f2 -d_) \
+# 		--build-arg TARGETARCH=$(shell echo $* | cut -f3 -d_) \
+# 		--build-arg TARGETVARIANT=$(shell echo $* | cut -f4 -d_) \
+# 		--target $(shell echo $* | cut -f1 -d_) \
+# 		--tag hairyhenderson/gomplate:$(shell echo $* | cut -f1 -d_ | cut -f2 -d- | sed 's/^gomplate$$/latest/') \
+# 		--iidfile $@ \
+# 		.
+
+# $(PREFIX)/images/%.tag: $(PREFIX)/images/%.iid
+# 	docker tag $(shell cat $<) hairyhenderson/gomplate:$(shell cat $< | sed 's/^sha256://')
+# 	echo hairyhenderson/gomplate:$(shell cat $< | sed 's/^sha256://') > $@
+
 %.iid: Dockerfile
 	@docker build \
 		--build-arg VCS_REF=$(COMMIT) \
 		--target $(subst .iid,,$@) \
 		--iidfile $@ \
 		.
+
+docker-multi: Dockerfile
+	docker buildx build \
+		--build-arg VCS_REF=$(COMMIT) \
+		--platform $(DOCKER_PLATFORMS) \
+		--tag hairyhenderson/gomplate:latest-$(COMMIT) \
+		--target gomplate \
+		--push .
+	docker buildx build \
+		--build-arg VCS_REF=$(COMMIT) \
+		--platform $(DOCKER_PLATFORMS) \
+		--tag hairyhenderson/gomplate:slim-$(COMMIT) \
+		--target gomplate-slim \
+		--push .
+	docker buildx build \
+		--build-arg VCS_REF=$(COMMIT) \
+		--platform $(DOCKER_LINUX_PLATFORMS) \
+		--tag hairyhenderson/gomplate:alpine-$(COMMIT) \
+		--target gomplate-alpine \
+		--push .
 
 %.cid: %.iid
 	@docker create $(shell cat $<) > $@
@@ -66,7 +116,7 @@ build-release: artifacts.cid
 docker-images: gomplate.iid gomplate-slim.iid
 
 $(PREFIX)/bin/$(PKG_NAME)_%: $(shell find $(PREFIX) -type f -name "*.go")
-	GOOS=$(shell echo $* | cut -f1 -d-) GOARCH=$(shell echo $* | cut -f2 -d- | cut -f1 -d.) CGO_ENABLED=0 \
+	GOOS=$(shell echo $* | cut -f1 -d-) GOARCH=$(shell echo $* | cut -f2 -d- | cut -f1 -d.) GOARM=$(GOARM) CGO_ENABLED=0 \
 		$(GO) build \
 			-ldflags "-w -s $(COMMIT_FLAG) $(VERSION_FLAG)" \
 			-o $@ \

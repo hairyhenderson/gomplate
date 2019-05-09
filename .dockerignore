@@ -5,5 +5,5 @@ Dockerfile
 *.iid
 bin/
 coverage/
-Dockerfile
 Dockerfile.integration
+images/
