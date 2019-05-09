@@ -1,3 +1,7 @@
+// Package data contains functions that parse and produce data structures in
+// different formats.
+//
+// Supported formats are: JSON, YAML, TOML, and CSV.
 package data
 
 import (

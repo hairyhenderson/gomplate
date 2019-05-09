@@ -1,3 +1,5 @@
+// Package test contains functions to help validate assumptions and can cause
+// template generation to fail in specific cases
 package test
 
 import (

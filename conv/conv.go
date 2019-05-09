@@ -1,3 +1,4 @@
+// Package conv contains functions that help converting data between different types
 package conv
 
 import (

@@ -1,3 +1,4 @@
+// Package env contains functions that retrieve data from the environment
 package env
 
 import (

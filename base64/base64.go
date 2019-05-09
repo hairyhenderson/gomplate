@@ -1,3 +1,4 @@
+// Package base64 contains Base64 encoding/decoding functions
 package base64
 
 import (

@@ -1,3 +1,4 @@
+// Package file contains functions for working with files and directories on the local filesystem
 package file
 
 import (

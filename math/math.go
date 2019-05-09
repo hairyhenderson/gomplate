@@ -1,3 +1,4 @@
+// Package math contains set of basic math functions to be able to perform simple arithmetic operations
 package math
 
 // AddInt -

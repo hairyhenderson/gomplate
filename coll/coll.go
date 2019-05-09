@@ -1,3 +1,8 @@
+// Package coll contains functions to help manipulate and query collections of
+// data, like slices/arrays and maps.
+//
+// For the functions that return an array, a []interface{} is returned,
+// regardless of whether or not the input was a different type.
 package coll
 
 import (

@@ -1,3 +1,5 @@
+// Package gomplate is a template renderer which supports a number of datasources,
+// and includes hundreds of built-in functions.
 package gomplate
 
 import (
