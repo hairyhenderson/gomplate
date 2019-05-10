@@ -1,3 +1,4 @@
+// Package net contains functions to help with network-oriented lookups
 package net
 
 import (

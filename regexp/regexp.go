@@ -1,3 +1,4 @@
+// Package regexp contains functions for dealing with regular expressions
 package regexp
 
 import stdre "regexp"

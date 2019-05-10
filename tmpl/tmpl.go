@@ -1,3 +1,4 @@
+// Package tmpl contains functions for defining or executing in-line templates.
 package tmpl
 
 import (

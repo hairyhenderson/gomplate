@@ -1,5 +1,6 @@
 /*
-Package funcs provides gomplate namespaces and functions to be used in 'text/template' templates.
+Package funcs is an internal package that provides gomplate namespaces and
+functions to be used in 'text/template' templates.
 
 The different namespaces can be added individually:
 
@@ -7,8 +8,9 @@ The different namespaces can be added individually:
 	funcs.AddMathFuncs(f)
 	funcs.AddNetFuncs(f)
 
-Even though the functions are exported, these are not intended to be called programmatically
-by external consumers, but instead only to be used as template functions.
+Even though the functions are exported, these are not intended to be called
+programmatically by external consumers, but instead only to be used as template
+functions.
 
 */
 package funcs
