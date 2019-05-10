@@ -10,7 +10,7 @@ import (
 	gaws "github.com/hairyhenderson/gomplate/aws"
 )
 
-// awsSecretsManagerGetter - A subset of SSM API for use in unit testing
+// awsSecretsManagerGetter - A subset of Secrets Manager API for use in unit testing
 type awsSecretsManagerGetter interface {
 	GetSecretValue(input *secretsmanager.GetSecretValueInput) (*secretsmanager.GetSecretValueOutput, error)
 }
@@ -22,7 +22,7 @@ func parseAWSSecretsManagerArgs(origPath string, args ...string) (paramPath stri
 	}
 
 	if len(args) >= 2 {
-		err = errors.New("Maximum two arguments to aws+secretsmanager datasource: alias, extraPath")
+		err = errors.New("Maximum two arguments to aws+sm datasource: alias, extraPath")
 	}
 	return
 }
@@ -48,7 +48,7 @@ func readAWSSecretsManagerParam(source *Source, paramPath string) ([]byte, error
 
 	response, err := source.awsSecretsManager.GetSecretValue(input)
 	if err != nil {
-		return nil, errors.Wrapf(err, "Error reading aws+secretsmanager from AWS using GetSecretValue with input %v", input)
+		return nil, errors.Wrapf(err, "Error reading aws+sm from AWS using GetSecretValue with input %v", input)
 	}
 
 	return toJSONBytes(response)

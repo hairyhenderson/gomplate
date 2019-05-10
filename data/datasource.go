@@ -45,7 +45,7 @@ func (d *Data) registerReaders() {
 	d.sourceReaders = make(map[string]func(*Source, ...string) ([]byte, error))
 
 	d.sourceReaders["aws+smp"] = readAWSSMP
-	d.sourceReaders["aws+asm"] = readAWSSecretsManager
+	d.sourceReaders["aws+sm"] = readAWSSecretsManager
 	d.sourceReaders["boltdb"] = readBoltDB
 	d.sourceReaders["consul"] = readConsul
 	d.sourceReaders["consul+http"] = readConsul
@@ -128,7 +128,7 @@ type Source struct {
 	vc                *vault.Vault            // used for vault: URLs, nil otherwise
 	kv                *libkv.LibKV            // used for consul:, etcd:, zookeeper: & boltdb: URLs, nil otherwise
 	asmpg             awssmpGetter            // used for aws+smp:, nil otherwise
-	awsSecretsManager awsSecretsManagerGetter // used for aws+asm, nil otherwise
+	awsSecretsManager awsSecretsManagerGetter // used for aws+sm, nil otherwise
 	header            http.Header             // used for http[s]: URLs, nil otherwise
 }
 
