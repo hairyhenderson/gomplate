@@ -199,7 +199,7 @@ For `aws+sm`, only the _scheme_ and _path_ components are necessary to be define
 
 ### Output
 
-The output will be a single `GetSecretValueOutput` object from the [AWS SDK for Go](https://docs.aws.amazon.com/sdk-for-go/api/service/secretsmanager/#GetSecretValueOutput)
+The output will be the SecretString from the `GetSecretValueOutput` object from the [AWS SDK for Go](https://docs.aws.amazon.com/sdk-for-go/api/service/secretsmanager/#GetSecretValueOutput)
 
 ### Examples
 
@@ -210,16 +210,13 @@ Given your [AWS account's Secret Manager](https://eu-central-1.console.aws.amazo
 - `/foo/second/p1` - `aaa`
 
 ```console
-$ echo '{{ ds "foo" }}' | gomplate -d foo=aws+sm:///foo/first/password
-map[ARN:arn:aws:secretsmanager:eu-central-1:XXX:secret:/foo/first/password-LWS3cp CreatedDate:2019-04-27T22:42:39Z Name:/foo/first/password SecretBinary:<nil> SecretString:super-secret VersionId:eae59873-0ded-4fdd-ad85-24a5af755b01 VersionStages:[AWSCURRENT]]
-
-$ echo '{{ (ds "foo").SecretString }}' | gomplate -d foo=aws+sm:///foo/first/password
+$ echo '{{ (ds "foo") }}' | gomplate -d foo=aws+sm:///foo/first/password
 super-secret
 
-$ echo '{{ (ds "foo" "/foo/first/others").SecretString }}' | gomplate -d foo=aws+sm:
+$ echo '{{ (ds "foo" "/foo/first/others") }}' | gomplate -d foo=aws+sm:
 Bill,Ben
 
-$ echo '{{ (ds "foo" "/second/p1").SecretString }}' | gomplate -d foo=aws+sm:///foo/
+$ echo '{{ (ds "foo" "/second/p1") }}' | gomplate -d foo=aws+sm:///foo/
 aaa
 ```
 

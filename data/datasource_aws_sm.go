@@ -37,7 +37,6 @@ func readAWSSecretsManager(source *Source, args ...string) (output []byte, err e
 		return nil, err
 	}
 
-	source.mediaType = jsonMimetype
 	return readAWSSecretsManagerParam(source, paramPath)
 }
 
@@ -51,5 +50,5 @@ func readAWSSecretsManagerParam(source *Source, paramPath string) ([]byte, error
 		return nil, errors.Wrapf(err, "Error reading aws+sm from AWS using GetSecretValue with input %v", input)
 	}
 
-	return toJSONBytes(response)
+	return []byte(*response.SecretString), nil
 }
