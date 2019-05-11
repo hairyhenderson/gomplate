@@ -205,19 +205,17 @@ The output will be the SecretString from the `GetSecretValueOutput` object from 
 
 Given your [AWS account's Secret Manager](https://eu-central-1.console.aws.amazon.com/secretsmanager/home?region=eu-central-1#/listSecrets) has the following data:
 
-- `/foo/first/others` - `Bill,Ben` (a StringList)
-- `/foo/first/password` - `super-secret` (a SecureString)
-- `/foo/second/p1` - `aaa`
+- `/foo/bar/password` - `super-secret`
 
 ```console
-$ echo '{{ (ds "foo") }}' | gomplate -d foo=aws+sm:///foo/first/password
+$ echo '{{ (ds "foo") }}' | gomplate -d foo=aws+sm:///foo/bar/password
 super-secret
 
-$ echo '{{ (ds "foo" "/foo/first/others") }}' | gomplate -d foo=aws+sm:
-Bill,Ben
+$ echo '{{ (ds "foo" "/foo/bar/password") }}' | gomplate -d foo=aws+sm:
+super-secret
 
-$ echo '{{ (ds "foo" "/second/p1") }}' | gomplate -d foo=aws+sm:///foo/
-aaa
+$ echo '{{ (ds "foo" "/bar/password") }}' | gomplate -d foo=aws+sm:///foo/
+super-secret
 ```
 
 ## Using `boltdb` datasources
