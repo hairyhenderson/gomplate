@@ -141,7 +141,7 @@ lint:
 		--enable unconvert \
 		--enable varcheck
 
-	golangci-lint run --tests false --disable-all \
+	golangci-lint run --tests=false --disable-all \
 		--enable deadcode \
 		--enable errcheck \
 		--enable interfacer \
