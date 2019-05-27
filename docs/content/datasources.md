@@ -74,7 +74,7 @@ Currently the following datasources support directory semantics:
 
 - [File](#using-file-datasources)
 - [Vault](#using-vault-datasources) - translates to Vault's [LIST](https://www.vaultproject.io/api/index.html#reading-writing-and-listing-secrets) method
-
+- [Consul](#using-consul-datasources)
 When accessing a directory datasource, an array of key names is returned, and can be iterated through to access each individual value contained within.
 
 For example, a group of configuration key/value pairs (named `one`, `two`, and `three`, with values `v1`, `v2`, and `v3` respectively) could be rendered like this: 
