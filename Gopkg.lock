@@ -23,14 +23,14 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:f12358576cd79bba0ae626530d23cde63416744f486c8bc817802c6907eaadd7"
+  digest = "1:5fc59659227ab4a033745305327e884b5e2efe275bf1e3a3b70cfa824398b5bb"
   name = "github.com/armon/go-metrics"
   packages = ["."]
   pruneopts = "NUT"
-  revision = "f0300d1749da6fa982027e449ec0c7a145510c3c"
+  revision = "ec5e00d3c878b2a97bbe0884ef45ffd1b4f669f5"
 
 [[projects]]
-  digest = "1:2736e2755508c39b30367719443b3b28c068cbea1bd7e0f56031404ffc7bdf93"
+  digest = "1:bcf6c6c7286d7dec7597bf6fa2623a5040a1d49a5b2d804f9051c593f183ea8d"
   name = "github.com/aws/aws-sdk-go"
   packages = [
     "aws",
@@ -71,8 +71,8 @@
     "service/sts",
   ]
   pruneopts = "NUT"
-  revision = "56c1def75689cceec1fa6f14c2eedb4b798827f9"
-  version = "v1.19.11"
+  revision = "5312c8dac9067d339c4e68d7e0dd5507b2f01849"
+  version = "v1.19.41"
 
 [[projects]]
   digest = "1:a12d94258c5298ead75e142e8001224bf029f302fed9e96cd39c0eaf90f3954d"
@@ -149,12 +149,12 @@
   version = "v1.1.1"
 
 [[projects]]
-  digest = "1:05c973d076efe8b4ec653ab4ce5293fa6282c215250f854add2f554f2648c380"
+  digest = "1:974a3957354622ffb7b0b345374322f782800a8e4c4517022fce77ef796249c5"
   name = "github.com/gosimple/slug"
   packages = ["."]
   pruneopts = "NUT"
-  revision = "42ac18c34c2c6f4843fa48167317dcaa9416d1e2"
-  version = "v1.4.2"
+  revision = "e78d39397ba41d2c33d9615044ef93eca8a309d8"
+  version = "v1.5.0"
 
 [[projects]]
   digest = "1:191c7fb2346ca251d648a938b003c3e75cef5c055f086c8e8a0776649badd662"
@@ -182,12 +182,12 @@
   revision = "d1df168234942b108d288625a58afe19791630bd"
 
 [[projects]]
-  digest = "1:adf097b949dbc1e452fbad15322c78651f6e7accb4661dffa38fed30273c5966"
+  digest = "1:70b127f3b7325a58ff547b872d25cddc3e119706d5fb7f37b3f2eaf5d6368730"
   name = "github.com/hashicorp/consul"
   packages = ["api"]
   pruneopts = "NUT"
-  revision = "ea5210a30e154f4da9a4c8e729b45b8ce7b9b92c"
-  version = "v1.4.4"
+  revision = "40cec98468b829e5cdaacb0629b3e23a028db688"
+  version = "v1.5.1"
 
 [[projects]]
   digest = "1:f0d9d74edbd40fdeada436d5ac9cb5197407899af3fef85ff0137077ffe8ae19"
@@ -206,12 +206,12 @@
   version = "v0.5.1"
 
 [[projects]]
-  digest = "1:1cf16b098a70d6c02899608abbb567296d11c7b830635014dfe6124a02dc1369"
+  digest = "1:74fcd337a6f349cdf637809abd746bd0e88f132747f0bbe06daa4315cccba5b9"
   name = "github.com/hashicorp/go-immutable-radix"
   packages = ["."]
   pruneopts = "NUT"
-  revision = "27df80928bb34bb1b0d6d0e01b9e679902e7a6b5"
-  version = "v1.0.0"
+  revision = "7dd1121b595e4e1bd6dd5caa78e0f5c454740379"
+  version = "v1.1.0"
 
 [[projects]]
   digest = "1:2ed138049ab373f696db2081ca48f15c5abdf20893803612a284f2bdce2bf443"
@@ -279,11 +279,11 @@
   name = "github.com/hashicorp/serf"
   packages = ["coordinate"]
   pruneopts = "NUT"
-  revision = "b89a09ebd4b1b570e0076d5097272e67c10ac4f6"
-  version = "v0.8.2"
+  revision = "15cfd05de3dffb3664aa37b06e91f970b825e380"
+  version = "v0.8.3"
 
 [[projects]]
-  digest = "1:cded54cacfb6fdc86b916031e4113cbc50dfb55e92535651733604f1e3a8ce59"
+  digest = "1:010eddbe5d1da9cbe074d721ff874862cf5d8be2069107e41915d50a0d2936ef"
   name = "github.com/hashicorp/vault"
   packages = [
     "api",
@@ -295,8 +295,8 @@
     "helper/strutil",
   ]
   pruneopts = "NUT"
-  revision = "36aa8c8dd1936e10ebd7a4c1d412ae0e6f7900bd"
-  version = "v1.1.0"
+  revision = "0082501623c0b704b87b1fbc84c2d725994bac54"
+  version = "v1.1.2"
 
 [[projects]]
   digest = "1:406338ad39ab2e37b7f4452906442a3dbf0eb3379dd1f06aafb5c07e769a5fbb"
@@ -354,15 +354,15 @@
   version = "v1.1.2"
 
 [[projects]]
-  digest = "1:122724025b9505074138089f78f543f643ae3a8fab6d5b9edf72cce4dd49cc91"
+  digest = "1:1bf95fa61209ea03139b5708ea26a364209f99a4fb70990a2697070588c156ab"
   name = "github.com/pierrec/lz4"
   packages = [
     ".",
     "internal/xxh32",
   ]
   pruneopts = "NUT"
-  revision = "315a67e90e415bcdaff33057da191569bf4d8479"
-  version = "v2.1.1"
+  revision = "d705d4371bfccdf47f10e45584e896026c83616f"
+  version = "v2.2.3"
 
 [[projects]]
   digest = "1:14715f705ff5dfe0ffd6571d7d201dd8e921030f8070321a79380d8ca4ec1a24"
@@ -408,12 +408,12 @@
   version = "v1.2.2"
 
 [[projects]]
-  digest = "1:343d44e06621142ab09ae0c76c1799104cdfddd3ffb445d78b1adf8dc3ffaf3d"
+  digest = "1:dfd5e4b70ef5c1b9a30f342bf0ce02a03fe8f8d412205af824db361e99548610"
   name = "github.com/spf13/cobra"
   packages = ["."]
   pruneopts = "NUT"
-  revision = "ef82de70bb3f60c65fb8eebacbb2d122ef517385"
-  version = "v0.0.3"
+  revision = "67fc4837d267bc9bfd6e47f77783fcc3dffc68de"
+  version = "v0.0.4"
 
 [[projects]]
   digest = "1:9d8420bbf131d1618bde6530af37c3799340d3762cc47210c1d9532a4c3a2779"
@@ -449,7 +449,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:3ad1cdfe5c9555d57d244c0755fbf6f5eeb0963e497ee761d38f338306627b83"
+  digest = "1:b7b11b85d17cbca82b8d29cb43ba84031d330b93697f017b360ff2d5c578ef95"
   name = "golang.org/x/crypto"
   packages = [
     "bcrypt",
@@ -463,11 +463,11 @@
     "salsa20/salsa",
   ]
   pruneopts = "NUT"
-  revision = "38d8ce5564a5b71b2e3a00553993f1b9a7ae852f"
+  revision = "20be4c3c3ed52bfccdb2d59a412ee1a936d175a7"
 
 [[projects]]
   branch = "master"
-  digest = "1:1843621f4f9b7a0f25e633428302ec6c88b77039bd0048232014621dc3cccf16"
+  digest = "1:bde464198a097e3bd7e1b45993bb6b5339bbe50ad23613a7def0379ed9f7a6df"
   name = "golang.org/x/net"
   packages = [
     "http/httpguts",
@@ -476,27 +476,29 @@
     "idna",
   ]
   pruneopts = "NUT"
-  revision = "eb5bcb51f2a31c7d5141d810b70815c05d9c9146"
+  revision = "f3200d17e092c607f615320ecaad13d87ad9a2b3"
 
 [[projects]]
   branch = "master"
-  digest = "1:e8411f171d8e483b3e1e1664afb3a6da0a23532a4d30bc4fda7de9ef43eaa619"
+  digest = "1:3748eb2ef6a7b44748846d0003d14da7a72c6f6da82a355360f6c99673fd24a1"
   name = "golang.org/x/sys"
   packages = [
     "cpu",
     "unix",
   ]
   pruneopts = "NUT"
-  revision = "4b34438f7a67ee5f45cc6132e2bad873a20324e9"
+  revision = "4c3a928424d249a1013e789cf5e458d480bcba16"
 
 [[projects]]
-  digest = "1:e7071ed636b5422cc51c0e3a6cebc229d6c9fffc528814b519a980641422d619"
+  digest = "1:8d8faad6b12a3a4c819a3f9618cb6ee1fa1cfc33253abeeea8b55336721e3405"
   name = "golang.org/x/text"
   packages = [
     "collate",
     "collate/build",
     "internal/colltab",
     "internal/gen",
+    "internal/language",
+    "internal/language/compact",
     "internal/tag",
     "internal/triegen",
     "internal/ucd",
@@ -509,8 +511,8 @@
     "unicode/rangetable",
   ]
   pruneopts = "NUT"
-  revision = "f21a4dfb5e38f5895301dc265a8def02365cc3d0"
-  version = "v0.3.0"
+  revision = "342b2e1fbaa52c93f31447ad2c6abc048c63e475"
+  version = "v0.3.2"
 
 [[projects]]
   branch = "master"
