@@ -116,6 +116,8 @@ When processing sub-directories, `.gomplateignore` files in the parent directory
 
 Add a data source in `name=URL` form. Specify multiple times to add multiple sources. The data can then be used by the [`datasource`](../functions/data/#datasource) and [`include`](../functions/data/#include) functions.
 
+Data sources referenced in this way are lazy-loaded: they will not be read until the template is parsed and a `datasource` or `include` function is encountered.
+
 See [Datasources](../datasources) for full details.
 
 A few different forms are valid:
@@ -130,7 +132,21 @@ A few different forms are valid:
 
 Add a data source in `name=URL` form, and make it available in the [default context][] as `.<name>`. The special name `.` (period) can be used to override the entire default context.
 
+Data sources referenced with `--context` will be immediately loaded before gomplate processes the template. This is in contrast to the `--datasource` behaviour, which lazy-loads data while processing the template.
+
 All other rules for the [`--datasource`/`-d`](#datasource-d) flag apply.
+
+Examples:
+
+```console
+$ gomplate --context post=https://jsonplaceholder.typicode.com/posts/2 -i 'post title is: {{ .post.title }}'
+post title is: qui est esse
+```
+
+```console
+$ gomplate -c .=http://xkcd.com/info.0.json -i '<a href="{{ .img }}">{{ .title }}</a>'
+<a href="https://imgs.xkcd.com/comics/diploma_legal_notes.png">Diploma Legal Notes</a>
+```
 
 ### Overriding the template delimiters
 
