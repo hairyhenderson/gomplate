@@ -178,6 +178,38 @@ func (s *ConsulDatasourcesSuite) TestConsulDatasource(c *C) {
 	result.Assert(c, icmd.Expected{ExitCode: 0, Out: "bar"})
 }
 
+func (s *ConsulDatasourcesSuite) TestConsulDatasourceListKeys(c *C) {
+	s.consulPut(c, "list-of-keys/foo1", `{"bar1": "bar1"}`)
+	s.consulPut(c, "list-of-keys/foo2", "bar2")
+	defer s.consulDelete(c, "list-of-keys")
+
+	// Get a list of keys using the ds args
+	result := icmd.RunCmd(icmd.Command(GomplateBin,
+		"-d", "consul=consul://",
+		"-i", `{{(ds "consul" "list-of-keys/") | data.ToJSON }}`,
+	), func(c *icmd.Cmd) {
+		c.Env = []string{"CONSUL_HTTP_ADDR=http://" + s.consulAddr}
+	})
+	expectedResult := `[{"key":"foo1","value":"{\"bar1\": \"bar1\"}"},{"key":"foo2","value":"bar2"}]`
+	result.Assert(c, icmd.Expected{ExitCode: 0, Out: expectedResult})
+
+	// Get a list of keys using the ds uri
+	result = icmd.RunCmd(icmd.Command(GomplateBin,
+		"-d", "consul=consul+http://"+s.consulAddr+"/list-of-keys/",
+		"-i", `{{(ds "consul" ) | data.ToJSON }}`,
+	))
+	expectedResult = `[{"key":"foo1","value":"{\"bar1\": \"bar1\"}"},{"key":"foo2","value":"bar2"}]`
+	result.Assert(c, icmd.Expected{ExitCode: 0, Out: expectedResult})
+
+	// Get a specific value from the list of Consul keys
+	result = icmd.RunCmd(icmd.Command(GomplateBin,
+		"-d", "consul=consul+http://"+s.consulAddr+"/list-of-keys/",
+		"-i", `{{ $data := (ds "consul") }} {{ (index $data 0).value }}`,
+	))
+	expectedResult = `{"bar1": "bar1"}`
+	result.Assert(c, icmd.Expected{ExitCode: 0, Out: expectedResult})
+}
+
 func (s *ConsulDatasourcesSuite) TestConsulWithVaultAuth(c *C) {
 	v, err := createVaultClient(s.vaultAddr, vaultRootToken)
 	handle(c, err)
