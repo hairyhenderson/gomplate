@@ -15,6 +15,8 @@ For PRs, please:
 
 Submit issues to [issue tracker](https://github.com/hairyhenderson/gomplate/issues/).
 
+Any bug fix PRs must also include unit tests and/or integration tests to prevent regression.
+
 If you think you've found a sensitive security issue, please e-mail me before opening an issue: dhenderson@gmail.com. My PGP key is available on Keybase: https://keybase.io/dhenderson/.
 
 ## Versioning, API and Deprecation
@@ -39,6 +41,8 @@ Any semver guarantees only apply between released versions of gomplate. I reserv
 Sometimes, a deprecation is necessary. I will mark these deprecations in the documentation as soon as possible, and the deprecations may turn into removals (or renames, behaviour changes, etc...) as early as the next major version. However, features may stay deprecated for many major versions without being removed.
 
 ## Style Guide
+
+Code style is enforced by [`golangci-lint`](https://github.com/golangci/golangci-lint) during CI builds.
 
 ### Template Function Style
 
