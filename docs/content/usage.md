@@ -35,7 +35,7 @@ You can specify multiple `--file` and `--out` arguments. The same number of each
 
 For processing multiple templates in a directory you can use `--input-dir` and `--output-dir` together. In this case all files in input directory will be processed as templates and the resulting files stored in `--output-dir`. The output directory will be created if it does not exist and the directory structure of the input directory will be preserved.
 
-You can use `.gomplateignore` to ignore some files in the input directory, with similar syntax and behaviour to [.gitignore](https://git-scm.com/docs/gitignore) files.
+You can use the [`--exclude`](#exclude) argument and/or a [`.gomplateignore`](#ignorefile) file to exclude some of the files in the input directory.
 
 Example:
 
@@ -83,13 +83,6 @@ We can blend these two together:
 $ gomplate -t out=out.t -c filemap.json --input-dir=in --output-map='{{ template "out" }}'
 ```
 
-### Ignorefile
-
-You can use ignore file `.gomplateignore` to ignore some files, have the similar behavior to the [.gitignore](https://git-scm.com/docs/gitignore) file.  
-Nested ignorefile are supported, you can use ignorefile on any sub directroy.
-
-Ignorefile only support `--input-dir` option.
-
 ### `--chmod`
 
 By default, output files are created with the same file mode (permissions) as input files. If desired, the `--chmod` option can be used to override this behaviour, and set the output file mode explicitly. This can be useful for creating executable scripts or ensuring write permissions.
@@ -100,20 +93,24 @@ The value must be an octal integer in the standard UNIX `chmod` format, i.e. `64
 
 ### `--exclude`
 
-To prevent certain files from being processed, you can use `--exclude`. It takes a glob, and any files matching that glob will not be included.
+When using the [`--input-dir`](#input-dir-and-output-dir) argument, it can be useful to exclude certain files from being processed. You can use `--exclude` to achieve this. It takes a [`.gitignore`][]-style pattern, and any files matching the pattern will be excluded. You can also repeat the argument to provide a series of patterns to be excluded.
+
+Patterns provided with `--exclude` are matched relative to the input directory.
+
+_Note:_ These patterns are _not_ treated as filesystem globs, and so a pattern like `/foo/bar.json` will match relative to the input directory, not the root of the filesystem as they may appear!
 
 Example:
 
 ```console
-$ gomplate --exclude example/** --exclude *.png
+$ gomplate --exclude example/** --exclude *.png --input-dir in/ --output-dir out/
 ```
 
-This will stop all files in the example folder from being processed, as well as all `.png` files in the current folder.
+This will stop all files in the `in/example` directory from being processed, as well as all `.png` files in the `in/` directory.
 
-You can also chain the flag to build up a series of globs to be excluded.
+#### `.gomplateignore` files
 
-The `--exclude` option compatible [.gomplateignore](#ignorefile), exclude rules will effective after [.gomplateignore](#ignorefile).
-
+You can also use a file named `.gomplateignore` containing one exclude pattern on each line. This has the same syntax as a [`.gitignore`][] file.
+When processing sub-directories, `.gomplateignore` files in the parent directory are also considered. Patterns are matched relative to the location of the `.gomplateignore` file.
 
 ### `--datasource`/`-d`
 
@@ -206,3 +203,4 @@ cat: out: No such file or directory
 [default context]: ../syntax/#the-context
 [context]: ../syntax/#the-context
 [external templates]: ../syntax/#external-templates
+[`.gitignore`]: https://git-scm.com/docs/gitignore
