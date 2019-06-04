@@ -110,8 +110,8 @@ func newGomplateCmd() *cobra.Command {
 			}
 			if verbose {
 				// nolint: errcheck
-				fmt.Fprintf(os.Stderr, "%s version %s, build %s (%v)\nconfig is:\n%s\n\n",
-					cmd.Name(), version.Version, version.GitCommit, version.BuildDate,
+				fmt.Fprintf(os.Stderr, "%s version %s, build %s\nconfig is:\n%s\n\n",
+					cmd.Name(), version.Version, version.GitCommit,
 					&opts)
 			}
 
