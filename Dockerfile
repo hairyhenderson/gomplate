@@ -25,13 +25,11 @@ CMD [ "/bin/gomplate_linux-amd64" ]
 
 FROM scratch AS gomplate
 
-ARG BUILD_DATE
 ARG VCS_REF
 ARG OS=linux
 ARG ARCH=amd64
 
-LABEL org.opencontainers.image.created=$BUILD_DATE \
-      org.opencontainers.image.revision=$VCS_REF \
+LABEL org.opencontainers.image.revision=$VCS_REF \
       org.opencontainers.image.source="https://github.com/hairyhenderson/gomplate"
 
 COPY --from=artifacts /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
@@ -41,13 +39,11 @@ ENTRYPOINT [ "/gomplate" ]
 
 FROM alpine:3.9 AS gomplate-alpine
 
-ARG BUILD_DATE
 ARG VCS_REF
 ARG OS=linux
 ARG ARCH=amd64
 
-LABEL org.opencontainers.image.created=$BUILD_DATE \
-      org.opencontainers.image.revision=$VCS_REF \
+LABEL org.opencontainers.image.revision=$VCS_REF \
       org.opencontainers.image.source="https://github.com/hairyhenderson/gomplate"
 
 RUN apk add --no-cache ca-certificates
@@ -57,13 +53,11 @@ ENTRYPOINT [ "/bin/gomplate" ]
 
 FROM scratch AS gomplate-slim
 
-ARG BUILD_DATE
 ARG VCS_REF
 ARG OS=linux
 ARG ARCH=amd64
 
-LABEL org.opencontainers.image.created=$BUILD_DATE \
-      org.opencontainers.image.revision=$VCS_REF \
+LABEL org.opencontainers.image.revision=$VCS_REF \
       org.opencontainers.image.source="https://github.com/hairyhenderson/gomplate"
 
 COPY --from=artifacts /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt

@@ -4,7 +4,6 @@ set -exuo pipefail
 docker version
 
 echo "======== Build hook running"
-export BUILD_DATE=`date -u +"%Y-%m-%dT%H:%M:%SZ"`
 export VCS_REF=`git rev-parse --short HEAD`
 export DOCKER_REPO=${DOCKER_REPO:-hairyhenderson/gomplate}
 export DOCKER_TAG=${DOCKER_TAG:-latest}
@@ -14,8 +13,7 @@ docker build --target artifacts \
              -t ${DOCKER_REPO}:artifacts .
 
 echo "======== Building $IMAGE_NAME"
-docker build --build-arg BUILD_DATE \
-             --build-arg VCS_REF \
+docker build --build-arg VCS_REF \
              --target gomplate \
              -t ${IMAGE_NAME} .
 
@@ -25,8 +23,7 @@ else
   export SLIM_TAG="${DOCKER_TAG}-slim"
 fi
 echo "======== Building ${DOCKER_REPO}:${SLIM_TAG}"
-docker build --build-arg BUILD_DATE \
-             --build-arg VCS_REF \
+docker build --build-arg VCS_REF \
              --target gomplate-slim \
              -t ${DOCKER_REPO}:${SLIM_TAG} .
 
@@ -36,7 +33,6 @@ else
   export ALPINE_TAG="${DOCKER_TAG}-alpine"
 fi
 echo "======== Building ${DOCKER_REPO}:${ALPINE_TAG}"
-docker build --build-arg BUILD_DATE \
-             --build-arg VCS_REF \
+docker build --build-arg VCS_REF \
              --target gomplate-alpine \
              -t ${DOCKER_REPO}:${ALPINE_TAG} .
