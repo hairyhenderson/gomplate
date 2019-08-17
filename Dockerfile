@@ -1,4 +1,4 @@
-FROM alpine:3.10 AS upx
+FROM alpine:3.8 AS upx
 RUN apk add --no-cache upx=3.94-r0
 
 FROM golang:1.12.9-alpine AS build
