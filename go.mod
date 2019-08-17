@@ -22,6 +22,7 @@ require (
 	github.com/hashicorp/golang-lru v0.5.3 // indirect
 	github.com/hashicorp/serf v0.8.5 // indirect
 	github.com/hashicorp/vault/api v1.0.4
+	github.com/johannesboyne/gofakes3 v0.0.0-20190901124954-96fabbd7f68a
 	github.com/joho/godotenv v1.3.0
 	github.com/pierrec/lz4 v2.3.0+incompatible // indirect
 	github.com/pkg/errors v0.8.1
@@ -33,10 +34,10 @@ require (
 	github.com/stretchr/testify v1.3.0
 	github.com/ugorji/go/codec v1.1.7
 	github.com/zealic/xignore v0.3.3
+	gocloud.dev v0.17.0
 	golang.org/x/crypto v0.0.0-20191011191535-87dc89f01550
 	golang.org/x/net v0.0.0-20191011234655-491137f69257 // indirect
 	golang.org/x/sys v0.0.0-20191010194322-b09406accb47 // indirect
-	golang.org/x/text v0.3.2 // indirect
 	golang.org/x/time v0.0.0-20190921001708-c4c64cad1fd0 // indirect
 	gopkg.in/check.v1 v1.0.0-20190902080502-41f04d3bba15
 	gopkg.in/yaml.v3 v3.0.0-20190924164351-c8b7dadae555

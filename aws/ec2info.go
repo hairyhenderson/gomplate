@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/pkg/errors"
@@ -70,6 +71,10 @@ func SDKSession(region ...string) *session.Session {
 		config := aws.NewConfig()
 		config = config.WithHTTPClient(&http.Client{Timeout: timeout})
 
+		if os.Getenv("AWS_ANON") == "true" {
+			config = config.WithCredentials(credentials.AnonymousCredentials)
+		}
+
 		metaRegion := ""
 		if len(region) > 0 {
 			metaRegion = region[0]
@@ -81,6 +86,7 @@ func SDKSession(region ...string) *session.Session {
 			}
 		}
 		config = config.WithRegion(metaRegion)
+		config = config.WithCredentialsChainVerboseErrors(true)
 
 		sdkSession = session.Must(session.NewSessionWithOptions(session.Options{
 			Config:            *config,

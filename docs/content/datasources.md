@@ -57,6 +57,7 @@ Gomplate supports a number of datasources, each specified with a particular URL 
 |------|---------------|-------------|
 | [AWS Systems Manager Parameter Store](#using-aws-smp-datasources) | `aws+smp` | [AWS Systems Manager Parameter Store][AWS SMP] is a hierarchically-organized key/value store which allows storage of text, lists, or encrypted secrets for retrieval by AWS resources |
 | [AWS Secrets Manager](#using-aws-sm-datasource) | `aws+sm` | [AWS Secrets Manager][] helps you protect secrets needed to access your applications, services, and IT resources. |
+| [Amazon S3](#using-aws-s3-datasources) | `s3` | [Amazon S3][] is a popular object storage service. |
 | [BoltDB](#using-boltdb-datasources) | `boltdb` | [BoltDB][] is a simple local key/value store used by many Go tools |
 | [Consul](#using-consul-datasources) | `consul`, `consul+http`, `consul+https` | [HashiCorp Consul][] provides (among many other features) a key/value store |
 | [Environment](#using-env-datasources) | `env` | Environment variables can be used as datasources - useful for testing |
@@ -76,6 +77,7 @@ Currently the following datasources support directory semantics:
 - [Vault](#using-vault-datasources) - translates to Vault's [LIST](https://www.vaultproject.io/api/index.html#reading-writing-and-listing-secrets) method
 - [Consul](#using-consul-datasources)
 When accessing a directory datasource, an array of key names is returned, and can be iterated through to access each individual value contained within.
+- [S3](#using-s3-datasources)
 
 For example, a group of configuration key/value pairs (named `one`, `two`, and `three`, with values `v1`, `v2`, and `v3` respectively) could be rendered like this: 
 
@@ -95,7 +97,7 @@ three = v3
 
 ## MIME Types
 
-Gomplate will read and parse a number of data formats. The appropriate type will be set automatically, if possible, either based on file extension (for the `file` and `http` datasources), or the [HTTP Content-Type][] header, if available. If an unsupported type is detected, gomplate will exit with an error.
+Gomplate will read and parse a number of data formats. The appropriate type will be set automatically, if possible, either based on file extension (for the `file`, `http`, and `s3` datasources), or the [HTTP Content-Type][] header, if available. If an unsupported type is detected, gomplate will exit with an error.
 
 These are the supported types:
 
@@ -216,6 +218,70 @@ super-secret
 
 $ echo '{{ (ds "foo" "/bar/password") }}' | gomplate -d foo=aws+sm:///foo/
 super-secret
+```
+
+## Using `s3` datasources
+
+### URL Considerations
+
+The _scheme_, _authority_, _path_, and _query_ URL components are used by this datasource.
+
+- the _scheme_ must be `s3`
+- the _authority_ component is used to specify the s3 bucket name
+- the _path_ component is used to specify the path to the object. [Directory](#directory-datasources) semantics are available when the path ends with a `/` character.
+- the _query_ component can be used to provide parameters to configure the connection:
+  - `region`: The AWS region for requests. Defaults to the value from the `AWS_REGION` or `AWS_DEFAULT_REGION` environment variables, or the EC2 region if run in AWS EC2.
+  - `endpoint`: The endpoint (`hostname`, `hostname:port`, or fully qualified URI). Useful for using a different S3-compatible object storage server. You can also set the `AWS_S3_ENDPOINT` environment variable.
+  - `s3ForcePathStyle`: A value of `true` forces use of the deprecated "path-style" access. This is necessary for some S3-compatible object storage servers.
+  - `disableSSL`: A value of `true` disables SSL when sending requests. Use only for test scenarios!
+  - `type`: can be used to [override the MIME type](#overriding-mime-types)
+
+#### URL Examples
+
+Here are a few examples to help explain `s3` URLs:
+
+- `s3://mybucket/config/file.json`
+  - the bucket region will be inferred, and the blob `config/file.json` in the `mybucket` bucket will be located in Amazon S3.
+- `s3://mybucket/`
+  - The contents of the bucket `mybucket` will be listed into an array. Note that only the last portion of the path (the file name) will be listed.
+- `s3://mybucket/config/file?region=eu-west-1`
+  - same as the first example, except the bucket's region is overridden to `eu-west-1`
+  - the lack of file extension means that file will be parsed according to the file's `Content-Type` metadata
+- `s3://mybucket/config/file.json?endpoint=localhost:5432&disableSSL=true&s3ForcePathStyle=true`
+  - this example is typical of a scenario where an S3-compatible server (such as [Minio][], [Zenko CloudServer][], or testing-focused servers such as [gofakes3][])
+  - the endpoint is overridden to be a server running on localhost
+  - encryption is disabled since the endpoint is local
+  - "path-style" access is used - this is typical for local servers, or scenarios where modifying DNS is impossible or impractical
+
+### Output
+
+The output will be the object contents, parsed based on the discovered [MIME type](#mime-types).
+
+### Examples
+
+Given the S3 bucket named `my-bucket` has the following objects:
+
+- `foo/bar.json` - `{"hello": "world"}`
+- `foo/baz.txt` - `hello world`
+
+```console
+$ gomplate -c foo=s3://my-bucket/foo/bar.json -i 'Hello {{ .foo.hello }}'
+Hello world
+
+$ gomplate -c foo=s3://my-bucket/foo/ -i 'my-bucket/foo contains:{{ range .foo }}{{ print "\n" . }}{{ end }}'
+my-bucket/foo contains:
+bar.json
+baz.txt
+
+$ gomplate -c foo=s3://my-bucket/foo/bar.json?region=eu-west-1 -i 'Hello {{ .foo.hello }}'
+Hello world
+
+$ gomplate -c foo=s3://my-bucket/foo/bar.json?region=eu-west-1&
+endpoint=my-test-site& -i 'Hello {{ .foo.hello }}'
+Hello world
+
+$ gomplate -d bucket=s3://my-bucket/?region=eu-west-1&endpoint=my-test-site& -i 'Hello {{ (ds "bucket" "/foo/bar.json").hello }}'
+Hello world
 ```
 
 ## Using `boltdb` datasources
@@ -570,3 +636,8 @@ The file `/tmp/vault-aws-nonce` will be created if it didn't already exist, and 
 [HTTP Content-Type]: https://tools.ietf.org/html/rfc7231#section-3.1.1.1
 [URL]: https://tools.ietf.org/html/rfc3986
 [AWS SDK for Go]: https://docs.aws.amazon.com/sdk-for-go/api/
+[Amazon S3]: https://aws.amazon.com/s3/
+
+[Minio]: https://min.io
+[Zenko CloudServer]: https://www.zenko.io/cloudserver/
+[gofakes3]: https://github.com/johannesboyne/gofakes3
