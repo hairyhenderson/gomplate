@@ -272,3 +272,27 @@ func (s *GomplateignoreSuite) TestGomplateignore_WithExcludes(c *C) {
 		"logs/archive.zip", "manifest.json", "rules/index.csv",
 		"sprites/demon.xml", "sprites/human.csv"), files)
 }
+
+func (s *GomplateignoreSuite) TestGomplateignore_WithIncludes(c *C) {
+	s.executeOpts(c, `.gomplateignore
+*.log
+`, []string{
+		"--include", "rules/*",
+		"--exclude", "rules/*.txt",
+	},
+		fs.WithDir("logs",
+			fs.WithFile("archive.zip", ""),
+			fs.WithFile("engine.log", ""),
+			fs.WithFile("skills.log", "")),
+		fs.WithDir("rules",
+			fs.WithFile("index.csv", ""),
+			fs.WithFile("fire.txt", ""),
+			fs.WithFile("earth.txt", "")),
+		fs.WithFile("manifest.json", ""),
+		fs.WithFile("crash.bin", ""),
+	)
+
+	files, err := s.collectOutFiles()
+	tassert.NoError(c, err)
+	tassert.Equal(c, fromSlashes("rules/index.csv"), files)
+}
