@@ -91,21 +91,27 @@ The value must be an octal integer in the standard UNIX `chmod` format, i.e. `64
 
 **Note:** `--chmod` is not currently supported on Windows. Behaviour is undefined, but will likely not change file permissions at all.
 
-### `--exclude`
+### `--exclude` and `--include`
 
-When using the [`--input-dir`](#input-dir-and-output-dir) argument, it can be useful to exclude certain files from being processed. You can use `--exclude` to achieve this. It takes a [`.gitignore`][]-style pattern, and any files matching the pattern will be excluded. You can also repeat the argument to provide a series of patterns to be excluded.
+When using the [`--input-dir`](#input-dir-and-output-dir) argument, it can be useful to filter which files are processed. You can use `--exclude` and `--include` to achieve this. The `--exclude` flag takes a [`.gitignore`][]-style pattern, and any files matching the pattern will be excluded. The `--include` flag is effectively the opposite of `--exclude`. You can also repeat the arguments to provide a series of patterns to be excluded/included.
 
-Patterns provided with `--exclude` are matched relative to the input directory.
+Patterns provided with `--exclude`/`--include` are matched relative to the input directory.
 
 _Note:_ These patterns are _not_ treated as filesystem globs, and so a pattern like `/foo/bar.json` will match relative to the input directory, not the root of the filesystem as they may appear!
 
-Example:
+Examples:
 
 ```console
 $ gomplate --exclude example/** --exclude *.png --input-dir in/ --output-dir out/
 ```
 
 This will stop all files in the `in/example` directory from being processed, as well as all `.png` files in the `in/` directory.
+
+```console
+$ gomplate --include *.tmpl --exclude foo*.tmpl --input-dir in/ --output-dir out/
+```
+
+This will cause only files ending in `.tmpl` to be processed, except for files with names beginning with `foo`: `template.tmpl` will be included, but `foo-template.tmpl` will not.
 
 #### `.gomplateignore` files
 

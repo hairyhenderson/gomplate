@@ -21,6 +21,7 @@ var (
 	printVer bool
 	verbose  bool
 	opts     gomplate.Config
+	includes []string
 )
 
 // nolint: gocyclo
@@ -98,6 +99,23 @@ func optionalExecArgs(cmd *cobra.Command, args []string) error {
 	return cobra.NoArgs(cmd, args)
 }
 
+// process --include flags - these are analogous to specifying --exclude '*',
+// then the inverse of the --include options.
+func processIncludes(includes, excludes []string) []string {
+	out := []string{}
+	// if any --includes are set, we start by excluding everything
+	if len(includes) > 0 {
+		out = make([]string, 1+len(includes))
+		out[0] = "*"
+	}
+	for i, include := range includes {
+		// includes are just the opposite of an exclude
+		out[i+1] = "!" + include
+	}
+	out = append(out, excludes...)
+	return out
+}
+
 func newGomplateCmd() *cobra.Command {
 	rootCmd := &cobra.Command{
 		Use:     "gomplate",
@@ -114,6 +132,9 @@ func newGomplateCmd() *cobra.Command {
 					cmd.Name(), version.Version, version.GitCommit,
 					&opts)
 			}
+
+			// support --include
+			opts.ExcludeGlob = processIncludes(includes, opts.ExcludeGlob)
 
 			err := gomplate.RunTemplates(&opts)
 			cmd.SilenceErrors = true
@@ -144,6 +165,7 @@ func initFlags(command *cobra.Command) {
 	command.Flags().StringVar(&opts.InputDir, "input-dir", "", "`directory` which is examined recursively for templates (alternative to --file and --in)")
 
 	command.Flags().StringArrayVar(&opts.ExcludeGlob, "exclude", []string{}, "glob of files to not parse")
+	command.Flags().StringArrayVar(&includes, "include", []string{}, "glob of files to parse")
 
 	command.Flags().StringArrayVarP(&opts.OutputFiles, "out", "o", []string{"-"}, "output `file` name. Omit to use standard output.")
 	command.Flags().StringArrayVarP(&opts.Templates, "template", "t", []string{}, "Additional template file(s)")
