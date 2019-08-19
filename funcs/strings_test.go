@@ -126,6 +126,31 @@ func TestQuote(t *testing.T) {
 	}
 }
 
+func TestShellQuote(t *testing.T) {
+	sf := &StringFuncs{}
+	testdata := []struct {
+		in  interface{}
+		out string
+	}{
+		// conventional cases
+		{``, `''`},
+		{`foo`, `'foo'`},
+		{nil, `'nil'`},
+		{123.4, `'123.4'`},
+		{`hello "world"`, `'hello "world"'`},
+		{`it's its`, `'it'"'"'s its'`},
+		// array and slice cases
+		{[]string{}, ``},
+		{[]string{"", ""}, `'' ''`},
+		{[...]string{"one'two", "three four"}, `'one'"'"'two' 'three four'`},
+		{[]string{"one'two", "three four"}, `'one'"'"'two' 'three four'`},
+	}
+
+	for _, d := range testdata {
+		assert.Equal(t, d.out, sf.ShellQuote(d.in))
+	}
+}
+
 func TestSquote(t *testing.T) {
 	sf := &StringFuncs{}
 	testdata := []struct {

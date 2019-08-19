@@ -397,6 +397,40 @@ $ echo 'Rock & Roll @ Cafe Wha?' | gomplate -d in=stdin: -i '{{ strings.Slug (in
 rock-and-roll-at-cafe-wha
 ```
 
+## `strings.ShellQuote`
+
+**Alias:** `shellQuote`
+
+Given a string, emits a version of that string that will evaluate to its literal data when expanded by any POSIX-compliant shell.
+
+Given an array or slice, emit a single string which will evaluate to a series of shell words, one per item in that array or slice.
+
+### Usage
+
+```go
+strings.ShellQuote in
+```
+```go
+in | strings.ShellQuote
+```
+
+### Arguments
+
+| name | description |
+|------|-------------|
+| `in` | _(required)_ The input to quote |
+
+### Examples
+
+```console
+$ gomplate -i "{{ slice \"one word\" \"foo='bar baz'\" | shellQuote }}"
+'one word' 'foo='"'"'bar baz'"'"''
+```
+```console
+$ gomplate -i "{{ strings.ShellQuote \"it's a banana\" }}"
+'it'"'"'s a banana'
+```
+
 ## `strings.Squote`
 
 **Alias:** `squote`
