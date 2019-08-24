@@ -221,26 +221,22 @@ func (f *StringFuncs) Quote(in interface{}) string {
 	return fmt.Sprintf("%q", conv.ToString(in))
 }
 
-func shellQuote(s string) string {
-	return "'" + strings.Replace(s, "'", "'\"'\"'", -1) + "'"
-}
-
 // ShellQuote -
 func (f *StringFuncs) ShellQuote(in interface{}) string {
 	val := reflect.ValueOf(in)
-	var sb strings.Builder
 	switch val.Kind() {
 	case reflect.Array, reflect.Slice:
+		var sb strings.Builder
 		max := val.Len()
 		for n := 0; n < max; n++ {
-			sb.WriteString(shellQuote(conv.ToString(val.Index(n))))
+			sb.WriteString(gompstrings.ShellQuote(conv.ToString(val.Index(n))))
 			if n+1 != max {
 				sb.WriteRune(' ')
 			}
 		}
 		return sb.String()
 	}
-	return shellQuote(conv.ToString(in))
+	return gompstrings.ShellQuote(conv.ToString(in))
 }
 
 // Squote -

@@ -132,13 +132,10 @@ func TestShellQuote(t *testing.T) {
 		in  interface{}
 		out string
 	}{
-		// conventional cases
-		{``, `''`},
-		{`foo`, `'foo'`},
+		// conventional cases are covered in gompstrings.ShellQuote() tests
+		// we cover only cases that require type conversion or array/slice combining here
 		{nil, `'nil'`},
 		{123.4, `'123.4'`},
-		{`hello "world"`, `'hello "world"'`},
-		{`it's its`, `'it'"'"'s its'`},
 		// array and slice cases
 		{[]string{}, ``},
 		{[]string{"", ""}, `'' ''`},
