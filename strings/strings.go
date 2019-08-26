@@ -30,6 +30,11 @@ func Indent(width int, indent, s string) string {
 	return string(res)
 }
 
+// ShellQuote - generate a POSIX shell literal evaluating to a string
+func ShellQuote(s string) string {
+	return "'" + strings.Replace(s, "'", "'\"'\"'", -1) + "'"
+}
+
 // Trunc - truncate a string to the given length
 func Trunc(length int, s string) string {
 	if length < 0 {

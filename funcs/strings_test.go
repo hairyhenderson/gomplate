@@ -126,6 +126,28 @@ func TestQuote(t *testing.T) {
 	}
 }
 
+func TestShellQuote(t *testing.T) {
+	sf := &StringFuncs{}
+	testdata := []struct {
+		in  interface{}
+		out string
+	}{
+		// conventional cases are covered in gompstrings.ShellQuote() tests
+		// we cover only cases that require type conversion or array/slice combining here
+		{nil, `'nil'`},
+		{123.4, `'123.4'`},
+		// array and slice cases
+		{[]string{}, ``},
+		{[]string{"", ""}, `'' ''`},
+		{[...]string{"one'two", "three four"}, `'one'"'"'two' 'three four'`},
+		{[]string{"one'two", "three four"}, `'one'"'"'two' 'three four'`},
+	}
+
+	for _, d := range testdata {
+		assert.Equal(t, d.out, sf.ShellQuote(d.in))
+	}
+}
+
 func TestSquote(t *testing.T) {
 	sf := &StringFuncs{}
 	testdata := []struct {

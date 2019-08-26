@@ -27,6 +27,13 @@ func TestTrunc(t *testing.T) {
 	assert.Equal(t, "hello, world", Trunc(-1, "hello, world"))
 }
 
+func TestShellQuote(t *testing.T) {
+	assert.Equal(t, `''`, ShellQuote(``))
+	assert.Equal(t, `'foo'`, ShellQuote(`foo`))
+	assert.Equal(t, `'hello "world"'`, ShellQuote(`hello "world"`))
+	assert.Equal(t, `'it'"'"'s its'`, ShellQuote(`it's its`))
+}
+
 func TestSort(t *testing.T) {
 	in := []string{}
 	expected := []string{}
