@@ -532,11 +532,11 @@
 
 [[projects]]
   branch = "v2"
-  digest = "1:c66b26c0ed873eadbb4021036b7f9deceeb4832db9edd2ee7a4e52ab99aed150"
+  digest = "1:c76afbbfaa179f4d95edaaa61a7b382d943ee045dd36efb4a25a5be159ae63b7"
   name = "gopkg.in/hairyhenderson/yaml.v2"
   packages = ["."]
   pruneopts = "NUT"
-  revision = "252a03df762e6cc75ed23ccd28fed3c3bd19516f"
+  revision = "627bc6d4be0ef390dfc6843e9e9e218941d66cb9"
 
 [[projects]]
   digest = "1:c3c645369d12dc28c9119d974127bc0fa849b5608e06bab83d0c9a2254289574"
