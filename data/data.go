@@ -8,7 +8,6 @@ import (
 	"bytes"
 	"encoding/csv"
 	"encoding/json"
-	"reflect"
 	"strings"
 
 	"github.com/joho/godotenv"
@@ -22,14 +21,8 @@ import (
 	"github.com/pkg/errors"
 	"github.com/ugorji/go/codec"
 
-	// XXX: replace once https://github.com/go-yaml/yaml/issues/139 is solved
-	yaml "gopkg.in/hairyhenderson/yaml.v2"
+	yaml "gopkg.in/yaml.v3"
 )
-
-func init() {
-	// XXX: remove once https://github.com/go-yaml/yaml/issues/139 is solved
-	*yaml.DefaultMapType = reflect.TypeOf(map[string]interface{}{})
-}
 
 func unmarshalObj(obj map[string]interface{}, in string, f func([]byte, interface{}) error) (map[string]interface{}, error) {
 	err := f([]byte(in), &obj)
@@ -314,7 +307,18 @@ func ToJSONPretty(indent string, in interface{}) (string, error) {
 
 // ToYAML - Stringify a struct as YAML
 func ToYAML(in interface{}) (string, error) {
-	return marshalObj(in, yaml.Marshal)
+	// I'd use yaml.Marshal, but between v2 and v3 the indent has changed from
+	// 2 to 4. This explicitly sets it back to 2.
+	marshal := func(in interface{}) (out []byte, err error) {
+		buf := &bytes.Buffer{}
+		e := yaml.NewEncoder(buf)
+		e.SetIndent(2)
+		defer e.Close()
+		err = e.Encode(in)
+		return buf.Bytes(), err
+	}
+
+	return marshalObj(in, marshal)
 }
 
 // ToTOML - Stringify a struct as TOML

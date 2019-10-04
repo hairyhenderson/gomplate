@@ -116,7 +116,6 @@ func TestDatasource(t *testing.T) {
 		if runtime.GOOS == osWindows {
 			_ = fs.Mkdir("C:\\tmp", 0777)
 			f, _ = fs.Create("C:\\tmp\\" + fname)
-			_, _ = f.Write(contents)
 			uPath = "C:/tmp/" + fname
 		} else {
 			_ = fs.Mkdir("/tmp", 0777)

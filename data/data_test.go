@@ -62,9 +62,9 @@ func TestUnmarshalArray(t *testing.T) {
 - baz:
     qux: true
   quux:
-    42: 18
+    "42": 18
   corge:
-    false: blah
+    "false": blah
 `))
 
 	obj := make([]interface{}, 1)
