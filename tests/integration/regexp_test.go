@@ -5,7 +5,7 @@ package integration
 import (
 	. "gopkg.in/check.v1"
 
-	"github.com/gotestyourself/gotestyourself/icmd"
+	"gotest.tools/v3/icmd"
 )
 
 type RegexpSuite struct{}

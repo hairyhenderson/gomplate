@@ -5,8 +5,8 @@ package integration
 import (
 	. "gopkg.in/check.v1"
 
-	"github.com/gotestyourself/gotestyourself/fs"
-	"github.com/gotestyourself/gotestyourself/icmd"
+	"gotest.tools/v3/fs"
+	"gotest.tools/v3/icmd"
 )
 
 type CollSuite struct {

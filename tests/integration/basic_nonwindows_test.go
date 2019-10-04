@@ -10,8 +10,8 @@ import (
 
 	. "gopkg.in/check.v1"
 
-	"github.com/gotestyourself/gotestyourself/assert"
-	"github.com/gotestyourself/gotestyourself/icmd"
+	"gotest.tools/v3/assert"
+	"gotest.tools/v3/icmd"
 )
 
 func (s *BasicSuite) TestRoutesInputsToProperOutputsWithChmod(c *C) {

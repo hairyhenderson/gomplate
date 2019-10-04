@@ -7,12 +7,12 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/gotestyourself/gotestyourself/assert"
+	"gotest.tools/v3/assert"
 
 	. "gopkg.in/check.v1"
 
-	"github.com/gotestyourself/gotestyourself/fs"
-	"github.com/gotestyourself/gotestyourself/icmd"
+	"gotest.tools/v3/fs"
+	"gotest.tools/v3/icmd"
 )
 
 type FileSuite struct {

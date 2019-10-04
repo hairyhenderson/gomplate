@@ -12,7 +12,7 @@ import (
 
 	"os"
 
-	"github.com/gotestyourself/gotestyourself/fs"
+	"gotest.tools/v3/fs"
 )
 
 func TestUnmarshalObj(t *testing.T) {

@@ -3,6 +3,7 @@ extension = $(patsubst windows,.exe,$(filter windows,$(1)))
 GO := go
 PKG_NAME := gomplate
 PREFIX := .
+GOFLAGS := -mod=vendor
 
 ifeq ("$(CI)","true")
 LINT_PROCS ?= 1
@@ -67,6 +68,7 @@ docker-images: gomplate.iid gomplate-slim.iid
 
 $(PREFIX)/bin/$(PKG_NAME)_%: $(shell find $(PREFIX) -type f -name "*.go")
 	GOOS=$(shell echo $* | cut -f1 -d-) GOARCH=$(shell echo $* | cut -f2 -d- | cut -f1 -d.) CGO_ENABLED=0 \
+		GOFLAGS=$(GOFLAGS) \
 		$(GO) build \
 			-ldflags "-w -s $(COMMIT_FLAG) $(VERSION_FLAG)" \
 			-o $@ \
@@ -79,14 +81,14 @@ build: $(PREFIX)/bin/$(PKG_NAME)$(call extension,$(GOOS))
 
 ifeq ($(OS),Windows_NT)
 test:
-	$(GO) test -v -coverprofile=c.out ./...
+	@GOFLAGS=$(GOFLAGS) $(GO) test -v -coverprofile=c.out ./...
 else
 test:
-	$(GO) test -v -race -coverprofile=c.out ./...
+	@GOFLAGS=$(GOFLAGS) $(GO) test -v -race -coverprofile=c.out ./...
 endif
 
 integration: build
-	$(GO) test -v -tags=integration \
+	@GOFLAGS=$(GOFLAGS) $(GO) test -v -tags=integration \
 		./tests/integration -check.v
 
 integration.iid: Dockerfile.integration $(PREFIX)/bin/$(PKG_NAME)_linux-amd64$(call extension,$(GOOS))

@@ -9,10 +9,10 @@ import (
 
 	. "gopkg.in/check.v1"
 
-	"github.com/gotestyourself/gotestyourself/fs"
-	"github.com/gotestyourself/gotestyourself/icmd"
 	"github.com/spf13/afero"
 	tassert "github.com/stretchr/testify/assert"
+	"gotest.tools/v3/fs"
+	"gotest.tools/v3/icmd"
 )
 
 type GomplateignoreSuite struct {

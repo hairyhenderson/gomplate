@@ -6,9 +6,9 @@ import (
 	"path/filepath"
 	"testing"
 
-	tfs "github.com/gotestyourself/gotestyourself/fs"
 	"github.com/spf13/afero"
 	"github.com/stretchr/testify/assert"
+	tfs "gotest.tools/v3/fs"
 )
 
 func TestRead(t *testing.T) {
