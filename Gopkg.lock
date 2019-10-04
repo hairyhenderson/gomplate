@@ -175,11 +175,11 @@
 
 [[projects]]
   branch = "support-map-interface-keys"
-  digest = "1:4ceab15049ee934853089fbc23a96d97493d6b3e043f0d4686e29085d037818e"
+  digest = "1:a3f848d56fd5ee4fdb2d60531264fd34426d083bae8011a2c59fdcc21e100ce4"
   name = "github.com/hairyhenderson/toml"
   packages = ["."]
   pruneopts = "NUT"
-  revision = "d1df168234942b108d288625a58afe19791630bd"
+  revision = "2a4f3b6160f2a23a3f59c9888d8c8ea9b70a7959"
 
 [[projects]]
   digest = "1:70b127f3b7325a58ff547b872d25cddc3e119706d5fb7f37b3f2eaf5d6368730"
