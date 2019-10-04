@@ -1,0 +1,30 @@
+name: Windows Build
+on: [push]
+
+jobs:
+  build:
+    runs-on: windows-latest
+    env:
+      TMP: D:\tmp
+    steps:
+      - name: Install Go
+        uses: actions/setup-go@v1
+        with:
+          go-version: 1.13.x
+      - name: go version
+        run: go version
+      - uses: actions/checkout@master
+        with:
+          path: ./src/github.com/${{ github.repository }}
+      - name: build
+        run: go build -o bin/gomplate.exe github.com/hairyhenderson/gomplate/cmd/gomplate
+        env:
+          GOPATH: ${{ runner.workspace }}
+      - name: test
+        run: go test -v ./... & IF ERRORLEVEL == 1 EXIT 1
+        env:
+          GOPATH: ${{ runner.workspace }}
+      - name: integration
+        run: go test -v -tags=integration -ldflags "-X github.com/hairyhenderson/gomplate/tests/integration.GomplateBin=${{ runner.workspace }}/src/github.com/${{ github.repository }}/bin/gomplate.exe" ./tests/integration -check.v
+        env:
+          GOPATH: ${{ runner.workspace }}
