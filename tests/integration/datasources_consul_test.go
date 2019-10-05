@@ -13,9 +13,9 @@ import (
 
 	. "gopkg.in/check.v1"
 
-	"github.com/gotestyourself/gotestyourself/fs"
-	"github.com/gotestyourself/gotestyourself/icmd"
 	vaultapi "github.com/hashicorp/vault/api"
+	"gotest.tools/v3/fs"
+	"gotest.tools/v3/icmd"
 )
 
 type ConsulDatasourcesSuite struct {

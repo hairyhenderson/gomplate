@@ -1,0 +1,16 @@
+name: ejson
+
+up:
+  - homebrew:
+      - glide
+  - ruby: 2.3.3
+  - go: 1.8.3
+  - bundler
+  - custom:
+      name: Install vendored dependencies
+      met?: test -e vendor
+      meet: glide install
+
+commands:
+  build: make
+  test: go test $(glide nv)

@@ -46,11 +46,13 @@ func (z *Writer) writeHeader() error {
 	}
 	// Allocate the compressed/uncompressed buffers.
 	// The compressed buffer cannot exceed the uncompressed one.
-	if n := 2 * bSize; cap(z.zdata) < n {
-		z.zdata = make([]byte, n, n)
+	if cap(z.zdata) < bSize {
+		// Only allocate if there is not enough capacity.
+		// Allocate both buffers at once.
+		z.zdata = make([]byte, 2*bSize)
 	}
-	z.data = z.zdata[:bSize]
-	z.zdata = z.zdata[:cap(z.zdata)][bSize:]
+	z.data = z.zdata[:bSize]                 // Uncompressed buffer is the first half.
+	z.zdata = z.zdata[:cap(z.zdata)][bSize:] // Compressed buffer is the second half.
 	z.idx = 0
 
 	// Size is optional.
@@ -193,20 +195,18 @@ func (z *Writer) compressBlock(data []byte) error {
 		h(written)
 	}
 
-	if z.BlockChecksum {
-		checksum := xxh32.ChecksumZero(zdata)
+	if !z.BlockChecksum {
 		if debugFlag {
-			debug("block checksum %x", checksum)
+			debug("current frame checksum %x", z.checksum.Sum32())
 		}
-		if err := z.writeUint32(checksum); err != nil {
-			return err
-		}
+		return nil
 	}
+	checksum := xxh32.ChecksumZero(zdata)
 	if debugFlag {
-		debug("current frame checksum %x", z.checksum.Sum32())
+		debug("block checksum %x", checksum)
+		defer func() { debug("current frame checksum %x", z.checksum.Sum32()) }()
 	}
-
-	return nil
+	return z.writeUint32(checksum)
 }
 
 // Flush flushes any pending compressed data to the underlying writer.
@@ -234,7 +234,6 @@ func (z *Writer) Close() error {
 			return err
 		}
 	}
-
 	if err := z.Flush(); err != nil {
 		return err
 	}
@@ -245,16 +244,14 @@ func (z *Writer) Close() error {
 	if err := z.writeUint32(0); err != nil {
 		return err
 	}
-	if !z.NoChecksum {
-		checksum := z.checksum.Sum32()
-		if debugFlag {
-			debug("stream checksum %x", checksum)
-		}
-		if err := z.writeUint32(checksum); err != nil {
-			return err
-		}
+	if z.NoChecksum {
+		return nil
 	}
-	return nil
+	checksum := z.checksum.Sum32()
+	if debugFlag {
+		debug("stream checksum %x", checksum)
+	}
+	return z.writeUint32(checksum)
 }
 
 // Reset clears the state of the Writer z such that it is equivalent to its

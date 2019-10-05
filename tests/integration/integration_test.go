@@ -11,9 +11,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/gotestyourself/gotestyourself/icmd"
 	vaultapi "github.com/hashicorp/vault/api"
 	. "gopkg.in/check.v1"
+	"gotest.tools/v3/icmd"
 )
 
 var (

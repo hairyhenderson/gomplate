@@ -6,8 +6,8 @@ import (
 	"runtime"
 	"time"
 
-	"github.com/gotestyourself/gotestyourself/icmd"
 	. "gopkg.in/check.v1"
+	"gotest.tools/v3/icmd"
 )
 
 type TimeSuite struct{}
