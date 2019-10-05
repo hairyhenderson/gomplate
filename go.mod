@@ -21,7 +21,7 @@ require (
 	github.com/hashicorp/go-sockaddr v1.0.2
 	github.com/hashicorp/golang-lru v0.5.3 // indirect
 	github.com/hashicorp/serf v0.8.5 // indirect
-	github.com/hashicorp/vault/api v1.0.4
+	github.com/hashicorp/vault/api v1.2.3
 	github.com/joho/godotenv v1.3.0
 	github.com/pierrec/lz4 v2.3.0+incompatible // indirect
 	github.com/pkg/errors v0.8.1
