@@ -23,7 +23,7 @@ require (
 	github.com/hashicorp/serf v0.8.5 // indirect
 	github.com/hashicorp/vault/api v1.0.4
 	github.com/joho/godotenv v1.3.0
-	github.com/pierrec/lz4 v2.3.0+incompatible // indirect
+	github.com/pierrec/lz4 v3.1.0 // indirect
 	github.com/pkg/errors v0.8.1
 	github.com/rainycape/unidecode v0.0.0-20150907023854-cb7f23ec59be // indirect
 	github.com/smartystreets/goconvey v0.0.0-20190731233626-505e41936337 // indirect
