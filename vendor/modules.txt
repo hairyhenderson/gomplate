@@ -193,6 +193,6 @@ gotest.tools/v3/internal/difflib
 gotest.tools/v3/internal/format
 gotest.tools/v3/internal/source
 gotest.tools/v3/x/subtest
-# k8s.io/client-go v11.0.0+incompatible
+# k8s.io/client-go v12.0.0+incompatible
 k8s.io/client-go/third_party/forked/golang/template
 k8s.io/client-go/util/jsonpath
