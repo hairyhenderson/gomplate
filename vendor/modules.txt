@@ -165,7 +165,7 @@ golang.org/x/net/http/httpguts
 golang.org/x/net/http2
 golang.org/x/net/http2/hpack
 golang.org/x/net/idna
-# golang.org/x/sys v0.0.0-20191003212358-c178f38b412c
+# golang.org/x/sys v0.0.0-20191005200804-aed5e4c7ecf9
 golang.org/x/sys/cpu
 golang.org/x/sys/unix
 # golang.org/x/text v0.3.2

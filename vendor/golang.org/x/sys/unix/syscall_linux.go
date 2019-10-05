@@ -1851,6 +1851,17 @@ func OpenByHandleAt(mountFD int, handle FileHandle, flags int) (fd int, err erro
 	return openByHandleAt(mountFD, handle.fileHandle, flags)
 }
 
+// Klogset wraps the sys_syslog system call; it sets console_loglevel to
+// the value specified by arg and passes a dummy pointer to bufp.
+func Klogset(typ int, arg int) (err error) {
+	var p unsafe.Pointer
+	_, _, errno := Syscall(SYS_SYSLOG, uintptr(typ), uintptr(p), uintptr(arg))
+	if errno != 0 {
+		return errnoErr(errno)
+	}
+	return nil
+}
+
 /*
  * Unimplemented
  */
