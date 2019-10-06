@@ -6,7 +6,7 @@ require (
 	github.com/Masterminds/goutils v1.1.0
 	github.com/Shopify/ejson v1.2.1
 	github.com/armon/go-metrics v0.0.0-20190430140413-ec5e00d3c878 // indirect
-	github.com/aws/aws-sdk-go v1.25.5
+	github.com/aws/aws-sdk-go v1.25.6
 	github.com/boltdb/bolt v1.3.1
 	github.com/docker/libkv v0.2.1
 	github.com/dustin/gojson v0.0.0-20160307161227-2e71ec9dd5ad // indirect
@@ -35,10 +35,10 @@ require (
 	github.com/zealic/xignore v0.3.3
 	golang.org/x/crypto v0.0.0-20191002192127-34f69633bfdc
 	golang.org/x/net v0.0.0-20191003171128-d98b1b443823 // indirect
-	golang.org/x/sys v0.0.0-20191003212358-c178f38b412c // indirect
+	golang.org/x/sys v0.0.0-20191005200804-aed5e4c7ecf9 // indirect
 	golang.org/x/text v0.3.2 // indirect
 	golang.org/x/time v0.0.0-20190921001708-c4c64cad1fd0 // indirect
-	gopkg.in/check.v1 v0.0.0-20161208181325-20d25e280405
+	gopkg.in/check.v1 v1.0.0-20190902080502-41f04d3bba15
 	gopkg.in/yaml.v3 v3.0.0-20190924164351-c8b7dadae555
 	gotest.tools/v3 v3.0.0
 	k8s.io/client-go v12.0.0+incompatible
