@@ -68,7 +68,7 @@ github.com/google/go-cmp/cmp/internal/function
 github.com/google/go-cmp/cmp/internal/value
 # github.com/google/uuid v1.1.1
 github.com/google/uuid
-# github.com/gosimple/slug v1.7.0
+# github.com/gosimple/slug v1.8.0
 github.com/gosimple/slug
 # github.com/hairyhenderson/toml v0.3.1-0.20191004034452-2a4f3b6160f2
 github.com/hairyhenderson/toml
