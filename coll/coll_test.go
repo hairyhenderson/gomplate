@@ -15,7 +15,6 @@ func TestSlice(t *testing.T) {
 }
 
 func TestHas(t *testing.T) {
-
 	in := map[string]interface{}{
 		"foo": "bar",
 		"baz": map[string]interface{}{
@@ -455,5 +454,114 @@ func TestSort(t *testing.T) {
 			assert.NoError(t, err)
 			assert.EqualValues(t, d.out, out)
 		})
+	}
+}
+
+func TestFlatten(t *testing.T) {
+	data := []struct {
+		depth    int
+		in       interface{}
+		expected []interface{}
+	}{
+		{0, []int{1, 2, 3}, []interface{}{1, 2, 3}},
+		{0, [3]int{1, 2, 3}, []interface{}{1, 2, 3}},
+		{0,
+			[]interface{}{[]string{}, []int{1, 2}, 3},
+			[]interface{}{[]string{}, []int{1, 2}, 3},
+		},
+		{0,
+			[]interface{}{[]string{"one"}, [][]int{{1, 2}}, 3},
+			[]interface{}{[]string{"one"}, [][]int{{1, 2}}, 3},
+		},
+
+		{1, []int{1, 2, 3}, []interface{}{1, 2, 3}},
+		{1, [3]int{1, 2, 3}, []interface{}{1, 2, 3}},
+		{1, []interface{}{[]string{}, []int{1, 2}, 3}, []interface{}{1, 2, 3}},
+		{1,
+			[]interface{}{[]string{"one"}, [][]int{{1, 2}}, 3},
+			[]interface{}{"one", []int{1, 2}, 3},
+		},
+
+		{2, []int{1, 2, 3}, []interface{}{1, 2, 3}},
+		{2, [3]int{1, 2, 3}, []interface{}{1, 2, 3}},
+		{2, []interface{}{[]string{}, []int{1, 2}, 3}, []interface{}{1, 2, 3}},
+		{2,
+			[]interface{}{[]string{"one"}, [][]int{{1, 2}}, 3},
+			[]interface{}{"one", 1, 2, 3},
+		},
+		{2,
+			[]interface{}{
+				[]string{"one"},
+				[]interface{}{
+					[]interface{}{
+						[]int{1},
+						[]interface{}{2, []int{3}},
+					},
+					[]int{4, 5},
+				},
+				6,
+			},
+			[]interface{}{"one", []int{1}, []interface{}{2, []int{3}}, 4, 5, 6},
+		},
+
+		{-1, []int{1, 2, 3}, []interface{}{1, 2, 3}},
+		{-1, [3]int{1, 2, 3}, []interface{}{1, 2, 3}},
+		{-1, []interface{}{[]string{}, []int{1, 2}, 3}, []interface{}{1, 2, 3}},
+		{-1,
+			[]interface{}{[]string{"one"}, [][]int{{1, 2}}, 3},
+			[]interface{}{"one", 1, 2, 3},
+		},
+		{-1,
+			[]interface{}{
+				[]string{"one"},
+				[]interface{}{
+					[]interface{}{
+						[]int{1},
+						[]interface{}{2, []int{3}},
+					},
+					[]int{4, 5},
+				},
+				6,
+			},
+			[]interface{}{"one", 1, 2, 3, 4, 5, 6},
+		},
+	}
+
+	for _, d := range data {
+		out, err := Flatten(d.in, d.depth)
+		assert.NoError(t, err)
+		assert.EqualValues(t, d.expected, out)
+	}
+
+	_, err := Flatten(42, -1)
+	assert.Error(t, err)
+}
+
+func BenchmarkFlatten(b *testing.B) {
+	data := []interface{}{
+		[]int{1, 2, 3},
+		[3]int{1, 2, 3},
+		[]interface{}{[]string{}, []int{1, 2}, 3},
+		[]interface{}{[]string{"one"}, [][]int{{1, 2}}, 3},
+		[]interface{}{
+			[]string{"one"},
+			[]interface{}{
+				[]interface{}{
+					[]int{1},
+					[]interface{}{2, []int{3}},
+				},
+				[]int{4, 5},
+			},
+			6,
+		},
+	}
+	for depth := -1; depth <= 2; depth++ {
+		for _, d := range data {
+			b.Run(fmt.Sprintf("depth%d %T(%v)", depth, d, d), func(b *testing.B) {
+				for i := 0; i < b.N; i++ {
+					Flatten(d, depth)
+				}
+			})
+		}
 	}
 }

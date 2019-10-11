@@ -292,3 +292,31 @@ func sameTypes(a []interface{}) bool {
 	}
 	return true
 }
+
+// Flatten a nested array or slice to at most 'depth' levels. Use depth of -1
+// to completely flatten the input.
+// Returns a new slice without modifying the input.
+func Flatten(list interface{}, depth int) (out []interface{}, err error) {
+	l, err := interfaceSlice(list)
+	if err != nil {
+		return nil, err
+	}
+	if depth == 0 {
+		return l, nil
+	}
+	for _, v := range l {
+		s := reflect.ValueOf(v)
+		kind := s.Kind()
+		switch kind {
+		case reflect.Slice, reflect.Array:
+			vl, err := Flatten(v, depth-1)
+			if err != nil {
+				return nil, err
+			}
+			out = append(out, vl...)
+		default:
+			out = append(out, v)
+		}
+	}
+	return out, nil
+}

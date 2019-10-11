@@ -36,6 +36,7 @@ func AddCollFuncs(f map[string]interface{}) {
 	f["merge"] = CollNS().Merge
 	f["sort"] = CollNS().Sort
 	f["jsonpath"] = CollNS().JSONPath
+	f["flatten"] = CollNS().Flatten
 }
 
 // CollFuncs -
@@ -113,4 +114,18 @@ func (f *CollFuncs) Sort(args ...interface{}) ([]interface{}, error) {
 // JSONPath -
 func (f *CollFuncs) JSONPath(p string, in interface{}) (interface{}, error) {
 	return coll.JSONPath(p, in)
+}
+
+// Flatten -
+func (f *CollFuncs) Flatten(args ...interface{}) ([]interface{}, error) {
+	if len(args) == 0 || len(args) > 2 {
+		return nil, errors.Errorf("wrong number of args: wanted 1 or 2, got %d", len(args))
+	}
+	list := args[0]
+	depth := -1
+	if len(args) == 2 {
+		depth = conv.ToInt(args[0])
+		list = args[1]
+	}
+	return coll.Flatten(list, depth)
 }
