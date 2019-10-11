@@ -33,7 +33,7 @@ require (
 	github.com/stretchr/testify v1.3.0
 	github.com/ugorji/go/codec v1.1.7
 	github.com/zealic/xignore v0.3.3
-	golang.org/x/crypto v0.0.0-20191010185427-af544f31c8ac
+	golang.org/x/crypto v0.0.0-20191011191535-87dc89f01550
 	golang.org/x/net v0.0.0-20191009170851-d66e71096ffb // indirect
 	golang.org/x/sys v0.0.0-20191010194322-b09406accb47 // indirect
 	golang.org/x/text v0.3.2 // indirect
