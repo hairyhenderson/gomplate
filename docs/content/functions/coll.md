@@ -304,8 +304,6 @@ Remove any duplicate values from the list, without changing order.
 
 _Note that this function does not change the given list; it always produces a new one._
 
-See also [`coll.Append`](#coll-append).
-
 ### Usage
 
 ```go
@@ -324,8 +322,8 @@ list | coll.Uniq
 ### Examples
 
 ```console
-$ gomplate -i '{{ slice 4 3 2 1 | prepend 5 }}'
-[5 4 3 2 1]
+$ gomplate -i '{{ slice 1 2 3 2 3 4 1 5 | uniq }}'
+[1 2 3 4 5]
 ```
 
 ## `coll.Reverse`
