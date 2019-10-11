@@ -326,6 +326,42 @@ $ gomplate -i '{{ slice 1 2 3 2 3 4 1 5 | uniq }}'
 [1 2 3 4 5]
 ```
 
+## `coll.Flatten`
+
+**Alias:** `flatten`
+
+Flatten a nested list. Defaults to completely flattening all nested lists,
+but can be limited with `depth`.
+
+_Note that this function does not change the given list; it always produces a new one._
+
+### Usage
+
+```go
+coll.Flatten [depth] list
+```
+```go
+list | coll.Flatten [depth]
+```
+
+### Arguments
+
+| name | description |
+|------|-------------|
+| `depth` | _(optional)_ maximum depth of nested lists to flatten. Omit or set to `-1` for infinite depth. |
+| `list` | _(required)_ the input list |
+
+### Examples
+
+```console
+$ gomplate -i '{{ "[[1,2],[],[[3,4],[[[5],6],7]]]" | jsonArray | flatten }}'
+[1 2 3 4 5 6 7]
+```
+```console
+$ gomplate -i '{{ coll.Flatten 2 ("[[1,2],[],[[3,4],[[[5],6],7]]]" | jsonArray) }}'
+[1 2 3 4 [[5] 6] 7]
+```
+
 ## `coll.Reverse`
 
 **Alias:** `reverse`

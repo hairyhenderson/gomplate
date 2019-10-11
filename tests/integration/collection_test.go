@@ -99,3 +99,22 @@ func (s *CollSuite) TestJSONPath(c *C) {
 		"-i", `{{ .config | coll.JSONPath ".values..a" }}`))
 	result.Assert(c, icmd.Expected{ExitCode: 0, Out: `eh?`})
 }
+
+func (s *CollSuite) TestFlatten(c *C) {
+	in := "[[1,2],[],[[3,4],[[[5],6],7]]]"
+	result := icmd.RunCmd(icmd.Command(GomplateBin,
+		"-i", "{{ `"+in+"` | jsonArray | coll.Flatten | toJSON }}"))
+	result.Assert(c, icmd.Expected{ExitCode: 0, Out: "[1,2,3,4,5,6,7]"})
+
+	result = icmd.RunCmd(icmd.Command(GomplateBin,
+		"-i", "{{ `"+in+"` | jsonArray | flatten 0 | toJSON }}"))
+	result.Assert(c, icmd.Expected{ExitCode: 0, Out: in})
+
+	result = icmd.RunCmd(icmd.Command(GomplateBin,
+		"-i", "{{ coll.Flatten 1 (`"+in+"` | jsonArray) | toJSON }}"))
+	result.Assert(c, icmd.Expected{ExitCode: 0, Out: "[1,2,[3,4],[[[5],6],7]]"})
+
+	result = icmd.RunCmd(icmd.Command(GomplateBin,
+		"-i", "{{ `"+in+"` | jsonArray | coll.Flatten 2 | toJSON }}"))
+	result.Assert(c, icmd.Expected{ExitCode: 0, Out: "[1,2,3,4,[[5],6],7]"})
+}
