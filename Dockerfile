@@ -14,7 +14,7 @@ RUN mkdir -p /go/src/github.com/hairyhenderson/gomplate
 WORKDIR /go/src/github.com/hairyhenderson/gomplate
 COPY . /go/src/github.com/hairyhenderson/gomplate
 
-RUN make build-x compress-all
+RUN make build compress
 
 FROM scratch AS artifacts
 
