@@ -2,7 +2,7 @@ name: Windows Build
 on: [push]
 
 jobs:
-  build:
+  windows-build:
     runs-on: windows-latest
     env:
       TMP: D:\tmp
