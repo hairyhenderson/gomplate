@@ -271,7 +271,6 @@ func TestEmptySkipper(t *testing.T) {
 		w := &bufferCloser{&bytes.Buffer{}}
 		opened := false
 		f := newEmptySkipper(func() (io.WriteCloser, error) {
-			t.Logf("I got called %#v", w)
 			opened = true
 			return w, nil
 		})
