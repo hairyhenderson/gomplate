@@ -22,7 +22,7 @@ func (s *DatasourcesHTTPSuite) SetUpSuite(c *C) {
 	s.l, err = net.ListenTCP("tcp", &net.TCPAddr{IP: net.ParseIP("127.0.0.1")})
 	handle(c, err)
 
-	http.HandleFunc("/", mirrorHandler)
+	http.HandleFunc("/mirror", mirrorHandler)
 	http.HandleFunc("/not.json", typeHandler("application/yaml", "value: notjson\n"))
 	http.HandleFunc("/foo", typeHandler("application/json", `{"value": "json"}`))
 	http.HandleFunc("/actually.json", typeHandler("", `{"value": "json"}`))
@@ -37,18 +37,18 @@ func (s *DatasourcesHTTPSuite) TearDownSuite(c *C) {
 
 func (s *DatasourcesHTTPSuite) TestReportsVersion(c *C) {
 	result := icmd.RunCommand(GomplateBin,
-		"-d", "foo=http://"+s.l.Addr().String()+"/",
+		"-d", "foo=http://"+s.l.Addr().String()+"/mirror",
 		"-H", "foo=Foo:bar",
 		"-i", "{{ index (ds `foo`).headers.Foo 0 }}")
 	result.Assert(c, icmd.Expected{ExitCode: 0, Out: "bar"})
 
 	result = icmd.RunCommand(GomplateBin,
 		"-H", "foo=Foo:bar",
-		"-i", "{{defineDatasource `foo` `http://"+s.l.Addr().String()+"/`}}{{ index (ds `foo`).headers.Foo 0 }}")
+		"-i", "{{defineDatasource `foo` `http://"+s.l.Addr().String()+"/mirror`}}{{ index (ds `foo`).headers.Foo 0 }}")
 	result.Assert(c, icmd.Expected{ExitCode: 0, Out: "bar"})
 
 	result = icmd.RunCommand(GomplateBin,
-		"-i", "{{ $d := ds `http://"+s.l.Addr().String()+"/`}}{{ index (index $d.headers `Accept-Encoding`) 0 }}")
+		"-i", "{{ $d := ds `http://"+s.l.Addr().String()+"/mirror`}}{{ index (index $d.headers `Accept-Encoding`) 0 }}")
 	result.Assert(c, icmd.Expected{ExitCode: 0, Out: "gzip"})
 }
 

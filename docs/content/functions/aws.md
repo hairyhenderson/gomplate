@@ -17,9 +17,10 @@ for details.
 
 | Environment Variable | Description |
 | -------------------- | ----------- |
+| `AWS_ANON` | Set to `true` when accessing services that do not need authentication, such as with public S3 buckets. Not part of the AWS SDK. |
 | `AWS_TIMEOUT` | _(Default `500`)_ Adjusts timeout for API requests, in milliseconds. Not part of the AWS SDK. |
 | `AWS_PROFILE` | Profile name the SDK should use when loading shared config from the configuration files. If not provided `default` will be used as the profile name. |
-| `AWS_REGION` | Specifies where to send requests. See [this list](https://docs.aws.amazon.com/general/latest/gr/rande.html). Note that the region must be set for AWS functions to work correctly, either through this variable, or a configuration profile. |
+| `AWS_REGION` | Specifies where to send requests. See [this list](https://docs.aws.amazon.com/general/latest/gr/rande.html). Note that the region must be set for AWS functions to work correctly, either through this variable, through a configuration profile, or by running on an EC2 instance. |
 
 ## `aws.EC2Meta`
 
