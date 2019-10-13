@@ -42,5 +42,5 @@ require (
 	gopkg.in/check.v1 v1.0.0-20190902080502-41f04d3bba15
 	gopkg.in/yaml.v3 v3.0.0-20190924164351-c8b7dadae555
 	gotest.tools/v3 v3.0.0
-	k8s.io/client-go v12.0.0+incompatible
+	k8s.io/client-go v11.0.0+incompatible
 )
