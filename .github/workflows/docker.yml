@@ -2,19 +2,7 @@ name: Docker Build
 on: [push]
 
 jobs:
-  # login:
-  #   runs-on: ubuntu-latest
-
-  #   steps:
-  #   - uses: actions/docker/login@master
-  #     secrets: [DOCKER_USERNAME, DOCKER_PASSWORD]
-      # env:
-      #   DOCKER_REGISTRY_URL: docker.pkg.github.com
-  docker_version:
-    runs-on: ubuntu-latest
-    steps:
-    - run: docker version
-  build:
+  docker-build:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@master
@@ -22,7 +10,3 @@ jobs:
       run: make docker-images
       env:
         DOCKER_BUILDKIT: '1'
-    # - uses: actions/setup-go@v1
-    #   with:
-    #     go-version: '1.12.9'
-    
