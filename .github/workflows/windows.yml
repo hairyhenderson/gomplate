@@ -6,6 +6,7 @@ jobs:
     runs-on: windows-latest
     env:
       TMP: D:\tmp
+      GOFLAGS: -mod=vendor
     steps:
       - name: Install Go
         uses: actions/setup-go@v1
