@@ -1,4 +1,4 @@
 {
-    "ignoredFiles": [ "*.svg" ],
+    "ignoredFiles": [ "*.svg", "vendor/*" ],
     "aggressiveCompression": "true"
 }
