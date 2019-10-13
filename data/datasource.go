@@ -163,6 +163,8 @@ func (s *Source) mimeType() (mimeType string, err error) {
 	if mediatype == "" {
 		mediatype = s.mediaType
 	}
+	// make it so + doesn't need to be escaped
+	mediatype = strings.ReplaceAll(mediatype, " ", "+")
 	if mediatype == "" {
 		ext := filepath.Ext(s.URL.Path)
 		mediatype = mime.TypeByExtension(ext)
@@ -171,7 +173,7 @@ func (s *Source) mimeType() (mimeType string, err error) {
 	if mediatype != "" {
 		t, _, err := mime.ParseMediaType(mediatype)
 		if err != nil {
-			return "", err
+			return "", errors.Wrapf(err, "MIME type was %q", mediatype)
 		}
 		mediatype = t
 		return mediatype, nil

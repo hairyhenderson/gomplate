@@ -27,6 +27,7 @@ func (s *DatasourcesHTTPSuite) SetUpSuite(c *C) {
 	http.HandleFunc("/foo", typeHandler("application/json", `{"value": "json"}`))
 	http.HandleFunc("/actually.json", typeHandler("", `{"value": "json"}`))
 	http.HandleFunc("/bogus.csv", typeHandler("text/plain", `{"value": "json"}`))
+	http.HandleFunc("/list", typeHandler("application/array+json", `[1, 2, 3, 4, 5]`))
 	go http.Serve(s.l, nil)
 }
 
@@ -71,6 +72,11 @@ func (s *DatasourcesHTTPSuite) TestTypeOverridePrecedence(c *C) {
 		"-d", "foo=http://"+s.l.Addr().String()+"/bogus.csv?type=application/json",
 		"-i", "{{ (ds `foo`).value }}")
 	result.Assert(c, icmd.Expected{ExitCode: 0, Out: "json"})
+
+	result = icmd.RunCommand(GomplateBin,
+		"-c", ".=http://"+s.l.Addr().String()+"/list?type=application/array+json",
+		"-i", "{{ range . }}{{ . }}{{ end }}")
+	result.Assert(c, icmd.Expected{ExitCode: 0, Out: "12345"})
 }
 
 func (s *DatasourcesHTTPSuite) TestAppendQueryAfterSubPaths(c *C) {
