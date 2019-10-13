@@ -325,6 +325,25 @@ func TestMimeType(t *testing.T) {
 	mt, err = s.mimeType()
 	assert.NoError(t, err)
 	assert.Equal(t, "application/yaml", mt)
+
+	s = &Source{URL: mustParseURL("http://example.com/list?type=application/array%2Bjson"), mediaType: "text/foo"}
+	mt, err = s.mimeType()
+	assert.NoError(t, err)
+	assert.Equal(t, "application/array+json", mt)
+
+	s = &Source{URL: mustParseURL("http://example.com/list?type=application/array+json")}
+	mt, err = s.mimeType()
+	assert.NoError(t, err)
+	assert.Equal(t, "application/array+json", mt)
+
+	s = &Source{URL: mustParseURL("http://example.com/list?type=a/b/c")}
+	_, err = s.mimeType()
+	assert.Error(t, err)
+
+	s = &Source{URL: mustParseURL("http://example.com/unknown")}
+	mt, err = s.mimeType()
+	assert.NoError(t, err)
+	assert.Equal(t, "text/plain", mt)
 }
 
 func TestQueryParse(t *testing.T) {
