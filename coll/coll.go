@@ -11,27 +11,12 @@ import (
 	"sort"
 
 	"github.com/hairyhenderson/gomplate/conv"
-	"github.com/pkg/errors"
+	iconv "github.com/hairyhenderson/gomplate/internal/conv"
 )
 
 // Slice creates a slice from a bunch of arguments
 func Slice(args ...interface{}) []interface{} {
 	return args
-}
-
-func interfaceSlice(slice interface{}) ([]interface{}, error) {
-	s := reflect.ValueOf(slice)
-	kind := s.Kind()
-	switch kind {
-	case reflect.Slice, reflect.Array:
-		ret := make([]interface{}, s.Len())
-		for i := 0; i < s.Len(); i++ {
-			ret[i] = s.Index(i).Interface()
-		}
-		return ret, nil
-	default:
-		return nil, errors.Errorf("expected an array or slice, but got a %T", s)
-	}
 }
 
 // Has determines whether or not a given object has a property with the given key
@@ -120,7 +105,7 @@ func Values(in ...map[string]interface{}) ([]interface{}, error) {
 
 // Append v to the end of list. No matter what type of input slice or array list is, a new []interface{} is always returned.
 func Append(v interface{}, list interface{}) ([]interface{}, error) {
-	l, err := interfaceSlice(list)
+	l, err := iconv.InterfaceSlice(list)
 	if err != nil {
 		return nil, err
 	}
@@ -130,7 +115,7 @@ func Append(v interface{}, list interface{}) ([]interface{}, error) {
 
 // Prepend v to the beginning of list. No matter what type of input slice or array list is, a new []interface{} is always returned.
 func Prepend(v interface{}, list interface{}) ([]interface{}, error) {
-	l, err := interfaceSlice(list)
+	l, err := iconv.InterfaceSlice(list)
 	if err != nil {
 		return nil, err
 	}
@@ -140,7 +125,7 @@ func Prepend(v interface{}, list interface{}) ([]interface{}, error) {
 
 // Uniq finds the unique values within list. No matter what type of input slice or array list is, a new []interface{} is always returned.
 func Uniq(list interface{}) ([]interface{}, error) {
-	l, err := interfaceSlice(list)
+	l, err := iconv.InterfaceSlice(list)
 	if err != nil {
 		return nil, err
 	}
@@ -156,7 +141,7 @@ func Uniq(list interface{}) ([]interface{}, error) {
 
 // Reverse the list. No matter what type of input slice or array list is, a new []interface{} is always returned.
 func Reverse(list interface{}) ([]interface{}, error) {
-	l, err := interfaceSlice(list)
+	l, err := iconv.InterfaceSlice(list)
 	if err != nil {
 		return nil, err
 	}
@@ -224,7 +209,7 @@ func Sort(key string, list interface{}) (out []interface{}, err error) {
 		return nil, nil
 	}
 
-	ia, err := interfaceSlice(list)
+	ia, err := iconv.InterfaceSlice(list)
 	if err != nil {
 		return nil, err
 	}
@@ -296,14 +281,15 @@ func sameTypes(a []interface{}) bool {
 // Flatten a nested array or slice to at most 'depth' levels. Use depth of -1
 // to completely flatten the input.
 // Returns a new slice without modifying the input.
-func Flatten(list interface{}, depth int) (out []interface{}, err error) {
-	l, err := interfaceSlice(list)
+func Flatten(list interface{}, depth int) ([]interface{}, error) {
+	l, err := iconv.InterfaceSlice(list)
 	if err != nil {
 		return nil, err
 	}
 	if depth == 0 {
 		return l, nil
 	}
+	out := make([]interface{}, 0, len(l)*2)
 	for _, v := range l {
 		s := reflect.ValueOf(v)
 		kind := s.Kind()

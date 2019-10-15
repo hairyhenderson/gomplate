@@ -1,12 +1,12 @@
 package funcs
 
 import (
-	"reflect"
 	"strconv"
 	"sync"
 	"unicode/utf8"
 
 	"github.com/hairyhenderson/gomplate/conv"
+	iconv "github.com/hairyhenderson/gomplate/internal/conv"
 	"github.com/hairyhenderson/gomplate/random"
 	"github.com/pkg/errors"
 )
@@ -107,24 +107,9 @@ func toCodePoints(l, u string) (rune, rune, error) {
 	return rune(li), rune(ui), nil
 }
 
-func interfaceSlice(slice interface{}) ([]interface{}, error) {
-	s := reflect.ValueOf(slice)
-	kind := s.Kind()
-	switch kind {
-	case reflect.Slice, reflect.Array:
-		ret := make([]interface{}, s.Len())
-		for i := 0; i < s.Len(); i++ {
-			ret[i] = s.Index(i).Interface()
-		}
-		return ret, nil
-	default:
-		return nil, errors.Errorf("expected an array or slice, but got a %T", s)
-	}
-}
-
 // Item -
 func (f *RandomFuncs) Item(items interface{}) (interface{}, error) {
-	i, err := interfaceSlice(items)
+	i, err := iconv.InterfaceSlice(items)
 	if err != nil {
 		return nil, err
 	}

@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"strings"
 
+	iconv "github.com/hairyhenderson/gomplate/internal/conv"
 	"github.com/pkg/errors"
 )
 
@@ -82,7 +83,7 @@ func Join(in interface{}, sep string) (out string, err error) {
 	var a []interface{}
 	a, ok = in.([]interface{})
 	if !ok {
-		a, err = interfaceSlice(in)
+		a, err = iconv.InterfaceSlice(in)
 		if err != nil {
 			return "", errors.Wrap(err, "Input to Join must be an array")
 		}
@@ -97,21 +98,6 @@ func Join(in interface{}, sep string) (out string, err error) {
 	}
 
 	return "", errors.New("Input to Join must be an array")
-}
-
-func interfaceSlice(slice interface{}) ([]interface{}, error) {
-	s := reflect.ValueOf(slice)
-	kind := s.Kind()
-	switch kind {
-	case reflect.Slice, reflect.Array:
-		ret := make([]interface{}, s.Len())
-		for i := 0; i < s.Len(); i++ {
-			ret[i] = s.Index(i).Interface()
-		}
-		return ret, nil
-	default:
-		return nil, errors.Errorf("expected an array or slice, but got a %T", s)
-	}
 }
 
 // Has determines whether or not a given object has a property with the given key
