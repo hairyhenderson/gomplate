@@ -6,6 +6,7 @@ import (
 	"bytes"
 	"net"
 	"net/http"
+	"os"
 
 	"github.com/johannesboyne/gofakes3"
 	"github.com/johannesboyne/gofakes3/backend/s3mem"
@@ -139,4 +140,31 @@ func (s *BlobDatasourcesSuite) TestS3MIMETypes(c *C) {
 		c.Env = []string{"AWS_ANON=true"}
 	})
 	result.Assert(c, icmd.Expected{ExitCode: 0, Out: "yay for yaml"})
+}
+
+func (s *BlobDatasourcesSuite) TestGCSDatasource(c *C) {
+	// this only works if we're authed with GCS
+	if os.Getenv("GOOGLE_APPLICATION_CREDENTIALS") == "" {
+		c.Skip("Not configured to authenticate with Google Cloud - skipping")
+		return
+	}
+	result := icmd.RunCmd(icmd.Command(GomplateBin,
+		"-c", "data=gs://gcp-public-data-landsat/LT08/PRE/015/013/LT80150132013127LGN01/LT80150132013127LGN01_MTL.txt?type=text/plain",
+		"-i", "{{ len .data }}",
+	), func(c *icmd.Cmd) {
+	})
+	result.Assert(c, icmd.Expected{ExitCode: 0, Out: "3218"})
+}
+
+func (s *BlobDatasourcesSuite) TestGCSDirectory(c *C) {
+	// this only works if we're likely to be authed with GCS
+	if os.Getenv("GOOGLE_APPLICATION_CREDENTIALS") == "" {
+		c.Skip("Not configured to authenticate with Google Cloud - skipping")
+		return
+	}
+	result := icmd.RunCmd(icmd.Command(GomplateBin,
+		"-c", "data=gs://gcp-public-data-landsat/",
+		"-i", "{{ coll.Has .data `index.csv.gz` }}",
+	), func(c *icmd.Cmd) {})
+	result.Assert(c, icmd.Expected{ExitCode: 0, Out: "true"})
 }

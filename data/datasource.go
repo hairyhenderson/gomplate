@@ -60,6 +60,7 @@ func (d *Data) registerReaders() {
 	d.sourceReaders["vault+http"] = readVault
 	d.sourceReaders["vault+https"] = readVault
 	d.sourceReaders["s3"] = readBlob
+	d.sourceReaders["gs"] = readBlob
 }
 
 // lookupReader - return the reader function for the given scheme
