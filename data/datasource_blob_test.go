@@ -118,6 +118,12 @@ func TestBlobURL(t *testing.T) {
 		{"s3://foo/bar/baz?region=us-east-1", "s3://foo/bar/baz?region=us-east-1"},
 		{"s3://foo/bar/baz?disableSSL=true&type=text/csv", "s3://foo/bar/baz?disableSSL=true"},
 		{"s3://foo/bar/baz?type=text/csv&s3ForcePathStyle=true&endpoint=1.2.3.4", "s3://foo/bar/baz?endpoint=1.2.3.4&s3ForcePathStyle=true"},
+		{"gs://foo/bar/baz", "gs://foo/bar/baz"},
+		{"gs://foo/bar/baz?type=foo/bar", "gs://foo/bar/baz"},
+		{"gs://foo/bar/baz?access_id=123", "gs://foo/bar/baz?access_id=123"},
+		{"gs://foo/bar/baz?private_key_path=/foo/bar", "gs://foo/bar/baz?private_key_path=%2Ffoo%2Fbar"},
+		{"gs://foo/bar/baz?private_key_path=key.json&foo=bar", "gs://foo/bar/baz?private_key_path=key.json"},
+		{"gs://foo/bar/baz?private_key_path=key.json&foo=bar&access_id=abcd", "gs://foo/bar/baz?access_id=abcd&private_key_path=key.json"},
 	}
 
 	for _, d := range data {

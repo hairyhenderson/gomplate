@@ -10,18 +10,19 @@ import (
 	"path"
 	"strings"
 
-	"gocloud.dev/blob"
-
 	gaws "github.com/hairyhenderson/gomplate/aws"
 	"github.com/hairyhenderson/gomplate/env"
 	"github.com/pkg/errors"
 
+	"gocloud.dev/blob"
+	"gocloud.dev/blob/gcsblob"
 	"gocloud.dev/blob/s3blob"
+	"gocloud.dev/gcp"
 )
 
 func readBlob(source *Source, args ...string) (output []byte, err error) {
 	if len(args) >= 2 {
-		return nil, errors.New("Maximum two arguments to s3 datasource: alias, extraPath")
+		return nil, errors.New("Maximum two arguments to blob datasource: alias, extraPath")
 	}
 
 	ctx := context.TODO()
@@ -31,14 +32,16 @@ func readBlob(source *Source, args ...string) (output []byte, err error) {
 		key = path.Join(key, args[0])
 	}
 
-	// set up a "regular" gomplate AWS SDK session
-	sess := gaws.SDKSession()
-	// see https://gocloud.dev/concepts/urls/#muxes
-	opener := &s3blob.URLOpener{ConfigProvider: sess}
-	mux := blob.URLMux{}
-	mux.RegisterBucket(s3blob.Scheme, opener)
+	opener, err := newOpener(ctx, source.URL)
+	if err != nil {
+		return nil, err
+	}
 
-	bucket, err := mux.OpenBucket(ctx, blobURL(source.URL))
+	mux := blob.URLMux{}
+	mux.RegisterBucket(source.URL.Scheme, opener)
+
+	u := blobURL(source.URL)
+	bucket, err := mux.OpenBucket(ctx, u)
 	if err != nil {
 		return nil, err
 	}
@@ -58,10 +61,38 @@ func readBlob(source *Source, args ...string) (output []byte, err error) {
 	return data, err
 }
 
+// create the correct kind of blob.BucketURLOpener for the given URL
+func newOpener(ctx context.Context, u *url.URL) (opener blob.BucketURLOpener, err error) {
+	switch u.Scheme {
+	case "s3":
+		// set up a "regular" gomplate AWS SDK session
+		sess := gaws.SDKSession()
+		// see https://gocloud.dev/concepts/urls/#muxes
+		opener = &s3blob.URLOpener{ConfigProvider: sess}
+	case "gs":
+		creds, err := gcp.DefaultCredentials(ctx)
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to retrieve GCP credentials")
+		}
+
+		client, err := gcp.NewHTTPClient(
+			gcp.DefaultTransport(),
+			gcp.CredentialsTokenSource(creds))
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to create GCP HTTP client")
+		}
+		opener = &gcsblob.URLOpener{
+			Client: client,
+		}
+	}
+	return opener, nil
+}
+
 func getBlob(ctx context.Context, bucket *blob.Bucket, key string) (mediaType string, data []byte, err error) {
+	key = strings.TrimPrefix(key, "/")
 	attr, err := bucket.Attributes(ctx, key)
 	if err != nil {
-		return "", nil, err
+		return "", nil, errors.Wrapf(err, "failed to retrieve attributes for %s", key)
 	}
 	if attr.ContentType != "" {
 		mt, _, e := mime.ParseMediaType(attr.ContentType)
@@ -71,7 +102,7 @@ func getBlob(ctx context.Context, bucket *blob.Bucket, key string) (mediaType st
 		mediaType = mt
 	}
 	data, err = bucket.ReadAll(ctx, key)
-	return mediaType, data, err
+	return mediaType, data, errors.Wrapf(err, "failed to read %s", key)
 }
 
 // calls the bucket listing API, returning a JSON Array
@@ -109,18 +140,33 @@ func listBucket(ctx context.Context, bucket *blob.Bucket, path string) (mediaTyp
 func blobURL(u *url.URL) string {
 	out, _ := url.Parse(u.String())
 	q := out.Query()
+
 	for param := range q {
-		switch param {
-		case "region", "endpoint", "disableSSL", "s3ForcePathStyle":
-		default:
-			q.Del(param)
+		switch u.Scheme {
+		case "s3":
+			switch param {
+			case "region", "endpoint", "disableSSL", "s3ForcePathStyle":
+			default:
+				q.Del(param)
+			}
+		case "gs":
+			switch param {
+			case "access_id", "private_key_path":
+			default:
+				q.Del(param)
+			}
 		}
 	}
-	// handle AWS_S3_ENDPOINT env var
-	endpoint := env.Getenv("AWS_S3_ENDPOINT")
-	if endpoint != "" {
-		q.Set("endpoint", endpoint)
+
+	if u.Scheme == "s3" {
+		// handle AWS_S3_ENDPOINT env var
+		endpoint := env.Getenv("AWS_S3_ENDPOINT")
+		if endpoint != "" {
+			q.Set("endpoint", endpoint)
+		}
 	}
+
 	out.RawQuery = q.Encode()
+
 	return out.String()
 }
