@@ -22,6 +22,8 @@ type Config struct {
 	DataSourceHeaders []string
 	Contexts          []string
 
+	Plugins []string
+
 	LDelim string
 	RDelim string
 
@@ -102,6 +104,10 @@ func (o *Config) String() string {
 	}
 	if len(o.Contexts) > 0 {
 		c += "\ncontexts: " + strings.Join(o.Contexts, ", ")
+	}
+
+	if len(o.Plugins) > 0 {
+		c += "\nplugins: " + strings.Join(o.Plugins, ", ")
 	}
 
 	if o.LDelim != "{{" {

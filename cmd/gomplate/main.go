@@ -160,6 +160,8 @@ func initFlags(command *cobra.Command) {
 
 	command.Flags().StringArrayVarP(&opts.Contexts, "context", "c", nil, "pre-load a `datasource` into the context, in alias=URL form. Use the special alias `.` to set the root context.")
 
+	command.Flags().StringArrayVar(&opts.Plugins, "plugin", nil, "plug in an external command as a function in name=path form. Can be specified multiple times")
+
 	command.Flags().StringArrayVarP(&opts.InputFiles, "file", "f", []string{"-"}, "Template `file` to process. Omit to use standard input, or use --in or --input-dir")
 	command.Flags().StringVarP(&opts.Input, "in", "i", "", "Template `string` to process (alternative to --file and --input-dir)")
 	command.Flags().StringVar(&opts.InputDir, "input-dir", "", "`directory` which is examined recursively for templates (alternative to --file and --in)")
