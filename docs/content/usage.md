@@ -127,6 +127,7 @@ Data sources referenced in this way are lazy-loaded: they will not be read until
 See [Datasources](../datasources) for full details.
 
 A few different forms are valid:
+
 - `mydata=file:///tmp/my/file.json`
   - Create a data source named `mydata` which is read from `/tmp/my/file.json`. This form is valid for any file in any path.
 - `mydata=file.json`
