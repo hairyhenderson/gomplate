@@ -116,7 +116,7 @@ gomplate.png: gomplate.svg
 	cloudconvert -f png -c density=288 $^
 
 lint:
-	golangci-lint run --disable-all \
+	@golangci-lint run --timeout 2m --disable-all \
 		--enable depguard \
 		--enable dupl \
 		--enable goconst \
@@ -140,14 +140,14 @@ lint:
 		--enable unconvert \
 		--enable varcheck
 
-	golangci-lint run --tests=false --disable-all \
+	@golangci-lint run --timeout 2m --tests=false --disable-all \
 		--enable deadcode \
 		--enable errcheck \
 		--enable interfacer \
 		--enable scopelint \
 		--enable unused
 
-	golangci-lint run --build-tags integration \
+	@golangci-lint run --timeout 2m --build-tags integration \
 		--disable-all \
 		--enable deadcode \
 		--enable depguard \
