@@ -13,7 +13,7 @@ require (
 	github.com/frankban/quicktest v1.5.0 // indirect
 	github.com/fullsailor/pkcs7 v0.0.0-20190404230743-d7302db945fa
 	github.com/google/uuid v1.1.1
-	github.com/gosimple/slug v1.8.0
+	github.com/gosimple/slug v1.9.0
 	github.com/hairyhenderson/toml v0.3.1-0.20191004034452-2a4f3b6160f2
 	github.com/hashicorp/consul/api v1.2.0
 	github.com/hashicorp/go-immutable-radix v1.1.0 // indirect
