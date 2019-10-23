@@ -49,11 +49,11 @@ func (g *gomplate) runTemplate(t *tplate) error {
 type templateAliases map[string]string
 
 // newGomplate -
-func newGomplate(d *data.Data, leftDelim, rightDelim string, nested templateAliases, context interface{}) *gomplate {
+func newGomplate(funcMap template.FuncMap, leftDelim, rightDelim string, nested templateAliases, context interface{}) *gomplate {
 	return &gomplate{
 		leftDelim:       leftDelim,
 		rightDelim:      rightDelim,
-		funcMap:         Funcs(d),
+		funcMap:         funcMap,
 		nestedTemplates: nested,
 		context:         context,
 	}
@@ -126,7 +126,12 @@ func RunTemplates(o *Config) error {
 	if err != nil {
 		return err
 	}
-	g := newGomplate(d, o.LDelim, o.RDelim, nested, c)
+	funcMap := Funcs(d)
+	err = bindPlugins(o.Plugins, funcMap)
+	if err != nil {
+		return err
+	}
+	g := newGomplate(funcMap, o.LDelim, o.RDelim, nested, c)
 
 	return g.runTemplates(o)
 }

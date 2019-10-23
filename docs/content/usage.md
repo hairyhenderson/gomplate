@@ -207,6 +207,31 @@ A few different forms are valid:
     here are the contents of the template: [ hello, world! ]
     ```
 
+### `--plugin`
+
+Some specialized use cases may need functionality that gomplate isn't capable
+of on its own. If you have a command or script to perform this functionality,
+you can plug in your own custom functions with the `--plugin` flag:
+
+```console
+$ gomplate --plugin echo=/bin/echo -i 'Hello {{ echo "World" }}'
+Hello World
+```
+
+All arguments provided to the function will be passed through to the plugin, and
+the plugin's standard output stream will be printed to the rendered output.
+
+If the plugin exits with a non-zero exit code, gomplate will also fail. All signals
+caught by gomplate will be passed through to the plugin. Any output on the standard
+error stream will be printed to gomplate's standard error stream.
+
+Plugins can also be written as PowerShell or CMD scripts (`.ps1`, `.bat`, or `.cmd`
+extensions) on Windows.
+
+By default, plugins will time out after 5 seconds. To adjust this, set the
+`GOMPLATE_PLUGIN_TIMEOUT` environment variable to a valid [duration](../functions/time/#time-parseduration)
+such as `10s` or `3m`.
+
 ## Post-template command execution
 
 Gomplate can launch other commands when template execution is successful. Simply
