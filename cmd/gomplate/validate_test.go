@@ -42,6 +42,41 @@ func TestValidateOpts(t *testing.T) {
 	))
 	assert.Error(t, err)
 
+	err = validateOpts(parseFlags("--exec-pipe"))
+	assert.Error(t, err)
+
+	err = validateOpts(parseFlags("--exec-pipe", "--"))
+	assert.Error(t, err)
+
+	err = validateOpts(parseFlags(
+		"--exec-pipe",
+		"--", "echo", "foo",
+	))
+	assert.NoError(t, err)
+
+	err = validateOpts(parseFlags(
+		"--exec-pipe",
+		"--out", "foo",
+		"--", "echo",
+	))
+	assert.Error(t, err)
+
+	err = validateOpts(parseFlags(
+		"--input-dir", "in",
+		"--exec-pipe",
+		"--output-dir", "foo",
+		"--", "echo",
+	))
+	assert.Error(t, err)
+
+	err = validateOpts(parseFlags(
+		"--input-dir", "in",
+		"--exec-pipe",
+		"--output-map", "foo",
+		"--", "echo",
+	))
+	assert.Error(t, err)
+
 	err = validateOpts(parseFlags(
 		"--input-dir", "in",
 		"--output-map", "bar",

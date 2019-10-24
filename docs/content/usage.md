@@ -232,6 +232,21 @@ By default, plugins will time out after 5 seconds. To adjust this, set the
 `GOMPLATE_PLUGIN_TIMEOUT` environment variable to a valid [duration](../functions/time/#time-parseduration)
 such as `10s` or `3m`.
 
+### `--exec-pipe`
+
+When using [post-template command execution](#post-template-command-execution),
+it may be useful to pipe gomplate's rendered output directly into the command's
+standard input.
+
+To do this, simply use `--exec-pipe` instead of `--out` or any other output flag:
+
+```console
+$ gomplate -i 'hello world' --exec-pipe -- tr a-z A-Z
+HELLO WORLD
+```
+
+Note that multiple inputs are not yet supported when using this option.
+
 ## Post-template command execution
 
 Gomplate can launch other commands when template execution is successful. Simply
@@ -241,6 +256,9 @@ add the command to the command-line after a `--` argument:
 $ gomplate -i 'hello world' -o out.txt -- cat out.txt
 hello world
 ```
+
+See also [`--exec-pipe`](#exec-pipe) for piping output directly into the
+post-exec command.
 
 ## Suppressing empty output
 

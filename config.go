@@ -1,6 +1,7 @@
 package gomplate
 
 import (
+	"io"
 	"os"
 	"strconv"
 	"strings"
@@ -17,6 +18,7 @@ type Config struct {
 	OutputDir   string
 	OutputMap   string
 	OutMode     string
+	Out         io.Writer
 
 	DataSources       []string
 	DataSourceHeaders []string
