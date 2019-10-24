@@ -47,6 +47,10 @@ func validateOpts(cmd *cobra.Command, args []string) (err error) {
 		err = fmt.Errorf("must provide same number of --out (%d) as --file (%d) options", len(opts.OutputFiles), len(opts.InputFiles))
 	}
 
+	if err == nil && cmd.Flag("exec-pipe").Changed && len(args) == 0 {
+		err = fmt.Errorf("--exec-pipe may only be used with a post-exec command after --")
+	}
+
 	if err == nil {
 		err = mustTogether(cmd, "output-dir", "input-dir")
 	}

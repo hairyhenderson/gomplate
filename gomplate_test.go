@@ -2,7 +2,6 @@ package gomplate
 
 import (
 	"bytes"
-	"io"
 	"net/http/httptest"
 	"os"
 	"path/filepath"
@@ -18,15 +17,6 @@ import (
 	"github.com/hairyhenderson/gomplate/env"
 	"github.com/stretchr/testify/assert"
 )
-
-// like ioutil.NopCloser(), except for io.WriteClosers...
-type nopWCloser struct {
-	io.Writer
-}
-
-func (n *nopWCloser) Close() error {
-	return nil
-}
 
 func testTemplate(g *gomplate, tmpl string) string {
 	var out bytes.Buffer

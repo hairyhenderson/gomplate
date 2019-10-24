@@ -103,6 +103,11 @@ func gatherTemplates(o *Config, outFileNamer func(string) (string, error)) (temp
 		return nil, err
 	}
 
+	// --exec-pipe redirects standard out to the out pipe
+	if o.Out != nil {
+		Stdout = &nopWCloser{o.Out}
+	}
+
 	switch {
 	// the arg-provided input string gets a special name
 	case o.Input != "":
@@ -335,4 +340,13 @@ func allWhitespace(p []byte) bool {
 		return false
 	}
 	return true
+}
+
+// like ioutil.NopCloser(), except for io.WriteClosers...
+type nopWCloser struct {
+	io.Writer
+}
+
+func (n *nopWCloser) Close() error {
+	return nil
 }

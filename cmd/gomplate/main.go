@@ -5,6 +5,7 @@ The gomplate command
 package main
 
 import (
+	"bytes"
 	"fmt"
 	"os"
 	"os/exec"
@@ -19,8 +20,11 @@ import (
 var (
 	printVer bool
 	verbose  bool
+	execPipe bool
 	opts     gomplate.Config
 	includes []string
+
+	postRunInput *bytes.Buffer
 )
 
 func printVersion(name string) {
@@ -34,7 +38,11 @@ func postRunExec(cmd *cobra.Command, args []string) error {
 		args = args[1:]
 		// nolint: gosec
 		c := exec.Command(name, args...)
-		c.Stdin = os.Stdin
+		if execPipe {
+			c.Stdin = postRunInput
+		} else {
+			c.Stdin = os.Stdin
+		}
 		c.Stderr = os.Stderr
 		c.Stdout = os.Stdout
 
@@ -101,6 +109,10 @@ func newGomplateCmd() *cobra.Command {
 			// support --include
 			opts.ExcludeGlob = processIncludes(includes, opts.ExcludeGlob)
 
+			if execPipe {
+				postRunInput = &bytes.Buffer{}
+				opts.Out = postRunInput
+			}
 			err := gomplate.RunTemplates(&opts)
 			cmd.SilenceErrors = true
 			cmd.SilenceUsage = true
@@ -139,6 +151,8 @@ func initFlags(command *cobra.Command) {
 	command.Flags().StringVar(&opts.OutputDir, "output-dir", ".", "`directory` to store the processed templates. Only used for --input-dir")
 	command.Flags().StringVar(&opts.OutputMap, "output-map", "", "Template `string` to map the input file to an output path")
 	command.Flags().StringVar(&opts.OutMode, "chmod", "", "set the mode for output file(s). Omit to inherit from input file(s)")
+
+	command.Flags().BoolVar(&execPipe, "exec-pipe", false, "pipe the output to the post-run exec command")
 
 	ldDefault := env.Getenv("GOMPLATE_LEFT_DELIM", "{{")
 	rdDefault := env.Getenv("GOMPLATE_RIGHT_DELIM", "}}")

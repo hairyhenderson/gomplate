@@ -184,6 +184,17 @@ func (s *BasicSuite) TestExecCommand(c *C) {
 	})
 }
 
+func (s *BasicSuite) TestPostRunExecPipe(c *C) {
+	result := icmd.RunCmd(icmd.Command(GomplateBin,
+		"-i", `{{print "hello world"}}`,
+		"--exec-pipe",
+		"--", "tr", "a-z", "A-Z"))
+	result.Assert(c, icmd.Expected{
+		ExitCode: 0,
+		Out:      "HELLO WORLD",
+	})
+}
+
 func (s *BasicSuite) TestEmptyOutputSuppression(c *C) {
 	out := s.tmpDir.Join("out")
 	result := icmd.RunCmd(icmd.Command(GomplateBin,
