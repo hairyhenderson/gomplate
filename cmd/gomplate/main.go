@@ -5,7 +5,6 @@ The gomplate command
 package main
 
 import (
-	"errors"
 	"fmt"
 	"os"
 	"os/exec"
@@ -23,40 +22,6 @@ var (
 	opts     gomplate.Config
 	includes []string
 )
-
-// nolint: gocyclo
-func validateOpts(cmd *cobra.Command, args []string) error {
-	if cmd.Flag("in").Changed && cmd.Flag("file").Changed {
-		return errors.New("--in and --file may not be used together")
-	}
-
-	if len(opts.InputFiles) != len(opts.OutputFiles) {
-		return fmt.Errorf("must provide same number of --out (%d) as --file (%d) options", len(opts.OutputFiles), len(opts.InputFiles))
-	}
-
-	if cmd.Flag("input-dir").Changed && (cmd.Flag("in").Changed || cmd.Flag("file").Changed) {
-		return errors.New("--input-dir can not be used together with --in or --file")
-	}
-
-	if cmd.Flag("output-dir").Changed {
-		if cmd.Flag("out").Changed {
-			return errors.New("--output-dir can not be used together with --out")
-		}
-		if !cmd.Flag("input-dir").Changed {
-			return errors.New("--input-dir must be set when --output-dir is set")
-		}
-	}
-
-	if cmd.Flag("output-map").Changed {
-		if cmd.Flag("out").Changed || cmd.Flag("output-dir").Changed {
-			return errors.New("--output-map can not be used together with --out or --output-dir")
-		}
-		if !cmd.Flag("input-dir").Changed {
-			return errors.New("--input-dir must be set when --output-map is set")
-		}
-	}
-	return nil
-}
 
 func printVersion(name string) {
 	fmt.Printf("%s version %s\n", name, version.Version)
