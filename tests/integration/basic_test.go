@@ -114,7 +114,7 @@ func (s *BasicSuite) TestFlagRules(c *C) {
 	result := icmd.RunCommand(GomplateBin, "-f", "-", "-i", "HELLO WORLD")
 	result.Assert(c, icmd.Expected{
 		ExitCode: 1,
-		Err:      "--in and --file may not be used together",
+		Err:      "only one of these flags is supported at a time: --in, --file, --input-dir",
 	})
 
 	result = icmd.RunCommand(GomplateBin, "--output-dir", ".")
@@ -126,25 +126,25 @@ func (s *BasicSuite) TestFlagRules(c *C) {
 	result = icmd.RunCommand(GomplateBin, "--input-dir", ".", "--in", "param")
 	result.Assert(c, icmd.Expected{
 		ExitCode: 1,
-		Err:      "--input-dir can not be used together with --in or --file",
+		Err:      "only one of these flags is supported at a time: --in, --file, --input-dir",
 	})
 
 	result = icmd.RunCommand(GomplateBin, "--input-dir", ".", "--file", "input.txt")
 	result.Assert(c, icmd.Expected{
 		ExitCode: 1,
-		Err:      "--input-dir can not be used together with --in or --file",
+		Err:      "only one of these flags is supported at a time: --in, --file, --input-dir",
 	})
 
 	result = icmd.RunCommand(GomplateBin, "--output-dir", ".", "--out", "param")
 	result.Assert(c, icmd.Expected{
 		ExitCode: 1,
-		Err:      "--output-dir can not be used together with --out",
+		Err:      "only one of these flags is supported at a time: --out, --output-dir, --output-map",
 	})
 
 	result = icmd.RunCommand(GomplateBin, "--output-map", ".", "--out", "param")
 	result.Assert(c, icmd.Expected{
 		ExitCode: 1,
-		Err:      "--output-map can not be used together with --out or --output-dir",
+		Err:      "only one of these flags is supported at a time: --out, --output-dir, --output-map",
 	})
 }
 
