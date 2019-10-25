@@ -14,7 +14,7 @@ github.com/Shopify/ejson/crypto
 github.com/Shopify/ejson/json
 # github.com/armon/go-metrics v0.0.0-20190430140413-ec5e00d3c878
 github.com/armon/go-metrics
-# github.com/aws/aws-sdk-go v1.25.16
+# github.com/aws/aws-sdk-go v1.25.19
 github.com/aws/aws-sdk-go/aws
 github.com/aws/aws-sdk-go/aws/awserr
 github.com/aws/aws-sdk-go/aws/awsutil
@@ -96,7 +96,7 @@ github.com/google/wire
 github.com/googleapis/gax-go
 # github.com/googleapis/gax-go/v2 v2.0.4
 github.com/googleapis/gax-go/v2
-# github.com/gosimple/slug v1.8.0
+# github.com/gosimple/slug v1.9.0
 github.com/gosimple/slug
 # github.com/hairyhenderson/toml v0.3.1-0.20191004034452-2a4f3b6160f2
 github.com/hairyhenderson/toml
