@@ -89,7 +89,7 @@ endif
 
 integration: build
 	@GOFLAGS=$(GOFLAGS) $(GO) test -v -tags=integration \
-		./tests/integration -check.v
+		./tests/integration
 
 integration.iid: Dockerfile.integration $(PREFIX)/bin/$(PKG_NAME)_linux-amd64$(call extension,$(GOOS))
 	docker build -f $< --iidfile $@ .

@@ -8,6 +8,7 @@ import (
 	"net"
 	"net/http"
 	"path/filepath"
+	"runtime"
 	"testing"
 	"time"
 
@@ -17,8 +18,17 @@ import (
 )
 
 var (
-	GomplateBin = filepath.Join(build.Default.GOPATH, "src", "github.com", "hairyhenderson", "gomplate", "bin", "gomplate")
+	GomplateBin string
 )
+
+// nolint: gochecknoinits
+func init() {
+	ext := ""
+	if runtime.GOOS == "windows" {
+		ext = ".exe"
+	}
+	GomplateBin = filepath.Join(build.Default.GOPATH, "src", "github.com", "hairyhenderson", "gomplate", "bin", "gomplate"+ext)
+}
 
 // Hook up gocheck into the "go test" runner.
 func Test(t *testing.T) { TestingT(t) }
