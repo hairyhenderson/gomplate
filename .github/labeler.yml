@@ -8,3 +8,8 @@ dependencies:
 - go.mod
 - go.sum
 - vendor/**/*
+
+build:
+- .github/workflows/*
+- .circleci/*
+- Makefile
