@@ -1,0 +1,56 @@
+name: Build
+on: [push]
+
+jobs:
+  linux-build:
+    runs-on: ubuntu-latest
+    container:
+      # Someday, but not yet...
+      # image: docker.pkg.github.com/hairyhenderson/dockerfiles/gomplate-ci-build:latest
+      image: hairyhenderson/gomplate-ci-build:latest
+    steps:
+      - uses: actions/setup-go@v1
+        with:
+          go-version: 1.13.x
+      - uses: actions/checkout@master
+        with:
+          path: ./src/github.com/${{ github.repository }}
+      - run: make build
+        env:
+          GOPATH: ${{ runner.workspace }}
+      - run: make test
+        env:
+          GOPATH: ${{ runner.workspace }}
+      - run: make integration
+        env:
+          GOPATH: ${{ runner.workspace }}
+  windows-build:
+    runs-on: windows-latest
+    env:
+      TMP: D:\tmp
+      GOFLAGS: -mod=vendor
+    steps:
+      - uses: actions/setup-go@v1
+        with:
+          go-version: 1.13.x
+      - uses: actions/checkout@master
+        with:
+          path: ./src/github.com/${{ github.repository }}
+      - run: make build
+        env:
+          GOPATH: ${{ runner.workspace }}
+      - run: make test
+        env:
+          GOPATH: ${{ runner.workspace }}
+      - run: make integration
+        env:
+          GOPATH: ${{ runner.workspace }}
+  lint:
+    runs-on: ubuntu-latest
+    container:
+      image: 'hairyhenderson/gomplate-ci-build:latest'
+    steps:
+      - uses: actions/checkout@master
+        with:
+          path: ./src/github.com/${{ github.repository }}
+      - run: make lint

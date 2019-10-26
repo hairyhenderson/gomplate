@@ -3,7 +3,7 @@
 _Read the docs at [docs.gomplate.ca][docs-url], chat with developers and community in the [#gomplate channel][] on [Gophers Slack][]_
 
 [![Build Status][circleci-image]][circleci-url]
-[![Windows Build][gh-windows-image]][gh-windows-url]
+[![Build][gh-actions-image]][gh-actions-url]
 [![Go Report Card][reportcard-image]][reportcard-url]
 [![Codebeat Status][codebeat-image]][codebeat-url]
 [![Coverage][gocover-image]][gocover-url]
@@ -100,8 +100,8 @@ Copyright (c) 2016-2019 Dave Henderson
 [circleci-image]: https://img.shields.io/circleci/project/github/hairyhenderson/gomplate/master.svg?logo=circleci
 [circleci-url]: https://circleci.com/gh/hairyhenderson/gomplate/tree/master
 
-[gh-windows-image]: https://github.com/hairyhenderson/gomplate/workflows/Windows%20Build/badge.svg
-[gh-windows-url]: https://github.com/hairyhenderson/gomplate/actions?workflow=Windows+Build
+[gh-actions-image]: https://github.com/hairyhenderson/gomplate/workflows/Build/badge.svg?branch=master
+[gh-actions-url]: https://github.com/hairyhenderson/gomplate/actions?workflow=Build&branch=master
 
 [reportcard-image]: https://goreportcard.com/badge/github.com/hairyhenderson/gomplate
 [reportcard-url]: https://goreportcard.com/report/github.com/hairyhenderson/gomplate
