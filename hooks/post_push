@@ -23,10 +23,26 @@ docker push $DOCKER_REPO:${ALPINE_TAG}
 # We only want to have special tags for releases.
 if (git describe --abbrev=0 --exact-match &>/dev/null); then
   tag=$(git describe --abbrev=0 --exact-match)
-  docker tag $IMAGE_NAME $DOCKER_REPO:$tag
+  # splits the major version from $tag - assumes it's a 3-part semver
+  major=${tag%%\.*}
+  # if we ever want minor tags, this is how
+  # minor=${tag%\.*}
+  docker tag $IMAGE_NAME $DOCKER_REPO:${tag}
+  docker tag $IMAGE_NAME $DOCKER_REPO:stable
+  docker tag $IMAGE_NAME $DOCKER_REPO:${major}
   docker tag $DOCKER_REPO:${SLIM_TAG} $DOCKER_REPO:${tag}-slim
+  docker tag $DOCKER_REPO:${SLIM_TAG} $DOCKER_REPO:${major}-slim
+  docker tag $DOCKER_REPO:${SLIM_TAG} $DOCKER_REPO:stable-slim
   docker tag $DOCKER_REPO:${ALPINE_TAG} $DOCKER_REPO:${tag}-alpine
-  docker push $DOCKER_REPO:$tag
+  docker tag $DOCKER_REPO:${ALPINE_TAG} $DOCKER_REPO:${major}-alpine
+  docker tag $DOCKER_REPO:${ALPINE_TAG} $DOCKER_REPO:stable-alpine
+  docker push $DOCKER_REPO:${tag}
+  docker push $DOCKER_REPO:${major}
+  docker push $DOCKER_REPO:stable
   docker push $DOCKER_REPO:${tag}-slim
+  docker push $DOCKER_REPO:${major}-slim
+  docker push $DOCKER_REPO:stable-slim
   docker push $DOCKER_REPO:${tag}-alpine
+  docker push $DOCKER_REPO:${major}-alpine
+  docker push $DOCKER_REPO:stable-alpine
 fi
