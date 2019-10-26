@@ -55,7 +55,7 @@ func (t *tplate) toGoTemplate(g *gomplate) (tmpl *template.Template, err error) 
 	}
 	tmpl.Option("missingkey=error")
 	// the "tmpl" funcs get added here because they need access to the root template and context
-	addTmplFuncs(g.funcMap, g.rootTemplate, g.context)
+	addTmplFuncs(g.funcMap, g.rootTemplate, g.tmplctx)
 	tmpl.Funcs(g.funcMap)
 	tmpl.Delims(g.leftDelim, g.rightDelim)
 	_, err = tmpl.Parse(t.contents)

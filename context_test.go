@@ -11,20 +11,20 @@ import (
 )
 
 func TestEnvMapifiesEnvironment(t *testing.T) {
-	c := &context{}
+	c := &tmplctx{}
 	env := c.Env()
 	assert.Equal(t, env["USER"], os.Getenv("USER"))
 }
 
 func TestEnvGetsUpdatedEnvironment(t *testing.T) {
-	c := &context{}
+	c := &tmplctx{}
 	assert.Empty(t, c.Env()["FOO"])
 	assert.NoError(t, os.Setenv("FOO", "foo"))
 	assert.Equal(t, c.Env()["FOO"], "foo")
 }
 
 func TestCreateContext(t *testing.T) {
-	c, err := createContext(nil, nil)
+	c, err := createTmplContext(nil, nil)
 	assert.NoError(t, err)
 	assert.Empty(t, c)
 
@@ -40,16 +40,16 @@ func TestCreateContext(t *testing.T) {
 	}
 	os.Setenv("foo", "foo: bar")
 	defer os.Unsetenv("foo")
-	c, err = createContext([]string{"foo=" + fooURL}, d)
+	c, err = createTmplContext([]string{"foo=" + fooURL}, d)
 	assert.NoError(t, err)
-	assert.IsType(t, &context{}, c)
-	ctx := c.(*context)
+	assert.IsType(t, &tmplctx{}, c)
+	ctx := c.(*tmplctx)
 	ds := ((*ctx)["foo"]).(map[string]interface{})
 	assert.Equal(t, "bar", ds["foo"])
 
 	os.Setenv("bar", "bar: baz")
 	defer os.Unsetenv("bar")
-	c, err = createContext([]string{".=" + barURL}, d)
+	c, err = createTmplContext([]string{".=" + barURL}, d)
 	assert.NoError(t, err)
 	assert.IsType(t, map[string]interface{}{}, c)
 	ds = c.(map[string]interface{})

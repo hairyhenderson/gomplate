@@ -43,10 +43,10 @@ func (t *Template) inline(name, in string, ctx interface{}) (string, error) {
 }
 
 // Exec - execute (render) a template - this is the built-in `template` action, except with output...
-func (t *Template) Exec(name string, context ...interface{}) (string, error) {
+func (t *Template) Exec(name string, tmplcontext ...interface{}) (string, error) {
 	ctx := t.defaultCtx
-	if len(context) == 1 {
-		ctx = context[0]
+	if len(tmplcontext) == 1 {
+		ctx = tmplcontext[0]
 	}
 	tmpl := t.root.Lookup(name)
 	if tmpl == nil {

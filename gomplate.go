@@ -24,7 +24,7 @@ type gomplate struct {
 	rightDelim      string
 	nestedTemplates templateAliases
 	rootTemplate    *template.Template
-	context         interface{}
+	tmplctx         interface{}
 }
 
 // runTemplate -
@@ -42,20 +42,20 @@ func (g *gomplate) runTemplate(t *tplate) error {
 			defer t.target.(io.Closer).Close()
 		}
 	}
-	err = tmpl.Execute(t.target, g.context)
+	err = tmpl.Execute(t.target, g.tmplctx)
 	return err
 }
 
 type templateAliases map[string]string
 
 // newGomplate -
-func newGomplate(funcMap template.FuncMap, leftDelim, rightDelim string, nested templateAliases, context interface{}) *gomplate {
+func newGomplate(funcMap template.FuncMap, leftDelim, rightDelim string, nested templateAliases, tctx interface{}) *gomplate {
 	return &gomplate{
 		leftDelim:       leftDelim,
 		rightDelim:      rightDelim,
 		funcMap:         funcMap,
 		nestedTemplates: nested,
-		context:         context,
+		tmplctx:         tctx,
 	}
 }
 
@@ -122,7 +122,7 @@ func RunTemplates(o *Config) error {
 	if err != nil {
 		return err
 	}
-	c, err := createContext(o.Contexts, d)
+	c, err := createTmplContext(o.Contexts, d)
 	if err != nil {
 		return err
 	}
@@ -186,22 +186,22 @@ func mappingNamer(outMap string, g *gomplate) func(string) (string, error) {
 		if err != nil {
 			return "", err
 		}
-		ctx := &context{}
+		tctx := &tmplctx{}
 		// nolint: gocritic
-		switch c := g.context.(type) {
-		case *context:
+		switch c := g.tmplctx.(type) {
+		case *tmplctx:
 			for k, v := range *c {
 				if k != "in" && k != "ctx" {
-					(*ctx)[k] = v
+					(*tctx)[k] = v
 				}
 			}
 		}
-		(*ctx)["ctx"] = g.context
-		(*ctx)["in"] = inPath
+		(*tctx)["ctx"] = g.tmplctx
+		(*tctx)["in"] = inPath
 
-		err = tpl.Execute(t.target, ctx)
+		err = tpl.Execute(t.target, tctx)
 		if err != nil {
-			return "", errors.Wrapf(err, "failed to render outputMap with ctx %+v and inPath %s", ctx, inPath)
+			return "", errors.Wrapf(err, "failed to render outputMap with ctx %+v and inPath %s", tctx, inPath)
 		}
 
 		return filepath.Clean(strings.TrimSpace(out.String())), nil

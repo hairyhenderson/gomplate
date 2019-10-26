@@ -2,7 +2,7 @@ package gomplate
 
 import (
 	"bytes"
-	gcontext "context"
+	"context"
 	"errors"
 	"fmt"
 	"os"
@@ -90,7 +90,7 @@ func (p *plugin) run(args ...interface{}) (interface{}, error) {
 		return nil, err
 	}
 
-	ctx, cancel := gcontext.WithTimeout(gcontext.Background(), t)
+	ctx, cancel := context.WithTimeout(context.Background(), t)
 	defer cancel()
 	c := exec.CommandContext(ctx, name, a...)
 	c.Stdin = nil

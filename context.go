@@ -8,10 +8,10 @@ import (
 )
 
 // context for templates
-type context map[string]interface{}
+type tmplctx map[string]interface{}
 
 // Env - Map environment variables for use in a template
-func (c *context) Env() map[string]string {
+func (c *tmplctx) Env() map[string]string {
 	env := make(map[string]string)
 	for _, i := range os.Environ() {
 		sep := strings.Index(i, "=")
@@ -20,20 +20,20 @@ func (c *context) Env() map[string]string {
 	return env
 }
 
-func createContext(contexts []string, d *data.Data) (interface{}, error) {
+func createTmplContext(contexts []string, d *data.Data) (interface{}, error) {
 	var err error
-	ctx := &context{}
-	for _, context := range contexts {
-		a := parseAlias(context)
+	tctx := &tmplctx{}
+	for _, c := range contexts {
+		a := parseAlias(c)
 		if a == "." {
 			return d.Datasource(a)
 		}
-		(*ctx)[a], err = d.Datasource(a)
+		(*tctx)[a], err = d.Datasource(a)
 		if err != nil {
 			return nil, err
 		}
 	}
-	return ctx, nil
+	return tctx, nil
 }
 
 func parseAlias(arg string) string {
