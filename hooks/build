@@ -1,21 +1,18 @@
 #!/bin/bash
 set -exuo pipefail
 
-docker version
-
 echo "======== Build hook running"
 export VCS_REF=`git rev-parse --short HEAD`
 export DOCKER_REPO=${DOCKER_REPO:-hairyhenderson/gomplate}
 export DOCKER_TAG=${DOCKER_TAG:-latest}
 export IMAGE_NAME=${IMAGE_NAME:-${DOCKER_REPO}:${DOCKER_TAG}}
 
-docker build --target artifacts \
-             -t ${DOCKER_REPO}:artifacts .
+make artifacts.iid
+docker tag $(< artifacts.iid) ${DOCKER_REPO}:artifacts
 
 echo "======== Building $IMAGE_NAME"
-docker build --build-arg VCS_REF \
-             --target gomplate \
-             -t ${IMAGE_NAME} .
+make gomplate.iid
+docker tag $(< gomplate.iid) ${IMAGE_NAME}
 
 if [ "$DOCKER_TAG" == "latest" ]; then
   export SLIM_TAG="slim"
@@ -23,9 +20,8 @@ else
   export SLIM_TAG="${DOCKER_TAG}-slim"
 fi
 echo "======== Building ${DOCKER_REPO}:${SLIM_TAG}"
-docker build --build-arg VCS_REF \
-             --target gomplate-slim \
-             -t ${DOCKER_REPO}:${SLIM_TAG} .
+make gomplate-slim.iid
+docker tag $(< gomplate-slim.iid) ${DOCKER_REPO}:${SLIM_TAG}
 
 if [ "$DOCKER_TAG" == "latest" ]; then
   export ALPINE_TAG="alpine"
@@ -33,6 +29,5 @@ else
   export ALPINE_TAG="${DOCKER_TAG}-alpine"
 fi
 echo "======== Building ${DOCKER_REPO}:${ALPINE_TAG}"
-docker build --build-arg VCS_REF \
-             --target gomplate-alpine \
-             -t ${DOCKER_REPO}:${ALPINE_TAG} .
+make gomplate-alpine.iid
+docker tag $(< gomplate-alpine.iid) ${DOCKER_REPO}:${ALPINE_TAG}
