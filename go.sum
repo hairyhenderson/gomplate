@@ -176,6 +176,7 @@ github.com/jmespath/go-jmespath v0.0.0-20180206201540-c2b33e8439af h1:pmfjZENx5i
 github.com/jmespath/go-jmespath v0.0.0-20180206201540-c2b33e8439af/go.mod h1:Nht3zPeWKUH0NzdCt2Blrr5ys8VGpn0CEB0cQHVjt7k=
 github.com/johannesboyne/gofakes3 v0.0.0-20190901124954-96fabbd7f68a h1:LzkxVIKP1QZAOC8FGr++7aK5WT4D3XjSlFPLuHEde8U=
 github.com/johannesboyne/gofakes3 v0.0.0-20190901124954-96fabbd7f68a/go.mod h1:cPDudDcSR9fls3ZmrXgt0GU2QpQGQRJc4JBNtKyNr1s=
+github.com/johannesboyne/gofakes3 v0.0.0-20191029185751-e238f04965fe/go.mod h1:cPDudDcSR9fls3ZmrXgt0GU2QpQGQRJc4JBNtKyNr1s=
 github.com/joho/godotenv v1.3.0 h1:Zjp+RcGpHhGlrMbJzXTrZZPrWj+1vfm90La1wgB6Bhc=
 github.com/joho/godotenv v1.3.0/go.mod h1:7hK45KPybAkOC6peb+G5yklZfMxEjkZhHbwpqxOKXbg=
 github.com/jstemmer/go-junit-report v0.0.0-20190106144839-af01ea7f8024/go.mod h1:6v2b51hI/fHJwM22ozAgKL4VKDeJcHhJFhtBdhmNjmU=

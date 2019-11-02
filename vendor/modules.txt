@@ -146,7 +146,7 @@ github.com/hashicorp/vault/sdk/helper/strutil
 github.com/inconshreveable/mousetrap
 # github.com/jmespath/go-jmespath v0.0.0-20180206201540-c2b33e8439af
 github.com/jmespath/go-jmespath
-# github.com/johannesboyne/gofakes3 v0.0.0-20190901124954-96fabbd7f68a
+# github.com/johannesboyne/gofakes3 v0.0.0-20191029185751-e238f04965fe
 github.com/johannesboyne/gofakes3
 github.com/johannesboyne/gofakes3/backend/s3mem
 github.com/johannesboyne/gofakes3/internal/goskipiter

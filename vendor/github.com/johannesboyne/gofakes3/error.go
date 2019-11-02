@@ -214,6 +214,8 @@ func (e InternalErrorCode) Error() string        { return string(ErrInternal) }
 // know!
 func (e ErrorCode) Message() string {
 	switch e {
+	case ErrInvalidBucketName:
+		return `Bucket name must match the regex "^[a-zA-Z0-9.\-_]{1,255}$"`
 	case ErrNoSuchBucket:
 		return "The specified bucket does not exist"
 	case ErrRequestTimeTooSkewed:
