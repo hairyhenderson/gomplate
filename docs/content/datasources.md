@@ -17,10 +17,10 @@ Since datasources are defined separately from the template, the same templates c
 All datasources are defined with a [URL][]. As a refresher, a URL is made up of the following components:
 
 ```pre
-  foo://example.com:8042/over/there?name=ferret#nose
-  \_/   \______________/\_________/ \_________/ \__/
-   |           |            |            |        |
-scheme     authority       path        query   fragment
+  foo://userinfo@example.com:8042/over/there?name=ferret#nose
+  \_/   \_______________________/\_________/ \_________/ \__/
+   |           |                    |            |        |
+scheme     authority               path        query   fragment
 ```
 
 For our purposes, the _scheme_ and the _path_ components are especially important, though the other components are used by certain datasources for particular purposes.
@@ -28,7 +28,7 @@ For our purposes, the _scheme_ and the _path_ components are especially importan
 | component | purpose |
 |-----------|---------|
 | _scheme_ | Identifies which [datasource](#supported-datasources) to access. All datasources require a scheme (except for `file` when using relative paths), and some datasources allow multiple different schemes to clarify access modes, such as `consul+https` |
-| _authority_ | Used only by networked datasources, and can be omitted in some of those cases |
+| _authority_ | Used only by remote datasources, and can be omitted in some of those cases. Consists of _userinfo_ (`user:pass`), _host_, and _port_. |
 | _path_ | Can be omitted, but usually used as the basis of the locator for the datasource. If the path ends with a `/` character, [directory](#directory-datasources) semantics are used. |
 | _query_ | Used rarely for datasources where information must be provided in order to get a reasonable reply (such as generating dynamic secrets with Vault), or for [overriding MIME types](#overriding-mime-types) |
 | _fragment_ | Used rarely for accessing a subset of the given path (such as a bucket name in a BoltDB database) |
@@ -62,6 +62,7 @@ Gomplate supports a number of datasources, each specified with a particular URL 
 | [Consul](#using-consul-datasources) | `consul`, `consul+http`, `consul+https` | [HashiCorp Consul][] provides (among many other features) a key/value store |
 | [Environment](#using-env-datasources) | `env` | Environment variables can be used as datasources - useful for testing |
 | [File](#using-file-datasources) | `file` | Files can be read in any of the [supported formats](#mime-types), including by piping through standard input (`Stdin`). [Directories](#directory-datasources) are also supported. |
+| [Git](#using-git-datasources) | `git`, `git+file`, `git+http`, `git+https`, `git+ssh` | Files can be read from a local or remote git repository, at specific branches or tags. [Directory semantics](#directory-datasources) are also supported. |
 | [HTTP](#using-http-datasources) | `http`, `https` | Data can be sourced from HTTP/HTTPS sites in many different formats. Arbitrary HTTP headers can be set with the [`--datasource-header`/`-H`][] flag |
 | [Merged Datasources](#using-merge-datasources) | `merge` | Merge two or more datasources together to produce the final value - useful for resolving defaults. Uses [`coll.Merge`][] for merging. |
 | [Stdin](#using-stdin-datasources) | `stdin` | A special case of the `file` datasource; allows piping through standard input (`Stdin`) |
@@ -78,6 +79,7 @@ Currently the following datasources support directory semantics:
 - [Consul](#using-consul-datasources)
 When accessing a directory datasource, an array of key names is returned, and can be iterated through to access each individual value contained within.
 - [S3](#using-s3-datasources)
+- [Git](#using-git-datasources)
 
 For example, a group of configuration key/value pairs (named `one`, `two`, and `three`, with values `v1`, `v2`, and `v3` respectively) could be rendered like this: 
 
@@ -428,6 +430,91 @@ Hello Dave
 
 $ gomplate -d person=file:///tmp/person.json -i 'Hello {{ (datasource "person").name }}'
 Hello Dave
+```
+
+## Using `git` datasources
+
+The `git` datasource type provides access to files in any of the [supported formats](#mime-types) hosted in local or remote git repositories. [Directory datasource](#directory-datasources) semantics are supported.
+
+Remote repositories can be accessed by SSH, HTTP(S), and Git protocols.
+
+Note that this datasource accesses the git state, and so for local filesystem repositories, any files not committed to a branch (i.e. "dirty" or modified files) will not be visible.
+
+### URL Considerations
+
+The _scheme_, _authority_ (with _userinfo_), _path_, and _fragment_ are used, and the _query_ component can be used to [override the MIME type](#overriding-mime-types).
+
+- the _scheme_ may be one of these values:
+  - `git`: uses the [classic Git protocol](https://git-scm.com/book/en/v2/Git-on-the-Server-The-Protocols#_the_git_protocol) (as served by `git daemon`)
+  - `git+file`: uses the local filesystem (repo can be bare or not)
+  - `git+http`, `git+https`: uses the [Smart HTTP protocol](https://git-scm.com/book/en/v2/Git-on-the-Server-The-Protocols#_the_http_protocols)
+  - `git+ssh`: uses the [SSH protocol](https://git-scm.com/book/en/v2/Git-on-the-Server-The-Protocols#_the_ssh_protocol)
+- the _authority_ component points to the remote git server hostname (and optional port, if applicable). The _userinfo_ subcomponent can be used for authenticated datasources like `git+https` and `git+ssh`.
+- the _path_ component is a composite of the path to the repository, and the path to the file or directory being referenced within. The `//` sequence (double forward-slash) is used to separate the repository from the path. If no `//` is present in the URL, the datasource will point to the root directory of the repository.
+- the _fragment_ component can be used to specify which branch or tag to reference. By default, the repository's default branch will be chosen.
+  - branches can be referenced by short name or by the long form. Valid fragments are `#master`, `#develop`, `#refs/heads/mybranch`, etc...
+  - tags must use the long form prefixed by `refs/tags/`, i.e. `#refs/tags/v1` for the `v1` tag
+
+### Authentication
+
+The `git` and `git+file` schemes are always unauthenticated, `git+http`/`git+https` can _optionally_ be authenticated, and `git+ssh` _must_ be authenticated.
+
+Authenticating with both HTTP and SSH requires the user to be set (like `git+ssh://user@example.com`), but the credentials vary otherwise.
+
+#### HTTP(S) Authentication
+
+Note that because HTTP connections are unencypted, and HTTP authentication is performed with headers, it is strongly recommended to _only_ use HTTPS (`git+https`) connections when accessing authenticated repositories.
+
+##### Basic Auth
+
+The most common form. The password can be specified as part of the URL, or provided through the `GIT_HTTP_PASSWORD` environment variable, or in a file referenced by the `GIT_HTTP_PASSWORD_FILE` environment variable.
+
+For authenticating with GitHub, Bitbucket, GitLab and other popular git hosts, use this method with a _personal access token_, and the user set to `git`.
+
+##### Token Auth
+
+Some servers require the use of a bearer token. To use this method, a user is _not_ required, and the token must be set in the `GIT_HTTP_TOKEN` environment variable, or in a file referenced by the `GIT_HTTP_TOKEN_FILE` environment variable.
+
+#### SSH Authentication
+
+Only public key based authentication is supported for `git+ssh` connections. The key can be provided directly, or via the SSH Agent (or Pageant on Windows).
+
+To provide a key directly, set the `GIT_SSH_KEY` to the contents of the key, or point `GIT_SSH_KEY_FILE` to a file containing the key. Because the file may contain newline characters that may be difficult to provide in an environment variable, it can also be Base64-encoded.
+
+If neither `GIT_SSH_KEY` nor `GIT_SSH_KEY_FILE` are set, gomplate will attempt to use the SSH Agent.
+
+**Note:** password-protected SSH keys are currently not supported. If you have a password-protected key, use the SSH Agent.
+
+### Examples
+
+Accessing a file in a publicly-readable GitHub repository:
+```console
+$ gomplate -c doc=git+https://github.com/hairyhenderson/gomplate//docs-src/content/functions/env.yml -i 'namespace is: {{ .doc.ns }}'
+namespace is: env
+```
+
+Accessing a file from a local repo (using arguments):
+```console
+$ gomplate -d which=git+file:///repos/go-which -i 'GOPATH on Windows is {{ (datasource "which" "//appveyor.yml").environment.GOPATH }}'
+GOPATH on Windows is c:\gopath
+```
+
+Accessing a directory at a specific tag:
+```console
+$ gomplate -d 'cmd=git+https://github.com/hairyhenderson/go-which//cmd/which#refs/tags/v0.1.0' -i '{{ ds "cmd" }}'
+[main.go]
+```
+
+Authenticating with the SSH Agent
+```console
+$ gomplate -d 'which=git+ssh://git@github.com/hairyhenderson/go-which' -i '{{ len (ds "which") }}'
+18
+```
+
+Using arguments to specify different repos
+```console
+$ gomplate -d 'hairyhenderson=git+https://github.com/hairyhenderson' -i '{{ (ds "hairyhenderson" "/gomplate//docs-src/content/functions/env.yml").ns }}'
+env
 ```
 
 ## Using `http` datasources
