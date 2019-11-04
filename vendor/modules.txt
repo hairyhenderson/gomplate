@@ -14,7 +14,7 @@ github.com/Shopify/ejson/crypto
 github.com/Shopify/ejson/json
 # github.com/armon/go-metrics v0.0.0-20190430140413-ec5e00d3c878
 github.com/armon/go-metrics
-# github.com/aws/aws-sdk-go v1.25.19
+# github.com/aws/aws-sdk-go v1.25.25
 github.com/aws/aws-sdk-go/aws
 github.com/aws/aws-sdk-go/aws/awserr
 github.com/aws/aws-sdk-go/aws/awsutil
