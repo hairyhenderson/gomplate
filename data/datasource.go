@@ -160,13 +160,36 @@ func (s *Source) cleanup() {
 // 2. otherwise, the Type property on the Source is used, if present
 // 3. otherwise, a MIME type is calculated from the file extension, if the extension is registered
 // 4. otherwise, the default type of 'text/plain' is used
-func (s *Source) mimeType() (mimeType string, err error) {
-	mediatype := s.URL.Query().Get("type")
+func (s *Source) mimeType(arg string) (mimeType string, err error) {
+	if len(arg) > 0 {
+		if strings.HasPrefix(arg, "//") {
+			arg = arg[1:]
+		}
+		if !strings.HasPrefix(arg, "/") {
+			arg = "/" + arg
+		}
+	}
+	argURL, err := url.Parse(arg)
+	if err != nil {
+		return "", fmt.Errorf("mimeType: couldn't parse arg %q: %w", arg, err)
+	}
+	mediatype := argURL.Query().Get("type")
+	if mediatype == "" {
+		mediatype = s.URL.Query().Get("type")
+	}
+
 	if mediatype == "" {
 		mediatype = s.mediaType
 	}
+
 	// make it so + doesn't need to be escaped
 	mediatype = strings.ReplaceAll(mediatype, " ", "+")
+
+	if mediatype == "" {
+		ext := filepath.Ext(argURL.Path)
+		mediatype = mime.TypeByExtension(ext)
+	}
+
 	if mediatype == "" {
 		ext := filepath.Ext(s.URL.Path)
 		mediatype = mime.TypeByExtension(ext)
@@ -333,7 +356,11 @@ func (d *Data) readDataSource(alias string, args ...string) (data, mimeType stri
 		return "", "", errors.Wrapf(err, "Couldn't read datasource '%s'", alias)
 	}
 
-	mimeType, err = source.mimeType()
+	subpath := ""
+	if len(args) > 0 {
+		subpath = args[0]
+	}
+	mimeType, err = source.mimeType(subpath)
 	if err != nil {
 		return "", "", err
 	}

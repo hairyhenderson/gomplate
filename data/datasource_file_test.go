@@ -51,7 +51,7 @@ func TestReadFile(t *testing.T) {
 	actual, err = readFile(source)
 	assert.NoError(t, err)
 	assert.Equal(t, []byte(`["bar.txt","baz.txt","foo.txt"]`), actual)
-	mime, err := source.mimeType()
+	mime, err := source.mimeType("")
 	assert.NoError(t, err)
 	assert.Equal(t, "application/json", mime)
 
@@ -60,7 +60,7 @@ func TestReadFile(t *testing.T) {
 	actual, err = readFile(source, "foo.txt")
 	assert.NoError(t, err)
 	assert.Equal(t, content, actual)
-	mime, err = source.mimeType()
+	mime, err = source.mimeType("")
 	assert.NoError(t, err)
 	assert.Equal(t, "application/json", mime)
 }

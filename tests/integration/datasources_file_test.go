@@ -72,6 +72,12 @@ func (s *FileDatasourcesSuite) TestFileDatasources(c *C) {
 	)
 	result.Assert(c, icmd.Expected{ExitCode: 0, Out: "baz"})
 
+	result = icmd.RunCommand(GomplateBin,
+		"-d", "dir="+s.tmpDir.Path(),
+		"-i", `{{ (datasource "dir" "config.json").foo.bar }}`,
+	)
+	result.Assert(c, icmd.Expected{ExitCode: 0, Out: "baz"})
+
 	result = icmd.RunCmd(icmd.Command(GomplateBin,
 		"-d", "config=config.json",
 		"-i", `{{ (ds "config").foo.bar }}`,
