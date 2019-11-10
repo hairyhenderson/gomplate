@@ -42,7 +42,7 @@ func (d *Data) readMerge(source *Source, args ...string) ([]byte, error) {
 			return nil, errors.Wrapf(err, "Couldn't read datasource '%s'", part)
 		}
 
-		mimeType, err := subSource.mimeType()
+		mimeType, err := subSource.mimeType("")
 		if err != nil {
 			return nil, errors.Wrapf(err, "failed to read datasource %s", subSource.URL)
 		}
