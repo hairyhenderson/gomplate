@@ -12,7 +12,8 @@ import (
 )
 
 func initLogger(ctx context.Context) context.Context {
-	zerolog.SetGlobalLevel(zerolog.InfoLevel)
+	// default to warn level
+	zerolog.SetGlobalLevel(zerolog.WarnLevel)
 	zerolog.DurationFieldUnit = time.Second
 
 	stdlogger := log.With().Bool("stdlog", true).Logger()

@@ -1,10 +1,12 @@
 package gomplate
 
 import (
+	"context"
 	"os"
 	"strings"
 
 	"github.com/hairyhenderson/gomplate/v3/data"
+	"github.com/hairyhenderson/gomplate/v3/internal/config"
 )
 
 // context for templates
@@ -20,11 +22,10 @@ func (c *tmplctx) Env() map[string]string {
 	return env
 }
 
-func createTmplContext(contexts []string, d *data.Data) (interface{}, error) {
+func createTmplContext(ctx context.Context, contexts config.DSources, d *data.Data) (interface{}, error) {
 	var err error
 	tctx := &tmplctx{}
-	for _, c := range contexts {
-		a := parseAlias(c)
+	for a := range contexts {
 		if a == "." {
 			return d.Datasource(a)
 		}
@@ -34,14 +35,4 @@ func createTmplContext(contexts []string, d *data.Data) (interface{}, error) {
 		}
 	}
 	return tctx, nil
-}
-
-func parseAlias(arg string) string {
-	parts := strings.SplitN(arg, "=", 2)
-	switch len(parts) {
-	case 1:
-		return strings.SplitN(parts[0], ".", 2)[0]
-	default:
-		return parts[0]
-	}
 }

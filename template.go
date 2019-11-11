@@ -9,10 +9,9 @@ import (
 	"path/filepath"
 	"text/template"
 
+	"github.com/hairyhenderson/gomplate/v3/internal/config"
 	"github.com/hairyhenderson/gomplate/v3/tmpl"
 
-	"github.com/hairyhenderson/gomplate/v3/conv"
-	"github.com/hairyhenderson/gomplate/v3/env"
 	"github.com/pkg/errors"
 
 	"github.com/spf13/afero"
@@ -84,66 +83,65 @@ func (t *tplate) loadContents() (err error) {
 	return err
 }
 
-func (t *tplate) addTarget() (err error) {
+func (t *tplate) addTarget(cfg *config.Config) (err error) {
 	if t.name == "<arg>" && t.targetPath == "" {
 		t.targetPath = "-"
 	}
 	if t.target == nil {
-		t.target, err = openOutFile(t.targetPath, t.mode, t.modeOverride)
+		t.target, err = openOutFile(cfg, t.targetPath, t.mode, t.modeOverride)
 	}
 	return err
 }
 
 // gatherTemplates - gather and prepare input template(s) and output file(s) for rendering
 // nolint: gocyclo
-func gatherTemplates(o *Config, outFileNamer func(string) (string, error)) (templates []*tplate, err error) {
-	o.defaults()
-	mode, modeOverride, err := o.getMode()
+func gatherTemplates(cfg *config.Config, outFileNamer func(string) (string, error)) (templates []*tplate, err error) {
+	mode, modeOverride, err := cfg.GetMode()
 	if err != nil {
 		return nil, err
 	}
 
 	// --exec-pipe redirects standard out to the out pipe
-	if o.Out != nil {
-		Stdout = &nopWCloser{o.Out}
+	if cfg.OutWriter != nil {
+		Stdout = &nopWCloser{cfg.OutWriter}
 	}
 
 	switch {
 	// the arg-provided input string gets a special name
-	case o.Input != "":
+	case cfg.Input != "":
 		templates = []*tplate{{
 			name:         "<arg>",
-			contents:     o.Input,
+			contents:     cfg.Input,
 			mode:         mode,
 			modeOverride: modeOverride,
-			targetPath:   o.OutputFiles[0],
+			targetPath:   cfg.OutputFiles[0],
 		}}
-	case o.InputDir != "":
+	case cfg.InputDir != "":
 		// input dirs presume output dirs are set too
-		templates, err = walkDir(o.InputDir, outFileNamer, o.ExcludeGlob, mode, modeOverride)
+		templates, err = walkDir(cfg.InputDir, outFileNamer, cfg.ExcludeGlob, mode, modeOverride)
 		if err != nil {
 			return nil, err
 		}
-	case o.Input == "":
-		templates = make([]*tplate, len(o.InputFiles))
-		for i := range o.InputFiles {
-			templates[i], err = fileToTemplates(o.InputFiles[i], o.OutputFiles[i], mode, modeOverride)
+	case cfg.Input == "":
+		templates = make([]*tplate, len(cfg.InputFiles))
+		for i := range cfg.InputFiles {
+			templates[i], err = fileToTemplates(cfg.InputFiles[i], cfg.OutputFiles[i], mode, modeOverride)
 			if err != nil {
 				return nil, err
 			}
 		}
 	}
 
-	return processTemplates(templates)
+	return processTemplates(cfg, templates)
 }
 
-func processTemplates(templates []*tplate) ([]*tplate, error) {
+func processTemplates(cfg *config.Config, templates []*tplate) ([]*tplate, error) {
 	for _, t := range templates {
 		if err := t.loadContents(); err != nil {
 			return nil, err
 		}
 
-		if err := t.addTarget(); err != nil {
+		if err := t.addTarget(cfg); err != nil {
 			return nil, err
 		}
 	}
@@ -229,8 +227,8 @@ func fileToTemplates(inFile, outFile string, mode os.FileMode, modeOverride bool
 	return tmpl, nil
 }
 
-func openOutFile(filename string, mode os.FileMode, modeOverride bool) (out io.WriteCloser, err error) {
-	if conv.ToBool(env.Getenv("GOMPLATE_SUPPRESS_EMPTY", "false")) {
+func openOutFile(cfg *config.Config, filename string, mode os.FileMode, modeOverride bool) (out io.WriteCloser, err error) {
+	if cfg.SuppressEmpty {
 		out = newEmptySkipper(func() (io.WriteCloser, error) {
 			if filename == "-" {
 				return Stdout, nil

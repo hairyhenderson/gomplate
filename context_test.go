@@ -1,11 +1,13 @@
 package gomplate
 
 import (
+	"context"
 	"net/url"
 	"os"
 	"testing"
 
 	"github.com/hairyhenderson/gomplate/v3/data"
+	"github.com/hairyhenderson/gomplate/v3/internal/config"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -24,7 +26,8 @@ func TestEnvGetsUpdatedEnvironment(t *testing.T) {
 }
 
 func TestCreateContext(t *testing.T) {
-	c, err := createTmplContext(nil, nil)
+	ctx := context.TODO()
+	c, err := createTmplContext(ctx, nil, nil)
 	assert.NoError(t, err)
 	assert.Empty(t, c)
 
@@ -40,31 +43,18 @@ func TestCreateContext(t *testing.T) {
 	}
 	os.Setenv("foo", "foo: bar")
 	defer os.Unsetenv("foo")
-	c, err = createTmplContext([]string{"foo=" + fooURL}, d)
+	c, err = createTmplContext(ctx, map[string]config.DSConfig{"foo": {URL: uf}}, d)
 	assert.NoError(t, err)
 	assert.IsType(t, &tmplctx{}, c)
-	ctx := c.(*tmplctx)
-	ds := ((*ctx)["foo"]).(map[string]interface{})
+	tctx := c.(*tmplctx)
+	ds := ((*tctx)["foo"]).(map[string]interface{})
 	assert.Equal(t, "bar", ds["foo"])
 
 	os.Setenv("bar", "bar: baz")
 	defer os.Unsetenv("bar")
-	c, err = createTmplContext([]string{".=" + barURL}, d)
+	c, err = createTmplContext(ctx, map[string]config.DSConfig{".": {URL: ub}}, d)
 	assert.NoError(t, err)
 	assert.IsType(t, map[string]interface{}{}, c)
 	ds = c.(map[string]interface{})
 	assert.Equal(t, "baz", ds["bar"])
-}
-
-func TestParseAlias(t *testing.T) {
-	testdata := map[string]string{
-		"":        "",
-		"foo":     "foo",
-		"foo.bar": "foo",
-		"a=b":     "a",
-		".=foo":   ".",
-	}
-	for k, v := range testdata {
-		assert.Equal(t, v, parseAlias(k))
-	}
 }

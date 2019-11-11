@@ -74,7 +74,7 @@ func (s *BasicSuite) TestErrorsWithInputOutputImbalance(c *C) {
 	})
 	result.Assert(c, icmd.Expected{
 		ExitCode: 1,
-		Err:      "must provide same number of --out (1) as --file (2) options",
+		Err:      "must provide same number of 'outputFiles' (1) as 'in' or 'inputFiles' (2) options",
 	})
 }
 
@@ -114,37 +114,37 @@ func (s *BasicSuite) TestFlagRules(c *C) {
 	result := icmd.RunCommand(GomplateBin, "-f", "-", "-i", "HELLO WORLD")
 	result.Assert(c, icmd.Expected{
 		ExitCode: 1,
-		Err:      "only one of these flags is supported at a time: --in, --file, --input-dir",
+		Err:      "only one of these options is supported at a time: 'in', 'inputFiles'",
 	})
 
 	result = icmd.RunCommand(GomplateBin, "--output-dir", ".")
 	result.Assert(c, icmd.Expected{
 		ExitCode: 1,
-		Err:      "--input-dir must be set when --output-dir is set",
+		Err:      "these options must be set together: 'outputDir', 'inputDir'",
 	})
 
 	result = icmd.RunCommand(GomplateBin, "--input-dir", ".", "--in", "param")
 	result.Assert(c, icmd.Expected{
 		ExitCode: 1,
-		Err:      "only one of these flags is supported at a time: --in, --file, --input-dir",
+		Err:      "only one of these options is supported at a time: 'in', 'inputDir'",
 	})
 
 	result = icmd.RunCommand(GomplateBin, "--input-dir", ".", "--file", "input.txt")
 	result.Assert(c, icmd.Expected{
 		ExitCode: 1,
-		Err:      "only one of these flags is supported at a time: --in, --file, --input-dir",
+		Err:      "only one of these options is supported at a time: 'inputFiles', 'inputDir'",
 	})
 
 	result = icmd.RunCommand(GomplateBin, "--output-dir", ".", "--out", "param")
 	result.Assert(c, icmd.Expected{
 		ExitCode: 1,
-		Err:      "only one of these flags is supported at a time: --out, --output-dir, --output-map",
+		Err:      "only one of these options is supported at a time: 'outputFiles', 'outputDir'",
 	})
 
 	result = icmd.RunCommand(GomplateBin, "--output-map", ".", "--out", "param")
 	result.Assert(c, icmd.Expected{
 		ExitCode: 1,
-		Err:      "only one of these flags is supported at a time: --out, --output-dir, --output-map",
+		Err:      "only one of these options is supported at a time: 'outputFiles', 'outputMap'",
 	})
 }
 

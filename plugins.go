@@ -3,26 +3,26 @@ package gomplate
 import (
 	"bytes"
 	"context"
-	"errors"
 	"fmt"
 	"os"
 	"os/exec"
 	"os/signal"
 	"path/filepath"
 	"runtime"
-	"strings"
 	"text/template"
 	"time"
 
 	"github.com/hairyhenderson/gomplate/v3/conv"
-	"github.com/hairyhenderson/gomplate/v3/env"
+	"github.com/hairyhenderson/gomplate/v3/internal/config"
 )
 
-func bindPlugins(ctx context.Context, plugins []string, funcMap template.FuncMap) error {
-	for _, p := range plugins {
-		plugin, err := newPlugin(ctx, p)
-		if err != nil {
-			return err
+func bindPlugins(ctx context.Context, cfg *config.Config, funcMap template.FuncMap) error {
+	for k, v := range cfg.Plugins {
+		plugin := &plugin{
+			ctx:     ctx,
+			name:    k,
+			path:    v,
+			timeout: cfg.PluginTimeout,
 		}
 		if _, ok := funcMap[plugin.name]; ok {
 			return fmt.Errorf("function %q is already bound, and can not be overridden", plugin.name)
@@ -35,21 +35,8 @@ func bindPlugins(ctx context.Context, plugins []string, funcMap template.FuncMap
 // plugin represents a custom function that binds to an external process to be executed
 type plugin struct {
 	name, path string
+	timeout    time.Duration
 	ctx        context.Context
-}
-
-func newPlugin(ctx context.Context, value string) (*plugin, error) {
-	parts := strings.SplitN(value, "=", 2)
-	if len(parts) < 2 {
-		return nil, errors.New("plugin requires both name and path")
-	}
-
-	p := &plugin{
-		ctx:  ctx,
-		name: parts[0],
-		path: parts[1],
-	}
-	return p, nil
 }
 
 // builds a command that's appropriate for running scripts
@@ -87,12 +74,7 @@ func (p *plugin) run(args ...interface{}) (interface{}, error) {
 
 	name, a := p.buildCommand(a)
 
-	t, err := time.ParseDuration(env.Getenv("GOMPLATE_PLUGIN_TIMEOUT", "5s"))
-	if err != nil {
-		return nil, err
-	}
-
-	ctx, cancel := context.WithTimeout(p.ctx, t)
+	ctx, cancel := context.WithTimeout(p.ctx, p.timeout)
 	defer cancel()
 	c := exec.CommandContext(ctx, name, a...)
 	c.Stdin = nil
@@ -112,7 +94,7 @@ func (p *plugin) run(args ...interface{}) (interface{}, error) {
 		}
 	}()
 	start := time.Now()
-	err = c.Run()
+	err := c.Run()
 	elapsed := time.Since(start)
 
 	if ctx.Err() != nil {

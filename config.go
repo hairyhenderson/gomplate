@@ -2,9 +2,9 @@ package gomplate
 
 import (
 	"io"
-	"os"
-	"strconv"
 	"strings"
+
+	"github.com/hairyhenderson/gomplate/v3/internal/config"
 )
 
 // Config - values necessary for rendering templates with gomplate.
@@ -50,20 +50,6 @@ func (o *Config) defaults() *Config {
 		o.RDelim = "}}"
 	}
 	return o
-}
-
-// parse an os.FileMode out of the string, and let us know if it's an override or not...
-func (o *Config) getMode() (os.FileMode, bool, error) {
-	modeOverride := o.OutMode != ""
-	m, err := strconv.ParseUint("0"+o.OutMode, 8, 32)
-	if err != nil {
-		return 0, false, err
-	}
-	mode := os.FileMode(m)
-	if mode == 0 && o.Input != "" {
-		mode = 0644
-	}
-	return mode, modeOverride, nil
 }
 
 // nolint: gocyclo
@@ -123,4 +109,30 @@ func (o *Config) String() string {
 		c += "\ntemplates: " + strings.Join(o.Templates, ", ")
 	}
 	return c
+}
+
+func (o *Config) toNewConfig() (*config.Config, error) {
+	cfg := &config.Config{
+		Input:       o.Input,
+		InputFiles:  o.InputFiles,
+		InputDir:    o.InputDir,
+		ExcludeGlob: o.ExcludeGlob,
+		OutputFiles: o.OutputFiles,
+		OutputDir:   o.OutputDir,
+		OutputMap:   o.OutputMap,
+		OutMode:     o.OutMode,
+		LDelim:      o.LDelim,
+		RDelim:      o.RDelim,
+		Templates:   o.Templates,
+		OutWriter:   o.Out,
+	}
+	err := cfg.ParsePluginFlags(o.Plugins)
+	if err != nil {
+		return nil, err
+	}
+	err = cfg.ParseDataSourceFlags(o.DataSources, o.Contexts, o.DataSourceHeaders)
+	if err != nil {
+		return nil, err
+	}
+	return cfg, nil
 }

@@ -5,6 +5,7 @@ package gomplate
 import (
 	"bytes"
 	"context"
+	"fmt"
 	"io"
 	"os"
 	"path"
@@ -14,7 +15,9 @@ import (
 	"time"
 
 	"github.com/hairyhenderson/gomplate/v3/data"
+	"github.com/hairyhenderson/gomplate/v3/internal/config"
 	"github.com/pkg/errors"
+	"github.com/rs/zerolog"
 	"github.com/spf13/afero"
 )
 
@@ -109,42 +112,45 @@ func parseTemplateArg(templateArg string, ta templateAliases) error {
 
 // RunTemplates - run all gomplate templates specified by the given configuration
 func RunTemplates(o *Config) error {
-	return RunTemplatesWithContext(context.Background(), o)
+	cfg, err := o.toNewConfig()
+	if err != nil {
+		return err
+	}
+	return RunTemplatesWithContext(context.Background(), cfg)
 }
 
 // RunTemplatesWithContext - run all gomplate templates specified by the given configuration
-func RunTemplatesWithContext(ctx context.Context, o *Config) error {
+func RunTemplatesWithContext(ctx context.Context, cfg *config.Config) error {
+	log := zerolog.Ctx(ctx)
+
 	Metrics = newMetrics()
 	defer runCleanupHooks()
-	// make sure config is sane
-	o.defaults()
-	ds := append(o.DataSources, o.Contexts...)
-	d, err := data.NewData(ds, o.DataSourceHeaders)
-	if err != nil {
-		return err
-	}
+
+	d := data.FromConfig(cfg)
+	log.Debug().Str("data", fmt.Sprintf("%+v", d)).Msg("created data from config")
+
 	addCleanupHook(d.Cleanup)
-	nested, err := parseTemplateArgs(o.Templates)
+	nested, err := parseTemplateArgs(cfg.Templates)
 	if err != nil {
 		return err
 	}
-	c, err := createTmplContext(o.Contexts, d)
+	c, err := createTmplContext(ctx, cfg.Context, d)
 	if err != nil {
 		return err
 	}
 	funcMap := Funcs(d)
-	err = bindPlugins(ctx, o.Plugins, funcMap)
+	err = bindPlugins(ctx, cfg, funcMap)
 	if err != nil {
 		return err
 	}
-	g := newGomplate(funcMap, o.LDelim, o.RDelim, nested, c)
+	g := newGomplate(funcMap, cfg.LDelim, cfg.RDelim, nested, c)
 
-	return g.runTemplates(ctx, o)
+	return g.runTemplates(ctx, cfg)
 }
 
-func (g *gomplate) runTemplates(ctx context.Context, o *Config) error {
+func (g *gomplate) runTemplates(ctx context.Context, cfg *config.Config) error {
 	start := time.Now()
-	tmpl, err := gatherTemplates(o, chooseNamer(o, g))
+	tmpl, err := gatherTemplates(cfg, chooseNamer(cfg, g))
 	Metrics.GatherDuration = time.Since(start)
 	if err != nil {
 		Metrics.Errors++
@@ -166,11 +172,11 @@ func (g *gomplate) runTemplates(ctx context.Context, o *Config) error {
 	return nil
 }
 
-func chooseNamer(o *Config, g *gomplate) func(string) (string, error) {
-	if o.OutputMap == "" {
-		return simpleNamer(o.OutputDir)
+func chooseNamer(cfg *config.Config, g *gomplate) func(string) (string, error) {
+	if cfg.OutputMap == "" {
+		return simpleNamer(cfg.OutputDir)
 	}
-	return mappingNamer(o.OutputMap, g)
+	return mappingNamer(cfg.OutputMap, g)
 }
 
 func simpleNamer(outDir string) func(inPath string) (string, error) {
