@@ -138,7 +138,7 @@ func listBucket(ctx context.Context, bucket *blob.Bucket, path string) (mediaTyp
 
 // copy/sanitize the URL for the Go CDK - it doesn't like params it can't parse
 func blobURL(u *url.URL) string {
-	out, _ := url.Parse(u.String())
+	out := cloneURL(u)
 	q := out.Query()
 
 	for param := range q {

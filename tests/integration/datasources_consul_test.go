@@ -5,7 +5,6 @@ package integration
 
 import (
 	"encoding/base64"
-	"io/ioutil"
 	"os"
 	"os/user"
 	"path"
@@ -85,23 +84,6 @@ func (s *ConsulDatasourcesSuite) startVault(c *C) {
 
 	err = waitForURL(c, "http://"+s.vaultAddr+"/v1/sys/health")
 	handle(c, err)
-}
-
-func killByPidFile(pidFile string) error {
-	p, err := ioutil.ReadFile(pidFile)
-	if err != nil {
-		return err
-	}
-	pid, err := strconv.Atoi(string(p))
-	if err != nil {
-		return err
-	}
-	process, err := os.FindProcess(pid)
-	if err != nil {
-		return err
-	}
-	err = process.Kill()
-	return err
 }
 
 func (s *ConsulDatasourcesSuite) TearDownSuite(c *C) {

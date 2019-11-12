@@ -7,8 +7,11 @@ import (
 	"log"
 	"net"
 	"net/http"
+	"os"
 	"path/filepath"
 	"runtime"
+	"strconv"
+	"strings"
 	"testing"
 	"time"
 
@@ -137,4 +140,21 @@ func (v *vaultClient) tokenCreate(policy string, uses int) (string, error) {
 		return "", err
 	}
 	return token.Auth.ClientToken, nil
+}
+
+func killByPidFile(pidFile string) error {
+	p, err := ioutil.ReadFile(pidFile)
+	if err != nil {
+		return err
+	}
+	pid, err := strconv.Atoi(strings.TrimSpace(string(p)))
+	if err != nil {
+		return err
+	}
+	process, err := os.FindProcess(pid)
+	if err != nil {
+		return err
+	}
+	err = process.Kill()
+	return err
 }

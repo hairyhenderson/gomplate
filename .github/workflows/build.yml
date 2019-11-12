@@ -12,6 +12,9 @@ jobs:
       - uses: actions/setup-go@v1
         with:
           go-version: 1.13.x
+      - run: |
+          git config --global user.email "bogus@example.com"
+          git config --global user.name "Someone"
       - uses: actions/checkout@master
         with:
           path: ./src/github.com/${{ github.repository }}
@@ -33,6 +36,9 @@ jobs:
       - uses: actions/setup-go@v1
         with:
           go-version: 1.13.x
+      - run: |
+          git config --global user.email "bogus@example.com"
+          git config --global user.name "Someone"
       - uses: actions/checkout@master
         with:
           path: ./src/github.com/${{ github.repository }}

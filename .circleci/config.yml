@@ -50,6 +50,9 @@ jobs:
   integration:
     executor: ci-executor
     steps:
+      - run: |
+          git config --global user.email "bogus@example.com"
+          git config --global user.name "Someone"
       - checkout
       - *attach_workspace
       - run: make integration
