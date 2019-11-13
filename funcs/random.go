@@ -5,9 +5,9 @@ import (
 	"sync"
 	"unicode/utf8"
 
-	"github.com/hairyhenderson/gomplate/conv"
-	iconv "github.com/hairyhenderson/gomplate/internal/conv"
-	"github.com/hairyhenderson/gomplate/random"
+	"github.com/hairyhenderson/gomplate/v3/conv"
+	iconv "github.com/hairyhenderson/gomplate/v3/internal/conv"
+	"github.com/hairyhenderson/gomplate/v3/random"
 	"github.com/pkg/errors"
 )
 

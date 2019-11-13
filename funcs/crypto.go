@@ -10,10 +10,10 @@ import (
 
 	"golang.org/x/crypto/bcrypt"
 
-	"github.com/hairyhenderson/gomplate/conv"
+	"github.com/hairyhenderson/gomplate/v3/conv"
 	"github.com/pkg/errors"
 
-	"github.com/hairyhenderson/gomplate/crypto"
+	"github.com/hairyhenderson/gomplate/v3/crypto"
 )
 
 var (

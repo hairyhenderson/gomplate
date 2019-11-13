@@ -7,8 +7,8 @@ import (
 	"github.com/docker/libkv"
 	"github.com/docker/libkv/store"
 	"github.com/docker/libkv/store/boltdb"
-	"github.com/hairyhenderson/gomplate/conv"
-	"github.com/hairyhenderson/gomplate/env"
+	"github.com/hairyhenderson/gomplate/v3/conv"
+	"github.com/hairyhenderson/gomplate/v3/env"
 	"github.com/pkg/errors"
 )
 

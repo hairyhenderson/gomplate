@@ -9,10 +9,10 @@ import (
 	"path/filepath"
 	"text/template"
 
-	"github.com/hairyhenderson/gomplate/tmpl"
+	"github.com/hairyhenderson/gomplate/v3/tmpl"
 
-	"github.com/hairyhenderson/gomplate/conv"
-	"github.com/hairyhenderson/gomplate/env"
+	"github.com/hairyhenderson/gomplate/v3/conv"
+	"github.com/hairyhenderson/gomplate/v3/env"
 	"github.com/pkg/errors"
 
 	"github.com/spf13/afero"

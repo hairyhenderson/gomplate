@@ -3,8 +3,8 @@ package funcs
 import (
 	"sync"
 
-	"github.com/hairyhenderson/gomplate/aws"
-	"github.com/hairyhenderson/gomplate/conv"
+	"github.com/hairyhenderson/gomplate/v3/aws"
+	"github.com/hairyhenderson/gomplate/v3/conv"
 )
 
 var (

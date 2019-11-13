@@ -10,8 +10,8 @@ import (
 	"reflect"
 	"sort"
 
-	"github.com/hairyhenderson/gomplate/conv"
-	iconv "github.com/hairyhenderson/gomplate/internal/conv"
+	"github.com/hairyhenderson/gomplate/v3/conv"
+	iconv "github.com/hairyhenderson/gomplate/v3/internal/conv"
 )
 
 // Slice creates a slice from a bunch of arguments

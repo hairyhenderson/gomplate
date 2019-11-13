@@ -12,7 +12,7 @@ import (
 	"text/template"
 	"time"
 
-	"github.com/hairyhenderson/gomplate/data"
+	"github.com/hairyhenderson/gomplate/v3/data"
 	"github.com/pkg/errors"
 	"github.com/spf13/afero"
 )

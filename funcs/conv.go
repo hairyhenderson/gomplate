@@ -5,8 +5,8 @@ import (
 	"sync"
 	"text/template"
 
-	"github.com/hairyhenderson/gomplate/coll"
-	"github.com/hairyhenderson/gomplate/conv"
+	"github.com/hairyhenderson/gomplate/v3/coll"
+	"github.com/hairyhenderson/gomplate/v3/conv"
 )
 
 var (

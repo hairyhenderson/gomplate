@@ -7,7 +7,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/ssm"
 	"github.com/pkg/errors"
 
-	gaws "github.com/hairyhenderson/gomplate/aws"
+	gaws "github.com/hairyhenderson/gomplate/v3/aws"
 )
 
 // awssmpGetter - A subset of SSM API for use in unit testing

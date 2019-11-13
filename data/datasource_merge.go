@@ -3,7 +3,7 @@ package data
 import (
 	"strings"
 
-	"github.com/hairyhenderson/gomplate/coll"
+	"github.com/hairyhenderson/gomplate/v3/coll"
 
 	"github.com/pkg/errors"
 )

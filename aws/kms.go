@@ -1,7 +1,7 @@
 package aws
 
 import (
-	b64 "github.com/hairyhenderson/gomplate/base64"
+	b64 "github.com/hairyhenderson/gomplate/v3/base64"
 
 	"github.com/aws/aws-sdk-go/service/kms"
 )

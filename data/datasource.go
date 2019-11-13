@@ -16,8 +16,8 @@ import (
 
 	"github.com/pkg/errors"
 
-	"github.com/hairyhenderson/gomplate/libkv"
-	"github.com/hairyhenderson/gomplate/vault"
+	"github.com/hairyhenderson/gomplate/v3/libkv"
+	"github.com/hairyhenderson/gomplate/v3/vault"
 )
 
 // stdin - for overriding in tests

@@ -1,4 +1,4 @@
-module github.com/hairyhenderson/gomplate
+module github.com/hairyhenderson/gomplate/v3
 
 go 1.13
 

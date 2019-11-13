@@ -3,7 +3,7 @@ package data
 import (
 	"strings"
 
-	"github.com/hairyhenderson/gomplate/env"
+	"github.com/hairyhenderson/gomplate/v3/env"
 )
 
 func readEnv(source *Source, args ...string) (b []byte, err error) {

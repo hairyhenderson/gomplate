@@ -12,13 +12,13 @@ import (
 	"unicode/utf8"
 
 	"github.com/Masterminds/goutils"
-	"github.com/hairyhenderson/gomplate/conv"
+	"github.com/hairyhenderson/gomplate/v3/conv"
 	"github.com/pkg/errors"
 
 	"strings"
 
 	"github.com/gosimple/slug"
-	gompstrings "github.com/hairyhenderson/gomplate/strings"
+	gompstrings "github.com/hairyhenderson/gomplate/v3/strings"
 )
 
 var (
