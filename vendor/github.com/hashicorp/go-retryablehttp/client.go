@@ -24,6 +24,7 @@ package retryablehttp
 import (
 	"bytes"
 	"context"
+	"crypto/x509"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -33,6 +34,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"regexp"
 	"strings"
 	"sync"
 	"time"
@@ -47,6 +49,9 @@ var (
 	defaultRetryWaitMax = 30 * time.Second
 	defaultRetryMax     = 4
 
+	// defaultLogger is the logger provided with defaultClient
+	defaultLogger = log.New(os.Stderr, "", log.LstdFlags)
+
 	// defaultClient is used for performing requests without explicitly making
 	// a new client. It is purposely private to avoid modifications.
 	defaultClient = NewClient()
@@ -54,6 +59,11 @@ var (
 	// We need to consume response bodies to maintain http connections, but
 	// limit the size we consume to respReadLimit.
 	respReadLimit = int64(4096)
+
+	// A regular expression to match the error returned by net/http when the
+	// configured number of redirects is exhausted. This error isn't typed
+	// specifically so we resort to matching on the error string.
+	redirectsErrorRe = regexp.MustCompile(`stopped after \d+ redirects\z`)
 )
 
 // ReaderFunc is the type of function that can be given natively to NewRequest
@@ -259,7 +269,7 @@ type ResponseLogHook func(Logger, *http.Response)
 // and returns the response to the caller. If CheckRetry returns an error,
 // that error value is returned in lieu of the error from the request. The
 // Client will close any response body when retrying, but if the retry is
-// aborted it is up to the CheckResponse callback to properly close any
+// aborted it is up to the CheckRetry callback to properly close any
 // response body before returning.
 type CheckRetry func(ctx context.Context, resp *http.Response, err error) (bool, error)
 
@@ -309,7 +319,7 @@ type Client struct {
 func NewClient() *Client {
 	return &Client{
 		HTTPClient:   cleanhttp.DefaultPooledClient(),
-		Logger:       log.New(os.Stderr, "", log.LstdFlags),
+		Logger:       defaultLogger,
 		RetryWaitMin: defaultRetryWaitMin,
 		RetryWaitMax: defaultRetryWaitMax,
 		RetryMax:     defaultRetryMax,
@@ -347,8 +357,22 @@ func DefaultRetryPolicy(ctx context.Context, resp *http.Response, err error) (bo
 	}
 
 	if err != nil {
-		return true, err
+		if v, ok := err.(*url.Error); ok {
+			// Don't retry if the error was due to too many redirects.
+			if redirectsErrorRe.MatchString(v.Error()) {
+				return false, nil
+			}
+
+			// Don't retry if the error was due to TLS cert verification failure.
+			if _, ok := v.Err.(x509.UnknownAuthorityError); ok {
+				return false, nil
+			}
+		}
+
+		// The error is likely recoverable so retry.
+		return true, nil
 	}
+
 	// Check the response code. We retry on 500-range responses to allow
 	// the server time to recover, as 500's are typically not permanent
 	// errors and may relate to outages on the server side. This will catch
@@ -454,7 +478,7 @@ func (c *Client) Do(req *Request) (*http.Response, error) {
 			}
 		}
 
-		if c.RequestLogHook != nil && logger != nil {
+		if c.RequestLogHook != nil {
 			switch v := logger.(type) {
 			case Logger:
 				c.RequestLogHook(v, req.Request, i)
@@ -474,27 +498,25 @@ func (c *Client) Do(req *Request) (*http.Response, error) {
 		// Check if we should continue with retries.
 		checkOK, checkErr := c.CheckRetry(req.Context(), resp, err)
 
-		if logger != nil {
-			if err != nil {
+		if err != nil {
+			switch v := logger.(type) {
+			case Logger:
+				v.Printf("[ERR] %s %s request failed: %v", req.Method, req.URL, err)
+			case hclog.Logger:
+				v.Error("request failed", "error", err, "method", req.Method, "url", req.URL)
+			}
+		} else {
+			// Call this here to maintain the behavior of logging all requests,
+			// even if CheckRetry signals to stop.
+			if c.ResponseLogHook != nil {
+				// Call the response logger function if provided.
 				switch v := logger.(type) {
 				case Logger:
-					v.Printf("[ERR] %s %s request failed: %v", req.Method, req.URL, err)
+					c.ResponseLogHook(v, resp)
 				case hclog.Logger:
-					v.Error("request failed", "error", err, "method", req.Method, "url", req.URL)
-				}
-			} else {
-				// Call this here to maintain the behavior of logging all requests,
-				// even if CheckRetry signals to stop.
-				if c.ResponseLogHook != nil {
-					// Call the response logger function if provided.
-					switch v := logger.(type) {
-					case Logger:
-						c.ResponseLogHook(v, resp)
-					case hclog.Logger:
-						c.ResponseLogHook(hookLogger{v}, resp)
-					default:
-						c.ResponseLogHook(nil, resp)
-					}
+					c.ResponseLogHook(hookLogger{v}, resp)
+				default:
+					c.ResponseLogHook(nil, resp)
 				}
 			}
 		}
