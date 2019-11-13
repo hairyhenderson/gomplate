@@ -6,7 +6,7 @@ import (
 
 	"github.com/pkg/errors"
 
-	"github.com/hairyhenderson/gomplate/vault"
+	"github.com/hairyhenderson/gomplate/v3/vault"
 )
 
 func parseVaultParams(sourceURL *url.URL, args []string) (params map[string]interface{}, p string, err error) {

@@ -39,7 +39,9 @@ jobs:
           command: |
             trap "go-junit-report < $CIRCLE_TEST_REPORTS/go-test.out > $CIRCLE_TEST_REPORTS/report.xml" EXIT
             make test | tee $CIRCLE_TEST_REPORTS/go-test.out
-            cc-test-reporter after-build --exit-code $?
+            # workaround from https://github.com/codeclimate/test-reporter/issues/378
+            export PREFIX=$(basename $(go list -m))
+            cc-test-reporter after-build -p $PREFIX --exit-code $?
       - store_test_results:
           path: /tmp/test-results
   lint:

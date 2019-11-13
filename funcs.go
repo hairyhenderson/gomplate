@@ -3,8 +3,8 @@ package gomplate
 import (
 	"text/template"
 
-	"github.com/hairyhenderson/gomplate/data"
-	"github.com/hairyhenderson/gomplate/funcs"
+	"github.com/hairyhenderson/gomplate/v3/data"
+	"github.com/hairyhenderson/gomplate/v3/funcs"
 )
 
 // Funcs - The function mappings are defined here!

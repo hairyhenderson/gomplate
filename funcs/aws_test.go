@@ -3,7 +3,7 @@ package funcs
 import (
 	"testing"
 
-	"github.com/hairyhenderson/gomplate/aws"
+	"github.com/hairyhenderson/gomplate/v3/aws"
 	"github.com/stretchr/testify/assert"
 )
 

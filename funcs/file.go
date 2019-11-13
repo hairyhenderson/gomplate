@@ -4,8 +4,8 @@ import (
 	"os"
 	"sync"
 
-	"github.com/hairyhenderson/gomplate/conv"
-	"github.com/hairyhenderson/gomplate/file"
+	"github.com/hairyhenderson/gomplate/v3/conv"
+	"github.com/hairyhenderson/gomplate/v3/file"
 	"github.com/spf13/afero"
 )
 

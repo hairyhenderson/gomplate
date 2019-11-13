@@ -11,9 +11,9 @@ import (
 	"os/exec"
 	"os/signal"
 
-	"github.com/hairyhenderson/gomplate"
-	"github.com/hairyhenderson/gomplate/env"
-	"github.com/hairyhenderson/gomplate/version"
+	"github.com/hairyhenderson/gomplate/v3"
+	"github.com/hairyhenderson/gomplate/v3/env"
+	"github.com/hairyhenderson/gomplate/v3/version"
 	"github.com/spf13/cobra"
 )
 

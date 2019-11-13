@@ -3,7 +3,7 @@ package data
 import (
 	"strings"
 
-	"github.com/hairyhenderson/gomplate/libkv"
+	"github.com/hairyhenderson/gomplate/v3/libkv"
 )
 
 func readConsul(source *Source, args ...string) (data []byte, err error) {

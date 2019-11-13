@@ -3,9 +3,9 @@ package funcs
 import (
 	"sync"
 
-	"github.com/hairyhenderson/gomplate/conv"
+	"github.com/hairyhenderson/gomplate/v3/conv"
 
-	"github.com/hairyhenderson/gomplate/coll"
+	"github.com/hairyhenderson/gomplate/v3/coll"
 	"github.com/pkg/errors"
 )
 

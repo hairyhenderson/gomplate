@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"strings"
 
-	iconv "github.com/hairyhenderson/gomplate/internal/conv"
+	iconv "github.com/hairyhenderson/gomplate/v3/internal/conv"
 	"github.com/pkg/errors"
 )
 

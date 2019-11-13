@@ -11,10 +11,10 @@ import (
 
 	"text/template"
 
-	"github.com/hairyhenderson/gomplate/aws"
-	"github.com/hairyhenderson/gomplate/conv"
-	"github.com/hairyhenderson/gomplate/data"
-	"github.com/hairyhenderson/gomplate/env"
+	"github.com/hairyhenderson/gomplate/v3/aws"
+	"github.com/hairyhenderson/gomplate/v3/conv"
+	"github.com/hairyhenderson/gomplate/v3/data"
+	"github.com/hairyhenderson/gomplate/v3/env"
 	"github.com/stretchr/testify/assert"
 )
 

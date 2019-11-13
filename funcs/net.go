@@ -4,9 +4,9 @@ import (
 	stdnet "net"
 	"sync"
 
-	"github.com/hairyhenderson/gomplate/conv"
+	"github.com/hairyhenderson/gomplate/v3/conv"
 
-	"github.com/hairyhenderson/gomplate/net"
+	"github.com/hairyhenderson/gomplate/v3/net"
 )
 
 var (

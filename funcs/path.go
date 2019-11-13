@@ -4,7 +4,7 @@ import (
 	"path"
 	"sync"
 
-	"github.com/hairyhenderson/gomplate/conv"
+	"github.com/hairyhenderson/gomplate/v3/conv"
 )
 
 var (

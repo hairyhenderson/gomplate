@@ -14,8 +14,8 @@ import (
 	"text/template"
 	"time"
 
-	"github.com/hairyhenderson/gomplate/conv"
-	"github.com/hairyhenderson/gomplate/env"
+	"github.com/hairyhenderson/gomplate/v3/conv"
+	"github.com/hairyhenderson/gomplate/v3/env"
 )
 
 func bindPlugins(plugins []string, funcMap template.FuncMap) error {

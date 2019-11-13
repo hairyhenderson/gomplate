@@ -3,10 +3,10 @@ package funcs
 import (
 	"sync"
 
-	"github.com/hairyhenderson/gomplate/conv"
+	"github.com/hairyhenderson/gomplate/v3/conv"
 	"github.com/pkg/errors"
 
-	"github.com/hairyhenderson/gomplate/test"
+	"github.com/hairyhenderson/gomplate/v3/test"
 )
 
 var (
