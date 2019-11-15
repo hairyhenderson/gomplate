@@ -68,7 +68,7 @@ func (f *DataFuncs) YAMLArray(in interface{}) ([]interface{}, error) {
 }
 
 // YAMLStream -
-func (f *DataFuncs) YAMLStream(in interface{}) (chan interface{}, error) {
+func (f *DataFuncs) YAMLStream(in interface{}) ([]interface{}, error) {
 	return data.YAMLStream(conv.ToString(in))
 }
 

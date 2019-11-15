@@ -124,22 +124,19 @@ func YAMLArray(in string) ([]interface{}, error) {
 }
 
 // YAMLStream - parses a (potentially) multi-document YAML stream
-func YAMLStream(in string) (ch chan interface{}, err error) {
-	ch = make(chan interface{})
+func YAMLStream(in string) ([]interface{}, error) {
+	obj := []interface{}{}
 	s := strings.NewReader(in)
 	d := yaml.NewDecoder(s)
-	go func() {
-		for {
-			var o interface{}
-			err := d.Decode(&o)
-			if err == io.EOF {
-				close(ch)
-				break
-			}
-			ch <- o
+	for {
+		var o interface{}
+		err := d.Decode(&o)
+		if err == io.EOF {
+			break
 		}
-	}()
-	return ch, nil
+		obj = append(obj, o)
+	}
+	return obj, nil
 }
 
 // TOML - Unmarshal a TOML Object
