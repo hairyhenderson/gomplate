@@ -67,6 +67,11 @@ func (f *DataFuncs) YAMLArray(in interface{}) ([]interface{}, error) {
 	return data.YAMLArray(conv.ToString(in))
 }
 
+// YAMLStream -
+func (f *DataFuncs) YAMLStream(in interface{}) (chan interface{}, error) {
+	return data.YAMLStream(conv.ToString(in))
+}
+
 // TOML -
 func (f *DataFuncs) TOML(in interface{}) (interface{}, error) {
 	return data.TOML(conv.ToString(in))

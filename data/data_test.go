@@ -523,3 +523,22 @@ QUX='single quotes ignore $variables'
 	assert.NoError(t, err)
 	assert.EqualValues(t, expected, out)
 }
+
+func TestMultiDocYAML(t *testing.T) {
+	in := `foo: bar
+---
+baz: qux
+---
+# empty document with a comment
+`
+	expected := []interface{}{
+		map[string]interface{}{"foo": "bar"},
+		map[string]interface{}{"baz": "qux"},
+		nil,
+	}
+	ch, err := YAMLArray(in)
+	for i, out := range ch {
+		assert.NoError(t, err)
+		assert.EqualValues(t, expected[i], out)
+	}
+}

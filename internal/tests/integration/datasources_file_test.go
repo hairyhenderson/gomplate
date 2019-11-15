@@ -201,10 +201,10 @@ bar`})
 }`})
 
 	result = icmd.RunCmd(icmd.Command(GomplateBin,
-		"-c=multidoc.yaml",
-		"-i", `{{ .multidoc.foo }}`,
+		"-d=multidoc.yaml",
+		"-i", `{{ range $d := (include "multidoc" | data.YAMLStream) }}---{{"\n"}}{{ range $k, $v := $d }}{{ $k }}: {{ $v }}{{"\n"}}{{ end }}{{ end }}`,
 	), func(c *icmd.Cmd) {
 		c.Dir = s.tmpDir.Path()
 	})
-	result.Assert(c, icmd.Expected{ExitCode: 0, Out: "bar"})
+	result.Assert(c, icmd.Expected{ExitCode: 0, Out: "---\n---\nfoo: bar\n---\nfoo: baz\n"})
 }
