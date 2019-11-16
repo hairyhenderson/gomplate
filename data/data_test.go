@@ -34,6 +34,15 @@ func TestUnmarshalObj(t *testing.T) {
 one: 1.0
 true: true
 `))
+	test(YAML(`# this comment marks an empty (nil!) document
+---
+# this one too, for good measure
+---
+foo:
+  bar: baz
+one: 1.0
+true: true
+`))
 
 	obj := make(map[string]interface{})
 	_, err := unmarshalObj(obj, "SOMETHING", func(in []byte, out interface{}) error {
@@ -65,6 +74,20 @@ func TestUnmarshalArray(t *testing.T) {
     "42": 18
   corge:
     "false": blah
+`))
+	test(YAMLArray(`---
+# blah blah blah ignore this!
+---
+- foo
+- bar
+- baz:
+    qux: true
+  quux:
+    "42": 18
+  corge:
+    "false": blah
+---
+this shouldn't be reached
 `))
 
 	obj := make([]interface{}, 1)

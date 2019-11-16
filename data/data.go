@@ -8,6 +8,7 @@ import (
 	"bytes"
 	"encoding/csv"
 	"encoding/json"
+	"io"
 	"strings"
 
 	"github.com/joho/godotenv"
@@ -84,13 +85,41 @@ func JSONArray(in string) ([]interface{}, error) {
 // YAML - Unmarshal a YAML Object
 func YAML(in string) (map[string]interface{}, error) {
 	obj := make(map[string]interface{})
-	return unmarshalObj(obj, in, yaml.Unmarshal)
+	s := strings.NewReader(in)
+	d := yaml.NewDecoder(s)
+	for {
+		err := d.Decode(&obj)
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			return nil, err
+		}
+		if obj != nil {
+			break
+		}
+	}
+	return obj, nil
 }
 
 // YAMLArray - Unmarshal a YAML Array
 func YAMLArray(in string) ([]interface{}, error) {
 	obj := make([]interface{}, 1)
-	return unmarshalArray(obj, in, yaml.Unmarshal)
+	s := strings.NewReader(in)
+	d := yaml.NewDecoder(s)
+	for {
+		err := d.Decode(&obj)
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			return nil, err
+		}
+		if obj != nil {
+			break
+		}
+	}
+	return obj, nil
 }
 
 // TOML - Unmarshal a TOML Object
