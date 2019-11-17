@@ -217,7 +217,7 @@ func (v *Vault) TokenLogin() (string, error) {
 	if token := env.Getenv("VAULT_TOKEN"); token != "" {
 		return token, nil
 	}
-	homeDir, err := homeDir()
+	homeDir, err := os.UserHomeDir()
 	if err != nil {
 		return "", err
 	}
@@ -230,14 +230,4 @@ func (v *Vault) TokenLogin() (string, error) {
 		return "", err
 	}
 	return string(b), nil
-}
-
-func homeDir() (string, error) {
-	if home := os.Getenv("HOME"); home != "" {
-		return home, nil
-	}
-	if home := os.Getenv("USERPROFILE"); home != "" {
-		return home, nil
-	}
-	return "", errors.New("neither HOME nor USERPROFILE environment variables are set! I can't figure out where the current user's home directory is")
 }
