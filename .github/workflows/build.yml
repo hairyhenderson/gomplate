@@ -15,7 +15,7 @@ jobs:
       - run: |
           git config --global user.email "bogus@example.com"
           git config --global user.name "Someone"
-      - uses: actions/checkout@master
+      - uses: actions/checkout@v1
         with:
           path: ./src/github.com/${{ github.repository }}
       - run: make build
@@ -39,7 +39,7 @@ jobs:
       - run: |
           git config --global user.email "bogus@example.com"
           git config --global user.name "Someone"
-      - uses: actions/checkout@master
+      - uses: actions/checkout@v1
         with:
           path: ./src/github.com/${{ github.repository }}
       - run: make build
@@ -56,7 +56,7 @@ jobs:
     container:
       image: 'hairyhenderson/gomplate-ci-build:latest'
     steps:
-      - uses: actions/checkout@master
+      - uses: actions/checkout@v1
         with:
           path: ./src/github.com/${{ github.repository }}
       - run: make lint
