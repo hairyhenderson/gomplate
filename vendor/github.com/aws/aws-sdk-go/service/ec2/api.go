@@ -40585,6 +40585,92 @@ func (s *CapacityReservation) SetTotalInstanceCount(v int64) *CapacityReservatio
 	return s
 }
 
+// Describes the strategy for using unused Capacity Reservations for fulfilling
+// On-Demand capacity.
+//
+// This strategy can only be used if the EC2 Fleet is of type instant.
+//
+// For more information about Capacity Reservations, see On-Demand Capacity
+// Reservations (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-capacity-reservations.html)
+// in the Amazon Elastic Compute Cloud User Guide.
+type CapacityReservationOptions struct {
+	_ struct{} `type:"structure"`
+
+	// Indicates whether to use unused Capacity Reservations for fulfilling On-Demand
+	// capacity.
+	//
+	// If you specify use-capacity-reservations-first, the fleet uses unused Capacity
+	// Reservations to fulfill On-Demand capacity up to the target On-Demand capacity.
+	// If the number of unused Capacity Reservations is less than the On-Demand
+	// target capacity, the remaining On-Demand target capacity is launched as usual.
+	// When unused Capacity Reservations are used to fulfil On-Demand capacity,
+	// the On-Demand allocation strategy (lowest-price or prioritized) is applied
+	// to them.
+	//
+	// If you do not specify a value, the fleet fulfils the On-Demand capacity as
+	// usual.
+	UsageStrategy *string `locationName:"usageStrategy" type:"string" enum:"FleetCapacityReservationUsageStrategy"`
+}
+
+// String returns the string representation
+func (s CapacityReservationOptions) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s CapacityReservationOptions) GoString() string {
+	return s.String()
+}
+
+// SetUsageStrategy sets the UsageStrategy field's value.
+func (s *CapacityReservationOptions) SetUsageStrategy(v string) *CapacityReservationOptions {
+	s.UsageStrategy = &v
+	return s
+}
+
+// Describes the strategy for using unused Capacity Reservations for fulfilling
+// On-Demand capacity.
+//
+// This strategy can only be used if the EC2 Fleet is of type instant.
+//
+// For more information about Capacity Reservations, see On-Demand Capacity
+// Reservations (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-capacity-reservations.html)
+// in the Amazon Elastic Compute Cloud User Guide.
+type CapacityReservationOptionsRequest struct {
+	_ struct{} `type:"structure"`
+
+	// Indicates whether to use unused Capacity Reservations for fulfilling On-Demand
+	// capacity.
+	//
+	// If you specify use-capacity-reservations-first, the fleet uses unused Capacity
+	// Reservations to fulfill On-Demand capacity up to the target On-Demand capacity.
+	// If the number of unused Capacity Reservations is less than the On-Demand
+	// target capacity, the remaining On-Demand target capacity is launched as usual.
+	// When unused Capacity Reservations are used to fulfil On-Demand capacity,
+	// the On-Demand allocation strategy (lowest-price or prioritized) is applied
+	// to them.
+	//
+	// If you do not specify a value, the fleet fulfils the On-Demand capacity as
+	// usual.
+	UsageStrategy *string `type:"string" enum:"FleetCapacityReservationUsageStrategy"`
+}
+
+// String returns the string representation
+func (s CapacityReservationOptionsRequest) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s CapacityReservationOptionsRequest) GoString() string {
+	return s.String()
+}
+
+// SetUsageStrategy sets the UsageStrategy field's value.
+func (s *CapacityReservationOptionsRequest) SetUsageStrategy(v string) *CapacityReservationOptionsRequest {
+	s.UsageStrategy = &v
+	return s
+}
+
 // Describes an instance's Capacity Reservation targeting option. You can specify
 // only one parameter at a time. If you specify CapacityReservationPreference
 // and CapacityReservationTarget, the request fails.
@@ -58389,8 +58475,9 @@ type DescribeInstancesInput struct {
 	//    * hypervisor - The hypervisor type of the instance (ovm | xen).
 	//
 	//    * iam-instance-profile.arn - The instance profile associated with the
-	//    instance. Specified as an ARN. image-id - The ID of the image used to
-	//    launch the instance.
+	//    instance. Specified as an ARN.
+	//
+	//    * image-id - The ID of the image used to launch the instance.
 	//
 	//    * instance-id - The ID of the instance.
 	//
@@ -68934,7 +69021,7 @@ type DiskInfo struct {
 	// The number of disks with this configuration.
 	Count *int64 `locationName:"count" type:"integer"`
 
-	// The size of the disk in GiB.
+	// The size of the disk in GB.
 	SizeInGB *int64 `locationName:"sizeInGB" type:"long"`
 
 	// The type of disk.
@@ -69103,8 +69190,9 @@ type EbsBlockDevice struct {
 	// size.
 	VolumeSize *int64 `locationName:"volumeSize" type:"integer"`
 
-	// The volume type. If you set the type to io1, you must also specify the IOPS
-	// that the volume supports.
+	// The volume type. If you set the type to io1, you must also specify the Iops
+	// parameter. If you set the type to gp2, st1, sc1, or standard, you must omit
+	// the Iops parameter.
 	//
 	// Default: gp2
 	VolumeType *string `locationName:"volumeType" type:"string" enum:"VolumeType"`
@@ -69527,8 +69615,13 @@ func (s *ElasticGpus) SetInstanceId(v string) *ElasticGpus {
 type ElasticInferenceAccelerator struct {
 	_ struct{} `type:"structure"`
 
-	// The type of elastic inference accelerator. The possible values are eia1.small,
-	// eia1.medium, and eia1.large.
+	// The number of elastic inference accelerators of given type to be attached
+	// to the instance. Only positive values allowed. If not specified defaults
+	// to 1.
+	Count *int64 `min:"1" type:"integer"`
+
+	// The type of elastic inference accelerator. The possible values are eia1.medium,
+	// eia1.large, and eia1.xlarge.
 	//
 	// Type is a required field
 	Type *string `type:"string" required:"true"`
@@ -69547,6 +69640,9 @@ func (s ElasticInferenceAccelerator) GoString() string {
 // Validate inspects the fields of the type to determine if they are valid.
 func (s *ElasticInferenceAccelerator) Validate() error {
 	invalidParams := request.ErrInvalidParams{Context: "ElasticInferenceAccelerator"}
+	if s.Count != nil && *s.Count < 1 {
+		invalidParams.Add(request.NewErrParamMinValue("Count", 1))
+	}
 	if s.Type == nil {
 		invalidParams.Add(request.NewErrParamRequired("Type"))
 	}
@@ -69555,6 +69651,12 @@ func (s *ElasticInferenceAccelerator) Validate() error {
 		return invalidParams
 	}
 	return nil
+}
+
+// SetCount sets the Count field's value.
+func (s *ElasticInferenceAccelerator) SetCount(v int64) *ElasticInferenceAccelerator {
+	s.Count = &v
+	return s
 }
 
 // SetType sets the Type field's value.
@@ -78738,7 +78840,7 @@ type InstanceStorageInfo struct {
 	// Array describing the disks that are available for the instance type.
 	Disks []*DiskInfo `locationName:"disks" locationNameList:"item" type:"list"`
 
-	// The total size of the disks, in GiB.
+	// The total size of the disks, in GB.
 	TotalSizeInGB *int64 `locationName:"totalSizeInGB" type:"long"`
 }
 
@@ -80193,6 +80295,11 @@ func (s *LaunchTemplateEbsBlockDeviceRequest) SetVolumeType(v string) *LaunchTem
 type LaunchTemplateElasticInferenceAccelerator struct {
 	_ struct{} `type:"structure"`
 
+	// The number of elastic inference accelerators of given type to be attached
+	// to the instance. Only positive values allowed. If not specified defaults
+	// to 1.
+	Count *int64 `min:"1" type:"integer"`
+
 	// The type of elastic inference accelerator. The possible values are eia1.medium,
 	// eia1.large, and eia1.xlarge.
 	//
@@ -80213,6 +80320,9 @@ func (s LaunchTemplateElasticInferenceAccelerator) GoString() string {
 // Validate inspects the fields of the type to determine if they are valid.
 func (s *LaunchTemplateElasticInferenceAccelerator) Validate() error {
 	invalidParams := request.ErrInvalidParams{Context: "LaunchTemplateElasticInferenceAccelerator"}
+	if s.Count != nil && *s.Count < 1 {
+		invalidParams.Add(request.NewErrParamMinValue("Count", 1))
+	}
 	if s.Type == nil {
 		invalidParams.Add(request.NewErrParamRequired("Type"))
 	}
@@ -80221,6 +80331,12 @@ func (s *LaunchTemplateElasticInferenceAccelerator) Validate() error {
 		return invalidParams
 	}
 	return nil
+}
+
+// SetCount sets the Count field's value.
+func (s *LaunchTemplateElasticInferenceAccelerator) SetCount(v int64) *LaunchTemplateElasticInferenceAccelerator {
+	s.Count = &v
+	return s
 }
 
 // SetType sets the Type field's value.
@@ -80232,6 +80348,11 @@ func (s *LaunchTemplateElasticInferenceAccelerator) SetType(v string) *LaunchTem
 // Describes an elastic inference accelerator.
 type LaunchTemplateElasticInferenceAcceleratorResponse struct {
 	_ struct{} `type:"structure"`
+
+	// The number of elastic inference accelerators of given type to be attached
+	// to the instance. Only positive values allowed. If not specified defaults
+	// to 1.
+	Count *int64 `locationName:"count" type:"integer"`
 
 	// The type of elastic inference accelerator. The possible values are eia1.medium,
 	// eia1.large, and eia1.xlarge.
@@ -80246,6 +80367,12 @@ func (s LaunchTemplateElasticInferenceAcceleratorResponse) String() string {
 // GoString returns the string representation
 func (s LaunchTemplateElasticInferenceAcceleratorResponse) GoString() string {
 	return s.String()
+}
+
+// SetCount sets the Count field's value.
+func (s *LaunchTemplateElasticInferenceAcceleratorResponse) SetCount(v int64) *LaunchTemplateElasticInferenceAcceleratorResponse {
+	s.Count = &v
+	return s
 }
 
 // SetType sets the Type field's value.
@@ -87704,6 +87831,10 @@ type OnDemandOptions struct {
 	// Fleet defaults to lowest-price.
 	AllocationStrategy *string `locationName:"allocationStrategy" type:"string" enum:"FleetOnDemandAllocationStrategy"`
 
+	// The strategy for using unused Capacity Reservations for fulfilling On-Demand
+	// capacity. Only available for fleets of type instant.
+	CapacityReservationOptions *CapacityReservationOptions `locationName:"capacityReservationOptions" type:"structure"`
+
 	// The maximum amount per hour for On-Demand Instances that you're willing to
 	// pay.
 	MaxTotalPrice *string `locationName:"maxTotalPrice" type:"string"`
@@ -87734,6 +87865,12 @@ func (s OnDemandOptions) GoString() string {
 // SetAllocationStrategy sets the AllocationStrategy field's value.
 func (s *OnDemandOptions) SetAllocationStrategy(v string) *OnDemandOptions {
 	s.AllocationStrategy = &v
+	return s
+}
+
+// SetCapacityReservationOptions sets the CapacityReservationOptions field's value.
+func (s *OnDemandOptions) SetCapacityReservationOptions(v *CapacityReservationOptions) *OnDemandOptions {
+	s.CapacityReservationOptions = v
 	return s
 }
 
@@ -87773,6 +87910,10 @@ type OnDemandOptionsRequest struct {
 	// Fleet defaults to lowest-price.
 	AllocationStrategy *string `type:"string" enum:"FleetOnDemandAllocationStrategy"`
 
+	// The strategy for using unused Capacity Reservations for fulfilling On-Demand
+	// capacity. Only available for fleets of type instant.
+	CapacityReservationOptions *CapacityReservationOptionsRequest `type:"structure"`
+
 	// The maximum amount per hour for On-Demand Instances that you're willing to
 	// pay.
 	MaxTotalPrice *string `type:"string"`
@@ -87803,6 +87944,12 @@ func (s OnDemandOptionsRequest) GoString() string {
 // SetAllocationStrategy sets the AllocationStrategy field's value.
 func (s *OnDemandOptionsRequest) SetAllocationStrategy(v string) *OnDemandOptionsRequest {
 	s.AllocationStrategy = &v
+	return s
+}
+
+// SetCapacityReservationOptions sets the CapacityReservationOptions field's value.
+func (s *OnDemandOptionsRequest) SetCapacityReservationOptions(v *CapacityReservationOptionsRequest) *OnDemandOptionsRequest {
+	s.CapacityReservationOptions = v
 	return s
 }
 
@@ -106478,6 +106625,11 @@ const (
 
 	// FleetActivityStatusFulfilled is a FleetActivityStatus enum value
 	FleetActivityStatusFulfilled = "fulfilled"
+)
+
+const (
+	// FleetCapacityReservationUsageStrategyUseCapacityReservationsFirst is a FleetCapacityReservationUsageStrategy enum value
+	FleetCapacityReservationUsageStrategyUseCapacityReservationsFirst = "use-capacity-reservations-first"
 )
 
 const (
