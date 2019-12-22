@@ -1,7 +1,7 @@
-FROM alpine:3.11 AS upx
+FROM alpine:3.8 AS upx
 RUN apk add --no-cache upx=3.94-r0
 
-FROM golang:1.13.5-alpine AS build
+FROM golang:1.13.5-alpine3.10 AS build
 
 RUN apk add --no-cache \
     make \
@@ -37,7 +37,7 @@ COPY --from=artifacts /bin/gomplate_${OS}-${ARCH} /gomplate
 
 ENTRYPOINT [ "/gomplate" ]
 
-FROM alpine:3.11 AS gomplate-alpine
+FROM alpine:3.11.0 AS gomplate-alpine
 
 ARG VCS_REF
 ARG OS=linux
