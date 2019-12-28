@@ -6,7 +6,7 @@ require (
 	github.com/Masterminds/goutils v1.1.0
 	github.com/Shopify/ejson v1.2.1
 	github.com/armon/go-metrics v0.3.0 // indirect
-	github.com/aws/aws-sdk-go v1.26.7
+	github.com/aws/aws-sdk-go v1.26.8
 	github.com/boltdb/bolt v1.3.1
 	github.com/docker/libkv v0.2.1
 	github.com/dustin/gojson v0.0.0-20160307161227-2e71ec9dd5ad // indirect
