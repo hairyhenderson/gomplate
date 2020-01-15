@@ -31,7 +31,6 @@ jobs:
     runs-on: windows-latest
     env:
       TMP: D:\tmp
-      GOFLAGS: -mod=vendor
     steps:
       - uses: actions/setup-go@v1
         with:
