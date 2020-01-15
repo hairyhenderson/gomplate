@@ -253,6 +253,20 @@ the default context from data sources with the [`--context`/`c`](../usage/#conte
 flag. The special context item [`.Env`](#env) is available for referencing the
 system's environment variables.
 
+_Note:_ The initial context (`.`) is always available as the variable `$`,
+so the initial context is always available, even when shadowed with `range`
+or `with` blocks:
+
+```
+$ echo '{"bar":"baz"}' | gomplate -c .=stdin:///in.json -i 'context is: {{ . }}
+{{ with "foo" }}now context is {{ . }}
+but the original context is still {{ $ }}
+{{ end }}'
+context is: map[bar:baz]
+now context is foo
+but the original context is still map[bar:baz]
+```
+
 ## Nested templates
 
 Gomplate supports nested templates, using Go's `template` action. These can be
