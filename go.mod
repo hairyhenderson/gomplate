@@ -26,7 +26,7 @@ require (
 	github.com/johannesboyne/gofakes3 v0.0.0-20191029185751-e238f04965fe
 	github.com/joho/godotenv v1.3.0
 	github.com/pierrec/lz4 v2.3.0+incompatible // indirect
-	github.com/pkg/errors v0.8.1
+	github.com/pkg/errors v0.9.1
 	github.com/smartystreets/goconvey v0.0.0-20190731233626-505e41936337 // indirect
 	github.com/spf13/afero v1.2.2
 	github.com/spf13/cobra v0.0.5
