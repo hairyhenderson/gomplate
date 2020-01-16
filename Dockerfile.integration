@@ -10,7 +10,6 @@ COPY --from=consul /bin/consul /bin/consul
 RUN apk add --no-cache make tzdata
 
 WORKDIR /go/src/github.com/hairyhenderson/gomplate/
-COPY vendor ./vendor
 COPY tests/integration ./tests/integration
 COPY Makefile ./Makefile
 COPY bin/gomplate_linux-amd64 ./bin/gomplate
