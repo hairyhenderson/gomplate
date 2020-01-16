@@ -1,0 +1,36 @@
+name: Tidy Go modules
+
+on:
+  push:
+    paths:
+      - .github/workflows/mod-tidy.yml
+      - go.mod
+      - go.sum
+
+jobs:
+  tidy:
+    runs-on: ubuntu-latest
+    container:
+      image: hairyhenderson/gomplate-ci-build:latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v1
+      - uses: actions/setup-go@v1
+        with:
+          go-version: 1.13.x
+      - name: Reattach HEAD
+        run: git checkout ${GITHUB_REF#refs/heads/}
+      - name: Tidy
+        run: rm -f go.sum; go mod tidy
+      - name: Configure git
+        run: |
+          git config user.name "${GITHUB_ACTOR}"
+          git config user.email "${GITHUB_ACTOR}@users.noreply.github.com"
+          git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${GITHUB_REPOSITORY}.git
+      - name: Commit and push changes
+        run: |
+          git add go.sum go.mod
+          if output=$(git status --porcelain) && [ ! -z "$output" ]; then
+            git commit -m 'chore(deps) Tidy go modules'
+            git push
+          fi
