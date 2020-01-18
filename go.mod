@@ -26,7 +26,7 @@ require (
 	github.com/ugorji/go/codec v1.1.7
 	github.com/zealic/xignore v0.3.3
 	gocloud.dev v0.18.0
-	golang.org/x/crypto v0.0.0-20200115085410-6d4e4cb37c7d
+	golang.org/x/crypto v0.0.0-20200117160349-530e935923ad
 	gopkg.in/check.v1 v1.0.0-20190902080502-41f04d3bba15
 	gopkg.in/src-d/go-billy.v4 v4.3.2
 	gopkg.in/src-d/go-git.v4 v4.13.1
