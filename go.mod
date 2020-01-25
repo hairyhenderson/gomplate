@@ -15,7 +15,7 @@ require (
 	github.com/hairyhenderson/toml v0.3.1-0.20191004034452-2a4f3b6160f2
 	github.com/hashicorp/consul/api v1.3.0
 	github.com/hashicorp/go-sockaddr v1.0.2
-	github.com/hashicorp/vault/api v1.0.4
+	github.com/hashicorp/vault/api v1.3.2
 	github.com/johannesboyne/gofakes3 v0.0.0-20191228161223-9aee1c78a252
 	github.com/joho/godotenv v1.3.0
 	github.com/pkg/errors v0.9.1
