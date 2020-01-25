@@ -57,12 +57,13 @@ Gomplate supports a number of datasources, each specified with a particular URL 
 |------|---------------|-------------|
 | [AWS Systems Manager Parameter Store](#using-aws-smp-datasources) | `aws+smp` | [AWS Systems Manager Parameter Store][AWS SMP] is a hierarchically-organized key/value store which allows storage of text, lists, or encrypted secrets for retrieval by AWS resources |
 | [AWS Secrets Manager](#using-aws-sm-datasource) | `aws+sm` | [AWS Secrets Manager][] helps you protect secrets needed to access your applications, services, and IT resources. |
-| [Amazon S3](#using-aws-s3-datasources) | `s3` | [Amazon S3][] is a popular object storage service. |
+| [Amazon S3](#using-s3-datasources) | `s3` | [Amazon S3][] is a popular object storage service. |
 | [BoltDB](#using-boltdb-datasources) | `boltdb` | [BoltDB][] is a simple local key/value store used by many Go tools |
 | [Consul](#using-consul-datasources) | `consul`, `consul+http`, `consul+https` | [HashiCorp Consul][] provides (among many other features) a key/value store |
 | [Environment](#using-env-datasources) | `env` | Environment variables can be used as datasources - useful for testing |
 | [File](#using-file-datasources) | `file` | Files can be read in any of the [supported formats](#mime-types), including by piping through standard input (`Stdin`). [Directories](#directory-datasources) are also supported. |
 | [Git](#using-git-datasources) | `git`, `git+file`, `git+http`, `git+https`, `git+ssh` | Files can be read from a local or remote git repository, at specific branches or tags. [Directory semantics](#directory-datasources) are also supported. |
+| [Google Cloud Storage](#using-google-cloud-storage-gs-datasources) | `gs` | [Google Cloud Storage][] is the object storage service available on GCP, comparable to AWS S3. |
 | [HTTP](#using-http-datasources) | `http`, `https` | Data can be sourced from HTTP/HTTPS sites in many different formats. Arbitrary HTTP headers can be set with the [`--datasource-header`/`-H`][] flag |
 | [Merged Datasources](#using-merge-datasources) | `merge` | Merge two or more datasources together to produce the final value - useful for resolving defaults. Uses [`coll.Merge`][] for merging. |
 | [Stdin](#using-stdin-datasources) | `stdin` | A special case of the `file` datasource; allows piping through standard input (`Stdin`) |
@@ -78,7 +79,8 @@ Currently the following datasources support directory semantics:
 - [Vault](#using-vault-datasources) - translates to Vault's [LIST](https://www.vaultproject.io/api/index.html#reading-writing-and-listing-secrets) method
 - [Consul](#using-consul-datasources)
 When accessing a directory datasource, an array of key names is returned, and can be iterated through to access each individual value contained within.
-- [S3](#using-s3-datasources)
+- [AWS S3](#using-s3-datasources)
+- [Google Cloud Storage](#using-google-cloud-storage-gs-datasources)
 - [Git](#using-git-datasources)
 
 For example, a group of configuration key/value pairs (named `one`, `two`, and `three`, with values `v1`, `v2`, and `v3` respectively) could be rendered like this: 
@@ -99,7 +101,7 @@ three = v3
 
 ## MIME Types
 
-Gomplate will read and parse a number of data formats. The appropriate type will be set automatically, if possible, either based on file extension (for the `file`, `http`, and `s3` datasources), or the [HTTP Content-Type][] header, if available. If an unsupported type is detected, gomplate will exit with an error.
+Gomplate will read and parse a number of data formats. The appropriate type will be set automatically, if possible, either based on file extension (for the `file`, `http`, `gs`, and `s3` datasources), or the [HTTP Content-Type][] header, if available. If an unsupported type is detected, gomplate will exit with an error.
 
 These are the supported types:
 
@@ -517,6 +519,47 @@ $ gomplate -d 'hairyhenderson=git+https://github.com/hairyhenderson' -i '{{ (ds 
 env
 ```
 
+## Using Google Cloud Storage (`gs`) datasources
+
+### URL Considerations
+
+The _scheme_, _authority_, _path_, and _query_ URL components are used by this datasource.
+
+- the _scheme_ must be `gs`
+- the _authority_ component is used to specify the bucket name
+- the _path_ component is used to specify the path to the object. [Directory](#directory-datasources) semantics are available when the path ends with a `/` character.
+- the _query_ component can be used to provide parameters to configure the connection:
+  - `access_id`: (optional) Usually unnecessary. Sets the GoogleAccessID (see https://godoc.org/cloud.google.com/go/storage#SignedURLOptions)
+  - `private_key_path`: (optional) Usually unnecessary. Sets the path to the Google service account private key (see https://godoc.org/cloud.google.com/go/storage#SignedURLOptions)
+  - `type`: can be used to [override the MIME type](#overriding-mime-types)
+
+### Authentication
+
+All `gs` datasources need credentials, provided by the `GOOGLE_APPLICATION_CREDENTIALS` environment variable. This should point to an authentication configuration JSON file.
+
+See Google Cloud's [Getting Started with Authentication](https://cloud.google.com/docs/authentication/getting-started) documentation for details.
+
+### Output
+
+The output will be the object contents, parsed based on the discovered [MIME type](#mime-types).
+
+### Examples
+
+Given the bucket named `my-bucket` has the following objects:
+
+- `foo/bar.json` - `{"hello": "world"}`
+- `foo/baz.txt` - `hello world`
+
+```console
+$ gomplate -c foo=gs://my-bucket/foo/bar.json -i 'Hello {{ .foo.hello }}'
+Hello world
+
+$ gomplate -c foo=gs://my-bucket/foo/ -i 'my-bucket/foo contains:{{ range .foo }}{{ print "\n" . }}{{ end }}'
+my-bucket/foo contains:
+bar.json
+baz.txt
+```
+
 ## Using `http` datasources
 
 To access datasources from HTTP sites or APIs, simply use a `http` or `https` URL:
@@ -724,6 +767,7 @@ The file `/tmp/vault-aws-nonce` will be created if it didn't already exist, and 
 [URL]: https://tools.ietf.org/html/rfc3986
 [AWS SDK for Go]: https://docs.aws.amazon.com/sdk-for-go/api/
 [Amazon S3]: https://aws.amazon.com/s3/
+[Google Cloud Storage]: https://cloud.google.com/storage/
 
 [Minio]: https://min.io
 [Zenko CloudServer]: https://www.zenko.io/cloudserver/
