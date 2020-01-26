@@ -389,7 +389,7 @@ func (d *Data) Datasource(alias string, args ...string) (interface{}, error) {
 }
 
 func parseData(mimeType, s string) (out interface{}, err error) {
-	switch mimeType {
+	switch mimeAlias(mimeType) {
 	case jsonMimetype:
 		out, err = JSON(s)
 	case jsonArrayMimetype:
