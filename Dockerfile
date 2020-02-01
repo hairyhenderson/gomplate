@@ -1,6 +1,6 @@
 FROM hairyhenderson/upx:3.94 AS upx
 
-FROM golang:1.13.6-alpine3.11 AS build
+FROM golang:1.13.7-alpine3.11 AS build
 
 RUN apk add --no-cache \
     make \
