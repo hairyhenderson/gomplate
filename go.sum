@@ -196,8 +196,7 @@ github.com/jessevdk/go-flags v1.4.0/go.mod h1:4FA24M0QyGHXBuZZK/XkWh8h0e1EYbRYJS
 github.com/jmespath/go-jmespath v0.0.0-20160202185014-0b12d6b521d8/go.mod h1:Nht3zPeWKUH0NzdCt2Blrr5ys8VGpn0CEB0cQHVjt7k=
 github.com/jmespath/go-jmespath v0.0.0-20180206201540-c2b33e8439af h1:pmfjZENx5imkbgOkpRUYLnmbU7UEFbjtDA2hxJ1ichM=
 github.com/jmespath/go-jmespath v0.0.0-20180206201540-c2b33e8439af/go.mod h1:Nht3zPeWKUH0NzdCt2Blrr5ys8VGpn0CEB0cQHVjt7k=
-github.com/johannesboyne/gofakes3 v0.0.0-20191228161223-9aee1c78a252 h1:ZABLXRnnFNP5nkVzVBx2kQ/4GvSLUqcD2YUc+9Uc2Mo=
-github.com/johannesboyne/gofakes3 v0.0.0-20191228161223-9aee1c78a252/go.mod h1:cPDudDcSR9fls3ZmrXgt0GU2QpQGQRJc4JBNtKyNr1s=
+github.com/johannesboyne/gofakes3 v0.0.0-20200218152459-de0855a40bc1 h1:jUva9XoPV9p9TE66pzRbSRY5cFJcUBoTkgxyQjxLLGI=
 github.com/johannesboyne/gofakes3 v0.0.0-20200218152459-de0855a40bc1/go.mod h1:fNiSoOiEI5KlkWXn26OwKnNe58ilTIkpBlgOrt7Olu8=
 github.com/joho/godotenv v1.3.0 h1:Zjp+RcGpHhGlrMbJzXTrZZPrWj+1vfm90La1wgB6Bhc=
 github.com/joho/godotenv v1.3.0/go.mod h1:7hK45KPybAkOC6peb+G5yklZfMxEjkZhHbwpqxOKXbg=
