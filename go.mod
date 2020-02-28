@@ -29,6 +29,7 @@ require (
 	github.com/joho/godotenv v1.3.0
 	github.com/pierrec/lz4 v2.4.1+incompatible // indirect
 	github.com/pkg/errors v0.9.1
+	github.com/rs/zerolog v1.18.0
 	github.com/sergi/go-diff v1.1.0 // indirect
 	github.com/smartystreets/goconvey v1.6.4 // indirect
 	github.com/spf13/afero v1.2.2

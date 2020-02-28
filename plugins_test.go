@@ -1,6 +1,7 @@
 package gomplate
 
 import (
+	"context"
 	"testing"
 	"text/template"
 
@@ -9,34 +10,37 @@ import (
 )
 
 func TestNewPlugin(t *testing.T) {
+	ctx := context.TODO()
 	in := "foo"
-	_, err := newPlugin(in)
+	_, err := newPlugin(ctx, in)
 	assert.ErrorContains(t, err, "")
 
 	in = "foo=/bin/bar"
-	out, err := newPlugin(in)
+	out, err := newPlugin(ctx, in)
 	assert.NilError(t, err)
 	assert.Equal(t, "foo", out.name)
 	assert.Equal(t, "/bin/bar", out.path)
 }
 
 func TestBindPlugins(t *testing.T) {
+	ctx := context.TODO()
 	fm := template.FuncMap{}
 	in := []string{}
-	err := bindPlugins(in, fm)
+	err := bindPlugins(ctx, in, fm)
 	assert.NilError(t, err)
 	assert.DeepEqual(t, template.FuncMap{}, fm)
 
 	in = []string{"foo=bar"}
-	err = bindPlugins(in, fm)
+	err = bindPlugins(ctx, in, fm)
 	assert.NilError(t, err)
 	assert.Check(t, cmp.Contains(fm, "foo"))
 
-	err = bindPlugins(in, fm)
+	err = bindPlugins(ctx, in, fm)
 	assert.ErrorContains(t, err, "already bound")
 }
 
 func TestBuildCommand(t *testing.T) {
+	ctx := context.TODO()
 	data := []struct {
 		plugin   string
 		args     []string
@@ -49,7 +53,7 @@ func TestBuildCommand(t *testing.T) {
 		{"foo=foo.ps1", []string{"bar", "baz"}, []string{"pwsh", "-File", "foo.ps1", "bar", "baz"}},
 	}
 	for _, d := range data {
-		p, err := newPlugin(d.plugin)
+		p, err := newPlugin(ctx, d.plugin)
 		assert.NilError(t, err)
 		name, args := p.buildCommand(d.args)
 		actual := append([]string{name}, args...)

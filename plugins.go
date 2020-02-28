@@ -18,9 +18,9 @@ import (
 	"github.com/hairyhenderson/gomplate/v3/env"
 )
 
-func bindPlugins(plugins []string, funcMap template.FuncMap) error {
+func bindPlugins(ctx context.Context, plugins []string, funcMap template.FuncMap) error {
 	for _, p := range plugins {
-		plugin, err := newPlugin(p)
+		plugin, err := newPlugin(ctx, p)
 		if err != nil {
 			return err
 		}
@@ -35,15 +35,17 @@ func bindPlugins(plugins []string, funcMap template.FuncMap) error {
 // plugin represents a custom function that binds to an external process to be executed
 type plugin struct {
 	name, path string
+	ctx        context.Context
 }
 
-func newPlugin(value string) (*plugin, error) {
+func newPlugin(ctx context.Context, value string) (*plugin, error) {
 	parts := strings.SplitN(value, "=", 2)
 	if len(parts) < 2 {
 		return nil, errors.New("plugin requires both name and path")
 	}
 
 	p := &plugin{
+		ctx:  ctx,
 		name: parts[0],
 		path: parts[1],
 	}
@@ -90,7 +92,7 @@ func (p *plugin) run(args ...interface{}) (interface{}, error) {
 		return nil, err
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), t)
+	ctx, cancel := context.WithTimeout(p.ctx, t)
 	defer cancel()
 	c := exec.CommandContext(ctx, name, a...)
 	c.Stdin = nil

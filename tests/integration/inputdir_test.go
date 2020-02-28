@@ -253,6 +253,6 @@ func (s *InputDirSuite) TestReportsFilenameWithBadInputFile(c *C) {
 	)
 	result.Assert(c, icmd.Expected{
 		ExitCode: 1,
-		Err:      "template: " + s.tmpDir.Join("bad_in", "bad.tmpl") + ":1: unexpected {{end}}",
+		Err:      "bad.tmpl:1: unexpected {{end}}",
 	})
 }
