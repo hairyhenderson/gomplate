@@ -2,6 +2,7 @@ package gomplate
 
 import (
 	"bytes"
+	"context"
 	"net/http/httptest"
 	"os"
 	"path/filepath"
@@ -20,7 +21,7 @@ import (
 
 func testTemplate(g *gomplate, tmpl string) string {
 	var out bytes.Buffer
-	err := g.runTemplate(&tplate{name: "testtemplate", contents: tmpl, target: &out})
+	err := g.runTemplate(context.TODO(), &tplate{name: "testtemplate", contents: tmpl, target: &out})
 	if err != nil {
 		panic(err)
 	}

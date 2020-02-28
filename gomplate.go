@@ -4,6 +4,7 @@ package gomplate
 
 import (
 	"bytes"
+	"context"
 	"io"
 	"os"
 	"path"
@@ -28,7 +29,7 @@ type gomplate struct {
 }
 
 // runTemplate -
-func (g *gomplate) runTemplate(t *tplate) error {
+func (g *gomplate) runTemplate(_ context.Context, t *tplate) error {
 	tmpl, err := t.toGoTemplate(g)
 	if err != nil {
 		return err
@@ -108,6 +109,11 @@ func parseTemplateArg(templateArg string, ta templateAliases) error {
 
 // RunTemplates - run all gomplate templates specified by the given configuration
 func RunTemplates(o *Config) error {
+	return RunTemplatesWithContext(context.Background(), o)
+}
+
+// RunTemplatesWithContext - run all gomplate templates specified by the given configuration
+func RunTemplatesWithContext(ctx context.Context, o *Config) error {
 	Metrics = newMetrics()
 	defer runCleanupHooks()
 	// make sure config is sane
@@ -127,16 +133,16 @@ func RunTemplates(o *Config) error {
 		return err
 	}
 	funcMap := Funcs(d)
-	err = bindPlugins(o.Plugins, funcMap)
+	err = bindPlugins(ctx, o.Plugins, funcMap)
 	if err != nil {
 		return err
 	}
 	g := newGomplate(funcMap, o.LDelim, o.RDelim, nested, c)
 
-	return g.runTemplates(o)
+	return g.runTemplates(ctx, o)
 }
 
-func (g *gomplate) runTemplates(o *Config) error {
+func (g *gomplate) runTemplates(ctx context.Context, o *Config) error {
 	start := time.Now()
 	tmpl, err := gatherTemplates(o, chooseNamer(o, g))
 	Metrics.GatherDuration = time.Since(start)
@@ -149,7 +155,7 @@ func (g *gomplate) runTemplates(o *Config) error {
 	defer func() { Metrics.TotalRenderDuration = time.Since(start) }()
 	for _, t := range tmpl {
 		tstart := time.Now()
-		err := g.runTemplate(t)
+		err := g.runTemplate(ctx, t)
 		Metrics.RenderDuration[t.name] = time.Since(tstart)
 		if err != nil {
 			Metrics.Errors++

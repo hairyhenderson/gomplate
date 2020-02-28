@@ -6,6 +6,7 @@ package main
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"os"
 	"os/exec"
@@ -14,6 +15,8 @@ import (
 	"github.com/hairyhenderson/gomplate/v3"
 	"github.com/hairyhenderson/gomplate/v3/env"
 	"github.com/hairyhenderson/gomplate/v3/version"
+
+	"github.com/rs/zerolog"
 	"github.com/spf13/cobra"
 )
 
@@ -34,10 +37,14 @@ func printVersion(name string) {
 // postRunExec - if templating succeeds, the command following a '--' will be executed
 func postRunExec(cmd *cobra.Command, args []string) error {
 	if len(args) > 0 {
+		ctx := cmd.Context()
+		log := zerolog.Ctx(ctx)
+		log.Debug().Strs("args", args).Msg("running post-exec command")
+
 		name := args[0]
 		args = args[1:]
 		// nolint: gosec
-		c := exec.Command(name, args...)
+		c := exec.CommandContext(ctx, name, args...)
 		if execPipe {
 			c.Stdin = postRunInput
 		} else {
@@ -99,12 +106,16 @@ func newGomplateCmd() *cobra.Command {
 				printVersion(cmd.Name())
 				return nil
 			}
-			if verbose {
-				// nolint: errcheck
-				fmt.Fprintf(os.Stderr, "%s version %s, build %s\nconfig is:\n%s\n\n",
-					cmd.Name(), version.Version, version.GitCommit,
-					&opts)
+
+			if v, _ := cmd.Flags().GetBool("verbose"); v {
+				zerolog.SetGlobalLevel(zerolog.DebugLevel)
 			}
+			ctx := cmd.Context()
+			log := zerolog.Ctx(ctx)
+
+			log.Debug().Msgf("%s version %s, build %s\nconfig is:\n%s",
+				cmd.Name(), version.Version, version.GitCommit,
+				&opts)
 
 			// support --include
 			opts.ExcludeGlob = processIncludes(includes, opts.ExcludeGlob)
@@ -116,11 +127,9 @@ func newGomplateCmd() *cobra.Command {
 			err := gomplate.RunTemplates(&opts)
 			cmd.SilenceErrors = true
 			cmd.SilenceUsage = true
-			if verbose {
-				// nolint: errcheck
-				fmt.Fprintf(os.Stderr, "rendered %d template(s) with %d error(s) in %v\n",
-					gomplate.Metrics.TemplatesProcessed, gomplate.Metrics.Errors, gomplate.Metrics.TotalRenderDuration)
-			}
+
+			log.Debug().Msgf("rendered %d template(s) with %d error(s) in %v",
+				gomplate.Metrics.TemplatesProcessed, gomplate.Metrics.Errors, gomplate.Metrics.TotalRenderDuration)
 			return err
 		},
 		PostRunE: postRunExec,
@@ -165,11 +174,14 @@ func initFlags(command *cobra.Command) {
 }
 
 func main() {
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	ctx = initLogger(ctx)
+
 	command := newGomplateCmd()
 	initFlags(command)
-	if err := command.Execute(); err != nil {
-		// nolint: errcheck
-		fmt.Fprintln(os.Stderr, err)
-		os.Exit(1)
+	if err := command.ExecuteContext(ctx); err != nil {
+		log := zerolog.Ctx(ctx)
+		log.Fatal().Err(err).Send()
 	}
 }
