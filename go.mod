@@ -33,7 +33,7 @@ require (
 	github.com/sergi/go-diff v1.1.0 // indirect
 	github.com/smartystreets/goconvey v1.6.4 // indirect
 	github.com/spf13/afero v1.2.2
-	github.com/spf13/cobra v0.0.6
+	github.com/spf13/cobra v0.0.7-0.20200228181340-95f2f73ed97e
 	github.com/stretchr/testify v1.5.1
 	github.com/ugorji/go/codec v1.1.7
 	github.com/zealic/xignore v0.3.3
