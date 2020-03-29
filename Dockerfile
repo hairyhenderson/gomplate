@@ -36,7 +36,7 @@ COPY --from=artifacts /bin/gomplate_${OS}-${ARCH} /gomplate
 
 ENTRYPOINT [ "/gomplate" ]
 
-FROM alpine:3.11.3 AS gomplate-alpine
+FROM alpine:3.11.5 AS gomplate-alpine
 
 ARG VCS_REF
 ARG OS=linux
