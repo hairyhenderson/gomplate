@@ -336,6 +336,24 @@ func TestToCSV(t *testing.T) {
 
 	_, err = ToCSV([][]int{{1, 2}})
 	assert.Error(t, err)
+
+	expected = "first,second,third\r\n1,2,3\r\n4,5,6\r\n"
+	out, err = ToCSV([][]interface{}{
+		{"first", "second", "third"},
+		{"1", "2", "3"},
+		{"4", "5", "6"},
+	})
+	assert.NoError(t, err)
+	assert.Equal(t, expected, out)
+
+	expected = "first|second|third\r\n1|2|3\r\n4|5|6\r\n"
+	out, err = ToCSV("|", []interface{}{
+		[]interface{}{"first", "second", "third"},
+		[]interface{}{1, "2", 3},
+		[]interface{}{"4", 5, "6"},
+	})
+	assert.NoError(t, err)
+	assert.Equal(t, expected, out)
 }
 
 func TestTOML(t *testing.T) {

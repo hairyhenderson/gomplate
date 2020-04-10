@@ -15,6 +15,7 @@ import (
 
 	"github.com/Shopify/ejson"
 	ejsonJson "github.com/Shopify/ejson/json"
+	"github.com/hairyhenderson/gomplate/v3/conv"
 	"github.com/hairyhenderson/gomplate/v3/env"
 
 	// XXX: replace once https://github.com/BurntSushi/toml/pull/179 is merged
@@ -272,10 +273,25 @@ func ToCSV(args ...interface{}) (string, error) {
 		args = args[1:]
 	}
 	if len(args) == 1 {
-		var ok bool
-		in, ok = args[0].([][]string)
-		if !ok {
-			return "", errors.Errorf("Can't parse ToCSV input - must be of type [][]string")
+		switch a := args[0].(type) {
+		case [][]string:
+			in = a
+		case [][]interface{}:
+			in = make([][]string, len(a))
+			for i, v := range a {
+				in[i] = conv.ToStrings(v...)
+			}
+		case []interface{}:
+			in = make([][]string, len(a))
+			for i, v := range a {
+				ar, ok := v.([]interface{})
+				if !ok {
+					return "", errors.Errorf("Can't parse ToCSV input - must be a two-dimensional array (like [][]string or [][]interface{}) (was %T)", args[0])
+				}
+				in[i] = conv.ToStrings(ar...)
+			}
+		default:
+			return "", errors.Errorf("Can't parse ToCSV input - must be a two-dimensional array (like [][]string or [][]interface{}) (was %T)", args[0])
 		}
 	}
 	b := &bytes.Buffer{}
