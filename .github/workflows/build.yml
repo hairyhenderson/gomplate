@@ -9,9 +9,6 @@ jobs:
       # image: docker.pkg.github.com/hairyhenderson/dockerfiles/gomplate-ci-build:latest
       image: hairyhenderson/gomplate-ci-build:latest
     steps:
-      - uses: actions/setup-go@v1
-        with:
-          go-version: 1.13.x
       - run: |
           git config --global user.email "bogus@example.com"
           git config --global user.name "Someone"
@@ -34,7 +31,7 @@ jobs:
     steps:
       - uses: actions/setup-go@v1
         with:
-          go-version: 1.13.x
+          go-version: 1.14.x
       - run: |
           git config --global user.email "bogus@example.com"
           git config --global user.name "Someone"
