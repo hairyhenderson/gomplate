@@ -1,6 +1,6 @@
 # this file is generated with gomplate:
-# template: https://github.com/hairyhenderson/gomplate/blob/f7690ff8436cec73ef72ba304a9d32956788db63/packaging/stackbrew.tmpl
-# config context: https://github.com/hairyhenderson/gomplate/blob/f7690ff8436cec73ef72ba304a9d32956788db63/packaging/stackbrew-config.yaml
+# template: https://github.com/hairyhenderson/gomplate/blob/abecaff02b8825bf6010a05872fda897bcaef790/packaging/stackbrew.tmpl
+# config context: https://github.com/hairyhenderson/gomplate/blob/abecaff02b8825bf6010a05872fda897bcaef790/packaging/stackbrew-config.yaml
 Maintainers: Dave Henderson (@hairyhenderson)
 
 Tags: v3.6.0-alpine, alpine
@@ -8,5 +8,5 @@ SharedTags: v3.6.0, latest
 GitRepo: https://github.com/hairyhenderson/gomplate.git
 Directory: packaging
 GitFetch: refs/heads/multi-platform-dockerfile
-GitCommit: f7690ff8436cec73ef72ba304a9d32956788db63
+GitCommit: abecaff02b8825bf6010a05872fda897bcaef790
 Architectures: amd64, arm64v8, arm32v7
