@@ -1,0 +1,29 @@
+FROM alpine:3.11.5
+
+RUN apk add --no-cache ca-certificates
+
+# https://github.com/hairyhenderson/gomplate/releases
+ENV GOMPLATE_VERSION {{ .config.version }}
+
+RUN set -eux; \
+	apkArch="$(apk --print-arch)"; \
+	case "$apkArch" in \
+		x86_64)  binArch='amd64'; checksum='{{ .config.checksums.amd64 }}' ;; \
+		armv7)   binArch='arm'; checksum='{{ .config.checksums.arm32v7 }}' ;; \
+		aarch64) binArch='arm64'; checksum='{{ .config.checksums.arm64v8 }}' ;; \
+		*) echo >&2 "error: unsupported architecture ($apkArch)"; exit 1 ;;\
+	esac; \
+	filename=gomplate_linux-${binArch}-slim; \
+	wget -O /bin/gomplate "https://github.com/hairyhenderson/gomplate/releases/download/{{ .config.version }}/${filename}"; \
+	echo "$checksum  /bin/gomplate" | sha512sum -c; \
+	chmod +x /bin/gomplate; \
+	gomplate --version
+
+LABEL org.opencontainers.image.version={{ .config.version }} \
+	org.opencontainers.image.title=gomplate \
+	org.opencontainers.image.url=https://gomplate.ca \
+	org.opencontainers.image.documentation=https://docs.gomplate.ca \
+	org.opencontainers.image.licenses=MIT \
+	org.opencontainers.image.source="https://github.com/hairyhenderson/gomplate"
+
+ENTRYPOINT [ "/bin/gomplate" ]

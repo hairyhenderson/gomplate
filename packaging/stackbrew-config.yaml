@@ -1,0 +1,25 @@
+version: v3.6.0
+# sha256 checksums for github-released binaries
+checksums:
+  amd64: acc075c4af7fac980457bf20a9c546f98c9c6ccae515c25bac883e0f98cf7a97b53bd1d5442dcdad6abd4ea4d0d3f5f9cc653b0abb006f0fc77ee8413e2ea180
+  # arm32v6: xxx
+  arm32v7: d1143816415d50f492eb45f696b269425a7b2e3185b08719ca8154bbe8f7eed4a0bb2069cfe240a59cc9f97e069a2a99935586a1e9defcc8fffbe298dce0a62c
+  arm64v8: 052cb36f6cdeb9b9bc88867de2c5ce54d638f4d432d78332025484fe93906f5ae7c714f6e34a299380aaf45864cd9640b8a44e16afa0bcb2babe0a5b193c9959
+  # windows_amd64: xxx
+# configuration for the stackbrew.tmpl template
+variants:
+  - dir: packaging
+    tags: [ "{{.config.version}}-alpine", "alpine", ]
+    shared_tags: [ "{{.config.version}}", "latest" ]
+    # architectures: [ amd64, arm64v8, arm32v6, arm32v7 ]
+    architectures: [ amd64, arm64v8, arm32v7 ]
+  # - dir: windows/1809
+  #   base_file: Dockerfile.windowsservercore-1809.base
+  #   tags: [ "{{.config.version}}-windowsservercore-1809", "windowsservercore-1809" ]
+  #   shared_tags: [ "{{.config.version}}-windowsservercore", "windowsservercore", "{{.config.version}}", "latest" ]
+  #   architectures: [ windows-amd64 ]
+  # - dir: windows/ltsc2016
+  #   base_file: Dockerfile.windowsservercore-ltsc2016.base
+  #   tags: [ "{{.config.version}}-windowsservercore-ltsc2016", "windowsservercore-ltsc2016" ]
+  #   shared_tags: [ "{{.config.version}}-windowsservercore", "windowsservercore" ]
+  #   architectures: [ windows-amd64 ]

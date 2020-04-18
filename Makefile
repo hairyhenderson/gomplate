@@ -42,12 +42,20 @@ $(PREFIX)/bin/$(PKG_NAME)_%-slim: $(PREFIX)/bin/$(PKG_NAME)_%
 $(PREFIX)/bin/$(PKG_NAME)_%-slim.exe: $(PREFIX)/bin/$(PKG_NAME)_%.exe
 	upx --lzma $< -o $@
 
-$(PREFIX)/bin/$(PKG_NAME)_%_checksum.txt: $(PREFIX)/bin/$(PKG_NAME)_%
+$(PREFIX)/bin/$(PKG_NAME)_%_checksum_sha256.txt: $(PREFIX)/bin/$(PKG_NAME)_%
 	@sha256sum $< > $@
 
-$(PREFIX)/bin/checksums.txt: \
-		$(patsubst %,$(PREFIX)/bin/$(PKG_NAME)_%_checksum.txt,$(platforms)) \
-		$(patsubst %,$(PREFIX)/bin/$(PKG_NAME)_%_checksum.txt,$(compressed-platforms))
+$(PREFIX)/bin/$(PKG_NAME)_%_checksum_sha512.txt: $(PREFIX)/bin/$(PKG_NAME)_%
+	@sha512sum $< > $@
+
+$(PREFIX)/bin/checksums_sha256.txt: \
+		$(patsubst %,$(PREFIX)/bin/$(PKG_NAME)_%_checksum_sha256.txt,$(platforms)) \
+		$(patsubst %,$(PREFIX)/bin/$(PKG_NAME)_%_checksum_sha256.txt,$(compressed-platforms))
+	@cat $^ > $@
+
+$(PREFIX)/bin/checksums_sha512.txt: \
+		$(patsubst %,$(PREFIX)/bin/$(PKG_NAME)_%_checksum_sha512.txt,$(platforms)) \
+		$(patsubst %,$(PREFIX)/bin/$(PKG_NAME)_%_checksum_sha512.txt,$(compressed-platforms))
 	@cat $^ > $@
 
 $(PREFIX)/%.signed: $(PREFIX)/%
@@ -79,6 +87,20 @@ compress: $(PREFIX)/bin/$(PKG_NAME)_$(GOOS)-$(GOARCH)-slim$(call extension,$(GOO
 # $(PREFIX)/images/%.tag: $(PREFIX)/images/%.iid
 # 	docker tag $(shell cat $<) hairyhenderson/gomplate:$(shell cat $< | sed 's/^sha256://')
 # 	echo hairyhenderson/gomplate:$(shell cat $< | sed 's/^sha256://') > $@
+
+packaging/library/gomplate: packaging/stackbrew.tmpl packaging/stackbrew-config.yaml packaging/Dockerfile.tmpl packaging/Dockerfile
+	@gomplate \
+		--plugin fileCommit=packaging/fileCommit.sh \
+		-c config=./packaging/stackbrew-config.yaml \
+		-f $< \
+		-o $@
+
+packaging/Dockerfile: packaging/Dockerfile.tmpl packaging/stackbrew-config.yaml
+	@gomplate \
+		--plugin fileCommit=packaging/fileCommit.sh \
+		-c config=./packaging/stackbrew-config.yaml \
+		-f $< \
+		-o $@
 
 %.iid: Dockerfile
 	@docker build \

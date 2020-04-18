@@ -1,0 +1,16 @@
+# this file is generated with gomplate:
+# template: https://github.com/hairyhenderson/gomplate/blob/{{ fileCommit "packaging/stackbrew.tmpl"}}/packaging/stackbrew.tmpl
+# config context: https://github.com/hairyhenderson/gomplate/blob/{{ fileCommit "packaging/stackbrew-config.yaml"}}/packaging/stackbrew-config.yaml
+Maintainers: Dave Henderson (@hairyhenderson)
+{{ range $variant := .config.variants }}
+{{- if and (file.IsDir $variant.dir) (file.Exists (filepath.Join $variant.dir "Dockerfile")) }}
+Tags: {{ tmpl.Inline (join $variant.tags ", ") $ }}
+{{- if has $variant "shared_tags" }}
+SharedTags: {{ tmpl.Inline (join $variant.shared_tags ", ") $ }}
+{{- end }}
+GitRepo: https://github.com/hairyhenderson/gomplate.git
+Directory: {{ $variant.dir }}
+GitFetch: refs/heads/multi-platform-dockerfile
+GitCommit: {{ fileCommit (filepath.Join $variant.dir "Dockerfile") }}
+Architectures: {{ join $variant.architectures ", " }}
+{{ end }}{{ end -}}

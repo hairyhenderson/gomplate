@@ -38,66 +38,95 @@ jobs:
       run: |
         # NOTE: DOCKERHUB_TOKEN and DOCKERHUB_USERNAME must be present in https://github.com/hairyhenderson/gomplate/settings
         echo ${{ secrets.DOCKERHUB_TOKEN }} | docker login --username ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
-    - name: Make/Push temporary Docker images
-      run: make docker-multi COMMIT=${{ github.sha }}
-      env:
-        COMMIT: ${{ github.sha }}
-    - name: Pull the temporary images
+      if: github.repository == 'hairyhenderson/gomplate'
+    # - name: Make/Push temporary Docker images
+    #   run: make docker-multi COMMIT=${{ github.sha }}
+    #   env:
+    #     COMMIT: ${{ github.sha }}
+    #   if: github.repository == 'hairyhenderson/gomplate'
+    # - name: Pull the temporary images
+    #   run: |
+    #     docker pull hairyhenderson/gomplate:latest-${{ github.sha }}
+    #     docker pull hairyhenderson/gomplate:slim-${{ github.sha }}
+    #     docker pull hairyhenderson/gomplate:alpine-${{ github.sha }}
+    # # - name: Delete temp images from registry
+    # #   run: |
+    # #     reg rm hairyhenderson/gomplate:latest-${{ github.sha }}
+    # #     reg rm hairyhenderson/gomplate:slim-${{ github.sha }}
+    # #     reg rm hairyhenderson/gomplate:alpine-${{ github.sha }}
+    # - name: Re-tag and push (master)
+    #   run: |
+    #     docker tag hairyhenderson/gomplate:latest-${{ github.sha }} hairyhenderson/gomplate:latest
+    #     docker tag hairyhenderson/gomplate:slim-${{ github.sha }} hairyhenderson/gomplate:slim
+    #     docker tag hairyhenderson/gomplate:alpine-${{ github.sha }} hairyhenderson/gomplate:alpine
+
+    #     docker rmi hairyhenderson/gomplate:latest-${{ github.sha }}
+    #     docker rmi hairyhenderson/gomplate:slim-${{ github.sha }}
+    #     docker rmi hairyhenderson/gomplate:alpine-${{ github.sha }}
+
+    #     docker images
+    #     # docker push hairyhenderson/gomplate
+    #   if: github.repository == 'hairyhenderson/gomplate' && github.ref == 'refs/heads/master'
+    # - name: Re-tag and push (tagged release)
+    #   run: |
+    #     docker tag hairyhenderson/gomplate:latest-${{ github.sha }} hairyhenderson/gomplate:latest
+    #     docker tag hairyhenderson/gomplate:slim-${{ github.sha }} hairyhenderson/gomplate:slim
+    #     docker tag hairyhenderson/gomplate:alpine-${{ github.sha }} hairyhenderson/gomplate:alpine
+
+    #     docker tag hairyhenderson/gomplate:latest-${{ github.sha }} hairyhenderson/gomplate:${git_tag}
+    #     docker tag hairyhenderson/gomplate:latest-${{ github.sha }} hairyhenderson/gomplate:stable
+    #     docker tag hairyhenderson/gomplate:latest-${{ github.sha }} hairyhenderson/gomplate:${major_version}
+    #     docker tag hairyhenderson/gomplate:slim-${{ github.sha }} hairyhenderson/gomplate:${git_tag}-slim
+    #     docker tag hairyhenderson/gomplate:slim-${{ github.sha }} hairyhenderson/gomplate:${major_version}-slim
+    #     docker tag hairyhenderson/gomplate:slim-${{ github.sha }} hairyhenderson/gomplate:stable-slim
+    #     docker tag hairyhenderson/gomplate:alpine-${{ github.sha }} hairyhenderson/gomplate:${git_tag}-alpine
+    #     docker tag hairyhenderson/gomplate:alpine-${{ github.sha }} hairyhenderson/gomplate:${major_version}-alpine
+    #     docker tag hairyhenderson/gomplate:alpine-${{ github.sha }} hairyhenderson/gomplate:stable-alpine
+
+    #     docker rmi hairyhenderson/gomplate:latest-${{ github.sha }}
+    #     docker rmi hairyhenderson/gomplate:slim-${{ github.sha }}
+    #     docker rmi hairyhenderson/gomplate:alpine-${{ github.sha }}
+
+    #     docker images
+    #     # docker push hairyhenderson/gomplate
+    #   if: github.repository == 'hairyhenderson/gomplate' && contains(github.ref, 'v*')
+    # - name: Re-tag and push (non-master dry run)
+    #   run: |
+    #     docker tag hairyhenderson/gomplate:latest-${{ github.sha }} hairyhenderson/gomplate:latest
+    #     docker tag hairyhenderson/gomplate:slim-${{ github.sha }} hairyhenderson/gomplate:slim
+    #     docker tag hairyhenderson/gomplate:alpine-${{ github.sha }} hairyhenderson/gomplate:alpine
+
+    #     docker rmi hairyhenderson/gomplate:latest-${{ github.sha }}
+    #     docker rmi hairyhenderson/gomplate:slim-${{ github.sha }}
+    #     docker rmi hairyhenderson/gomplate:alpine-${{ github.sha }}
+
+    #     docker images
+    #     # docker push hairyhenderson/gomplate
+    #   if: github.repository != 'hairyhenderson/gomplate' || github.ref != 'refs/heads/master'
+  bashbrew-build:
+    runs-on: ubuntu-latest
+    container:
+      image: hairyhenderson/gomplate-ci-build:latest
+    env:
+      BASHBREW_LIBRARY: packaging/library/
+      BASHBREW_NAMESPACE: hairyhenderson
+    steps:
+    - run: docker info && docker version
+    - uses: actions/checkout@v1
+    - name: determine if this is a tag
       run: |
-        docker pull hairyhenderson/gomplate:latest-${{ github.sha }}
-        docker pull hairyhenderson/gomplate:slim-${{ github.sha }}
-        docker pull hairyhenderson/gomplate:alpine-${{ github.sha }}
-    - name: Delete temp images from registry
+        if (git describe --abbrev=0 --exact-match &>/dev/null); then
+          echo "::set-env name=is_tag::true"
+          echo "::set-env name=git_tag::$(git describe --abbrev=0 --exact-match)"
+          # splits the major version from $tag - assumes it's a 3-part semver
+          echo "::set-env name=major_version::${tag%%\.*}"
+        fi
+      if: github.repository == 'hairyhenderson/gomplate'
+    - name: login
       run: |
-        reg rm hairyhenderson/gomplate:latest-${{ github.sha }}
-        reg rm hairyhenderson/gomplate:slim-${{ github.sha }}
-        reg rm hairyhenderson/gomplate:alpine-${{ github.sha }}
-    - name: Re-tag and push (master)
+        # NOTE: DOCKERHUB_TOKEN and DOCKERHUB_USERNAME must be present in https://github.com/hairyhenderson/gomplate/settings
+        echo ${{ secrets.DOCKERHUB_TOKEN }} | docker login --username ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
+      if: github.repository == 'hairyhenderson/gomplate'
+    - name: build
       run: |
-        docker tag hairyhenderson/gomplate:latest-${{ github.sha }} hairyhenderson/gomplate:latest
-        docker tag hairyhenderson/gomplate:slim-${{ github.sha }} hairyhenderson/gomplate:slim
-        docker tag hairyhenderson/gomplate:alpine-${{ github.sha }} hairyhenderson/gomplate:alpine
-
-        docker rmi hairyhenderson/gomplate:latest-${{ github.sha }}
-        docker rmi hairyhenderson/gomplate:slim-${{ github.sha }}
-        docker rmi hairyhenderson/gomplate:alpine-${{ github.sha }}
-
-        docker images
-        # docker push hairyhenderson/gomplate
-      if: github.repository == 'hairyhenderson/gomplate' && github.ref == 'refs/heads/master'
-    - name: Re-tag and push (tagged release)
-      run: |
-        docker tag hairyhenderson/gomplate:latest-${{ github.sha }} hairyhenderson/gomplate:latest
-        docker tag hairyhenderson/gomplate:slim-${{ github.sha }} hairyhenderson/gomplate:slim
-        docker tag hairyhenderson/gomplate:alpine-${{ github.sha }} hairyhenderson/gomplate:alpine
-
-        docker tag hairyhenderson/gomplate:latest-${{ github.sha }} hairyhenderson/gomplate:${git_tag}
-        docker tag hairyhenderson/gomplate:latest-${{ github.sha }} hairyhenderson/gomplate:stable
-        docker tag hairyhenderson/gomplate:latest-${{ github.sha }} hairyhenderson/gomplate:${major_version}
-        docker tag hairyhenderson/gomplate:slim-${{ github.sha }} hairyhenderson/gomplate:${git_tag}-slim
-        docker tag hairyhenderson/gomplate:slim-${{ github.sha }} hairyhenderson/gomplate:${major_version}-slim
-        docker tag hairyhenderson/gomplate:slim-${{ github.sha }} hairyhenderson/gomplate:stable-slim
-        docker tag hairyhenderson/gomplate:alpine-${{ github.sha }} hairyhenderson/gomplate:${git_tag}-alpine
-        docker tag hairyhenderson/gomplate:alpine-${{ github.sha }} hairyhenderson/gomplate:${major_version}-alpine
-        docker tag hairyhenderson/gomplate:alpine-${{ github.sha }} hairyhenderson/gomplate:stable-alpine
-
-        docker rmi hairyhenderson/gomplate:latest-${{ github.sha }}
-        docker rmi hairyhenderson/gomplate:slim-${{ github.sha }}
-        docker rmi hairyhenderson/gomplate:alpine-${{ github.sha }}
-
-        docker images
-        # docker push hairyhenderson/gomplate
-      if: github.repository == 'hairyhenderson/gomplate' && contains(github.ref, 'v*')
-    - name: Re-tag and push (non-master dry run)
-      run: |
-        docker tag hairyhenderson/gomplate:latest-${{ github.sha }} hairyhenderson/gomplate:latest
-        docker tag hairyhenderson/gomplate:slim-${{ github.sha }} hairyhenderson/gomplate:slim
-        docker tag hairyhenderson/gomplate:alpine-${{ github.sha }} hairyhenderson/gomplate:alpine
-
-        docker rmi hairyhenderson/gomplate:latest-${{ github.sha }}
-        docker rmi hairyhenderson/gomplate:slim-${{ github.sha }}
-        docker rmi hairyhenderson/gomplate:alpine-${{ github.sha }}
-
-        docker images
-        # docker push hairyhenderson/gomplate
-      if: github.repository != 'hairyhenderson/gomplate' || github.ref != 'refs/heads/master'
+        bashbrew build gomplate
