@@ -127,6 +127,12 @@ jobs:
         # NOTE: DOCKERHUB_TOKEN and DOCKERHUB_USERNAME must be present in https://github.com/hairyhenderson/gomplate/settings
         echo ${{ secrets.DOCKERHUB_TOKEN }} | docker login --username ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
       if: github.repository == 'hairyhenderson/gomplate'
-    - name: build
+    - name: build amd64
       run: |
-        bashbrew build gomplate
+        bashbrew --arch amd64 build gomplate
+    - name: build arm32v7
+      run: |
+        bashbrew --arch arm32v7 build gomplate
+    - name: build arm64
+      run: |
+        bashbrew --arch arm64 build gomplate
