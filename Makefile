@@ -2,6 +2,7 @@
 extension = $(patsubst windows,.exe,$(filter windows,$(1)))
 GO := go
 PKG_NAME := gomplate
+DOCKER_REPO ?= hairyhenderson/$(PKG_NAME)
 PREFIX := .
 DOCKER_LINUX_PLATFORMS ?= linux/amd64,linux/arm64,linux/arm/v6,linux/arm/v7
 DOCKER_PLATFORMS ?= $(DOCKER_LINUX_PLATFORMS),windows/amd64
@@ -113,19 +114,19 @@ docker-multi: Dockerfile
 	docker buildx build \
 		--build-arg VCS_REF=$(COMMIT) \
 		--platform $(DOCKER_PLATFORMS) \
-		--tag hairyhenderson/gomplate:latest-$(COMMIT) \
+		--tag $(DOCKER_REPO):latest-$(COMMIT) \
 		--target gomplate \
 		--push .
 	docker buildx build \
 		--build-arg VCS_REF=$(COMMIT) \
 		--platform $(DOCKER_PLATFORMS) \
-		--tag hairyhenderson/gomplate:slim-$(COMMIT) \
+		--tag $(DOCKER_REPO):slim-$(COMMIT) \
 		--target gomplate-slim \
 		--push .
 	docker buildx build \
 		--build-arg VCS_REF=$(COMMIT) \
 		--platform $(DOCKER_LINUX_PLATFORMS) \
-		--tag hairyhenderson/gomplate:alpine-$(COMMIT) \
+		--tag $(DOCKER_REPO):alpine-$(COMMIT) \
 		--target gomplate-alpine \
 		--push .
 
