@@ -72,7 +72,7 @@ LABEL org.opencontainers.image.revision=$VCS_REF \
       org.opencontainers.image.source="https://github.com/hairyhenderson/gomplate"
 
 COPY --from=build /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
-COPY --from=compress /bin/gomplate_${TARGETOS}-${TARGETARCH}${TARGETVARIANT}-slim /gomplate
+COPY --from=compress /bin/gomplate_${TARGETOS}-${TARGETARCH}${TARGETVARIANT}-slim /bin/gomplate
 
 ENTRYPOINT [ "/bin/gomplate" ]
 
