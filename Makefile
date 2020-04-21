@@ -6,6 +6,7 @@ DOCKER_REPO ?= hairyhenderson/$(PKG_NAME)
 PREFIX := .
 DOCKER_LINUX_PLATFORMS ?= linux/amd64,linux/arm64,linux/arm/v6,linux/arm/v7
 DOCKER_PLATFORMS ?= $(DOCKER_LINUX_PLATFORMS),windows/amd64
+DOCKER_CACHE ?=
 
 ifeq ("$(CI)","true")
 LINT_PROCS ?= 1
@@ -72,18 +73,21 @@ compress: $(PREFIX)/bin/$(PKG_NAME)_$(GOOS)-$(GOARCH)$(TARGETVARIANT)-slim$(call
 
 docker-multi: Dockerfile
 	docker buildx build \
+		$(DOCKER_CACHE_OPTS) \
 		--build-arg VCS_REF=$(COMMIT) \
 		--platform $(DOCKER_PLATFORMS) \
 		--tag $(DOCKER_REPO):latest-$(COMMIT) \
 		--target gomplate \
 		--push .
 	docker buildx build \
+		$(DOCKER_CACHE_OPTS) \
 		--build-arg VCS_REF=$(COMMIT) \
 		--platform $(DOCKER_PLATFORMS) \
 		--tag $(DOCKER_REPO):slim-$(COMMIT) \
 		--target gomplate-slim \
 		--push .
 	docker buildx build \
+		$(DOCKER_CACHE_OPTS) \
 		--build-arg VCS_REF=$(COMMIT) \
 		--platform $(DOCKER_LINUX_PLATFORMS) \
 		--tag $(DOCKER_REPO):alpine-$(COMMIT) \

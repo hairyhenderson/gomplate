@@ -47,8 +47,13 @@ jobs:
       run: |
         # NOTE: DOCKERHUB_TOKEN and DOCKERHUB_USERNAME must be present in https://github.com/hairyhenderson/gomplate/settings
         echo ${{ secrets.DOCKERHUB_TOKEN }} | docker login --username ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
+        echo ${{ secrets.GITHUB_TOKEN }} | docker login docker.pkg.github.com --username ${{ github.actor }} --password-stdin
     - name: Make/Push temporary Docker images
-      run: make docker-multi COMMIT=${{ github.sha }} DOCKER_REPO=localhost:5000/gomplate
+      run: |
+        make docker-multi \
+          COMMIT=${{ github.sha }} \
+          DOCKER_REPO=localhost:5000/gomplate \
+          DOCKER_CACHE_OPTS="--cache-from=hairyhenderson/gomplate:build-cache --cache-to=hairyhenderson/gomplate:build-cache"
       env:
         COMMIT: ${{ github.sha }}
     - name: Pull the temporary images
