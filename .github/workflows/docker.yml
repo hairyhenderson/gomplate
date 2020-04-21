@@ -56,18 +56,22 @@ jobs:
         docker pull localhost:5000/gomplate:latest-${{ github.sha }}
         docker pull localhost:5000/gomplate:slim-${{ github.sha }}
         docker pull localhost:5000/gomplate:alpine-${{ github.sha }}
+    - name: Re-tag and list images (non-master)
+      run: |
+        docker tag localhost:5000/gomplate:latest-${{ github.sha }} hairyhenderson/gomplate:latest
+        docker tag localhost:5000/gomplate:slim-${{ github.sha }} hairyhenderson/gomplate:slim
+        docker tag localhost:5000/gomplate:alpine-${{ github.sha }} hairyhenderson/gomplate:alpine
+
+        docker images
+      if: github.repository != 'hairyhenderson/gomplate' || github.ref != 'refs/heads/master'
     - name: Re-tag and push (master)
       run: |
         docker tag localhost:5000/gomplate:latest-${{ github.sha }} hairyhenderson/gomplate:latest
         docker tag localhost:5000/gomplate:slim-${{ github.sha }} hairyhenderson/gomplate:slim
         docker tag localhost:5000/gomplate:alpine-${{ github.sha }} hairyhenderson/gomplate:alpine
 
-        docker rmi localhost:5000/gomplate:latest-${{ github.sha }}
-        docker rmi localhost:5000/gomplate:slim-${{ github.sha }}
-        docker rmi localhost:5000/gomplate:alpine-${{ github.sha }}
-
         docker images
-        # docker push hairyhenderson/gomplate
+        docker push hairyhenderson/gomplate
       if: github.repository == 'hairyhenderson/gomplate' && github.ref == 'refs/heads/master'
     - name: Re-tag and push (tagged release)
       run: |
@@ -85,23 +89,6 @@ jobs:
         docker tag localhost:5000/gomplate:alpine-${{ github.sha }} hairyhenderson/gomplate:${major_version}-alpine
         docker tag localhost:5000/gomplate:alpine-${{ github.sha }} hairyhenderson/gomplate:stable-alpine
 
-        docker rmi localhost:5000/gomplate:latest-${{ github.sha }}
-        docker rmi localhost:5000/gomplate:slim-${{ github.sha }}
-        docker rmi localhost:5000/gomplate:alpine-${{ github.sha }}
-
         docker images
-        # docker push hairyhenderson/gomplate
-      if: github.repository == 'hairyhenderson/gomplate' && contains(github.ref, 'v*')
-    - name: Re-tag and push (non-master dry run)
-      run: |
-        docker tag localhost:5000/gomplate:latest-${{ github.sha }} hairyhenderson/gomplate:latest
-        docker tag localhost:5000/gomplate:slim-${{ github.sha }} hairyhenderson/gomplate:slim
-        docker tag localhost:5000/gomplate:alpine-${{ github.sha }} hairyhenderson/gomplate:alpine
-
-        docker rmi localhost:5000/gomplate:latest-${{ github.sha }}
-        docker rmi localhost:5000/gomplate:slim-${{ github.sha }}
-        docker rmi localhost:5000/gomplate:alpine-${{ github.sha }}
-
-        docker images
-        # docker push hairyhenderson/gomplate
-      if: github.repository != 'hairyhenderson/gomplate' || github.ref != 'refs/heads/master'
+        docker push hairyhenderson/gomplate
+      if: github.repository == 'hairyhenderson/gomplate' && env.is_tag == 'true'
