@@ -1,65 +1,107 @@
-FROM hairyhenderson/upx:3.94 AS upx
+# syntax=docker/dockerfile:1.1.5-experimental
+FROM --platform=linux/amd64 hairyhenderson/upx:3.94 AS upx
 
-FROM golang:1.14.2-alpine3.11 AS build
+FROM --platform=linux/amd64 golang:1.14.2-alpine3.11 AS build
+
+ARG TARGETOS
+ARG TARGETARCH
+ARG TARGETVARIANT
+ENV GOOS=$TARGETOS GOARCH=$TARGETARCH
+
+RUN apk add --no-cache make git
+
+WORKDIR /go/src/github.com/hairyhenderson/gomplate
+COPY go.mod /go/src/github.com/hairyhenderson/gomplate
+COPY go.sum /go/src/github.com/hairyhenderson/gomplate
+
+RUN --mount=type=cache,id=go-build-${TARGETOS}-${TARGETARCH}${TARGETVARIANT},target=/root/.cache/go-build \
+	--mount=type=cache,id=go-pkg-${TARGETOS}-${TARGETARCH}${TARGETVARIANT},target=/go/pkg \
+		go mod download -x
+
+COPY . /go/src/github.com/hairyhenderson/gomplate
+
+RUN --mount=type=cache,id=go-build-${TARGETOS}-${TARGETARCH}${TARGETVARIANT},target=/root/.cache/go-build \
+	--mount=type=cache,id=go-pkg-${TARGETOS}-${TARGETARCH}${TARGETVARIANT},target=/go/pkg \
+		make build
+RUN mv bin/gomplate* /bin/
+
+FROM --platform=linux/amd64 alpine:3.11.5 AS compress
+
+ARG TARGETOS
+ARG TARGETARCH
+ARG TARGETVARIANT
 
 RUN apk add --no-cache \
     make \
-    libgcc libstdc++ ucl \
-    git
+    libgcc libstdc++ ucl
+
+ENV GOOS=$TARGETOS GOARCH=$TARGETARCH
+WORKDIR /go/src/github.com/hairyhenderson/gomplate
+COPY Makefile .
+RUN mkdir bin
 
 COPY --from=upx /usr/bin/upx /usr/bin/upx
+COPY --from=build bin/* bin/
 
-RUN mkdir -p /go/src/github.com/hairyhenderson/gomplate
-WORKDIR /go/src/github.com/hairyhenderson/gomplate
-COPY . /go/src/github.com/hairyhenderson/gomplate
+RUN make compress
+RUN mv bin/gomplate* /bin/
 
-RUN make build compress
-
-FROM scratch AS artifacts
-
-COPY --from=build /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
-COPY --from=build /go/src/github.com/hairyhenderson/gomplate/bin/* /bin/
-
-CMD [ "/bin/gomplate_linux-amd64" ]
-
-FROM scratch AS gomplate
+FROM scratch AS gomplate-linux
 
 ARG VCS_REF
-ARG OS=linux
-ARG ARCH=amd64
+ARG TARGETOS
+ARG TARGETARCH
+ARG TARGETVARIANT
 
 LABEL org.opencontainers.image.revision=$VCS_REF \
       org.opencontainers.image.source="https://github.com/hairyhenderson/gomplate"
 
-COPY --from=artifacts /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
-COPY --from=artifacts /bin/gomplate_${OS}-${ARCH} /gomplate
+COPY --from=build /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
+COPY --from=build /bin/gomplate_${TARGETOS}-${TARGETARCH}${TARGETVARIANT} /gomplate
 
 ENTRYPOINT [ "/gomplate" ]
 
 FROM alpine:3.11.5 AS gomplate-alpine
 
 ARG VCS_REF
-ARG OS=linux
-ARG ARCH=amd64
+ARG TARGETOS
+ARG TARGETARCH
+ARG TARGETVARIANT
 
 LABEL org.opencontainers.image.revision=$VCS_REF \
       org.opencontainers.image.source="https://github.com/hairyhenderson/gomplate"
 
-RUN apk add --no-cache ca-certificates
-COPY --from=artifacts /bin/gomplate_${OS}-${ARCH}-slim /bin/gomplate
+COPY --from=build /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
+COPY --from=compress /bin/gomplate_${TARGETOS}-${TARGETARCH}${TARGETVARIANT}-slim /gomplate
 
 ENTRYPOINT [ "/bin/gomplate" ]
 
-FROM scratch AS gomplate-slim
+FROM scratch AS gomplate-slim-linux
 
 ARG VCS_REF
-ARG OS=linux
-ARG ARCH=amd64
+ARG TARGETOS
+ARG TARGETARCH
+ARG TARGETVARIANT
 
 LABEL org.opencontainers.image.revision=$VCS_REF \
       org.opencontainers.image.source="https://github.com/hairyhenderson/gomplate"
 
-COPY --from=artifacts /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
-COPY --from=artifacts /bin/gomplate_${OS}-${ARCH}-slim /gomplate
+COPY --from=build /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
+COPY --from=compress /bin/gomplate_${TARGETOS}-${TARGETARCH}${TARGETVARIANT}-slim /gomplate
 
 ENTRYPOINT [ "/gomplate" ]
+
+FROM --platform=windows/amd64 mcr.microsoft.com/windows/nanoserver:1809 AS gomplate-windows
+ARG TARGETOS
+ARG TARGETARCH
+ARG TARGETVARIANT
+COPY --from=build /bin/gomplate_${TARGETOS}-${TARGETARCH}${TARGETVARIANT}.exe /gomplate.exe
+
+FROM --platform=windows/amd64 mcr.microsoft.com/windows/nanoserver:1809 AS gomplate-slim-windows
+ARG TARGETOS
+ARG TARGETARCH
+ARG TARGETVARIANT
+COPY --from=compress /bin/gomplate_${TARGETOS}-${TARGETARCH}${TARGETVARIANT}-slim.exe /gomplate.exe
+
+FROM gomplate-$TARGETOS AS gomplate
+FROM gomplate-slim-$TARGETOS AS gomplate-slim

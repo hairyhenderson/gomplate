@@ -4,9 +4,104 @@ on: [push]
 jobs:
   docker-build:
     runs-on: ubuntu-latest
+    services:
+      registry:
+        image: registry:2
+        ports:
+          - '5000:5000'
+    env:
+      DOCKER_BUILDKIT: 1
+      DOCKER_CLI_EXPERIMENTAL: enabled
     steps:
+    - name: enable experimental mode
+      run: |
+        mkdir ~/.docker
+        echo '{"experimental": "enabled"}' > ~/.docker/config.json
+    - name: Install BuildX
+      run: |
+        mkdir -p ~/.docker/cli-plugins
+        curl -SL -o ~/.docker/cli-plugins/docker-buildx https://github.com/docker/buildx/releases/download/v0.3.1/buildx-v0.3.1.linux-amd64
+        chmod 755 ~/.docker/cli-plugins/docker-buildx
+    - name: Create BuildX Builder
+      run: |
+        docker buildx create \
+          --name builder \
+          --platform linux/amd64,linux/arm64,linux/arm/v6,linux/arm/v7,linux/ppc64le,linux/s390x,linux/386 \
+          --use \
+          --driver docker-container --driver-opt image=moby/buildkit:buildx-stable-1,network=host
+        docker buildx ls
+        docker ps
+        docker images
+    - run: docker info && docker version
     - uses: actions/checkout@v1
-    - name: Make Docker images
-      run: make docker-images
+    - name: determine if this is a tag
+      run: |
+        if (git describe --abbrev=0 --exact-match &>/dev/null); then
+          echo "::set-env name=is_tag::true"
+          echo "::set-env name=git_tag::$(git describe --abbrev=0 --exact-match)"
+          # splits the major version from $tag - assumes it's a 3-part semver
+          echo "::set-env name=major_version::${tag%%\.*}"
+        fi
+      if: github.repository == 'hairyhenderson/gomplate'
+    - name: login
+      run: |
+        # NOTE: DOCKERHUB_TOKEN and DOCKERHUB_USERNAME must be present in https://github.com/hairyhenderson/gomplate/settings
+        echo ${{ secrets.DOCKERHUB_TOKEN }} | docker login --username ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
+    - name: Make/Push temporary Docker images
+      run: make docker-multi COMMIT=${{ github.sha }} DOCKER_REPO=localhost:5000/gomplate
       env:
-        DOCKER_BUILDKIT: '1'
+        COMMIT: ${{ github.sha }}
+    - name: Pull the temporary images
+      run: |
+        docker pull localhost:5000/gomplate:latest-${{ github.sha }}
+        docker pull localhost:5000/gomplate:slim-${{ github.sha }}
+        docker pull localhost:5000/gomplate:alpine-${{ github.sha }}
+    - name: Re-tag and push (master)
+      run: |
+        docker tag localhost:5000/gomplate:latest-${{ github.sha }} hairyhenderson/gomplate:latest
+        docker tag localhost:5000/gomplate:slim-${{ github.sha }} hairyhenderson/gomplate:slim
+        docker tag localhost:5000/gomplate:alpine-${{ github.sha }} hairyhenderson/gomplate:alpine
+
+        docker rmi localhost:5000/gomplate:latest-${{ github.sha }}
+        docker rmi localhost:5000/gomplate:slim-${{ github.sha }}
+        docker rmi localhost:5000/gomplate:alpine-${{ github.sha }}
+
+        docker images
+        # docker push hairyhenderson/gomplate
+      if: github.repository == 'hairyhenderson/gomplate' && github.ref == 'refs/heads/master'
+    - name: Re-tag and push (tagged release)
+      run: |
+        docker tag localhost:5000/gomplate:latest-${{ github.sha }} hairyhenderson/gomplate:latest
+        docker tag localhost:5000/gomplate:slim-${{ github.sha }} hairyhenderson/gomplate:slim
+        docker tag localhost:5000/gomplate:alpine-${{ github.sha }} hairyhenderson/gomplate:alpine
+
+        docker tag localhost:5000/gomplate:latest-${{ github.sha }} hairyhenderson/gomplate:${git_tag}
+        docker tag localhost:5000/gomplate:latest-${{ github.sha }} hairyhenderson/gomplate:stable
+        docker tag localhost:5000/gomplate:latest-${{ github.sha }} hairyhenderson/gomplate:${major_version}
+        docker tag localhost:5000/gomplate:slim-${{ github.sha }} hairyhenderson/gomplate:${git_tag}-slim
+        docker tag localhost:5000/gomplate:slim-${{ github.sha }} hairyhenderson/gomplate:${major_version}-slim
+        docker tag localhost:5000/gomplate:slim-${{ github.sha }} hairyhenderson/gomplate:stable-slim
+        docker tag localhost:5000/gomplate:alpine-${{ github.sha }} hairyhenderson/gomplate:${git_tag}-alpine
+        docker tag localhost:5000/gomplate:alpine-${{ github.sha }} hairyhenderson/gomplate:${major_version}-alpine
+        docker tag localhost:5000/gomplate:alpine-${{ github.sha }} hairyhenderson/gomplate:stable-alpine
+
+        docker rmi localhost:5000/gomplate:latest-${{ github.sha }}
+        docker rmi localhost:5000/gomplate:slim-${{ github.sha }}
+        docker rmi localhost:5000/gomplate:alpine-${{ github.sha }}
+
+        docker images
+        # docker push hairyhenderson/gomplate
+      if: github.repository == 'hairyhenderson/gomplate' && contains(github.ref, 'v*')
+    - name: Re-tag and push (non-master dry run)
+      run: |
+        docker tag localhost:5000/gomplate:latest-${{ github.sha }} hairyhenderson/gomplate:latest
+        docker tag localhost:5000/gomplate:slim-${{ github.sha }} hairyhenderson/gomplate:slim
+        docker tag localhost:5000/gomplate:alpine-${{ github.sha }} hairyhenderson/gomplate:alpine
+
+        docker rmi localhost:5000/gomplate:latest-${{ github.sha }}
+        docker rmi localhost:5000/gomplate:slim-${{ github.sha }}
+        docker rmi localhost:5000/gomplate:alpine-${{ github.sha }}
+
+        docker images
+        # docker push hairyhenderson/gomplate
+      if: github.repository != 'hairyhenderson/gomplate' || github.ref != 'refs/heads/master'

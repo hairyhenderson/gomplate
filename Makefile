@@ -2,7 +2,10 @@
 extension = $(patsubst windows,.exe,$(filter windows,$(1)))
 GO := go
 PKG_NAME := gomplate
+DOCKER_REPO ?= hairyhenderson/$(PKG_NAME)
 PREFIX := .
+DOCKER_LINUX_PLATFORMS ?= linux/amd64,linux/arm64,linux/arm/v6,linux/arm/v7
+DOCKER_PLATFORMS ?= $(DOCKER_LINUX_PLATFORMS),windows/amd64
 
 ifeq ("$(CI)","true")
 LINT_PROCS ?= 1
@@ -19,8 +22,18 @@ VERSION_FLAG := -X `go list ./version`.Version=$(VERSION)
 GOOS ?= $(shell go version | sed 's/^.*\ \([a-z0-9]*\)\/\([a-z0-9]*\)/\1/')
 GOARCH ?= $(shell go version | sed 's/^.*\ \([a-z0-9]*\)\/\([a-z0-9]*\)/\2/')
 
-platforms := freebsd-amd64 linux-amd64 linux-386 linux-arm linux-arm64 darwin-amd64 solaris-amd64 windows-amd64.exe windows-386.exe
-compressed-platforms := linux-amd64-slim linux-arm-slim linux-arm64-slim darwin-amd64-slim windows-amd64-slim.exe
+ifeq ("$(TARGETVARIANT)","")
+ifneq ("$(GOARM)","")
+TARGETVARIANT := v$(GOARM)
+endif
+else
+ifeq ("$(GOARM)","")
+GOARM ?= $(subst v,,$(TARGETVARIANT))
+endif
+endif
+
+platforms := freebsd-amd64 linux-amd64 linux-386 linux-armv6 linux-armv7 linux-arm64 darwin-amd64 solaris-amd64 windows-amd64.exe windows-386.exe
+compressed-platforms := linux-amd64-slim linux-armv6-slim linux-armv7-slim linux-arm64-slim darwin-amd64-slim windows-amd64-slim.exe
 
 clean:
 	rm -Rf $(PREFIX)/bin/*
@@ -47,7 +60,7 @@ $(PREFIX)/bin/checksums.txt: \
 $(PREFIX)/%.signed: $(PREFIX)/%
 	@keybase sign < $< > $@
 
-compress: $(PREFIX)/bin/$(PKG_NAME)_$(GOOS)-$(GOARCH)-slim$(call extension,$(GOOS))
+compress: $(PREFIX)/bin/$(PKG_NAME)_$(GOOS)-$(GOARCH)$(TARGETVARIANT)-slim$(call extension,$(GOOS))
 	cp $< $(PREFIX)/bin/$(PKG_NAME)-slim$(call extension,$(GOOS))
 
 %.iid: Dockerfile
@@ -57,6 +70,26 @@ compress: $(PREFIX)/bin/$(PKG_NAME)_$(GOOS)-$(GOARCH)-slim$(call extension,$(GOO
 		--iidfile $@ \
 		.
 
+docker-multi: Dockerfile
+	docker buildx build \
+		--build-arg VCS_REF=$(COMMIT) \
+		--platform $(DOCKER_PLATFORMS) \
+		--tag $(DOCKER_REPO):latest-$(COMMIT) \
+		--target gomplate \
+		--push .
+	docker buildx build \
+		--build-arg VCS_REF=$(COMMIT) \
+		--platform $(DOCKER_PLATFORMS) \
+		--tag $(DOCKER_REPO):slim-$(COMMIT) \
+		--target gomplate-slim \
+		--push .
+	docker buildx build \
+		--build-arg VCS_REF=$(COMMIT) \
+		--platform $(DOCKER_LINUX_PLATFORMS) \
+		--tag $(DOCKER_REPO):alpine-$(COMMIT) \
+		--target gomplate-alpine \
+		--push .
+
 %.cid: %.iid
 	@docker create $(shell cat $<) > $@
 
@@ -65,17 +98,17 @@ build-release: artifacts.cid
 
 docker-images: gomplate.iid gomplate-slim.iid
 
-$(PREFIX)/bin/$(PKG_NAME)_%: $(shell find $(PREFIX) -type f -name "*.go")
-	GOOS=$(shell echo $* | cut -f1 -d-) GOARCH=$(shell echo $* | cut -f2 -d- | cut -f1 -d.) CGO_ENABLED=0 \
+$(PREFIX)/bin/$(PKG_NAME)_%$(TARGETVARIANT)$(call extension,$(GOOS)): $(shell find $(PREFIX) -type f -name "*.go")
+	GOOS=$(shell echo $* | cut -f1 -d-) GOARCH=$(shell echo $* | cut -f2 -d- ) GOARM=$(GOARM) CGO_ENABLED=0 \
 		$(GO) build \
 			-ldflags "-w -s $(COMMIT_FLAG) $(VERSION_FLAG)" \
 			-o $@ \
 			./cmd/gomplate
 
-$(PREFIX)/bin/$(PKG_NAME)$(call extension,$(GOOS)): $(PREFIX)/bin/$(PKG_NAME)_$(GOOS)-$(GOARCH)$(call extension,$(GOOS))
+$(PREFIX)/bin/$(PKG_NAME)$(call extension,$(GOOS)): $(PREFIX)/bin/$(PKG_NAME)_$(GOOS)-$(GOARCH)$(TARGETVARIANT)$(call extension,$(GOOS))
 	cp $< $@
 
-build: $(PREFIX)/bin/$(PKG_NAME)$(call extension,$(GOOS))
+build: $(PREFIX)/bin/$(PKG_NAME)_$(GOOS)-$(GOARCH)$(TARGETVARIANT)$(call extension,$(GOOS)) $(PREFIX)/bin/$(PKG_NAME)$(call extension,$(GOOS))
 
 ifeq ($(OS),Windows_NT)
 test:
