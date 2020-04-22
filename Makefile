@@ -6,6 +6,11 @@ DOCKER_REPO ?= hairyhenderson/$(PKG_NAME)
 PREFIX := .
 DOCKER_LINUX_PLATFORMS ?= linux/amd64,linux/arm64,linux/arm/v6,linux/arm/v7
 DOCKER_PLATFORMS ?= $(DOCKER_LINUX_PLATFORMS),windows/amd64
+# we just load by default, as a "dry run"
+BUILDX_ACTION ?= --load
+TAG_LATEST ?= latest
+TAG_SLIM ?= slim
+TAG_ALPINE ?= alpine
 
 ifeq ("$(CI)","true")
 LINT_PROCS ?= 1
@@ -74,21 +79,21 @@ docker-multi: Dockerfile
 	docker buildx build \
 		--build-arg VCS_REF=$(COMMIT) \
 		--platform $(DOCKER_PLATFORMS) \
-		--tag $(DOCKER_REPO):latest-$(COMMIT) \
+		--tag $(DOCKER_REPO):$(TAG_LATEST) \
 		--target gomplate \
-		--push .
+		$(BUILDX_ACTION) .
 	docker buildx build \
 		--build-arg VCS_REF=$(COMMIT) \
 		--platform $(DOCKER_PLATFORMS) \
-		--tag $(DOCKER_REPO):slim-$(COMMIT) \
+		--tag $(DOCKER_REPO):$(TAG_SLIM) \
 		--target gomplate-slim \
-		--push .
+		$(BUILDX_ACTION) .
 	docker buildx build \
 		--build-arg VCS_REF=$(COMMIT) \
 		--platform $(DOCKER_LINUX_PLATFORMS) \
-		--tag $(DOCKER_REPO):alpine-$(COMMIT) \
+		--tag $(DOCKER_REPO):$(TAG_ALPINE) \
 		--target gomplate-alpine \
-		--push .
+		$(BUILDX_ACTION) .
 
 %.cid: %.iid
 	@docker create $(shell cat $<) > $@
