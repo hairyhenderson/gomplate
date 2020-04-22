@@ -47,48 +47,32 @@ jobs:
       run: |
         # NOTE: DOCKERHUB_TOKEN and DOCKERHUB_USERNAME must be present in https://github.com/hairyhenderson/gomplate/settings
         echo ${{ secrets.DOCKERHUB_TOKEN }} | docker login --username ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
-    - name: Make/Push temporary Docker images
-      run: make docker-multi COMMIT=${{ github.sha }} DOCKER_REPO=localhost:5000/gomplate
-      env:
-        COMMIT: ${{ github.sha }}
-    - name: Pull the temporary images
+    - name: Build & Push (non-master)
       run: |
-        docker pull localhost:5000/gomplate:latest-${{ github.sha }}
-        docker pull localhost:5000/gomplate:slim-${{ github.sha }}
-        docker pull localhost:5000/gomplate:alpine-${{ github.sha }}
-    - name: Re-tag and list images (non-master)
-      run: |
-        docker tag localhost:5000/gomplate:latest-${{ github.sha }} hairyhenderson/gomplate:latest
-        docker tag localhost:5000/gomplate:slim-${{ github.sha }} hairyhenderson/gomplate:slim
-        docker tag localhost:5000/gomplate:alpine-${{ github.sha }} hairyhenderson/gomplate:alpine
+        set -ex
+        make docker-multi COMMIT=${{ github.sha }} DOCKER_REPO=localhost:5000/gomplate BUILDX_ACTION=--push
 
-        docker images
+        docker buildx imagetools create --dry-run -t localhost:5000/gomplate:dev localhost:5000/gomplate:latest
+        docker buildx imagetools create --dry-run -t localhost:5000/gomplate:dev-slim localhost:5000/gomplate:slim
+        docker buildx imagetools create --dry-run -t localhost:5000/gomplate:dev-alpine localhost:5000/gomplate:alpine
       if: github.repository != 'hairyhenderson/gomplate' || github.ref != 'refs/heads/master'
-    - name: Re-tag and push (master)
+    - name: Build & Push (master)
       run: |
-        docker tag localhost:5000/gomplate:latest-${{ github.sha }} hairyhenderson/gomplate:latest
-        docker tag localhost:5000/gomplate:slim-${{ github.sha }} hairyhenderson/gomplate:slim
-        docker tag localhost:5000/gomplate:alpine-${{ github.sha }} hairyhenderson/gomplate:alpine
-
-        docker images
-        docker push hairyhenderson/gomplate
+        make docker-multi COMMIT=${{ github.sha }} DOCKER_REPO=hairyhenderson/gomplate BUILDX_ACTION=--push
       if: github.repository == 'hairyhenderson/gomplate' && github.ref == 'refs/heads/master'
-    - name: Re-tag and push (tagged release)
+    - name: Build & Push (tagged release)
       run: |
-        docker tag localhost:5000/gomplate:latest-${{ github.sha }} hairyhenderson/gomplate:latest
-        docker tag localhost:5000/gomplate:slim-${{ github.sha }} hairyhenderson/gomplate:slim
-        docker tag localhost:5000/gomplate:alpine-${{ github.sha }} hairyhenderson/gomplate:alpine
+        make docker-multi COMMIT=${{ github.sha }} DOCKER_REPO=hairyhenderson/gomplate BUILDX_ACTION=--push
 
-        docker tag localhost:5000/gomplate:latest-${{ github.sha }} hairyhenderson/gomplate:${git_tag}
-        docker tag localhost:5000/gomplate:latest-${{ github.sha }} hairyhenderson/gomplate:stable
-        docker tag localhost:5000/gomplate:latest-${{ github.sha }} hairyhenderson/gomplate:${major_version}
-        docker tag localhost:5000/gomplate:slim-${{ github.sha }} hairyhenderson/gomplate:${git_tag}-slim
-        docker tag localhost:5000/gomplate:slim-${{ github.sha }} hairyhenderson/gomplate:${major_version}-slim
-        docker tag localhost:5000/gomplate:slim-${{ github.sha }} hairyhenderson/gomplate:stable-slim
-        docker tag localhost:5000/gomplate:alpine-${{ github.sha }} hairyhenderson/gomplate:${git_tag}-alpine
-        docker tag localhost:5000/gomplate:alpine-${{ github.sha }} hairyhenderson/gomplate:${major_version}-alpine
-        docker tag localhost:5000/gomplate:alpine-${{ github.sha }} hairyhenderson/gomplate:stable-alpine
+        docker buildx imagetools create -t localhost:5000/gomplate:stable localhost:5000/gomplate:latest
+        docker buildx imagetools create -t localhost:5000/gomplate:${git_tag} localhost:5000/gomplate:latest
+        docker buildx imagetools create -t localhost:5000/gomplate:${major_version} localhost:5000/gomplate:latest
 
-        docker images
-        docker push hairyhenderson/gomplate
+        docker buildx imagetools create -t localhost:5000/gomplate:stable-slim localhost:5000/gomplate:slim
+        docker buildx imagetools create -t localhost:5000/gomplate:${git_tag}-slim localhost:5000/gomplate:slim
+        docker buildx imagetools create -t localhost:5000/gomplate:${major_version}-slim localhost:5000/gomplate:slim
+
+        docker buildx imagetools create -t localhost:5000/gomplate:stable-alpine localhost:5000/gomplate:alpine
+        docker buildx imagetools create -t localhost:5000/gomplate:${git_tag}-alpine localhost:5000/gomplate:alpine
+        docker buildx imagetools create -t localhost:5000/gomplate:${major_version}-alpine localhost:5000/gomplate:alpine
       if: github.repository == 'hairyhenderson/gomplate' && env.is_tag == 'true'
