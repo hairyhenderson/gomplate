@@ -230,7 +230,7 @@ func parseSource(value string) (source *Source, err error) {
 			err = errors.Errorf("Invalid datasource (%s). Must provide an alias with files not in working directory", value)
 			return nil, err
 		}
-		source.URL, err = absURL(f)
+		source.URL, err = absFileURL(f)
 		if err != nil {
 			return nil, err
 		}
@@ -272,7 +272,7 @@ func parseSourceURL(value string) (*url.URL, error) {
 	}
 
 	if !srcURL.IsAbs() {
-		srcURL, err = absURL(value)
+		srcURL, err = absFileURL(value)
 		if err != nil {
 			return nil, err
 		}
@@ -280,7 +280,7 @@ func parseSourceURL(value string) (*url.URL, error) {
 	return srcURL, nil
 }
 
-func absURL(value string) (*url.URL, error) {
+func absFileURL(value string) (*url.URL, error) {
 	cwd, err := os.Getwd()
 	if err != nil {
 		return nil, errors.Wrapf(err, "can't get working directory")
@@ -290,8 +290,9 @@ func absURL(value string) (*url.URL, error) {
 		Scheme: "file",
 		Path:   urlCwd + "/",
 	}
-	relURL := &url.URL{
-		Path: value,
+	relURL, err := url.Parse(value)
+	if err != nil {
+		return nil, fmt.Errorf("can't parse value %s as URL: %w", value, err)
 	}
 	resolved := baseURL.ResolveReference(relURL)
 	// deal with Windows drive letters
