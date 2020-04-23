@@ -19,6 +19,7 @@ func (s *FileDatasourcesSuite) SetUpSuite(c *C) {
 	s.tmpDir = fs.NewDir(c, "gomplate-inttests",
 		fs.WithFiles(map[string]string{
 			"config.json": `{"foo": {"bar": "baz"}}`,
+			"ajsonfile":   `{"foo": {"bar": "baz"}}`,
 			"encrypted.json": `{
   "_public_key": "dfcf98785869cdfc4a59273bbdfe1bfcf6c44850a11ea9d84db21c89a802c057",
   "password": "EJ[1:Cb1AY94Dl76xwHHrnJyh+Y+fAeovijPlFQZXSAuvZBc=:oCGZM6lbeXXOl2ONSKfLQ0AgaltrTpNU:VjegqQPPkOK1hSylMAbmcfusQImfkHCWZw==]"
@@ -96,6 +97,11 @@ func (s *FileDatasourcesSuite) TestFileDatasources(c *C) {
 
 	result = icmd.RunCommand(GomplateBin,
 		"-i", `foo{{defineDatasource "config" `+"`"+s.tmpDir.Join("config.json")+"`"+`}}bar{{(datasource "config").foo.bar}}`,
+	)
+	result.Assert(c, icmd.Expected{ExitCode: 0, Out: "foobarbaz"})
+
+	result = icmd.RunCommand(GomplateBin,
+		"-i", `foo{{defineDatasource "config" `+"`"+s.tmpDir.Join("ajsonfile")+"?type=application/json`"+`}}bar{{(datasource "config").foo.bar}}`,
 	)
 	result.Assert(c, icmd.Expected{ExitCode: 0, Out: "foobarbaz"})
 

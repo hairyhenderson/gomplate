@@ -3,6 +3,8 @@ package data
 import (
 	"fmt"
 	"net/url"
+	"os"
+	"path/filepath"
 	"runtime"
 	"strings"
 	"testing"
@@ -303,6 +305,15 @@ func TestDefineDatasource(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, "data", s.Alias)
 	assert.Nil(t, s.URL)
+
+	d = &Data{}
+	_, err = d.DefineDatasource("data", "/otherdir/foo?type=application/x-env")
+	s = d.Sources["data"]
+	assert.NoError(t, err)
+	assert.Equal(t, "data", s.Alias)
+	m, err := s.mimeType("")
+	assert.NoError(t, err)
+	assert.Equal(t, "application/x-env", m)
 }
 
 func TestMimeType(t *testing.T) {
@@ -408,6 +419,39 @@ func TestQueryParse(t *testing.T) {
 		RawQuery: "bar",
 	}
 	u, err := parseSourceURL("http://example.com/foo.json?bar")
+	assert.NoError(t, err)
+	assert.EqualValues(t, expected, u)
+}
+
+func TestAbsFileURL(t *testing.T) {
+	cwd, _ := os.Getwd()
+	// make this pass on Windows
+	cwd = filepath.ToSlash(cwd)
+	expected := &url.URL{
+		Scheme: "file",
+		Host:   "",
+		Path:   "/tmp/foo",
+	}
+	u, err := absFileURL("/tmp/foo")
+	assert.NoError(t, err)
+	assert.EqualValues(t, expected, u)
+
+	expected = &url.URL{
+		Scheme: "file",
+		Host:   "",
+		Path:   cwd + "/tmp/foo",
+	}
+	u, err = absFileURL("tmp/foo")
+	assert.NoError(t, err)
+	assert.EqualValues(t, expected, u)
+
+	expected = &url.URL{
+		Scheme:   "file",
+		Host:     "",
+		Path:     cwd + "/tmp/foo",
+		RawQuery: "q=p",
+	}
+	u, err = absFileURL("tmp/foo?q=p")
 	assert.NoError(t, err)
 	assert.EqualValues(t, expected, u)
 }
