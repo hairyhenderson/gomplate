@@ -7,6 +7,7 @@ import (
 	"os"
 	"testing"
 
+	"github.com/hairyhenderson/gomplate/v3/internal/config"
 	"github.com/spf13/afero"
 
 	"github.com/stretchr/testify/assert"
@@ -44,7 +45,8 @@ func TestOpenOutFile(t *testing.T) {
 	fs = afero.NewMemMapFs()
 	_ = fs.Mkdir("/tmp", 0777)
 
-	_, err := openOutFile("/tmp/foo", 0644, false)
+	cfg := &config.Config{}
+	_, err := openOutFile(cfg, "/tmp/foo", 0644, false)
 	assert.NoError(t, err)
 	i, err := fs.Stat("/tmp/foo")
 	assert.NoError(t, err)
@@ -53,7 +55,7 @@ func TestOpenOutFile(t *testing.T) {
 	defer func() { Stdout = os.Stdout }()
 	Stdout = &nopWCloser{&bytes.Buffer{}}
 
-	f, err := openOutFile("-", 0644, false)
+	f, err := openOutFile(cfg, "-", 0644, false)
 	assert.NoError(t, err)
 	assert.Equal(t, Stdout, f)
 }
@@ -76,8 +78,9 @@ func TestAddTarget(t *testing.T) {
 	defer func() { fs = origfs }()
 	fs = afero.NewMemMapFs()
 
+	cfg := &config.Config{}
 	tmpl := &tplate{name: "foo", targetPath: "/out/outfile"}
-	err := tmpl.addTarget()
+	err := tmpl.addTarget(cfg)
 	assert.NoError(t, err)
 	assert.NotNil(t, tmpl.target)
 }
@@ -92,19 +95,23 @@ func TestGatherTemplates(t *testing.T) {
 	afero.WriteFile(fs, "in/2", []byte("bar"), 0644)
 	afero.WriteFile(fs, "in/3", []byte("baz"), 0644)
 
-	templates, err := gatherTemplates(&Config{}, nil)
+	cfg := &config.Config{}
+	cfg.ApplyDefaults()
+	templates, err := gatherTemplates(cfg, nil)
 	assert.NoError(t, err)
 	assert.Len(t, templates, 1)
 
-	templates, err = gatherTemplates(&Config{
+	cfg = &config.Config{
 		Input: "foo",
-	}, nil)
+	}
+	cfg.ApplyDefaults()
+	templates, err = gatherTemplates(cfg, nil)
 	assert.NoError(t, err)
 	assert.Len(t, templates, 1)
 	assert.Equal(t, "foo", templates[0].contents)
 	assert.Equal(t, Stdout, templates[0].target)
 
-	templates, err = gatherTemplates(&Config{
+	templates, err = gatherTemplates(&config.Config{
 		Input:       "foo",
 		OutputFiles: []string{"out"},
 	}, nil)
@@ -117,7 +124,7 @@ func TestGatherTemplates(t *testing.T) {
 	assert.Equal(t, os.FileMode(0644), info.Mode())
 	fs.Remove("out")
 
-	templates, err = gatherTemplates(&Config{
+	templates, err = gatherTemplates(&config.Config{
 		InputFiles:  []string{"foo"},
 		OutputFiles: []string{"out"},
 	}, nil)
@@ -131,7 +138,7 @@ func TestGatherTemplates(t *testing.T) {
 	assert.Equal(t, os.FileMode(0600), info.Mode())
 	fs.Remove("out")
 
-	templates, err = gatherTemplates(&Config{
+	templates, err = gatherTemplates(&config.Config{
 		InputFiles:  []string{"foo"},
 		OutputFiles: []string{"out"},
 		OutMode:     "755",
@@ -146,7 +153,7 @@ func TestGatherTemplates(t *testing.T) {
 	assert.Equal(t, os.FileMode(0755), info.Mode())
 	fs.Remove("out")
 
-	templates, err = gatherTemplates(&Config{
+	templates, err = gatherTemplates(&config.Config{
 		InputDir:  "in",
 		OutputDir: "out",
 	}, simpleNamer("out"))
@@ -168,6 +175,7 @@ func TestProcessTemplates(t *testing.T) {
 
 	afero.WriteFile(fs, "existing", []byte(""), 0644)
 
+	cfg := &config.Config{}
 	testdata := []struct {
 		templates []*tplate
 		contents  []string
@@ -221,7 +229,7 @@ func TestProcessTemplates(t *testing.T) {
 		},
 	}
 	for _, in := range testdata {
-		actual, err := processTemplates(in.templates)
+		actual, err := processTemplates(cfg, in.templates)
 		assert.NoError(t, err)
 		assert.Len(t, actual, len(in.templates))
 		for i, a := range actual {

@@ -18,6 +18,11 @@ jobs:
       - run: make build
         env:
           GOPATH: ${{ runner.workspace }}
+      - name: Save binary
+        uses: actions/upload-artifact@v1
+        with:
+          name: gomplate
+          path: bin/gomplate
       - run: make test
         env:
           GOPATH: ${{ runner.workspace }}
@@ -41,6 +46,11 @@ jobs:
       - run: make build
         env:
           GOPATH: ${{ runner.workspace }}
+      - name: Save binary
+        uses: actions/upload-artifact@v1
+        with:
+          name: gomplate.exe
+          path: bin/gomplate.exe
       - run: make test
         env:
           GOPATH: ${{ runner.workspace }}

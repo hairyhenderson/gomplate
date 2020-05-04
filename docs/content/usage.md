@@ -19,6 +19,23 @@ Hello, hairyhenderson
 
 ## Commandline Arguments
 
+### `--config`
+
+Specify the path to a [gomplate config file](../config). The default is `.gomplate.yaml`. Can also be set with the `GOMPLATE_CONFIG` environment variable.
+
+For example:
+
+```console
+$ cat myconfig.yaml
+in: hello {{ .data.thing }}
+
+datasources:
+  data:
+    url: https://example.com/data.json
+$ gomplate --config myconfig.yaml
+hello world
+```
+
 ### `--file`/`-f`, `--in`/`-i`, and `--out`/`-o`
 
 By default, `gomplate` will read from `Stdin` and write to `Stdout`. This behaviour can be changed.
@@ -135,7 +152,7 @@ A few different forms are valid:
 - `mydata.json`
   - This form infers the name from the file name (without extension). Only valid for files in the current directory.
 
-### `--context`/`c`
+### `--context`/`-c`
 
 Add a data source in `name=URL` form, and make it available in the [default context][] as `.<name>`. The special name `.` (period) can be used to override the entire default context.
 
@@ -262,7 +279,7 @@ post-exec command.
 
 ## Suppressing empty output
 
-Sometimes it can be desirable to suppress empty output (i.e. output consisting of only whitespace). To do so, set `GOMPLATE_SUPPRESS_EMPTY=true` in your environment:
+Sometimes it can be desirable to suppress empty output (i.e. output consisting of only whitespace). To do so, set `suppressEmpty: true` in your [config][] file, or `GOMPLATE_SUPPRESS_EMPTY=true` in your environment:
 
 ```console
 $ export GOMPLATE_SUPPRESS_EMPTY=true
@@ -273,5 +290,6 @@ cat: out: No such file or directory
 
 [default context]: ../syntax/#the-context
 [context]: ../syntax/#the-context
+[config]: ../config/#suppressempty
 [external templates]: ../syntax/#external-templates
 [`.gitignore`]: https://git-scm.com/docs/gitignore

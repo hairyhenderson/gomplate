@@ -96,7 +96,6 @@ func (s *TmplSuite) TestExec(c *C) {
 	})
 	result.Assert(c, icmd.Expected{ExitCode: 0})
 	assert.Equal(c, "", result.Stdout())
-	assert.Equal(c, "", result.Stderr())
 
 	out, err := ioutil.ReadFile(s.tmpDir.Join("out", "users", "config.json"))
 	assert.NilError(c, err)

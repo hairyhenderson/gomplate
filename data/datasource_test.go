@@ -2,6 +2,7 @@ package data
 
 import (
 	"fmt"
+	"net/http"
 	"net/url"
 	"os"
 	"path/filepath"
@@ -9,6 +10,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/hairyhenderson/gomplate/v3/internal/config"
 	"github.com/spf13/afero"
 
 	"github.com/stretchr/testify/assert"
@@ -454,4 +456,71 @@ func TestAbsFileURL(t *testing.T) {
 	u, err = absFileURL("tmp/foo?q=p")
 	assert.NoError(t, err)
 	assert.EqualValues(t, expected, u)
+}
+
+func TestFromConfig(t *testing.T) {
+	cfg := &config.Config{}
+	expected := &Data{
+		Sources: map[string]*Source{},
+	}
+	assert.EqualValues(t, expected, FromConfig(cfg))
+
+	cfg = &config.Config{
+		DataSources: map[string]config.DSConfig{
+			"foo": {
+				URL: mustParseURL("http://example.com"),
+			},
+		},
+	}
+	expected = &Data{
+		Sources: map[string]*Source{
+			"foo": {
+				Alias: "foo",
+				URL:   mustParseURL("http://example.com"),
+			},
+		},
+	}
+	assert.EqualValues(t, expected, FromConfig(cfg))
+
+	cfg = &config.Config{
+		DataSources: map[string]config.DSConfig{
+			"foo": {
+				URL: mustParseURL("http://foo.com"),
+			},
+		},
+		Context: map[string]config.DSConfig{
+			"bar": {
+				URL: mustParseURL("http://bar.com"),
+				Header: http.Header{
+					"Foo": []string{"bar"},
+				},
+			},
+		},
+		ExtraHeaders: map[string]http.Header{
+			"baz": {
+				"Foo": []string{"bar"},
+			},
+		},
+	}
+	expected = &Data{
+		Sources: map[string]*Source{
+			"foo": {
+				Alias: "foo",
+				URL:   mustParseURL("http://foo.com"),
+			},
+			"bar": {
+				Alias: "bar",
+				URL:   mustParseURL("http://bar.com"),
+				header: http.Header{
+					"Foo": []string{"bar"},
+				},
+			},
+		},
+		extraHeaders: map[string]http.Header{
+			"baz": {
+				"Foo": []string{"bar"},
+			},
+		},
+	}
+	assert.EqualValues(t, expected, FromConfig(cfg))
 }

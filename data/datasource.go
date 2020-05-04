@@ -16,6 +16,7 @@ import (
 
 	"github.com/pkg/errors"
 
+	"github.com/hairyhenderson/gomplate/v3/internal/config"
 	"github.com/hairyhenderson/gomplate/v3/libkv"
 	"github.com/hairyhenderson/gomplate/v3/vault"
 )
@@ -123,6 +124,29 @@ func NewData(datasourceArgs, headerArgs []string) (*Data, error) {
 		data.Sources[s.Alias] = s
 	}
 	return data, nil
+}
+
+// FromConfig - internal use only!
+func FromConfig(cfg *config.Config) *Data {
+	sources := map[string]*Source{}
+	for alias, d := range cfg.DataSources {
+		sources[alias] = &Source{
+			Alias:  alias,
+			URL:    d.URL,
+			header: d.Header,
+		}
+	}
+	for alias, d := range cfg.Context {
+		sources[alias] = &Source{
+			Alias:  alias,
+			URL:    d.URL,
+			header: d.Header,
+		}
+	}
+	return &Data{
+		Sources:      sources,
+		extraHeaders: cfg.ExtraHeaders,
+	}
 }
 
 // Source - a data source
