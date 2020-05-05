@@ -418,8 +418,8 @@ outputFiles: ['-']
 leftDelim: L
 rightDelim: R
 templates:
-- foo=foo.t
-- bar=bar.t
+  - foo=foo.t
+  - bar=bar.t
 `
 	assert.Equal(t, expected, c.String())
 
@@ -436,8 +436,8 @@ outputFiles: ['-']
 leftDelim: L
 rightDelim: R
 templates:
-- foo=foo.t
-- bar=bar.t
+  - foo=foo.t
+  - bar=bar.t
 `
 	assert.Equal(t, expected, c.String())
 
