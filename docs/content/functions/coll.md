@@ -484,3 +484,71 @@ $ gomplate -i '{{ $dst := dict "foo" 1 "bar" 2 }}
 {{ coll.Merge $dst $src1 $src2 }}'
 map[foo:1 bar:5 baz:4]
 ```
+
+## `coll.Pick`
+
+Given a map, returns a new map with any entries that have the given keys.
+
+All keys are converted to strings.
+
+This is the inverse of [`coll.Omit`](#coll-omit).
+
+_Note that this function does not modify the input._
+
+### Usage
+
+```go
+coll.Pick keys... map
+```
+```go
+map | coll.Pick keys...
+```
+
+### Arguments
+
+| name | description |
+|------|-------------|
+| `keys...` | _(required)_ the keys to match |
+| `map` | _(required)_ the map to pick from |
+
+### Examples
+
+```console
+$ gomplate -i '{{ $data := dict "foo" 1 "bar" 2 "baz" 3 }}
+{{ coll.Pick "foo" "baz" $data }}'
+map[baz:3 foo:1]
+```
+
+## `coll.Omit`
+
+Given a map, returns a new map without any entries that have the given keys.
+
+All keys are converted to strings.
+
+This is the inverse of [`coll.Pic`](#coll-pick).
+
+_Note that this function does not modify the input._
+
+### Usage
+
+```go
+coll.Omit keys... map
+```
+```go
+map | coll.Omit keys...
+```
+
+### Arguments
+
+| name | description |
+|------|-------------|
+| `keys...` | _(required)_ the keys to match |
+| `map` | _(required)_ the map to omit from |
+
+### Examples
+
+```console
+$ gomplate -i '{{ $data := dict "foo" 1 "bar" 2 "baz" 3 }}
+{{ coll.Omit "foo" "baz" $data }}'
+map[bar:2]
+```

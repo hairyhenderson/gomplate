@@ -118,3 +118,15 @@ func (s *CollSuite) TestFlatten(c *C) {
 		"-i", "{{ `"+in+"` | jsonArray | coll.Flatten 2 | toJSON }}"))
 	result.Assert(c, icmd.Expected{ExitCode: 0, Out: "[1,2,3,4,[[5],6],7]"})
 }
+
+func (s *CollSuite) TestPick(c *C) {
+	result := icmd.RunCmd(icmd.Command(GomplateBin,
+		"-i", `{{ $data := dict "foo" 1 "bar" 2 "baz" 3 }}{{ coll.Pick "foo" "baz" $data }}`))
+	result.Assert(c, icmd.Expected{ExitCode: 0, Out: "map[baz:3 foo:1]"})
+}
+
+func (s *CollSuite) TestOmit(c *C) {
+	result := icmd.RunCmd(icmd.Command(GomplateBin,
+		"-i", `{{ $data := dict "foo" 1 "bar" 2 "baz" 3 }}{{ coll.Omit "foo" "baz" $data }}`))
+	result.Assert(c, icmd.Expected{ExitCode: 0, Out: "map[bar:2]"})
+}
