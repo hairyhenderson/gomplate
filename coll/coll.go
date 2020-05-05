@@ -162,6 +162,40 @@ func Merge(dst map[string]interface{}, srcs ...map[string]interface{}) (map[stri
 	return dst, nil
 }
 
+// returns whether or not a contains v
+func contains(v string, a []string) bool {
+	for _, n := range a {
+		if n == v {
+			return true
+		}
+	}
+	return false
+}
+
+// Omit returns a new map without any entries that have the
+// given keys (inverse of Pick).
+func Omit(in map[string]interface{}, keys ...string) map[string]interface{} {
+	out := map[string]interface{}{}
+	for k, v := range in {
+		if !contains(k, keys) {
+			out[k] = v
+		}
+	}
+	return out
+}
+
+// Pick returns a new map with any entries that have the
+// given keys (inverse of Omit).
+func Pick(in map[string]interface{}, keys ...string) map[string]interface{} {
+	out := map[string]interface{}{}
+	for k, v := range in {
+		if contains(k, keys) {
+			out[k] = v
+		}
+	}
+	return out
+}
+
 func copyMap(m map[string]interface{}) map[string]interface{} {
 	n := map[string]interface{}{}
 	for k, v := range m {

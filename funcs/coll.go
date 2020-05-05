@@ -129,3 +129,42 @@ func (f *CollFuncs) Flatten(args ...interface{}) ([]interface{}, error) {
 	}
 	return coll.Flatten(list, depth)
 }
+
+func pickOmitArgs(args ...interface{}) (map[string]interface{}, []string, error) {
+	if len(args) <= 1 {
+		return nil, nil, errors.Errorf("wrong number of args: wanted 2 or more, got %d", len(args))
+	}
+
+	m, ok := args[len(args)-1].(map[string]interface{})
+	if !ok {
+		return nil, nil, errors.Errorf("wrong map type: must be map[string]interface{}, got %T", args[len(args)-1])
+	}
+
+	keys := make([]string, len(args)-1)
+	for i, v := range args[0 : len(args)-1] {
+		k, ok := v.(string)
+		if !ok {
+			return nil, nil, errors.Errorf("wrong key type: must be string, got %T (%+v)", args[i], args[i])
+		}
+		keys[i] = k
+	}
+	return m, keys, nil
+}
+
+// Pick -
+func (f *CollFuncs) Pick(args ...interface{}) (map[string]interface{}, error) {
+	m, keys, err := pickOmitArgs(args...)
+	if err != nil {
+		return nil, err
+	}
+	return coll.Pick(m, keys...), nil
+}
+
+// Omit -
+func (f *CollFuncs) Omit(args ...interface{}) (map[string]interface{}, error) {
+	m, keys, err := pickOmitArgs(args...)
+	if err != nil {
+		return nil, err
+	}
+	return coll.Omit(m, keys...), nil
+}

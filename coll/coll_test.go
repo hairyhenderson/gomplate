@@ -565,3 +565,48 @@ func BenchmarkFlatten(b *testing.B) {
 		}
 	}
 }
+
+func TestOmit(t *testing.T) {
+	in := map[string]interface{}{
+		"foo": "bar",
+		"bar": true,
+		"":    "baz",
+	}
+	assert.EqualValues(t, in, Omit(in, "baz"))
+
+	expected := map[string]interface{}{
+		"foo": "bar",
+		"bar": true,
+	}
+	assert.EqualValues(t, expected, Omit(in, ""))
+
+	expected = map[string]interface{}{
+		"": "baz",
+	}
+	assert.EqualValues(t, expected, Omit(in, "foo", "bar"))
+
+	assert.EqualValues(t, map[string]interface{}{}, Omit(in, "foo", "bar", ""))
+}
+
+func TestPick(t *testing.T) {
+	in := map[string]interface{}{
+		"foo": "bar",
+		"bar": true,
+		"":    "baz",
+	}
+	expected := map[string]interface{}{}
+	assert.EqualValues(t, expected, Pick(in, "baz"))
+
+	expected = map[string]interface{}{
+		"": "baz",
+	}
+	assert.EqualValues(t, expected, Pick(in, ""))
+
+	expected = map[string]interface{}{
+		"foo": "bar",
+		"bar": true,
+	}
+	assert.EqualValues(t, expected, Pick(in, "foo", "bar"))
+
+	assert.EqualValues(t, in, Pick(in, "foo", "bar", ""))
+}
