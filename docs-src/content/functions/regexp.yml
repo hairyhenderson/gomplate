@@ -72,6 +72,21 @@ funcs:
       - |
         $ gomplate -i '{{ if (.Env.USER | regexp.Match `^h`) }}username ({{.Env.USER}}) starts with h!{{end}}'
         username (hairyhenderson) starts with h!
+  - name: regexp.QuoteMeta
+    description: |
+      Escapes all regular expression metacharacters in the input. The returned string is a regular expression matching the literal text.
+
+      This function provides the same behaviour as Go's
+      [`regexp.QuoteMeta`](https://golang.org/pkg/regexp/#Regexp.QuoteMeta) function.
+    pipeline: true
+    arguments:
+      - name: input
+        required: true
+        description: The input to escape
+    examples:
+      - |
+        $ gomplate -i '{{ `{hello}` | regexp.QuoteMeta }}'
+        \{hello\}
   - name: regexp.Replace
     description: |
       Replaces matches of a regular expression with the replacement string.

@@ -27,6 +27,11 @@ func Match(expression, input string) bool {
 	return re.MatchString(input)
 }
 
+// QuoteMeta -
+func QuoteMeta(input string) string {
+	return stdre.QuoteMeta(input)
+}
+
 // Replace -
 func Replace(expression, replacement, input string) string {
 	re := stdre.MustCompile(expression)

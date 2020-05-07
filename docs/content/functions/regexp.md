@@ -59,10 +59,10 @@ This function provides the same behaviour as Go's
 ### Usage
 
 ```go
-regexp.FindAll expression [false] input
+regexp.FindAll expression [n] input
 ```
 ```go
-input | regexp.FindAll expression [false]
+input | regexp.FindAll expression [n]
 ```
 
 ### Arguments
@@ -70,7 +70,7 @@ input | regexp.FindAll expression [false]
 | name | description |
 |------|-------------|
 | `expression` | _(required)_ The regular expression |
-| `false` | _(optional)_ The number of matches to return |
+| `n` | _(optional)_ The number of matches to return |
 | `input` | _(required)_ The input to search |
 
 ### Examples
@@ -111,6 +111,35 @@ input | regexp.Match expression
 ```console
 $ gomplate -i '{{ if (.Env.USER | regexp.Match `^h`) }}username ({{.Env.USER}}) starts with h!{{end}}'
 username (hairyhenderson) starts with h!
+```
+
+## `regexp.QuoteMeta`
+
+Escapes all regular expression metacharacters in the input. The returned string is a regular expression matching the literal text.
+
+This function provides the same behaviour as Go's
+[`regexp.QuoteMeta`](https://golang.org/pkg/regexp/#Regexp.QuoteMeta) function.
+
+### Usage
+
+```go
+regexp.QuoteMeta input
+```
+```go
+input | regexp.QuoteMeta
+```
+
+### Arguments
+
+| name | description |
+|------|-------------|
+| `input` | _(required)_ The input to escape |
+
+### Examples
+
+```console
+$ gomplate -i '{{ `{hello}` | regexp.QuoteMeta }}'
+\{hello\}
 ```
 
 ## `regexp.Replace`
@@ -205,10 +234,10 @@ This function provides the same behaviour as Go's
 ### Usage
 
 ```go
-regexp.Split expression [false] input
+regexp.Split expression [n] input
 ```
 ```go
-input | regexp.Split expression [false]
+input | regexp.Split expression [n]
 ```
 
 ### Arguments
@@ -216,7 +245,7 @@ input | regexp.Split expression [false]
 | name | description |
 |------|-------------|
 | `expression` | _(required)_ The regular expression |
-| `false` | _(optional)_ The number of matches to return |
+| `n` | _(optional)_ The number of matches to return |
 | `input` | _(required)_ The input to search |
 
 ### Examples

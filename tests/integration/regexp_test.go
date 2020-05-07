@@ -17,3 +17,9 @@ func (s *RegexpSuite) TestReplace(c *C) {
 		`{{ "1.2.3-59" | regexp.Replace "-([0-9]*)" ".$1" }}`)
 	result.Assert(c, icmd.Expected{ExitCode: 0, Out: "1.2.3.59"})
 }
+
+func (s *RegexpSuite) TestQuoteMeta(c *C) {
+	result := icmd.RunCommand(GomplateBin, "-i",
+		"{{ regexp.QuoteMeta `foo{(\\` }}")
+	result.Assert(c, icmd.Expected{ExitCode: 0, Out: `foo\{\(\\`})
+}
