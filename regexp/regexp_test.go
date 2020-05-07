@@ -107,3 +107,7 @@ func TestSplit(t *testing.T) {
 		assert.EqualValues(t, d.expected, f)
 	}
 }
+
+func TestQuoteMeta(t *testing.T) {
+	assert.Equal(t, `foo\{\(\\`, QuoteMeta(`foo{(\`))
+}

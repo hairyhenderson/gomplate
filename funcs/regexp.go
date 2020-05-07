@@ -58,6 +58,11 @@ func (f *ReFuncs) Match(re, input interface{}) bool {
 	return regexp.Match(conv.ToString(re), conv.ToString(input))
 }
 
+// QuoteMeta -
+func (f *ReFuncs) QuoteMeta(in interface{}) string {
+	return regexp.QuoteMeta(conv.ToString(in))
+}
+
 // Replace -
 func (f *ReFuncs) Replace(re, replacement, input interface{}) string {
 	return regexp.Replace(conv.ToString(re),
