@@ -85,7 +85,9 @@ func SDKSession(region ...string) *session.Session {
 				panic(errors.Wrap(err, "failed to determine EC2 region"))
 			}
 		}
-		config = config.WithRegion(metaRegion)
+		if metaRegion != "" && metaRegion != unknown {
+			config = config.WithRegion(metaRegion)
+		}
 		config = config.WithCredentialsChainVerboseErrors(true)
 
 		sdkSession = session.Must(session.NewSessionWithOptions(session.Options{
