@@ -56,9 +56,9 @@ func (s *CollSuite) TestMerge(c *C) {
     b: b
   one: uno
   three:
-  - 5
-  - 6
-  - 7
+    - 5
+    - 6
+    - 7
   two: 2
 `})
 }
