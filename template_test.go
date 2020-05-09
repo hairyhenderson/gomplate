@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/hairyhenderson/gomplate/v3/internal/config"
+	"github.com/hairyhenderson/gomplate/v3/internal/writers"
 	"github.com/spf13/afero"
 
 	"github.com/stretchr/testify/assert"
@@ -53,7 +54,7 @@ func TestOpenOutFile(t *testing.T) {
 	assert.Equal(t, os.FileMode(0644), i.Mode())
 
 	defer func() { Stdout = os.Stdout }()
-	Stdout = &nopWCloser{&bytes.Buffer{}}
+	Stdout = &writers.NopCloser{Writer: &bytes.Buffer{}}
 
 	f, err := openOutFile(cfg, "-", 0644, false)
 	assert.NoError(t, err)
@@ -246,60 +247,4 @@ func TestProcessTemplates(t *testing.T) {
 		}
 		fs.Remove("out")
 	}
-}
-
-func TestAllWhitespace(t *testing.T) {
-	testdata := []struct {
-		in       []byte
-		expected bool
-	}{
-		{[]byte(" "), true},
-		{[]byte("foo"), false},
-		{[]byte("   \t\n\n\v\r\n"), true},
-		{[]byte("   foo   "), false},
-	}
-
-	for _, d := range testdata {
-		assert.Equal(t, d.expected, allWhitespace(d.in))
-	}
-}
-
-func TestEmptySkipper(t *testing.T) {
-	testdata := []struct {
-		in    []byte
-		empty bool
-	}{
-		{[]byte(" "), true},
-		{[]byte("foo"), false},
-		{[]byte("   \t\n\n\v\r\n"), true},
-		{[]byte("   foo   "), false},
-	}
-
-	for _, d := range testdata {
-		w := &bufferCloser{&bytes.Buffer{}}
-		opened := false
-		f := newEmptySkipper(func() (io.WriteCloser, error) {
-			opened = true
-			return w, nil
-		})
-		n, err := f.Write(d.in)
-		assert.NoError(t, err)
-		assert.Equal(t, len(d.in), n)
-		if d.empty {
-			assert.Nil(t, f.w)
-			assert.False(t, opened)
-		} else {
-			assert.NotNil(t, f.w)
-			assert.True(t, opened)
-			assert.EqualValues(t, d.in, w.Bytes())
-		}
-	}
-}
-
-type bufferCloser struct {
-	*bytes.Buffer
-}
-
-func (b *bufferCloser) Close() error {
-	return nil
 }

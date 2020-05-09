@@ -1,7 +1,6 @@
 package gomplate
 
 import (
-	"bytes"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -10,9 +9,8 @@ import (
 	"text/template"
 
 	"github.com/hairyhenderson/gomplate/v3/internal/config"
+	"github.com/hairyhenderson/gomplate/v3/internal/writers"
 	"github.com/hairyhenderson/gomplate/v3/tmpl"
-
-	"github.com/pkg/errors"
 
 	"github.com/spf13/afero"
 	"github.com/zealic/xignore"
@@ -103,7 +101,7 @@ func gatherTemplates(cfg *config.Config, outFileNamer func(string) (string, erro
 
 	// --exec-pipe redirects standard out to the out pipe
 	if cfg.OutWriter != nil {
-		Stdout = &nopWCloser{cfg.OutWriter}
+		Stdout = &writers.NopCloser{Writer: cfg.OutWriter}
 	}
 
 	switch {
@@ -229,7 +227,7 @@ func fileToTemplates(inFile, outFile string, mode os.FileMode, modeOverride bool
 
 func openOutFile(cfg *config.Config, filename string, mode os.FileMode, modeOverride bool) (out io.WriteCloser, err error) {
 	if cfg.SuppressEmpty {
-		out = newEmptySkipper(func() (io.WriteCloser, error) {
+		out = writers.NewEmptySkipper(func() (io.WriteCloser, error) {
 			if filename == "-" {
 				return Stdout, nil
 			}
@@ -274,77 +272,4 @@ func readInput(filename string) (string, error) {
 		return "", err
 	}
 	return string(bytes), nil
-}
-
-// emptySkipper is a io.WriteCloser wrapper that will only start writing once a
-// non-whitespace byte has been encountered. The writer must be provided by the
-// `open` func
-type emptySkipper struct {
-	open func() (io.WriteCloser, error)
-
-	// internal
-	w   io.WriteCloser
-	buf *bytes.Buffer
-	nw  bool
-}
-
-func newEmptySkipper(open func() (io.WriteCloser, error)) *emptySkipper {
-	return &emptySkipper{
-		w:    nil,
-		buf:  &bytes.Buffer{},
-		nw:   false,
-		open: open,
-	}
-}
-
-func (f *emptySkipper) Write(p []byte) (n int, err error) {
-	if !f.nw {
-		if allWhitespace(p) {
-			// buffer the whitespace
-			return f.buf.Write(p)
-		}
-
-		// first time around, so open the writer
-		f.nw = true
-		f.w, err = f.open()
-		if err != nil {
-			return 0, err
-		}
-		if f.w == nil {
-			return 0, errors.New("nil writer returned by open")
-		}
-		// empty the buffer into the wrapped writer
-		_, err = f.buf.WriteTo(f.w)
-		if err != nil {
-			return 0, err
-		}
-	}
-
-	return f.w.Write(p)
-}
-
-func (f *emptySkipper) Close() error {
-	if f.w != nil {
-		return f.w.Close()
-	}
-	return nil
-}
-
-func allWhitespace(p []byte) bool {
-	for _, b := range p {
-		if b == ' ' || b == '\t' || b == '\n' || b == '\r' || b == '\v' {
-			continue
-		}
-		return false
-	}
-	return true
-}
-
-// like ioutil.NopCloser(), except for io.WriteClosers...
-type nopWCloser struct {
-	io.Writer
-}
-
-func (n *nopWCloser) Close() error {
-	return nil
 }
