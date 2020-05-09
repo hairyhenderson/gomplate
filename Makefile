@@ -125,7 +125,7 @@ endif
 
 integration: build
 	$(GO) test -v -tags=integration \
-		./tests/integration
+		./internal/tests/integration
 
 integration.iid: Dockerfile.integration $(PREFIX)/bin/$(PKG_NAME)_linux-amd64$(call extension,$(GOOS))
 	docker build -f $< --iidfile $@ .
@@ -212,7 +212,7 @@ lint:
 		--enable unparam \
 		--enable unused \
 		--enable varcheck \
-			./tests/integration
+			./internal/tests/integration
 
 .PHONY: gen-changelog clean test build-x compress-all build-release build test-integration-docker gen-docs lint clean-images clean-containers docker-images
 .DELETE_ON_ERROR:
