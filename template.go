@@ -249,10 +249,26 @@ func createOutFile(filename string, mode os.FileMode, modeOverride bool) (out io
 			return nil, fmt.Errorf("failed to chmod output file '%s' with mode %q: %w", filename, mode.Perm(), err)
 		}
 	}
-	out, err = fs.OpenFile(filename, os.O_RDWR|os.O_CREATE|os.O_TRUNC, mode.Perm())
-	if err != nil {
+
+	open := func() (out io.WriteCloser, err error) {
+		out, err = fs.OpenFile(filename, os.O_RDWR|os.O_CREATE|os.O_TRUNC, mode.Perm())
+		if err != nil {
+			return out, fmt.Errorf("failed to open output file '%s' for writing: %w", filename, err)
+		}
+
 		return out, err
 	}
+
+	// if the output file already exists, we'll use a SameSkipper
+	f, err := fs.OpenFile(filename, os.O_RDONLY, mode.Perm())
+	if err != nil {
+		// likely means the file just doesn't exist - open's error will be more useful
+		return open()
+	}
+	out = writers.SameSkipper(f, func() (io.WriteCloser, error) {
+		return open()
+	})
+
 	return out, err
 }
 
