@@ -25,7 +25,8 @@ var _ = Suite(&BasicSuite{})
 func (s *BasicSuite) SetUpTest(c *C) {
 	s.tmpDir = fs.NewDir(c, "gomplate-inttests",
 		fs.WithFile("one", "hi\n", fs.WithMode(0640)),
-		fs.WithFile("two", "hello\n"))
+		fs.WithFile("two", "hello\n"),
+		fs.WithFile("broken", "", fs.WithMode(0000)))
 }
 
 func (s *BasicSuite) TearDownTest(c *C) {

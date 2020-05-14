@@ -71,3 +71,21 @@ func (s *BasicSuite) TestOverridesOutputModeWithChmod(c *C) {
 		assert.Equal(c, v.content, string(content))
 	}
 }
+
+func (s *BasicSuite) TestAppliesChmodBeforeWrite(c *C) {
+	// 'broken' was created with mode 0000
+	out := s.tmpDir.Join("broken")
+	result := icmd.RunCmd(icmd.Command(GomplateBin,
+		"-f", s.tmpDir.Join("one"),
+		"-o", out,
+		"--chmod", "0644"), func(cmd *icmd.Cmd) {
+	})
+	result.Assert(c, icmd.Success)
+
+	info, err := os.Stat(out)
+	assert.NilError(c, err)
+	assert.Equal(c, os.FileMode(0644), info.Mode())
+	content, err := ioutil.ReadFile(out)
+	assert.NilError(c, err)
+	assert.Equal(c, "hi\n", string(content))
+}
