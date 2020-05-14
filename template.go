@@ -243,12 +243,15 @@ func openOutFile(cfg *config.Config, filename string, mode os.FileMode, modeOver
 }
 
 func createOutFile(filename string, mode os.FileMode, modeOverride bool) (out io.WriteCloser, err error) {
+	if modeOverride {
+		err = fs.Chmod(filename, mode.Perm())
+		if err != nil && !os.IsNotExist(err) {
+			return nil, fmt.Errorf("failed to chmod output file '%s' with mode %q: %w", filename, mode.Perm(), err)
+		}
+	}
 	out, err = fs.OpenFile(filename, os.O_RDWR|os.O_CREATE|os.O_TRUNC, mode.Perm())
 	if err != nil {
 		return out, err
-	}
-	if modeOverride {
-		err = fs.Chmod(filename, mode.Perm())
 	}
 	return out, err
 }
