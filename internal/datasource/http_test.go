@@ -1,6 +1,7 @@
-package data
+package datasource
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -25,7 +26,7 @@ func setupHTTP(code int, mimetype string, body string) (*httptest.Server, *http.
 		w.WriteHeader(code)
 		if body == "" {
 			// mirror back the headers
-			fmt.Fprintln(w, must(marshalObj(r.Header, json.Marshal)))
+			fmt.Fprintln(w, must(json.Marshal(r.Header)))
 		} else {
 			fmt.Fprintln(w, body)
 		}
@@ -46,76 +47,56 @@ func TestHTTPFile(t *testing.T) {
 	server, client := setupHTTP(200, "application/json; charset=utf-8", `{"hello": "world"}`)
 	defer server.Close()
 
-	sources := make(map[string]*Source)
-	sources["foo"] = &Source{
-		Alias: "foo",
-		URL: &url.URL{
-			Scheme: "http",
-			Host:   "example.com",
-			Path:   "/foo",
-		},
-		hc: client,
-	}
-	data := &Data{
-		Sources: sources,
-	}
-
 	expected := map[string]interface{}{
 		"hello": "world",
 	}
 
-	actual, err := data.Datasource("foo")
-	assert.NoError(t, err)
-	assert.Equal(t, must(marshalObj(expected, json.Marshal)), must(marshalObj(actual, json.Marshal)))
+	ctx := context.Background()
+	h := &HTTP{hc: client}
 
-	actual, err = data.Datasource(server.URL)
+	data, err := h.Read(ctx, mustParseURL("http://example.com/foo"))
 	assert.NoError(t, err)
-	assert.Equal(t, must(marshalObj(expected, json.Marshal)), must(marshalObj(actual, json.Marshal)))
+	assert.Equal(t, must(json.Marshal(expected)), must(json.Marshal(data.Bytes)))
+
+	data, err = h.Read(ctx, mustParseURL(server.URL))
+	assert.NoError(t, err)
+	assert.Equal(t, must(json.Marshal(expected)), must(json.Marshal(data.Bytes)))
 }
 
 func TestHTTPFileWithHeaders(t *testing.T) {
 	server, client := setupHTTP(200, jsonMimetype, "")
 	defer server.Close()
 
-	sources := make(map[string]*Source)
-	sources["foo"] = &Source{
-		Alias: "foo",
-		URL: &url.URL{
-			Scheme: "http",
-			Host:   "example.com",
-			Path:   "/foo",
-		},
-		hc: client,
-		header: http.Header{
-			"Foo":             {"bar"},
-			"foo":             {"baz"},
-			"User-Agent":      {},
-			"Accept-Encoding": {"test"},
-		},
-	}
-	data := &Data{
-		Sources: sources,
-	}
+	// TODO: uncomment
+	// hdr := http.Header{
+	// 	"Foo":             {"bar"},
+	// 	"foo":             {"baz"},
+	// 	"User-Agent":      {},
+	// 	"Accept-Encoding": {"test"},
+	// }
+	ctx := context.Background()
+	h := &HTTP{hc: client}
+
 	expected := http.Header{
 		"Accept-Encoding": {"test"},
 		"Foo":             {"bar", "baz"},
 	}
-	actual, err := data.Datasource("foo")
+	u := mustParseURL("http://example.com/foo")
+	data, err := h.Read(ctx, u)
 	assert.NoError(t, err)
-	assert.Equal(t, must(marshalObj(expected, json.Marshal)), must(marshalObj(actual, json.Marshal)))
+	assert.Equal(t, must(json.Marshal(expected)), must(json.Marshal(data.Bytes)))
 
 	expected = http.Header{
 		"Accept-Encoding": {"test"},
 		"Foo":             {"bar", "baz"},
 		"User-Agent":      {"Go-http-client/1.1"},
 	}
-	data = &Data{
-		Sources:      sources,
-		extraHeaders: map[string]http.Header{server.URL: expected},
-	}
-	actual, err = data.Datasource(server.URL)
+
+	// TODO: uncomment
+	// extraHeaders := http.Header{server.URL: expected}
+	data, err = h.Read(ctx, mustParseURL(server.URL))
 	assert.NoError(t, err)
-	assert.Equal(t, must(marshalObj(expected, json.Marshal)), must(marshalObj(actual, json.Marshal)))
+	assert.Equal(t, must(json.Marshal(expected)), must(json.Marshal(data.Bytes)))
 }
 
 func TestBuildURL(t *testing.T) {

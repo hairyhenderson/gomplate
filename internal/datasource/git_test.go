@@ -1,4 +1,4 @@
-package data
+package datasource
 
 import (
 	"context"
@@ -32,7 +32,7 @@ import (
 
 func TestParseArgPath(t *testing.T) {
 	t.Parallel()
-	g := gitsource{}
+	g := &Git{}
 
 	data := []struct {
 		url        string
@@ -87,7 +87,7 @@ func TestParseArgPath(t *testing.T) {
 
 func TestParseGitPath(t *testing.T) {
 	t.Parallel()
-	g := gitsource{}
+	g := &Git{}
 	_, _, err := g.parseGitPath(nil)
 	assert.ErrorContains(t, err, "")
 
@@ -187,7 +187,7 @@ func TestParseGitPath(t *testing.T) {
 }
 
 func TestReadGitRepo(t *testing.T) {
-	g := gitsource{}
+	g := &Git{}
 	fs := setupGitRepo(t)
 	fs, err := fs.Chroot("/repo")
 	assert.NilError(t, err)
@@ -312,7 +312,7 @@ func overrideFSLoader(fs billy.Filesystem) {
 func TestOpenFileRepo(t *testing.T) {
 	ctx := context.TODO()
 	repoFS := setupGitRepo(t)
-	g := gitsource{}
+	g := &Git{}
 
 	overrideFSLoader(repoFS)
 	defer overrideFSLoader(osfs.New(""))
@@ -351,7 +351,7 @@ func TestOpenFileRepo(t *testing.T) {
 func TestOpenBareFileRepo(t *testing.T) {
 	ctx := context.TODO()
 	repoFS := setupGitRepo(t)
-	g := gitsource{}
+	g := &Git{}
 
 	overrideFSLoader(repoFS)
 	defer overrideFSLoader(osfs.New(""))
@@ -371,26 +371,20 @@ func TestReadGit(t *testing.T) {
 	overrideFSLoader(repoFS)
 	defer overrideFSLoader(osfs.New(""))
 
-	s := &Source{
-		Alias: "hi",
-		URL:   mustParseURL("git+file:///bare.git//hello.txt"),
-	}
-	b, err := readGit(s)
+	ctx := context.Background()
+	g := &Git{}
+	d, err := g.Read(ctx, mustParseURL("git+file:///bare.git//hello.txt"))
 	assert.NilError(t, err)
-	assert.Equal(t, "hello world", string(b))
+	assert.Equal(t, "hello world", string(d.Bytes))
 
-	s = &Source{
-		Alias: "hi",
-		URL:   mustParseURL("git+file:///bare.git"),
-	}
-	b, err = readGit(s)
+	d, err = g.Read(ctx, mustParseURL("git+file:///bare.git"))
 	assert.NilError(t, err)
-	assert.Equal(t, "application/array+json", s.mediaType)
-	assert.Equal(t, `["hello.txt"]`, string(b))
+	assert.Equal(t, "application/array+json", d.MediaType)
+	assert.Equal(t, `["hello.txt"]`, string(d.Bytes))
 }
 
 func TestGitAuth(t *testing.T) {
-	g := gitsource{}
+	g := &Git{}
 	a, err := g.auth(mustParseURL("git+file:///bare.git"))
 	assert.NilError(t, err)
 	assert.Equal(t, nil, a)
@@ -450,7 +444,7 @@ func TestGitAuth(t *testing.T) {
 
 func TestRefFromURL(t *testing.T) {
 	t.Parallel()
-	g := gitsource{}
+	g := &Git{}
 	data := []struct {
 		url, expected string
 	}{

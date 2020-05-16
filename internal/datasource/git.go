@@ -1,4 +1,4 @@
-package data
+package datasource
 
 import (
 	"bytes"
@@ -14,7 +14,6 @@ import (
 
 	"github.com/hairyhenderson/gomplate/v3/base64"
 	"github.com/hairyhenderson/gomplate/v3/env"
-
 	"gopkg.in/src-d/go-billy.v4"
 	"gopkg.in/src-d/go-billy.v4/memfs"
 	"gopkg.in/src-d/go-git.v4"
@@ -25,38 +24,33 @@ import (
 	"gopkg.in/src-d/go-git.v4/storage/memory"
 )
 
-func readGit(source *Source, args ...string) ([]byte, error) {
-	ctx := context.Background()
-	g := gitsource{}
+// Git -
+type Git struct{}
 
-	u := source.URL
-	repoURL, path, err := g.parseGitPath(u, args...)
+var _ Reader = (*Git)(nil)
+
+func (g *Git) Read(ctx context.Context, url *url.URL, args ...string) (data Data, err error) {
+	repoURL, path, err := g.parseGitPath(url, args...)
 	if err != nil {
-		return nil, err
+		return data, err
 	}
 
 	depth := 1
-	if u.Scheme == "git+file" {
+	if url.Scheme == "git+file" {
 		// we can't do shallow clones for filesystem repos apparently
 		depth = 0
 	}
 
 	fs, _, err := g.clone(ctx, repoURL, depth)
 	if err != nil {
-		return nil, err
+		return data, err
 	}
 
-	mimeType, out, err := g.read(fs, path)
-	if mimeType != "" {
-		source.mediaType = mimeType
-	}
-	return out, err
+	data.MediaType, data.Bytes, err = g.read(fs, path)
+	return data, err
 }
 
-type gitsource struct {
-}
-
-func (g gitsource) parseArgURL(arg string) (u *url.URL, err error) {
+func (g *Git) parseArgURL(arg string) (u *url.URL, err error) {
 	if strings.HasPrefix(arg, "//") {
 		u, err = url.Parse(arg[1:])
 		u.Path = "/" + u.Path
@@ -70,7 +64,7 @@ func (g gitsource) parseArgURL(arg string) (u *url.URL, err error) {
 	return u, err
 }
 
-func (g gitsource) parseQuery(orig, arg *url.URL) string {
+func (g *Git) parseQuery(orig, arg *url.URL) string {
 	q := orig.Query()
 	pq := arg.Query()
 	for k, vs := range pq {
@@ -81,7 +75,7 @@ func (g gitsource) parseQuery(orig, arg *url.URL) string {
 	return q.Encode()
 }
 
-func (g gitsource) parseArgPath(u *url.URL, arg string) (repo, p string) {
+func (g *Git) parseArgPath(u *url.URL, arg string) (repo, p string) {
 	// if the source URL already specified a repo and subpath, the whole
 	// arg is interpreted as subpath
 	if strings.Contains(u.Path, "//") || strings.HasPrefix(arg, "//") {
@@ -99,7 +93,7 @@ func (g gitsource) parseArgPath(u *url.URL, arg string) (repo, p string) {
 // Massage the URL and args together to produce the repo to clone,
 // and the path to read.
 // The path is delimited from the repo by '//'
-func (g gitsource) parseGitPath(u *url.URL, args ...string) (out *url.URL, p string, err error) {
+func (g *Git) parseGitPath(u *url.URL, args ...string) (out *url.URL, p string, err error) {
 	if u == nil {
 		return nil, "", fmt.Errorf("parseGitPath: no url provided (%v)", u)
 	}
@@ -135,13 +129,7 @@ func (g gitsource) parseGitPath(u *url.URL, args ...string) (out *url.URL, p str
 	return out, p, err
 }
 
-//nolint: interfacer
-func cloneURL(u *url.URL) *url.URL {
-	out, _ := url.Parse(u.String())
-	return out
-}
-
-func (g gitsource) refFromURL(u *url.URL) plumbing.ReferenceName {
+func (g *Git) refFromURL(u *url.URL) plumbing.ReferenceName {
 	switch {
 	case strings.HasPrefix(u.Fragment, "refs/"):
 		return plumbing.ReferenceName(u.Fragment)
@@ -154,7 +142,7 @@ func (g gitsource) refFromURL(u *url.URL) plumbing.ReferenceName {
 
 // clone a repo for later reading through http(s), git, or ssh. u must be the URL to the repo
 // itself, and must have any file path stripped
-func (g gitsource) clone(ctx context.Context, repoURL *url.URL, depth int) (billy.Filesystem, *git.Repository, error) {
+func (g *Git) clone(ctx context.Context, repoURL *url.URL, depth int) (billy.Filesystem, *git.Repository, error) {
 	fs := memfs.New()
 	storer := memory.NewStorage()
 
@@ -197,7 +185,7 @@ func (g gitsource) clone(ctx context.Context, repoURL *url.URL, depth int) (bill
 }
 
 // read - reads the provided path out of a git repo
-func (g gitsource) read(fs billy.Filesystem, path string) (string, []byte, error) {
+func (g *Git) read(fs billy.Filesystem, path string) (string, []byte, error) {
 	fi, err := fs.Stat(path)
 	if err != nil {
 		return "", nil, fmt.Errorf("can't stat %s: %w", path, err)
@@ -220,7 +208,7 @@ func (g gitsource) read(fs billy.Filesystem, path string) (string, []byte, error
 	return "", b, nil
 }
 
-func (g gitsource) readDir(fs billy.Filesystem, path string) ([]byte, error) {
+func (g *Git) readDir(fs billy.Filesystem, path string) ([]byte, error) {
 	names, err := fs.ReadDir(path)
 	if err != nil {
 		return nil, fmt.Errorf("couldn't read dir %s: %w", path, err)
@@ -248,7 +236,7 @@ auth methods:
 - http basic auth (for github, gitlab, bitbucket tokens)
 - http token auth (bearer token, somewhat unusual)
 */
-func (g gitsource) auth(u *url.URL) (auth transport.AuthMethod, err error) {
+func (g *Git) auth(u *url.URL) (auth transport.AuthMethod, err error) {
 	user := u.User.Username()
 	switch u.Scheme {
 	case "git+http", "git+https":

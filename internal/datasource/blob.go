@@ -1,4 +1,4 @@
-package data
+package datasource
 
 import (
 	"bytes"
@@ -20,30 +20,34 @@ import (
 	"gocloud.dev/gcp"
 )
 
-func readBlob(source *Source, args ...string) (output []byte, err error) {
+// Blob -
+type Blob struct {
+}
+
+var _ Reader = (*Blob)(nil)
+
+func (b *Blob) Read(ctx context.Context, url *url.URL, args ...string) (data Data, err error) {
 	if len(args) >= 2 {
-		return nil, errors.New("Maximum two arguments to blob datasource: alias, extraPath")
+		return data, errors.New("Maximum two arguments to blob datasource: alias, extraPath")
 	}
 
-	ctx := context.TODO()
-
-	key := source.URL.Path
+	key := url.Path
 	if len(args) == 1 {
 		key = path.Join(key, args[0])
 	}
 
-	opener, err := newOpener(ctx, source.URL)
+	opener, err := newOpener(ctx, url)
 	if err != nil {
-		return nil, err
+		return data, err
 	}
 
 	mux := blob.URLMux{}
-	mux.RegisterBucket(source.URL.Scheme, opener)
+	mux.RegisterBucket(url.Scheme, opener)
 
-	u := blobURL(source.URL)
+	u := blobURL(url)
 	bucket, err := mux.OpenBucket(ctx, u)
 	if err != nil {
-		return nil, err
+		return data, err
 	}
 	defer bucket.Close()
 
@@ -54,10 +58,7 @@ func readBlob(source *Source, args ...string) (output []byte, err error) {
 		r = getBlob
 	}
 
-	mediaType, data, err := r(ctx, bucket, key)
-	if mediaType != "" {
-		source.mediaType = mediaType
-	}
+	data.MediaType, data.Bytes, err = r(ctx, bucket, key)
 	return data, err
 }
 

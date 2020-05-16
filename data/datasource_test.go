@@ -394,3 +394,8 @@ func TestFromConfig(t *testing.T) {
 	}
 	assert.EqualValues(t, expected, FromConfig(cfg))
 }
+
+func mustParseURL(in string) *url.URL {
+	u, _ := url.Parse(in)
+	return u
+}

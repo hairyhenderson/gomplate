@@ -1,8 +1,8 @@
 package data
 
 import (
+	"context"
 	"fmt"
-	"io"
 	"mime"
 	"net/http"
 	"net/url"
@@ -14,12 +14,10 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/hairyhenderson/gomplate/v3/internal/config"
+	"github.com/hairyhenderson/gomplate/v3/internal/datasource"
 	"github.com/hairyhenderson/gomplate/v3/libkv"
 	"github.com/hairyhenderson/gomplate/v3/vault"
 )
-
-// stdin - for overriding in tests
-var stdin io.Reader
 
 func regExtension(ext, typ string) {
 	err := mime.AddExtensionType(ext, typ)
@@ -38,36 +36,56 @@ func init() {
 	regExtension(".env", envMimetype)
 }
 
+func (d *Data) regReader(scheme string, reader interface{}) {
+	if d.sourceReaders == nil {
+		d.sourceReaders = make(map[string]interface{})
+	}
+
+	if _, ok := reader.(func(*Source, ...string) ([]byte, error)); ok {
+		d.sourceReaders[scheme] = reader
+	} else if _, ok := reader.(datasource.Reader); ok {
+		d.sourceReaders[scheme] = reader
+	} else {
+		panic(fmt.Errorf("can't register %v as a reader: wrong type %T", reader, reader))
+	}
+}
+
 // registerReaders registers the source-reader functions
 func (d *Data) registerReaders() {
-	d.sourceReaders = make(map[string]func(*Source, ...string) ([]byte, error))
+	d.regReader("aws+smp", readAWSSMP)
+	d.regReader("aws+sm", readAWSSecretsManager)
+	d.regReader("boltdb", &datasource.BoltDB{})
+	d.regReader("consul", readConsul)
+	d.regReader("consul+http", readConsul)
+	d.regReader("consul+https", readConsul)
+	d.regReader("env", &datasource.Env{})
+	d.regReader("file", readFile)
 
-	d.sourceReaders["aws+smp"] = readAWSSMP
-	d.sourceReaders["aws+sm"] = readAWSSecretsManager
-	d.sourceReaders["boltdb"] = readBoltDB
-	d.sourceReaders["consul"] = readConsul
-	d.sourceReaders["consul+http"] = readConsul
-	d.sourceReaders["consul+https"] = readConsul
-	d.sourceReaders["env"] = readEnv
-	d.sourceReaders["file"] = readFile
-	d.sourceReaders["http"] = readHTTP
-	d.sourceReaders["https"] = readHTTP
-	d.sourceReaders["merge"] = d.readMerge
-	d.sourceReaders["stdin"] = readStdin
-	d.sourceReaders["vault"] = readVault
-	d.sourceReaders["vault+http"] = readVault
-	d.sourceReaders["vault+https"] = readVault
-	d.sourceReaders["s3"] = readBlob
-	d.sourceReaders["gs"] = readBlob
-	d.sourceReaders["git"] = readGit
-	d.sourceReaders["git+file"] = readGit
-	d.sourceReaders["git+http"] = readGit
-	d.sourceReaders["git+https"] = readGit
-	d.sourceReaders["git+ssh"] = readGit
+	httpReader := &datasource.HTTP{}
+	d.regReader("http", httpReader)
+	d.regReader("https", httpReader)
+	d.regReader("merge", d.readMerge)
+	d.regReader("stdin", &datasource.Stdin{})
+
+	vaultReader := &datasource.Vault{}
+	d.regReader("vault", vaultReader)
+	d.regReader("vault+http", vaultReader)
+	d.regReader("vault+https", vaultReader)
+
+	blobReader := &datasource.Blob{}
+	d.regReader("s3", blobReader)
+	d.regReader("gs", blobReader)
+
+	gitReader := &datasource.Git{}
+	d.regReader("git", gitReader)
+	d.regReader("git+file", gitReader)
+	d.regReader("git+http", gitReader)
+	d.regReader("git+https", gitReader)
+	d.regReader("git+ssh", gitReader)
 }
 
 // lookupReader - return the reader function for the given scheme
-func (d *Data) lookupReader(scheme string) (func(*Source, ...string) ([]byte, error), error) {
+func (d *Data) lookupReader(scheme string) (interface{}, error) {
 	if d.sourceReaders == nil {
 		d.registerReaders()
 	}
@@ -82,7 +100,7 @@ func (d *Data) lookupReader(scheme string) (func(*Source, ...string) ([]byte, er
 type Data struct {
 	Sources map[string]*Source
 
-	sourceReaders map[string]func(*Source, ...string) ([]byte, error)
+	sourceReaders map[string]interface{}
 	cache         map[string][]byte
 
 	// headers from the --datasource-header/-H option that don't reference datasources from the commandline
@@ -347,7 +365,7 @@ func (d *Data) DatasourceReachable(alias string, args ...string) bool {
 
 // readSource returns the (possibly cached) data from the given source,
 // as referenced by the given args
-func (d *Data) readSource(source *Source, args ...string) ([]byte, error) {
+func (d *Data) readSource(source *Source, args ...string) (data []byte, err error) {
 	if d.cache == nil {
 		d.cache = make(map[string][]byte)
 	}
@@ -359,13 +377,24 @@ func (d *Data) readSource(source *Source, args ...string) ([]byte, error) {
 	if ok {
 		return cached, nil
 	}
-	r, err := d.lookupReader(source.URL.Scheme)
+	ri, err := d.lookupReader(source.URL.Scheme)
 	if err != nil {
 		return nil, errors.Wrap(err, "Datasource not yet supported")
 	}
-	data, err := r(source, args...)
-	if err != nil {
-		return nil, err
+
+	if r, ok := ri.(func(*Source, ...string) ([]byte, error)); ok {
+		data, err = r(source, args...)
+		if err != nil {
+			return nil, err
+		}
+	} else if r, ok := ri.(datasource.Reader); ok {
+		ctx := context.TODO()
+		d, err := r.Read(ctx, source.URL, args...)
+		if err != nil {
+			return nil, err
+		}
+		data = d.Bytes
+		source.mediaType = d.MediaType
 	}
 	d.cache[cacheKey] = data
 	return data, nil
