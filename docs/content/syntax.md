@@ -126,6 +126,50 @@ Hello, world!
 Goodbye, world.
 ```
 
+Variables are declared with `:=`, and can be redefined with `=`:
+
+```
+{{ $w := "hello" }}
+{{ $w = "goodbye" }}
+```
+
+### Variable scope
+
+A variable's scope extends to the `end` action of the control structure (`if`,
+`with`, or `range`) in which it is declared, or to the end of the template if
+there is no such control structure.
+
+In other words, if a variable is initialized inside an `if` or `else` block,
+it cannot be referenced outside that block.
+
+This template will error with `undefined variable "$w"` since `$w` is only
+declared within `if`/`else` blocks:
+
+```
+{{ if 1 }}
+{{ $w := "world" }}
+{{ else }}
+{{ $w := "earth" }}
+{{ end }}
+
+Hello, {{ print $w }}!
+Goodbye, {{ print $w }}.
+```
+
+One way to approach this is to declare the variable first to an empty value:
+
+```
+{{ $w := "" }}
+{{ if 1 }}
+{{ $w = "world" }}
+{{ else }}
+{{ $w = "earth" }}
+{{ end -}}
+
+Hello, {{ print $w }}!
+Goodbye, {{ print $w }}.
+```
+
 ## Indexing arrays and maps
 
 Occasionally, multi-dimensional data such as arrays (lists, slices) and maps
