@@ -81,7 +81,8 @@ Currently the following datasources support directory semantics:
 When accessing a directory datasource, an array of key names is returned, and can be iterated through to access each individual value contained within.
 - [AWS S3](#using-s3-datasources)
 - [Google Cloud Storage](#using-google-cloud-storage-gs-datasources)
-- [Git](#using-git-datasources)
+- [Git](#using-git-datasources) 
+- [AWS Systems Manager Parameter Store](#using-aws-smp-datasources)
 
 For example, a group of configuration key/value pairs (named `one`, `two`, and `three`, with values `v1`, `v2`, and `v3` respectively) could be rendered like this: 
 
@@ -153,14 +154,16 @@ The [`github.com/joho/godotenv`](https://github.com/joho/godotenv) package is us
 
 The `aws+smp://` scheme can be used to retrieve data from the [AWS Systems Manager](https://aws.amazon.com/systems-manager/) (née AWS EC2 Simple Systems Manager) [Parameter Store](https://aws.amazon.com/systems-manager/features/#Parameter_Store). This hierarchically organized key/value store allows you to store text, lists or encrypted secrets for easy retrieval by AWS resources. See [the AWS Systems Manager documentation](https://docs.aws.amazon.com/systems-manager/latest/userguide/sysman-paramstore-su-create.html#sysman-paramstore-su-create-about) for details on creating these parameters.
 
-
 You must grant `gomplate` permission via IAM credentials for the [`ssm:GetParameter` action](https://docs.aws.amazon.com/systems-manager/latest/userguide/auth-and-access-control-permissions-reference.html). <!-- List support further requires `ssm.GetParameters` permissions. -->
 
 See details on how to configure gomplate's AWS support in [_Configuring AWS_](../functions/aws/#configuring-aws).
 
 ### URL Considerations
 
-For `aws+smp`, only the _scheme_ and _path_ components are necessary to be defined. Other URL components are ignored.
+The _scheme_ and _path_ URL components are used by this datasource.
+
+- the _scheme_ must be `aws+smp`
+- the _path_ component is used to specify the path to the parameter. [Directory](#directory-datasources) semantics are available when the path ends with a `/` character.
 
 ### Output
 
@@ -196,6 +199,12 @@ Bill,Ben
 
 $ echo '{{ (ds "foo" "/second/p1").Value }}' | gomplate -d foo=aws+smp:///foo/
 aaa
+
+$ gomplate -d foo=aws+smp:///foo/first/ -i '{{ range (ds "foo") }}
+{{ . }}: {{ (ds "foo" .).Value }}
+{{- end }}'
+others: Bill,Ben
+password: super-secret
 ```
 
 ## Using `aws+sm` datasource
