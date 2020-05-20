@@ -379,7 +379,7 @@ func TestReadGit(t *testing.T) {
 
 	d, err = g.Read(ctx, mustParseURL("git+file:///bare.git"))
 	assert.NilError(t, err)
-	assert.Equal(t, "application/array+json", d.MediaType)
+	assert.Equal(t, "application/array+json", must(d.MediaType()))
 	assert.Equal(t, `["hello.txt"]`, string(d.Bytes))
 }
 

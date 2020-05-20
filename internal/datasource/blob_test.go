@@ -73,7 +73,7 @@ func TestReadBlob(t *testing.T) {
 	d, err := b.Read(ctx, du)
 	assert.NoError(t, err)
 	assert.Equal(t, "hello", string(d.Bytes))
-	assert.Equal(t, textMimetype, d.MediaType)
+	assert.Equal(t, textMimetype, must(d.MediaType()))
 
 	os.Unsetenv("AWS_ANON")
 
@@ -91,7 +91,7 @@ func TestReadBlob(t *testing.T) {
 	d, err = b.Read(ctx, du)
 	assert.NoError(t, err)
 	assert.Equal(t, `{"value": "goodbye world"}`, string(d.Bytes))
-	assert.Equal(t, jsonMimetype, d.MediaType)
+	assert.Equal(t, jsonMimetype, must(d.MediaType()))
 
 	du = mustParseURL("s3://mybucket/?region=us-east-1&disableSSL=true&s3ForcePathStyle=true")
 	assert.NoError(t, err)
@@ -99,7 +99,7 @@ func TestReadBlob(t *testing.T) {
 	d, err = b.Read(ctx, du)
 	assert.NoError(t, err)
 	assert.EqualValues(t, `["dir1/","file1","file2","file3"]`, string(d.Bytes))
-	assert.Equal(t, jsonArrayMimetype, d.MediaType)
+	assert.Equal(t, jsonArrayMimetype, must(d.MediaType()))
 
 	du = mustParseURL("s3://mybucket/dir1/?region=us-east-1&disableSSL=true&s3ForcePathStyle=true")
 	assert.NoError(t, err)
@@ -107,7 +107,7 @@ func TestReadBlob(t *testing.T) {
 	d, err = b.Read(ctx, du)
 	assert.NoError(t, err)
 	assert.EqualValues(t, `["file1","file2"]`, string(d.Bytes))
-	assert.Equal(t, jsonArrayMimetype, d.MediaType)
+	assert.Equal(t, jsonArrayMimetype, must(d.MediaType()))
 }
 
 func TestBlobURL(t *testing.T) {

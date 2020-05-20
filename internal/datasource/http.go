@@ -18,44 +18,49 @@ type HTTP struct {
 
 var _ Reader = (*HTTP)(nil)
 
-func (h *HTTP) Read(ctx context.Context, url *url.URL, args ...string) (data Data, err error) {
+func (h *HTTP) Read(ctx context.Context, url *url.URL, args ...string) (data *Data, err error) {
 	if h.hc == nil {
 		h.hc = &http.Client{Timeout: time.Second * 5}
 	}
+
+	data = newData(url, args)
+
 	u, err := buildURL(url, args...)
 	if err != nil {
-		return data, err
+		return nil, err
 	}
 	req, err := http.NewRequest("GET", u.String(), nil)
 	if err != nil {
-		return data, err
+		return nil, err
 	}
-	// TODO: uncomment
-	// req.Header = source.header
+
+	if hdr, ok := ctx.Value(headerKey).(http.Header); ok {
+		req.Header = hdr
+	}
 
 	res, err := h.hc.Do(req)
 	if err != nil {
-		return data, err
+		return nil, err
 	}
 	data.Bytes, err = ioutil.ReadAll(res.Body)
 	if err != nil {
-		return data, err
+		return nil, err
 	}
 	err = res.Body.Close()
 	if err != nil {
-		return data, err
+		return nil, err
 	}
 	if res.StatusCode != 200 {
 		err := errors.Errorf("Unexpected HTTP status %d on GET from %s: %s", res.StatusCode, url, string(data.Bytes))
-		return data, err
+		return nil, err
 	}
 	ctypeHdr := res.Header.Get("Content-Type")
 	if ctypeHdr != "" {
 		mediatype, _, e := mime.ParseMediaType(ctypeHdr)
 		if e != nil {
-			return data, e
+			return nil, e
 		}
-		data.MediaType = mediatype
+		data.MType = mediatype
 	}
 	return data, nil
 }

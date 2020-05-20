@@ -18,11 +18,11 @@ type Stdin struct {
 
 var _ Reader = (*Stdin)(nil)
 
-func (s *Stdin) Read(ctx context.Context, url *url.URL, args ...string) (data Data, err error) {
+func (s *Stdin) Read(ctx context.Context, url *url.URL, args ...string) (data *Data, err error) {
 	if s.in == nil {
 		s.in = os.Stdin
 	}
-
+	data = newData(url, args)
 	data.Bytes, err = ioutil.ReadAll(s.in)
 	if err != nil {
 		return data, errors.Wrapf(err, "Can't read %s", s.in)

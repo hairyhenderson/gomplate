@@ -15,19 +15,20 @@ type BoltDB struct {
 
 var _ Reader = (*BoltDB)(nil)
 
-func (b *BoltDB) Read(ctx context.Context, url *url.URL, args ...string) (data Data, err error) {
+func (b *BoltDB) Read(ctx context.Context, url *url.URL, args ...string) (data *Data, err error) {
 	if b.kv == nil {
 		b.kv, err = libkv.NewBoltDB(url)
 		if err != nil {
-			return data, err
+			return nil, err
 		}
 	}
 
 	if len(args) != 1 {
-		return data, errors.New("missing key")
+		return nil, errors.New("missing key")
 	}
 	p := args[0]
 
+	data = newData(url, args)
 	data.Bytes, err = b.kv.Read(p)
 	if err != nil {
 		return data, err

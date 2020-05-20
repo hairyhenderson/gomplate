@@ -15,7 +15,7 @@ func TestReadStdin(t *testing.T) {
 
 	out, err := s.Read(ctx, nil)
 	assert.NoError(t, err)
-	assert.Equal(t, Data{Bytes: []byte("foo")}, out)
+	assert.Equal(t, []byte("foo"), out.Bytes)
 
 	s = &Stdin{errorReader{}}
 	_, err = s.Read(ctx, nil)

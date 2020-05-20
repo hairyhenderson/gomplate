@@ -1,4 +1,4 @@
-package data
+package datasource
 
 import (
 	"context"
@@ -10,6 +10,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/aws/request"
 	"github.com/aws/aws-sdk-go/service/ssm"
+
 	"github.com/stretchr/testify/assert"
 )
 
@@ -46,17 +47,6 @@ func (d DummyParamGetter) GetParametersByPathWithContext(ctx context.Context, in
 	}, nil
 }
 
-func simpleAWSSourceHelper(dummy awssmpGetter) *Source {
-	return &Source{
-		Alias: "foo",
-		URL: &url.URL{
-			Scheme: "aws+smp",
-			Path:   "/foo",
-		},
-		asmpg: dummy,
-	}
-}
-
 func TestAWSSMP_ParseArgsSimple(t *testing.T) {
 	u, _ := url.Parse("noddy")
 	_, p, err := parseAWSSMPArgs(u)
@@ -86,7 +76,7 @@ func TestAWSSMP_ParseArgsTooMany(t *testing.T) {
 
 func TestAWSSMP_GetParameterSetup(t *testing.T) {
 	calledOk := false
-	s := simpleAWSSourceHelper(DummyParamGetter{
+	d := DummyParamGetter{
 		t: t,
 		mockGetParameter: func(input *ssm.GetParameterInput) (*ssm.GetParameterOutput, error) {
 			assert.Equal(t, "/foo/bar", *input.Name)
@@ -96,9 +86,12 @@ func TestAWSSMP_GetParameterSetup(t *testing.T) {
 				Parameter: &ssm.Parameter{},
 			}, nil
 		},
-	})
+	}
 
-	_, err := readAWSSMP(s, "/bar")
+	ctx := context.Background()
+	a := &AWSSMP{asmpg: d}
+
+	_, err := a.Read(ctx, mustParseURL("aws+smp:///foo"), "/bar")
 	assert.True(t, calledOk)
 	assert.Nil(t, err)
 }
@@ -110,61 +103,70 @@ func TestAWSSMP_GetParameterValidOutput(t *testing.T) {
 		Value:   aws.String("val"),
 		Version: aws.Int64(1),
 	}
-	s := simpleAWSSourceHelper(DummyParamGetter{
+	d := DummyParamGetter{
 		t:     t,
 		param: expected,
-	})
+	}
 
-	output, err := readAWSSMP(s, "")
+	ctx := context.Background()
+	a := &AWSSMP{asmpg: d}
+
+	data, err := a.Read(ctx, mustParseURL("aws+smp:///foo"), "")
 	assert.Nil(t, err)
 	actual := &ssm.Parameter{}
-	err = json.Unmarshal(output, &actual)
+	err = json.Unmarshal(data.Bytes, &actual)
 	assert.Nil(t, err)
 	assert.Equal(t, expected, actual)
-	assert.Equal(t, jsonMimetype, s.mediaType)
+	assert.Equal(t, jsonMimetype, must(data.MediaType()))
 }
 
 func TestAWSSMP_GetParameterMissing(t *testing.T) {
 	expectedErr := awserr.New("ParameterNotFound", "Test of error message", nil)
-	s := simpleAWSSourceHelper(DummyParamGetter{
+	d := DummyParamGetter{
 		t:   t,
 		err: expectedErr,
-	})
+	}
 
-	_, err := readAWSSMP(s, "")
+	ctx := context.Background()
+	a := &AWSSMP{asmpg: d}
+
+	_, err := a.Read(ctx, mustParseURL("aws+smp:///foo"), "")
 	assert.Error(t, err, "Test of error message")
 }
 
 func TestAWSSMP_listAWSSMPParams(t *testing.T) {
 	ctx := context.Background()
-	s := simpleAWSSourceHelper(DummyParamGetter{
+	d := DummyParamGetter{
 		t:   t,
 		err: awserr.New("ParameterNotFound", "foo", nil),
-	})
-	_, err := listAWSSMPParams(ctx, s, "")
+	}
+	a := &AWSSMP{asmpg: d}
+
+	_, err := a.listAWSSMPParams(ctx, "")
 	assert.Error(t, err)
 
-	s = simpleAWSSourceHelper(DummyParamGetter{
+	a.asmpg = DummyParamGetter{
 		t: t,
 		params: []*ssm.Parameter{
 			{Name: aws.String("/a")},
 			{Name: aws.String("/b")},
 			{Name: aws.String("/c")},
 		},
-	})
-	data, err := listAWSSMPParams(ctx, s, "/")
+	}
+
+	data, err := a.listAWSSMPParams(ctx, "/")
 	assert.NoError(t, err)
 	assert.Equal(t, []byte(`["a","b","c"]`), data)
 
-	s = simpleAWSSourceHelper(DummyParamGetter{
+	a.asmpg = DummyParamGetter{
 		t: t,
 		params: []*ssm.Parameter{
 			{Name: aws.String("/a/a")},
 			{Name: aws.String("/a/b")},
 			{Name: aws.String("/a/c")},
 		},
-	})
-	data, err = listAWSSMPParams(ctx, s, "/a/")
+	}
+	data, err = a.listAWSSMPParams(ctx, "/a/")
 	assert.NoError(t, err)
 	assert.Equal(t, []byte(`["a","b","c"]`), data)
 }

@@ -21,23 +21,23 @@ func TestReadVault(t *testing.T) {
 	r, err := v.Read(ctx, u)
 	assert.NoError(t, err)
 	assert.Equal(t, expected, r.Bytes)
-	assert.Equal(t, jsonMimetype, r.MediaType)
+	assert.Equal(t, jsonMimetype, must(r.MediaType()))
 
 	r, err = v.Read(ctx, u, "bar")
 	assert.NoError(t, err)
 	assert.Equal(t, expected, r.Bytes)
-	assert.Equal(t, jsonMimetype, r.MediaType)
+	assert.Equal(t, jsonMimetype, must(r.MediaType()))
 
 	r, err = v.Read(ctx, u, "?param=value")
 	assert.NoError(t, err)
 	assert.Equal(t, expected, r.Bytes)
-	assert.Equal(t, jsonMimetype, r.MediaType)
+	assert.Equal(t, jsonMimetype, must(r.MediaType()))
 
 	u, _ = url.Parse("vault:///secret/foo?param1=value1&param2=value2")
 	r, err = v.Read(ctx, u)
 	assert.NoError(t, err)
 	assert.Equal(t, expected, r.Bytes)
-	assert.Equal(t, jsonMimetype, r.MediaType)
+	assert.Equal(t, jsonMimetype, must(r.MediaType()))
 
 	expected = []byte("[\"one\",\"two\"]\n")
 	server, v.vc = vault.MockServer(200, `{"data":{"keys":`+string(expected)+`}}`)
@@ -47,5 +47,5 @@ func TestReadVault(t *testing.T) {
 	r, err = v.Read(ctx, u)
 	assert.NoError(t, err)
 	assert.Equal(t, expected, r.Bytes)
-	assert.Equal(t, jsonArrayMimetype, r.MediaType)
+	assert.Equal(t, jsonArrayMimetype, must(r.MediaType()))
 }

@@ -1,76 +1,99 @@
 package data
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"net/url"
+	"os"
+	"path/filepath"
 	"runtime"
 	"testing"
 
 	"github.com/hairyhenderson/gomplate/v3/internal/config"
-	"github.com/spf13/afero"
+	"github.com/hairyhenderson/gomplate/v3/internal/datasource"
+	"github.com/pkg/errors"
 
 	"github.com/stretchr/testify/assert"
 )
 
 const osWindows = "windows"
 
-func TestNewData(t *testing.T) {
-	d, err := NewData(nil, nil)
-	assert.NoError(t, err)
-	assert.Len(t, d.Sources, 0)
+type mockSource struct {
+	err    error
+	data   *datasource.Data
+	header http.Header
 
-	d, err = NewData([]string{"foo=http:///foo.json"}, nil)
-	assert.NoError(t, err)
-	assert.Equal(t, "/foo.json", d.Sources["foo"].URL.Path)
+	args []string
+}
 
-	d, err = NewData([]string{"foo=http:///foo.json"}, []string{})
-	assert.NoError(t, err)
-	assert.Equal(t, "/foo.json", d.Sources["foo"].URL.Path)
-	assert.Empty(t, d.Sources["foo"].header)
+func (m *mockSource) Read(ctx context.Context, args ...string) (*datasource.Data, error) {
+	m.args = args
+	return m.data, m.err
+}
 
-	d, err = NewData([]string{"foo=http:///foo.json"}, []string{"bar=Accept: blah"})
-	assert.NoError(t, err)
-	assert.Equal(t, "/foo.json", d.Sources["foo"].URL.Path)
-	assert.Empty(t, d.Sources["foo"].header)
+func (m *mockSource) Cleanup() {
+}
 
-	d, err = NewData([]string{"foo=http:///foo.json"}, []string{"foo=Accept: blah"})
-	assert.NoError(t, err)
-	assert.Equal(t, "/foo.json", d.Sources["foo"].URL.Path)
-	assert.Equal(t, "blah", d.Sources["foo"].header["Accept"][0])
+type mockSourceReg map[string]datasource.Source
+
+var _ datasource.SourceRegistry = (*mockSourceReg)(nil)
+
+func (m mockSourceReg) Register(alias string, url *url.URL, header http.Header) (datasource.Source, error) {
+	s := &mockSource{
+		data: &datasource.Data{
+			URL: url,
+		},
+		header: header,
+	}
+	m[alias] = s
+	return s, nil
+}
+
+func (m mockSourceReg) Exists(alias string) bool {
+	_, ok := m[alias]
+	return ok
+}
+
+// Get returns a cached source if it exists
+func (m mockSourceReg) Get(alias string) datasource.Source {
+	return m[alias]
+}
+
+// Dynamic registers a new dynamically-defined source - the alias would be a URL in this case
+func (m mockSourceReg) Dynamic(alias string, header http.Header) (datasource.Source, error) {
+	u, err := url.Parse(alias)
+	if err != nil || !u.IsAbs() {
+		return nil, fmt.Errorf("invalid: %w", err)
+	}
+	return m.Register(alias, u, header)
 }
 
 func TestDatasource(t *testing.T) {
 	setup := func(ext, mime string, contents []byte) *Data {
 		fname := "foo." + ext
-		fs := afero.NewMemMapFs()
 		var uPath string
-		var f afero.File
 		if runtime.GOOS == osWindows {
-			_ = fs.Mkdir("C:\\tmp", 0777)
-			f, _ = fs.Create("C:\\tmp\\" + fname)
 			uPath = "C:/tmp/" + fname
 		} else {
-			_ = fs.Mkdir("/tmp", 0777)
-			f, _ = fs.Create("/tmp/" + fname)
 			uPath = "/tmp/" + fname
 		}
-		_, _ = f.Write(contents)
 
-		sources := map[string]*Source{
-			"foo": {
-				Alias:     "foo",
-				URL:       &url.URL{Scheme: "file", Path: uPath},
-				mediaType: mime,
-				fs:        fs,
+		return &Data{sourceReg: mockSourceReg{
+			"foo": &mockSource{
+				data: &datasource.Data{
+					Bytes: contents,
+					URL:   &url.URL{Scheme: "file", Path: uPath},
+					MType: mime,
+				},
 			},
-		}
-		return &Data{Sources: sources}
+		}}
 	}
+
 	test := func(ext, mime string, contents []byte) {
-		data := setup(ext, mime, contents)
+		d := setup(ext, mime, contents)
 		expected := map[string]interface{}{"hello": map[string]interface{}{"cruel": "world"}}
-		actual, err := data.Datasource("foo")
+		actual, err := d.Datasource("foo")
 		assert.NoError(t, err)
 		assert.Equal(t, expected, actual)
 	}
@@ -88,78 +111,32 @@ func TestDatasource(t *testing.T) {
 }
 
 func TestDatasourceReachable(t *testing.T) {
-	fname := "foo.json"
-	fs := afero.NewMemMapFs()
-	var uPath string
-	var f afero.File
-	if runtime.GOOS == osWindows {
-		_ = fs.Mkdir("C:\\tmp", 0777)
-		f, _ = fs.Create("C:\\tmp\\" + fname)
-		uPath = "C:/tmp/" + fname
-	} else {
-		_ = fs.Mkdir("/tmp", 0777)
-		f, _ = fs.Create("/tmp/" + fname)
-		uPath = "/tmp/" + fname
-	}
-	_, _ = f.Write([]byte("{}"))
-
-	sources := map[string]*Source{
-		"foo": {
-			Alias:     "foo",
-			URL:       &url.URL{Scheme: "file", Path: uPath},
-			mediaType: jsonMimetype,
-			fs:        fs,
-		},
-		"bar": {
-			Alias: "bar",
-			URL:   &url.URL{Scheme: "file", Path: "/bogus"},
-			fs:    fs,
-		},
-	}
-	data := &Data{Sources: sources}
+	data := &Data{sourceReg: mockSourceReg{
+		"foo": &mockSource{},
+		"bar": &mockSource{err: errors.New("foo")},
+	}}
 
 	assert.True(t, data.DatasourceReachable("foo"))
 	assert.False(t, data.DatasourceReachable("bar"))
+	assert.False(t, data.DatasourceReachable("baz"))
 }
 
 func TestDatasourceExists(t *testing.T) {
-	sources := map[string]*Source{
-		"foo": {Alias: "foo"},
-	}
-	data := &Data{Sources: sources}
+	data := &Data{sourceReg: mockSourceReg{
+		"foo": &mockSource{},
+	}}
 	assert.True(t, data.DatasourceExists("foo"))
 	assert.False(t, data.DatasourceExists("bar"))
 }
 
 func TestInclude(t *testing.T) {
-	ext := "txt"
 	contents := "hello world"
-	fname := "foo." + ext
-	fs := afero.NewMemMapFs()
-
-	var uPath string
-	var f afero.File
-	if runtime.GOOS == osWindows {
-		_ = fs.Mkdir("C:\\tmp", 0777)
-		f, _ = fs.Create("C:\\tmp\\" + fname)
-		uPath = "C:/tmp/" + fname
-	} else {
-		_ = fs.Mkdir("/tmp", 0777)
-		f, _ = fs.Create("/tmp/" + fname)
-		uPath = "/tmp/" + fname
-	}
-	_, _ = f.Write([]byte(contents))
-
-	sources := map[string]*Source{
-		"foo": {
-			Alias:     "foo",
-			URL:       &url.URL{Scheme: "file", Path: uPath},
-			mediaType: textMimetype,
-			fs:        fs,
-		},
-	}
 	data := &Data{
-		Sources: sources,
+		sourceReg: mockSourceReg{
+			"foo": &mockSource{
+				data: &datasource.Data{Bytes: []byte(contents)},
+			},
+		},
 	}
 	actual, err := data.Include("foo")
 	assert.NoError(t, err)
@@ -174,62 +151,55 @@ func (e errorReader) Read(p []byte) (n int, err error) {
 
 // nolint: megacheck
 func TestDefineDatasource(t *testing.T) {
-	d := &Data{}
+	d := &Data{sourceReg: mockSourceReg{}}
 	_, err := d.DefineDatasource("", "foo.json")
 	assert.Error(t, err)
 
-	d = &Data{}
+	d = &Data{sourceReg: mockSourceReg{}}
 	_, err = d.DefineDatasource("", "../foo.json")
 	assert.Error(t, err)
 
-	d = &Data{}
+	d = &Data{sourceReg: mockSourceReg{}}
 	_, err = d.DefineDatasource("", "ftp://example.com/foo.yml")
 	assert.Error(t, err)
 
-	d = &Data{}
+	d = &Data{sourceReg: mockSourceReg{}}
 	_, err = d.DefineDatasource("data", "foo.json")
-	s := d.Sources["data"]
+	ok := d.sourceReg.Exists("data")
 	assert.NoError(t, err)
-	assert.Equal(t, "data", s.Alias)
-	assert.Equal(t, "file", s.URL.Scheme)
-	assert.True(t, s.URL.IsAbs())
+	assert.True(t, ok)
 
-	d = &Data{}
+	d = &Data{sourceReg: mockSourceReg{}}
 	_, err = d.DefineDatasource("data", "/otherdir/foo.json")
-	s = d.Sources["data"]
+	ok = d.sourceReg.Exists("data")
 	assert.NoError(t, err)
-	assert.Equal(t, "data", s.Alias)
-	assert.Equal(t, "file", s.URL.Scheme)
-	assert.True(t, s.URL.IsAbs())
-	assert.Equal(t, "/otherdir/foo.json", s.URL.Path)
+	assert.True(t, ok)
 
-	d = &Data{}
+	d = &Data{sourceReg: mockSourceReg{}}
 	_, err = d.DefineDatasource("data", "sftp://example.com/blahblah/foo.json")
-	s = d.Sources["data"]
+	ok = d.sourceReg.Exists("data")
 	assert.NoError(t, err)
-	assert.Equal(t, "data", s.Alias)
-	assert.Equal(t, "sftp", s.URL.Scheme)
-	assert.True(t, s.URL.IsAbs())
-	assert.Equal(t, "/blahblah/foo.json", s.URL.Path)
+	assert.True(t, ok)
 
 	d = &Data{
-		Sources: map[string]*Source{
-			"data": {Alias: "data"},
+		sourceReg: mockSourceReg{
+			"data": &mockSource{},
 		},
 	}
 	_, err = d.DefineDatasource("data", "/otherdir/foo.json")
-	s = d.Sources["data"]
+	ok = d.sourceReg.Exists("data")
 	assert.NoError(t, err)
-	assert.Equal(t, "data", s.Alias)
-	assert.Nil(t, s.URL)
+	assert.True(t, ok)
 
-	d = &Data{}
+	d = &Data{sourceReg: mockSourceReg{}}
 	_, err = d.DefineDatasource("data", "/otherdir/foo?type=application/x-env")
-	s = d.Sources["data"]
+	s := d.sourceReg.Get("data")
 	assert.NoError(t, err)
-	assert.Equal(t, "data", s.Alias)
-	m, err := s.mimeType("")
+	assert.True(t, ok)
+	dd, err := s.Read(context.Background())
 	assert.NoError(t, err)
+	assert.NotNil(t, dd)
+	m, err := dd.MediaType()
 	assert.Equal(t, "application/x-env", m)
 }
 
@@ -328,12 +298,62 @@ func TestMimeTypeWithArg(t *testing.T) {
 	}
 }
 
-func TestFromConfig(t *testing.T) {
-	cfg := &config.Config{}
-	expected := &Data{
-		Sources: map[string]*Source{},
+func TestQueryParse(t *testing.T) {
+	expected := &url.URL{
+		Scheme:   "http",
+		Host:     "example.com",
+		Path:     "/foo.json",
+		RawQuery: "bar",
 	}
-	assert.EqualValues(t, expected, FromConfig(cfg))
+	u, err := parseSourceURL("http://example.com/foo.json?bar")
+	assert.NoError(t, err)
+	assert.EqualValues(t, expected, u)
+}
+
+func TestAbsFileURL(t *testing.T) {
+	cwd, _ := os.Getwd()
+	// make this pass on Windows
+	cwd = filepath.ToSlash(cwd)
+	expected := &url.URL{
+		Scheme: "file",
+		Host:   "",
+		Path:   "/tmp/foo",
+	}
+	u, err := absFileURL("/tmp/foo")
+	assert.NoError(t, err)
+	assert.EqualValues(t, expected, u)
+
+	expected = &url.URL{
+		Scheme: "file",
+		Host:   "",
+		Path:   cwd + "/tmp/foo",
+	}
+	u, err = absFileURL("tmp/foo")
+	assert.NoError(t, err)
+	assert.EqualValues(t, expected, u)
+
+	expected = &url.URL{
+		Scheme:   "file",
+		Host:     "",
+		Path:     cwd + "/tmp/foo",
+		RawQuery: "q=p",
+	}
+	u, err = absFileURL("tmp/foo?q=p")
+	assert.NoError(t, err)
+	assert.EqualValues(t, expected, u)
+}
+
+func TestFromConfig(t *testing.T) {
+	defer func() { sourceRegistry = datasource.DefaultRegistry }()
+	sreg := mockSourceReg{}
+	sourceRegistry = sreg
+
+	cfg := &config.Config{}
+
+	_, err := FromConfig(cfg)
+	assert.NoError(t, err)
+	assert.Empty(t, sreg)
+	// assert.EqualValues(t, expected, d)
 
 	cfg = &config.Config{
 		DataSources: map[string]config.DataSource{
@@ -342,15 +362,17 @@ func TestFromConfig(t *testing.T) {
 			},
 		},
 	}
-	expected = &Data{
-		Sources: map[string]*Source{
-			"foo": {
-				Alias: "foo",
-				URL:   mustParseURL("http://example.com"),
-			},
+
+	sreg = mockSourceReg{}
+	sourceRegistry = sreg
+
+	_, err = FromConfig(cfg)
+	assert.NoError(t, err)
+	assert.EqualValues(t, &mockSource{
+		data: &datasource.Data{
+			URL: mustParseURL("http://example.com"),
 		},
-	}
-	assert.EqualValues(t, expected, FromConfig(cfg))
+	}, sreg["foo"])
 
 	cfg = &config.Config{
 		DataSources: map[string]config.DataSource{
@@ -372,27 +394,34 @@ func TestFromConfig(t *testing.T) {
 			},
 		},
 	}
-	expected = &Data{
-		Sources: map[string]*Source{
-			"foo": {
-				Alias: "foo",
-				URL:   mustParseURL("http://foo.com"),
-			},
-			"bar": {
-				Alias: "bar",
-				URL:   mustParseURL("http://bar.com"),
-				header: http.Header{
-					"Foo": []string{"bar"},
-				},
-			},
-		},
+	sreg = mockSourceReg{}
+	sourceRegistry = sreg
+
+	expected := &Data{
+		sourceReg: sreg,
 		extraHeaders: map[string]http.Header{
 			"baz": {
 				"Foo": []string{"bar"},
 			},
 		},
 	}
-	assert.EqualValues(t, expected, FromConfig(cfg))
+	d, err := FromConfig(cfg)
+	assert.NoError(t, err)
+	assert.EqualValues(t, expected, d)
+	assert.EqualValues(t, mockSourceReg{
+		"foo": &mockSource{
+			data: &datasource.Data{
+				URL: mustParseURL("http://foo.com"),
+			},
+		},
+		"bar": &mockSource{
+			data: &datasource.Data{
+				URL: mustParseURL("http://bar.com"),
+			},
+			header: http.Header{
+				"Foo": []string{"bar"},
+			},
+		}}, sreg)
 }
 
 func mustParseURL(in string) *url.URL {

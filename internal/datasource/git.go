@@ -29,10 +29,10 @@ type Git struct{}
 
 var _ Reader = (*Git)(nil)
 
-func (g *Git) Read(ctx context.Context, url *url.URL, args ...string) (data Data, err error) {
+func (g *Git) Read(ctx context.Context, url *url.URL, args ...string) (data *Data, err error) {
 	repoURL, path, err := g.parseGitPath(url, args...)
 	if err != nil {
-		return data, err
+		return nil, err
 	}
 
 	depth := 1
@@ -43,10 +43,12 @@ func (g *Git) Read(ctx context.Context, url *url.URL, args ...string) (data Data
 
 	fs, _, err := g.clone(ctx, repoURL, depth)
 	if err != nil {
-		return data, err
+		return nil, err
 	}
 
-	data.MediaType, data.Bytes, err = g.read(fs, path)
+	data = newData(url, args)
+
+	data.MType, data.Bytes, err = g.read(fs, path)
 	return data, err
 }
 

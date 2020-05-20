@@ -1,5 +1,7 @@
 package datasource
 
+import "mime"
+
 const (
 	textMimetype      = "text/plain"
 	csvMimetype       = "text/csv"
@@ -22,4 +24,21 @@ func mimeAlias(m string) string {
 		return a
 	}
 	return m
+}
+
+func regExtension(ext, typ string) {
+	err := mime.AddExtensionType(ext, typ)
+	if err != nil {
+		panic(err)
+	}
+}
+
+func init() {
+	// Add some types we want to be able to handle which can be missing by default
+	regExtension(".json", jsonMimetype)
+	regExtension(".yml", yamlMimetype)
+	regExtension(".yaml", yamlMimetype)
+	regExtension(".csv", csvMimetype)
+	regExtension(".toml", tomlMimetype)
+	regExtension(".env", envMimetype)
 }

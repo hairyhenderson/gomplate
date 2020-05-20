@@ -1,4 +1,4 @@
-package data
+package dataconv
 
 import (
 	"testing"
@@ -519,7 +519,7 @@ QUX='single quotes ignore $variables'
 		"BAZ":     "variable expansion: a regular unquoted value",
 		"QUX":     "single quotes ignore $variables",
 	}
-	out, err := dotEnv(in)
+	out, err := DotEnv(in)
 	assert.NoError(t, err)
 	assert.EqualValues(t, expected, out)
 }

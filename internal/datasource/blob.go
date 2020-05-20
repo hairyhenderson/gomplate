@@ -26,9 +26,9 @@ type Blob struct {
 
 var _ Reader = (*Blob)(nil)
 
-func (b *Blob) Read(ctx context.Context, url *url.URL, args ...string) (data Data, err error) {
+func (b *Blob) Read(ctx context.Context, url *url.URL, args ...string) (data *Data, err error) {
 	if len(args) >= 2 {
-		return data, errors.New("Maximum two arguments to blob datasource: alias, extraPath")
+		return nil, errors.New("Maximum two arguments to blob datasource: alias, extraPath")
 	}
 
 	key := url.Path
@@ -38,7 +38,7 @@ func (b *Blob) Read(ctx context.Context, url *url.URL, args ...string) (data Dat
 
 	opener, err := newOpener(ctx, url)
 	if err != nil {
-		return data, err
+		return nil, err
 	}
 
 	mux := blob.URLMux{}
@@ -47,7 +47,7 @@ func (b *Blob) Read(ctx context.Context, url *url.URL, args ...string) (data Dat
 	u := blobURL(url)
 	bucket, err := mux.OpenBucket(ctx, u)
 	if err != nil {
-		return data, err
+		return nil, err
 	}
 	defer bucket.Close()
 
@@ -58,7 +58,8 @@ func (b *Blob) Read(ctx context.Context, url *url.URL, args ...string) (data Dat
 		r = getBlob
 	}
 
-	data.MediaType, data.Bytes, err = r(ctx, bucket, key)
+	data = newData(url, args)
+	data.MType, data.Bytes, err = r(ctx, bucket, key)
 	return data, err
 }
 
