@@ -2,6 +2,8 @@ package data
 
 import (
 	"net/url"
+	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/spf13/afero"
@@ -28,6 +30,17 @@ func TestReadMerge(t *testing.T) {
 	f, _ = fs.Create("/tmp/textfile.txt")
 	_, _ = f.WriteString(`plain text...`)
 
+	wd, _ := os.Getwd()
+	_ = fs.Mkdir(wd, 0777)
+	f, _ = fs.Create(filepath.Join(wd, "jsonfile.json"))
+	_, _ = f.WriteString(jsonContent)
+	f, _ = fs.Create(filepath.Join(wd, "array.json"))
+	_, _ = f.WriteString(arrayContent)
+	f, _ = fs.Create(filepath.Join(wd, "yamlfile.yaml"))
+	_, _ = f.WriteString(yamlContent)
+	f, _ = fs.Create(filepath.Join(wd, "textfile.txt"))
+	_, _ = f.WriteString(`plain text...`)
+
 	source := &Source{Alias: "foo", URL: mustParseURL("merge:file:///tmp/jsonfile.json|file:///tmp/yamlfile.yaml")}
 	source.fs = fs
 	d := &Data{
@@ -47,6 +60,11 @@ func TestReadMerge(t *testing.T) {
 	assert.Equal(t, mergedContent, string(actual))
 
 	source.URL = mustParseURL("merge:bar|baz")
+	actual, err = d.readMerge(source)
+	assert.NoError(t, err)
+	assert.Equal(t, mergedContent, string(actual))
+
+	source.URL = mustParseURL("merge:./jsonfile.json|baz")
 	actual, err = d.readMerge(source)
 	assert.NoError(t, err)
 	assert.Equal(t, mergedContent, string(actual))
