@@ -2,13 +2,11 @@ package datasource
 
 import (
 	"context"
-	"fmt"
 	"net/url"
-	"os"
-	"path/filepath"
 	"strings"
 
 	"github.com/hairyhenderson/gomplate/v3/coll"
+	"github.com/hairyhenderson/gomplate/v3/internal/config"
 	"github.com/hairyhenderson/gomplate/v3/internal/dataconv"
 
 	"github.com/pkg/errors"
@@ -118,66 +116,9 @@ func parseMap(data *Data) (map[string]interface{}, error) {
 // TODO: rename this function
 func (m *Merge) parseSource(value string) (Source, error) {
 	var err error
-	url, err := parseSourceURL(value)
+	url, err := config.ParseSourceURL(value)
 	if err != nil {
 		return nil, err
 	}
 	return m.reg.Register(value, url, nil)
-}
-
-func parseSourceURL(value string) (*url.URL, error) {
-	if value == "-" {
-		value = "stdin://"
-	}
-	value = filepath.ToSlash(value)
-	// handle absolute Windows paths
-	volName := ""
-	if volName = filepath.VolumeName(value); volName != "" {
-		// handle UNCs
-		if len(volName) > 2 {
-			value = "file:" + value
-		} else {
-			value = "file:///" + value
-		}
-	}
-	srcURL, err := url.Parse(value)
-	if err != nil {
-		return nil, err
-	}
-
-	if volName != "" {
-		if strings.HasPrefix(srcURL.Path, "/") && srcURL.Path[2] == ':' {
-			srcURL.Path = srcURL.Path[1:]
-		}
-	}
-
-	if !srcURL.IsAbs() {
-		srcURL, err = absFileURL(value)
-		if err != nil {
-			return nil, err
-		}
-	}
-	return srcURL, nil
-}
-
-func absFileURL(value string) (*url.URL, error) {
-	cwd, err := os.Getwd()
-	if err != nil {
-		return nil, errors.Wrapf(err, "can't get working directory")
-	}
-	urlCwd := filepath.ToSlash(cwd)
-	baseURL := &url.URL{
-		Scheme: "file",
-		Path:   urlCwd + "/",
-	}
-	relURL, err := url.Parse(value)
-	if err != nil {
-		return nil, fmt.Errorf("can't parse value %s as URL: %w", value, err)
-	}
-	resolved := baseURL.ResolveReference(relURL)
-	// deal with Windows drive letters
-	if !strings.HasPrefix(urlCwd, "/") && resolved.Path[2] == ':' {
-		resolved.Path = resolved.Path[1:]
-	}
-	return resolved, nil
 }
