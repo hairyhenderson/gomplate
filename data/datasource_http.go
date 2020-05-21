@@ -5,7 +5,6 @@ import (
 	"mime"
 	"net/http"
 	"net/url"
-	"strings"
 	"time"
 
 	"github.com/pkg/errors"
@@ -60,41 +59,4 @@ func readHTTP(source *Source, args ...string) ([]byte, error) {
 		source.mediaType = mediatype
 	}
 	return body, nil
-}
-
-func parseHeaderArgs(headerArgs []string) (map[string]http.Header, error) {
-	headers := make(map[string]http.Header)
-	for _, v := range headerArgs {
-		ds, name, value, err := splitHeaderArg(v)
-		if err != nil {
-			return nil, err
-		}
-		if _, ok := headers[ds]; !ok {
-			headers[ds] = make(http.Header)
-		}
-		headers[ds][name] = append(headers[ds][name], strings.TrimSpace(value))
-	}
-	return headers, nil
-}
-
-func splitHeaderArg(arg string) (datasourceAlias, name, value string, err error) {
-	parts := strings.SplitN(arg, "=", 2)
-	if len(parts) != 2 {
-		err = errors.Errorf("Invalid datasource-header option '%s'", arg)
-		return "", "", "", err
-	}
-	datasourceAlias = parts[0]
-	name, value, err = splitHeader(parts[1])
-	return datasourceAlias, name, value, err
-}
-
-func splitHeader(header string) (name, value string, err error) {
-	parts := strings.SplitN(header, ":", 2)
-	if len(parts) != 2 {
-		err = errors.Errorf("Invalid HTTP Header format '%s'", header)
-		return "", "", err
-	}
-	name = http.CanonicalHeaderKey(parts[0])
-	value = parts[1]
-	return name, value, nil
 }

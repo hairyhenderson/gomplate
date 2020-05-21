@@ -118,50 +118,6 @@ func TestHTTPFileWithHeaders(t *testing.T) {
 	assert.Equal(t, must(marshalObj(expected, json.Marshal)), must(marshalObj(actual, json.Marshal)))
 }
 
-func TestParseHeaderArgs(t *testing.T) {
-	args := []string{
-		"foo=Accept: application/json",
-		"bar=Authorization: Bearer supersecret",
-	}
-	expected := map[string]http.Header{
-		"foo": {
-			"Accept": {jsonMimetype},
-		},
-		"bar": {
-			"Authorization": {"Bearer supersecret"},
-		},
-	}
-	parsed, err := parseHeaderArgs(args)
-	assert.NoError(t, err)
-	assert.Equal(t, expected, parsed)
-
-	_, err = parseHeaderArgs([]string{"foo"})
-	assert.Error(t, err)
-
-	_, err = parseHeaderArgs([]string{"foo=bar"})
-	assert.Error(t, err)
-
-	args = []string{
-		"foo=Accept: application/json",
-		"foo=Foo: bar",
-		"foo=foo: baz",
-		"foo=fOO: qux",
-		"bar=Authorization: Bearer  supersecret",
-	}
-	expected = map[string]http.Header{
-		"foo": {
-			"Accept": {jsonMimetype},
-			"Foo":    {"bar", "baz", "qux"},
-		},
-		"bar": {
-			"Authorization": {"Bearer  supersecret"},
-		},
-	}
-	parsed, err = parseHeaderArgs(args)
-	assert.NoError(t, err)
-	assert.Equal(t, expected, parsed)
-}
-
 func TestBuildURL(t *testing.T) {
 	expected := "https://example.com/index.html"
 	base := mustParseURL(expected)

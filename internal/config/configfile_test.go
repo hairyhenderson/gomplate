@@ -4,6 +4,9 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"path"
+	"path/filepath"
+	"runtime"
 	"strings"
 	"testing"
 	"time"
@@ -555,4 +558,180 @@ func TestGetMode(t *testing.T) {
 	c = &Config{OutMode: "foo"}
 	_, _, err = c.GetMode()
 	assert.Error(t, err)
+}
+
+func TestParseHeaderArgs(t *testing.T) {
+	args := []string{
+		"foo=Accept: application/json",
+		"bar=Authorization: Bearer supersecret",
+	}
+	expected := map[string]http.Header{
+		"foo": {
+			"Accept": {"application/json"},
+		},
+		"bar": {
+			"Authorization": {"Bearer supersecret"},
+		},
+	}
+	parsed, err := parseHeaderArgs(args)
+	assert.NoError(t, err)
+	assert.Equal(t, expected, parsed)
+
+	_, err = parseHeaderArgs([]string{"foo"})
+	assert.Error(t, err)
+
+	_, err = parseHeaderArgs([]string{"foo=bar"})
+	assert.Error(t, err)
+
+	args = []string{
+		"foo=Accept: application/json",
+		"foo=Foo: bar",
+		"foo=foo: baz",
+		"foo=fOO: qux",
+		"bar=Authorization: Bearer  supersecret",
+	}
+	expected = map[string]http.Header{
+		"foo": {
+			"Accept": {"application/json"},
+			"Foo":    {"bar", "baz", "qux"},
+		},
+		"bar": {
+			"Authorization": {"Bearer  supersecret"},
+		},
+	}
+	parsed, err = parseHeaderArgs(args)
+	assert.NoError(t, err)
+	assert.Equal(t, expected, parsed)
+}
+
+func TestParseSourceURL(t *testing.T) {
+	expected := &url.URL{
+		Scheme:   "http",
+		Host:     "example.com",
+		Path:     "/foo.json",
+		RawQuery: "bar",
+	}
+	u, err := ParseSourceURL("http://example.com/foo.json?bar")
+	assert.NoError(t, err)
+	assert.EqualValues(t, expected, u)
+
+	expected = &url.URL{Scheme: "stdin"}
+	u, err = ParseSourceURL("-")
+	assert.NoError(t, err)
+	assert.EqualValues(t, expected, u)
+
+	wd, err := os.Getwd()
+	assert.NoError(t, err)
+	expected = &url.URL{
+		Scheme: "file",
+		Path:   path.Join(filepath.ToSlash(wd), "foo/bar.json"),
+	}
+	u, err = ParseSourceURL("./foo/bar.json")
+	assert.NoError(t, err)
+	assert.EqualValues(t, expected, u)
+}
+
+func TestAbsFileURL(t *testing.T) {
+	cwd, _ := os.Getwd()
+	// make this pass on Windows
+	cwd = filepath.ToSlash(cwd)
+	expected := &url.URL{
+		Scheme: "file",
+		Host:   "",
+		Path:   "/tmp/foo",
+	}
+	u, err := absFileURL("/tmp/foo")
+	assert.NoError(t, err)
+	assert.EqualValues(t, expected, u)
+
+	expected = &url.URL{
+		Scheme: "file",
+		Host:   "",
+		Path:   cwd + "/tmp/foo",
+	}
+	u, err = absFileURL("tmp/foo")
+	assert.NoError(t, err)
+	assert.EqualValues(t, expected, u)
+
+	expected = &url.URL{
+		Scheme:   "file",
+		Host:     "",
+		Path:     cwd + "/tmp/foo",
+		RawQuery: "q=p",
+	}
+	u, err = absFileURL("tmp/foo?q=p")
+	assert.NoError(t, err)
+	assert.EqualValues(t, expected, u)
+}
+
+func TestParseDatasourceArgNoAlias(t *testing.T) {
+	key, ds, err := parseDatasourceArg("foo.json")
+	assert.NoError(t, err)
+	assert.Equal(t, "foo", key)
+	assert.Equal(t, "file", ds.URL.Scheme)
+
+	_, _, err = parseDatasourceArg("../foo.json")
+	assert.Error(t, err)
+
+	_, _, err = parseDatasourceArg("ftp://example.com/foo.yml")
+	assert.Error(t, err)
+}
+
+func TestParseDatasourceArgWithAlias(t *testing.T) {
+	key, ds, err := parseDatasourceArg("data=foo.json")
+	assert.NoError(t, err)
+	assert.Equal(t, "data", key)
+	assert.Equal(t, "file", ds.URL.Scheme)
+	assert.True(t, ds.URL.IsAbs())
+
+	key, ds, err = parseDatasourceArg("data=/otherdir/foo.json")
+	assert.NoError(t, err)
+	assert.Equal(t, "data", key)
+	assert.Equal(t, "file", ds.URL.Scheme)
+	assert.True(t, ds.URL.IsAbs())
+	assert.Equal(t, "/otherdir/foo.json", ds.URL.Path)
+
+	if runtime.GOOS == "windows" {
+		key, ds, err = parseDatasourceArg("data=foo.json")
+		assert.NoError(t, err)
+		assert.Equal(t, "data", key)
+		assert.Equal(t, "file", ds.URL.Scheme)
+		assert.True(t, ds.URL.IsAbs())
+		assert.Equalf(t, byte(':'), ds.URL.Path[1], "Path was %s", ds.URL.Path)
+
+		key, ds, err = parseDatasourceArg(`data=\otherdir\foo.json`)
+		assert.NoError(t, err)
+		assert.Equal(t, "data", key)
+		assert.Equal(t, "file", ds.URL.Scheme)
+		assert.True(t, ds.URL.IsAbs())
+		assert.Equal(t, `/otherdir/foo.json`, ds.URL.Path)
+
+		key, ds, err = parseDatasourceArg("data=C:\\windowsdir\\foo.json")
+		assert.NoError(t, err)
+		assert.Equal(t, "data", key)
+		assert.Equal(t, "file", ds.URL.Scheme)
+		assert.True(t, ds.URL.IsAbs())
+		assert.Equal(t, "C:/windowsdir/foo.json", ds.URL.Path)
+
+		key, ds, err = parseDatasourceArg("data=\\\\somehost\\share\\foo.json")
+		assert.NoError(t, err)
+		assert.Equal(t, "data", key)
+		assert.Equal(t, "file", ds.URL.Scheme)
+		assert.Equal(t, "somehost", ds.URL.Host)
+		assert.True(t, ds.URL.IsAbs())
+		assert.Equal(t, "/share/foo.json", ds.URL.Path)
+	}
+
+	key, ds, err = parseDatasourceArg("data=sftp://example.com/blahblah/foo.json")
+	assert.NoError(t, err)
+	assert.Equal(t, "data", key)
+	assert.Equal(t, "sftp", ds.URL.Scheme)
+	assert.True(t, ds.URL.IsAbs())
+	assert.Equal(t, "/blahblah/foo.json", ds.URL.Path)
+
+	key, ds, err = parseDatasourceArg("merged=merge:./foo.yaml|http://example.com/bar.json%3Ffoo=bar")
+	assert.NoError(t, err)
+	assert.Equal(t, "merged", key)
+	assert.Equal(t, "merge", ds.URL.Scheme)
+	assert.Equal(t, "./foo.yaml|http://example.com/bar.json%3Ffoo=bar", ds.URL.Opaque)
 }

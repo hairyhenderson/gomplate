@@ -4,8 +4,6 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
-	"os"
-	"path/filepath"
 	"runtime"
 	"strings"
 	"testing"
@@ -41,74 +39,6 @@ func TestNewData(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, "/foo.json", d.Sources["foo"].URL.Path)
 	assert.Equal(t, "blah", d.Sources["foo"].header["Accept"][0])
-}
-
-func TestParseSourceNoAlias(t *testing.T) {
-	s, err := parseSource("foo.json")
-	assert.NoError(t, err)
-	assert.Equal(t, "foo", s.Alias)
-
-	_, err = parseSource("../foo.json")
-	assert.Error(t, err)
-
-	_, err = parseSource("ftp://example.com/foo.yml")
-	assert.Error(t, err)
-}
-
-func TestParseSourceWithAlias(t *testing.T) {
-	s, err := parseSource("data=foo.json")
-	assert.NoError(t, err)
-	assert.Equal(t, "data", s.Alias)
-	assert.Equal(t, "file", s.URL.Scheme)
-	assert.True(t, s.URL.IsAbs())
-
-	s, err = parseSource("data=/otherdir/foo.json")
-	assert.NoError(t, err)
-	assert.Equal(t, "data", s.Alias)
-	assert.Equal(t, "file", s.URL.Scheme)
-	assert.True(t, s.URL.IsAbs())
-	assert.Equal(t, "/otherdir/foo.json", s.URL.Path)
-
-	if runtime.GOOS == osWindows {
-		s, err = parseSource("data=foo.json")
-		assert.NoError(t, err)
-		assert.Equalf(t, byte(':'), s.URL.Path[1], "Path was %s", s.URL.Path)
-
-		s, err = parseSource(`data=\otherdir\foo.json`)
-		assert.NoError(t, err)
-		assert.Equal(t, "data", s.Alias)
-		assert.Equal(t, "file", s.URL.Scheme)
-		assert.True(t, s.URL.IsAbs())
-		assert.Equal(t, `/otherdir/foo.json`, s.URL.Path)
-
-		s, err = parseSource("data=C:\\windowsdir\\foo.json")
-		assert.NoError(t, err)
-		assert.Equal(t, "data", s.Alias)
-		assert.Equal(t, "file", s.URL.Scheme)
-		assert.True(t, s.URL.IsAbs())
-		assert.Equal(t, "C:/windowsdir/foo.json", s.URL.Path)
-
-		s, err = parseSource("data=\\\\somehost\\share\\foo.json")
-		assert.NoError(t, err)
-		assert.Equal(t, "data", s.Alias)
-		assert.Equal(t, "file", s.URL.Scheme)
-		assert.Equal(t, "somehost", s.URL.Host)
-		assert.True(t, s.URL.IsAbs())
-		assert.Equal(t, "/share/foo.json", s.URL.Path)
-	}
-
-	s, err = parseSource("data=sftp://example.com/blahblah/foo.json")
-	assert.NoError(t, err)
-	assert.Equal(t, "data", s.Alias)
-	assert.Equal(t, "sftp", s.URL.Scheme)
-	assert.True(t, s.URL.IsAbs())
-	assert.Equal(t, "/blahblah/foo.json", s.URL.Path)
-
-	s, err = parseSource("merged=merge:./foo.yaml|http://example.com/bar.json%3Ffoo=bar")
-	assert.NoError(t, err)
-	assert.Equal(t, "merged", s.Alias)
-	assert.Equal(t, "merge", s.URL.Scheme)
-	assert.Equal(t, "./foo.yaml|http://example.com/bar.json%3Ffoo=bar", s.URL.Opaque)
 }
 
 func TestDatasource(t *testing.T) {
@@ -411,51 +341,6 @@ func TestMimeTypeWithArg(t *testing.T) {
 			assert.Equal(t, d.expected, mt)
 		})
 	}
-}
-
-func TestQueryParse(t *testing.T) {
-	expected := &url.URL{
-		Scheme:   "http",
-		Host:     "example.com",
-		Path:     "/foo.json",
-		RawQuery: "bar",
-	}
-	u, err := parseSourceURL("http://example.com/foo.json?bar")
-	assert.NoError(t, err)
-	assert.EqualValues(t, expected, u)
-}
-
-func TestAbsFileURL(t *testing.T) {
-	cwd, _ := os.Getwd()
-	// make this pass on Windows
-	cwd = filepath.ToSlash(cwd)
-	expected := &url.URL{
-		Scheme: "file",
-		Host:   "",
-		Path:   "/tmp/foo",
-	}
-	u, err := absFileURL("/tmp/foo")
-	assert.NoError(t, err)
-	assert.EqualValues(t, expected, u)
-
-	expected = &url.URL{
-		Scheme: "file",
-		Host:   "",
-		Path:   cwd + "/tmp/foo",
-	}
-	u, err = absFileURL("tmp/foo")
-	assert.NoError(t, err)
-	assert.EqualValues(t, expected, u)
-
-	expected = &url.URL{
-		Scheme:   "file",
-		Host:     "",
-		Path:     cwd + "/tmp/foo",
-		RawQuery: "q=p",
-	}
-	u, err = absFileURL("tmp/foo?q=p")
-	assert.NoError(t, err)
-	assert.EqualValues(t, expected, u)
 }
 
 func TestFromConfig(t *testing.T) {

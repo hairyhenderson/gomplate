@@ -4,6 +4,7 @@ import (
 	"strings"
 
 	"github.com/hairyhenderson/gomplate/v3/coll"
+	"github.com/hairyhenderson/gomplate/v3/internal/config"
 
 	"github.com/pkg/errors"
 )
@@ -30,9 +31,13 @@ func (d *Data) readMerge(source *Source, args ...string) ([]byte, error) {
 		subSource, err := d.lookupSource(part)
 		if err != nil {
 			// maybe it's a relative filename?
-			subSource, err = parseSource(part + "=" + part)
+			u, err := config.ParseSourceURL(part)
 			if err != nil {
 				return nil, err
+			}
+			subSource = &Source{
+				Alias: part,
+				URL:   u,
 			}
 		}
 		subSource.inherit(source)
