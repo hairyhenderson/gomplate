@@ -8,7 +8,6 @@ import (
 	"net/http"
 	"net/url"
 	"os"
-	"path"
 	"path/filepath"
 	"strings"
 
@@ -101,28 +100,14 @@ func (d *Data) Cleanup() {
 }
 
 // NewData - constructor for Data
+// Deprecated: will be replaced in future
 func NewData(datasourceArgs, headerArgs []string) (*Data, error) {
-	headers, err := parseHeaderArgs(headerArgs)
+	cfg := &config.Config{}
+	err := cfg.ParseDataSourceFlags(datasourceArgs, nil, headerArgs)
 	if err != nil {
 		return nil, err
 	}
-
-	data := &Data{
-		Sources:      make(map[string]*Source),
-		extraHeaders: headers,
-	}
-
-	for _, v := range datasourceArgs {
-		s, err := parseSource(v)
-		if err != nil {
-			return nil, errors.Wrapf(err, "error parsing datasource")
-		}
-		s.header = headers[s.Alias]
-		// pop the header out of the map, so we end up with only the unreferenced ones
-		delete(headers, s.Alias)
-
-		data.Sources[s.Alias] = s
-	}
+	data := FromConfig(cfg)
 	return data, nil
 }
 
@@ -242,90 +227,6 @@ func (s *Source) String() string {
 	return fmt.Sprintf("%s=%s (%s)", s.Alias, s.URL.String(), s.mediaType)
 }
 
-// parseSource creates a *Source by parsing the value provided to the
-// --datasource/-d commandline flag
-func parseSource(value string) (source *Source, err error) {
-	source = &Source{}
-	parts := strings.SplitN(value, "=", 2)
-	if len(parts) == 1 {
-		f := parts[0]
-		source.Alias = strings.SplitN(value, ".", 2)[0]
-		if path.Base(f) != f {
-			err = errors.Errorf("Invalid datasource (%s). Must provide an alias with files not in working directory", value)
-			return nil, err
-		}
-		source.URL, err = absFileURL(f)
-		if err != nil {
-			return nil, err
-		}
-	} else if len(parts) == 2 {
-		source.Alias = parts[0]
-		source.URL, err = parseSourceURL(parts[1])
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	return source, nil
-}
-
-func parseSourceURL(value string) (*url.URL, error) {
-	if value == "-" {
-		value = "stdin://"
-	}
-	value = filepath.ToSlash(value)
-	// handle absolute Windows paths
-	volName := ""
-	if volName = filepath.VolumeName(value); volName != "" {
-		// handle UNCs
-		if len(volName) > 2 {
-			value = "file:" + value
-		} else {
-			value = "file:///" + value
-		}
-	}
-	srcURL, err := url.Parse(value)
-	if err != nil {
-		return nil, err
-	}
-
-	if volName != "" {
-		if strings.HasPrefix(srcURL.Path, "/") && srcURL.Path[2] == ':' {
-			srcURL.Path = srcURL.Path[1:]
-		}
-	}
-
-	if !srcURL.IsAbs() {
-		srcURL, err = absFileURL(value)
-		if err != nil {
-			return nil, err
-		}
-	}
-	return srcURL, nil
-}
-
-func absFileURL(value string) (*url.URL, error) {
-	cwd, err := os.Getwd()
-	if err != nil {
-		return nil, errors.Wrapf(err, "can't get working directory")
-	}
-	urlCwd := filepath.ToSlash(cwd)
-	baseURL := &url.URL{
-		Scheme: "file",
-		Path:   urlCwd + "/",
-	}
-	relURL, err := url.Parse(value)
-	if err != nil {
-		return nil, fmt.Errorf("can't parse value %s as URL: %w", value, err)
-	}
-	resolved := baseURL.ResolveReference(relURL)
-	// deal with Windows drive letters
-	if !strings.HasPrefix(urlCwd, "/") && resolved.Path[2] == ':' {
-		resolved.Path = resolved.Path[1:]
-	}
-	return resolved, nil
-}
-
 // DefineDatasource -
 func (d *Data) DefineDatasource(alias, value string) (string, error) {
 	if alias == "" {
@@ -334,7 +235,7 @@ func (d *Data) DefineDatasource(alias, value string) (string, error) {
 	if d.DatasourceExists(alias) {
 		return "", nil
 	}
-	srcURL, err := parseSourceURL(value)
+	srcURL, err := config.ParseSourceURL(value)
 	if err != nil {
 		return "", err
 	}

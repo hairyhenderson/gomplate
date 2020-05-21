@@ -98,7 +98,7 @@ func (d *DSConfig) UnmarshalYAML(value *yaml.Node) error {
 	if err != nil {
 		return err
 	}
-	u, err := parseSourceURL(r.URL)
+	u, err := ParseSourceURL(r.URL)
 	if err != nil {
 		return fmt.Errorf("could not parse datasource URL %q: %w", r.URL, err)
 	}
@@ -280,10 +280,10 @@ func parseDatasourceArg(value string) (key string, ds DSConfig, err error) {
 			err = fmt.Errorf("invalid datasource (%s): must provide an alias with files not in working directory", value)
 			return key, ds, err
 		}
-		ds.URL, err = absFileURL(f)
+		ds.URL, err = ParseSourceURL(f)
 	} else if len(parts) == 2 {
 		key = parts[0]
-		ds.URL, err = parseSourceURL(parts[1])
+		ds.URL, err = ParseSourceURL(parts[1])
 	}
 	return key, ds, err
 }
@@ -466,7 +466,11 @@ func (c *Config) String() string {
 	return out.String()
 }
 
-func parseSourceURL(value string) (*url.URL, error) {
+// ParseSourceURL parses a datasource URL value, which may be '-' (for stdin://),
+// or it may be a Windows path (with driver letter and back-slack separators) or
+// UNC, or it may be relative. It also might just be a regular absolute URL...
+// In all cases it returns a correct URL for the value.
+func ParseSourceURL(value string) (*url.URL, error) {
 	if value == "-" {
 		value = "stdin://"
 	}

@@ -152,7 +152,7 @@ gomplate.png: gomplate.svg
 	cloudconvert -f png -c density=288 $^
 
 lint:
-	golangci-lint --version
+	@golangci-lint --version
 	@golangci-lint run --timeout 2m --disable-all \
 		--enable depguard \
 		--enable dupl \
