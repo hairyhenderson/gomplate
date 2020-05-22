@@ -37,6 +37,7 @@ GOARM ?= $(subst v,,$(TARGETVARIANT))
 endif
 endif
 
+# platforms := freebsd-amd64 linux-amd64 linux-386 linux-armv5 linux-armv6 linux-armv7 linux-arm64 darwin-amd64 solaris-amd64 windows-amd64.exe windows-386.exe
 platforms := freebsd-amd64 linux-amd64 linux-386 linux-armv6 linux-armv7 linux-arm64 darwin-amd64 solaris-amd64 windows-amd64.exe windows-386.exe
 compressed-platforms := linux-amd64-slim linux-armv6-slim linux-armv7-slim linux-arm64-slim darwin-amd64-slim windows-amd64-slim.exe
 
@@ -54,12 +55,23 @@ $(PREFIX)/bin/$(PKG_NAME)_%-slim: $(PREFIX)/bin/$(PKG_NAME)_%
 $(PREFIX)/bin/$(PKG_NAME)_%-slim.exe: $(PREFIX)/bin/$(PKG_NAME)_%.exe
 	upx --lzma $< -o $@
 
-$(PREFIX)/bin/$(PKG_NAME)_%_checksum.txt: $(PREFIX)/bin/$(PKG_NAME)_%
+$(PREFIX)/bin/$(PKG_NAME)_%_checksum_sha256.txt: $(PREFIX)/bin/$(PKG_NAME)_%
 	@sha256sum $< > $@
 
-$(PREFIX)/bin/checksums.txt: \
-		$(patsubst %,$(PREFIX)/bin/$(PKG_NAME)_%_checksum.txt,$(platforms)) \
-		$(patsubst %,$(PREFIX)/bin/$(PKG_NAME)_%_checksum.txt,$(compressed-platforms))
+$(PREFIX)/bin/$(PKG_NAME)_%_checksum_sha512.txt: $(PREFIX)/bin/$(PKG_NAME)_%
+	@sha512sum $< > $@
+
+$(PREFIX)/bin/checksums.txt: $(PREFIX)/bin/checksums_sha256.txt
+	@cp $< $@
+
+$(PREFIX)/bin/checksums_sha256.txt: \
+		$(patsubst %,$(PREFIX)/bin/$(PKG_NAME)_%_checksum_sha256.txt,$(platforms)) \
+		$(patsubst %,$(PREFIX)/bin/$(PKG_NAME)_%_checksum_sha256.txt,$(compressed-platforms))
+	@cat $^ > $@
+
+$(PREFIX)/bin/checksums_sha512.txt: \
+		$(patsubst %,$(PREFIX)/bin/$(PKG_NAME)_%_checksum_sha512.txt,$(platforms)) \
+		$(patsubst %,$(PREFIX)/bin/$(PKG_NAME)_%_checksum_sha512.txt,$(compressed-platforms))
 	@cat $^ > $@
 
 $(PREFIX)/%.signed: $(PREFIX)/%
@@ -102,6 +114,34 @@ build-release: artifacts.cid
 	@docker cp $(shell cat $<):/bin/. bin/
 
 docker-images: gomplate.iid gomplate-slim.iid
+
+$(PREFIX)/bin/$(PKG_NAME)_%v5$(call extension,$(GOOS)): $(shell find $(PREFIX) -type f -name "*.go")
+	GOOS=$(shell echo $* | cut -f1 -d-) GOARCH=$(shell echo $* | cut -f2 -d- ) GOARM=5 CGO_ENABLED=0 \
+		$(GO) build \
+			-ldflags "-w -s $(COMMIT_FLAG) $(VERSION_FLAG)" \
+			-o $@ \
+			./cmd/gomplate
+
+$(PREFIX)/bin/$(PKG_NAME)_%v6$(call extension,$(GOOS)): $(shell find $(PREFIX) -type f -name "*.go")
+	GOOS=$(shell echo $* | cut -f1 -d-) GOARCH=$(shell echo $* | cut -f2 -d- ) GOARM=6 CGO_ENABLED=0 \
+		$(GO) build \
+			-ldflags "-w -s $(COMMIT_FLAG) $(VERSION_FLAG)" \
+			-o $@ \
+			./cmd/gomplate
+
+$(PREFIX)/bin/$(PKG_NAME)_%v7$(call extension,$(GOOS)): $(shell find $(PREFIX) -type f -name "*.go")
+	GOOS=$(shell echo $* | cut -f1 -d-) GOARCH=$(shell echo $* | cut -f2 -d- ) GOARM=7 CGO_ENABLED=0 \
+		$(GO) build \
+			-ldflags "-w -s $(COMMIT_FLAG) $(VERSION_FLAG)" \
+			-o $@ \
+			./cmd/gomplate
+
+$(PREFIX)/bin/$(PKG_NAME)_windows-%.exe: $(shell find $(PREFIX) -type f -name "*.go")
+	GOOS=windows GOARCH=$* GOARM= CGO_ENABLED=0 \
+		$(GO) build \
+			-ldflags "-w -s $(COMMIT_FLAG) $(VERSION_FLAG)" \
+			-o $@ \
+			./cmd/gomplate
 
 $(PREFIX)/bin/$(PKG_NAME)_%$(TARGETVARIANT)$(call extension,$(GOOS)): $(shell find $(PREFIX) -type f -name "*.go")
 	GOOS=$(shell echo $* | cut -f1 -d-) GOARCH=$(shell echo $* | cut -f2 -d- ) GOARM=$(GOARM) CGO_ENABLED=0 \
