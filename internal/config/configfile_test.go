@@ -45,7 +45,7 @@ pluginTimeout: 2s
 	expected = &Config{
 		Input:       "hello world",
 		OutputFiles: []string{"out.txt"},
-		DataSources: map[string]DSConfig{
+		DataSources: map[string]DataSource{
 			"data": {
 				URL: mustURL("file:///data.json"),
 			},
@@ -56,7 +56,7 @@ pluginTimeout: 2s
 				},
 			},
 		},
-		Context: map[string]DSConfig{
+		Context: map[string]DataSource{
 			".": {
 				URL: mustURL("file:///data.json"),
 			},
@@ -177,7 +177,7 @@ func TestMergeFrom(t *testing.T) {
 	t.Parallel()
 	cfg := &Config{
 		Input: "hello world",
-		DataSources: map[string]DSConfig{
+		DataSources: map[string]DataSource{
 			"data": {
 				URL: mustURL("file:///data.json"),
 			},
@@ -188,7 +188,7 @@ func TestMergeFrom(t *testing.T) {
 				},
 			},
 		},
-		Context: map[string]DSConfig{
+		Context: map[string]DataSource{
 			"foo": {
 				URL: mustURL("https://example.com/foo.yaml"),
 				Header: http.Header{
@@ -200,14 +200,14 @@ func TestMergeFrom(t *testing.T) {
 	}
 	other := &Config{
 		OutputFiles: []string{"out.txt"},
-		DataSources: map[string]DSConfig{
+		DataSources: map[string]DataSource{
 			"data": {
 				Header: http.Header{
 					"Accept": {"foo/bar"},
 				},
 			},
 		},
-		Context: map[string]DSConfig{
+		Context: map[string]DataSource{
 			"foo": {
 				Header: http.Header{
 					"Accept": {"application/json"},
@@ -219,7 +219,7 @@ func TestMergeFrom(t *testing.T) {
 	expected := &Config{
 		Input:       "hello world",
 		OutputFiles: []string{"out.txt"},
-		DataSources: map[string]DSConfig{
+		DataSources: map[string]DataSource{
 			"data": {
 				URL: mustURL("file:///data.json"),
 				Header: http.Header{
@@ -233,7 +233,7 @@ func TestMergeFrom(t *testing.T) {
 				},
 			},
 		},
-		Context: map[string]DSConfig{
+		Context: map[string]DataSource{
 			"foo": {
 				URL: mustURL("https://example.com/foo.yaml"),
 				Header: http.Header{
@@ -335,7 +335,7 @@ func TestParseDataSourceFlags(t *testing.T) {
 	err = cfg.ParseDataSourceFlags([]string{"baz=foo/bar/baz.json"}, nil, nil)
 	assert.NoError(t, err)
 	expected := &Config{
-		DataSources: DSources{
+		DataSources: map[string]DataSource{
 			"baz": {URL: mustURL("foo/bar/baz.json")},
 		},
 	}
@@ -348,7 +348,7 @@ func TestParseDataSourceFlags(t *testing.T) {
 		[]string{"baz=Accept: application/json"})
 	assert.NoError(t, err)
 	assert.EqualValues(t, &Config{
-		DataSources: DSources{
+		DataSources: map[string]DataSource{
 			"baz": {
 				URL: mustURL("foo/bar/baz.json"),
 				Header: http.Header{
@@ -366,10 +366,10 @@ func TestParseDataSourceFlags(t *testing.T) {
 			"bar=Authorization: Basic xxxxx"})
 	assert.NoError(t, err)
 	assert.EqualValues(t, &Config{
-		DataSources: DSources{
+		DataSources: map[string]DataSource{
 			"baz": {URL: mustURL("foo/bar/baz.json")},
 		},
-		Context: DSources{
+		Context: map[string]DataSource{
 			"foo": {
 				URL: mustURL("http://example.com"),
 				Header: http.Header{

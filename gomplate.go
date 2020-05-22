@@ -111,16 +111,18 @@ func parseTemplateArg(templateArg string, ta templateAliases) error {
 }
 
 // RunTemplates - run all gomplate templates specified by the given configuration
+//
+// Deprecated: use Run instead
 func RunTemplates(o *Config) error {
 	cfg, err := o.toNewConfig()
 	if err != nil {
 		return err
 	}
-	return RunTemplatesWithContext(context.Background(), cfg)
+	return Run(context.Background(), cfg)
 }
 
-// RunTemplatesWithContext - run all gomplate templates specified by the given configuration
-func RunTemplatesWithContext(ctx context.Context, cfg *config.Config) error {
+// Run all gomplate templates specified by the given configuration
+func Run(ctx context.Context, cfg *config.Config) error {
 	log := zerolog.Ctx(ctx)
 
 	Metrics = newMetrics()

@@ -336,7 +336,7 @@ func TestFromConfig(t *testing.T) {
 	assert.EqualValues(t, expected, FromConfig(cfg))
 
 	cfg = &config.Config{
-		DataSources: map[string]config.DSConfig{
+		DataSources: map[string]config.DataSource{
 			"foo": {
 				URL: mustParseURL("http://example.com"),
 			},
@@ -353,12 +353,12 @@ func TestFromConfig(t *testing.T) {
 	assert.EqualValues(t, expected, FromConfig(cfg))
 
 	cfg = &config.Config{
-		DataSources: map[string]config.DSConfig{
+		DataSources: map[string]config.DataSource{
 			"foo": {
 				URL: mustParseURL("http://foo.com"),
 			},
 		},
-		Context: map[string]config.DSConfig{
+		Context: map[string]config.DataSource{
 			"bar": {
 				URL: mustParseURL("http://bar.com"),
 				Header: http.Header{
