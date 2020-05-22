@@ -17,11 +17,6 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-var (
-	// PluginTimeoutKey - context key for PluginTimeout - temporary!
-	PluginTimeoutKey = struct{}{}
-)
-
 // Parse a config file
 func Parse(in io.Reader) (*Config, error) {
 	out := &Config{}
@@ -33,7 +28,7 @@ func Parse(in io.Reader) (*Config, error) {
 	return out, nil
 }
 
-// Config -
+// Config - configures the gomplate execution
 type Config struct {
 	Input       string   `yaml:"in,omitempty"`
 	InputFiles  []string `yaml:"inputFiles,omitempty,flow"`
@@ -47,14 +42,14 @@ type Config struct {
 	ExecPipe      bool     `yaml:"execPipe,omitempty"`
 	PostExec      []string `yaml:"postExec,omitempty,flow"`
 
-	OutMode       string            `yaml:"chmod,omitempty"`
-	LDelim        string            `yaml:"leftDelim,omitempty"`
-	RDelim        string            `yaml:"rightDelim,omitempty"`
-	DataSources   DSources          `yaml:"datasources,omitempty"`
-	Context       DSources          `yaml:"context,omitempty"`
-	Plugins       map[string]string `yaml:"plugins,omitempty"`
-	PluginTimeout time.Duration     `yaml:"pluginTimeout,omitempty"`
-	Templates     []string          `yaml:"templates,omitempty"`
+	OutMode       string                `yaml:"chmod,omitempty"`
+	LDelim        string                `yaml:"leftDelim,omitempty"`
+	RDelim        string                `yaml:"rightDelim,omitempty"`
+	DataSources   map[string]DataSource `yaml:"datasources,omitempty"`
+	Context       map[string]DataSource `yaml:"context,omitempty"`
+	Plugins       map[string]string     `yaml:"plugins,omitempty"`
+	PluginTimeout time.Duration         `yaml:"pluginTimeout,omitempty"`
+	Templates     []string              `yaml:"templates,omitempty"`
 
 	// Extra HTTP headers not attached to pre-defined datsources. Potentially
 	// used by datasources defined in the template.
@@ -65,10 +60,8 @@ type Config struct {
 	OutWriter     io.Writer     `yaml:"-"`
 }
 
-// DSources - map of datasource configs
-type DSources map[string]DSConfig
-
-func (d DSources) mergeFrom(o DSources) DSources {
+// mergeDataSources - use d as defaults, and override with values from o
+func mergeDataSources(d, o map[string]DataSource) map[string]DataSource {
 	for k, v := range o {
 		c, ok := d[k]
 		if ok {
@@ -80,15 +73,15 @@ func (d DSources) mergeFrom(o DSources) DSources {
 	return d
 }
 
-// DSConfig - datasource config
-type DSConfig struct {
+// DataSource - datasource configuration
+type DataSource struct {
 	URL    *url.URL    `yaml:"-"`
 	Header http.Header `yaml:"header,omitempty,flow"`
 }
 
 // UnmarshalYAML - satisfy the yaml.Umarshaler interface - URLs aren't
 // well supported, and anyway we need to do some extra parsing
-func (d *DSConfig) UnmarshalYAML(value *yaml.Node) error {
+func (d *DataSource) UnmarshalYAML(value *yaml.Node) error {
 	type raw struct {
 		URL    string
 		Header http.Header
@@ -102,7 +95,7 @@ func (d *DSConfig) UnmarshalYAML(value *yaml.Node) error {
 	if err != nil {
 		return fmt.Errorf("could not parse datasource URL %q: %w", r.URL, err)
 	}
-	*d = DSConfig{
+	*d = DataSource{
 		URL:    u,
 		Header: r.Header,
 	}
@@ -111,7 +104,7 @@ func (d *DSConfig) UnmarshalYAML(value *yaml.Node) error {
 
 // MarshalYAML - satisfy the yaml.Marshaler interface - URLs aren't
 // well supported, and anyway we need to do some extra parsing
-func (d DSConfig) MarshalYAML() (interface{}, error) {
+func (d DataSource) MarshalYAML() (interface{}, error) {
 	type raw struct {
 		URL    string
 		Header http.Header
@@ -123,7 +116,8 @@ func (d DSConfig) MarshalYAML() (interface{}, error) {
 	return r, nil
 }
 
-func (d DSConfig) mergeFrom(o DSConfig) DSConfig {
+// mergeFrom - use this as default, and override with values from o
+func (d DataSource) mergeFrom(o DataSource) DataSource {
 	if o.URL != nil {
 		d.URL = o.URL
 	}
@@ -197,8 +191,8 @@ func (c *Config) MergeFrom(o *Config) *Config {
 	if !isZero(o.Templates) {
 		c.Templates = o.Templates
 	}
-	c.DataSources.mergeFrom(o.DataSources)
-	c.Context.mergeFrom(o.Context)
+	mergeDataSources(c.DataSources, o.DataSources)
+	mergeDataSources(c.Context, o.Context)
 	if len(o.Plugins) > 0 {
 		for k, v := range o.Plugins {
 			c.Plugins[k] = v
@@ -217,7 +211,7 @@ func (c *Config) ParseDataSourceFlags(datasources, contexts, headers []string) e
 			return err
 		}
 		if c.DataSources == nil {
-			c.DataSources = DSources{}
+			c.DataSources = map[string]DataSource{}
 		}
 		c.DataSources[k] = ds
 	}
@@ -227,7 +221,7 @@ func (c *Config) ParseDataSourceFlags(datasources, contexts, headers []string) e
 			return err
 		}
 		if c.Context == nil {
-			c.Context = DSources{}
+			c.Context = map[string]DataSource{}
 		}
 		c.Context[k] = ds
 	}
@@ -271,7 +265,7 @@ func (c *Config) ParsePluginFlags(plugins []string) error {
 	return nil
 }
 
-func parseDatasourceArg(value string) (key string, ds DSConfig, err error) {
+func parseDatasourceArg(value string) (key string, ds DataSource, err error) {
 	parts := strings.SplitN(value, "=", 2)
 	if len(parts) == 1 {
 		f := parts[0]
@@ -446,6 +440,20 @@ func (c *Config) ApplyDefaults() {
 	}
 }
 
+// GetMode - parse an os.FileMode out of the string, and let us know if it's an override or not...
+func (c *Config) GetMode() (os.FileMode, bool, error) {
+	modeOverride := c.OutMode != ""
+	m, err := strconv.ParseUint("0"+c.OutMode, 8, 32)
+	if err != nil {
+		return 0, false, err
+	}
+	mode := os.FileMode(m)
+	if mode == 0 && c.Input != "" {
+		mode = 0644
+	}
+	return mode, modeOverride, nil
+}
+
 // String -
 func (c *Config) String() string {
 	out := &strings.Builder{}
@@ -525,18 +533,4 @@ func absFileURL(value string) (*url.URL, error) {
 		resolved.Path = resolved.Path[1:]
 	}
 	return resolved, nil
-}
-
-// GetMode - parse an os.FileMode out of the string, and let us know if it's an override or not...
-func (c *Config) GetMode() (os.FileMode, bool, error) {
-	modeOverride := c.OutMode != ""
-	m, err := strconv.ParseUint("0"+c.OutMode, 8, 32)
-	if err != nil {
-		return 0, false, err
-	}
-	mode := os.FileMode(m)
-	if mode == 0 && c.Input != "" {
-		mode = 0644
-	}
-	return mode, modeOverride, nil
 }

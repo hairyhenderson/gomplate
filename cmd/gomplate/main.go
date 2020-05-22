@@ -85,7 +85,7 @@ func newGomplateCmd() *cobra.Command {
 				Str("build", version.GitCommit).
 				Msgf("config is:\n%v", cfg)
 
-			err = gomplate.RunTemplatesWithContext(ctx, cfg)
+			err = gomplate.Run(ctx, cfg)
 			cmd.SilenceErrors = true
 			cmd.SilenceUsage = true
 
