@@ -3,11 +3,9 @@ package data
 import (
 	"fmt"
 	"io"
-	"io/ioutil"
 	"mime"
 	"net/http"
 	"net/url"
-	"os"
 	"path/filepath"
 	"strings"
 
@@ -370,37 +368,5 @@ func (d *Data) readSource(source *Source, args ...string) ([]byte, error) {
 		return nil, err
 	}
 	d.cache[cacheKey] = data
-	return data, nil
-}
-
-func readStdin(source *Source, args ...string) ([]byte, error) {
-	if stdin == nil {
-		stdin = os.Stdin
-	}
-	b, err := ioutil.ReadAll(stdin)
-	if err != nil {
-		return nil, errors.Wrapf(err, "Can't read %s", stdin)
-	}
-	return b, nil
-}
-
-func readBoltDB(source *Source, args ...string) (data []byte, err error) {
-	if source.kv == nil {
-		source.kv, err = libkv.NewBoltDB(source.URL)
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	if len(args) != 1 {
-		return nil, errors.New("missing key")
-	}
-	p := args[0]
-
-	data, err = source.kv.Read(p)
-	if err != nil {
-		return nil, err
-	}
-
 	return data, nil
 }

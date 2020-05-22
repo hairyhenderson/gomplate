@@ -5,7 +5,6 @@ import (
 	"net/http"
 	"net/url"
 	"runtime"
-	"strings"
 	"testing"
 
 	"github.com/hairyhenderson/gomplate/v3/internal/config"
@@ -171,20 +170,6 @@ type errorReader struct{}
 
 func (e errorReader) Read(p []byte) (n int, err error) {
 	return 0, fmt.Errorf("error")
-}
-
-func TestReadStdin(t *testing.T) {
-	defer func() {
-		stdin = nil
-	}()
-	stdin = strings.NewReader("foo")
-	out, err := readStdin(nil)
-	assert.NoError(t, err)
-	assert.Equal(t, []byte("foo"), out)
-
-	stdin = errorReader{}
-	_, err = readStdin(nil)
-	assert.Error(t, err)
 }
 
 // nolint: megacheck
