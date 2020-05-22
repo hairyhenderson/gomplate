@@ -52,7 +52,7 @@ compress-all: $(patsubst %,$(PREFIX)/bin/$(PKG_NAME)_%,$(compressed-platforms))
 $(PREFIX)/bin/$(PKG_NAME)_%-slim: $(PREFIX)/bin/$(PKG_NAME)_%
 	upx --lzma $< -o $@
 
-$(PREFIX)/bin/$(PKG_NAME)_%-slim.exe: $(PREFIX)/bin/$(PKG_NAME)_%.exe
+$(PREFIX)/bin/$(PKG_NAME)_windows-%-slim.exe: $(PREFIX)/bin/$(PKG_NAME)_windows-%.exe
 	upx --lzma $< -o $@
 
 $(PREFIX)/bin/$(PKG_NAME)_%_checksum_sha256.txt: $(PREFIX)/bin/$(PKG_NAME)_%
