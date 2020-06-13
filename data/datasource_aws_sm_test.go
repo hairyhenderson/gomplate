@@ -41,27 +41,57 @@ func simpleAWSSecretsManagerSourceHelper(dummyGetter awsSecretsManagerGetter) *S
 	}
 }
 
-func TestAWSSecretsManager_ParseArgsSimple(t *testing.T) {
-	paramPath, err := parseAWSSecretsManagerArgs("noddy")
-	assert.Equal(t, "noddy", paramPath)
-	assert.Nil(t, err)
-}
-
-func TestAWSSecretsManager_ParseArgsAppend(t *testing.T) {
-	paramPath, err := parseAWSSecretsManagerArgs("base", "extra")
-	assert.Equal(t, "base/extra", paramPath)
-	assert.Nil(t, err)
-}
-
-func TestAWSSecretsManager_ParseArgsAppend2(t *testing.T) {
-	paramPath, err := parseAWSSecretsManagerArgs("/foo/", "/extra")
-	assert.Equal(t, "/foo/extra", paramPath)
-	assert.Nil(t, err)
-}
-
-func TestAWSSecretsManager_ParseArgsTooMany(t *testing.T) {
-	_, err := parseAWSSecretsManagerArgs("base", "extra", "too many!")
+func TestAWSSecretsManager_ParseAWSSecretsManagerArgs(t *testing.T) {
+	_, _, err := parseDatasourceURLArgs(mustParseURL("base"), "extra", "too many!")
 	assert.Error(t, err)
+
+	data := []struct {
+		u              *url.URL
+		args           []string
+		expectedParams map[string]interface{}
+		expectedPath   string
+	}{
+		{mustParseURL("noddy"), nil, nil, "noddy"},
+		{mustParseURL("base"), []string{"extra"}, nil, "base/extra"},
+		{mustParseURL("/foo/"), []string{"/extra"}, nil, "/foo/extra"},
+		{mustParseURL("aws+sm:///foo"), []string{"bar"}, nil, "/foo/bar"},
+		{mustParseURL("aws+sm:foo"), nil, nil, "foo"},
+		{mustParseURL("aws+sm:foo/bar"), nil, nil, "foo/bar"},
+		{mustParseURL("aws+sm:/foo/bar"), nil, nil, "/foo/bar"},
+		{mustParseURL("aws+sm:foo"), []string{"baz"}, nil, "foo/baz"},
+		{mustParseURL("aws+sm:foo/bar"), []string{"baz"}, nil, "foo/bar/baz"},
+		{mustParseURL("aws+sm:/foo/bar"), []string{"baz"}, nil, "/foo/bar/baz"},
+		{mustParseURL("aws+sm:///foo"), []string{"dir/"}, nil, "/foo/dir/"},
+		{mustParseURL("aws+sm:///foo/"), nil, nil, "/foo/"},
+		{mustParseURL("aws+sm:///foo/"), []string{"baz"}, nil, "/foo/baz"},
+
+		{mustParseURL("aws+sm:foo?type=text/plain"), []string{"baz"},
+			map[string]interface{}{"type": "text/plain"}, "foo/baz"},
+		{mustParseURL("aws+sm:foo/bar?type=text/plain"), []string{"baz"},
+			map[string]interface{}{"type": "text/plain"}, "foo/bar/baz"},
+		{mustParseURL("aws+sm:/foo/bar?type=text/plain"), []string{"baz"},
+			map[string]interface{}{"type": "text/plain"}, "/foo/bar/baz"},
+		{
+			mustParseURL("aws+sm:/foo/bar?type=text/plain"),
+			[]string{"baz/qux?type=application/json&param=quux"},
+			map[string]interface{}{
+				"type":  "application/json",
+				"param": "quux",
+			},
+			"/foo/bar/baz/qux",
+		},
+	}
+
+	for _, d := range data {
+		params, p, err := parseDatasourceURLArgs(d.u, d.args...)
+		assert.NoError(t, err)
+		if d.expectedParams == nil {
+			assert.Empty(t, params)
+		} else {
+			assert.EqualValues(t, d.expectedParams, params)
+		}
+		assert.Equal(t, d.expectedPath, p)
+	}
 }
 
 func TestAWSSecretsManager_GetParameterSetup(t *testing.T) {

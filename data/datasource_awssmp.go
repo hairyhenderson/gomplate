@@ -2,8 +2,6 @@ package data
 
 import (
 	"context"
-	"net/url"
-	"path"
 	"strings"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -20,42 +18,13 @@ type awssmpGetter interface {
 	GetParametersByPathWithContext(ctx context.Context, input *ssm.GetParametersByPathInput, opts ...request.Option) (*ssm.GetParametersByPathOutput, error)
 }
 
-func parseAWSSMPArgs(sourceURL *url.URL, args ...string) (params map[string]interface{}, p string, err error) {
-	if len(args) >= 2 {
-		err = errors.New("Maximum two arguments to aws+smp datasource: alias, extraPath")
-		return nil, "", err
-	}
-
-	p = sourceURL.Path
-	params = make(map[string]interface{})
-	for key, val := range sourceURL.Query() {
-		params[key] = strings.Join(val, " ")
-	}
-
-	if len(args) == 1 {
-		parsed, err := url.Parse(args[0])
-		if err != nil {
-			return nil, "", err
-		}
-
-		if parsed.Path != "" {
-			p = path.Join(p, parsed.Path)
-		}
-
-		for key, val := range parsed.Query() {
-			params[key] = strings.Join(val, " ")
-		}
-	}
-	return params, p, err
-}
-
 func readAWSSMP(source *Source, args ...string) (data []byte, err error) {
 	ctx := context.TODO()
 	if source.asmpg == nil {
 		source.asmpg = ssm.New(gaws.SDKSession())
 	}
 
-	_, paramPath, err := parseAWSSMPArgs(source.URL, args...)
+	_, paramPath, err := parseDatasourceURLArgs(source.URL, args...)
 	if err != nil {
 		return nil, err
 	}

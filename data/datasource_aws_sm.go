@@ -1,7 +1,10 @@
 package data
 
 import (
+	"fmt"
+	"net/url"
 	"path"
+	"strings"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/secretsmanager"
@@ -15,16 +18,41 @@ type awsSecretsManagerGetter interface {
 	GetSecretValue(input *secretsmanager.GetSecretValueInput) (*secretsmanager.GetSecretValueOutput, error)
 }
 
-func parseAWSSecretsManagerArgs(origPath string, args ...string) (paramPath string, err error) {
-	paramPath = origPath
-	if len(args) >= 1 {
-		paramPath = path.Join(paramPath, args[0])
+func parseDatasourceURLArgs(sourceURL *url.URL, args ...string) (params map[string]interface{}, p string, err error) {
+	if len(args) >= 2 {
+		err = fmt.Errorf("maximum two arguments to %s datasource: alias, extraPath (found %d)",
+			sourceURL.Scheme, len(args))
+		return nil, "", err
 	}
 
-	if len(args) >= 2 {
-		err = errors.New("Maximum two arguments to aws+sm datasource: alias, extraPath")
+	p = sourceURL.Path
+	params = make(map[string]interface{})
+	for key, val := range sourceURL.Query() {
+		params[key] = strings.Join(val, " ")
 	}
-	return
+
+	if p == "" && sourceURL.Opaque != "" {
+		p = sourceURL.Opaque
+	}
+
+	if len(args) == 1 {
+		parsed, err := url.Parse(args[0])
+		if err != nil {
+			return nil, "", err
+		}
+
+		if parsed.Path != "" {
+			p = path.Join(p, parsed.Path)
+			if strings.HasSuffix(parsed.Path, "/") {
+				p += "/"
+			}
+		}
+
+		for key, val := range parsed.Query() {
+			params[key] = strings.Join(val, " ")
+		}
+	}
+	return params, p, nil
 }
 
 func readAWSSecretsManager(source *Source, args ...string) (output []byte, err error) {
@@ -32,7 +60,7 @@ func readAWSSecretsManager(source *Source, args ...string) (output []byte, err e
 		source.awsSecretsManager = secretsmanager.New(gaws.SDKSession())
 	}
 
-	paramPath, err := parseAWSSecretsManagerArgs(source.URL.Path, args...)
+	_, paramPath, err := parseDatasourceURLArgs(source.URL, args...)
 	if err != nil {
 		return nil, err
 	}

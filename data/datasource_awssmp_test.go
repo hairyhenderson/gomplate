@@ -57,33 +57,6 @@ func simpleAWSSourceHelper(dummy awssmpGetter) *Source {
 	}
 }
 
-func TestAWSSMP_ParseArgsSimple(t *testing.T) {
-	u, _ := url.Parse("noddy")
-	_, p, err := parseAWSSMPArgs(u)
-	assert.Equal(t, "noddy", p)
-	assert.Nil(t, err)
-}
-
-func TestAWSSMP_ParseArgsAppend(t *testing.T) {
-	u, _ := url.Parse("base")
-	_, p, err := parseAWSSMPArgs(u, "extra")
-	assert.Equal(t, "base/extra", p)
-	assert.Nil(t, err)
-}
-
-func TestAWSSMP_ParseArgsAppend2(t *testing.T) {
-	u, _ := url.Parse("/foo/")
-	_, p, err := parseAWSSMPArgs(u, "/extra")
-	assert.Equal(t, "/foo/extra", p)
-	assert.Nil(t, err)
-}
-
-func TestAWSSMP_ParseArgsTooMany(t *testing.T) {
-	u, _ := url.Parse("base")
-	_, _, err := parseAWSSMPArgs(u, "extra", "too many!")
-	assert.Error(t, err)
-}
-
 func TestAWSSMP_GetParameterSetup(t *testing.T) {
 	calledOk := false
 	s := simpleAWSSourceHelper(DummyParamGetter{
