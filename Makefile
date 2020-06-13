@@ -49,11 +49,23 @@ build-x: $(patsubst %,$(PREFIX)/bin/$(PKG_NAME)_%,$(platforms))
 
 compress-all: $(patsubst %,$(PREFIX)/bin/$(PKG_NAME)_%,$(compressed-platforms))
 
+UPX_VERSION := $(shell upx --version | head -n1 | cut -f2 -d\ )
+UPX_REQUIRED_VERSION := 3.94
+
+
+ifeq ($(UPX_REQUIRED_VERSION),$(UPX_VERSION))
 $(PREFIX)/bin/$(PKG_NAME)_%-slim: $(PREFIX)/bin/$(PKG_NAME)_%
 	upx --lzma $< -o $@
-
 $(PREFIX)/bin/$(PKG_NAME)_windows-%-slim.exe: $(PREFIX)/bin/$(PKG_NAME)_windows-%.exe
 	upx --lzma $< -o $@
+else
+$(PREFIX)/bin/$(PKG_NAME)_%-slim:
+	$(error Wrong upx version - need $(UPX_REQUIRED_VERSION))
+
+$(PREFIX)/bin/$(PKG_NAME)_windows-%-slim.exe:
+	$(error Wrong upx version - need $(UPX_REQUIRED_VERSION))
+endif
+
 
 $(PREFIX)/bin/$(PKG_NAME)_%_checksum_sha256.txt: $(PREFIX)/bin/$(PKG_NAME)_%
 	@sha256sum $< > $@
