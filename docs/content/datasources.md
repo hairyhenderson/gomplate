@@ -35,7 +35,7 @@ For our purposes, the _scheme_ and the _path_ components are especially importan
 
 ### Opaque URIs
 
-For some more advanced datasources, such as the [`merge` scheme](#using-merge-datasources), opaque URIs are used (rather than a hierarchical URL):
+For some datasources, such as the [`merge`](#using-merge-datasources), [`aws+sm`](#using-aws-sm-datasources), and [`aws+smp`](#using-aws-smp-datasources) schemes, opaque URIs can be used (rather than a hierarchical URL):
 
 ```pre
 scheme                   path        query   fragment
@@ -160,10 +160,10 @@ See details on how to configure gomplate's AWS support in [_Configuring AWS_](..
 
 ### URL Considerations
 
-The _scheme_ and _path_ URL components are used by this datasource.
+The _scheme_ and _path_ URL components are used by this datasource. This may be an _opaque_ URI instead of an URL, when the key does not begin with a `/` character (e.g. `aws+smp:myparam`).
 
 - the _scheme_ must be `aws+smp`
-- the _path_ component is used to specify the path to the parameter. [Directory](#directory-datasources) semantics are available when the path ends with a `/` character.
+- the _path_ component is used to specify the path to the parameter (this may be a hierarchical path beginning with `/`, or an opaque path). [Directory](#directory-datasources) semantics are available when the path ends with a `/` character.
 
 ### Output
 
@@ -186,6 +186,7 @@ Given your [AWS account's Parameter Store](https://eu-west-1.console.aws.amazon.
 - `/foo/first/others` - `Bill,Ben` (a StringList)
 - `/foo/first/password` - `super-secret` (a SecureString)
 - `/foo/second/p1` - `aaa`
+- `myparameter` - `bar`
 
 ```console
 $ echo '{{ ds "foo" }}' | gomplate -d foo=aws+smp:///foo/first/password
@@ -205,12 +206,19 @@ $ gomplate -d foo=aws+smp:///foo/first/ -i '{{ range (ds "foo") }}
 {{- end }}'
 others: Bill,Ben
 password: super-secret
+
+$ gomplate -d foo=aws+smp:myparameter -i '{{ (ds "foo").Value }}
+bar
 ```
 
 ## Using `aws+sm` datasource
 
 ### URL Considerations
-For `aws+sm`, only the _scheme_ and _path_ components are necessary to be defined. Other URL components are ignored.
+
+For `aws+sm`, only the _scheme_ and _path_ components are necessary to be defined. This may be an _opaque_ URI instead of an URL, when the key does not begin with a `/` character (e.g. `aws+sm:myparam`).
+
+- the _scheme_ must be `aws+sm`
+- the _path_ component is used to specify the path to the secret (this may be a hierarchical path beginning with `/`, or an opaque path)
 
 ### Output
 
@@ -221,6 +229,7 @@ The output will be the SecretString from the `GetSecretValueOutput` object from 
 Given your [AWS account's Secret Manager](https://eu-central-1.console.aws.amazon.com/secretsmanager/home?region=eu-central-1#/listSecrets) has the following data:
 
 - `/foo/bar/password` - `super-secret`
+- `mysecret` - `bar`
 
 ```console
 $ echo '{{ (ds "foo") }}' | gomplate -d foo=aws+sm:///foo/bar/password
@@ -231,6 +240,9 @@ super-secret
 
 $ echo '{{ (ds "foo" "/bar/password") }}' | gomplate -d foo=aws+sm:///foo/
 super-secret
+
+$ echo '{{ (ds "foo") }}' | gomplate -d foo=aws+sm:mysecret
+bar
 ```
 
 ## Using `s3` datasources

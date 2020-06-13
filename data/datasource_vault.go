@@ -1,37 +1,12 @@
 package data
 
 import (
-	"net/url"
 	"strings"
 
 	"github.com/pkg/errors"
 
 	"github.com/hairyhenderson/gomplate/v3/vault"
 )
-
-func parseVaultParams(sourceURL *url.URL, args []string) (params map[string]interface{}, p string, err error) {
-	p = sourceURL.Path
-	params = make(map[string]interface{})
-	for key, val := range sourceURL.Query() {
-		params[key] = strings.Join(val, " ")
-	}
-
-	if len(args) == 1 {
-		parsed, err := url.Parse(args[0])
-		if err != nil {
-			return nil, "", err
-		}
-
-		if parsed.Path != "" {
-			p = p + "/" + parsed.Path
-		}
-
-		for key, val := range parsed.Query() {
-			params[key] = strings.Join(val, " ")
-		}
-	}
-	return params, p, nil
-}
 
 func readVault(source *Source, args ...string) (data []byte, err error) {
 	if source.vc == nil {
@@ -45,7 +20,7 @@ func readVault(source *Source, args ...string) (data []byte, err error) {
 		}
 	}
 
-	params, p, err := parseVaultParams(source.URL, args)
+	params, p, err := parseDatasourceURLArgs(source.URL, args...)
 	if err != nil {
 		return nil, err
 	}
