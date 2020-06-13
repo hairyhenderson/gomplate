@@ -65,7 +65,7 @@ func TestUnmarshalArray(t *testing.T) {
 		assert.EqualValues(t, expected, actual)
 	}
 	test(JSONArray(`["foo","bar",{"baz":{"qux": true},"quux":{"42":18},"corge":{"false":"blah"}}]`))
-	test(YAMLArray(`
+	test(YAMLArray(`---
 - foo
 - bar
 - baz:
@@ -522,4 +522,23 @@ QUX='single quotes ignore $variables'
 	out, err := dotEnv(in)
 	assert.NoError(t, err)
 	assert.EqualValues(t, expected, out)
+}
+
+func TestMultiDocYAML(t *testing.T) {
+	in := `foo: bar
+---
+baz: qux
+---
+# empty document with a comment
+`
+	expected := []interface{}{
+		map[string]interface{}{"foo": "bar"},
+		map[string]interface{}{"baz": "qux"},
+		nil,
+	}
+	ch, err := YAMLArray(in)
+	for i, out := range ch {
+		assert.NoError(t, err)
+		assert.EqualValues(t, expected[i], out)
+	}
 }
