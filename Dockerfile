@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1.1.5-experimental
-FROM --platform=linux/amd64 hairyhenderson/upx:3.96 AS upx
+FROM --platform=linux/amd64 hairyhenderson/upx:3.94 AS upx
 
 FROM --platform=linux/amd64 golang:1.14.4-alpine3.12 AS build
 
@@ -32,8 +32,8 @@ ARG TARGETARCH
 ARG TARGETVARIANT
 
 RUN apk add --no-cache \
-    make \
-    libgcc libstdc++ ucl
+	make \
+	libgcc libstdc++ ucl
 
 ENV GOOS=$TARGETOS GOARCH=$TARGETARCH
 WORKDIR /go/src/github.com/hairyhenderson/gomplate
@@ -54,7 +54,7 @@ ARG TARGETARCH
 ARG TARGETVARIANT
 
 LABEL org.opencontainers.image.revision=$VCS_REF \
-      org.opencontainers.image.source="https://github.com/hairyhenderson/gomplate"
+	org.opencontainers.image.source="https://github.com/hairyhenderson/gomplate"
 
 COPY --from=build /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
 COPY --from=build /bin/gomplate_${TARGETOS}-${TARGETARCH}${TARGETVARIANT} /gomplate
@@ -69,7 +69,7 @@ ARG TARGETARCH
 ARG TARGETVARIANT
 
 LABEL org.opencontainers.image.revision=$VCS_REF \
-      org.opencontainers.image.source="https://github.com/hairyhenderson/gomplate"
+	org.opencontainers.image.source="https://github.com/hairyhenderson/gomplate"
 
 COPY --from=build /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
 COPY --from=compress /bin/gomplate_${TARGETOS}-${TARGETARCH}${TARGETVARIANT}-slim /bin/gomplate
@@ -84,7 +84,7 @@ ARG TARGETARCH
 ARG TARGETVARIANT
 
 LABEL org.opencontainers.image.revision=$VCS_REF \
-      org.opencontainers.image.source="https://github.com/hairyhenderson/gomplate"
+	org.opencontainers.image.source="https://github.com/hairyhenderson/gomplate"
 
 COPY --from=build /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
 COPY --from=compress /bin/gomplate_${TARGETOS}-${TARGETARCH}${TARGETVARIANT}-slim /gomplate
