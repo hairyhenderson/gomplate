@@ -245,6 +245,7 @@ func TestToString(t *testing.T) {
 		{p, "foo"},
 		{fmt.Errorf("hi"), "hi"},
 		{n, "<nil>"},
+		{[]byte("hello world"), "hello world"},
 	}
 
 	for _, d := range testdata {
