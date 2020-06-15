@@ -131,3 +131,39 @@ func (f *CryptoFuncs) Bcrypt(args ...interface{}) (string, error) {
 	hash, err := bcrypt.GenerateFromPassword([]byte(input), cost)
 	return string(hash), err
 }
+
+// RSAEncrypt -
+func (f *CryptoFuncs) RSAEncrypt(key string, in interface{}) ([]byte, error) {
+	msg := toBytes(in)
+	return crypto.RSAEncrypt(key, msg)
+}
+
+// RSADecrypt -
+func (f *CryptoFuncs) RSADecrypt(key string, in []byte) (string, error) {
+	out, err := crypto.RSADecrypt(key, in)
+	return string(out), err
+}
+
+// RSADecryptBytes -
+func (f *CryptoFuncs) RSADecryptBytes(key string, in []byte) ([]byte, error) {
+	out, err := crypto.RSADecrypt(key, in)
+	return out, err
+}
+
+// RSAGenerateKey -
+func (f *CryptoFuncs) RSAGenerateKey(args ...interface{}) (string, error) {
+	bits := 4096
+	if len(args) == 1 {
+		bits = conv.ToInt(args[0])
+	} else if len(args) > 1 {
+		return "", fmt.Errorf("wrong number of args: want 0 or 1, got %d", len(args))
+	}
+	out, err := crypto.RSAGenerateKey(bits)
+	return string(out), err
+}
+
+// RSADerivePublicKey -
+func (f *CryptoFuncs) RSADerivePublicKey(privateKey string) (string, error) {
+	out, err := crypto.RSADerivePublicKey([]byte(privateKey))
+	return string(out), err
+}

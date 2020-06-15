@@ -132,6 +132,9 @@ func ToString(in interface{}) string {
 	if s, ok := in.(fmt.Stringer); ok {
 		return s.String()
 	}
+	if s, ok := in.([]byte); ok {
+		return string(s)
+	}
 
 	v, ok := printableValue(reflect.ValueOf(in))
 	if ok {

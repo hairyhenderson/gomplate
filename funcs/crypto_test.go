@@ -64,3 +64,39 @@ func TestBcrypt(t *testing.T) {
 	_, err = c.Bcrypt()
 	assert.Error(t, err)
 }
+
+func TestRSAGenerateKey(t *testing.T) {
+	c := CryptoNS()
+	_, err := c.RSAGenerateKey(0)
+	assert.Error(t, err)
+
+	_, err = c.RSAGenerateKey(0, "foo", true)
+	assert.Error(t, err)
+
+	key, err := c.RSAGenerateKey(12)
+	assert.NoError(t, err)
+	assert.True(t, strings.HasPrefix(key,
+		"-----BEGIN RSA PRIVATE KEY-----"))
+	assert.True(t, strings.HasSuffix(key,
+		"-----END RSA PRIVATE KEY-----\n"))
+}
+
+func TestRSACrypt(t *testing.T) {
+	c := CryptoNS()
+	key, err := c.RSAGenerateKey()
+	assert.NoError(t, err)
+	pub, err := c.RSADerivePublicKey(key)
+	assert.NoError(t, err)
+
+	in := "hello world"
+	enc, err := c.RSAEncrypt(pub, in)
+	assert.NoError(t, err)
+
+	dec, err := c.RSADecrypt(key, enc)
+	assert.NoError(t, err)
+	assert.Equal(t, in, dec)
+
+	b, err := c.RSADecryptBytes(key, enc)
+	assert.NoError(t, err)
+	assert.Equal(t, dec, string(b))
+}

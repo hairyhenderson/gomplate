@@ -1,8 +1,13 @@
 ns: crypto
 preamble: |
-  A set of crypto-related functions to be able to perform hashing and (simple!) encryption operations with `gomplate`.
+  A set of crypto-related functions to be able to perform hashing and (simple!)
+  encryption operations with `gomplate`.
 
-  _Note: These functions are mostly wrappers of existing functions in the Go standard library. The authors of gomplate are not cryptographic experts, however, and so can not guarantee correctness of implementation. It is recommended to have your resident security experts inspect gomplate's code before using gomplate for critical security infrastructure!_
+  _Note: These functions are mostly wrappers of existing functions in the Go
+  standard library. The authors of gomplate are not cryptographic experts,
+  however, and so can not guarantee correctness of implementation. It is
+  recommended to have your resident security experts inspect gomplate's code
+  before using gomplate for critical security infrastructure!_
 funcs:
   - name: crypto.Bcrypt
     description: |
@@ -49,13 +54,165 @@ funcs:
       - |
         $ gomplate -i '{{ crypto.PBKDF2 "foo" "bar" 1024 8 }}'
         32c4907c3c80792b
+  - name: crypto.RSADecrypt
+    description: |
+      Decrypt an RSA-encrypted input and print the output as a string. Note that
+      this may result in unreadable text if the decrypted payload is binary. See
+      [`crypto.RSADecryptBytes`](#crypto.RSADecryptBytes) for a safer method.
+
+      The private key must be a PEM-encoded RSA private key in PKCS#1, ASN.1 DER
+      form, which typically begins with `-----BEGIN RSA PRIVATE KEY-----`.
+
+      The input text must be plain ciphertext, as a byte array, or safely
+      convertible to a byte array. To decrypt base64-encoded input, you must
+      first decode with the [`base64.DecodeBytes`](../base64/#base64.DecodeBytes)
+      function.
+    pipeline: true
+    arguments:
+      - name: key
+        required: true
+        description: the private key to decrypt the input with
+      - name: input
+        required: true
+        description: the encrypted input
+    examples:
+      - |
+        $ gomplate -c pubKey=./testPubKey -c privKey=./testPrivKey \
+          -i '{{ $enc := "hello" | crypto.RSAEncrypt .pubKey -}}
+          {{ crypto.RSADecrypt .privKey $enc }}'
+        hello
+      - |
+        $ export ENCRYPTED="ScTcX1NZ6p/EeDIf6R7FKLcDFjvP98YgiBhyhPE4jtehajIyTKP1GL8C72qbAWrgdQ6A2cSVjoyo3viqf/PZxpcBDUUMDJuemTaJqUUjMWaDuPG37mQbmRtcvFTuUhw1qSbKyHorDOgTX5d4DvWV4otycGtBT6dXhnmmb5V72J/w3z68vtTJ21m9wREFD7LrYVHdFFtRZiIyMBAF0ngQ+hcujrxilnmgzPkEAg6E7Ccctn28Ie2c4CojrwRbNNxXNlIWCCkC/8Vq8qlDfZ70a+BsTmJDuScE6BZbTyteo9uGYrLn+bTIHNDj90AeLCKUTyWLUJ5Edi9LhlKVBoJUNQ=="
+        $ gomplate -c ciphertext=env:///ENCRYPTED -c privKey=./testPrivKey \
+          -i '{{ base64.DecodeBytes .ciphertext | crypto.RSADecrypt .privKey }}'
+        hello
+  - name: crypto.RSADecryptBytes
+    description: |
+      Decrypt an RSA-encrypted input and output the decrypted byte array.
+
+      The private key must be a PEM-encoded RSA private key in PKCS#1, ASN.1 DER
+      form, which typically begins with `-----BEGIN RSA PRIVATE KEY-----`.
+
+      The input text must be plain ciphertext, as a byte array, or safely
+      convertible to a byte array. To decrypt base64-encoded input, you must
+      first decode with the [`base64.DecodeBytes`](../base64/#base64.DecodeBytes)
+      function.
+
+      See [`crypto.RSADecrypt`](#crypto.RSADecrypt) for a function that outputs
+      a string.
+    pipeline: true
+    arguments:
+      - name: key
+        required: true
+        description: the private key to decrypt the input with
+      - name: input
+        required: true
+        description: the encrypted input
+    examples:
+      - |
+        $ gomplate -c pubKey=./testPubKey -c privKey=./testPrivKey \
+          -i '{{ $enc := "hello" | crypto.RSAEncrypt .pubKey -}}
+          {{ crypto.RSADecryptBytes .privKey $enc }}'
+        [104 101 108 108 111]
+      - |
+        $ gomplate -c pubKey=./testPubKey -c privKey=./testPrivKey \
+          -i '{{ $enc := "hello" | crypto.RSAEncrypt .pubKey -}}
+          {{ crypto.RSADecryptBytes .privKey $enc | conv.ToString }}'
+        hello
+  - name: crypto.RSAEncrypt
+    description: |
+      Encrypt the input with RSA and the padding scheme from PKCS#1 v1.5.
+
+      This function is suitable for encrypting data that will be decrypted by
+      [Terraform's `rsadecrypt` function](https://www.terraform.io/docs/configuration/functions/rsadecrypt.html).
+
+      The key should be a PEM-encoded RSA public key in PKIX ASN.1 DER form,
+      which typically begins with `BEGIN PUBLIC KEY`. RSA public keys in PKCS#1
+      ASN.1 DER form are also supported (beginning with `RSA PUBLIC KEY`).
+
+      The output will not be encoded, so consider
+      [base64-encoding](../base64/#base64.Encode) it for display.
+
+      _Note:_ Output encrypted with this function will _not_ be deterministic,
+      so encrypting the same input twice will not result in the same ciphertext.
+
+      _Warning:_ Using this function may not be safe. See the warning on Go's
+      [`rsa.EncryptPKCS1v15`](https://golang.org/pkg/crypto/rsa/#EncryptPKCS1v15)
+      documentation.
+    pipeline: true
+    arguments:
+      - name: key
+        required: true
+        description: the public key to encrypt the input with
+      - name: input
+        required: true
+        description: the encrypted input
+    examples:
+      - |
+        $ gomplate -c pubKey=./testPubKey \
+          -i '{{ "hello" | crypto.RSAEncrypt .pubKey | base64.Encode }}'
+        ScTcX1NZ6p/EeDIf6R7FKLcDFjvP98YgiBhyhPE4jtehajIyTKP1GL8C72qbAWrgdQ6A2cSVjoyo3viqf/PZxpcBDUUMDJuemTaJqUUjMWaDuPG37mQbmRtcvFTuUhw1qSbKyHorDOgTX5d4DvWV4otycGtBT6dXhnmmb5V72J/w3z68vtTJ21m9wREFD7LrYVHdFFtRZiIyMBAF0ngQ+hcujrxilnmgzPkEAg6E7Ccctn28Ie2c4CojrwRbNNxXNlIWCCkC/8Vq8qlDfZ70a+BsTmJDuScE6BZbTyteo9uGYrLn+bTIHNDj90AeLCKUTyWLUJ5Edi9LhlKVBoJUNQ==
+      - |
+        $ gomplate -c pubKey=./testPubKey \
+          -i '{{ $enc := "hello" | crypto.RSAEncrypt .pubKey -}}
+          Ciphertext in hex: {{ printf "%x" $enc }}'
+        71729b87cccabb248b9e0e5173f0b12c01d9d2a0565bad18aef9d332ce984bde06acb8bb69334a01446f7f6430077f269e6fbf2ccacd972fe5856dd4719252ebddf599948d937d96ea41540dad291b868f6c0cf647dffdb5acb22cd33557f9a1ddd0ee6c1ad2bbafc910ba8f817b66ea0569afc06e5c7858fd9dc2638861fe7c97391b2f190e4c682b4aa2c9b0050081efe18b10aa8c2b2b5f5b68a42dcc06c9da35b37fca9b1509fddc940eb99f516a2e0195405bcb3993f0fa31bc038d53d2e7231dff08cc39448105ed2d0ac52d375cb543ca8a399f807cc5d007e2c44c69876d189667eee66361a393c4916826af77479382838cd4e004b8baa05636805a
+  - name: crypto.RSAGenerateKey
+    description: |
+      Generate a new RSA Private Key and output in PEM-encoded PKCS#1 ASN.1 DER
+      form.
+
+      Default key length is 4096 bits, which should be safe enough for most
+      uses, but can be overridden with the optional `bits` parameter.
+
+      The output is a string, suitable for use with the other `crypto.RSA*`
+      functions.
+    pipeline: true
+    arguments:
+      - name: bits
+        required: false
+        description: bit size of the generated key. Defaults to `4096`
+    examples:
+      - |
+        $ gomplate -i '{{ crypto.RSAGenerateKey }}'
+        -----BEGIN RSA PRIVATE KEY-----
+        ...
+      - |
+        $ gomplate -i '{{ $key := crypto.RSAGenerateKey 2048 -}}
+          {{ $pub := crypto.RSADerivePublicKey $key -}}
+          {{ $enc := "hello" | crypto.RSAEncrypt $pub -}}
+          {{ crypto.RSADecrypt $key $enc }}'
+        hello
+  - name: crypto.RSADerivePublicKey
+    description: |
+      Derive a public key from an RSA private key and output in PKIX ASN.1 DER
+      form.
+
+      The output is a string, suitable for use with other `crypto.RSA*`
+      functions.
+    pipeline: true
+    arguments:
+      - name: key
+        required: true
+        description: the private key to derive a public key from
+    examples:
+      - |
+        $ gomplate -i '{{ crypto.RSAGenerateKey | crypto.RSADerivePublicKey }}'
+        -----BEGIN PUBLIC KEY-----
+        ...
+      - |
+        $ gomplate -c privKey=./privKey.pem \
+          -i '{{ $pub := crypto.RSADerivePublicKey .privKey -}}
+          {{ $enc := "hello" | crypto.RSAEncrypt $pub -}}
+          {{ crypto.RSADecrypt .privKey $enc }}'
+        hello
   - rawName: '`crypto.SHA1`, `crypto.SHA224`, `crypto.SHA256`, `crypto.SHA384`, `crypto.SHA512`, `crypto.SHA512_224`, `crypto.SHA512_256`'
     description: |
       Compute a checksum with a SHA-1 or SHA-2 algorithm as defined in [RFC 3174](https://tools.ietf.org/html/rfc3174) (SHA-1) and [FIPS 180-4](http://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.180-4.pdf) (SHA-2).
 
       These functions output the binary result as a hexadecimal string.
 
-      _Note: SHA-1 is cryptographically broken and should not be used for secure applications._
+      _Warning: SHA-1 is cryptographically broken and should not be used for secure applications._
     pipeline: false
     rawUsage: |
       ```

@@ -38,6 +38,12 @@ func (f *Base64Funcs) Decode(in interface{}) (string, error) {
 	return string(out), err
 }
 
+// DecodeBytes -
+func (f *Base64Funcs) DecodeBytes(in interface{}) ([]byte, error) {
+	out, err := base64.Decode(conv.ToString(in))
+	return out, err
+}
+
 type byter interface {
 	Bytes() []byte
 }

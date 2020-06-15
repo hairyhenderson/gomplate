@@ -4,7 +4,7 @@ funcs:
   - name: base64.Encode
     description: |
       Encode data as a Base64 string. Specifically, this uses the standard Base64 encoding as defined in [RFC4648 &sect;4](https://tools.ietf.org/html/rfc4648#section-4) (and _not_ the URL-safe encoding).
-    pipeline: false
+    pipeline: true
     arguments:
       - name: input
         required: true
@@ -20,8 +20,10 @@ funcs:
     description: |
       Decode a Base64 string. This supports both standard ([RFC4648 &sect;4](https://tools.ietf.org/html/rfc4648#section-4)) and URL-safe ([RFC4648 &sect;5](https://tools.ietf.org/html/rfc4648#section-5)) encodings.
 
-      This implementation outputs the data as a string, so it may not be appropriate for decoding binary data. If this functionality is desired, [file an issue](https://github.com/hairyhenderson/gomplate/issues/new).
-    pipeline: false
+      This function outputs the data as a string, so it may not be appropriate
+      for decoding binary data. Use [`base64.DecodeBytes`](#base64.DecodeBytes)
+      for binary data.
+    pipeline: true
     arguments:
       - name: input
         required: true
@@ -32,4 +34,23 @@ funcs:
         hello world
       - |
         $ gomplate -i '{{ "aGVsbG8gd29ybGQ=" | base64.Decode }}'
+        hello world
+  - name: base64.DecodeBytes
+    description: |
+      Decode a Base64 string. This supports both standard ([RFC4648 &sect;4](https://tools.ietf.org/html/rfc4648#section-4)) and URL-safe ([RFC4648 &sect;5](https://tools.ietf.org/html/rfc4648#section-5)) encodings.
+
+      This function outputs the data as a byte array, so it's most useful for
+      outputting binary data that will be processed further.
+      Use [`base64.Decode`](#base64.Decode) to output a plain string.
+    pipeline: false
+    arguments:
+      - name: input
+        required: true
+        description: The base64 string to decode
+    examples:
+      - |
+        $ gomplate -i '{{ base64.DecodeBytes "aGVsbG8gd29ybGQ=" }}'
+        [104 101 108 108 111 32 119 111 114 108 100]
+      - |
+        $ gomplate -i '{{ "aGVsbG8gd29ybGQ=" | base64.DecodeBytes | conv.ToString }}'
         hello world
