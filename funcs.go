@@ -12,6 +12,7 @@ func Funcs(d *data.Data) template.FuncMap {
 	f := template.FuncMap{}
 	funcs.AddDataFuncs(f, d)
 	funcs.AWSFuncs(f)
+	funcs.AddGCPFuncs(f)
 	funcs.AddBase64Funcs(f)
 	funcs.AddNetFuncs(f)
 	funcs.AddReFuncs(f)
