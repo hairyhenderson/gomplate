@@ -4,13 +4,19 @@ weight: 10
 menu: main
 ---
 
-## macOS with homebrew
+There are many installation methods available for gomplate, depending on your platform and use-case.
 
-The simplest method for macOS is to use homebrew:
+## macOS/Linux with homebrew
+
+The simplest method for macOS and Linux is to use [homebrew](https://brew.sh/):
 
 ```console
 $ brew install gomplate
 ...
+
+==> Installing gomplate
+==> Pouring gomplate-3.7.0.x86_64_linux.bottle.tar.gz
+🍺  /home/linuxbrew/.linuxbrew/Cellar/gomplate/3.7.0: 6 files, 7.8MB
 ```
 
 ## Alpine Linux
@@ -47,7 +53,7 @@ so this can be made simpler with a shell alias:
 ```console
 $ alias gomplate=docker run hairyhenderson/gomplate
 $ gomplate --version
-gomplate version 1.2.3
+gomplate version 3.7.0
 ```
 
 ### use inside a container
@@ -58,7 +64,7 @@ Use the `COPY` instruction's `--from` flag to accomplish this:
 
 ```Dockerfile
 ...
-COPY --from=hairyhenderson/gomplate:v2.5.0-slim /gomplate /bin/gomplate
+COPY --from=hairyhenderson/gomplate:3.7.0-slim /gomplate /bin/gomplate
 ```
 
 Now, `gomplate` will be available in the `/bin` directory inside the container image.
@@ -68,7 +74,7 @@ Note that when using `gomplate` with HTTPS-based datasources, you will likely ne
 ```Dockerfile
 FROM alpine
 
-COPY --from=hairyhenderson/gomplate:v2.5.0-slim /gomplate /bin/gomplate
+COPY --from=hairyhenderson/gomplate:v3.7.0-slim /gomplate /bin/gomplate
 RUN apk add --no-cache ca-certificates
 ```
 
@@ -79,7 +85,7 @@ RUN apk add --no-cache ca-certificates
 2. Store the downloaded binary somewhere in your path as `gomplate` (or `gomplate.exe`
   on Windows)
 3. Make sure it's executable (on Linux/macOS)
-3. Test it out with `gomplate --help`!
+4. Test it out with `gomplate --help`!
 
 In other words:
 
@@ -92,13 +98,15 @@ $ gomplate --help
 
 ## install with `go get`
 
-If you're a Go user already, sometimes it's faster to just use `go get` to install `gomplate`:
+If you're a Go developer, sometimes it's faster to just use `go get` to install `gomplate`:
 
 ```console
 $ go get github.com/hairyhenderson/gomplate/v3/cmd/gomplate
 $ gomplate --help
 ...
 ```
+
+(note that this method produces a binary that isn't versioned and may not necessarily work correctly)
 
 ## install with `npm`
 
