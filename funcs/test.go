@@ -1,6 +1,7 @@
 package funcs
 
 import (
+	"reflect"
 	"sync"
 
 	"github.com/hairyhenderson/gomplate/v3/conv"
@@ -28,6 +29,8 @@ func AddTestFuncs(f map[string]interface{}) {
 	f["fail"] = TestNS().Fail
 	f["required"] = TestNS().Required
 	f["ternary"] = TestNS().Ternary
+	f["kind"] = TestNS().Kind
+	f["isKind"] = TestNS().IsKind
 }
 
 // TestFuncs -
@@ -84,4 +87,24 @@ func (f *TestFuncs) Ternary(tval, fval, b interface{}) interface{} {
 		return tval
 	}
 	return fval
+}
+
+// Kind - return the kind of the argument
+func (f *TestFuncs) Kind(arg interface{}) string {
+	return reflect.ValueOf(arg).Kind().String()
+}
+
+// IsKind - return whether or not the argument is of the given kind
+func (f *TestFuncs) IsKind(kind string, arg interface{}) bool {
+	k := f.Kind(arg)
+	if kind == "number" {
+		switch k {
+		case "int", "int8", "int16", "int32", "int64",
+			"uint", "uint8", "uint16", "uint32", "uint64", "uintptr",
+			"float32", "float64",
+			"complex64", "complex128":
+			kind = k
+		}
+	}
+	return k == kind
 }

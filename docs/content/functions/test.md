@@ -70,6 +70,107 @@ $ gomplate -i '{{ test.Fail "something is wrong!" }}'
 template: <arg>:1:7: executing "<arg>" at <test.Fail>: error calling Fail: template generation failed: something is wrong!
 ```
 
+## `test.IsKind`
+
+**Alias:** `isKind`
+
+Report whether the argument is of the given Kind. Can be used to render
+different templates depending on the kind of data.
+
+See [the Go `reflect` source code](https://github.com/golang/go/blob/36fcde1676a0d3863cb5f295eed6938cd782fcbb/src/reflect/type.go#L595..L622)
+for the complete list, but these are some common values:
+
+- `string`
+- `bool`
+- `int`, `int64`, `uint64`
+- `float64`
+- `slice`
+- `map`
+- `invalid` (a catch-all, usually just `nil` values)
+
+In addition, the special kind `number` is accepted by this function, to
+represent _any_ numeric kind (whether `float32`, `uint8`, or whatever).
+This is useful when the specific numeric type is unknown.
+
+See also [`test.Kind`](test-kind).
+
+### Usage
+
+```go
+test.IsKind kind value
+```
+```go
+value | test.IsKind kind
+```
+
+### Arguments
+
+| name | description |
+|------|-------------|
+| `kind` | _(required)_ the kind to compare with (see desription for possible values) |
+| `value` | _(required)_ the value to check |
+
+### Examples
+
+```console
+$ gomplate -i '{{ $data := "hello world" }}
+{{- if isKind "string" $data }}{{ $data }} is a string{{ end }}'
+hello world is a string
+```
+```console
+$ gomplate -i '{{ $object := dict "key1" true "key2" "foobar" }}
+{{- if test.IsKind "map" $object }}
+Got a map:
+{{ range $key, $value := $object -}}
+  - "{{ $key }}": {{ $value }}
+{{ end }}
+{{ else if test.IsKind "number" $object }}
+Got a number: {{ $object }}
+{{ end }}'
+
+Got a map:
+- "key1": true
+- "key2": foobar
+```
+
+## `test.Kind`
+
+**Alias:** `kind`
+
+Report the _kind_ of the given argument. This differs from the _type_ of
+the argument in specificity; for example, while a slice of strings may
+have a type of `[]string`, the _kind_ of that slice will simply be `slice`.
+
+If you need to know the precise type of a value, use `printf "%T" $value`.
+
+See also [`test.IsKind`](test-iskind).
+
+### Usage
+
+```go
+test.Kind value
+```
+```go
+value | test.Kind
+```
+
+### Arguments
+
+| name | description |
+|------|-------------|
+| `value` | _(required)_ the value to check |
+
+### Examples
+
+```console
+$ gomplate -i '{{ kind "hello world" }}'
+string
+```
+```console
+$ gomplate -i '{{ dict "key1" true "key2" "foobar" | test.Kind }}'
+map
+```
+
 ## `test.Required`
 
 **Alias:** `required`
