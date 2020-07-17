@@ -78,3 +78,67 @@ func TestTernary(t *testing.T) {
 		assert.Equal(t, d.expected, f.Ternary(d.tval, d.fval, d.b))
 	}
 }
+
+func TestKind(t *testing.T) {
+	f := TestNS()
+	testdata := []struct {
+		arg      interface{}
+		expected string
+	}{
+		{"foo", "string"},
+		{nil, "invalid"},
+		{false, "bool"},
+		{[]string{"foo", "bar"}, "slice"},
+		{map[string]string{"foo": "bar"}, "map"},
+		{42, "int"},
+		{42.0, "float64"},
+		{uint(42), "uint"},
+		{struct{}{}, "struct"},
+	}
+	for _, d := range testdata {
+		assert.Equal(t, d.expected, f.Kind(d.arg))
+	}
+}
+
+func TestIsKind(t *testing.T) {
+	f := TestNS()
+	truedata := []struct {
+		arg  interface{}
+		kind string
+	}{
+		{"foo", "string"},
+		{nil, "invalid"},
+		{false, "bool"},
+		{[]string{"foo", "bar"}, "slice"},
+		{map[string]string{"foo": "bar"}, "map"},
+		{42, "int"},
+		{42.0, "float64"},
+		{uint(42), "uint"},
+		{struct{}{}, "struct"},
+		{42.0, "number"},
+		{42, "number"},
+		{uint32(64000), "number"},
+		{complex128(64000), "number"},
+	}
+	for _, d := range truedata {
+		assert.True(t, f.IsKind(d.kind, d.arg))
+	}
+
+	falsedata := []struct {
+		arg  interface{}
+		kind string
+	}{
+		{"foo", "bool"},
+		{nil, "struct"},
+		{false, "string"},
+		{[]string{"foo", "bar"}, "map"},
+		{map[string]string{"foo": "bar"}, "int"},
+		{42, "int64"},
+		{42.0, "float32"},
+		{uint(42), "int"},
+		{struct{}{}, "interface"},
+	}
+	for _, d := range falsedata {
+		assert.False(t, f.IsKind(d.kind, d.arg))
+	}
+}
