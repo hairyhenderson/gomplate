@@ -152,6 +152,16 @@ A few different forms are valid:
 - `mydata.json`
   - This form infers the name from the file name (without extension). Only valid for files in the current directory.
 
+
+### `--datasource-header`/`-H`
+
+Provides one (or more) HTTP headers to be sent along with the matching
+HTTP-based datasource. Value is in the form `alias="HeaderName: header-value"`.
+
+Note that the `alias` does not need to map to a datasource specified in a
+command-line flag, but can be used in dynamically-defined datasources (see 
+[`defineDatasource`](../functions/data#definedatasource)).
+
 ### `--context`/`-c`
 
 Add a data source in `name=URL` form, and make it available in the [default context][] as `.<name>`. The special name `.` (period) can be used to override the entire default context.
