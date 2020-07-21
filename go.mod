@@ -25,6 +25,7 @@ require (
 	github.com/stretchr/testify v1.6.1
 	github.com/ugorji/go/codec v1.1.7
 	github.com/zealic/xignore v0.3.3
+	go.mozilla.org/sops/v3 v3.6.0
 	gocloud.dev v0.20.0
 	golang.org/x/crypto v0.0.0-20200604202706-70a84ac30bf9
 	gopkg.in/check.v1 v1.0.0-20200227125254-8fa46927fb4f

@@ -192,6 +192,13 @@ If the input is in the [EJSON](https://github.com/Shopify/ejson) format (i.e. ha
 - set the `EJSON_KEY_FILE` environment variable to the path to a file containing the private key
 - set the `EJSON_KEYDIR` environment variable to the path to a directory containing private keys (filename must be the public key), just like [`ejson decrypt`'s `--keydir`](https://github.com/Shopify/ejson/blob/master/man/man1/ejson.1.ronn) flag. Defaults to `/opt/ejson/keys`.
 
+#### Encrypted data with SOPS
+
+If the input is encrypted with [SOPS](https://github.com/mozilla/sops),
+this function will attempt to decrypt it. Note that if it cannot be
+decrypted, no error will be given, but the output will be returned
+unmodified.
+
 ### Usage
 
 ```go
@@ -259,6 +266,13 @@ Hello world
 **Alias:** `yaml`
 
 Converts a YAML string into an object. Only works for YAML Objects (not Arrays or other valid YAML types). This can be used to access properties of YAML objects.
+
+#### Encrypted data with SOPS
+
+If the input is encrypted with [SOPS](https://github.com/mozilla/sops),
+this function will attempt to decrypt it. Note that if it cannot be
+decrypted, no error will be given, but the output will be returned
+unmodified.
 
 ### Usage
 

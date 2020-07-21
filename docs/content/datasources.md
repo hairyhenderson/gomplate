@@ -109,12 +109,12 @@ These are the supported types:
 | Format | MIME Type | Extension(s) | Notes |
 |--------|-----------|-------|------|
 | CSV | `text/csv` | `.csv` | Uses the [`data.CSV`][] function to present the file as a 2-dimensional row-first string array |
-| JSON | `application/json` | `.json` | [JSON][] _objects_ are assumed, and arrays or other values are not parsed with this type. Uses the [`data.JSON`][] function for parsing. [EJSON][] (encrypted JSON) is supported and will be decrypted. |
+| JSON | `application/json` | `.json` | [JSON][] _objects_ are assumed, and arrays or other values are not parsed with this type. Uses the [`data.JSON`][] function for parsing. Data encrypted with [EJSON][] or [SOPS][] will be decrypted. |
 | JSON Array | `application/array+json` | | A special type for parsing datasources containing just JSON arrays. Uses the [`data.JSONArray`][] function for parsing |
 | Plain Text | `text/plain` | | Unstructured, and as such only intended for use with the [`include`][] function |
 | TOML | `application/toml` | `.toml` | Parses [TOML][] with the [`data.TOML`][] function |
-| YAML | `application/yaml` | `.yml`, `.yaml` | Parses [YAML][] with the [`data.YAML`][] function |
-| [.env](#the-env-file-format) | `application/x-env` | `.env` | Basically just a file of `key=value` pairs separated by newlines, usually intended for sourcing into a shell. Common in [Docker Compose](https://docs.docker.com/compose/env-file/), [Ruby](https://github.com/bkeepers/dotenv), and [Node.js](https://github.com/motdotla/dotenv) applications. See [below](#the-env-file-format) for more information. |
+| YAML | `application/yaml` | `.yml`, `.yaml` | Parses [YAML][] with the [`data.YAML`][] function. Data encrypted with [SOPS][] will be decrypted. |
+| [.env](#the-env-file-format) | `application/x-env` | `.env` | Basically just a file of `key=value` pairs separated by newlines, usually intended for sourcing into a shell. Common in [Docker Compose](https://docs.docker.com/compose/env-file/), [Ruby](https://github.com/bkeepers/dotenv), and [Node.js](https://github.com/motdotla/dotenv) applications. Data encrypted with [SOPS][] will be decrypted. See [below](#the-env-file-format) for more information. |
 
 ### Overriding MIME Types
 
@@ -148,7 +148,6 @@ QUX='single quotes ignore $variables and newlines'
 ```
 
 The [`github.com/joho/godotenv`](https://github.com/joho/godotenv) package is used for parsing - see the full details there.
-
 
 ## Using `aws+smp` datasources
 
@@ -771,6 +770,7 @@ The file `/tmp/vault-aws-nonce` will be created if it didn't already exist, and 
 [`data.CSV`]: ../functions/data/#data-csv
 [`data.JSON`]: ../functions/data/#data-json
 [EJSON]: ../functions/data/#encrypted-json-support-ejson
+[SOPS]: ../functions/data/#encrypted-data-with-sops
 [`data.JSONArray`]: ../functions/data/#data-jsonarray
 [`data.TOML`]: ../functions/data/#data-toml
 [`data.YAML`]: ../functions/data/#data-yaml

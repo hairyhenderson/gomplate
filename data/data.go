@@ -15,6 +15,8 @@ import (
 
 	"github.com/Shopify/ejson"
 	ejsonJson "github.com/Shopify/ejson/json"
+	sopsDecrypt "go.mozilla.org/sops/v3/decrypt"
+
 	"github.com/hairyhenderson/gomplate/v3/conv"
 	"github.com/hairyhenderson/gomplate/v3/env"
 
@@ -44,6 +46,10 @@ func unmarshalArray(obj []interface{}, in string, f func([]byte, interface{}) er
 
 // JSON - Unmarshal a JSON Object. Can be ejson-encrypted.
 func JSON(in string) (map[string]interface{}, error) {
+	cleartext, err := sopsDecrypt.Data([]byte(in), "json")
+	if err == nil {
+		in = string(cleartext)
+	}
 	obj := make(map[string]interface{})
 	out, err := unmarshalObj(obj, in, yaml.Unmarshal)
 	if err != nil {
@@ -54,6 +60,7 @@ func JSON(in string) (map[string]interface{}, error) {
 	if ok {
 		out, err = decryptEJSON(in)
 	}
+
 	return out, err
 }
 
@@ -83,8 +90,16 @@ func JSONArray(in string) ([]interface{}, error) {
 	return unmarshalArray(obj, in, yaml.Unmarshal)
 }
 
-// YAML - Unmarshal a YAML Object
+// YAML - Unmarshal a YAML Object. Can be SOPS-encrypted
 func YAML(in string) (map[string]interface{}, error) {
+	// always try to decrypt with SOPS so multi-doc streams still works
+	cleartext, err := sopsDecrypt.Data([]byte(in), "yaml")
+	if err == nil {
+		in = string(cleartext)
+	}
+	if err != nil {
+		return nil, err
+	}
 	obj := make(map[string]interface{})
 	s := strings.NewReader(in)
 	d := yaml.NewDecoder(s)
@@ -100,6 +115,8 @@ func YAML(in string) (map[string]interface{}, error) {
 			break
 		}
 	}
+
+	delete(obj, "sops")
 	return obj, nil
 }
 
