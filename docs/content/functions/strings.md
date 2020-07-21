@@ -230,7 +230,8 @@ input | strings.Split separator
 ### Examples
 
 ```console
-$ gomplate -i '{{range ("Bart,Lisa,Maggie" | strings.Split ",") }}Hello, {{.}}{{end}}'
+$ gomplate -i '{{range ("Bart,Lisa,Maggie" | strings.Split ",") }}Hello, {{.}}
+{{end}}'
 Hello, Bart
 Hello, Lisa
 Hello, Maggie
@@ -261,7 +262,8 @@ input | strings.SplitN separator count
 ### Examples
 
 ```console
-$ gomplate -i '{{ range ("foo:bar:baz" | strings.SplitN ":" 2) }}{{.}}{{end}}'
+$ gomplate -i '{{ range ("foo:bar:baz" | strings.SplitN ":" 2) }}{{.}}
+{{end}}'
 foo
 bar:baz
 ```
@@ -998,7 +1000,8 @@ split input separator
 ### Examples
 
 ```console
-$ gomplate -i '{{range split "Bart,Lisa,Maggie" ","}}Hello, {{.}}{{end}}'
+$ gomplate -i '{{range split "Bart,Lisa,Maggie" ","}}Hello, {{.}}
+{{end}}'
 Hello, Bart
 Hello, Lisa
 Hello, Maggie
@@ -1028,7 +1031,8 @@ splitN input separator count
 ### Examples
 
 ```console
-$ gomplate -i '{{ range splitN "foo:bar:baz" ":" 2 }}{{.}}{{end}}'
+$ gomplate -i '{{ range splitN "foo:bar:baz" ":" 2 }}{{.}}
+{{end}}'
 foo
 bar:baz
 ```

@@ -150,7 +150,8 @@ funcs:
         description: the input string
     examples:
       - |
-        $ gomplate -i '{{range ("Bart,Lisa,Maggie" | strings.Split ",") }}Hello, {{.}}{{end}}'
+        $ gomplate -i '{{range ("Bart,Lisa,Maggie" | strings.Split ",") }}Hello, {{.}}
+        {{end}}'
         Hello, Bart
         Hello, Lisa
         Hello, Maggie
@@ -171,7 +172,8 @@ funcs:
         description: the input string
     examples:
       - |
-        $ gomplate -i '{{ range ("foo:bar:baz" | strings.SplitN ":" 2) }}{{.}}{{end}}'
+        $ gomplate -i '{{ range ("foo:bar:baz" | strings.SplitN ":" 2) }}{{.}}
+        {{end}}'
         foo
         bar:baz
   - name: strings.Quote
@@ -615,7 +617,8 @@ funcs:
         description: the string sequence to split
     examples:
       - |
-        $ gomplate -i '{{range split "Bart,Lisa,Maggie" ","}}Hello, {{.}}{{end}}'
+        $ gomplate -i '{{range split "Bart,Lisa,Maggie" ","}}Hello, {{.}}
+        {{end}}'
         Hello, Bart
         Hello, Lisa
         Hello, Maggie
@@ -638,7 +641,8 @@ funcs:
         description: the maximum number of substrings to return
     examples:
       - |
-        $ gomplate -i '{{ range splitN "foo:bar:baz" ":" 2 }}{{.}}{{end}}'
+        $ gomplate -i '{{ range splitN "foo:bar:baz" ":" 2 }}{{.}}
+        {{end}}'
         foo
         bar:baz
   - name: trim
