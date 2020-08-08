@@ -5,7 +5,7 @@ go 1.14
 require (
 	github.com/Masterminds/goutils v1.1.0
 	github.com/Shopify/ejson v1.2.2
-	github.com/aws/aws-sdk-go v1.33.9
+	github.com/aws/aws-sdk-go v1.34.0
 	github.com/boltdb/bolt v1.3.1
 	github.com/docker/libkv v0.2.1
 	github.com/fullsailor/pkcs7 v0.0.0-20190404230743-d7302db945fa
