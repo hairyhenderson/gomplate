@@ -24,9 +24,23 @@ menu:
 
 {{ $data.preamble -}}
 
+{{- define "annotations" -}}
+{{ if has . "deprecated" }} _(deprecated)_{{ end -}}
+{{ if and (has . "experimental") (index . "experimental") }} _(experimental)_{{ end -}}
+{{ end -}}
+
 {{ range $_, $f := $data.funcs }}
-## {{ if has $f "rawName" }}{{ $f.rawName }}{{ else }}`{{ $f.name }}`{{ if has $f "deprecated" }} _(deprecated)_
-**Deprecation Notice:** {{ $f.deprecated }}{{ end }}{{ end }}
+## {{ if has $f "rawName" -}}
+{{ $f.rawName }}{{ else }}`{{ $f.name }}`{{ end }}{{ template "annotations" $f }}
+{{ if has $f "deprecated" -}}
+**Deprecation Notice:** {{ $f.deprecated }}
+{{ end -}}
+{{ if and (has . "experimental") (index . "experimental") -}}
+**Experimental:** This function is [_experimental_][experimental] and may be enabled with the [`--experimental`][experimental] flag.
+
+[experimental]: ../config/#experimental
+{{ end -}}
+
 {{ if has $f "alias" }}
 **Alias:** `{{$f.alias}}`
 {{ end }}

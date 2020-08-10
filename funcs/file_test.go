@@ -10,7 +10,7 @@ import (
 
 func TestFileExists(t *testing.T) {
 	fs := afero.NewMemMapFs()
-	ff := &FileFuncs{fs}
+	ff := &FileFuncs{fs: fs}
 
 	_ = fs.Mkdir("/tmp", 0777)
 	f, _ := fs.Create("/tmp/foo")
@@ -22,7 +22,7 @@ func TestFileExists(t *testing.T) {
 
 func TestFileIsDir(t *testing.T) {
 	fs := afero.NewMemMapFs()
-	ff := &FileFuncs{fs}
+	ff := &FileFuncs{fs: fs}
 
 	_ = fs.Mkdir("/tmp", 0777)
 	f, _ := fs.Create("/tmp/foo")
@@ -34,7 +34,7 @@ func TestFileIsDir(t *testing.T) {
 
 func TestFileWalk(t *testing.T) {
 	fs := afero.NewMemMapFs()
-	ff := &FileFuncs{fs}
+	ff := &FileFuncs{fs: fs}
 
 	_ = fs.Mkdir("/tmp", 0777)
 	_ = fs.Mkdir("/tmp/bar", 0777)

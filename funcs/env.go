@@ -1,6 +1,7 @@
 package funcs
 
 import (
+	"context"
 	"sync"
 
 	"github.com/hairyhenderson/gomplate/v3/conv"
@@ -20,14 +21,25 @@ func EnvNS() *EnvFuncs {
 
 // AddEnvFuncs -
 func AddEnvFuncs(f map[string]interface{}) {
-	f["env"] = EnvNS
+	for k, v := range CreateEnvFuncs(context.Background()) {
+		f[k] = v
+	}
+}
 
-	// global aliases - for backwards compatibility
-	f["getenv"] = EnvNS().Getenv
+// CreateEnvFuncs -
+func CreateEnvFuncs(ctx context.Context) map[string]interface{} {
+	ns := EnvNS()
+	ns.ctx = ctx
+	return map[string]interface{}{
+		"env":    EnvNS,
+		"getenv": ns.Getenv,
+	}
 }
 
 // EnvFuncs -
-type EnvFuncs struct{}
+type EnvFuncs struct {
+	ctx context.Context
+}
 
 // Getenv -
 func (f *EnvFuncs) Getenv(key interface{}, def ...string) string {

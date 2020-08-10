@@ -1,6 +1,7 @@
 package funcs
 
 import (
+	"context"
 	"sync"
 
 	"github.com/hairyhenderson/gomplate/v3/aws"
@@ -24,17 +25,32 @@ func AWSNS() *Funcs {
 
 // AWSFuncs -
 func AWSFuncs(f map[string]interface{}) {
+	f2 := CreateAWSFuncs(context.Background())
+	for k, v := range f2 {
+		f[k] = v
+	}
+}
+
+// CreateAWSFuncs -
+func CreateAWSFuncs(ctx context.Context) map[string]interface{} {
+	f := map[string]interface{}{}
+	ns := AWSNS()
+	ns.ctx = ctx
+
 	f["aws"] = AWSNS
 
 	// global aliases - for backwards compatibility
-	f["ec2meta"] = AWSNS().EC2Meta
-	f["ec2dynamic"] = AWSNS().EC2Dynamic
-	f["ec2tag"] = AWSNS().EC2Tag
-	f["ec2region"] = AWSNS().EC2Region
+	f["ec2meta"] = ns.EC2Meta
+	f["ec2dynamic"] = ns.EC2Dynamic
+	f["ec2tag"] = ns.EC2Tag
+	f["ec2region"] = ns.EC2Region
+	return f
 }
 
 // Funcs -
 type Funcs struct {
+	ctx context.Context
+
 	meta     *aws.Ec2Meta
 	info     *aws.Ec2Info
 	kms      *aws.KMS

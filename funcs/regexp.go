@@ -1,6 +1,7 @@
 package funcs
 
 import (
+	"context"
 	"sync"
 
 	"github.com/pkg/errors"
@@ -22,11 +23,22 @@ func ReNS() *ReFuncs {
 
 // AddReFuncs -
 func AddReFuncs(f map[string]interface{}) {
-	f["regexp"] = ReNS
+	for k, v := range CreateReFuncs(context.Background()) {
+		f[k] = v
+	}
+}
+
+// CreateReFuncs -
+func CreateReFuncs(ctx context.Context) map[string]interface{} {
+	ns := ReNS()
+	ns.ctx = ctx
+	return map[string]interface{}{"regexp": ReNS}
 }
 
 // ReFuncs -
-type ReFuncs struct{}
+type ReFuncs struct {
+	ctx context.Context
+}
 
 // Find -
 func (f *ReFuncs) Find(re, input interface{}) (string, error) {

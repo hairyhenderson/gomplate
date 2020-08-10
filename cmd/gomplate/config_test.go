@@ -233,6 +233,25 @@ func TestApplyEnvVars(t *testing.T) {
 			&config.Config{SuppressEmpty: true},
 			&config.Config{SuppressEmpty: true},
 		},
+
+		{
+			"GOMPLATE_EXPERIMENTAL", "bogus",
+			false,
+			&config.Config{},
+			&config.Config{Experimental: false},
+		},
+		{
+			"GOMPLATE_EXPERIMENTAL", "true",
+			false,
+			&config.Config{},
+			&config.Config{Experimental: true},
+		},
+		{
+			"GOMPLATE_EXPERIMENTAL", "false",
+			false,
+			&config.Config{Experimental: true},
+			&config.Config{Experimental: true},
+		},
 	}
 
 	for i, d := range data {

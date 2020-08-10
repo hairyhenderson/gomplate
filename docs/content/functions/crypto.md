@@ -75,7 +75,10 @@ $ gomplate -i '{{ crypto.PBKDF2 "foo" "bar" 1024 8 }}'
 32c4907c3c80792b
 ```
 
-## `crypto.RSADecrypt`
+## `crypto.RSADecrypt` _(experimental)_
+**Experimental:** This function is [_experimental_][experimental] and may be enabled with the [`--experimental`][experimental] flag.
+
+[experimental]: ../config/#experimental
 
 Decrypt an RSA-encrypted input and print the output as a string. Note that
 this may result in unreadable text if the decrypted payload is binary. See
@@ -120,7 +123,10 @@ $ gomplate -c ciphertext=env:///ENCRYPTED -c privKey=./testPrivKey \
 hello
 ```
 
-## `crypto.RSADecryptBytes`
+## `crypto.RSADecryptBytes` _(experimental)_
+**Experimental:** This function is [_experimental_][experimental] and may be enabled with the [`--experimental`][experimental] flag.
+
+[experimental]: ../config/#experimental
 
 Decrypt an RSA-encrypted input and output the decrypted byte array.
 
@@ -166,7 +172,10 @@ $ gomplate -c pubKey=./testPubKey -c privKey=./testPrivKey \
 hello
 ```
 
-## `crypto.RSAEncrypt`
+## `crypto.RSAEncrypt` _(experimental)_
+**Experimental:** This function is [_experimental_][experimental] and may be enabled with the [`--experimental`][experimental] flag.
+
+[experimental]: ../config/#experimental
 
 Encrypt the input with RSA and the padding scheme from PKCS#1 v1.5.
 
@@ -217,7 +226,10 @@ $ gomplate -c pubKey=./testPubKey \
 71729b87cccabb248b9e0e5173f0b12c01d9d2a0565bad18aef9d332ce984bde06acb8bb69334a01446f7f6430077f269e6fbf2ccacd972fe5856dd4719252ebddf599948d937d96ea41540dad291b868f6c0cf647dffdb5acb22cd33557f9a1ddd0ee6c1ad2bbafc910ba8f817b66ea0569afc06e5c7858fd9dc2638861fe7c97391b2f190e4c682b4aa2c9b0050081efe18b10aa8c2b2b5f5b68a42dcc06c9da35b37fca9b1509fddc940eb99f516a2e0195405bcb3993f0fa31bc038d53d2e7231dff08cc39448105ed2d0ac52d375cb543ca8a399f807cc5d007e2c44c69876d189667eee66361a393c4916826af77479382838cd4e004b8baa05636805a
 ```
 
-## `crypto.RSAGenerateKey`
+## `crypto.RSAGenerateKey` _(experimental)_
+**Experimental:** This function is [_experimental_][experimental] and may be enabled with the [`--experimental`][experimental] flag.
+
+[experimental]: ../config/#experimental
 
 Generate a new RSA Private Key and output in PEM-encoded PKCS#1 ASN.1 DER
 form.
@@ -258,7 +270,10 @@ $ gomplate -i '{{ $key := crypto.RSAGenerateKey 2048 -}}
 hello
 ```
 
-## `crypto.RSADerivePublicKey`
+## `crypto.RSADerivePublicKey` _(experimental)_
+**Experimental:** This function is [_experimental_][experimental] and may be enabled with the [`--experimental`][experimental] flag.
+
+[experimental]: ../config/#experimental
 
 Derive a public key from an RSA private key and output in PKIX ASN.1 DER
 form.

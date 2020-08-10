@@ -140,7 +140,7 @@ func Run(ctx context.Context, cfg *config.Config) error {
 	if err != nil {
 		return err
 	}
-	funcMap := Funcs(d)
+	funcMap := CreateFuncs(ctx, d)
 	err = bindPlugins(ctx, cfg, funcMap)
 	if err != nil {
 		return err

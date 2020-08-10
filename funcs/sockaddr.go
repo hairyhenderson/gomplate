@@ -1,6 +1,7 @@
 package funcs
 
 import (
+	"context"
 	"sync"
 
 	"github.com/hashicorp/go-sockaddr"
@@ -23,8 +24,17 @@ func AddSockaddrFuncs(f map[string]interface{}) {
 	f["sockaddr"] = SockaddrNS
 }
 
+// CreateSockaddrFuncs -
+func CreateSockaddrFuncs(ctx context.Context) map[string]interface{} {
+	ns := SockaddrNS()
+	ns.ctx = ctx
+	return map[string]interface{}{"sockaddr": SockaddrNS}
+}
+
 // SockaddrFuncs -
-type SockaddrFuncs struct{}
+type SockaddrFuncs struct {
+	ctx context.Context
+}
 
 // GetAllInterfaces -
 func (f *SockaddrFuncs) GetAllInterfaces() (sockaddr.IfAddrs, error) {

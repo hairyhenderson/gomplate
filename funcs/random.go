@@ -1,6 +1,7 @@
 package funcs
 
 import (
+	"context"
 	"strconv"
 	"sync"
 	"unicode/utf8"
@@ -24,11 +25,22 @@ func RandomNS() *RandomFuncs {
 
 // AddRandomFuncs -
 func AddRandomFuncs(f map[string]interface{}) {
-	f["random"] = RandomNS
+	for k, v := range CreateRandomFuncs(context.Background()) {
+		f[k] = v
+	}
+}
+
+// CreateRandomFuncs -
+func CreateRandomFuncs(ctx context.Context) map[string]interface{} {
+	ns := RandomNS()
+	ns.ctx = ctx
+	return map[string]interface{}{"random": RandomNS}
 }
 
 // RandomFuncs -
-type RandomFuncs struct{}
+type RandomFuncs struct {
+	ctx context.Context
+}
 
 // ASCII -
 func (f *RandomFuncs) ASCII(count interface{}) (string, error) {

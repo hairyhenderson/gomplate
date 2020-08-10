@@ -6,6 +6,7 @@ package funcs
 // in templates easier.
 
 import (
+	"context"
 	"fmt"
 	"reflect"
 	"sync"
@@ -34,17 +35,28 @@ func StrNS() *StringFuncs {
 
 // AddStringFuncs -
 func AddStringFuncs(f map[string]interface{}) {
+	for k, v := range CreateStringFuncs(context.Background()) {
+		f[k] = v
+	}
+}
+
+// CreateStringFuncs -
+func CreateStringFuncs(ctx context.Context) map[string]interface{} {
+	f := map[string]interface{}{}
+	ns := StrNS()
+	ns.ctx = ctx
+
 	f["strings"] = StrNS
 
-	f["replaceAll"] = StrNS().ReplaceAll
-	f["title"] = StrNS().Title
-	f["toUpper"] = StrNS().ToUpper
-	f["toLower"] = StrNS().ToLower
-	f["trimSpace"] = StrNS().TrimSpace
-	f["indent"] = StrNS().Indent
-	f["quote"] = StrNS().Quote
-	f["shellQuote"] = StrNS().ShellQuote
-	f["squote"] = StrNS().Squote
+	f["replaceAll"] = ns.ReplaceAll
+	f["title"] = ns.Title
+	f["toUpper"] = ns.ToUpper
+	f["toLower"] = ns.ToLower
+	f["trimSpace"] = ns.TrimSpace
+	f["indent"] = ns.Indent
+	f["quote"] = ns.Quote
+	f["shellQuote"] = ns.ShellQuote
+	f["squote"] = ns.Squote
 
 	// these are legacy aliases with non-pipelinable arg order
 	f["contains"] = strings.Contains
@@ -53,10 +65,14 @@ func AddStringFuncs(f map[string]interface{}) {
 	f["split"] = strings.Split
 	f["splitN"] = strings.SplitN
 	f["trim"] = strings.Trim
+
+	return f
 }
 
 // StringFuncs -
-type StringFuncs struct{}
+type StringFuncs struct {
+	ctx context.Context
+}
 
 // Abbrev -
 func (f *StringFuncs) Abbrev(args ...interface{}) (string, error) {

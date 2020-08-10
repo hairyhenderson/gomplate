@@ -1,14 +1,26 @@
 package funcs
 
 import (
+	"context"
 	"strings"
 	"testing"
 
+	"github.com/hairyhenderson/gomplate/v3/internal/config"
 	"github.com/stretchr/testify/assert"
 )
 
-func TestPBKDF2(t *testing.T) {
+func testCryptoNS() *CryptoFuncs {
+	ctx := context.Background()
+	cfg := config.FromContext(ctx)
+	cfg.Experimental = true
+	ctx = config.ContextWithConfig(ctx, cfg)
 	c := CryptoNS()
+	c.ctx = ctx
+	return c
+}
+
+func TestPBKDF2(t *testing.T) {
+	c := testCryptoNS()
 	dk, err := cryptoNS.PBKDF2("password", []byte("IEEE"), "4096", 32)
 	assert.Equal(t, "f42c6fc52df0ebef9ebb4b90b38a5f902e83fe1b135a70e23aed762e9710a12e", dk)
 	assert.NoError(t, err)
@@ -36,7 +48,7 @@ func TestSHA(t *testing.T) {
 	sha512 := "ddaf35a193617abacc417349ae20413112e6fa4e89a97ea20a9eeee64b55d39a2192992a274fc1a836ba3c23a3feebbd454d4423643ce80e2a9ac94fa54ca49f"
 	sha512_224 := "4634270f707b6a54daae7530460842e20e37ed265ceee9a43e8924aa"
 	sha512_256 := "53048e2681941ef99b2e29b76b4c7dabe4c2d0c634fc6d46e0e2f13107e7af23"
-	c := CryptoNS()
+	c := testCryptoNS()
 	assert.Equal(t, sha1, c.SHA1(in))
 	assert.Equal(t, sha224, c.SHA224(in))
 	assert.Equal(t, sha256, c.SHA256(in))
@@ -48,7 +60,7 @@ func TestSHA(t *testing.T) {
 
 func TestBcrypt(t *testing.T) {
 	in := "foo"
-	c := CryptoNS()
+	c := testCryptoNS()
 	actual, err := c.Bcrypt(in)
 	assert.NoError(t, err)
 	assert.True(t, strings.HasPrefix(actual, "$2a$10$"))
@@ -66,7 +78,7 @@ func TestBcrypt(t *testing.T) {
 }
 
 func TestRSAGenerateKey(t *testing.T) {
-	c := CryptoNS()
+	c := testCryptoNS()
 	_, err := c.RSAGenerateKey(0)
 	assert.Error(t, err)
 
@@ -82,7 +94,7 @@ func TestRSAGenerateKey(t *testing.T) {
 }
 
 func TestRSACrypt(t *testing.T) {
-	c := CryptoNS()
+	c := testCryptoNS()
 	key, err := c.RSAGenerateKey()
 	assert.NoError(t, err)
 	pub, err := c.RSADerivePublicKey(key)

@@ -52,6 +52,7 @@ func (s *CryptoSuite) TearDownTest(c *check.C) {
 
 func (s *CryptoSuite) TestRSACrypt(c *check.C) {
 	result := icmd.RunCmd(icmd.Command(GomplateBin,
+		"--experimental",
 		"-i", `{{ crypto.RSAGenerateKey 2048 -}}`,
 		"-o", `key.pem`), func(cmd *icmd.Cmd) {
 		cmd.Dir = s.tmpDir.Path()
@@ -59,6 +60,7 @@ func (s *CryptoSuite) TestRSACrypt(c *check.C) {
 	result.Assert(c, icmd.Expected{ExitCode: 0})
 
 	result = icmd.RunCmd(icmd.Command(GomplateBin,
+		"--experimental",
 		"-c", "privKey=./key.pem",
 		"-i", `{{ $pub := crypto.RSADerivePublicKey .privKey -}}
 {{ $enc := "hello" | crypto.RSAEncrypt $pub -}}

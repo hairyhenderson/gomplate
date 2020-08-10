@@ -1,6 +1,7 @@
 package funcs
 
 import (
+	"context"
 	"path/filepath"
 	"sync"
 
@@ -20,11 +21,21 @@ func FilePathNS() *FilePathFuncs {
 
 // AddFilePathFuncs -
 func AddFilePathFuncs(f map[string]interface{}) {
-	f["filepath"] = FilePathNS
+	for k, v := range CreateFilePathFuncs(context.Background()) {
+		f[k] = v
+	}
+}
+
+// CreateFilePathFuncs -
+func CreateFilePathFuncs(ctx context.Context) map[string]interface{} {
+	ns := FilePathNS()
+	ns.ctx = ctx
+	return map[string]interface{}{"filepath": FilePathNS}
 }
 
 // FilePathFuncs -
 type FilePathFuncs struct {
+	ctx context.Context
 }
 
 // Base -

@@ -1,6 +1,7 @@
 package funcs
 
 import (
+	"context"
 	"sync"
 
 	"github.com/hairyhenderson/gomplate/v3/conv"
@@ -20,6 +21,14 @@ func DataNS() *DataFuncs {
 
 // AddDataFuncs -
 func AddDataFuncs(f map[string]interface{}, d *data.Data) {
+	for k, v := range CreateDataFuncs(context.Background(), d) {
+		f[k] = v
+	}
+}
+
+// CreateDataFuncs -
+func CreateDataFuncs(ctx context.Context, d *data.Data) map[string]interface{} {
+	f := map[string]interface{}{}
 	f["datasource"] = d.Datasource
 	f["ds"] = d.Datasource
 	f["datasourceExists"] = d.DatasourceExists
@@ -27,25 +36,31 @@ func AddDataFuncs(f map[string]interface{}, d *data.Data) {
 	f["defineDatasource"] = d.DefineDatasource
 	f["include"] = d.Include
 
+	ns := DataNS()
+	ns.ctx = ctx
+
 	f["data"] = DataNS
 
-	f["json"] = DataNS().JSON
-	f["jsonArray"] = DataNS().JSONArray
-	f["yaml"] = DataNS().YAML
-	f["yamlArray"] = DataNS().YAMLArray
-	f["toml"] = DataNS().TOML
-	f["csv"] = DataNS().CSV
-	f["csvByRow"] = DataNS().CSVByRow
-	f["csvByColumn"] = DataNS().CSVByColumn
-	f["toJSON"] = DataNS().ToJSON
-	f["toJSONPretty"] = DataNS().ToJSONPretty
-	f["toYAML"] = DataNS().ToYAML
-	f["toTOML"] = DataNS().ToTOML
-	f["toCSV"] = DataNS().ToCSV
+	f["json"] = ns.JSON
+	f["jsonArray"] = ns.JSONArray
+	f["yaml"] = ns.YAML
+	f["yamlArray"] = ns.YAMLArray
+	f["toml"] = ns.TOML
+	f["csv"] = ns.CSV
+	f["csvByRow"] = ns.CSVByRow
+	f["csvByColumn"] = ns.CSVByColumn
+	f["toJSON"] = ns.ToJSON
+	f["toJSONPretty"] = ns.ToJSONPretty
+	f["toYAML"] = ns.ToYAML
+	f["toTOML"] = ns.ToTOML
+	f["toCSV"] = ns.ToCSV
+	return f
 }
 
 // DataFuncs -
-type DataFuncs struct{}
+type DataFuncs struct {
+	ctx context.Context
+}
 
 // JSON -
 func (f *DataFuncs) JSON(in interface{}) (map[string]interface{}, error) {
