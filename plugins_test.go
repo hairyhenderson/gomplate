@@ -12,7 +12,7 @@ import (
 )
 
 func TestBindPlugins(t *testing.T) {
-	ctx := context.TODO()
+	ctx := context.Background()
 	fm := template.FuncMap{}
 	cfg := &config.Config{
 		Plugins: map[string]string{},
@@ -31,7 +31,7 @@ func TestBindPlugins(t *testing.T) {
 }
 
 func TestBuildCommand(t *testing.T) {
-	ctx := context.TODO()
+	ctx := context.Background()
 	data := []struct {
 		name, path string
 		args       []string

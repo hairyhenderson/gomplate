@@ -1,6 +1,7 @@
 package data
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"mime"
@@ -80,6 +81,8 @@ func (d *Data) lookupReader(scheme string) (func(*Source, ...string) ([]byte, er
 
 // Data -
 type Data struct {
+	ctx context.Context
+
 	Sources map[string]*Source
 
 	sourceReaders map[string]func(*Source, ...string) ([]byte, error)
@@ -105,12 +108,12 @@ func NewData(datasourceArgs, headerArgs []string) (*Data, error) {
 	if err != nil {
 		return nil, err
 	}
-	data := FromConfig(cfg)
+	data := FromConfig(context.Background(), cfg)
 	return data, nil
 }
 
 // FromConfig - internal use only!
-func FromConfig(cfg *config.Config) *Data {
+func FromConfig(ctx context.Context, cfg *config.Config) *Data {
 	sources := map[string]*Source{}
 	for alias, d := range cfg.DataSources {
 		sources[alias] = &Source{
@@ -127,6 +130,7 @@ func FromConfig(cfg *config.Config) *Data {
 		}
 	}
 	return &Data{
+		ctx:          ctx,
 		Sources:      sources,
 		extraHeaders: cfg.ExtraHeaders,
 	}

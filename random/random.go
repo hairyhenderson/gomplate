@@ -12,6 +12,8 @@ import (
 )
 
 // Rnd -
+//
+//nolint:gosec
 var Rnd = rand.New(rand.NewSource(time.Now().UnixNano()))
 
 // Default set, matches "[a-zA-Z0-9_.-]"
