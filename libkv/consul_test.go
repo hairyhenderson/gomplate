@@ -108,12 +108,12 @@ func TestConsulConfig(t *testing.T) {
 
 	os.Unsetenv("CONSUL_TIMEOUT")
 	expectedConfig = &store.Config{
-		TLS: &tls.Config{},
+		TLS: &tls.Config{MinVersion: tls.VersionTLS13},
 	}
 
 	actualConfig, err = consulConfig(true)
 	assert.NoError(t, err)
 	assert.NotNil(t, actualConfig.TLS)
-	actualConfig.TLS = &tls.Config{}
+	actualConfig.TLS = &tls.Config{MinVersion: tls.VersionTLS13}
 	assert.Equal(t, expectedConfig, actualConfig)
 }

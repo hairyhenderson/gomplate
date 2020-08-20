@@ -26,7 +26,7 @@ func TestEnvGetsUpdatedEnvironment(t *testing.T) {
 }
 
 func TestCreateContext(t *testing.T) {
-	ctx := context.TODO()
+	ctx := context.Background()
 	c, err := createTmplContext(ctx, nil, nil)
 	assert.NoError(t, err)
 	assert.Empty(t, c)

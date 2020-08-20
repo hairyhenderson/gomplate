@@ -189,11 +189,11 @@ func csvParseArgs(args ...string) (in, delim string, hdr []string) {
 
 // autoIndex - calculates a default string column name given a numeric value
 func autoIndex(i int) string {
-	s := ""
+	s := &strings.Builder{}
 	for n := 0; n <= i/26; n++ {
-		s += string('A' + i%26)
+		s.WriteRune('A' + rune(i%26))
 	}
-	return s
+	return s.String()
 }
 
 // CSV - Unmarshal CSV

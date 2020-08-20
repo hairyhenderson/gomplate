@@ -23,7 +23,7 @@ import (
 
 func testTemplate(g *gomplate, tmpl string) string {
 	var out bytes.Buffer
-	err := g.runTemplate(context.TODO(), &tplate{name: "testtemplate", contents: tmpl, target: &out})
+	err := g.runTemplate(context.Background(), &tplate{name: "testtemplate", contents: tmpl, target: &out})
 	if err != nil {
 		panic(err)
 	}

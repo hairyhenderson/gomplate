@@ -310,7 +310,7 @@ func overrideFSLoader(fs billy.Filesystem) {
 }
 
 func TestOpenFileRepo(t *testing.T) {
-	ctx := context.TODO()
+	ctx := context.Background()
 	repoFS := setupGitRepo(t)
 	g := gitsource{}
 
@@ -349,7 +349,7 @@ func TestOpenFileRepo(t *testing.T) {
 }
 
 func TestOpenBareFileRepo(t *testing.T) {
-	ctx := context.TODO()
+	ctx := context.Background()
 	repoFS := setupGitRepo(t)
 	g := gitsource{}
 

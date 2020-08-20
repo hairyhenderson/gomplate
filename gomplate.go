@@ -128,7 +128,7 @@ func Run(ctx context.Context, cfg *config.Config) error {
 	Metrics = newMetrics()
 	defer runCleanupHooks()
 
-	d := data.FromConfig(cfg)
+	d := data.FromConfig(ctx, cfg)
 	log.Debug().Str("data", fmt.Sprintf("%+v", d)).Msg("created data from config")
 
 	addCleanupHook(d.Cleanup)

@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"testing"
 	"time"
@@ -183,76 +184,69 @@ func TestPickConfigFile(t *testing.T) {
 	assert.Equal(t, "config.file", cf)
 }
 
-func TestApplyEnvVars_PluginTimeout(t *testing.T) {
-	os.Setenv("GOMPLATE_PLUGIN_TIMEOUT", "bogus")
+func TestApplyEnvVars(t *testing.T) {
+	data := []struct {
+		env             string
+		value           string
+		shouldErr       bool
+		input, expected *config.Config
+	}{
+		{
+			"GOMPLATE_PLUGIN_TIMEOUT", "bogus",
+			true,
+			&config.Config{}, nil,
+		},
+		{
+			"GOMPLATE_PLUGIN_TIMEOUT", "bogus",
+			false,
+			&config.Config{PluginTimeout: 2 * time.Second},
+			&config.Config{PluginTimeout: 2 * time.Second},
+		},
+		{
+			"GOMPLATE_PLUGIN_TIMEOUT", "2s",
+			false,
+			&config.Config{},
+			&config.Config{PluginTimeout: 2 * time.Second},
+		},
+		{
+			"GOMPLATE_PLUGIN_TIMEOUT", "2s",
+			false,
+			&config.Config{PluginTimeout: 100 * time.Millisecond},
+			&config.Config{PluginTimeout: 100 * time.Millisecond},
+		},
 
-	ctx := context.TODO()
-	cfg := &config.Config{}
-	_, err := applyEnvVars(ctx, cfg)
-	assert.Error(t, err)
-
-	cfg = &config.Config{
-		PluginTimeout: 2 * time.Second,
+		{
+			"GOMPLATE_SUPPRESS_EMPTY", "bogus",
+			false,
+			&config.Config{},
+			&config.Config{SuppressEmpty: false},
+		},
+		{
+			"GOMPLATE_SUPPRESS_EMPTY", "true",
+			false,
+			&config.Config{},
+			&config.Config{SuppressEmpty: true},
+		},
+		{
+			"GOMPLATE_SUPPRESS_EMPTY", "false",
+			false,
+			&config.Config{SuppressEmpty: true},
+			&config.Config{SuppressEmpty: true},
+		},
 	}
-	expected := &config.Config{
-		PluginTimeout: 2 * time.Second,
+
+	for i, d := range data {
+		t.Run(fmt.Sprintf("applyEnvVars_%s_%s/%d", d.env, d.value, i), func(t *testing.T) {
+			os.Setenv(d.env, d.value)
+
+			actual, err := applyEnvVars(context.Background(), d.input)
+			os.Unsetenv(d.env)
+			if d.shouldErr {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+				assert.EqualValues(t, d.expected, actual)
+			}
+		})
 	}
-	actual, err := applyEnvVars(ctx, cfg)
-	assert.NoError(t, err)
-	assert.EqualValues(t, expected, actual)
-
-	os.Setenv("GOMPLATE_PLUGIN_TIMEOUT", "2s")
-	defer os.Unsetenv("GOMPLATE_PLUGIN_TIMEOUT")
-
-	cfg = &config.Config{}
-	actual, err = applyEnvVars(ctx, cfg)
-	assert.NoError(t, err)
-	assert.EqualValues(t, expected, actual)
-
-	cfg = &config.Config{
-		PluginTimeout: 100 * time.Millisecond,
-	}
-	expected = &config.Config{
-		PluginTimeout: 100 * time.Millisecond,
-	}
-	actual, err = applyEnvVars(ctx, cfg)
-	assert.NoError(t, err)
-	assert.EqualValues(t, expected, actual)
-
-}
-
-func TestApplyEnvVars_SuppressEmpty(t *testing.T) {
-	os.Setenv("GOMPLATE_SUPPRESS_EMPTY", "bogus")
-	defer os.Unsetenv("GOMPLATE_SUPPRESS_EMPTY")
-
-	ctx := context.TODO()
-	cfg := &config.Config{}
-	expected := &config.Config{
-		SuppressEmpty: false,
-	}
-	actual, err := applyEnvVars(ctx, cfg)
-	assert.NoError(t, err)
-	assert.EqualValues(t, expected, actual)
-
-	os.Setenv("GOMPLATE_SUPPRESS_EMPTY", "true")
-
-	cfg = &config.Config{}
-	expected = &config.Config{
-		SuppressEmpty: true,
-	}
-	actual, err = applyEnvVars(ctx, cfg)
-	assert.NoError(t, err)
-	assert.EqualValues(t, expected, actual)
-
-	os.Setenv("GOMPLATE_SUPPRESS_EMPTY", "false")
-
-	cfg = &config.Config{
-		SuppressEmpty: true,
-	}
-	expected = &config.Config{
-		SuppressEmpty: true,
-	}
-	actual, err = applyEnvVars(ctx, cfg)
-	assert.NoError(t, err)
-	assert.EqualValues(t, expected, actual)
 }

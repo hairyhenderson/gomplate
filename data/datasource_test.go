@@ -1,6 +1,7 @@
 package data
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -329,11 +330,13 @@ func TestMimeTypeWithArg(t *testing.T) {
 }
 
 func TestFromConfig(t *testing.T) {
+	ctx := context.Background()
 	cfg := &config.Config{}
 	expected := &Data{
+		ctx:     ctx,
 		Sources: map[string]*Source{},
 	}
-	assert.EqualValues(t, expected, FromConfig(cfg))
+	assert.EqualValues(t, expected, FromConfig(ctx, cfg))
 
 	cfg = &config.Config{
 		DataSources: map[string]config.DataSource{
@@ -343,6 +346,7 @@ func TestFromConfig(t *testing.T) {
 		},
 	}
 	expected = &Data{
+		ctx: ctx,
 		Sources: map[string]*Source{
 			"foo": {
 				Alias: "foo",
@@ -350,7 +354,7 @@ func TestFromConfig(t *testing.T) {
 			},
 		},
 	}
-	assert.EqualValues(t, expected, FromConfig(cfg))
+	assert.EqualValues(t, expected, FromConfig(ctx, cfg))
 
 	cfg = &config.Config{
 		DataSources: map[string]config.DataSource{
@@ -373,6 +377,7 @@ func TestFromConfig(t *testing.T) {
 		},
 	}
 	expected = &Data{
+		ctx: ctx,
 		Sources: map[string]*Source{
 			"foo": {
 				Alias: "foo",
@@ -392,5 +397,5 @@ func TestFromConfig(t *testing.T) {
 			},
 		},
 	}
-	assert.EqualValues(t, expected, FromConfig(cfg))
+	assert.EqualValues(t, expected, FromConfig(ctx, cfg))
 }
