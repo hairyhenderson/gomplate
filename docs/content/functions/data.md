@@ -11,7 +11,7 @@ A collection of functions that retrieve, parse, and convert structured data.
 
 **Alias:** `ds`
 
-Parses a given datasource (provided by the [`--datasource/-d`](#--datasource-d) argument or [`defineDatasource`](#definedatasource)).
+Parses a given datasource (provided by the [`--datasource/-d`](../../usage/#datasource-d) argument or [`defineDatasource`](#definedatasource)).
 
 If the `alias` is undefined, but is a valid URL, `datasource` will dynamically read from that URL.
 
@@ -45,7 +45,7 @@ Hello Dave
 ## `datasourceExists`
 
 Tests whether or not a given datasource was defined on the commandline (with the
-[`--datasource/-d`](#--datasource-d) argument). This is intended mainly to allow
+[`--datasource/-d`](../../usage/#datasource-d) argument). This is intended mainly to allow
 a template to be rendered differently whether or not a given datasource was
 defined.
 
@@ -99,7 +99,7 @@ no worries
 
 ## `defineDatasource`
 
-Define a datasource alias with target URL inside the template. Overridden by the [`--datasource/-d`](#--datasource-d) flag.
+Define a datasource alias with target URL inside the template. Overridden by the [`--datasource/-d`](../../usage/#datasource-d) flag.
 
 Note: once a datasource is defined, it can not be redefined (i.e. if this function is called twice with the same alias, only the first applies).
 
@@ -136,7 +136,7 @@ Hello Daisy
 
 ## `include`
 
-Includes the content of a given datasource (provided by the [`--datasource/-d`](../usage/#datasource-d) argument).
+Includes the content of a given datasource (provided by the [`--datasource/-d`](../../usage/#datasource-d) argument).
 
 This is similar to [`datasource`](#datasource), except that the data is not parsed. There is no restriction on the type of data included, except that it should be textual.
 
@@ -150,7 +150,7 @@ include alias [subpath]
 
 | name | description |
 |------|-------------|
-| `alias` | _(required)_ the datasource alias, as provided by [`--datasource/-d`](../usage/#datasource-d) |
+| `alias` | _(required)_ the datasource alias, as provided by [`--datasource/-d`](../../usage/#datasource-d) |
 | `subpath` | _(optional)_ the subpath to use, if supported by the datasource |
 
 ### Examples
@@ -182,7 +182,10 @@ $ gomplate -d person.json -f input.tmpl
 
 **Alias:** `json`
 
-Converts a JSON string into an object. Only works for JSON Objects (not Arrays or other valid JSON types). This can be used to access properties of JSON objects.
+Converts a JSON string into an object. Works for JSON Objects, but will
+also parse JSON Arrays. Will not parse other valid JSON types.
+
+For more explict JSON Array support, see [`data.JSONArray`](#data-jsonarray).
 
 #### Encrypted JSON support (EJSON)
 
@@ -258,7 +261,10 @@ Hello world
 
 **Alias:** `yaml`
 
-Converts a YAML string into an object. Only works for YAML Objects (not Arrays or other valid YAML types). This can be used to access properties of YAML objects.
+Converts a YAML string into an object. Works for YAML Objects but will
+also parse YAML Arrays. This can be used to access properties of YAML objects.
+
+For more explict YAML Array support, see [`data.JSONArray`](#data-yamlarray).
 
 ### Usage
 

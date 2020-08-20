@@ -68,16 +68,27 @@ func TestDatasource(t *testing.T) {
 		}
 		return &Data{Sources: sources}
 	}
-	test := func(ext, mime string, contents []byte) {
+	test := func(ext, mime string, contents []byte, expected interface{}) {
 		data := setup(ext, mime, contents)
-		expected := map[string]interface{}{"hello": map[string]interface{}{"cruel": "world"}}
+
 		actual, err := data.Datasource("foo")
 		assert.NoError(t, err)
 		assert.Equal(t, expected, actual)
 	}
 
-	test("json", jsonMimetype, []byte(`{"hello":{"cruel":"world"}}`))
-	test("yml", yamlMimetype, []byte("hello:\n  cruel: world\n"))
+	testObj := func(ext, mime string, contents []byte) {
+		test(ext, mime, contents,
+			map[string]interface{}{
+				"hello": map[string]interface{}{"cruel": "world"},
+			})
+	}
+
+	testObj("json", jsonMimetype, []byte(`{"hello":{"cruel":"world"}}`))
+	testObj("yml", yamlMimetype, []byte("hello:\n  cruel: world\n"))
+	test("json", jsonMimetype, []byte(`[1, "two", true]`),
+		[]interface{}{1, "two", true})
+	test("yaml", yamlMimetype, []byte("---\n- 1\n- two\n- true\n"),
+		[]interface{}{1, "two", true})
 
 	d := setup("", textMimetype, nil)
 	actual, err := d.Datasource("foo")
