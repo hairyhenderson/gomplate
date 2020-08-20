@@ -109,7 +109,7 @@ These are the supported types:
 | Format | MIME Type | Extension(s) | Notes |
 |--------|-----------|-------|------|
 | CSV | `text/csv` | `.csv` | Uses the [`data.CSV`][] function to present the file as a 2-dimensional row-first string array |
-| JSON | `application/json` | `.json` | [JSON][] _objects_ are assumed, and arrays or other values are not parsed with this type. Uses the [`data.JSON`][] function for parsing. [EJSON][] (encrypted JSON) is supported and will be decrypted. |
+| JSON | `application/json` | `.json` | [JSON][] _objects_ are assumed, but will support arrays as well. Other values are not parsed with this type. Uses the [`data.JSON`][] function for parsing. [EJSON][] (encrypted JSON) is supported and will be decrypted. |
 | JSON Array | `application/array+json` | | A special type for parsing datasources containing just JSON arrays. Uses the [`data.JSONArray`][] function for parsing |
 | Plain Text | `text/plain` | | Unstructured, and as such only intended for use with the [`include`][] function |
 | TOML | `application/toml` | `.toml` | Parses [TOML][] with the [`data.TOML`][] function |

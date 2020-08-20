@@ -320,10 +320,18 @@ func parseData(mimeType, s string) (out interface{}, err error) {
 	switch mimeAlias(mimeType) {
 	case jsonMimetype:
 		out, err = JSON(s)
+		if err != nil {
+			// maybe it's a JSON array
+			out, err = JSONArray(s)
+		}
 	case jsonArrayMimetype:
 		out, err = JSONArray(s)
 	case yamlMimetype:
 		out, err = YAML(s)
+		if err != nil {
+			// maybe it's a YAML array
+			out, err = YAMLArray(s)
+		}
 	case csvMimetype:
 		out, err = CSV(s)
 	case tomlMimetype:
