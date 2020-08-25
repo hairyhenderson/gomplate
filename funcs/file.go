@@ -1,6 +1,7 @@
 package funcs
 
 import (
+	"context"
 	"os"
 	"sync"
 
@@ -16,18 +17,28 @@ var (
 
 // FileNS - the File namespace
 func FileNS() *FileFuncs {
-	ffInit.Do(func() { ff = &FileFuncs{afero.NewOsFs()} })
+	ffInit.Do(func() { ff = &FileFuncs{fs: afero.NewOsFs()} })
 	return ff
 }
 
 // AddFileFuncs -
 func AddFileFuncs(f map[string]interface{}) {
-	f["file"] = FileNS
+	for k, v := range CreateFileFuncs(context.Background()) {
+		f[k] = v
+	}
+}
+
+// CreateFileFuncs -
+func CreateFileFuncs(ctx context.Context) map[string]interface{} {
+	ns := FileNS()
+	ns.ctx = ctx
+	return map[string]interface{}{"file": FileNS}
 }
 
 // FileFuncs -
 type FileFuncs struct {
-	fs afero.Fs
+	ctx context.Context
+	fs  afero.Fs
 }
 
 // Read -

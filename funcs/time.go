@@ -1,6 +1,7 @@
 package funcs
 
 import (
+	"context"
 	"fmt"
 	"strconv"
 	"strings"
@@ -42,11 +43,22 @@ func TimeNS() *TimeFuncs {
 
 // AddTimeFuncs -
 func AddTimeFuncs(f map[string]interface{}) {
-	f["time"] = TimeNS
+	for k, v := range CreateTimeFuncs(context.Background()) {
+		f[k] = v
+	}
+}
+
+// CreateTimeFuncs -
+func CreateTimeFuncs(ctx context.Context) map[string]interface{} {
+	ns := TimeNS()
+	ns.ctx = ctx
+
+	return map[string]interface{}{"time": TimeNS}
 }
 
 // TimeFuncs -
 type TimeFuncs struct {
+	ctx         context.Context
 	ANSIC       string
 	UnixDate    string
 	RubyDate    string

@@ -1,6 +1,7 @@
 package funcs
 
 import (
+	"context"
 	"net/url"
 	"sync"
 	"text/template"
@@ -22,16 +23,29 @@ func ConvNS() *ConvFuncs {
 
 // AddConvFuncs -
 func AddConvFuncs(f map[string]interface{}) {
+	for k, v := range CreateConvFuncs(context.Background()) {
+		f[k] = v
+	}
+}
+
+// CreateConvFuncs -
+func CreateConvFuncs(ctx context.Context) map[string]interface{} {
+	ns := ConvNS()
+	ns.ctx = ctx
+	f := map[string]interface{}{}
 	f["conv"] = ConvNS
 
-	f["urlParse"] = ConvNS().URL
-	f["bool"] = ConvNS().Bool
-	f["join"] = ConvNS().Join
-	f["default"] = ConvNS().Default
+	f["urlParse"] = ns.URL
+	f["bool"] = ns.Bool
+	f["join"] = ns.Join
+	f["default"] = ns.Default
+	return f
 }
 
 // ConvFuncs -
-type ConvFuncs struct{}
+type ConvFuncs struct {
+	ctx context.Context
+}
 
 // Bool -
 func (f *ConvFuncs) Bool(s interface{}) bool {

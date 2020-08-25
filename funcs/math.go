@@ -1,6 +1,7 @@
 package funcs
 
 import (
+	"context"
 	"fmt"
 	gmath "math"
 	"strconv"
@@ -24,19 +25,32 @@ func MathNS() *MathFuncs {
 
 // AddMathFuncs -
 func AddMathFuncs(f map[string]interface{}) {
+	for k, v := range CreateMathFuncs(context.Background()) {
+		f[k] = v
+	}
+}
+
+// CreateMathFuncs -
+func CreateMathFuncs(ctx context.Context) map[string]interface{} {
+	f := map[string]interface{}{}
+	ns := MathNS()
+	ns.ctx = ctx
 	f["math"] = MathNS
 
-	f["add"] = MathNS().Add
-	f["sub"] = MathNS().Sub
-	f["mul"] = MathNS().Mul
-	f["div"] = MathNS().Div
-	f["rem"] = MathNS().Rem
-	f["pow"] = MathNS().Pow
-	f["seq"] = MathNS().Seq
+	f["add"] = ns.Add
+	f["sub"] = ns.Sub
+	f["mul"] = ns.Mul
+	f["div"] = ns.Div
+	f["rem"] = ns.Rem
+	f["pow"] = ns.Pow
+	f["seq"] = ns.Seq
+	return f
 }
 
 // MathFuncs -
-type MathFuncs struct{}
+type MathFuncs struct {
+	ctx context.Context
+}
 
 // IsInt -
 func (f *MathFuncs) IsInt(n interface{}) bool {

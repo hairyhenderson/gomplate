@@ -1,6 +1,7 @@
 package funcs
 
 import (
+	"context"
 	gcrypto "crypto"
 	"crypto/sha1" //nolint: gosec
 	"crypto/sha256"
@@ -29,11 +30,23 @@ func CryptoNS() *CryptoFuncs {
 
 // AddCryptoFuncs -
 func AddCryptoFuncs(f map[string]interface{}) {
-	f["crypto"] = CryptoNS
+	for k, v := range CreateCryptoFuncs(context.Background()) {
+		f[k] = v
+	}
+}
+
+// CreateCryptoFuncs -
+func CreateCryptoFuncs(ctx context.Context) map[string]interface{} {
+	ns := CryptoNS()
+	ns.ctx = ctx
+
+	return map[string]interface{}{"crypto": CryptoNS}
 }
 
 // CryptoFuncs -
-type CryptoFuncs struct{}
+type CryptoFuncs struct {
+	ctx context.Context
+}
 
 // PBKDF2 - Run the Password-Based Key Derivation Function #2 as defined in
 // RFC 2898 (PKCS #5 v2.0). This function outputs the binary result in hex
@@ -133,25 +146,41 @@ func (f *CryptoFuncs) Bcrypt(args ...interface{}) (string, error) {
 }
 
 // RSAEncrypt -
+// Experimental!
 func (f *CryptoFuncs) RSAEncrypt(key string, in interface{}) ([]byte, error) {
+	if err := checkExperimental(f.ctx); err != nil {
+		return nil, err
+	}
 	msg := toBytes(in)
 	return crypto.RSAEncrypt(key, msg)
 }
 
 // RSADecrypt -
+// Experimental!
 func (f *CryptoFuncs) RSADecrypt(key string, in []byte) (string, error) {
+	if err := checkExperimental(f.ctx); err != nil {
+		return "", err
+	}
 	out, err := crypto.RSADecrypt(key, in)
 	return string(out), err
 }
 
 // RSADecryptBytes -
+// Experimental!
 func (f *CryptoFuncs) RSADecryptBytes(key string, in []byte) ([]byte, error) {
+	if err := checkExperimental(f.ctx); err != nil {
+		return nil, err
+	}
 	out, err := crypto.RSADecrypt(key, in)
 	return out, err
 }
 
 // RSAGenerateKey -
+// Experimental!
 func (f *CryptoFuncs) RSAGenerateKey(args ...interface{}) (string, error) {
+	if err := checkExperimental(f.ctx); err != nil {
+		return "", err
+	}
 	bits := 4096
 	if len(args) == 1 {
 		bits = conv.ToInt(args[0])
@@ -163,7 +192,11 @@ func (f *CryptoFuncs) RSAGenerateKey(args ...interface{}) (string, error) {
 }
 
 // RSADerivePublicKey -
+// Experimental!
 func (f *CryptoFuncs) RSADerivePublicKey(privateKey string) (string, error) {
+	if err := checkExperimental(f.ctx); err != nil {
+		return "", err
+	}
 	out, err := crypto.RSADerivePublicKey([]byte(privateKey))
 	return string(out), err
 }

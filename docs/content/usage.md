@@ -274,6 +274,12 @@ HELLO WORLD
 
 Note that multiple inputs are not yet supported when using this option.
 
+### `--experimental`
+
+Use this flag to enable experimental functionality. See the docs for the
+[`experimental`](../config/#experimental) configuration option for more
+information.
+
 ## Post-template command execution
 
 Gomplate can launch other commands when template execution is successful. Simply

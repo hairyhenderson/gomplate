@@ -156,6 +156,10 @@ func cobraConfig(cmd *cobra.Command, args []string) (cfg *config.Config, err err
 	if err != nil {
 		return nil, err
 	}
+	cfg.Experimental, err = getBool(cmd, "experimental")
+	if err != nil {
+		return nil, err
+	}
 
 	cfg.LDelim, err = getString(cmd, "left-delim")
 	if err != nil {
@@ -247,6 +251,10 @@ func applyEnvVars(ctx context.Context, cfg *config.Config) (*config.Config, erro
 
 	if !cfg.SuppressEmpty && conv.ToBool(env.Getenv("GOMPLATE_SUPPRESS_EMPTY", "false")) {
 		cfg.SuppressEmpty = true
+	}
+
+	if !cfg.Experimental && conv.ToBool(env.Getenv("GOMPLATE_EXPERIMENTAL", "false")) {
+		cfg.Experimental = true
 	}
 
 	return cfg, nil

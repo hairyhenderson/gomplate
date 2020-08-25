@@ -2,6 +2,7 @@ package config
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"io"
 	"net/http"
@@ -38,6 +39,8 @@ type Config struct {
 	OutputDir   string   `yaml:"outputDir,omitempty"`
 	OutputMap   string   `yaml:"outputMap,omitempty"`
 
+	Experimental bool `yaml:"experimental,omitempty"`
+
 	SuppressEmpty bool     `yaml:"suppressEmpty,omitempty"`
 	ExecPipe      bool     `yaml:"execPipe,omitempty"`
 	PostExec      []string `yaml:"postExec,omitempty,flow"`
@@ -58,6 +61,27 @@ type Config struct {
 	// internal use only, can't be injected in YAML
 	PostExecInput io.ReadWriter `yaml:"-"`
 	OutWriter     io.Writer     `yaml:"-"`
+}
+
+var cfgContextKey = struct{}{}
+
+// ContextWithConfig returns a new context with a reference to the config.
+func ContextWithConfig(ctx context.Context, cfg *Config) context.Context {
+	return context.WithValue(ctx, cfgContextKey, cfg)
+}
+
+// FromContext returns a config from the given context, if any. If no
+// config is present a new default configuration will be returned.
+func FromContext(ctx context.Context) (cfg *Config) {
+	ok := ctx != nil
+	if ok {
+		cfg, ok = ctx.Value(cfgContextKey).(*Config)
+	}
+	if !ok {
+		cfg = &Config{}
+		cfg.ApplyDefaults()
+	}
+	return cfg
 }
 
 // mergeDataSources - use d as defaults, and override with values from o

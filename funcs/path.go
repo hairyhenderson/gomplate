@@ -1,6 +1,7 @@
 package funcs
 
 import (
+	"context"
 	"path"
 	"sync"
 
@@ -20,11 +21,21 @@ func PathNS() *PathFuncs {
 
 // AddPathFuncs -
 func AddPathFuncs(f map[string]interface{}) {
-	f["path"] = PathNS
+	for k, v := range CreatePathFuncs(context.Background()) {
+		f[k] = v
+	}
+}
+
+// CreatePathFuncs -
+func CreatePathFuncs(ctx context.Context) map[string]interface{} {
+	ns := PathNS()
+	ns.ctx = ctx
+	return map[string]interface{}{"path": PathNS}
 }
 
 // PathFuncs -
 type PathFuncs struct {
+	ctx context.Context
 }
 
 // Base -

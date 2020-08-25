@@ -78,6 +78,13 @@ func newGomplateCmd() *cobra.Command {
 			if err != nil {
 				return err
 			}
+			ctx = config.ContextWithConfig(ctx, cfg)
+			if cfg.Experimental {
+				log.UpdateContext(func(c zerolog.Context) zerolog.Context {
+					return c.Bool("experimental", true)
+				})
+				log.Info().Msg("experimental functions and features enabled!")
+			}
 
 			log.Debug().Msgf("starting %s", cmd.Name())
 			log.Debug().
@@ -134,6 +141,8 @@ func initFlags(command *cobra.Command) {
 	rdDefault := env.Getenv("GOMPLATE_RIGHT_DELIM", "}}")
 	command.Flags().String("left-delim", ldDefault, "override the default left-`delimiter` [$GOMPLATE_LEFT_DELIM]")
 	command.Flags().String("right-delim", rdDefault, "override the default right-`delimiter` [$GOMPLATE_RIGHT_DELIM]")
+
+	command.Flags().Bool("experimental", false, "enable experimental features [$GOMPLATE_EXPERIMENTAL]")
 
 	command.Flags().BoolP("verbose", "V", false, "output extra information about what gomplate is doing")
 

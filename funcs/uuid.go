@@ -1,6 +1,7 @@
 package funcs
 
 import (
+	"context"
 	"sync"
 
 	"github.com/hairyhenderson/gomplate/v3/conv"
@@ -23,11 +24,22 @@ func UUIDNS() *UUIDFuncs {
 
 // AddUUIDFuncs -
 func AddUUIDFuncs(f map[string]interface{}) {
-	f["uuid"] = UUIDNS
+	for k, v := range CreateUUIDFuncs(context.Background()) {
+		f[k] = v
+	}
+}
+
+// CreateUUIDFuncs -
+func CreateUUIDFuncs(ctx context.Context) map[string]interface{} {
+	ns := UUIDNS()
+	ns.ctx = ctx
+	return map[string]interface{}{"uuid": UUIDNS}
 }
 
 // UUIDFuncs -
-type UUIDFuncs struct{}
+type UUIDFuncs struct {
+	ctx context.Context
+}
 
 // V1 - return a version 1 UUID (based on the current MAC Address and the
 // current date/time). Use V4 instead in most cases.

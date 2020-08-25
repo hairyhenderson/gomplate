@@ -148,6 +148,18 @@ Use the rendered output as the [`postExec`](#postexec) command's standard input.
 Must be used in conjuction with [`postExec`](#postexec), and will override
 any [`outputFiles`](#outputfiles) settings.
 
+## `experimental`
+
+See [`--experimental`](../usage/#--experimental). Can also be set with the `GOMPLATE_EXPERIMENTAL=true` environment variable.
+
+Some functions and features are provided for early feedback behind the `experimental` configuration option. These features may change before being permanently enabled, and [feedback](https://github.com/hairyhenderson/gomplate/issues/new) is requested from early adopters!
+
+Experimental functions are marked in the documentation with an _"(experimental)"_ annotation.
+
+```yaml
+experimental: true
+```
+
 ## `in`
 
 See [`--in`/`-i`](../usage/#--file-f---in-i-and---out-o).

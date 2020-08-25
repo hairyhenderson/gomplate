@@ -1,6 +1,7 @@
 package funcs
 
 import (
+	"context"
 	"sync"
 
 	"github.com/hairyhenderson/gomplate/v3/base64"
@@ -20,11 +21,22 @@ func Base64NS() *Base64Funcs {
 
 // AddBase64Funcs -
 func AddBase64Funcs(f map[string]interface{}) {
-	f["base64"] = Base64NS
+	for k, v := range CreateBase64Funcs(context.Background()) {
+		f[k] = v
+	}
+}
+
+// CreateBase64Funcs -
+func CreateBase64Funcs(ctx context.Context) map[string]interface{} {
+	ns := Base64NS()
+	ns.ctx = ctx
+	return map[string]interface{}{"base64": Base64NS}
 }
 
 // Base64Funcs -
-type Base64Funcs struct{}
+type Base64Funcs struct {
+	ctx context.Context
+}
 
 // Encode -
 func (f *Base64Funcs) Encode(in interface{}) (string, error) {

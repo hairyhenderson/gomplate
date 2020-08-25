@@ -26,7 +26,7 @@ import (
 )
 
 func readGit(source *Source, args ...string) ([]byte, error) {
-	ctx := context.Background()
+	ctx := context.TODO()
 	g := gitsource{}
 
 	u := source.URL

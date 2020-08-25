@@ -1,6 +1,7 @@
 package funcs
 
 import (
+	"context"
 	stdnet "net"
 	"sync"
 
@@ -25,8 +26,17 @@ func AddNetFuncs(f map[string]interface{}) {
 	f["net"] = NetNS
 }
 
+// CreateNetFuncs -
+func CreateNetFuncs(ctx context.Context) map[string]interface{} {
+	ns := NetNS()
+	ns.ctx = ctx
+	return map[string]interface{}{"net": NetNS}
+}
+
 // NetFuncs -
-type NetFuncs struct{}
+type NetFuncs struct {
+	ctx context.Context
+}
 
 // LookupIP -
 func (f *NetFuncs) LookupIP(name interface{}) (string, error) {

@@ -1,6 +1,7 @@
 package funcs
 
 import (
+	"context"
 	"reflect"
 	"sync"
 
@@ -23,18 +24,31 @@ func TestNS() *TestFuncs {
 
 // AddTestFuncs -
 func AddTestFuncs(f map[string]interface{}) {
+	for k, v := range CreateTestFuncs(context.Background()) {
+		f[k] = v
+	}
+}
+
+// CreateTestFuncs -
+func CreateTestFuncs(ctx context.Context) map[string]interface{} {
+	f := map[string]interface{}{}
+	ns := TestNS()
+	ns.ctx = ctx
 	f["test"] = TestNS
 
-	f["assert"] = TestNS().Assert
-	f["fail"] = TestNS().Fail
-	f["required"] = TestNS().Required
-	f["ternary"] = TestNS().Ternary
-	f["kind"] = TestNS().Kind
-	f["isKind"] = TestNS().IsKind
+	f["assert"] = ns.Assert
+	f["fail"] = ns.Fail
+	f["required"] = ns.Required
+	f["ternary"] = ns.Ternary
+	f["kind"] = ns.Kind
+	f["isKind"] = ns.IsKind
+	return f
 }
 
 // TestFuncs -
-type TestFuncs struct{}
+type TestFuncs struct {
+	ctx context.Context
+}
 
 // Assert -
 func (f *TestFuncs) Assert(args ...interface{}) (string, error) {

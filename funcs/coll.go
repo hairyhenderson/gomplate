@@ -1,6 +1,7 @@
 package funcs
 
 import (
+	"context"
 	"sync"
 
 	"github.com/hairyhenderson/gomplate/v3/conv"
@@ -22,6 +23,16 @@ func CollNS() *CollFuncs {
 
 // AddCollFuncs -
 func AddCollFuncs(f map[string]interface{}) {
+	for k, v := range CreateCollFuncs(context.Background()) {
+		f[k] = v
+	}
+}
+
+// CreateCollFuncs -
+func CreateCollFuncs(ctx context.Context) map[string]interface{} {
+	ns := CollNS()
+	ns.ctx = ctx
+	f := map[string]interface{}{}
 	f["coll"] = CollNS
 
 	f["has"] = CollNS().Has
@@ -37,10 +48,13 @@ func AddCollFuncs(f map[string]interface{}) {
 	f["sort"] = CollNS().Sort
 	f["jsonpath"] = CollNS().JSONPath
 	f["flatten"] = CollNS().Flatten
+	return f
 }
 
 // CollFuncs -
-type CollFuncs struct{}
+type CollFuncs struct {
+	ctx context.Context
+}
 
 // Slice -
 func (f *CollFuncs) Slice(args ...interface{}) []interface{} {
