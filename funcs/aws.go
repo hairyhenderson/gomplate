@@ -43,6 +43,7 @@ func CreateAWSFuncs(ctx context.Context) map[string]interface{} {
 	f["ec2meta"] = ns.EC2Meta
 	f["ec2dynamic"] = ns.EC2Dynamic
 	f["ec2tag"] = ns.EC2Tag
+	f["ec2tags"] = ns.EC2Tags
 	f["ec2region"] = ns.EC2Region
 	return f
 }
@@ -84,6 +85,12 @@ func (a *Funcs) EC2Dynamic(key string, def ...string) (string, error) {
 func (a *Funcs) EC2Tag(tag string, def ...string) (string, error) {
 	a.infoInit.Do(a.initInfo)
 	return a.info.Tag(tag, def...)
+}
+
+// EC2Tag -
+func (a *Funcs) EC2Tags() (map[string]string, error) {
+	a.infoInit.Do(a.initInfo)
+	return a.info.Tags()
 }
 
 // KMSEncrypt -
