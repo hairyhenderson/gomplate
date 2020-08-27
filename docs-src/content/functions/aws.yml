@@ -98,6 +98,18 @@ funcs:
       - |
         $ echo 'I am a {{ aws.EC2Tag "classification" "meat popsicle" }}.' | ./gomplate
         I am a meat popsicle.
+  - name: aws.EC2Tags
+    alias: ec2tags
+    description: |
+      Queries the AWS EC2 API to find all the tags/values [user-defined tag](http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/Using_Tags.html).
+    pipeline: false
+    arguments:
+    examples:
+      - |
+        echo '{{ range $key, $value := aws.EC2Tags }}{{(printf "%s=%s\n" $key $value)}}{{ end }}' | ./gomplate
+        Description=foo
+        Name=bar
+        svc:name=foobar
   - name: aws.KMSEncrypt
     description: |
       Encrypt an input string with the AWS Key Management Service (KMS).

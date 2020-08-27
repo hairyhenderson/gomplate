@@ -163,6 +163,28 @@ func (e *Ec2Info) Tag(tag string, def ...string) (string, error) {
 	return returnDefault(def), nil
 }
 
+func (e *Ec2Info) Tags() (map[string]string, error) {
+	tags := map[string]string{}
+
+	output, err := e.describeInstance()
+	if err != nil {
+		return tags, err
+	}
+	if output == nil {
+		return tags, nil
+	}
+
+	if len(output.Reservations) > 0 &&
+		len(output.Reservations[0].Instances) > 0 &&
+		len(output.Reservations[0].Instances[0].Tags) > 0 {
+		for _, v := range output.Reservations[0].Instances[0].Tags {
+			tags[*v.Key] = *v.Value
+		}
+	}
+
+	return tags, nil
+}
+
 func (e *Ec2Info) describeInstance() (output *ec2.DescribeInstancesOutput, err error) {
 	// cache the InstanceDescriber here
 	d, err := e.describer()

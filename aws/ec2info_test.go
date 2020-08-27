@@ -65,6 +65,32 @@ func TestTag_ValidKey(t *testing.T) {
 	assert.Equal(t, "bar", must(e.Tag("foo", "default")))
 }
 
+func TestTags(t *testing.T) {
+	server, ec2meta := MockServer(200, `"i-1234"`)
+	defer server.Close()
+	client := DummyInstanceDescriber{
+		tags: []*ec2.Tag{
+			{
+				Key:   aws.String("foo"),
+				Value: aws.String("bar"),
+			},
+			{
+				Key:   aws.String("baz"),
+				Value: aws.String("qux"),
+			},
+		},
+	}
+	e := &Ec2Info{
+		describer: func() (InstanceDescriber, error) {
+			return client, nil
+		},
+		metaClient: ec2meta,
+		cache:      make(map[string]interface{}),
+	}
+
+	assert.Equal(t, map[string]string{"foo": "bar", "baz": "qux"}, must(e.Tags()))
+}
+
 func TestTag_NonEC2(t *testing.T) {
 	server, ec2meta := MockServer(404, "")
 	ec2meta.nonAWS = true
