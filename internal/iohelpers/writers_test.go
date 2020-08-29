@@ -1,9 +1,10 @@
-package writers
+package iohelpers
 
 import (
 	"bytes"
 	"fmt"
 	"io"
+	"os"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -37,7 +38,7 @@ func TestEmptySkipper(t *testing.T) {
 	}
 
 	for _, d := range testdata {
-		w := &bufferCloser{&bytes.Buffer{}}
+		w := newBufferCloser(&bytes.Buffer{})
 		opened := false
 		f, ok := NewEmptySkipper(func() (io.WriteCloser, error) {
 			opened = true
@@ -61,11 +62,18 @@ func TestEmptySkipper(t *testing.T) {
 	}
 }
 
+func newBufferCloser(b *bytes.Buffer) *bufferCloser {
+	return &bufferCloser{b, false}
+}
+
 type bufferCloser struct {
 	*bytes.Buffer
+
+	closed bool
 }
 
 func (b *bufferCloser) Close() error {
+	b.closed = true
 	return nil
 }
 
@@ -86,7 +94,7 @@ func TestSameSkipper(t *testing.T) {
 	for _, d := range testdata {
 		t.Run(fmt.Sprintf("in:%q/out:%q/same:%v", d.in, d.out, d.same), func(t *testing.T) {
 			r := bytes.NewBuffer(d.out)
-			w := &bufferCloser{&bytes.Buffer{}}
+			w := newBufferCloser(&bytes.Buffer{})
 			opened := false
 			f, ok := SameSkipper(r, func() (io.WriteCloser, error) {
 				opened = true
@@ -110,4 +118,42 @@ func TestSameSkipper(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestLazyWriteCloser(t *testing.T) {
+	w := newBufferCloser(&bytes.Buffer{})
+	opened := false
+	l, ok := LazyWriteCloser(func() (io.WriteCloser, error) {
+		opened = true
+		return w, nil
+	}).(*lazyWriteCloser)
+	assert.True(t, ok)
+
+	assert.False(t, opened)
+	assert.Nil(t, l.w)
+	assert.False(t, w.closed)
+
+	p := []byte("hello world")
+	n, err := l.Write(p)
+	assert.NoError(t, err)
+	assert.True(t, opened)
+	assert.Equal(t, 11, n)
+
+	err = l.Close()
+	assert.NoError(t, err)
+	assert.True(t, w.closed)
+
+	// test error propagation
+	l = LazyWriteCloser(func() (io.WriteCloser, error) {
+		return nil, os.ErrNotExist
+	}).(*lazyWriteCloser)
+
+	assert.Nil(t, l.w)
+
+	p = []byte("hello world")
+	_, err = l.Write(p)
+	assert.Error(t, err)
+
+	err = l.Close()
+	assert.Error(t, err)
 }

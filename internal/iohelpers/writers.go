@@ -1,4 +1,4 @@
-package writers
+package iohelpers
 
 import (
 	"bufio"
@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"sync"
 )
 
 type emptySkipper struct {
@@ -168,4 +169,46 @@ func (f *sameSkipper) Close() error {
 		return f.w.Close()
 	}
 	return nil
+}
+
+// LazyWriteCloser provides an interface to a WriteCloser that will open on the
+// first access. The wrapped io.WriteCloser must be provided by 'open'.
+func LazyWriteCloser(open func() (io.WriteCloser, error)) io.WriteCloser {
+	return &lazyWriteCloser{
+		opened: sync.Once{},
+		open:   open,
+	}
+}
+
+type lazyWriteCloser struct {
+	opened sync.Once
+	w      io.WriteCloser
+	// caches the error that came from open(), if any
+	openErr error
+	open    func() (io.WriteCloser, error)
+}
+
+var _ io.WriteCloser = (*lazyWriteCloser)(nil)
+
+func (l *lazyWriteCloser) openWriter() (r io.WriteCloser, err error) {
+	l.opened.Do(func() {
+		l.w, l.openErr = l.open()
+	})
+	return l.w, l.openErr
+}
+
+func (l *lazyWriteCloser) Close() error {
+	w, err := l.openWriter()
+	if err != nil {
+		return err
+	}
+	return w.Close()
+}
+
+func (l *lazyWriteCloser) Write(p []byte) (n int, err error) {
+	w, err := l.openWriter()
+	if err != nil {
+		return 0, err
+	}
+	return w.Write(p)
 }

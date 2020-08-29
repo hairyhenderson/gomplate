@@ -8,10 +8,11 @@ import (
 	"testing"
 
 	"github.com/hairyhenderson/gomplate/v3/internal/config"
-	"github.com/hairyhenderson/gomplate/v3/internal/writers"
+	"github.com/hairyhenderson/gomplate/v3/internal/iohelpers"
 	"github.com/spf13/afero"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestReadInput(t *testing.T) {
@@ -47,16 +48,20 @@ func TestOpenOutFile(t *testing.T) {
 	_ = fs.Mkdir("/tmp", 0777)
 
 	cfg := &config.Config{}
-	_, err := openOutFile(cfg, "/tmp/foo", 0644, false)
+	f, err := openOutFile(cfg, "/tmp/foo", 0644, false)
 	assert.NoError(t, err)
+
+	err = f.Close()
+	assert.NoError(t, err)
+
 	i, err := fs.Stat("/tmp/foo")
 	assert.NoError(t, err)
 	assert.Equal(t, os.FileMode(0644), i.Mode())
 
 	defer func() { Stdout = os.Stdout }()
-	Stdout = &writers.NopCloser{Writer: &bytes.Buffer{}}
+	Stdout = &iohelpers.NopCloser{Writer: &bytes.Buffer{}}
 
-	f, err := openOutFile(cfg, "-", 0644, false)
+	f, err = openOutFile(cfg, "-", 0644, false)
 	assert.NoError(t, err)
 	assert.Equal(t, Stdout, f)
 }
@@ -120,8 +125,17 @@ func TestGatherTemplates(t *testing.T) {
 	assert.Len(t, templates, 1)
 	assert.Equal(t, "out", templates[0].targetPath)
 	assert.Equal(t, os.FileMode(0644), templates[0].mode)
-	info, err := fs.Stat("out")
+
+	// out file is created only on demand
+	_, err = fs.Stat("out")
+	assert.Error(t, err)
+	assert.True(t, os.IsNotExist(err))
+
+	_, err = templates[0].target.Write([]byte("hello world"))
 	assert.NoError(t, err)
+
+	info, err := fs.Stat("out")
+	require.NoError(t, err)
 	assert.Equal(t, os.FileMode(0644), info.Mode())
 	fs.Remove("out")
 
@@ -134,6 +148,10 @@ func TestGatherTemplates(t *testing.T) {
 	assert.Equal(t, "bar", templates[0].contents)
 	assert.NotEqual(t, Stdout, templates[0].target)
 	assert.Equal(t, os.FileMode(0600), templates[0].mode)
+
+	_, err = templates[0].target.Write([]byte("hello world"))
+	assert.NoError(t, err)
+
 	info, err = fs.Stat("out")
 	assert.NoError(t, err)
 	assert.Equal(t, os.FileMode(0600), info.Mode())
@@ -149,6 +167,10 @@ func TestGatherTemplates(t *testing.T) {
 	assert.Equal(t, "bar", templates[0].contents)
 	assert.NotEqual(t, Stdout, templates[0].target)
 	assert.Equal(t, os.FileMode(0755), templates[0].mode)
+
+	_, err = templates[0].target.Write([]byte("hello world"))
+	assert.NoError(t, err)
+
 	info, err = fs.Stat("out")
 	assert.NoError(t, err)
 	assert.Equal(t, os.FileMode(0755), info.Mode())
@@ -230,21 +252,41 @@ func TestProcessTemplates(t *testing.T) {
 		},
 	}
 	for _, in := range testdata {
+
 		actual, err := processTemplates(cfg, in.templates)
 		assert.NoError(t, err)
 		assert.Len(t, actual, len(in.templates))
 		for i, a := range actual {
+			current := in.templates[i]
 			assert.Equal(t, in.contents[i], a.contents)
-			assert.Equal(t, in.templates[i].mode, a.mode)
+			assert.Equal(t, current.mode, a.mode)
 			if len(in.targets) > 0 {
 				assert.Equal(t, in.targets[i], a.target)
 			}
-			if in.templates[i].targetPath != "-" {
-				info, err := fs.Stat(in.templates[i].targetPath)
+			if current.targetPath != "-" {
+				err = current.loadContents()
+				assert.NoError(t, err)
+
+				n, err := current.target.Write([]byte("hello world"))
+				assert.NoError(t, err)
+				assert.Equal(t, 11, n)
+
+				info, err := fs.Stat(current.targetPath)
 				assert.NoError(t, err)
 				assert.Equal(t, in.modes[i], info.Mode())
 			}
 		}
 		fs.Remove("out")
 	}
+}
+
+func TestCreateOutFile(t *testing.T) {
+	origfs := fs
+	defer func() { fs = origfs }()
+	fs = afero.NewMemMapFs()
+	_ = fs.Mkdir("in", 0755)
+
+	_, err := createOutFile("in", 0644, false)
+	assert.Error(t, err)
+	assert.IsType(t, &os.PathError{}, err)
 }
