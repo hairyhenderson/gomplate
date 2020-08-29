@@ -8,6 +8,7 @@ import (
 	"bytes"
 	"encoding/csv"
 	"encoding/json"
+	"fmt"
 	"io"
 	"strings"
 
@@ -100,7 +101,9 @@ func YAML(in string) (map[string]interface{}, error) {
 			break
 		}
 	}
-	return obj, nil
+
+	err := stringifyYAMLMapMapKeys(obj)
+	return obj, err
 }
 
 // YAMLArray - Unmarshal a YAML Array
@@ -120,7 +123,64 @@ func YAMLArray(in string) ([]interface{}, error) {
 			break
 		}
 	}
-	return obj, nil
+	err := stringifyYAMLArrayMapKeys(obj)
+	return obj, err
+}
+
+// stringifyYAMLArrayMapKeys recurses into the input array and changes all
+// non-string map keys to string map keys. Modifies the input array.
+func stringifyYAMLArrayMapKeys(in []interface{}) error {
+	if _, changed := stringifyMapKeys(in); changed {
+		return fmt.Errorf("stringifyYAMLArrayMapKeys: output type did not match input type, this should be impossible")
+	}
+	return nil
+}
+
+// stringifyYAMLMapMapKeys recurses into the input map and changes all
+// non-string map keys to string map keys. Modifies the input map.
+func stringifyYAMLMapMapKeys(in map[string]interface{}) error {
+	if _, changed := stringifyMapKeys(in); changed {
+		return fmt.Errorf("stringifyYAMLMapMapKeys: output type did not match input type, this should be impossible")
+	}
+	return nil
+}
+
+// stringifyMapKeys recurses into in and changes all instances of
+// map[interface{}]interface{} to map[string]interface{}. This is useful to
+// work around the impedance mismatch between JSON and YAML unmarshaling that's
+// described here: https://github.com/go-yaml/yaml/issues/139
+//
+// Taken and modified from https://github.com/gohugoio/hugo/blob/cdfd1c99baa22d69e865294dfcd783811f96c880/parser/metadecoders/decoder.go#L257, Apache License 2.0
+// Originally inspired by https://github.com/stripe/stripe-mock/blob/24a2bb46a49b2a416cfea4150ab95781f69ee145/mapstr.go#L13, MIT License
+func stringifyMapKeys(in interface{}) (interface{}, bool) {
+	switch in := in.(type) {
+	case []interface{}:
+		for i, v := range in {
+			if vv, replaced := stringifyMapKeys(v); replaced {
+				in[i] = vv
+			}
+		}
+	case map[string]interface{}:
+		for k, v := range in {
+			if vv, changed := stringifyMapKeys(v); changed {
+				in[k] = vv
+			}
+		}
+	case map[interface{}]interface{}:
+		res := make(map[string]interface{})
+
+		for k, v := range in {
+			ks := conv.ToString(k)
+			if vv, replaced := stringifyMapKeys(v); replaced {
+				res[ks] = vv
+			} else {
+				res[ks] = v
+			}
+		}
+		return res, true
+	}
+
+	return nil, false
 }
 
 // TOML - Unmarshal a TOML Object

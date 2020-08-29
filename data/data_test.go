@@ -24,15 +24,22 @@ func TestUnmarshalObj(t *testing.T) {
 
 	test := func(actual map[string]interface{}, err error) {
 		assert.NoError(t, err)
-		assert.Equal(t, expected["foo"], actual["foo"])
-		assert.Equal(t, expected["one"], actual["one"])
-		assert.Equal(t, expected["true"], actual["true"])
+		assert.Equal(t, expected["foo"], actual["foo"], "foo")
+		assert.Equal(t, expected["one"], actual["one"], "one")
+		assert.Equal(t, expected["true"], actual["true"], "true")
 	}
 	test(JSON(`{"foo":{"bar":"baz"},"one":1.0,"true":true}`))
 	test(YAML(`foo:
   bar: baz
 one: 1.0
-true: true
+'true': true
+`))
+	test(YAML(`anchor: &anchor
+  bar: baz
+foo:
+  <<: *anchor
+one: 1.0
+'true': true
 `))
 	test(YAML(`# this comment marks an empty (nil!) document
 ---
@@ -41,7 +48,7 @@ true: true
 foo:
   bar: baz
 one: 1.0
-true: true
+'true': true
 `))
 
 	obj := make(map[string]interface{})
@@ -52,7 +59,6 @@ true: true
 }
 
 func TestUnmarshalArray(t *testing.T) {
-
 	expected := []interface{}{"foo", "bar",
 		map[string]interface{}{
 			"baz":   map[string]interface{}{"qux": true},
@@ -90,8 +96,43 @@ func TestUnmarshalArray(t *testing.T) {
 this shouldn't be reached
 `))
 
+	actual, err := YAMLArray(`---
+- foo: &foo
+    bar: baz
+- qux:
+    <<: *foo
+    quux: corge
+- baz:
+    qux: true
+    42: 18
+    false: blah
+`)
+	assert.NoError(t, err)
+	assert.EqualValues(t,
+		[]interface{}{
+			map[string]interface{}{
+				"foo": map[string]interface{}{
+					"bar": "baz",
+				},
+			},
+			map[string]interface{}{
+				"qux": map[string]interface{}{
+					"bar":  "baz",
+					"quux": "corge",
+				},
+			},
+			map[string]interface{}{
+				"baz": map[string]interface{}{
+					"qux":   true,
+					"42":    18,
+					"false": "blah",
+				},
+			},
+		},
+		actual)
+
 	obj := make([]interface{}, 1)
-	_, err := unmarshalArray(obj, "SOMETHING", func(in []byte, out interface{}) error {
+	_, err = unmarshalArray(obj, "SOMETHING", func(in []byte, out interface{}) error {
 		return errors.New("fail")
 	})
 	assert.EqualError(t, err, "Unable to unmarshal array SOMETHING: fail")
@@ -522,4 +563,96 @@ QUX='single quotes ignore $variables'
 	out, err := dotEnv(in)
 	assert.NoError(t, err)
 	assert.EqualValues(t, expected, out)
+}
+
+func TestStringifyYAMLArrayMapKeys(t *testing.T) {
+	cases := []struct {
+		input    []interface{}
+		want     []interface{}
+		replaced bool
+	}{
+		{
+			[]interface{}{map[interface{}]interface{}{"a": 1, "b": 2}},
+			[]interface{}{map[string]interface{}{"a": 1, "b": 2}},
+			false,
+		},
+		{
+			[]interface{}{map[interface{}]interface{}{"a": []interface{}{1, map[interface{}]interface{}{"b": 2}}}},
+			[]interface{}{map[string]interface{}{"a": []interface{}{1, map[string]interface{}{"b": 2}}}},
+			false,
+		},
+		{
+			[]interface{}{map[interface{}]interface{}{true: 1, "b": false}},
+			[]interface{}{map[string]interface{}{"true": 1, "b": false}},
+			false,
+		},
+		{
+			[]interface{}{map[interface{}]interface{}{1: "a", 2: "b"}},
+			[]interface{}{map[string]interface{}{"1": "a", "2": "b"}},
+			false,
+		},
+		{
+			[]interface{}{map[interface{}]interface{}{"a": map[interface{}]interface{}{"b": 1}}},
+			[]interface{}{map[string]interface{}{"a": map[string]interface{}{"b": 1}}},
+			false,
+		},
+		{
+			[]interface{}{map[string]interface{}{"a": map[string]interface{}{"b": 1}}},
+			[]interface{}{map[string]interface{}{"a": map[string]interface{}{"b": 1}}},
+			false,
+		},
+		{
+			[]interface{}{map[interface{}]interface{}{1: "a", 2: "b"}},
+			[]interface{}{map[string]interface{}{"1": "a", "2": "b"}},
+			false,
+		},
+	}
+
+	for _, c := range cases {
+		err := stringifyYAMLArrayMapKeys(c.input)
+		assert.NoError(t, err)
+		assert.EqualValues(t, c.want, c.input)
+	}
+}
+
+func TestStringifyYAMLMapMapKeys(t *testing.T) {
+	cases := []struct {
+		input map[string]interface{}
+		want  map[string]interface{}
+	}{
+		{
+			map[string]interface{}{"root": map[interface{}]interface{}{"a": 1, "b": 2}},
+			map[string]interface{}{"root": map[string]interface{}{"a": 1, "b": 2}},
+		},
+		{
+			map[string]interface{}{"root": map[interface{}]interface{}{"a": []interface{}{1, map[interface{}]interface{}{"b": 2}}}},
+			map[string]interface{}{"root": map[string]interface{}{"a": []interface{}{1, map[string]interface{}{"b": 2}}}},
+		},
+		{
+			map[string]interface{}{"root": map[interface{}]interface{}{true: 1, "b": false}},
+			map[string]interface{}{"root": map[string]interface{}{"true": 1, "b": false}},
+		},
+		{
+			map[string]interface{}{"root": map[interface{}]interface{}{1: "a", 2: "b"}},
+			map[string]interface{}{"root": map[string]interface{}{"1": "a", "2": "b"}},
+		},
+		{
+			map[string]interface{}{"root": map[interface{}]interface{}{"a": map[interface{}]interface{}{"b": 1}}},
+			map[string]interface{}{"root": map[string]interface{}{"a": map[string]interface{}{"b": 1}}},
+		},
+		{
+			map[string]interface{}{"a": map[string]interface{}{"b": 1}},
+			map[string]interface{}{"a": map[string]interface{}{"b": 1}},
+		},
+		{
+			map[string]interface{}{"root": []interface{}{map[interface{}]interface{}{1: "a", 2: "b"}}},
+			map[string]interface{}{"root": []interface{}{map[string]interface{}{"1": "a", "2": "b"}}},
+		},
+	}
+
+	for _, c := range cases {
+		err := stringifyYAMLMapMapKeys(c.input)
+		assert.NoError(t, err)
+		assert.EqualValues(t, c.want, c.input)
+	}
 }
