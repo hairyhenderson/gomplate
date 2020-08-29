@@ -43,10 +43,6 @@ out/{{ .in | strings.ReplaceAll $f (index .filemap $f) }}.out
 	)
 }
 
-func (s *InputDirSuite) TearDownTest(c *C) {
-	s.tmpDir.Remove()
-}
-
 func (s *InputDirSuite) TestInputDir(c *C) {
 	result := icmd.RunCommand(GomplateBin,
 		"--input-dir", s.tmpDir.Join("in"),

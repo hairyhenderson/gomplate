@@ -27,6 +27,7 @@ require (
 	github.com/zealic/xignore v0.3.3
 	gocloud.dev v0.20.0
 	golang.org/x/crypto v0.0.0-20200728195943-123391ffb6de
+	golang.org/x/sys v0.0.0-20200615200032-f1bc736245b1
 	gopkg.in/check.v1 v1.0.0-20200227125254-8fa46927fb4f
 	gopkg.in/src-d/go-billy.v4 v4.3.2
 	gopkg.in/src-d/go-git.v4 v4.13.1
