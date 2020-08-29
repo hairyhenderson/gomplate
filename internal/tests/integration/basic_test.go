@@ -6,7 +6,6 @@ import (
 	"bytes"
 	"io/ioutil"
 	"os"
-	"runtime"
 
 	. "gopkg.in/check.v1"
 
@@ -102,7 +101,7 @@ func (s *BasicSuite) TestRoutesInputsToProperOutputs(c *C) {
 	for _, v := range testdata {
 		info, err := os.Stat(v.path)
 		assert.NilError(c, err)
-		if runtime.GOOS != "windows" {
+		if !isWindows {
 			assert.Equal(c, v.mode, info.Mode())
 		}
 		content, err := ioutil.ReadFile(v.path)

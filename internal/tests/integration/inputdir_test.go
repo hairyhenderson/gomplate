@@ -5,7 +5,6 @@ package integration
 import (
 	"io/ioutil"
 	"os"
-	"runtime"
 
 	. "gopkg.in/check.v1"
 
@@ -78,7 +77,7 @@ func (s *InputDirSuite) TestInputDir(c *C) {
 		info, err := os.Stat(v.path)
 		assert.NilError(c, err)
 		// chmod support on Windows is pretty weak for now
-		if runtime.GOOS != "windows" {
+		if !isWindows {
 			assert.Equal(c, v.mode, info.Mode(), v.path)
 		}
 		content, err := ioutil.ReadFile(v.path)
@@ -118,7 +117,7 @@ func (s *InputDirSuite) TestInputDirWithModeOverride(c *C) {
 		info, err := os.Stat(v.path)
 		assert.NilError(c, err)
 		// chmod support on Windows is pretty weak for now
-		if runtime.GOOS != "windows" {
+		if !isWindows {
 			assert.Equal(c, v.mode, info.Mode())
 		}
 		content, err := ioutil.ReadFile(v.path)
@@ -159,7 +158,7 @@ func (s *InputDirSuite) TestOutputMapInline(c *C) {
 		info, err := os.Stat(v.path)
 		assert.NilError(c, err)
 		// chmod support on Windows is pretty weak for now
-		if runtime.GOOS != "windows" {
+		if !isWindows {
 			assert.Equal(c, v.mode, info.Mode())
 		}
 		content, err := ioutil.ReadFile(v.path)
@@ -202,7 +201,7 @@ func (s *InputDirSuite) TestOutputMapExternal(c *C) {
 		info, err := os.Stat(v.path)
 		assert.NilError(c, err)
 		// chmod support on Windows is pretty weak for now
-		if runtime.GOOS != "windows" {
+		if !isWindows {
 			assert.Equal(c, v.mode, info.Mode())
 		}
 		content, err := ioutil.ReadFile(v.path)

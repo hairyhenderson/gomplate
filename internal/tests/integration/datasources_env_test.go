@@ -4,7 +4,6 @@ package integration
 
 import (
 	"os"
-	"runtime"
 
 	. "gopkg.in/check.v1"
 
@@ -36,7 +35,7 @@ func (s *EnvDatasourcesSuite) TestEnvDatasources(c *C) {
 		"-i", `{{ ds "foo" }}`,
 	)
 	// Windows envvars are case-insensitive
-	if runtime.GOOS == "windows" {
+	if isWindows {
 		result.Assert(c, icmd.Expected{ExitCode: 0, Out: "baz"})
 	} else {
 		result.Assert(c, icmd.Expected{ExitCode: 0, Out: "bar"})

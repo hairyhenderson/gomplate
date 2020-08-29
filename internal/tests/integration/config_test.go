@@ -6,7 +6,6 @@ import (
 	"bytes"
 	"io/ioutil"
 	"os"
-	"runtime"
 
 	"gopkg.in/check.v1"
 
@@ -155,7 +154,7 @@ func (s *ConfigSuite) TestEnvConfigFile(c *check.C) {
 }
 
 func (s *ConfigSuite) TestConfigOverridesEnvDelim(c *check.C) {
-	if runtime.GOOS != "windows" {
+	if !isWindows {
 		s.writeConfig(`inputFiles: [in]
 leftDelim: (╯°□°）╯︵ ┻━┻
 datasources:
@@ -173,7 +172,7 @@ datasources:
 }
 
 func (s *ConfigSuite) TestFlagOverridesAllDelim(c *check.C) {
-	if runtime.GOOS != "windows" {
+	if !isWindows {
 		s.writeConfig(`inputFiles: [in]
 leftDelim: (╯°□°）╯︵ ┻━┻
 datasources:
@@ -191,7 +190,7 @@ datasources:
 }
 
 func (s *ConfigSuite) TestConfigOverridesEnvPluginTimeout(c *check.C) {
-	if runtime.GOOS != "windows" {
+	if !isWindows {
 		s.writeConfig(`in: hi there {{ sleep 2 }}
 plugins:
   sleep: echo

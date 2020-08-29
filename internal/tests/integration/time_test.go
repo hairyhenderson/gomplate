@@ -3,7 +3,6 @@
 package integration
 
 import (
-	"runtime"
 	"time"
 
 	. "gopkg.in/check.v1"
@@ -20,7 +19,7 @@ func (s *TimeSuite) TestTime(c *C) {
 	inOutTest(c, `{{ (time.Parse "`+f+`" "`+i+`").Format "2006-01-02 15 -0700" }}`,
 		"2009-02-13 23 +0000")
 
-	if runtime.GOOS != "windows" {
+	if !isWindows {
 		result := icmd.RunCmd(icmd.Command(GomplateBin, "-i",
 			`{{ (time.ParseLocal time.Kitchen "6:00AM").Format "15:04 MST" }}`), func(cmd *icmd.Cmd) {
 			cmd.Env = []string{"TZ=Africa/Luanda"}

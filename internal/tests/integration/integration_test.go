@@ -24,10 +24,12 @@ var (
 	GomplateBin string
 )
 
+const isWindows = runtime.GOOS == "windows"
+
 // nolint: gochecknoinits
 func init() {
 	ext := ""
-	if runtime.GOOS == "windows" {
+	if isWindows {
 		ext = ".exe"
 	}
 	GomplateBin = filepath.Join(build.Default.GOPATH, "src", "github.com", "hairyhenderson", "gomplate", "bin", "gomplate"+ext)
