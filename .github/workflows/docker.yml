@@ -37,8 +37,9 @@ jobs:
     - name: determine if this is a tag
       run: |
         if (git describe --abbrev=0 --exact-match &>/dev/null); then
+          tag=$(git describe --abbrev=0 --exact-match)
           echo "::set-env name=is_tag::true"
-          echo "::set-env name=git_tag::$(git describe --abbrev=0 --exact-match)"
+          echo "::set-env name=git_tag::$tag"
           # splits the major version from $tag - assumes it's a 3-part semver
           echo "::set-env name=major_version::${tag%%\.*}"
         fi
