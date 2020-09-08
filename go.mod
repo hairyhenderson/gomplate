@@ -9,7 +9,7 @@ require (
 	github.com/boltdb/bolt v1.3.1
 	github.com/docker/libkv v0.2.1
 	github.com/fullsailor/pkcs7 v0.0.0-20190404230743-d7302db945fa
-	github.com/google/uuid v1.1.1
+	github.com/google/uuid v1.1.2
 	github.com/gosimple/slug v1.9.0
 	github.com/hairyhenderson/toml v0.3.1-0.20191004034452-2a4f3b6160f2
 	github.com/hashicorp/consul/api v1.6.0
