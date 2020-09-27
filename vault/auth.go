@@ -11,6 +11,7 @@ import (
 	"github.com/hairyhenderson/gomplate/v3/aws"
 	"github.com/hairyhenderson/gomplate/v3/conv"
 	"github.com/hairyhenderson/gomplate/v3/env"
+	"github.com/hairyhenderson/gomplate/v3/internal/config"
 	"github.com/pkg/errors"
 )
 
@@ -169,7 +170,7 @@ func (v *Vault) EC2Login() (string, error) {
 		if val, ok := secret.Auth.Metadata["nonce"]; ok {
 			nonce = val
 		}
-		f, err := os.OpenFile(output, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, os.FileMode(0600))
+		f, err := os.OpenFile(output, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, config.NormalizeFileMode(0o600))
 		if err != nil {
 			return "", errors.Wrapf(err, "Error opening nonce output file")
 		}

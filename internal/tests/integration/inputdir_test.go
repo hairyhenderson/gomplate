@@ -8,6 +8,7 @@ import (
 
 	. "gopkg.in/check.v1"
 
+	"github.com/hairyhenderson/gomplate/v3/internal/config"
 	tassert "github.com/stretchr/testify/assert"
 	"gotest.tools/v3/assert"
 	"gotest.tools/v3/fs"
@@ -72,10 +73,8 @@ func (s *InputDirSuite) TestInputDir(c *C) {
 	for _, v := range testdata {
 		info, err := os.Stat(v.path)
 		assert.NilError(c, err)
-		// chmod support on Windows is pretty weak for now
-		if !isWindows {
-			assert.Equal(c, v.mode, info.Mode(), v.path)
-		}
+		m := config.NormalizeFileMode(v.mode)
+		assert.Equal(c, m, info.Mode(), v.path)
 		content, err := ioutil.ReadFile(v.path)
 		assert.NilError(c, err)
 		assert.Equal(c, v.content, string(content))
@@ -112,10 +111,8 @@ func (s *InputDirSuite) TestInputDirWithModeOverride(c *C) {
 	for _, v := range testdata {
 		info, err := os.Stat(v.path)
 		assert.NilError(c, err)
-		// chmod support on Windows is pretty weak for now
-		if !isWindows {
-			assert.Equal(c, v.mode, info.Mode())
-		}
+		m := config.NormalizeFileMode(v.mode)
+		assert.Equal(c, m, info.Mode(), v.path)
 		content, err := ioutil.ReadFile(v.path)
 		assert.NilError(c, err)
 		assert.Equal(c, v.content, string(content))
@@ -153,10 +150,8 @@ func (s *InputDirSuite) TestOutputMapInline(c *C) {
 	for _, v := range testdata {
 		info, err := os.Stat(v.path)
 		assert.NilError(c, err)
-		// chmod support on Windows is pretty weak for now
-		if !isWindows {
-			assert.Equal(c, v.mode, info.Mode())
-		}
+		m := config.NormalizeFileMode(v.mode)
+		assert.Equal(c, m, info.Mode(), v.path)
 		content, err := ioutil.ReadFile(v.path)
 		assert.NilError(c, err)
 		assert.Equal(c, v.content, string(content))
@@ -196,10 +191,8 @@ func (s *InputDirSuite) TestOutputMapExternal(c *C) {
 	for _, v := range testdata {
 		info, err := os.Stat(v.path)
 		assert.NilError(c, err)
-		// chmod support on Windows is pretty weak for now
-		if !isWindows {
-			assert.Equal(c, v.mode, info.Mode())
-		}
+		m := config.NormalizeFileMode(v.mode)
+		assert.Equal(c, m, info.Mode(), v.path)
 		content, err := ioutil.ReadFile(v.path)
 		assert.NilError(c, err)
 		assert.Equal(c, v.content, string(content))

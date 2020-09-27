@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/hairyhenderson/gomplate/v3/internal/config"
 	"github.com/pkg/errors"
 
 	"github.com/spf13/afero"
@@ -15,7 +16,7 @@ import (
 // for overriding in tests
 var fs = afero.NewOsFs()
 
-// Read -
+// Read the contents of the referenced file, as a string.
 func Read(filename string) (string, error) {
 	inFile, err := fs.OpenFile(filename, os.O_RDONLY, 0)
 	if err != nil {
@@ -31,7 +32,7 @@ func Read(filename string) (string, error) {
 	return string(bytes), nil
 }
 
-// ReadDir -
+// ReadDir gets a directory listing.
 func ReadDir(path string) ([]string, error) {
 	f, err := fs.Open(path)
 	if err != nil {
@@ -47,7 +48,8 @@ func ReadDir(path string) ([]string, error) {
 	return nil, errors.New("file is not a directory")
 }
 
-// Write a
+// Write the given content to the file, truncating any existing file, and
+// creating the directory structure leading up to it if necessary.
 func Write(filename string, content []byte) error {
 	err := assertPathInWD(filename)
 	if err != nil {
@@ -58,11 +60,11 @@ func Write(filename string, content []byte) error {
 	if err != nil && !os.IsNotExist(err) {
 		return errors.Wrapf(err, "failed to stat %s", filename)
 	}
-	mode := os.FileMode(0644)
+	mode := config.NormalizeFileMode(0o644)
 	if fi != nil {
 		mode = fi.Mode()
 	}
-	err = fs.MkdirAll(filepath.Dir(filename), 0755)
+	err = fs.MkdirAll(filepath.Dir(filename), 0o755)
 	if err != nil {
 		return errors.Wrapf(err, "failed to make dirs for %s", filename)
 	}

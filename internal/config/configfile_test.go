@@ -541,19 +541,19 @@ func TestGetMode(t *testing.T) {
 	c := &Config{}
 	m, o, err := c.GetMode()
 	assert.NoError(t, err)
-	assert.Equal(t, os.FileMode(0), m)
+	assert.Equal(t, NormalizeFileMode(0), m)
 	assert.False(t, o)
 
 	c = &Config{OutMode: "755"}
 	m, o, err = c.GetMode()
 	assert.NoError(t, err)
-	assert.Equal(t, os.FileMode(0755), m)
+	assert.Equal(t, NormalizeFileMode(0o755), m)
 	assert.True(t, o)
 
 	c = &Config{OutMode: "0755"}
 	m, o, err = c.GetMode()
 	assert.NoError(t, err)
-	assert.Equal(t, os.FileMode(0755), m)
+	assert.Equal(t, NormalizeFileMode(0o755), m)
 	assert.True(t, o)
 
 	c = &Config{OutMode: "foo"}
