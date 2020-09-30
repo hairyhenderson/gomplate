@@ -86,7 +86,7 @@ things very badly. To wit:
 https://example.com/a/super-long/url/that-shouldnt-be?wrapped=for+fear+of#the-breaking-of-functionality
 should appear on its own line, regardless of the desired word-wrapping width
 that has been set.`
-	in = strings.Replace(out, "\n", " ", -1)
+	in = strings.ReplaceAll(out, "\n", " ")
 	assert.Equal(t, out, WordWrap(in, WordWrapOpts{}))
 
 	// TODO: get these working - need to switch to a word-wrapping package that
@@ -102,7 +102,7 @@ that has been set.`
 	// καὶ καιρὸς τοῦ ἐκβαλεῖν, καιρὸς τοῦ ρῆξαι καὶ καιρὸς τοῦ ράψαι, καιρὸς τοῦ
 	// σιγᾶν καὶ καιρὸς τοῦ λαλεῖν, καιρὸς τοῦ φιλῆσαι καὶ καιρὸς τοῦ μισῆσαι, καιρὸς
 	// πολέμου καὶ καιρὸς εἰρήνης.`
-	// 	in = strings.Replace(out, "\n", " ", -1)
+	// 	in = strings.ReplaceAll(out, "\n", " ")
 	// 	assert.Equal(t, out, WordWrap(in, WordWrapOpts{}))
 
 	// TODO: get these working - need to switch to a word-wrapping package that
@@ -119,6 +119,6 @@ that has been set.`
 	// 大切にしまっておく時、遠くに投げ捨てる時、
 	// 引き裂く時、修理する時、黙っている時、口を開く時、
 	// 愛する時、憎む時、戦う時、和解する時。`
-	// 	in = strings.Replace(out, "\n", " ", -1)
+	// 	in = strings.ReplaceAll(out, "\n", " ")
 	// 	assert.Equal(t, out, WordWrap(in, WordWrapOpts{Width: 100}))
 }
