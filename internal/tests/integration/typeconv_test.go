@@ -24,10 +24,10 @@ COBOL	357`
 )
 
 func (s *TypeconvSuite) TestTypeconvFuncs(c *C) {
-	//@test "'has' can handle sub-maps in nested maps" {
 	inOutTest(c, `{{ has ("`+testYAML+`" | yaml).foo.bar "baz"}}`,
 		"true")
 }
+
 func (s *TypeconvSuite) TestJSON(c *C) {
 	inOutTest(c, `{{ "`+testYAML+`" | yaml | toJSON }}`, testJSON)
 

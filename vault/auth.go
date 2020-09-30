@@ -208,7 +208,7 @@ func createEc2LoginVars(nonce string) (map[string]interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	vars["pkcs7"] = strings.Replace(strings.TrimSpace(doc), "\n", "", -1)
+	vars["pkcs7"] = strings.ReplaceAll(strings.TrimSpace(doc), "\n", "")
 	return vars, nil
 }
 
