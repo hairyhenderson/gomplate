@@ -101,7 +101,7 @@ var rlen = utf8.RuneCountInString
 func toCodePoints(l, u string) (rune, rune, error) {
 	// no way are these representing valid printable codepoints - we'll treat
 	// them as runes
-	if rlen(l) == rlen(u) && rlen(l) == 1 {
+	if rlen(l) == 1 && rlen(u) == 1 {
 		lower, _ := utf8.DecodeRuneInString(l)
 		upper, _ := utf8.DecodeRuneInString(u)
 		return lower, upper, nil

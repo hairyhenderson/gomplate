@@ -67,7 +67,7 @@ things very badly. To wit:
 https://example.com/a/super-long/url/that-shouldnt-be?wrapped=for+fear+of#the-breaking-of-functionality
 should appear on its own line, regardless of the desired word-wrapping width
 that has been set.`
-	text := strings.Replace(out, "\n", " ", -1)
+	text := strings.ReplaceAll(out, "\n", " ")
 	in := `{{ print "` + text + `" | strings.WordWrap 80 }}`
 	inOutTest(c, in, out)
 }

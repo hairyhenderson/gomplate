@@ -99,7 +99,7 @@ func (f *StringFuncs) Abbrev(args ...interface{}) (string, error) {
 
 // ReplaceAll -
 func (f *StringFuncs) ReplaceAll(old, new string, s interface{}) string {
-	return strings.Replace(conv.ToString(s), old, new, -1)
+	return strings.ReplaceAll(conv.ToString(s), old, new)
 }
 
 // Contains -
@@ -258,7 +258,7 @@ func (f *StringFuncs) ShellQuote(in interface{}) string {
 // Squote -
 func (f *StringFuncs) Squote(in interface{}) string {
 	s := conv.ToString(in)
-	s = strings.Replace(s, `'`, `''`, -1)
+	s = strings.ReplaceAll(s, `'`, `''`)
 	return fmt.Sprintf("'%s'", s)
 }
 

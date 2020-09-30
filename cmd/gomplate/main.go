@@ -150,6 +150,11 @@ func initFlags(command *cobra.Command) {
 }
 
 func main() {
+	exitCode := 0
+	// defer the exit first to make sure that other deferred functions have a
+	// chance to run
+	defer func() { os.Exit(exitCode) }()
+
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 	ctx = initLogger(ctx)
@@ -158,6 +163,7 @@ func main() {
 	initFlags(command)
 	if err := command.ExecuteContext(ctx); err != nil {
 		log := zerolog.Ctx(ctx)
-		log.Fatal().Err(err).Send()
+		log.Error().Err(err).Send()
+		exitCode = 1
 	}
 }
