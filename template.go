@@ -243,15 +243,16 @@ func openOutFile(cfg *config.Config, filename string, mode os.FileMode, modeOver
 }
 
 func createOutFile(filename string, mode os.FileMode, modeOverride bool) (out io.WriteCloser, err error) {
+	mode = config.NormalizeFileMode(mode.Perm())
 	if modeOverride {
-		err = fs.Chmod(filename, mode.Perm())
+		err = fs.Chmod(filename, mode)
 		if err != nil && !os.IsNotExist(err) {
-			return nil, fmt.Errorf("failed to chmod output file '%s' with mode %q: %w", filename, mode.Perm(), err)
+			return nil, fmt.Errorf("failed to chmod output file '%s' with mode %q: %w", filename, mode, err)
 		}
 	}
 
 	open := func() (out io.WriteCloser, err error) {
-		out, err = fs.OpenFile(filename, os.O_RDWR|os.O_CREATE|os.O_TRUNC, mode.Perm())
+		out, err = fs.OpenFile(filename, os.O_RDWR|os.O_CREATE|os.O_TRUNC, mode)
 		if err != nil {
 			return out, fmt.Errorf("failed to open output file '%s' for writing: %w", filename, err)
 		}
@@ -271,7 +272,7 @@ func createOutFile(filename string, mode os.FileMode, modeOverride bool) (out io
 	}
 
 	out = iohelpers.SameSkipper(iohelpers.LazyReadCloser(func() (io.ReadCloser, error) {
-		return fs.OpenFile(filename, os.O_RDONLY, mode.Perm())
+		return fs.OpenFile(filename, os.O_RDONLY, mode)
 	}), open)
 
 	return out, err

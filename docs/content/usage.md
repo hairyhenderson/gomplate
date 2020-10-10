@@ -106,7 +106,7 @@ By default, output files are created with the same file mode (permissions) as in
 
 The value must be an octal integer in the standard UNIX `chmod` format, i.e. `644` to indicate that owner gets read+write, group gets read-only, and others get read-only permissions. See the [`chmod(1)` man page](https://linux.die.net/man/1/chmod) for more details.
 
-**Note:** `--chmod` is not currently supported on Windows. Behaviour is undefined, but will likely not change file permissions at all.
+**Note:** `--chmod` is supported on Windows, but only read/write (`666`) and read-only (`444`). If you pass a value like `755` on Windows, gomplate will reinterpret that as what you probably intended (read-write).
 
 ### `--exclude` and `--include`
 

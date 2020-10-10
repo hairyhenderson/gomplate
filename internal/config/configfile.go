@@ -471,9 +471,9 @@ func (c *Config) GetMode() (os.FileMode, bool, error) {
 	if err != nil {
 		return 0, false, err
 	}
-	mode := os.FileMode(m)
+	mode := NormalizeFileMode(os.FileMode(m))
 	if mode == 0 && c.Input != "" {
-		mode = 0644
+		mode = NormalizeFileMode(0644)
 	}
 	return mode, modeOverride, nil
 }
