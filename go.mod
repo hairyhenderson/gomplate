@@ -32,6 +32,6 @@ require (
 	gopkg.in/src-d/go-billy.v4 v4.3.2
 	gopkg.in/src-d/go-git.v4 v4.13.1
 	gopkg.in/yaml.v3 v3.0.0-20200615113413-eeeca48fe776
-	gotest.tools/v3 v3.0.2
+	gotest.tools/v3 v3.0.3
 	k8s.io/client-go v11.0.0+incompatible
 )
