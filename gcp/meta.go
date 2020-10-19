@@ -76,7 +76,7 @@ func NewMetaClient(options ClientOptions) *MetaClient {
 // Meta retrieves a value from the GCP Instance Metadata Service, returning the given default
 // if the service is unavailable or the requested URL does not exist.
 func (c *MetaClient) Meta(key string, def ...string) (string, error) {
-	url := c.endpoint + "/computeMetadata/v1/instance/" + key
+	url := c.endpoint + "/computeMetadata/" + key
 	return c.retrieveMetadata(url, def...)
 }
 
