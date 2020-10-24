@@ -23,7 +23,7 @@ require (
 	github.com/spf13/afero v1.4.1
 	github.com/spf13/cobra v1.1.0
 	github.com/stretchr/testify v1.6.1
-	github.com/ugorji/go/codec v1.1.12
+	github.com/ugorji/go/codec v1.1.13
 	github.com/zealic/xignore v0.3.3
 	gocloud.dev v0.20.0
 	golang.org/x/crypto v0.0.0-20201016220609-9e8e0b390897
