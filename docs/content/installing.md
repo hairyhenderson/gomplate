@@ -15,8 +15,8 @@ $ brew install gomplate
 ...
 
 ==> Installing gomplate
-==> Pouring gomplate-3.7.0.x86_64_linux.bottle.tar.gz
-🍺  /home/linuxbrew/.linuxbrew/Cellar/gomplate/3.7.0: 6 files, 7.8MB
+==> Pouring gomplate-3.8.0.x86_64_linux.bottle.tar.gz
+🍺  /home/linuxbrew/.linuxbrew/Cellar/gomplate/3.8.0: 6 files, 7.8MB
 ```
 
 ## Alpine Linux
@@ -53,7 +53,7 @@ so this can be made simpler with a shell alias:
 ```console
 $ alias gomplate=docker run hairyhenderson/gomplate
 $ gomplate --version
-gomplate version 3.7.0
+gomplate version 3.8.0
 ```
 
 ### use inside a container
@@ -64,7 +64,7 @@ Use the `COPY` instruction's `--from` flag to accomplish this:
 
 ```Dockerfile
 ...
-COPY --from=hairyhenderson/gomplate:3.7.0-slim /gomplate /bin/gomplate
+COPY --from=hairyhenderson/gomplate:v3.8.0 /gomplate /bin/gomplate
 ```
 
 Now, `gomplate` will be available in the `/bin` directory inside the container image.
@@ -74,7 +74,7 @@ Note that when using `gomplate` with HTTPS-based datasources, you will likely ne
 ```Dockerfile
 FROM alpine
 
-COPY --from=hairyhenderson/gomplate:v3.7.0-slim /gomplate /bin/gomplate
+COPY --from=hairyhenderson/gomplate:v3.8.0-slim /gomplate /bin/gomplate
 RUN apk add --no-cache ca-certificates
 ```
 
