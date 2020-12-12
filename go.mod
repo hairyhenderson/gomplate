@@ -5,7 +5,7 @@ go 1.15
 require (
 	github.com/Masterminds/goutils v1.1.0
 	github.com/Shopify/ejson v1.2.2
-	github.com/aws/aws-sdk-go v1.35.14
+	github.com/aws/aws-sdk-go v1.36.1
 	github.com/boltdb/bolt v1.3.1
 	github.com/docker/libkv v0.2.1
 	github.com/fullsailor/pkcs7 v0.0.0-20190404230743-d7302db945fa
@@ -25,9 +25,9 @@ require (
 	github.com/stretchr/testify v1.6.1
 	github.com/ugorji/go/codec v1.1.13
 	github.com/zealic/xignore v0.3.3
-	gocloud.dev v0.20.0
-	golang.org/x/crypto v0.0.0-20201016220609-9e8e0b390897
-	golang.org/x/sys v0.0.0-20201016160150-f659759dc4ca
+	gocloud.dev v0.21.0
+	golang.org/x/crypto v0.0.0-20201203163018-be400aefbc4c
+	golang.org/x/sys v0.0.0-20201202213521-69691e467435
 	gopkg.in/check.v1 v1.0.0-20200902074654-038fdea0a05b
 	gopkg.in/src-d/go-billy.v4 v4.3.2
 	gopkg.in/src-d/go-git.v4 v4.13.1
