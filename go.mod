@@ -12,7 +12,7 @@ require (
 	github.com/google/uuid v1.1.2
 	github.com/gosimple/slug v1.9.0
 	github.com/hairyhenderson/toml v0.3.1-0.20191004034452-2a4f3b6160f2
-	github.com/hashicorp/consul/api v1.7.0
+	github.com/hashicorp/consul/api v1.8.1
 	github.com/hashicorp/go-sockaddr v1.0.2
 	github.com/hashicorp/vault/api v1.0.4
 	github.com/johannesboyne/gofakes3 v0.0.0-20200716060623-6b2b4cb092cc
