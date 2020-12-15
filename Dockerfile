@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1.1.7-experimental
-FROM --platform=linux/amd64 hairyhenderson/upx:3.94 AS upx
+FROM --platform=linux/amd64 hairyhenderson/upx:3.96 AS upx
 
 FROM --platform=linux/amd64 golang:1.15.0-alpine3.12 AS build
 
