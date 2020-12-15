@@ -91,13 +91,13 @@ COPY --from=compress /bin/gomplate_${TARGETOS}-${TARGETARCH}${TARGETVARIANT}-sli
 
 ENTRYPOINT [ "/gomplate" ]
 
-FROM --platform=windows/amd64 mcr.microsoft.com/windows/nanoserver:1809 AS gomplate-windows
+FROM --platform=windows/amd64 mcr.microsoft.com/windows/nanoserver:2009 AS gomplate-windows
 ARG TARGETOS
 ARG TARGETARCH
 ARG TARGETVARIANT
 COPY --from=build /bin/gomplate_${TARGETOS}-${TARGETARCH}${TARGETVARIANT}.exe /gomplate.exe
 
-FROM --platform=windows/amd64 mcr.microsoft.com/windows/nanoserver:1809 AS gomplate-slim-windows
+FROM --platform=windows/amd64 mcr.microsoft.com/windows/nanoserver:2009 AS gomplate-slim-windows
 ARG TARGETOS
 ARG TARGETARCH
 ARG TARGETVARIANT
