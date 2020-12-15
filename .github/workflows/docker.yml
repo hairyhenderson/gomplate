@@ -15,7 +15,7 @@ jobs:
     steps:
     - name: enable experimental mode
       run: |
-        mkdir ~/.docker
+        mkdir -p ~/.docker
         echo '{"experimental": "enabled"}' > ~/.docker/config.json
     - name: Install BuildX
       run: |
