@@ -11,7 +11,7 @@ menu:
 such as: JSON (_including EJSON - encrypted JSON_), YAML, AWS EC2 metadata, [BoltDB](https://github.com/boltdb/bolt),
 [Hashicorp Consul](https://www.consul.io/) and [Hashicorp Vault](https://www.vaultproject.io/) secrets.
 
-Come chat with developers and community in the [#gomplate channel][] on [Gophers Slack][]!
+Come chat with developers and community in the [#gomplate channel][] on [Gophers Slack][] and on [GitHub Discussions][discussions-url]!
 
 _Please report any bugs found in the [issue tracker](https://github.com/hairyhenderson/gomplate/issues/)._
 
@@ -90,3 +90,4 @@ Copyright (c) 2016-{{< year >}} Dave Henderson
 
 [Gophers Slack]: https://invite.slack.golangbridge.org
 [#gomplate channel]: https://gophers.slack.com/messages/CGTR16RM2/
+[discussions-url]: https://github.com/hairyhenderson/gomplate/discussions
