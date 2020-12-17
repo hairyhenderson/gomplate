@@ -19,10 +19,13 @@ _Read the docs at [docs.gomplate.ca][docs-url], chat with developers and communi
 
 [![Install Docs][install-docs-image]][install-docs-url]
 [![Slack][slack-image]][slack-url]
+[![Discussions][discussions-image]][discussions-url]
 
 `gomplate` is a template renderer which supports a growing list of datasources,
 such as: JSON (_including EJSON - encrypted JSON_), YAML, AWS EC2 metadata, [BoltDB](https://github.com/boltdb/bolt),
 [Hashicorp Consul](https://www.consul.io/) and [Hashicorp Vault](https://www.vaultproject.io/) secrets.
+
+Come chat with developers and community in the [#gomplate channel][] on [Gophers Slack][] and on [GitHub Discussions][discussions-url]!
 
 Here are some hands-on examples of how `gomplate` works:
 
@@ -87,7 +90,8 @@ $ gomplate -d 'cities=env:///CITIES?type=application/yaml' -d 'weather=https://w
                0.0 mm
 ```
 
-Read the documentation at [docs.gomplate.ca][docs-url]!
+Read the documentation at [docs.gomplate.ca][docs-url], and join the discussion
+in [GitHub Discussions][discussions-url]!
 
 _Please report any bugs found in the [issue tracker](https://github.com/hairyhenderson/gomplate/issues/)._
 
@@ -134,5 +138,8 @@ Copyright (c) 2016-2019 Dave Henderson
 
 [slack-image]: https://img.shields.io/badge/slack-gophers/%23gomplate-00ADD8.svg?logo=slack
 [slack-url]: https://gophers.slack.com/messages/CGTR16RM2/
+
+[discussions-image]: https://img.shields.io/badge/discussions-gomplate-blue.svg?logo=github
+[discussions-url]: https://github.com/hairyhenderson/gomplate/discussions
 
 [![Analytics](https://ga-beacon.appspot.com/UA-82637990-1/gomplate/README.md?pixel)](https://github.com/igrigorik/ga-beacon)
