@@ -137,7 +137,15 @@ func (o *Config) toNewConfig() (*config.Config, error) {
 	if err != nil {
 		return nil, err
 	}
-	err = cfg.ParseDataSourceFlags(o.DataSources, o.Contexts, o.DataSourceHeaders)
+	err = cfg.ParseDataSourceFlags(o.DataSources, o.Contexts)
+	if err != nil {
+		return nil, err
+	}
+	err = cfg.ParseTemplateFlags(o.Templates)
+	if err != nil {
+		return nil, err
+	}
+	err = cfg.ParseHeaderFlags(o.DataSourceHeaders)
 	if err != nil {
 		return nil, err
 	}

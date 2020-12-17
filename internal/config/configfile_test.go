@@ -14,7 +14,83 @@ import (
 
 	"github.com/hairyhenderson/gomplate/v3/internal/iohelpers"
 	"github.com/stretchr/testify/assert"
+	"gopkg.in/yaml.v3"
 )
+
+func TestDataSourceUnmarshalYAML(t *testing.T) {
+	d := &DataSource{}
+	in := ``
+	err := yaml.Unmarshal([]byte(in), d)
+	assert.NoError(t, err)
+
+	d = &DataSource{}
+	in = `{}`
+	err = yaml.Unmarshal([]byte(in), d)
+	assert.NoError(t, err)
+	assert.EqualValues(t, &DataSource{}, d)
+
+	d = &DataSource{}
+	in = `{url: file:///foo.txt, header: {Accept: [text/plain] } }`
+	err = yaml.Unmarshal([]byte(in), d)
+	assert.NoError(t, err)
+	assert.EqualValues(t, &DataSource{
+		URL: mustURL("file:///foo.txt"),
+		Header: http.Header{
+			"Accept": {"text/plain"},
+		},
+	}, d)
+
+	d = &DataSource{}
+	in = `"foo=http://example.com/bar"`
+	err = yaml.Unmarshal([]byte(in), d)
+	assert.NoError(t, err)
+	assert.EqualValues(t, &DataSource{URL: mustURL("http://example.com/bar")}, d)
+
+	d = &DataSource{}
+	in = `"file.txt"`
+	err = yaml.Unmarshal([]byte(in), d)
+	assert.NoError(t, err)
+	assert.EqualValues(t, &DataSource{URL: mustURL("file.txt")}, d)
+}
+
+func TestTemplatesUnmarshalYAML(t *testing.T) {
+	tp := Templates{}
+	in := ``
+	err := yaml.Unmarshal([]byte(in), &tp)
+	assert.NoError(t, err)
+	assert.EqualValues(t, Templates{}, tp)
+
+	tp = Templates{}
+	in = `{foo: "http://example.com"}`
+	err = yaml.Unmarshal([]byte(in), &tp)
+	assert.NoError(t, err)
+	assert.EqualValues(t, Templates{
+		"foo": DataSource{URL: mustURL("http://example.com")},
+	}, tp)
+
+	tp = Templates{}
+	in = `{foo: {url: foo}, bar: {header: {Hdr: [hdrval]}, url: http://example.com}}`
+	err = yaml.Unmarshal([]byte(in), &tp)
+	assert.NoError(t, err)
+	assert.EqualValues(t, Templates{
+		"foo": DataSource{URL: mustURL("foo")},
+		"bar": DataSource{
+			URL: mustURL("http://example.com"),
+			Header: http.Header{
+				"Hdr": {"hdrval"},
+			},
+		},
+	}, tp)
+
+	tp = Templates{}
+	in = `["foo=bar", "baz=http://example.com"]`
+	err = yaml.Unmarshal([]byte(in), &tp)
+	assert.NoError(t, err)
+	assert.EqualValues(t, Templates{
+		"foo": DataSource{URL: mustURL("bar")},
+		"baz": DataSource{URL: mustURL("http://example.com")},
+	}, tp)
+}
 
 func TestParseConfigFile(t *testing.T) {
 	t.Parallel()
@@ -37,6 +113,11 @@ datasources:
     url: https://example.com/more.json
     header:
       Authorization: ["Bearer abcd1234"]
+templates:
+  tpl1:
+    url: file:///one.tpl
+  file:///two.tpl:
+    url: file:///two.tpl
 
 context:
   .:
@@ -63,9 +144,45 @@ pluginTimeout: 2s
 				URL: mustURL("file:///data.json"),
 			},
 		},
+		Templates: map[string]DataSource{
+			"tpl1": {
+				URL: mustURL("file:///one.tpl"),
+			},
+			"file:///two.tpl": {
+				URL: mustURL("file:///two.tpl"),
+			},
+		},
 		OutMode:       "644",
 		PluginTimeout: 2 * time.Second,
 	}
+
+	cf, err = Parse(strings.NewReader(in))
+	assert.NoError(t, err)
+	assert.EqualValues(t, expected, cf)
+
+	// make sure deprecated templates config still works (string array) so we
+	// don't break compatibility
+	in = `in: hello world
+outputFiles: [out.txt]
+chmod: 644
+
+datasources:
+  data:
+    url: file:///data.json
+  moredata:
+    url: https://example.com/more.json
+    header:
+      Authorization: ["Bearer abcd1234"]
+templates:
+  - tpl1=file:///one.tpl
+  - file:///two.tpl
+
+context:
+  .:
+    url: file:///data.json
+
+pluginTimeout: 2s
+`
 
 	cf, err = Parse(strings.NewReader(in))
 	assert.NoError(t, err)
@@ -320,21 +437,47 @@ func TestMergeFrom(t *testing.T) {
 	}
 
 	assert.EqualValues(t, expected, cfg.MergeFrom(other))
+
+	cfg = &Config{
+		Input:       "hello world",
+		OutputFiles: []string{"-"},
+		Templates: map[string]DataSource{
+			"foo": {URL: mustURL("http://example.com/foo.json")},
+			"bar": {URL: mustURL("aws+sm:///bar/baz")},
+		},
+	}
+	other = &Config{
+		InputFiles:  []string{"-"},
+		OutputFiles: []string{"-"},
+		Templates: map[string]DataSource{
+			"bar": {URL: mustURL("bar.yaml")},
+		},
+	}
+	expected = &Config{
+		Input:       "hello world",
+		OutputFiles: []string{"-"},
+		Templates: map[string]DataSource{
+			"foo": {URL: mustURL("http://example.com/foo.json")},
+			"bar": {URL: mustURL("bar.yaml")},
+		},
+	}
+
+	assert.EqualValues(t, expected, cfg.MergeFrom(other))
 }
 
 func TestParseDataSourceFlags(t *testing.T) {
 	t.Parallel()
 	cfg := &Config{}
-	err := cfg.ParseDataSourceFlags(nil, nil, nil)
+	err := cfg.ParseDataSourceFlags(nil, nil)
 	assert.NoError(t, err)
 	assert.EqualValues(t, &Config{}, cfg)
 
 	cfg = &Config{}
-	err = cfg.ParseDataSourceFlags([]string{"foo/bar/baz.json"}, nil, nil)
+	err = cfg.ParseDataSourceFlags([]string{"foo/bar/baz.json"}, nil)
 	assert.Error(t, err)
 
 	cfg = &Config{}
-	err = cfg.ParseDataSourceFlags([]string{"baz=foo/bar/baz.json"}, nil, nil)
+	err = cfg.ParseDataSourceFlags([]string{"baz=foo/bar/baz.json"}, nil)
 	assert.NoError(t, err)
 	expected := &Config{
 		DataSources: map[string]DataSource{
@@ -344,10 +487,9 @@ func TestParseDataSourceFlags(t *testing.T) {
 	assert.EqualValues(t, expected, cfg, "expected: %+v\nactual: %+v\n", expected, cfg)
 
 	cfg = &Config{}
-	err = cfg.ParseDataSourceFlags(
-		[]string{"baz=foo/bar/baz.json"},
-		nil,
-		[]string{"baz=Accept: application/json"})
+	err = cfg.ParseDataSourceFlags([]string{"baz=foo/bar/baz.json"}, nil)
+	assert.NoError(t, err)
+	err = cfg.ParseHeaderFlags([]string{"baz=Accept: application/json"})
 	assert.NoError(t, err)
 	assert.EqualValues(t, &Config{
 		DataSources: map[string]DataSource{
@@ -364,8 +506,9 @@ func TestParseDataSourceFlags(t *testing.T) {
 	err = cfg.ParseDataSourceFlags(
 		[]string{"baz=foo/bar/baz.json"},
 		[]string{"foo=http://example.com"},
-		[]string{"foo=Accept: application/json",
-			"bar=Authorization: Basic xxxxx"})
+	)
+	err = cfg.ParseHeaderFlags([]string{"foo=Accept: application/json",
+		"bar=Authorization: Basic xxxxx"})
 	assert.NoError(t, err)
 	assert.EqualValues(t, &Config{
 		DataSources: map[string]DataSource{
@@ -377,6 +520,64 @@ func TestParseDataSourceFlags(t *testing.T) {
 				Header: http.Header{
 					"Accept": {"application/json"},
 				},
+			},
+		},
+		ExtraHeaders: map[string]http.Header{
+			"bar": {"Authorization": {"Basic xxxxx"}},
+		},
+	}, cfg)
+}
+
+func TestParseTemplateFlags(t *testing.T) {
+	t.Parallel()
+	cfg := &Config{}
+	err := cfg.ParseTemplateFlags(nil)
+	assert.NoError(t, err)
+	assert.EqualValues(t, &Config{}, cfg)
+
+	cfg = &Config{}
+	err = cfg.ParseTemplateFlags([]string{"foo/bar/baz.json"})
+	assert.Error(t, err)
+
+	cfg = &Config{}
+	err = cfg.ParseTemplateFlags([]string{"baz=foo/bar/baz.json"})
+	assert.NoError(t, err)
+	expected := &Config{
+		Templates: map[string]DataSource{
+			"baz": {URL: mustURL("foo/bar/baz.json")},
+		},
+	}
+	assert.EqualValues(t, expected, cfg, "expected: %+v\nactual: %+v\n", expected, cfg)
+
+	cfg = &Config{}
+	err = cfg.ParseTemplateFlags([]string{"baz=foo/bar/baz.json"})
+	assert.NoError(t, err)
+	err = cfg.ParseHeaderFlags([]string{"baz=Accept: application/json"})
+	assert.NoError(t, err)
+	assert.EqualValues(t, &Config{
+		Templates: map[string]DataSource{
+			"baz": {
+				URL: mustURL("foo/bar/baz.json"),
+				Header: http.Header{
+					"Accept": {"application/json"},
+				},
+			},
+		},
+	}, cfg)
+
+	cfg = &Config{}
+	err = cfg.ParseTemplateFlags(
+		[]string{"foo=foo/bar/baz.json"})
+	assert.NoError(t, err)
+	err = cfg.ParseHeaderFlags(
+		[]string{"foo=Accept: application/json",
+			"bar=Authorization: Basic xxxxx"})
+	assert.NoError(t, err)
+	assert.EqualValues(t, &Config{
+		Templates: map[string]DataSource{
+			"foo": {
+				URL:    mustURL("foo/bar/baz.json"),
+				Header: http.Header{"Accept": {"application/json"}},
 			},
 		},
 		ExtraHeaders: map[string]http.Header{
@@ -415,7 +616,10 @@ pluginTimeout: 5s
 		RDelim:      "R",
 		Input:       "foo",
 		OutputFiles: []string{"-"},
-		Templates:   []string{"foo=foo.t", "bar=bar.t"},
+		Templates: map[string]DataSource{
+			"foo": {URL: mustURL("http://example.com/foo.tmpl")},
+			"bar": {URL: mustURL("file:///bar")},
+		},
 	}
 	expected = `---
 in: foo
@@ -423,8 +627,10 @@ outputFiles: ['-']
 leftDelim: L
 rightDelim: R
 templates:
-  - foo=foo.t
-  - bar=bar.t
+  bar:
+    url: file:///bar
+  foo:
+    url: http://example.com/foo.tmpl
 `
 	assert.Equal(t, expected, c.String())
 
@@ -433,7 +639,10 @@ templates:
 		RDelim:      "R",
 		Input:       "long input that should be truncated",
 		OutputFiles: []string{"-"},
-		Templates:   []string{"foo=foo.t", "bar=bar.t"},
+		Templates: map[string]DataSource{
+			"foo": {URL: mustURL("http://example.com/foo.tmpl")},
+			"bar": {URL: mustURL("file:///bar")},
+		},
 	}
 	expected = `---
 in: long inp...
@@ -441,8 +650,39 @@ outputFiles: ['-']
 leftDelim: L
 rightDelim: R
 templates:
-  - foo=foo.t
-  - bar=bar.t
+  bar:
+    url: file:///bar
+  foo:
+    url: http://example.com/foo.tmpl
+`
+	assert.Equal(t, expected, c.String())
+
+	c = &Config{
+		InputDir:  "in/",
+		OutputDir: "out/",
+		Context: map[string]DataSource{
+			"data": {
+				URL: mustURL("foo://bar"),
+			},
+			"data2": {
+				URL: mustURL("http://example.com/data.json"),
+				Header: http.Header{
+					"Accept": {"text/plain"},
+				},
+			},
+		},
+	}
+	expected = `---
+inputDir: in/
+outputDir: out/
+context:
+  data:
+    url: foo://bar
+  data2:
+    url: http://example.com/data.json
+    header:
+      Accept:
+        - text/plain
 `
 	assert.Equal(t, expected, c.String())
 
@@ -454,7 +694,6 @@ templates:
 inputDir: in/
 outputDir: out/
 `
-
 	assert.Equal(t, expected, c.String())
 
 	c = &Config{

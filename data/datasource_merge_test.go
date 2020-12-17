@@ -1,11 +1,14 @@
 package data
 
 import (
+	"context"
 	"net/url"
 	"os"
 	"path/filepath"
 	"testing"
 
+	"github.com/hairyhenderson/gomplate/v3/internal/config"
+	"github.com/hairyhenderson/gomplate/v3/internal/datasources"
 	"github.com/spf13/afero"
 
 	"github.com/stretchr/testify/assert"
@@ -19,6 +22,9 @@ func TestReadMerge(t *testing.T) {
 	mergedContent := "goodnight: moon\nhello: world\n"
 
 	fs := afero.NewMemMapFs()
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	ctx = config.WithFileSystem(ctx, fs)
 
 	_ = fs.Mkdir("/tmp", 0777)
 	f, _ := fs.Create("/tmp/jsonfile.json")
@@ -41,109 +47,52 @@ func TestReadMerge(t *testing.T) {
 	f, _ = fs.Create(filepath.Join(wd, "textfile.txt"))
 	_, _ = f.WriteString(`plain text...`)
 
-	source := &Source{Alias: "foo", URL: mustParseURL("merge:file:///tmp/jsonfile.json|file:///tmp/yamlfile.yaml")}
-	source.fs = fs
-	d := &Data{
-		Sources: map[string]*Source{
-			"foo":       source,
-			"bar":       {Alias: "bar", URL: mustParseURL("file:///tmp/jsonfile.json")},
-			"baz":       {Alias: "baz", URL: mustParseURL("file:///tmp/yamlfile.yaml")},
-			"text":      {Alias: "text", URL: mustParseURL("file:///tmp/textfile.txt")},
-			"badscheme": {Alias: "badscheme", URL: mustParseURL("bad:///scheme.json")},
-			"badtype":   {Alias: "badtype", URL: mustParseURL("file:///tmp/textfile.txt?type=foo/bar")},
-			"array":     {Alias: "array", URL: mustParseURL("file:///tmp/array.json?type=" + url.QueryEscape(jsonArrayMimetype))},
-		},
-	}
+	source := config.DataSource{URL: mustParseURL("merge:file:///tmp/jsonfile.json|file:///tmp/yamlfile.yaml")}
 
-	actual, err := d.readMerge(source)
+	ctx = config.WithDataSources(ctx, map[string]config.DataSource{
+		"foo":       source,
+		"bar":       {URL: mustParseURL("file:///tmp/jsonfile.json")},
+		"baz":       {URL: mustParseURL("file:///tmp/yamlfile.yaml")},
+		"text":      {URL: mustParseURL("file:///tmp/textfile.txt")},
+		"badscheme": {URL: mustParseURL("bad:///scheme.json")},
+		"badtype":   {URL: mustParseURL("file:///tmp/textfile.txt?type=foo/bar")},
+		"array":     {URL: mustParseURL("file:///tmp/array.json?type=" + url.QueryEscape(jsonArrayMimetype))},
+	})
+
+	mt, actual, err := datasources.ReadDataSource(ctx, source)
 	assert.NoError(t, err)
 	assert.Equal(t, mergedContent, string(actual))
+	assert.Equal(t, yamlMimetype, mt)
 
 	source.URL = mustParseURL("merge:bar|baz")
-	actual, err = d.readMerge(source)
+	mt, actual, err = datasources.ReadDataSource(ctx, source)
 	assert.NoError(t, err)
 	assert.Equal(t, mergedContent, string(actual))
+	assert.Equal(t, yamlMimetype, mt)
 
 	source.URL = mustParseURL("merge:./jsonfile.json|baz")
-	actual, err = d.readMerge(source)
+	mt, actual, err = datasources.ReadDataSource(ctx, source)
 	assert.NoError(t, err)
 	assert.Equal(t, mergedContent, string(actual))
+	assert.Equal(t, yamlMimetype, mt)
 
 	source.URL = mustParseURL("merge:file:///tmp/jsonfile.json")
-	_, err = d.readMerge(source)
+	_, _, err = datasources.ReadDataSource(ctx, source)
 	assert.Error(t, err)
 
 	source.URL = mustParseURL("merge:bogusalias|file:///tmp/jsonfile.json")
-	_, err = d.readMerge(source)
+	_, _, err = datasources.ReadDataSource(ctx, source)
 	assert.Error(t, err)
 
 	source.URL = mustParseURL("merge:file:///tmp/jsonfile.json|badscheme")
-	_, err = d.readMerge(source)
+	_, _, err = datasources.ReadDataSource(ctx, source)
 	assert.Error(t, err)
 
 	source.URL = mustParseURL("merge:file:///tmp/jsonfile.json|badtype")
-	_, err = d.readMerge(source)
+	_, _, err = datasources.ReadDataSource(ctx, source)
 	assert.Error(t, err)
 
 	source.URL = mustParseURL("merge:file:///tmp/jsonfile.json|array")
-	_, err = d.readMerge(source)
+	_, _, err = datasources.ReadDataSource(ctx, source)
 	assert.Error(t, err)
-}
-
-func TestMergeData(t *testing.T) {
-	def := map[string]interface{}{
-		"f": true,
-		"t": false,
-		"z": "def",
-	}
-	out, err := mergeData([]map[string]interface{}{def})
-	assert.NoError(t, err)
-	assert.Equal(t, "f: true\nt: false\nz: def\n", string(out))
-
-	over := map[string]interface{}{
-		"f": false,
-		"t": true,
-		"z": "over",
-	}
-	out, err = mergeData([]map[string]interface{}{over, def})
-	assert.NoError(t, err)
-	assert.Equal(t, "f: false\nt: true\nz: over\n", string(out))
-
-	over = map[string]interface{}{
-		"f": false,
-		"t": true,
-		"z": "over",
-		"m": map[string]interface{}{
-			"a": "aaa",
-		},
-	}
-	out, err = mergeData([]map[string]interface{}{over, def})
-	assert.NoError(t, err)
-	assert.Equal(t, "f: false\nm:\n  a: aaa\nt: true\nz: over\n", string(out))
-
-	uber := map[string]interface{}{
-		"z": "über",
-	}
-	out, err = mergeData([]map[string]interface{}{uber, over, def})
-	assert.NoError(t, err)
-	assert.Equal(t, "f: false\nm:\n  a: aaa\nt: true\nz: über\n", string(out))
-
-	uber = map[string]interface{}{
-		"m": "notamap",
-		"z": map[string]interface{}{
-			"b": "bbb",
-		},
-	}
-	out, err = mergeData([]map[string]interface{}{uber, over, def})
-	assert.NoError(t, err)
-	assert.Equal(t, "f: false\nm: notamap\nt: true\nz:\n  b: bbb\n", string(out))
-
-	uber = map[string]interface{}{
-		"m": map[string]interface{}{
-			"b": "bbb",
-		},
-	}
-	out, err = mergeData([]map[string]interface{}{uber, over, def})
-	assert.NoError(t, err)
-	assert.Equal(t, "f: false\nm:\n  a: aaa\n  b: bbb\nt: true\nz: over\n", string(out))
 }

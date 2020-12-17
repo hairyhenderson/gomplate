@@ -1,17 +1,16 @@
-package data
+package datasources
 
 import (
 	"bytes"
 	"context"
+	"io/ioutil"
 	"net/http/httptest"
 	"net/url"
 	"os"
 	"testing"
 
-	"github.com/hairyhenderson/gomplate/v3/internal/config"
 	"github.com/johannesboyne/gofakes3"
 	"github.com/johannesboyne/gofakes3/backend/s3mem"
-
 	"github.com/stretchr/testify/assert"
 )
 
@@ -57,18 +56,8 @@ func putFile(backend gofakes3.Backend, bucket, file, mime, content string) error
 	return err
 }
 
-func testData(alias, u string) *Data {
-	return &Data{
-		ds: map[string]config.DataSource{
-			alias: {URL: mustParseURL(u)},
-		},
-		ctx: context.Background(),
-	}
-}
-
 func TestReadBlob(t *testing.T) {
-	_, err := readBlob(nil, "foo", "bar")
-	assert.Error(t, err)
+	ctx := context.Background()
 
 	ts, u := setupTestBucket(t)
 	defer ts.Close()
@@ -76,13 +65,16 @@ func TestReadBlob(t *testing.T) {
 	os.Setenv("AWS_ANON", "true")
 	defer os.Unsetenv("AWS_ANON")
 
-	d := testData("data", "s3://mybucket/file1?region=us-east-1&disableSSL=true&s3ForcePathStyle=true&type=text/plain&endpoint="+u.Host)
+	r := &blobRequester{}
 
 	var expected interface{}
 	expected = "hello"
-	out, err := d.Datasource("data")
+	out, err := r.Request(ctx, mustParseURL("s3://mybucket/file1?region=us-east-1&disableSSL=true&s3ForcePathStyle=true&type=text/plain&endpoint="+u.Host), nil)
 	assert.NoError(t, err)
-	assert.Equal(t, expected, out)
+	defer out.Body.Close()
+	actual, err := ioutil.ReadAll(out.Body)
+	assert.NoError(t, err)
+	assert.Equal(t, expected, string(actual))
 
 	os.Unsetenv("AWS_ANON")
 
@@ -93,29 +85,32 @@ func TestReadBlob(t *testing.T) {
 	os.Setenv("AWS_S3_ENDPOINT", u.Host)
 	defer os.Unsetenv("AWS_S3_ENDPOINT")
 
-	d = testData("data", "s3://mybucket/file2?region=us-east-1&disableSSL=true&s3ForcePathStyle=true")
-
-	expected = map[string]interface{}{"value": "goodbye world"}
-	out, err = d.Datasource("data")
+	expected = `{"value": "goodbye world"}`
+	out, err = r.Request(ctx, mustParseURL("s3://mybucket/file2?region=us-east-1&disableSSL=true&s3ForcePathStyle=true"), nil)
 	assert.NoError(t, err)
-	assert.Equal(t, expected, out)
-
-	d = testData("data", "s3://mybucket/?region=us-east-1&disableSSL=true&s3ForcePathStyle=true")
-
-	expected = []interface{}{"dir1/", "file1", "file2", "file3"}
-	out, err = d.Datasource("data")
+	defer out.Body.Close()
+	actual, err = ioutil.ReadAll(out.Body)
 	assert.NoError(t, err)
-	assert.EqualValues(t, expected, out)
+	assert.Equal(t, expected, string(actual))
 
-	d = testData("data", "s3://mybucket/dir1/?region=us-east-1&disableSSL=true&s3ForcePathStyle=true")
-
-	expected = []interface{}{"file1", "file2"}
-	out, err = d.Datasource("data")
+	expected = `["dir1/","file1","file2","file3"]`
+	out, err = r.Request(ctx, mustParseURL("s3://mybucket/?region=us-east-1&disableSSL=true&s3ForcePathStyle=true"), nil)
 	assert.NoError(t, err)
-	assert.EqualValues(t, expected, out)
+	defer out.Body.Close()
+	actual, err = ioutil.ReadAll(out.Body)
+	assert.NoError(t, err)
+	assert.EqualValues(t, expected, string(actual))
+
+	expected = `["file1","file2"]`
+	out, err = r.Request(ctx, mustParseURL("s3://mybucket/dir1/?region=us-east-1&disableSSL=true&s3ForcePathStyle=true"), nil)
+	assert.NoError(t, err)
+	defer out.Body.Close()
+	actual, err = ioutil.ReadAll(out.Body)
+	assert.NoError(t, err)
+	assert.EqualValues(t, expected, string(actual))
 }
 
-func TestBlobURL(t *testing.T) {
+func TestBlobSanitizeURL(t *testing.T) {
 	data := []struct {
 		in       string
 		expected string
@@ -135,7 +130,7 @@ func TestBlobURL(t *testing.T) {
 
 	for _, d := range data {
 		u, _ := url.Parse(d.in)
-		out := blobURL(u)
+		out := sanitizeURL(u).String()
 		assert.Equal(t, d.expected, out)
 	}
 }

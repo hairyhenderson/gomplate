@@ -1,10 +1,13 @@
 package data
 
 import (
+	"context"
 	"net/url"
 	"os"
 	"testing"
 
+	"github.com/hairyhenderson/gomplate/v3/internal/config"
+	"github.com/hairyhenderson/gomplate/v3/internal/datasources"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -20,33 +23,35 @@ func TestReadEnv(t *testing.T) {
 	os.Setenv("HELLO_UNIVERSE", "hello universe")
 	defer os.Unsetenv("HELLO_UNIVERSE")
 
-	source := &Source{Alias: "foo", URL: mustParseURL("env:HELLO_WORLD")}
+	source := config.DataSource{URL: mustParseURL("env:HELLO_WORLD")}
 
-	actual, err := readEnv(source)
+	ctx := context.Background()
+
+	_, actual, err := datasources.ReadDataSource(ctx, source)
 	assert.NoError(t, err)
 	assert.Equal(t, content, actual)
 
-	source = &Source{Alias: "foo", URL: mustParseURL("env:/HELLO_WORLD")}
+	source = config.DataSource{URL: mustParseURL("env:/HELLO_WORLD")}
 
-	actual, err = readEnv(source)
+	_, actual, err = datasources.ReadDataSource(ctx, source)
 	assert.NoError(t, err)
 	assert.Equal(t, content, actual)
 
-	source = &Source{Alias: "foo", URL: mustParseURL("env:///HELLO_WORLD")}
+	source = config.DataSource{URL: mustParseURL("env:///HELLO_WORLD")}
 
-	actual, err = readEnv(source)
+	_, actual, err = datasources.ReadDataSource(ctx, source)
 	assert.NoError(t, err)
 	assert.Equal(t, content, actual)
 
-	source = &Source{Alias: "foo", URL: mustParseURL("env:HELLO_WORLD?foo=bar")}
+	source = config.DataSource{URL: mustParseURL("env:HELLO_WORLD?foo=bar")}
 
-	actual, err = readEnv(source)
+	_, actual, err = datasources.ReadDataSource(ctx, source)
 	assert.NoError(t, err)
 	assert.Equal(t, content, actual)
 
-	source = &Source{Alias: "foo", URL: mustParseURL("env:///HELLO_WORLD?foo=bar")}
+	source = config.DataSource{URL: mustParseURL("env:///HELLO_WORLD?foo=bar")}
 
-	actual, err = readEnv(source)
+	_, actual, err = datasources.ReadDataSource(ctx, source)
 	assert.NoError(t, err)
 	assert.Equal(t, content, actual)
 }

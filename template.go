@@ -1,6 +1,7 @@
 package gomplate
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -9,6 +10,7 @@ import (
 	"text/template"
 
 	"github.com/hairyhenderson/gomplate/v3/internal/config"
+	"github.com/hairyhenderson/gomplate/v3/internal/datasources"
 	"github.com/hairyhenderson/gomplate/v3/internal/iohelpers"
 	"github.com/hairyhenderson/gomplate/v3/tmpl"
 
@@ -39,7 +41,7 @@ func addTmplFuncs(f template.FuncMap, root *template.Template, ctx interface{}) 
 	f["tpl"] = t.Inline
 }
 
-func (t *tplate) toGoTemplate(g *gomplate) (tmpl *template.Template, err error) {
+func (t *tplate) toGoTemplate(ctx context.Context, g *gomplate) (tmpl *template.Template, err error) {
 	if g.rootTemplate != nil {
 		tmpl = g.rootTemplate.New(t.name)
 	} else {
@@ -55,9 +57,8 @@ func (t *tplate) toGoTemplate(g *gomplate) (tmpl *template.Template, err error) 
 	if err != nil {
 		return nil, err
 	}
-	for alias, path := range g.nestedTemplates {
-		// nolint: gosec
-		b, err := ioutil.ReadFile(path)
+	for alias, ds := range g.nestedTemplates {
+		_, b, err := datasources.ReadDataSource(ctx, ds)
 		if err != nil {
 			return nil, err
 		}
