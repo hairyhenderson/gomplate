@@ -99,7 +99,7 @@ _Please report any bugs found in the [issue tracker](https://github.com/hairyhen
 
 [The MIT License](http://opensource.org/licenses/MIT)
 
-Copyright (c) 2016-2019 Dave Henderson
+Copyright (c) 2016-2021 Dave Henderson
 
 [circleci-image]: https://img.shields.io/circleci/project/github/hairyhenderson/gomplate/master.svg?logo=circleci
 [circleci-url]: https://circleci.com/gh/hairyhenderson/gomplate/tree/master
