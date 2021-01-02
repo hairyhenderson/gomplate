@@ -204,67 +204,10 @@ gomplate.png: gomplate.svg
 	cloudconvert -f png -c density=288 $^
 
 lint:
-	@golangci-lint --version
-	@golangci-lint run --timeout 2m --disable-all \
-		--enable depguard \
-		--enable dupl \
-		--enable goconst \
-		--enable gocritic \
-		--enable gocyclo \
-		--enable gofmt \
-		--enable goimports \
-		--enable golint \
-		--enable gosec \
-		--enable gosimple \
-		--enable govet \
-		--enable ineffassign \
-		--enable maligned \
-		--enable misspell \
-		--enable nakedret \
-		--enable prealloc \
-		--enable staticcheck \
-		--enable structcheck \
-		--enable stylecheck \
-		--enable typecheck \
-		--enable unconvert \
-		--enable varcheck
+	@golangci-lint run --verbose --max-same-issues=0 --max-issues-per-linter=0
 
-	@golangci-lint run --timeout 2m --tests=false --disable-all \
-		--enable deadcode \
-		--enable errcheck \
-		--enable interfacer \
-		--enable scopelint \
-		--enable unused
-
-	@golangci-lint run --timeout 2m --build-tags integration \
-		--disable-all \
-		--enable deadcode \
-		--enable depguard \
-		--enable dupl \
-		--enable gochecknoinits \
-		--enable gocritic \
-		--enable gocyclo \
-		--enable gofmt \
-		--enable goimports \
-		--enable golint \
-		--enable gosec \
-		--enable gosimple \
-		--enable govet \
-		--enable ineffassign \
-		--enable maligned \
-		--enable misspell \
-		--enable nakedret \
-		--enable prealloc \
-		--enable scopelint \
-		--enable staticcheck \
-		--enable structcheck \
-		--enable stylecheck \
-		--enable typecheck \
-		--enable unconvert \
-		--enable unparam \
-		--enable unused \
-		--enable varcheck \
-			./internal/tests/integration
+ci-lint:
+	@golangci-lint run --verbose --max-same-issues=0 --max-issues-per-linter=0 --out-format=github-actions
 
 .PHONY: gen-changelog clean test build-x compress-all build-release build test-integration-docker gen-docs lint clean-images clean-containers docker-images
 .DELETE_ON_ERROR:

@@ -331,6 +331,7 @@ func TestLessThan(t *testing.T) {
 	}
 
 	for _, d := range data {
+		d := d
 		t.Run(fmt.Sprintf(`LessThan("%s")(<%T>%#v,%#v)==%v`, d.key, d.left, d.left, d.right, d.out), func(t *testing.T) {
 			assert.Equal(t, d.out, lessThan(d.key)(d.left, d.right))
 		})
@@ -449,6 +450,7 @@ func TestSort(t *testing.T) {
 	}
 
 	for _, d := range data {
+		d := d
 		t.Run(fmt.Sprintf(`Sort("%s",<%T>)==%#v`, d.key, d.in, d.out), func(t *testing.T) {
 			out, err := Sort(d.key, d.in)
 			assert.NoError(t, err)
@@ -556,7 +558,9 @@ func BenchmarkFlatten(b *testing.B) {
 		},
 	}
 	for depth := -1; depth <= 2; depth++ {
+		depth := depth
 		for _, d := range data {
+			d := d
 			b.Run(fmt.Sprintf("depth%d %T(%v)", depth, d, d), func(b *testing.B) {
 				for i := 0; i < b.N; i++ {
 					Flatten(d, depth)

@@ -253,6 +253,7 @@ func TestProcessTemplates(t *testing.T) {
 		},
 	}
 	for i, in := range testdata {
+		in := in
 		t.Run(fmt.Sprintf("%d", i), func(t *testing.T) {
 			actual, err := processTemplates(cfg, in.templates)
 			assert.NoError(t, err)

@@ -75,6 +75,7 @@ func TestParseArgPath(t *testing.T) {
 	}
 
 	for i, d := range data {
+		d := d
 		t.Run(fmt.Sprintf("%d:(%q,%q)==(%q,%q)", i, d.url, d.arg, d.repo, d.path), func(t *testing.T) {
 			t.Parallel()
 			u, _ := url.Parse(d.url)
@@ -175,6 +176,7 @@ func TestParseGitPath(t *testing.T) {
 	}
 
 	for i, d := range data {
+		d := d
 		t.Run(fmt.Sprintf("%d:(%q,%q)==(%q,%q)", i, d.url, d.args, d.repo, d.path), func(t *testing.T) {
 			t.Parallel()
 			u, _ := url.Parse(d.url)

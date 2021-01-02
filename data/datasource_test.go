@@ -276,6 +276,7 @@ func TestMimeType(t *testing.T) {
 	}
 
 	for i, d := range data {
+		d := d
 		t.Run(fmt.Sprintf("%d:%q,%q==%q", i, d.url, d.mediaType, d.expected), func(t *testing.T) {
 			s := &Source{URL: mustParseURL(d.url), mediaType: d.mediaType}
 			mt, err := s.mimeType("")
@@ -331,6 +332,7 @@ func TestMimeTypeWithArg(t *testing.T) {
 	}
 
 	for i, d := range data {
+		d := d
 		t.Run(fmt.Sprintf("%d:%q,%q,%q==%q", i, d.url, d.mediaType, d.arg, d.expected), func(t *testing.T) {
 			s := &Source{URL: mustParseURL(d.url), mediaType: d.mediaType}
 			mt, err := s.mimeType(d.arg)

@@ -118,9 +118,9 @@ func (g gitsource) parseGitPath(u *url.URL, args ...string) (out *url.URL, p str
 	}
 
 	if len(args) > 0 {
-		argURL, err := g.parseArgURL(args[0])
-		if err != nil {
-			return nil, "", err
+		argURL, uerr := g.parseArgURL(args[0])
+		if uerr != nil {
+			return nil, "", uerr
 		}
 		repo, argpath := g.parseArgPath(u, argURL.Path)
 		out.Path = path.Join(out.Path, repo)
@@ -203,8 +203,8 @@ func (g gitsource) read(fs billy.Filesystem, path string) (string, []byte, error
 		return "", nil, fmt.Errorf("can't stat %s: %w", path, err)
 	}
 	if fi.IsDir() || strings.HasSuffix(path, string(filepath.Separator)) {
-		out, err := g.readDir(fs, path)
-		return jsonArrayMimetype, out, err
+		out, rerr := g.readDir(fs, path)
+		return jsonArrayMimetype, out, rerr
 	}
 
 	f, err := fs.OpenFile(path, os.O_RDONLY, 0)

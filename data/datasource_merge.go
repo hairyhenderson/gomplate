@@ -31,9 +31,9 @@ func (d *Data) readMerge(source *Source, args ...string) ([]byte, error) {
 		subSource, err := d.lookupSource(part)
 		if err != nil {
 			// maybe it's a relative filename?
-			u, err := config.ParseSourceURL(part)
-			if err != nil {
-				return nil, err
+			u, uerr := config.ParseSourceURL(part)
+			if uerr != nil {
+				return nil, uerr
 			}
 			subSource = &Source{
 				Alias: part,

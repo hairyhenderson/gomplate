@@ -85,7 +85,7 @@ func Join(in interface{}, sep string) (out string, err error) {
 	if !ok {
 		a, err = iconv.InterfaceSlice(in)
 		if err != nil {
-			return "", errors.Wrap(err, "Input to Join must be an array")
+			return "", errors.Wrap(err, "input to Join must be an array")
 		}
 		ok = true
 	}
@@ -97,7 +97,7 @@ func Join(in interface{}, sep string) (out string, err error) {
 		return strings.Join(b, sep), nil
 	}
 
-	return "", errors.New("Input to Join must be an array")
+	return "", errors.New("input to Join must be an array")
 }
 
 // Has determines whether or not a given object has a property with the given key

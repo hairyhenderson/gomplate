@@ -249,6 +249,7 @@ func TestToString(t *testing.T) {
 	}
 
 	for _, d := range testdata {
+		d := d
 		t.Run(fmt.Sprintf("%T/%#v == %s", d.in, d.in, d.out), func(t *testing.T) {
 			out := ToString(d.in)
 			assert.Equal(t, d.out, out)

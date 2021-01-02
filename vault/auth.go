@@ -31,7 +31,7 @@ func (v *Vault) GetToken() (string, error) {
 			return token, err
 		}
 	}
-	return "", errors.New("No vault auth methods succeeded")
+	return "", errors.New("no vault auth methods succeeded")
 }
 
 // AppIDLogin - app-id auth backend
@@ -52,10 +52,10 @@ func (v *Vault) AppIDLogin() (string, error) {
 	path := fmt.Sprintf("auth/%s/login/%s", mount, appID)
 	secret, err := v.client.Logical().Write(path, vars)
 	if err != nil {
-		return "", errors.Wrapf(err, "AppID logon failed")
+		return "", errors.Wrapf(err, "appID logon failed")
 	}
 	if secret == nil {
-		return "", errors.New("Empty response from AppID logon")
+		return "", errors.New("empty response from AppID logon")
 	}
 
 	return secret.Auth.ClientToken, nil
@@ -80,10 +80,10 @@ func (v *Vault) AppRoleLogin() (string, error) {
 	path := fmt.Sprintf("auth/%s/login", mount)
 	secret, err := v.client.Logical().Write(path, vars)
 	if err != nil {
-		return "", errors.Wrap(err, "AppRole logon failed")
+		return "", errors.Wrap(err, "appRole logon failed")
 	}
 	if secret == nil {
-		return "", errors.New("Empty response from AppRole logon")
+		return "", errors.New("empty response from AppRole logon")
 	}
 
 	return secret.Auth.ClientToken, nil
@@ -106,10 +106,10 @@ func (v *Vault) GitHubLogin() (string, error) {
 	path := fmt.Sprintf("auth/%s/login", mount)
 	secret, err := v.client.Logical().Write(path, vars)
 	if err != nil {
-		return "", errors.Wrap(err, "AppRole logon failed")
+		return "", errors.Wrap(err, "appRole logon failed")
 	}
 	if secret == nil {
-		return "", errors.New("Empty response from AppRole logon")
+		return "", errors.New("empty response from AppRole logon")
 	}
 
 	return secret.Auth.ClientToken, nil
@@ -133,10 +133,10 @@ func (v *Vault) UserPassLogin() (string, error) {
 	path := fmt.Sprintf("auth/%s/login/%s", mount, username)
 	secret, err := v.client.Logical().Write(path, vars)
 	if err != nil {
-		return "", errors.Wrap(err, "UserPass logon failed")
+		return "", errors.Wrap(err, "userPass logon failed")
 	}
 	if secret == nil {
-		return "", errors.New("Empty response from UserPass logon")
+		return "", errors.New("empty response from UserPass logon")
 	}
 
 	return secret.Auth.ClientToken, nil
@@ -163,7 +163,7 @@ func (v *Vault) EC2Login() (string, error) {
 		return "", errors.Wrapf(err, "AWS EC2 logon failed")
 	}
 	if secret == nil {
-		return "", errors.New("Empty response from AWS EC2 logon")
+		return "", errors.New("empty response from AWS EC2 logon")
 	}
 
 	if output != "" {
