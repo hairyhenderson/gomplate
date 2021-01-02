@@ -20,13 +20,13 @@ func genPKCS1PrivKey() (*rsa.PrivateKey, string) {
 	return rsaPriv, string(pem.EncodeToMemory(privBlock))
 }
 
-func derivePKIXPrivKey(priv *rsa.PrivateKey) string {
-	privBlock := &pem.Block{
-		Type:  "RSA PRIVATE KEY",
-		Bytes: x509.MarshalPKCS1PrivateKey(priv),
-	}
-	return string(pem.EncodeToMemory(privBlock))
-}
+// func derivePKIXPrivKey(priv *rsa.PrivateKey) string {
+// 	privBlock := &pem.Block{
+// 		Type:  "RSA PRIVATE KEY",
+// 		Bytes: x509.MarshalPKCS1PrivateKey(priv),
+// 	}
+// 	return string(pem.EncodeToMemory(privBlock))
+// }
 
 func derivePKIXPubKey(priv *rsa.PrivateKey) string {
 	b, _ := x509.MarshalPKIXPublicKey(&priv.PublicKey)

@@ -28,6 +28,7 @@ func TestDefault(t *testing.T) {
 	}
 
 	for _, d := range data {
+		d := d
 		t.Run(fmt.Sprintf("%T/%#v empty==%v", d.val, d.val, d.empty), func(t *testing.T) {
 			if d.empty {
 				assert.Equal(t, def, c.Default(def, d.val))

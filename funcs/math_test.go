@@ -126,6 +126,7 @@ func TestIsIntFloatNum(t *testing.T) {
 	}
 	m := MathNS()
 	for _, tt := range tests {
+		tt := tt
 		t.Run(fmt.Sprintf("%T(%#v)", tt.in, tt.in), func(t *testing.T) {
 			assert.Equal(t, tt.isInt, m.IsInt(tt.in))
 			assert.Equal(t, tt.isFloat, m.IsFloat(tt.in))
@@ -140,6 +141,7 @@ func BenchmarkIsFloat(b *testing.B) {
 	}
 	m := MathNS()
 	for _, n := range data {
+		n := n
 		b.Run(fmt.Sprintf("%T(%v)", n, n), func(b *testing.B) {
 			for i := 0; i < b.N; i++ {
 				m.IsFloat(n)
@@ -164,6 +166,7 @@ func TestMax(t *testing.T) {
 		{[]interface{}{"14", "0xff", -5}, int64(255)},
 	}
 	for _, d := range data {
+		d := d
 		t.Run(fmt.Sprintf("%v==%v", d.n, d.expected), func(t *testing.T) {
 			var actual interface{}
 			if len(d.n) == 1 {
@@ -192,6 +195,7 @@ func TestMin(t *testing.T) {
 		{[]interface{}{"14", "0xff", -5}, int64(-5)},
 	}
 	for _, d := range data {
+		d := d
 		t.Run(fmt.Sprintf("%v==%v", d.n, d.expected), func(t *testing.T) {
 			var actual interface{}
 			if len(d.n) == 1 {
@@ -223,6 +227,7 @@ func TestContainsFloat(t *testing.T) {
 		{[]interface{}{"NaN"}, true},
 	}
 	for _, d := range data {
+		d := d
 		t.Run(fmt.Sprintf("%v==%v", d.n, d.expected), func(t *testing.T) {
 			if d.expected {
 				assert.True(t, m.containsFloat(d.n...))
@@ -248,6 +253,7 @@ func TestCeil(t *testing.T) {
 		{-1.9, -1},
 	}
 	for _, d := range data {
+		d := d
 		t.Run(fmt.Sprintf("%v==%v", d.n, d.a), func(t *testing.T) {
 			assert.InDelta(t, d.a, m.Ceil(d.n), 1e-12)
 		})
@@ -269,6 +275,7 @@ func TestFloor(t *testing.T) {
 		{-1.9, -2.},
 	}
 	for _, d := range data {
+		d := d
 		t.Run(fmt.Sprintf("%v==%v", d.n, d.a), func(t *testing.T) {
 			assert.InDelta(t, d.a, m.Floor(d.n), 1e-12)
 		})
@@ -294,6 +301,7 @@ func TestRound(t *testing.T) {
 		{-4.5, -5},
 	}
 	for _, d := range data {
+		d := d
 		t.Run(fmt.Sprintf("%v==%v", d.n, d.a), func(t *testing.T) {
 			assert.InDelta(t, d.a, m.Round(d.n), 1e-12)
 		})
@@ -318,6 +326,7 @@ func TestAbs(t *testing.T) {
 		{-2, int64(2)},
 	}
 	for _, d := range data {
+		d := d
 		t.Run(fmt.Sprintf("%#v==%v", d.n, d.a), func(t *testing.T) {
 			assert.Equal(t, d.a, m.Abs(d.n))
 		})

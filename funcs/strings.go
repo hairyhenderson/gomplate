@@ -210,18 +210,18 @@ func (f *StringFuncs) Indent(args ...interface{}) (string, error) {
 		if !ok {
 			width, ok = args[0].(int)
 			if !ok {
-				return "", errors.New("Indent: invalid arguments")
+				return "", errors.New("indent: invalid arguments")
 			}
 			indent = " "
 		}
 	case 3:
 		width, ok = args[0].(int)
 		if !ok {
-			return "", errors.New("Indent: invalid arguments")
+			return "", errors.New("indent: invalid arguments")
 		}
 		indent, ok = args[1].(string)
 		if !ok {
-			return "", errors.New("Indent: invalid arguments")
+			return "", errors.New("indent: invalid arguments")
 		}
 	}
 	return gompstrings.Indent(width, indent, input), nil

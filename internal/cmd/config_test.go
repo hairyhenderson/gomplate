@@ -255,6 +255,7 @@ func TestApplyEnvVars(t *testing.T) {
 	}
 
 	for i, d := range data {
+		d := d
 		t.Run(fmt.Sprintf("applyEnvVars_%s_%s/%d", d.env, d.value, i), func(t *testing.T) {
 			os.Setenv(d.env, d.value)
 
