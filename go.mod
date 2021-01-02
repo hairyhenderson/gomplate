@@ -9,6 +9,8 @@ require (
 	github.com/boltdb/bolt v1.3.1
 	github.com/docker/libkv v0.2.1
 	github.com/fullsailor/pkcs7 v0.0.0-20190404230743-d7302db945fa
+	github.com/go-git/go-billy/v5 v5.0.0
+	github.com/go-git/go-git/v5 v5.2.0
 	github.com/google/uuid v1.1.3
 	github.com/gosimple/slug v1.9.0
 	github.com/hairyhenderson/toml v0.3.1-0.20191004034452-2a4f3b6160f2
@@ -29,8 +31,6 @@ require (
 	golang.org/x/sys v0.0.0-20201223074533-0d417f636930
 	golang.org/x/term v0.0.0-20201210144234-2321bbc49cbf
 	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c
-	gopkg.in/src-d/go-billy.v4 v4.3.2
-	gopkg.in/src-d/go-git.v4 v4.13.1
 	gopkg.in/yaml.v3 v3.0.0-20200615113413-eeeca48fe776
 	gotest.tools/v3 v3.0.3
 	k8s.io/client-go v11.0.0+incompatible
