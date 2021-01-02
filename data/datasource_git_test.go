@@ -11,18 +11,18 @@ import (
 	"testing"
 	"time"
 
-	"gopkg.in/src-d/go-billy.v4"
-	"gopkg.in/src-d/go-billy.v4/memfs"
-	"gopkg.in/src-d/go-billy.v4/osfs"
-	"gopkg.in/src-d/go-git.v4"
-	"gopkg.in/src-d/go-git.v4/plumbing"
-	"gopkg.in/src-d/go-git.v4/plumbing/cache"
-	"gopkg.in/src-d/go-git.v4/plumbing/object"
-	"gopkg.in/src-d/go-git.v4/plumbing/transport/client"
-	"gopkg.in/src-d/go-git.v4/plumbing/transport/http"
-	"gopkg.in/src-d/go-git.v4/plumbing/transport/server"
-	"gopkg.in/src-d/go-git.v4/plumbing/transport/ssh"
-	"gopkg.in/src-d/go-git.v4/storage/filesystem"
+	"github.com/go-git/go-billy/v5"
+	"github.com/go-git/go-billy/v5/memfs"
+	"github.com/go-git/go-billy/v5/osfs"
+	"github.com/go-git/go-git/v5"
+	"github.com/go-git/go-git/v5/plumbing"
+	"github.com/go-git/go-git/v5/plumbing/cache"
+	"github.com/go-git/go-git/v5/plumbing/object"
+	"github.com/go-git/go-git/v5/plumbing/transport/client"
+	"github.com/go-git/go-git/v5/plumbing/transport/http"
+	"github.com/go-git/go-git/v5/plumbing/transport/server"
+	"github.com/go-git/go-git/v5/plumbing/transport/ssh"
+	"github.com/go-git/go-git/v5/storage/filesystem"
 
 	"golang.org/x/crypto/ssh/testdata"
 
@@ -226,7 +226,7 @@ func setupGitRepo(t *testing.T) billy.Filesystem {
 	assert.NilError(t, err)
 
 	// config needs to be created after setting up a "normal" fs repo
-	// this is possibly a bug in src-d/git-go?
+	// this is possibly a bug in git-go?
 	c, err := r.Config()
 	assert.NilError(t, err)
 	s.SetConfig(c)
