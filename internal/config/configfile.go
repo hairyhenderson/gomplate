@@ -432,7 +432,8 @@ func isZero(value interface{}) bool {
 	}
 }
 
-// ApplyDefaults -
+// ApplyDefaults - any defaults changed here should be added to cmd.InitFlags as
+// well for proper help/usage display.
 func (c *Config) ApplyDefaults() {
 	if c.InputDir != "" && c.OutputDir == "" && c.OutputMap == "" {
 		c.OutputDir = "."

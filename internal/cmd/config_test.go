@@ -252,6 +252,36 @@ func TestApplyEnvVars(t *testing.T) {
 			&config.Config{Experimental: true},
 			&config.Config{Experimental: true},
 		},
+		{
+			"GOMPLATE_LEFT_DELIM", "--",
+			false,
+			&config.Config{},
+			&config.Config{LDelim: "--"},
+		},
+		{
+			"GOMPLATE_LEFT_DELIM", "--",
+			false,
+			&config.Config{LDelim: "{{"},
+			&config.Config{LDelim: "--"},
+		},
+		{
+			"GOMPLATE_RIGHT_DELIM", ")>",
+			false,
+			&config.Config{},
+			&config.Config{RDelim: ")>"},
+		},
+		{
+			"GOMPLATE_RIGHT_DELIM", ")>",
+			false,
+			&config.Config{RDelim: "}}"},
+			&config.Config{RDelim: ")>"},
+		},
+		{
+			"GOMPLATE_RIGHT_DELIM", "",
+			false,
+			&config.Config{RDelim: "}}"},
+			&config.Config{RDelim: "}}"},
+		},
 	}
 
 	for i, d := range data {

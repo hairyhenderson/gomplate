@@ -153,19 +153,19 @@ func (s *BasicSuite) TestDelimsChangedThroughOpts(c *C) {
 	result := icmd.RunCommand(GomplateBin,
 		"--left-delim", "((",
 		"--right-delim", "))",
-		"-i", `((print "hi"))`)
-	result.Assert(c, icmd.Expected{ExitCode: 0, Out: "hi"})
+		"-i", `foo((print "hi"))`)
+	result.Assert(c, icmd.Expected{ExitCode: 0, Out: "foohi"})
 }
 
 func (s *BasicSuite) TestDelimsChangedThroughEnvVars(c *C) {
-	result := icmd.RunCmd(icmd.Command(GomplateBin, "-i", `<<print "hi">>`),
+	result := icmd.RunCmd(icmd.Command(GomplateBin, "-i", `foo<<print "hi">>`),
 		func(cmd *icmd.Cmd) {
 			cmd.Env = []string{
 				"GOMPLATE_LEFT_DELIM=<<",
 				"GOMPLATE_RIGHT_DELIM=>>",
 			}
 		})
-	result.Assert(c, icmd.Expected{ExitCode: 0, Out: "hi"})
+	result.Assert(c, icmd.Expected{ExitCode: 0, Out: "foohi"})
 }
 
 func (s *BasicSuite) TestUnknownArgErrors(c *C) {

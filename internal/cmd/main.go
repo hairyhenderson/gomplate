@@ -109,7 +109,10 @@ func NewGomplateCmd() *cobra.Command {
 	return rootCmd
 }
 
-// InitFlags -
+// InitFlags - initialize the various flags and help strings on the command.
+// Note that the defaults set here are ignored, and instead defaults from
+// *config.Config's ApplyDefaults method are used instead. Changes here must be
+// reflected there as well.
 func InitFlags(command *cobra.Command) {
 	command.Flags().SortFlags = false
 
@@ -135,6 +138,7 @@ func InitFlags(command *cobra.Command) {
 
 	command.Flags().Bool("exec-pipe", false, "pipe the output to the post-run exec command")
 
+	// these are only set for the help output - these defaults aren't actually used
 	ldDefault := env.Getenv("GOMPLATE_LEFT_DELIM", "{{")
 	rdDefault := env.Getenv("GOMPLATE_RIGHT_DELIM", "}}")
 	command.Flags().String("left-delim", ldDefault, "override the default left-`delimiter` [$GOMPLATE_LEFT_DELIM]")
