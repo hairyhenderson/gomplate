@@ -45,6 +45,7 @@ func (s *BasicSuite) TestTakesStdinByDefault(c *C) {
 		cmd.Stdin = bytes.NewBufferString("hello world")
 	})
 	result.Assert(c, icmd.Expected{ExitCode: 0, Out: "hello world"})
+	assert.Equal(c, "hello world\n", result.Combined())
 }
 
 func (s *BasicSuite) TestTakesStdinWithFileFlag(c *C) {
@@ -52,12 +53,14 @@ func (s *BasicSuite) TestTakesStdinWithFileFlag(c *C) {
 		cmd.Stdin = bytes.NewBufferString("hello world")
 	})
 	result.Assert(c, icmd.Expected{ExitCode: 0, Out: "hello world"})
+	assert.Equal(c, "hello world\n", result.Combined())
 }
 func (s *BasicSuite) TestWritesToStdoutWithOutFlag(c *C) {
 	result := icmd.RunCmd(icmd.Command(GomplateBin, "--out", "-"), func(cmd *icmd.Cmd) {
 		cmd.Stdin = bytes.NewBufferString("hello world")
 	})
 	result.Assert(c, icmd.Expected{ExitCode: 0, Out: "hello world"})
+	assert.Equal(c, "hello world\n", result.Combined())
 }
 
 func (s *BasicSuite) TestIgnoresStdinWithInFlag(c *C) {
@@ -65,6 +68,7 @@ func (s *BasicSuite) TestIgnoresStdinWithInFlag(c *C) {
 		cmd.Stdin = bytes.NewBufferString("hello world")
 	})
 	result.Assert(c, icmd.Expected{ExitCode: 0, Out: "hi"})
+	assert.Equal(c, "hi\n", result.Combined())
 }
 
 func (s *BasicSuite) TestErrorsWithInputOutputImbalance(c *C) {
@@ -91,6 +95,7 @@ func (s *BasicSuite) TestRoutesInputsToProperOutputs(c *C) {
 		cmd.Stdin = bytes.NewBufferString("hello world")
 	})
 	result.Assert(c, icmd.Success)
+	assert.Equal(c, "", result.Combined())
 
 	testdata := []struct {
 		path    string
@@ -183,6 +188,7 @@ func (s *BasicSuite) TestExecCommand(c *C) {
 		ExitCode: 0,
 		Out:      "hello world",
 	})
+	assert.Equal(c, "hello world", result.Combined())
 }
 
 func (s *BasicSuite) TestPostRunExecPipe(c *C) {
@@ -194,6 +200,7 @@ func (s *BasicSuite) TestPostRunExecPipe(c *C) {
 		ExitCode: 0,
 		Out:      "HELLO WORLD",
 	})
+	assert.Equal(c, "HELLO WORLD", result.Combined())
 }
 
 func (s *BasicSuite) TestEmptyOutputSuppression(c *C) {
