@@ -26,7 +26,6 @@ var fs = afero.NewOsFs()
 // - creates a config.Config from the config file (if present)
 // - merges the two (flags take precedence)
 // - validates the final config
-// - converts the config to a *gomplate.Config for further use (TODO: eliminate this part)
 func loadConfig(cmd *cobra.Command, args []string) (*config.Config, error) {
 	ctx := cmd.Context()
 	flagConfig, err := cobraConfig(cmd, args)
@@ -256,6 +255,9 @@ func applyEnvVars(ctx context.Context, cfg *config.Config) (*config.Config, erro
 	if !cfg.Experimental && conv.ToBool(env.Getenv("GOMPLATE_EXPERIMENTAL", "false")) {
 		cfg.Experimental = true
 	}
+
+	cfg.LDelim = env.Getenv("GOMPLATE_LEFT_DELIM", cfg.LDelim)
+	cfg.RDelim = env.Getenv("GOMPLATE_RIGHT_DELIM", cfg.RDelim)
 
 	return cfg, nil
 }
