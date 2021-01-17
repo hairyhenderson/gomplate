@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"os"
@@ -63,7 +64,12 @@ func TestLoadConfig(t *testing.T) {
 	fs = afero.NewMemMapFs()
 	defer func() { fs = afero.NewOsFs() }()
 
+	stdin, stdout, stderr := &bytes.Buffer{}, &bytes.Buffer{}, &bytes.Buffer{}
 	cmd := &cobra.Command{}
+	cmd.SetIn(stdin)
+	cmd.SetOut(stdout)
+	cmd.SetErr(stderr)
+
 	cmd.Args = optionalExecArgs
 	cmd.Flags().StringSlice("file", []string{"-"}, "...")
 	cmd.Flags().StringSlice("out", []string{"-"}, "...")
@@ -80,9 +86,11 @@ func TestLoadConfig(t *testing.T) {
 		OutputFiles:   []string{"-"},
 		LDelim:        "{{",
 		RDelim:        "}}",
-		PostExecInput: os.Stdin,
-		OutWriter:     os.Stdout,
+		PostExecInput: stdin,
 		PluginTimeout: 5 * time.Second,
+		Stdin:         stdin,
+		Stdout:        stdout,
+		Stderr:        stderr,
 	}
 	assert.NoError(t, err)
 	assert.EqualValues(t, expected, out)
@@ -94,9 +102,11 @@ func TestLoadConfig(t *testing.T) {
 		OutputFiles:   []string{"-"},
 		LDelim:        "{{",
 		RDelim:        "}}",
-		PostExecInput: os.Stdin,
-		OutWriter:     os.Stdout,
+		PostExecInput: stdin,
 		PluginTimeout: 5 * time.Second,
+		Stdin:         stdin,
+		Stdout:        out.Stdout,
+		Stderr:        stderr,
 	}
 	assert.NoError(t, err)
 	assert.EqualValues(t, expected, out)
@@ -110,9 +120,11 @@ func TestLoadConfig(t *testing.T) {
 		ExecPipe:      true,
 		PostExec:      []string{"tr", "[a-z]", "[A-Z]"},
 		PostExecInput: out.PostExecInput,
-		OutWriter:     out.PostExecInput,
 		OutputFiles:   []string{"-"},
 		PluginTimeout: 5 * time.Second,
+		Stdin:         stdin,
+		Stdout:        out.Stdout,
+		Stderr:        stderr,
 	}
 	assert.NoError(t, err)
 	assert.EqualValues(t, expected, out)

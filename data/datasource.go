@@ -3,7 +3,6 @@ package data
 import (
 	"context"
 	"fmt"
-	"io"
 	"mime"
 	"net/http"
 	"net/url"
@@ -18,9 +17,6 @@ import (
 	"github.com/hairyhenderson/gomplate/v3/libkv"
 	"github.com/hairyhenderson/gomplate/v3/vault"
 )
-
-// stdin - for overriding in tests
-var stdin io.Reader
 
 func regExtension(ext, typ string) {
 	err := mime.AddExtensionType(ext, typ)
@@ -114,6 +110,10 @@ func NewData(datasourceArgs, headerArgs []string) (*Data, error) {
 
 // FromConfig - internal use only!
 func FromConfig(ctx context.Context, cfg *config.Config) *Data {
+	// XXX: This is temporary, and will be replaced with something a bit cleaner
+	// when datasources are refactored
+	stdin = cfg.Stdin
+
 	sources := map[string]*Source{}
 	for alias, d := range cfg.DataSources {
 		sources[alias] = &Source{

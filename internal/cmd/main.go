@@ -18,7 +18,7 @@ import (
 )
 
 // postRunExec - if templating succeeds, the command following a '--' will be executed
-func postRunExec(ctx context.Context, cfg *config.Config) error {
+func postRunExec(ctx context.Context, cfg *config.Config, stdout, stderr io.Writer) error {
 	args := cfg.PostExec
 	if len(args) > 0 {
 		log := zerolog.Ctx(ctx)
@@ -29,8 +29,8 @@ func postRunExec(ctx context.Context, cfg *config.Config) error {
 		// nolint: gosec
 		c := exec.CommandContext(ctx, name, args...)
 		c.Stdin = cfg.PostExecInput
-		c.Stderr = os.Stderr
-		c.Stdout = os.Stdout
+		c.Stderr = stderr
+		c.Stdout = stdout
 
 		// make sure all signals are propagated
 		sigs := make(chan os.Signal, 1)
@@ -98,7 +98,7 @@ func NewGomplateCmd() *cobra.Command {
 			// Note: once stdin/out/err are externalized we should only do this
 			// if stdout isn't ending with its own newline!
 			if len(cfg.OutputFiles) == 0 || (len(cfg.OutputFiles) == 1 && cfg.OutputFiles[0] == "-") && !cfg.ExecPipe {
-				fmt.Fprintf(os.Stderr, "\n")
+				fmt.Fprintf(cmd.ErrOrStderr(), "\n")
 			}
 			log.Debug().Int("templatesRendered", gomplate.Metrics.TemplatesProcessed).
 				Int("errors", gomplate.Metrics.Errors).
@@ -108,7 +108,7 @@ func NewGomplateCmd() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			return postRunExec(ctx, cfg)
+			return postRunExec(ctx, cfg, cmd.OutOrStdout(), cmd.ErrOrStderr())
 		},
 		Args: optionalExecArgs,
 	}

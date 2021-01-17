@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"io"
 	"os"
 	"os/exec"
 	"os/signal"
@@ -23,6 +24,7 @@ func bindPlugins(ctx context.Context, cfg *config.Config, funcMap template.FuncM
 			name:    k,
 			path:    v,
 			timeout: cfg.PluginTimeout,
+			stderr:  cfg.Stderr,
 		}
 		if _, ok := funcMap[plugin.name]; ok {
 			return fmt.Errorf("function %q is already bound, and can not be overridden", plugin.name)
@@ -37,6 +39,7 @@ type plugin struct {
 	name, path string
 	timeout    time.Duration
 	ctx        context.Context
+	stderr     io.Writer
 }
 
 // builds a command that's appropriate for running scripts
@@ -78,7 +81,7 @@ func (p *plugin) run(args ...interface{}) (interface{}, error) {
 	defer cancel()
 	c := exec.CommandContext(ctx, name, a...)
 	c.Stdin = nil
-	c.Stderr = os.Stderr
+	c.Stderr = p.stderr
 	outBuf := &bytes.Buffer{}
 	c.Stdout = outBuf
 

@@ -2,9 +2,11 @@ package gomplate
 
 import (
 	"io"
+	"os"
 	"strings"
 
 	"github.com/hairyhenderson/gomplate/v3/internal/config"
+	"github.com/hairyhenderson/gomplate/v3/internal/iohelpers"
 )
 
 // Config - values necessary for rendering templates with gomplate.
@@ -127,7 +129,9 @@ func (o *Config) toNewConfig() (*config.Config, error) {
 		LDelim:      o.LDelim,
 		RDelim:      o.RDelim,
 		Templates:   o.Templates,
-		OutWriter:   o.Out,
+		Stdin:       os.Stdin,
+		Stdout:      &iohelpers.NopCloser{Writer: o.Out},
+		Stderr:      os.Stderr,
 	}
 	err := cfg.ParsePluginFlags(o.Plugins)
 	if err != nil {

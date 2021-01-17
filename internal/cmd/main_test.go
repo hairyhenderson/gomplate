@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"bytes"
 	"context"
 	"testing"
 
@@ -47,4 +48,11 @@ func TestRunMain(t *testing.T) {
 
 	err = Main(ctx, []string{"--bogus"}, nil, nil, nil)
 	assert.Error(t, err)
+
+	stdin := &bytes.Buffer{}
+	stdout := &bytes.Buffer{}
+	stderr := &bytes.Buffer{}
+	err = Main(ctx, []string{"-i", "hello"}, stdin, stdout, stderr)
+	assert.NoError(t, err)
+	assert.Equal(t, "hello", stdout.String())
 }

@@ -14,6 +14,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/hairyhenderson/gomplate/v3/internal/iohelpers"
 	"github.com/pkg/errors"
 	"gopkg.in/yaml.v3"
 )
@@ -59,8 +60,11 @@ type Config struct {
 	ExtraHeaders map[string]http.Header `yaml:"-"`
 
 	// internal use only, can't be injected in YAML
-	PostExecInput io.ReadWriter `yaml:"-"`
-	OutWriter     io.Writer     `yaml:"-"`
+	PostExecInput io.Reader `yaml:"-"`
+
+	Stdin  io.Reader `yaml:"-"`
+	Stdout io.Writer `yaml:"-"`
+	Stderr io.Writer `yaml:"-"`
 }
 
 var cfgContextKey = struct{}{}
@@ -452,12 +456,14 @@ func (c *Config) ApplyDefaults() {
 	}
 
 	if c.ExecPipe {
-		c.PostExecInput = &bytes.Buffer{}
-		c.OutWriter = c.PostExecInput
+		pipe := &bytes.Buffer{}
+		c.PostExecInput = pipe
 		c.OutputFiles = []string{"-"}
+
+		// --exec-pipe redirects standard out to the out pipe
+		c.Stdout = &iohelpers.NopCloser{Writer: pipe}
 	} else {
-		c.PostExecInput = os.Stdin
-		c.OutWriter = os.Stdout
+		c.PostExecInput = c.Stdin
 	}
 
 	if c.PluginTimeout == 0 {

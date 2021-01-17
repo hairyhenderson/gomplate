@@ -1,16 +1,16 @@
 package data
 
 import (
+	"io"
 	"io/ioutil"
-	"os"
 
 	"github.com/pkg/errors"
 )
 
+// stdin - for overriding in tests
+var stdin io.Reader
+
 func readStdin(source *Source, args ...string) ([]byte, error) {
-	if stdin == nil {
-		stdin = os.Stdin
-	}
 	b, err := ioutil.ReadAll(stdin)
 	if err != nil {
 		return nil, errors.Wrapf(err, "Can't read %s", stdin)
