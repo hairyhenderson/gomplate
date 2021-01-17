@@ -20,11 +20,7 @@ import (
 const gomplateignore = ".gomplateignore"
 
 // for overriding in tests
-var stdin io.ReadCloser = os.Stdin
 var fs = afero.NewOsFs()
-
-// Stdout allows overriding the writer to use when templates are written to stdout ("-").
-var Stdout io.WriteCloser = os.Stdout
 
 // tplate - models a gomplate template file...
 type tplate struct {
@@ -73,22 +69,24 @@ func (t *tplate) toGoTemplate(g *gomplate) (tmpl *template.Template, err error) 
 	return tmpl, nil
 }
 
-// loadContents - reads the template in _once_ if it hasn't yet been read. Uses the name!
-func (t *tplate) loadContents() (err error) {
-	if t.contents == "" {
-		t.contents, err = readInput(t.name)
+// loadContents - reads the template
+func (t *tplate) loadContents(in io.Reader) ([]byte, error) {
+	if in == nil {
+		f, err := fs.OpenFile(t.name, os.O_RDONLY, 0)
+		if err != nil {
+			return nil, fmt.Errorf("failed to open %s: %w", t.name, err)
+		}
+		// nolint: errcheck
+		defer f.Close()
+		in = f
 	}
-	return err
-}
 
-func (t *tplate) addTarget(cfg *config.Config) (err error) {
-	if t.name == "<arg>" && t.targetPath == "" {
-		t.targetPath = "-"
+	b, err := ioutil.ReadAll(in)
+	if err != nil {
+		return nil, fmt.Errorf("failed to load contents of %s: %w", t.name, err)
 	}
-	if t.target == nil {
-		t.target, err = openOutFile(cfg, t.targetPath, t.mode, t.modeOverride)
-	}
-	return err
+
+	return b, nil
 }
 
 // gatherTemplates - gather and prepare input template(s) and output file(s) for rendering
@@ -97,11 +95,6 @@ func gatherTemplates(cfg *config.Config, outFileNamer func(string) (string, erro
 	mode, modeOverride, err := cfg.GetMode()
 	if err != nil {
 		return nil, err
-	}
-
-	// --exec-pipe redirects standard out to the out pipe
-	if cfg.OutWriter != nil {
-		Stdout = &iohelpers.NopCloser{Writer: cfg.OutWriter}
 	}
 
 	switch {
@@ -133,14 +126,31 @@ func gatherTemplates(cfg *config.Config, outFileNamer func(string) (string, erro
 	return processTemplates(cfg, templates)
 }
 
+// processTemplates - reads data into the given templates as necessary and opens
+// outputs for writing as necessary
 func processTemplates(cfg *config.Config, templates []*tplate) ([]*tplate, error) {
 	for _, t := range templates {
-		if err := t.loadContents(); err != nil {
-			return nil, err
+		if t.contents == "" {
+			var in io.Reader
+			if t.name == "-" {
+				in = cfg.Stdin
+			}
+
+			b, err := t.loadContents(in)
+			if err != nil {
+				return nil, err
+			}
+
+			t.contents = string(b)
 		}
 
-		if err := t.addTarget(cfg); err != nil {
-			return nil, err
+		if t.target == nil {
+			out, err := openOutFile(cfg, t.targetPath, t.mode, t.modeOverride)
+			if err != nil {
+				return nil, err
+			}
+
+			t.target = out
 		}
 	}
 
@@ -225,11 +235,19 @@ func fileToTemplates(inFile, outFile string, mode os.FileMode, modeOverride bool
 	return tmpl, nil
 }
 
+func stdout(cfg *config.Config) io.WriteCloser {
+	wc, ok := cfg.Stdout.(io.WriteCloser)
+	if ok {
+		return wc
+	}
+	return &iohelpers.NopCloser{Writer: cfg.Stdout}
+}
+
 func openOutFile(cfg *config.Config, filename string, mode os.FileMode, modeOverride bool) (out io.WriteCloser, err error) {
 	if cfg.SuppressEmpty {
 		out = iohelpers.NewEmptySkipper(func() (io.WriteCloser, error) {
 			if filename == "-" {
-				return Stdout, nil
+				return stdout(cfg), nil
 			}
 			return createOutFile(filename, mode, modeOverride)
 		})
@@ -237,7 +255,7 @@ func openOutFile(cfg *config.Config, filename string, mode os.FileMode, modeOver
 	}
 
 	if filename == "-" {
-		return Stdout, nil
+		return stdout(cfg), nil
 	}
 	return createOutFile(filename, mode, modeOverride)
 }
@@ -276,25 +294,4 @@ func createOutFile(filename string, mode os.FileMode, modeOverride bool) (out io
 	}), open)
 
 	return out, err
-}
-
-func readInput(filename string) (string, error) {
-	var err error
-	var inFile io.ReadCloser
-	if filename == "-" {
-		inFile = stdin
-	} else {
-		inFile, err = fs.OpenFile(filename, os.O_RDONLY, 0)
-		if err != nil {
-			return "", fmt.Errorf("failed to open %s: %w", filename, err)
-		}
-		// nolint: errcheck
-		defer inFile.Close()
-	}
-	bytes, err := ioutil.ReadAll(inFile)
-	if err != nil {
-		err = fmt.Errorf("read failed for %s: %w", filename, err)
-		return "", err
-	}
-	return string(bytes), nil
 }

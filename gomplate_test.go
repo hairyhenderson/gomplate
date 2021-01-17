@@ -16,7 +16,6 @@ import (
 	"github.com/hairyhenderson/gomplate/v3/conv"
 	"github.com/hairyhenderson/gomplate/v3/data"
 	"github.com/hairyhenderson/gomplate/v3/env"
-	"github.com/hairyhenderson/gomplate/v3/internal/iohelpers"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -156,10 +155,8 @@ func TestCustomDelim(t *testing.T) {
 }
 
 func TestRunTemplates(t *testing.T) {
-	defer func() { Stdout = os.Stdout }()
 	buf := &bytes.Buffer{}
-	Stdout = &iohelpers.NopCloser{Writer: buf}
-	config := &Config{Input: "foo", OutputFiles: []string{"-"}}
+	config := &Config{Input: "foo", OutputFiles: []string{"-"}, Out: buf}
 	err := RunTemplates(config)
 	assert.NoError(t, err)
 	assert.Equal(t, "foo", buf.String())

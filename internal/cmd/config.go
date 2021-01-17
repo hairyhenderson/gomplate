@@ -48,6 +48,10 @@ func loadConfig(cmd *cobra.Command, args []string) (*config.Config, error) {
 		return nil, err
 	}
 
+	cfg.Stdin = cmd.InOrStdin()
+	cfg.Stdout = cmd.OutOrStdout()
+	cfg.Stderr = cmd.ErrOrStderr()
+
 	// reset defaults before validation
 	cfg.ApplyDefaults()
 

@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"testing"
 
@@ -15,32 +14,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
-
-func TestReadInput(t *testing.T) {
-	origfs := fs
-	defer func() { fs = origfs }()
-	fs = afero.NewMemMapFs()
-	_ = fs.Mkdir("/tmp", 0777)
-	f, _ := fs.Create("/tmp/foo")
-	_, _ = f.Write([]byte("foo"))
-
-	f, _ = fs.Create("/tmp/unreadable")
-	_, _ = f.Write([]byte("foo"))
-
-	actual, err := readInput("/tmp/foo")
-	assert.NoError(t, err)
-	assert.Equal(t, "foo", actual)
-
-	defer func() { stdin = os.Stdin }()
-	stdin = ioutil.NopCloser(bytes.NewBufferString("bar"))
-
-	actual, err = readInput("-")
-	assert.NoError(t, err)
-	assert.Equal(t, "bar", actual)
-
-	_, err = readInput("bogus")
-	assert.Error(t, err)
-}
 
 func TestOpenOutFile(t *testing.T) {
 	origfs := fs
@@ -59,12 +32,11 @@ func TestOpenOutFile(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, config.NormalizeFileMode(0644), i.Mode())
 
-	defer func() { Stdout = os.Stdout }()
-	Stdout = &iohelpers.NopCloser{Writer: &bytes.Buffer{}}
+	cfg.Stdout = &iohelpers.NopCloser{Writer: &bytes.Buffer{}}
 
 	f, err = openOutFile(cfg, "-", 0644, false)
 	assert.NoError(t, err)
-	assert.Equal(t, Stdout, f)
+	assert.Equal(t, cfg.Stdout, f)
 }
 
 func TestLoadContents(t *testing.T) {
@@ -75,21 +47,9 @@ func TestLoadContents(t *testing.T) {
 	afero.WriteFile(fs, "foo", []byte("contents"), 0644)
 
 	tmpl := &tplate{name: "foo"}
-	err := tmpl.loadContents()
+	b, err := tmpl.loadContents(nil)
 	assert.NoError(t, err)
-	assert.Equal(t, "contents", tmpl.contents)
-}
-
-func TestAddTarget(t *testing.T) {
-	origfs := fs
-	defer func() { fs = origfs }()
-	fs = afero.NewMemMapFs()
-
-	cfg := &config.Config{}
-	tmpl := &tplate{name: "foo", targetPath: "/out/outfile"}
-	err := tmpl.addTarget(cfg)
-	assert.NoError(t, err)
-	assert.NotNil(t, tmpl.target)
+	assert.Equal(t, "contents", string(b))
 }
 
 func TestGatherTemplates(t *testing.T) {
@@ -102,21 +62,25 @@ func TestGatherTemplates(t *testing.T) {
 	afero.WriteFile(fs, "in/2", []byte("bar"), 0644)
 	afero.WriteFile(fs, "in/3", []byte("baz"), 0644)
 
-	cfg := &config.Config{}
+	cfg := &config.Config{
+		Stdin:  &bytes.Buffer{},
+		Stdout: &bytes.Buffer{},
+	}
 	cfg.ApplyDefaults()
 	templates, err := gatherTemplates(cfg, nil)
 	assert.NoError(t, err)
 	assert.Len(t, templates, 1)
 
 	cfg = &config.Config{
-		Input: "foo",
+		Input:  "foo",
+		Stdout: &iohelpers.NopCloser{Writer: &bytes.Buffer{}},
 	}
 	cfg.ApplyDefaults()
 	templates, err = gatherTemplates(cfg, nil)
 	assert.NoError(t, err)
 	assert.Len(t, templates, 1)
 	assert.Equal(t, "foo", templates[0].contents)
-	assert.Equal(t, Stdout, templates[0].target)
+	assert.Equal(t, cfg.Stdout, templates[0].target)
 
 	templates, err = gatherTemplates(&config.Config{
 		Input:       "foo",
@@ -140,14 +104,16 @@ func TestGatherTemplates(t *testing.T) {
 	assert.Equal(t, config.NormalizeFileMode(0644), info.Mode())
 	fs.Remove("out")
 
-	templates, err = gatherTemplates(&config.Config{
+	cfg = &config.Config{
 		InputFiles:  []string{"foo"},
 		OutputFiles: []string{"out"},
-	}, nil)
+		Stdout:      &iohelpers.NopCloser{Writer: &bytes.Buffer{}},
+	}
+	templates, err = gatherTemplates(cfg, nil)
 	assert.NoError(t, err)
 	assert.Len(t, templates, 1)
 	assert.Equal(t, "bar", templates[0].contents)
-	assert.NotEqual(t, Stdout, templates[0].target)
+	assert.NotEqual(t, cfg.Stdout, templates[0].target)
 	assert.Equal(t, os.FileMode(0600), templates[0].mode)
 
 	_, err = templates[0].target.Write([]byte("hello world"))
@@ -158,15 +124,17 @@ func TestGatherTemplates(t *testing.T) {
 	assert.Equal(t, config.NormalizeFileMode(0600), info.Mode())
 	fs.Remove("out")
 
-	templates, err = gatherTemplates(&config.Config{
+	cfg = &config.Config{
 		InputFiles:  []string{"foo"},
 		OutputFiles: []string{"out"},
 		OutMode:     "755",
-	}, nil)
+		Stdout:      &iohelpers.NopCloser{Writer: &bytes.Buffer{}},
+	}
+	templates, err = gatherTemplates(cfg, nil)
 	assert.NoError(t, err)
 	assert.Len(t, templates, 1)
 	assert.Equal(t, "bar", templates[0].contents)
-	assert.NotEqual(t, Stdout, templates[0].target)
+	assert.NotEqual(t, cfg.Stdout, templates[0].target)
 	assert.Equal(t, config.NormalizeFileMode(0755), templates[0].mode)
 
 	_, err = templates[0].target.Write([]byte("hello world"))
@@ -199,7 +167,9 @@ func TestProcessTemplates(t *testing.T) {
 
 	afero.WriteFile(fs, "existing", []byte(""), config.NormalizeFileMode(0644))
 
-	cfg := &config.Config{}
+	cfg := &config.Config{
+		Stdout: &iohelpers.NopCloser{Writer: &bytes.Buffer{}},
+	}
 	testdata := []struct {
 		templates []*tplate
 		contents  []string
@@ -211,7 +181,7 @@ func TestProcessTemplates(t *testing.T) {
 			templates: []*tplate{{name: "<arg>", contents: "foo", targetPath: "-", mode: 0644}},
 			contents:  []string{"foo"},
 			modes:     []os.FileMode{0644},
-			targets:   []io.WriteCloser{Stdout},
+			targets:   []io.WriteCloser{stdout(cfg)},
 		},
 		{
 			templates: []*tplate{{name: "<arg>", contents: "foo", targetPath: "out", mode: 0644}},
@@ -265,8 +235,8 @@ func TestProcessTemplates(t *testing.T) {
 				if len(in.targets) > 0 {
 					assert.Equal(t, in.targets[i], a.target)
 				}
-				if current.targetPath != "-" {
-					err = current.loadContents()
+				if current.targetPath != "-" && current.name != "<arg>" {
+					_, err = current.loadContents(nil)
 					assert.NoError(t, err)
 
 					n, err := current.target.Write([]byte("hello world"))
