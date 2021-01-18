@@ -95,11 +95,13 @@ func NewGomplateCmd() *cobra.Command {
 
 			// print a newline to stderr for convenience if the output is going
 			// to stdout, since otherwise the shell prompt may look wrong
-			// Note: once stdin/out/err are externalized we should only do this
-			// if stdout isn't ending with its own newline!
-			if len(cfg.OutputFiles) == 0 || (len(cfg.OutputFiles) == 1 && cfg.OutputFiles[0] == "-") && !cfg.ExecPipe {
+			// TODO: consider only doing this if stdout doesn't have a trailing
+			// newline already.
+			if len(cfg.OutputFiles) == 0 || (len(cfg.OutputFiles) == 1 && cfg.OutputFiles[0] == "-") &&
+				!cfg.ExecPipe && cfg.Stdout == os.Stdout {
 				fmt.Fprintf(cmd.ErrOrStderr(), "\n")
 			}
+
 			log.Debug().Int("templatesRendered", gomplate.Metrics.TemplatesProcessed).
 				Int("errors", gomplate.Metrics.Errors).
 				Dur("duration", gomplate.Metrics.TotalRenderDuration).
