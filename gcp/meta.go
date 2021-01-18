@@ -3,7 +3,6 @@ package gcp
 import (
 	"io/ioutil"
 	"net/http"
-	"os"
 	"strconv"
 	"strings"
 	"sync"
@@ -33,7 +32,7 @@ type ClientOptions struct {
 // ... but cannot use in vault/auth.go as different strconv.Atoi error handling
 func GetClientOptions() ClientOptions {
 	coInit.Do(func() {
-		timeout := os.Getenv("GCP_TIMEOUT")
+		timeout := env.Getenv("GCP_TIMEOUT")
 		if timeout == "" {
 			timeout = "500"
 		}
