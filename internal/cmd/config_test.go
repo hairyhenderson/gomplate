@@ -274,7 +274,7 @@ func TestApplyEnvVars(t *testing.T) {
 			"GOMPLATE_LEFT_DELIM", "--",
 			false,
 			&config.Config{LDelim: "{{"},
-			&config.Config{LDelim: "--"},
+			&config.Config{LDelim: "{{"},
 		},
 		{
 			"GOMPLATE_RIGHT_DELIM", ")>",
@@ -286,7 +286,7 @@ func TestApplyEnvVars(t *testing.T) {
 			"GOMPLATE_RIGHT_DELIM", ")>",
 			false,
 			&config.Config{RDelim: "}}"},
-			&config.Config{RDelim: ")>"},
+			&config.Config{RDelim: "}}"},
 		},
 		{
 			"GOMPLATE_RIGHT_DELIM", "",

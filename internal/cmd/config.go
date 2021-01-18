@@ -260,8 +260,12 @@ func applyEnvVars(ctx context.Context, cfg *config.Config) (*config.Config, erro
 		cfg.Experimental = true
 	}
 
-	cfg.LDelim = env.Getenv("GOMPLATE_LEFT_DELIM", cfg.LDelim)
-	cfg.RDelim = env.Getenv("GOMPLATE_RIGHT_DELIM", cfg.RDelim)
+	if cfg.LDelim == "" {
+		cfg.LDelim = env.Getenv("GOMPLATE_LEFT_DELIM")
+	}
+	if cfg.RDelim == "" {
+		cfg.RDelim = env.Getenv("GOMPLATE_RIGHT_DELIM")
+	}
 
 	return cfg, nil
 }
