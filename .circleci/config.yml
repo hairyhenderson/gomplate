@@ -34,6 +34,9 @@ jobs:
     steps:
       - checkout
       - run: cc-test-reporter before-build
+      - run: |
+          git config --global user.email "bogus@example.com"
+          git config --global user.name "Someone"
       - run:
           name: make test
           command: |
