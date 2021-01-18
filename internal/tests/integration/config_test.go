@@ -165,7 +165,7 @@ datasources:
 		s.writeFile("in.yaml", `value: hello world`)
 		result := icmd.RunCmd(icmd.Command(GomplateBin), func(cmd *icmd.Cmd) {
 			cmd.Dir = s.tmpDir.Path()
-			cmd.Env = []string{"GOMPLATE_LEFT_DELIM", "<<"}
+			cmd.Env = []string{"GOMPLATE_LEFT_DELIM=<<"}
 		})
 		result.Assert(c, icmd.Expected{ExitCode: 0, Out: "hello world"})
 	}
@@ -183,7 +183,7 @@ datasources:
 		s.writeFile("in.yaml", `value: hello world`)
 		result := icmd.RunCmd(icmd.Command(GomplateBin, "--left-delim={{"), func(cmd *icmd.Cmd) {
 			cmd.Dir = s.tmpDir.Path()
-			cmd.Env = []string{"GOMPLATE_LEFT_DELIM", "<<"}
+			cmd.Env = []string{"GOMPLATE_LEFT_DELIM=<<"}
 		})
 		result.Assert(c, icmd.Expected{ExitCode: 0, Out: "hello world"})
 	}
