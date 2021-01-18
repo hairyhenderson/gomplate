@@ -11,6 +11,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ec2"
+	"github.com/hairyhenderson/gomplate/v3/env"
 	"github.com/pkg/errors"
 )
 
@@ -44,7 +45,7 @@ type InstanceDescriber interface {
 // ... but cannot use in vault/auth.go as different strconv.Atoi error handling
 func GetClientOptions() ClientOptions {
 	coInit.Do(func() {
-		timeout := os.Getenv("AWS_TIMEOUT")
+		timeout := env.Getenv("AWS_TIMEOUT")
 		if timeout == "" {
 			timeout = "500"
 		}
@@ -71,7 +72,7 @@ func SDKSession(region ...string) *session.Session {
 		config := aws.NewConfig()
 		config = config.WithHTTPClient(&http.Client{Timeout: timeout})
 
-		if os.Getenv("AWS_ANON") == "true" {
+		if env.Getenv("AWS_ANON") == "true" {
 			config = config.WithCredentials(credentials.AnonymousCredentials)
 		}
 

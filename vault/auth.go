@@ -200,7 +200,7 @@ func createEc2LoginVars(nonce string) (map[string]interface{}, error) {
 	}
 
 	opts := aws.ClientOptions{
-		Timeout: time.Duration(conv.MustAtoi(os.Getenv("AWS_TIMEOUT"))) * time.Millisecond,
+		Timeout: time.Duration(conv.MustAtoi(env.Getenv("AWS_TIMEOUT"))) * time.Millisecond,
 	}
 
 	meta := aws.NewEc2Meta(opts)
