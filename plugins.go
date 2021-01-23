@@ -85,19 +85,28 @@ func (p *plugin) run(args ...interface{}) (interface{}, error) {
 	outBuf := &bytes.Buffer{}
 	c.Stdout = outBuf
 
+	start := time.Now()
+	err := c.Start()
+	if err != nil {
+		return nil, err
+	}
+
 	// make sure all signals are propagated
 	sigs := make(chan os.Signal, 1)
 	signal.Notify(sigs)
 	go func() {
-		// Pass signals to the sub-process
-		sig := <-sigs
-		if c.Process != nil {
-			// nolint: gosec
-			_ = c.Process.Signal(sig)
+		select {
+		case sig := <-sigs:
+			// Pass signals to the sub-process
+			if c.Process != nil {
+				// nolint: gosec
+				_ = c.Process.Signal(sig)
+			}
+		case <-ctx.Done():
 		}
 	}()
-	start := time.Now()
-	err := c.Run()
+
+	err = c.Wait()
 	elapsed := time.Since(start)
 
 	if ctx.Err() != nil {

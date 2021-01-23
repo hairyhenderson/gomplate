@@ -24,6 +24,10 @@ func postRunExec(ctx context.Context, cfg *config.Config, stdout, stderr io.Writ
 		log := zerolog.Ctx(ctx)
 		log.Debug().Strs("args", args).Msg("running post-exec command")
 
+		//nolint:govet
+		ctx, cancel := context.WithCancel(ctx)
+		defer cancel()
+
 		name := args[0]
 		args = args[1:]
 		// nolint: gosec
@@ -35,16 +39,25 @@ func postRunExec(ctx context.Context, cfg *config.Config, stdout, stderr io.Writ
 		// make sure all signals are propagated
 		sigs := make(chan os.Signal, 1)
 		signal.Notify(sigs)
+
+		err := c.Start()
+		if err != nil {
+			return err
+		}
+
 		go func() {
-			// Pass signals to the sub-process
-			sig := <-sigs
-			if c.Process != nil {
-				// nolint: gosec
-				_ = c.Process.Signal(sig)
+			select {
+			case sig := <-sigs:
+				// Pass signals to the sub-process
+				if c.Process != nil {
+					// nolint: gosec
+					_ = c.Process.Signal(sig)
+				}
+			case <-ctx.Done():
 			}
 		}()
 
-		return c.Run()
+		return c.Wait()
 	}
 	return nil
 }
