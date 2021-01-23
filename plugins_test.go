@@ -1,9 +1,12 @@
 package gomplate
 
 import (
+	"bytes"
 	"context"
+	"strings"
 	"testing"
 	"text/template"
+	"time"
 
 	"gotest.tools/v3/assert"
 	"gotest.tools/v3/assert/cmp"
@@ -53,4 +56,21 @@ func TestBuildCommand(t *testing.T) {
 		actual := append([]string{name}, args...)
 		assert.DeepEqual(t, d.expected, actual)
 	}
+}
+
+func TestRun(t *testing.T) {
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	stderr := &bytes.Buffer{}
+	p := &plugin{
+		ctx:     ctx,
+		timeout: 500 * time.Millisecond,
+		stderr:  stderr,
+		path:    "echo",
+	}
+	out, err := p.run("foo")
+	assert.NilError(t, err)
+	assert.Equal(t, "", stderr.String())
+	assert.Equal(t, "foo", strings.TrimSpace(out.(string)))
 }

@@ -3,8 +3,10 @@ package cmd
 import (
 	"bytes"
 	"context"
+	"strings"
 	"testing"
 
+	"github.com/hairyhenderson/gomplate/v3/internal/config"
 	"github.com/spf13/cobra"
 	"github.com/stretchr/testify/assert"
 )
@@ -55,4 +57,18 @@ func TestRunMain(t *testing.T) {
 	err = Main(ctx, []string{"-i", "hello"}, stdin, stdout, stderr)
 	assert.NoError(t, err)
 	assert.Equal(t, "hello", stdout.String())
+}
+
+func TestPostRunExec(t *testing.T) {
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	cfg := &config.Config{
+		PostExecInput: strings.NewReader("hello world"),
+		PostExec:      []string{"cat"},
+	}
+	out := &bytes.Buffer{}
+	err := postRunExec(ctx, cfg, out, out)
+	assert.NoError(t, err)
+	assert.Equal(t, "hello world", out.String())
 }
