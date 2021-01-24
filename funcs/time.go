@@ -9,6 +9,7 @@ import (
 	gotime "time"
 
 	"github.com/hairyhenderson/gomplate/v3/conv"
+	"github.com/hairyhenderson/gomplate/v3/env"
 	"github.com/hairyhenderson/gomplate/v3/time"
 )
 
@@ -93,7 +94,8 @@ func (f *TimeFuncs) Parse(layout string, value interface{}) (gotime.Time, error)
 
 // ParseLocal -
 func (f *TimeFuncs) ParseLocal(layout string, value interface{}) (gotime.Time, error) {
-	return gotime.ParseInLocation(layout, conv.ToString(value), gotime.Local)
+	tz := env.Getenv("TZ", "Local")
+	return f.ParseInLocation(layout, tz, value)
 }
 
 // ParseInLocation -
