@@ -6,8 +6,7 @@ require (
 	github.com/Masterminds/goutils v1.1.0
 	github.com/Shopify/ejson v1.2.2
 	github.com/aws/aws-sdk-go v1.36.28
-	github.com/boltdb/bolt v1.3.1
-	github.com/docker/libkv v0.2.1
+	github.com/docker/libkv v0.2.2-0.20180912205406-458977154600
 	github.com/fullsailor/pkcs7 v0.0.0-20190404230743-d7302db945fa
 	github.com/go-git/go-billy/v5 v5.0.0
 	github.com/go-git/go-git/v5 v5.2.0
@@ -26,6 +25,7 @@ require (
 	github.com/stretchr/testify v1.7.0
 	github.com/ugorji/go/codec v1.2.3
 	github.com/zealic/xignore v0.3.3
+	go.etcd.io/bbolt v1.3.2
 	gocloud.dev v0.21.0
 	golang.org/x/crypto v0.0.0-20201221181555-eec23a3978ad
 	golang.org/x/sys v0.0.0-20201223074533-0d417f636930

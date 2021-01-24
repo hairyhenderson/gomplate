@@ -22,7 +22,7 @@ _Read the docs at [docs.gomplate.ca][docs-url], chat with developers and communi
 [![Discussions][discussions-image]][discussions-url]
 
 `gomplate` is a template renderer which supports a growing list of datasources,
-such as: JSON (_including EJSON - encrypted JSON_), YAML, AWS EC2 metadata, [BoltDB](https://github.com/boltdb/bolt),
+such as: JSON (_including EJSON - encrypted JSON_), YAML, AWS EC2 metadata, [BoltDB](https://pkg.go.dev/go.etcd.io/bbolt),
 [Hashicorp Consul](https://www.consul.io/) and [Hashicorp Vault](https://www.vaultproject.io/) secrets.
 
 Come chat with developers and community in the [#gomplate channel][] on [Gophers Slack][] and on [GitHub Discussions][discussions-url]!

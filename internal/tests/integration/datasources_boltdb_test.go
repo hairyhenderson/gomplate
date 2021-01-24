@@ -3,9 +3,8 @@
 package integration
 
 import (
+	"go.etcd.io/bbolt"
 	. "gopkg.in/check.v1"
-
-	"github.com/boltdb/bolt"
 	"gotest.tools/v3/fs"
 	"gotest.tools/v3/icmd"
 )
@@ -18,12 +17,12 @@ var _ = Suite(&BoltDBDatasourcesSuite{})
 
 func (s *BoltDBDatasourcesSuite) SetUpSuite(c *C) {
 	s.tmpDir = fs.NewDir(c, "gomplate-inttests")
-	db, err := bolt.Open(s.tmpDir.Join("config.db"), 0600, nil)
+	db, err := bbolt.Open(s.tmpDir.Join("config.db"), 0600, nil)
 	handle(c, err)
 	defer db.Close()
 
-	err = db.Update(func(tx *bolt.Tx) error {
-		var b *bolt.Bucket
+	err = db.Update(func(tx *bbolt.Tx) error {
+		var b *bbolt.Bucket
 		b, err = tx.CreateBucket([]byte("Bucket1"))
 		if err != nil {
 			return err
