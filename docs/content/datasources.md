@@ -311,7 +311,7 @@ Hello world
 
 ## Using `boltdb` datasources
 
-[BoltDB](https://github.com/boltdb/bolt) is a simple local key/value store used by many Go tools. The `boltdb://` scheme can be used to access values stored in a BoltDB database file. The full path is provided in the URL, and the bucket name can be specified using a URL fragment (e.g. `boltdb:///tmp/database.db#bucket`).
+[BoltDB][] is a simple local key/value store used by many Go tools. The `boltdb://` scheme can be used to access values stored in a BoltDB database file. The full path is provided in the URL, and the bucket name can be specified using a URL fragment (e.g. `boltdb:///tmp/database.db#bucket`).
 
 **Note:** Access is implemented through [`libkv`](https://github.com/docker/libkv), and as such, the first 8 bytes of all values are used as an incrementing last modified index value. All values must therefore be at least 9 bytes long, with the first 8 being ignored.
 
@@ -778,7 +778,7 @@ The file `/tmp/vault-aws-nonce` will be created if it didn't already exist, and 
 
 [AWS SMP]: https://aws.amazon.com/systems-manager/features#Parameter_Store
 [AWS Secrets Manager]: https://aws.amazon.com/secrets-manager
-[BoltDB]: https://github.com/boltdb/bolt
+[BoltDB]: https://pkg.go.dev/go.etcd.io/bbolt
 [HashiCorp Consul]: https://consul.io
 [HashiCorp Vault]: https://vaultproject.io
 [JSON]: https://json.org
