@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1.1.7-experimental
 FROM --platform=linux/amd64 hairyhenderson/upx:3.94 AS upx
 
-FROM --platform=linux/amd64 golang:1.15.6-alpine3.12 AS build
+FROM --platform=linux/amd64 golang:1.15.7-alpine3.12 AS build
 
 ARG TARGETOS
 ARG TARGETARCH
