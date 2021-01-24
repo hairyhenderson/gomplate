@@ -25,7 +25,7 @@ RUN --mount=type=cache,id=go-build-${TARGETOS}-${TARGETARCH}${TARGETVARIANT},tar
 		make build
 RUN mv bin/gomplate* /bin/
 
-FROM --platform=linux/amd64 alpine:3.12.3 AS compress
+FROM --platform=linux/amd64 alpine:3.13.0 AS compress
 
 ARG TARGETOS
 ARG TARGETARCH
@@ -61,7 +61,7 @@ COPY --from=build /bin/gomplate_${TARGETOS}-${TARGETARCH}${TARGETVARIANT} /gompl
 
 ENTRYPOINT [ "/gomplate" ]
 
-FROM alpine:3.12.3 AS gomplate-alpine
+FROM alpine:3.13.0 AS gomplate-alpine
 
 ARG VCS_REF
 ARG TARGETOS
