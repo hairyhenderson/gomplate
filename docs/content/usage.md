@@ -280,6 +280,65 @@ Use this flag to enable experimental functionality. See the docs for the
 [`experimental`](../config/#experimental) configuration option for more
 information.
 
+### `--verbose`
+
+When you specify `--verbose`, gomplate will log some extra information useful
+for debugging and troubleshooting.
+
+All log output is done on the _standard error_ stream, and so will never
+interrupt rendered output. For example, redirecting output to a file or another
+command will work as expected, without the log output interfering.
+
+## Log formatting
+
+The `GOMPLATE_LOG_FORMAT` environment variable can be used to control the format
+of the log messages that gomplate may output, whether error messages or debug
+messages when the [`--verbose`](#verbose) option is in use.
+
+The value can be set to `json`, `logfmt`, `console`, or `simple`.
+
+#### `json` format
+
+`json` is the default format when gomplate is used in a script or non-interactive
+terminal.
+
+```console
+$ GOMPLATE_LOG_FORMAT=json gomplate -i '{{'
+
+{"level":"error","error":"template: <arg>:1: unexpected unclosed action in command","time":"2021-01-24T20:49:02-05:00"}
+```
+
+#### `console` format
+
+`console` is the default format used when gomplate is used in an interactive terminal.
+Messages are printed in colour when possible.
+
+```console
+$ GOMPLATE_LOG_FORMAT=console gomplate -i '{{'
+
+20:49:28 ERR  error="template: <arg>:1: unexpected unclosed action in command"
+```
+
+#### `logfmt` format
+
+`logfmt` format is a simple structured `key=value` format.
+
+```console
+$ GOMPLATE_LOG_FORMAT=logfmt bin/gomplate -i '{{'
+
+time=2021-01-24T20:50:58-05:00 level=error  error="template: <arg>:1: unexpected unclosed action in command"
+```
+
+#### `simple` format
+
+`simple` omits the level and timestamp for a very simplistic output.
+
+```console
+$ GOMPLATE_LOG_FORMAT=simple bin/gomplate -i '{{'
+
+ error="template: <arg>:1: unexpected unclosed action in command"
+```
+
 ## Post-template command execution
 
 Gomplate can launch other commands when template execution is successful. Simply
