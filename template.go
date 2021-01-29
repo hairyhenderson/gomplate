@@ -235,19 +235,11 @@ func fileToTemplates(inFile, outFile string, mode os.FileMode, modeOverride bool
 	return tmpl, nil
 }
 
-func stdout(cfg *config.Config) io.WriteCloser {
-	wc, ok := cfg.Stdout.(io.WriteCloser)
-	if ok {
-		return wc
-	}
-	return &iohelpers.NopCloser{Writer: cfg.Stdout}
-}
-
-func openOutFile(cfg *config.Config, filename string, mode os.FileMode, modeOverride bool) (out io.WriteCloser, err error) {
+func openOutFile(cfg *config.Config, filename string, mode os.FileMode, modeOverride bool) (out io.Writer, err error) {
 	if cfg.SuppressEmpty {
-		out = iohelpers.NewEmptySkipper(func() (io.WriteCloser, error) {
+		out = iohelpers.NewEmptySkipper(func() (io.Writer, error) {
 			if filename == "-" {
-				return stdout(cfg), nil
+				return cfg.Stdout, nil
 			}
 			return createOutFile(filename, mode, modeOverride)
 		})
@@ -255,7 +247,7 @@ func openOutFile(cfg *config.Config, filename string, mode os.FileMode, modeOver
 	}
 
 	if filename == "-" {
-		return stdout(cfg), nil
+		return cfg.Stdout, nil
 	}
 	return createOutFile(filename, mode, modeOverride)
 }

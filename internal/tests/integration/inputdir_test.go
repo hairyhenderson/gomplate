@@ -50,7 +50,9 @@ func (s *InputDirSuite) TestInputDir(c *C) {
 		"--output-dir", s.tmpDir.Join("out"),
 		"-d", "config="+s.tmpDir.Join("config.yml"),
 	)
-	result.Assert(c, icmd.Success)
+	assert.Equal(c, 0, result.ExitCode)
+	assert.Equal(c, "", result.Stderr())
+	assert.Equal(c, "", result.Stdout())
 
 	files, err := ioutil.ReadDir(s.tmpDir.Join("out"))
 	assert.NilError(c, err)

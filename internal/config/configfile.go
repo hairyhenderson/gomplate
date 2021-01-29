@@ -14,7 +14,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/hairyhenderson/gomplate/v3/internal/iohelpers"
 	"github.com/pkg/errors"
 	"gopkg.in/yaml.v3"
 )
@@ -461,7 +460,7 @@ func (c *Config) ApplyDefaults() {
 		c.OutputFiles = []string{"-"}
 
 		// --exec-pipe redirects standard out to the out pipe
-		c.Stdout = &iohelpers.NopCloser{Writer: pipe}
+		c.Stdout = pipe
 	} else {
 		c.PostExecInput = c.Stdin
 	}

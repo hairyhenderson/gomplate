@@ -40,7 +40,7 @@ func TestEmptySkipper(t *testing.T) {
 	for _, d := range testdata {
 		w := newBufferCloser(&bytes.Buffer{})
 		opened := false
-		f, ok := NewEmptySkipper(func() (io.WriteCloser, error) {
+		f, ok := NewEmptySkipper(func() (io.Writer, error) {
 			opened = true
 			return w, nil
 		}).(*emptySkipper)
