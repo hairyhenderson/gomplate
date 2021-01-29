@@ -59,8 +59,9 @@ func (s *BasicSuite) TestWritesToStdoutWithOutFlag(c *C) {
 	result := icmd.RunCmd(icmd.Command(GomplateBin, "--out", "-"), func(cmd *icmd.Cmd) {
 		cmd.Stdin = bytes.NewBufferString("hello world")
 	})
-	result.Assert(c, icmd.Expected{ExitCode: 0, Out: "hello world"})
-	assert.Equal(c, "hello world\n", result.Combined())
+	assert.Equal(c, 0, result.ExitCode)
+	assert.Equal(c, "hello world", result.Stdout())
+	assert.Equal(c, "\n", result.Stderr())
 }
 
 func (s *BasicSuite) TestIgnoresStdinWithInFlag(c *C) {

@@ -8,7 +8,6 @@ import (
 	"testing"
 
 	"github.com/hairyhenderson/gomplate/v3/internal/config"
-	"github.com/hairyhenderson/gomplate/v3/internal/iohelpers"
 	"github.com/spf13/afero"
 
 	"github.com/stretchr/testify/assert"
@@ -25,14 +24,16 @@ func TestOpenOutFile(t *testing.T) {
 	f, err := openOutFile(cfg, "/tmp/foo", 0644, false)
 	assert.NoError(t, err)
 
-	err = f.Close()
+	wc, ok := f.(io.WriteCloser)
+	assert.True(t, ok)
+	err = wc.Close()
 	assert.NoError(t, err)
 
 	i, err := fs.Stat("/tmp/foo")
 	assert.NoError(t, err)
 	assert.Equal(t, config.NormalizeFileMode(0644), i.Mode())
 
-	cfg.Stdout = &iohelpers.NopCloser{Writer: &bytes.Buffer{}}
+	cfg.Stdout = &bytes.Buffer{}
 
 	f, err = openOutFile(cfg, "-", 0644, false)
 	assert.NoError(t, err)
@@ -73,7 +74,7 @@ func TestGatherTemplates(t *testing.T) {
 
 	cfg = &config.Config{
 		Input:  "foo",
-		Stdout: &iohelpers.NopCloser{Writer: &bytes.Buffer{}},
+		Stdout: &bytes.Buffer{},
 	}
 	cfg.ApplyDefaults()
 	templates, err = gatherTemplates(cfg, nil)
@@ -107,7 +108,7 @@ func TestGatherTemplates(t *testing.T) {
 	cfg = &config.Config{
 		InputFiles:  []string{"foo"},
 		OutputFiles: []string{"out"},
-		Stdout:      &iohelpers.NopCloser{Writer: &bytes.Buffer{}},
+		Stdout:      &bytes.Buffer{},
 	}
 	templates, err = gatherTemplates(cfg, nil)
 	assert.NoError(t, err)
@@ -128,7 +129,7 @@ func TestGatherTemplates(t *testing.T) {
 		InputFiles:  []string{"foo"},
 		OutputFiles: []string{"out"},
 		OutMode:     "755",
-		Stdout:      &iohelpers.NopCloser{Writer: &bytes.Buffer{}},
+		Stdout:      &bytes.Buffer{},
 	}
 	templates, err = gatherTemplates(cfg, nil)
 	assert.NoError(t, err)
@@ -168,20 +169,20 @@ func TestProcessTemplates(t *testing.T) {
 	afero.WriteFile(fs, "existing", []byte(""), config.NormalizeFileMode(0644))
 
 	cfg := &config.Config{
-		Stdout: &iohelpers.NopCloser{Writer: &bytes.Buffer{}},
+		Stdout: &bytes.Buffer{},
 	}
 	testdata := []struct {
 		templates []*tplate
 		contents  []string
 		modes     []os.FileMode
-		targets   []io.WriteCloser
+		targets   []io.Writer
 	}{
 		{},
 		{
 			templates: []*tplate{{name: "<arg>", contents: "foo", targetPath: "-", mode: 0644}},
 			contents:  []string{"foo"},
 			modes:     []os.FileMode{0644},
-			targets:   []io.WriteCloser{stdout(cfg)},
+			targets:   []io.Writer{cfg.Stdout},
 		},
 		{
 			templates: []*tplate{{name: "<arg>", contents: "foo", targetPath: "out", mode: 0644}},

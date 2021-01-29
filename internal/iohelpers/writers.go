@@ -10,10 +10,10 @@ import (
 )
 
 type emptySkipper struct {
-	open func() (io.WriteCloser, error)
+	open func() (io.Writer, error)
 
 	// internal
-	w   io.WriteCloser
+	w   io.Writer
 	buf *bytes.Buffer
 	nw  bool
 }
@@ -21,7 +21,7 @@ type emptySkipper struct {
 // NewEmptySkipper creates an io.WriteCloser that will only start writing once a
 // non-whitespace byte has been encountered. The wrapped io.WriteCloser must be
 // provided by the `open` func.
-func NewEmptySkipper(open func() (io.WriteCloser, error)) io.WriteCloser {
+func NewEmptySkipper(open func() (io.Writer, error)) io.WriteCloser {
 	return &emptySkipper{
 		w:    nil,
 		buf:  &bytes.Buffer{},
@@ -58,8 +58,8 @@ func (f *emptySkipper) Write(p []byte) (n int, err error) {
 
 // Close - implements io.Closer
 func (f *emptySkipper) Close() error {
-	if f.w != nil {
-		return f.w.Close()
+	if wc, ok := f.w.(io.WriteCloser); ok {
+		return wc.Close()
 	}
 	return nil
 }
