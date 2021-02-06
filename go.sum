@@ -85,6 +85,7 @@ github.com/BurntSushi/xgb v0.0.0-20160522181843-27f122750802/go.mod h1:IVnqGOEym
 github.com/GoogleCloudPlatform/cloudsql-proxy v1.19.1/go.mod h1:+yYmuKqcBVkgRePGpUhTA9OEg0XsnFE96eZ6nJ2yCQM=
 github.com/Masterminds/goutils v1.1.0 h1:zukEsf/1JZwCMgHiK3GZftabmxiCw4apj3a28RPBiVg=
 github.com/Masterminds/goutils v1.1.0/go.mod h1:8cTjp+g8YejhMuvIA5y2vz3BpJxksy863GQaJW2MFNU=
+github.com/Masterminds/goutils v1.1.1/go.mod h1:8cTjp+g8YejhMuvIA5y2vz3BpJxksy863GQaJW2MFNU=
 github.com/OneOfOne/xxhash v1.2.2/go.mod h1:HSdplMjZKSmBqAxg5vPj2TmRDmfkzw+cTzAElWljhcU=
 github.com/Shopify/ejson v1.2.2 h1:1Hr5SZmRQ+bfkuxrWnn17mmsAYWEe4eKloffM1KXXXI=
 github.com/Shopify/ejson v1.2.2/go.mod h1:bvgKjC8UhJQT2Cgo/dmREmcKIzYzF3MWkFsYkSmf/Tw=
