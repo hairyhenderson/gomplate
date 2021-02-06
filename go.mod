@@ -26,12 +26,12 @@ require (
 	github.com/ugorji/go/codec v1.2.4
 	github.com/zealic/xignore v0.3.3
 	go.etcd.io/bbolt v1.3.5
-	gocloud.dev v0.21.0
+	gocloud.dev v0.22.0
 	golang.org/x/crypto v0.0.0-20201221181555-eec23a3978ad
 	golang.org/x/sys v0.0.0-20210124154548-22da62e12c0c
 	golang.org/x/term v0.0.0-20201210144234-2321bbc49cbf
 	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b
 	gotest.tools/v3 v3.0.3
-	k8s.io/client-go v11.0.0+incompatible
+	k8s.io/client-go v0.20.2
 )
