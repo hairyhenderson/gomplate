@@ -3,7 +3,7 @@ module github.com/hairyhenderson/gomplate/v3
 go 1.15
 
 require (
-	github.com/Masterminds/goutils v1.1.0
+	github.com/Masterminds/goutils v1.1.1
 	github.com/Shopify/ejson v1.2.2
 	github.com/aws/aws-sdk-go v1.37.6
 	github.com/docker/libkv v0.2.2-0.20180912205406-458977154600
