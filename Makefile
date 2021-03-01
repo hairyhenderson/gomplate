@@ -38,7 +38,7 @@ endif
 endif
 
 # platforms := freebsd-amd64 linux-amd64 linux-386 linux-armv5 linux-armv6 linux-armv7 linux-arm64 darwin-amd64 solaris-amd64 windows-amd64.exe windows-386.exe
-platforms := freebsd-amd64 linux-amd64 linux-386 linux-armv6 linux-armv7 linux-arm64 darwin-amd64 solaris-amd64 windows-amd64.exe windows-386.exe
+platforms := freebsd-amd64 linux-amd64 linux-386 linux-armv6 linux-armv7 linux-arm64 darwin-amd64 darwin-arm64 gsbsolaris-amd64 windows-amd64.exe windows-386.exe
 compressed-platforms := linux-amd64-slim linux-armv6-slim linux-armv7-slim linux-arm64-slim darwin-amd64-slim windows-amd64-slim.exe
 
 clean:
