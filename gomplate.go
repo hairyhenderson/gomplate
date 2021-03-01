@@ -156,7 +156,7 @@ func (g *gomplate) runTemplates(ctx context.Context, cfg *config.Config) error {
 	Metrics.GatherDuration = time.Since(start)
 	if err != nil {
 		Metrics.Errors++
-		return err
+		return fmt.Errorf("failed to gather templates for rendering: %w", err)
 	}
 	Metrics.TemplatesGathered = len(tmpl)
 	start = time.Now()
@@ -167,7 +167,7 @@ func (g *gomplate) runTemplates(ctx context.Context, cfg *config.Config) error {
 		Metrics.RenderDuration[t.name] = time.Since(tstart)
 		if err != nil {
 			Metrics.Errors++
-			return err
+			return fmt.Errorf("failed to render template %s: %w", t.name, err)
 		}
 		Metrics.TemplatesProcessed++
 	}

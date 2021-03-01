@@ -233,3 +233,32 @@ func (s *InputDirSuite) TestReportsFilenameWithBadInputFile(c *C) {
 	assert.ErrorContains(c, err, "bad.tmpl:1: unexpected {{end}}")
 	assert.Equal(c, "", o)
 }
+
+func (s *InputDirSuite) TestInputDirCwd(c *C) {
+	o, e, err := cmdWithDir(c, s.tmpDir.Path(),
+		"--input-dir", ".",
+		"--include", "*.txt",
+		"--output-map", `{{ .in | strings.ReplaceAll ".txt" ".out" }}`,
+		"-d", "config="+s.tmpDir.Join("config.yml"),
+	)
+	assertSuccess(c, o, e, err, "")
+
+	testdata := []struct {
+		path    string
+		mode    os.FileMode
+		content string
+	}{
+		{s.tmpDir.Join("in", "eins.out"), 0644, "eins"},
+		{s.tmpDir.Join("in", "inner", "deux.out"), 0444, "deux"},
+		{s.tmpDir.Join("in", "vier.out"), 0544, "deux * deux"},
+	}
+	for _, v := range testdata {
+		info, err := os.Stat(v.path)
+		assert.NilError(c, err)
+		m := config.NormalizeFileMode(v.mode)
+		assert.Equal(c, m, info.Mode(), v.path)
+		content, err := ioutil.ReadFile(v.path)
+		assert.NilError(c, err)
+		assert.Equal(c, v.content, string(content))
+	}
+}
