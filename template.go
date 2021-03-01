@@ -165,19 +165,25 @@ func walkDir(dir string, outFileNamer func(string) (string, error), excludeGlob 
 
 	dirStat, err := fs.Stat(dir)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("couldn't stat %s: %w", dir, err)
 	}
 	dirMode := dirStat.Mode()
 
 	templates := make([]*tplate, 0)
 	matcher := xignore.NewMatcher(fs)
-	matches, err := matcher.Matches(dir, &xignore.MatchesOptions{
+
+	// work around bug in xignore - a basedir of '.' doesn't work
+	basedir := dir
+	if basedir == "." {
+		basedir, _ = os.Getwd()
+	}
+	matches, err := matcher.Matches(basedir, &xignore.MatchesOptions{
 		Ignorefile:    gomplateignore,
 		Nested:        true, // allow nested ignorefile
 		AfterPatterns: excludeGlob,
 	})
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("ignore matching failed for %s: %w", basedir, err)
 	}
 
 	// Unmatched ignorefile rules's files

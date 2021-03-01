@@ -246,3 +246,27 @@ func (s *InputDirSuite) TestReportsFilenameWithBadInputFile(c *C) {
 		Err:      "bad.tmpl:1: unexpected {{end}}",
 	})
 }
+
+func (s *InputDirSuite) TestInputDirCwd(c *C) {
+	result := icmd.RunCmd(icmd.Command(GomplateBin,
+		"--input-dir", ".",
+		"--include", "*.txt",
+		"--output-map", `{{ .in | strings.ReplaceAll ".txt" ".out" }}`,
+		"-d", "config="+s.tmpDir.Join("config.yml"),
+	), func(c *icmd.Cmd) {
+		c.Dir = s.tmpDir.Path()
+	})
+	result.Assert(c, icmd.Success)
+
+	content, err := ioutil.ReadFile(s.tmpDir.Join("in", "eins.out"))
+	assert.NilError(c, err)
+	assert.Equal(c, "eins", string(content))
+
+	content, err = ioutil.ReadFile(s.tmpDir.Join("in", "inner", "deux.out"))
+	assert.NilError(c, err)
+	assert.Equal(c, "deux", string(content))
+
+	content, err = ioutil.ReadFile(s.tmpDir.Join("in", "vier.out"))
+	assert.NilError(c, err)
+	assert.Equal(c, `deux * deux`, string(content))
+}
