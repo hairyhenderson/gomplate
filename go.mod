@@ -31,7 +31,9 @@ require (
 	golang.org/x/sys v0.0.0-20210124154548-22da62e12c0c
 	golang.org/x/term v0.0.0-20201210144234-2321bbc49cbf
 	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c
+	gopkg.in/square/go-jose.v2 v2.3.1
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b
 	gotest.tools/v3 v3.0.3
+	k8s.io/api v0.20.2
 	k8s.io/client-go v0.20.2
 )

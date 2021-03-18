@@ -15,6 +15,8 @@ import (
 	"github.com/pkg/errors"
 )
 
+const kubernetesTokenPath = "/var/run/secrets/kubernetes.io/serviceaccount/token" //#nosec G101
+
 // GetToken -
 func (v *Vault) GetToken() (string, error) {
 	// sorted in order of precedence
@@ -24,6 +26,8 @@ func (v *Vault) GetToken() (string, error) {
 		v.GitHubLogin,
 		v.UserPassLogin,
 		v.TokenLogin,
+		v.JwtLogin,
+		v.KubernetesLogin,
 		v.EC2Login,
 	}
 	for _, f := range authFuncs {
@@ -231,4 +235,50 @@ func (v *Vault) TokenLogin() (string, error) {
 		return "", err
 	}
 	return string(b), nil
+}
+
+func (v *Vault) jwtLogin(mount string, token string, role string) (string, error) {
+	vars := map[string]interface{}{
+		"role": role,
+		"jwt":  token,
+	}
+	path := fmt.Sprintf("auth/%s/login", mount)
+	secret, err := v.client.Logical().Write(path, vars)
+	if err != nil {
+		return "", errors.Wrap(err, "token logon failed")
+	}
+	if secret == nil {
+		return "", errors.New("empty response from token logon")
+	}
+	return secret.Auth.ClientToken, nil
+}
+
+func (v *Vault) JwtLogin() (string, error) {
+	token := env.Getenv("VAULT_AUTH_JWT_TOKEN")
+	if token == "" {
+		return "", nil
+	}
+	role := env.Getenv("VAULT_AUTH_JWT_ROLE")
+	if role == "" {
+		return "", errors.New("VAULT_AUTH_JWT_ROLE not defined")
+	}
+	mount := env.Getenv("VAULT_AUTH_JWT_MOUNT", "jwt")
+	return v.jwtLogin(mount, token, role)
+}
+
+func (v *Vault) KubernetesLogin() (string, error) {
+	if os.Getenv("VAULT_AUTH_KUBERNETES_TOKEN_FILE") == "" {
+		os.Setenv("VAULT_AUTH_KUBERNETES_TOKEN_FILE", kubernetesTokenPath)
+		defer os.Unsetenv("VAULT_AUTH_KUBERNETES_TOKEN_FILE")
+	}
+	token := env.Getenv("VAULT_AUTH_KUBERNETES_TOKEN")
+	if token == "" {
+		return "", nil
+	}
+	role := env.Getenv("VAULT_AUTH_KUBERNETES_ROLE")
+	if role == "" {
+		return "", nil
+	}
+	mount := env.Getenv("VAULT_AUTH_KUBERNETES_MOUNT", "kubernetes")
+	return v.jwtLogin(mount, token, role)
 }

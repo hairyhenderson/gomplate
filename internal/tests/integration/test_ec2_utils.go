@@ -11,7 +11,9 @@ import (
 	"encoding/pem"
 	"log"
 	"math/big"
+	"net"
 	"net/http"
+	"time"
 
 	"github.com/fullsailor/pkcs7"
 )
@@ -53,11 +55,19 @@ func certificateGenerate() (priv *rsa.PrivateKey, derBytes []byte, err error) {
 		log.Fatalf("failed to generate serial number: %s", err)
 	}
 
+	commonName := "gomplate"
 	template := x509.Certificate{
 		SerialNumber: serialNumber,
 		Subject: pkix.Name{
 			Organization: []string{"Test"},
+			CommonName:   commonName,
 		},
+		NotBefore:    time.Now(),
+		NotAfter:     time.Now().AddDate(10, 0, 0),
+		SubjectKeyId: []byte{1, 2, 3, 4, 5},
+		ExtKeyUsage:  []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth, x509.ExtKeyUsageServerAuth},
+		KeyUsage:     x509.KeyUsageDigitalSignature,
+		IPAddresses:  []net.IP{net.IPv4(127, 0, 0, 1)},
 	}
 
 	derBytes, err = x509.CreateCertificate(rand.Reader, &template, &template, &priv.PublicKey, priv)
