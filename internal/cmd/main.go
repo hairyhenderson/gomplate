@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"context"
-	"fmt"
 	"io"
 	"os"
 	"os/exec"
@@ -106,12 +105,6 @@ func NewGomplateCmd() *cobra.Command {
 			cmd.SilenceErrors = true
 			cmd.SilenceUsage = true
 
-			// print a newline to stderr for convenience if the output is going
-			// to stdout, since otherwise the shell prompt may look wrong
-			if consoleOutput(cfg) {
-				fmt.Fprintf(cmd.ErrOrStderr(), "\n")
-			}
-
 			log.Debug().Int("templatesRendered", gomplate.Metrics.TemplatesProcessed).
 				Int("errors", gomplate.Metrics.Errors).
 				Dur("duration", gomplate.Metrics.TotalRenderDuration).
@@ -125,14 +118,6 @@ func NewGomplateCmd() *cobra.Command {
 		Args: optionalExecArgs,
 	}
 	return rootCmd
-}
-
-// TODO: consider only doing this if stdout doesn't have a trailing newline
-// already.
-func consoleOutput(cfg *config.Config) bool {
-	consoleOnly := len(cfg.OutputFiles) == 0 || (len(cfg.OutputFiles) == 1 && cfg.OutputFiles[0] == "-")
-	usingDirs := cfg.InputDir != "" && cfg.OutputDir != ""
-	return consoleOnly && !usingDirs && !cfg.ExecPipe && cfg.Stdout == os.Stdout
 }
 
 // InitFlags - initialize the various flags and help strings on the command.
