@@ -131,9 +131,9 @@ func (s *BlobDatasourcesSuite) TestGCSDatasource(c *C) {
 		c.Skip("Not configured to authenticate with Google Cloud - skipping")
 		return
 	}
-	o, e, err := cmdTest(c, "-c", "data=gs://gcp-public-data-landsat/LT08/PRE/015/013/LT80150132013127LGN01/LT80150132013127LGN01_MTL.txt?type=text/plain",
+	o, e, err := cmdTest(c, "-c", "data=gs://gcp-public-data-landsat/LT08/01/015/013/LT08_L1GT_015013_20130315_20170310_01_T2/LT08_L1GT_015013_20130315_20170310_01_T2_MTL.txt?type=text/plain",
 		"-i", "{{ len .data }}")
-	assertSuccess(c, o, e, err, "3218")
+	assertSuccess(c, o, e, err, "3672")
 }
 
 func (s *BlobDatasourcesSuite) TestGCSDirectory(c *C) {

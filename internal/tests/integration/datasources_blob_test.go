@@ -149,11 +149,11 @@ func (s *BlobDatasourcesSuite) TestGCSDatasource(c *C) {
 		return
 	}
 	result := icmd.RunCmd(icmd.Command(GomplateBin,
-		"-c", "data=gs://gcp-public-data-landsat/LT08/PRE/015/013/LT80150132013127LGN01/LT80150132013127LGN01_MTL.txt?type=text/plain",
+		"-c", "data=gs://gcp-public-data-landsat/LT08/01/015/013/LT08_L1GT_015013_20130315_20170310_01_T2/LT08_L1GT_015013_20130315_20170310_01_T2_MTL.txt?type=text/plain",
 		"-i", "{{ len .data }}",
 	), func(c *icmd.Cmd) {
 	})
-	result.Assert(c, icmd.Expected{ExitCode: 0, Out: "3218"})
+	result.Assert(c, icmd.Expected{ExitCode: 0, Out: "3672"})
 }
 
 func (s *BlobDatasourcesSuite) TestGCSDirectory(c *C) {
