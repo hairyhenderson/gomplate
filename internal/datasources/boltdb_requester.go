@@ -21,13 +21,18 @@ func storeKey(u *url.URL) string {
 }
 
 func (r *boltDBRequester) Request(ctx context.Context, u *url.URL, header http.Header) (resp *Response, err error) {
-	kv, ok := r.kv[storeKey(u)]
+	if r.kv == nil {
+		r.kv = map[string]kvStore{}
+	}
+
+	k := storeKey(u)
+	kv, ok := r.kv[k]
 	if !ok {
 		kv, err = libkv.NewBoltDB(u)
 		if err != nil {
 			return nil, err
 		}
-		r.kv[storeKey(u)] = kv
+		r.kv[k] = kv
 	}
 
 	key := u.Query().Get("key")

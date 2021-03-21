@@ -324,14 +324,14 @@ func TestCSVByColumn(t *testing.T) {
 	}
 
 	testdata := []struct {
-		args []string
 		out  map[string][]string
+		args []string
 	}{
-		{[]string{"first,second,third\n1,2,3\n4,5,6"}, expected},
-		{[]string{"first,second,third", "1,2,3\n4,5,6"}, expected},
-		{[]string{";", "first;second;third", "1;2;3\n4;5;6"}, expected},
-		{[]string{";", "first;second;third\r\n1;2;3\r\n4;5;6"}, expected},
-		{[]string{"", "1,2,3\n4,5,6"}, map[string][]string{
+		{args: []string{"first,second,third\n1,2,3\n4,5,6"}, out: expected},
+		{args: []string{"first,second,third", "1,2,3\n4,5,6"}, out: expected},
+		{args: []string{";", "first;second;third", "1;2;3\n4;5;6"}, out: expected},
+		{args: []string{";", "first;second;third\r\n1;2;3\r\n4;5;6"}, out: expected},
+		{args: []string{"", "1,2,3\n4,5,6"}, out: map[string][]string{
 			"A": {"1", "4"},
 			"B": {"2", "5"},
 			"C": {"3", "6"},

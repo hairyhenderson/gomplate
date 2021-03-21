@@ -33,6 +33,10 @@ func consulStoreKey(u *url.URL) string {
 }
 
 func (r *consulRequester) Request(ctx context.Context, u *url.URL, header http.Header) (resp *Response, err error) {
+	if r.kv == nil {
+		r.kv = map[string]kvStore{}
+	}
+
 	kv, ok := r.kv[consulStoreKey(u)]
 	if !ok {
 		kv, err = libkv.NewConsul(u)

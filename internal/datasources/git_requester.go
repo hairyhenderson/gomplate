@@ -59,7 +59,8 @@ func (r *gitRequester) Request(ctx context.Context, u *url.URL, header http.Head
 
 	if fi.IsDir() || strings.HasSuffix(path, string(filepath.Separator)) {
 		hint = jsonArrayMimetype
-		b, err := r.readDir(fs, path)
+		var b []byte
+		b, err = r.readDir(fs, path)
 		if err != nil {
 			return nil, fmt.Errorf("failed to list directory %q: %w", path, err)
 		}

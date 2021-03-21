@@ -74,83 +74,94 @@ func consulPut(t *testing.T, consulAddr, k, v string) {
 }
 
 func TestDatasources_Consul(t *testing.T) {
-	consulAddr, _ := setupDatasourcesConsulTest(t)
-	consulPut(t, consulAddr, "foo1", "bar")
-
-	o, e, err := cmd(t, "-d", "consul=consul://",
-		"-i", `{{(ds "consul" "foo1")}}`).
-		withEnv("CONSUL_HTTP_ADDR", "http://"+consulAddr).run()
-	assertSuccess(t, o, e, err, "bar")
-
-	consulPut(t, consulAddr, "foo2", `{"bar": "baz"}`)
-
-	o, e, err = cmd(t, "-d", "consul=consul://?type=application/json",
-		"-i", `{{(ds "consul" "foo2").bar}}`).
-		withEnv("CONSUL_HTTP_ADDR", "http://"+consulAddr).run()
-	assertSuccess(t, o, e, err, "baz")
-
-	consulPut(t, consulAddr, "foo2", `bar`)
-
-	o, e, err = cmd(t, "-d", "consul=consul://"+consulAddr,
-		"-i", `{{(ds "consul" "foo2")}}`).run()
-	assertSuccess(t, o, e, err, "bar")
-
-	consulPut(t, consulAddr, "foo3", `bar`)
-
-	o, e, err = cmd(t, "-d", "consul=consul+http://"+consulAddr,
-		"-i", `{{(ds "consul" "foo3")}}`).run()
-	assertSuccess(t, o, e, err, "bar")
-}
-
-func TestDatasources_Consul_ListKeys(t *testing.T) {
-	consulAddr, _ := setupDatasourcesConsulTest(t)
-	consulPut(t, consulAddr, "list-of-keys/foo1", `{"bar1": "bar1"}`)
-	consulPut(t, consulAddr, "list-of-keys/foo2", "bar2")
-
-	// Get a list of keys using the ds args
-	expectedResult := `[{"key":"foo1","value":"{\"bar1\": \"bar1\"}"},{"key":"foo2","value":"bar2"}]`
-	o, e, err := cmd(t, "-d", "consul=consul://",
-		"-i", `{{(ds "consul" "list-of-keys/") | data.ToJSON }}`).
-		withEnv("CONSUL_HTTP_ADDR", "http://"+consulAddr).run()
-	assertSuccess(t, o, e, err, expectedResult)
-
-	// Get a list of keys using the ds uri
-	expectedResult = `[{"key":"foo1","value":"{\"bar1\": \"bar1\"}"},{"key":"foo2","value":"bar2"}]`
-	o, e, err = cmd(t, "-d", "consul=consul+http://"+consulAddr+"/list-of-keys/",
-		"-i", `{{(ds "consul" ) | data.ToJSON }}`).run()
-	assertSuccess(t, o, e, err, expectedResult)
-
-	// Get a specific value from the list of Consul keys
-	expectedResult = `{"bar1": "bar1"}`
-	o, e, err = cmd(t, "-d", "consul=consul+http://"+consulAddr+"/list-of-keys/",
-		"-i", `{{ $data := ds "consul" }}{{ (index $data 0).value }}`).run()
-	assertSuccess(t, o, e, err, expectedResult)
-}
-
-func TestDatasources_Consul_WithVaultAuth(t *testing.T) {
 	consulAddr, v := setupDatasourcesConsulTest(t)
+	// run as subtests since we want to maintain the same consul process for the
+	// whole test
+	t.Run("basic", consulBasicTest(consulAddr))
+	t.Run("listKeys", consulListKeysTest(consulAddr))
+	t.Run("vaultAuth", consulVaultAuthTest(consulAddr, v))
+}
 
-	err := v.vc.Sys().Mount("consul/", &vaultapi.MountInput{Type: "consul"})
-	require.NoError(t, err)
-	defer v.vc.Sys().Unmount("consul/")
+func consulBasicTest(consulAddr string) func(t *testing.T) {
+	return func(t *testing.T) {
+		consulPut(t, consulAddr, "foo1", "bar")
 
-	_, err = v.vc.Logical().Write("consul/config/access", map[string]interface{}{
-		"address": consulAddr, "token": consulRootToken,
-	})
-	require.NoError(t, err)
-	policy := base64.StdEncoding.EncodeToString([]byte(`key "" { policy = "read" }`))
-	_, err = v.vc.Logical().Write("consul/roles/readonly", map[string]interface{}{"policy": policy})
-	require.NoError(t, err)
+		o, e, err := cmd(t, "-d", "consul=consul://",
+			"-i", `{{(ds "consul" "foo1")}}`).
+			withEnv("CONSUL_HTTP_ADDR", "http://"+consulAddr).run()
+		assertSuccess(t, o, e, err, "bar")
 
-	consulPut(t, consulAddr, "foo", "bar")
+		consulPut(t, consulAddr, "foo2", `{"bar": "baz"}`)
 
-	o, e, err := cmd(t,
-		"-d", "consul=consul://",
-		"-i", `{{(ds "consul" "foo")}}`).
-		withEnv("VAULT_TOKEN", vaultRootToken).
-		withEnv("VAULT_ADDR", "http://"+v.addr).
-		withEnv("CONSUL_VAULT_ROLE", "readonly").
-		withEnv("CONSUL_HTTP_ADDR", "http://"+consulAddr).
-		run()
-	assertSuccess(t, o, e, err, "bar")
+		o, e, err = cmd(t, "-d", "consul=consul://?type=application/json",
+			"-i", `{{(ds "consul" "foo2").bar}}`).
+			withEnv("CONSUL_HTTP_ADDR", "http://"+consulAddr).run()
+		assertSuccess(t, o, e, err, "baz")
+
+		consulPut(t, consulAddr, "foo2", `bar`)
+
+		o, e, err = cmd(t, "-d", "consul=consul://"+consulAddr,
+			"-i", `{{(ds "consul" "foo2")}}`).run()
+		assertSuccess(t, o, e, err, "bar")
+
+		consulPut(t, consulAddr, "foo3", `bar`)
+
+		o, e, err = cmd(t, "-d", "consul=consul+http://"+consulAddr,
+			"-i", `{{(ds "consul" "foo3")}}`).run()
+		assertSuccess(t, o, e, err, "bar")
+	}
+}
+
+func consulListKeysTest(consulAddr string) func(t *testing.T) {
+	return func(t *testing.T) {
+		consulPut(t, consulAddr, "list-of-keys/foo1", `{"bar1": "bar1"}`)
+		consulPut(t, consulAddr, "list-of-keys/foo2", "bar2")
+
+		// Get a list of keys using the ds args
+		expectedResult := `[{"key":"foo1","value":"{\"bar1\": \"bar1\"}"},{"key":"foo2","value":"bar2"}]`
+		o, e, err := cmd(t, "-d", "consul=consul://",
+			"-i", `{{(ds "consul" "list-of-keys/") | data.ToJSON }}`).
+			withEnv("CONSUL_HTTP_ADDR", "http://"+consulAddr).run()
+		assertSuccess(t, o, e, err, expectedResult)
+
+		// Get a list of keys using the ds uri
+		expectedResult = `[{"key":"foo1","value":"{\"bar1\": \"bar1\"}"},{"key":"foo2","value":"bar2"}]`
+		o, e, err = cmd(t, "-d", "consul=consul+http://"+consulAddr+"/list-of-keys/",
+			"-i", `{{(ds "consul" ) | data.ToJSON }}`).run()
+		assertSuccess(t, o, e, err, expectedResult)
+
+		// Get a specific value from the list of Consul keys
+		expectedResult = `{"bar1": "bar1"}`
+		o, e, err = cmd(t, "-d", "consul=consul+http://"+consulAddr+"/list-of-keys/",
+			"-i", `{{ $data := ds "consul" }}{{ (index $data 0).value }}`).run()
+		assertSuccess(t, o, e, err, expectedResult)
+	}
+}
+
+func consulVaultAuthTest(consulAddr string, v *vaultClient) func(t *testing.T) {
+	return func(t *testing.T) {
+		err := v.vc.Sys().Mount("consul/", &vaultapi.MountInput{Type: "consul"})
+		require.NoError(t, err)
+		defer v.vc.Sys().Unmount("consul/")
+
+		_, err = v.vc.Logical().Write("consul/config/access", map[string]interface{}{
+			"address": consulAddr, "token": consulRootToken,
+		})
+		require.NoError(t, err)
+		policy := base64.StdEncoding.EncodeToString([]byte(`key "" { policy = "read" }`))
+		_, err = v.vc.Logical().Write("consul/roles/readonly", map[string]interface{}{"policy": policy})
+		require.NoError(t, err)
+
+		consulPut(t, consulAddr, "foo", "bar")
+
+		o, e, err := cmd(t,
+			"-d", "consul=consul://",
+			"-i", `{{(ds "consul" "foo")}}`).
+			withEnv("VAULT_TOKEN", vaultRootToken).
+			withEnv("VAULT_ADDR", "http://"+v.addr).
+			withEnv("CONSUL_VAULT_ROLE", "readonly").
+			withEnv("CONSUL_HTTP_ADDR", "http://"+consulAddr).
+			run()
+		assertSuccess(t, o, e, err, "bar")
+	}
 }

@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"testing"
 
+	"github.com/hairyhenderson/gomplate/v3/internal/config"
 	"github.com/spf13/afero"
 
 	"github.com/stretchr/testify/assert"
@@ -29,8 +30,8 @@ func TestFileRequest(t *testing.T) {
 	_, _ = fs.Create("/tmp/partial/bar.txt")
 	_, _ = fs.Create("/tmp/partial/baz.txt")
 
-	ctx := context.Background()
-	r := &fileRequester{fs}
+	r := &fileRequester{}
+	ctx := config.WithFileSystem(context.Background(), fs)
 
 	_, err := r.Request(ctx, mustParseURL("file:///bogus"), nil)
 	assert.Error(t, err)
@@ -38,14 +39,14 @@ func TestFileRequest(t *testing.T) {
 	testdata := []struct {
 		url       string
 		mediatype string
-		length    int64
 		body      []byte
+		length    int64
 	}{
-		{"file:///tmp/foo", textMimetype, cLen, content},
-		{"file:///tmp/partial/foo.txt", textMimetype, cLen, content},
-		{"file:///tmp/partial/", jsonArrayMimetype, dirLen, dirListing},
-		{"file:///tmp/partial/?type=application/json", jsonMimetype, dirLen, dirListing},
-		{"file:///tmp/partial/foo.txt?type=application/json", jsonMimetype, cLen, content},
+		{"file:///tmp/foo", textMimetype, content, cLen},
+		{"file:///tmp/partial/foo.txt", textMimetype, content, cLen},
+		{"file:///tmp/partial/", jsonArrayMimetype, dirListing, dirLen},
+		{"file:///tmp/partial/?type=application/json", jsonMimetype, dirListing, dirLen},
+		{"file:///tmp/partial/foo.txt?type=application/json", jsonMimetype, content, cLen},
 	}
 
 	for i, d := range testdata {

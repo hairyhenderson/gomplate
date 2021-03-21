@@ -17,17 +17,14 @@ import (
 )
 
 type fileRequester struct {
-	fs afero.Fs
 }
 
 func (r *fileRequester) Request(ctx context.Context, u *url.URL, header http.Header) (*Response, error) {
 	fs := config.FileSystemFromContext(ctx)
 	if fs == nil {
-		if r.fs == nil {
-			r.fs = afero.NewOsFs()
-		}
-		fs = r.fs
+		fs = afero.NewOsFs()
 	}
+
 	p := filepath.FromSlash(u.Path)
 	// make sure we can access the file
 	i, err := fs.Stat(p)
@@ -45,7 +42,8 @@ func (r *fileRequester) Request(ctx context.Context, u *url.URL, header http.Hea
 	hint := ""
 	if i.IsDir() {
 		hint = jsonArrayMimetype
-		b, err := r.readFileDir(ctx, fs, p)
+		var b []byte
+		b, err = r.readFileDir(ctx, fs, p)
 		if err != nil {
 			return nil, fmt.Errorf("failed to list directory %q: %w", p, err)
 		}

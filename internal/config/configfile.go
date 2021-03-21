@@ -39,29 +39,29 @@ type Config struct {
 	// internal use only, can't be injected in YAML
 	PostExecInput io.Reader `yaml:"-"`
 
-	Input       string   `yaml:"in,omitempty"`
-	InputDir    string   `yaml:"inputDir,omitempty"`
-	InputFiles  []string `yaml:"inputFiles,omitempty,flow"`
-	ExcludeGlob []string `yaml:"excludes,omitempty"`
-
-	OutputDir   string   `yaml:"outputDir,omitempty"`
-	OutputMap   string   `yaml:"outputMap,omitempty"`
-	OutputFiles []string `yaml:"outputFiles,omitempty,flow"`
-	OutMode     string   `yaml:"chmod,omitempty"`
-
-	LDelim string `yaml:"leftDelim,omitempty"`
-	RDelim string `yaml:"rightDelim,omitempty"`
-
-	PostExec []string `yaml:"postExec,omitempty,flow"`
-
-	DataSources map[string]DataSource `yaml:"datasources,omitempty"`
 	Context     map[string]DataSource `yaml:"context,omitempty"`
+	DataSources map[string]DataSource `yaml:"datasources,omitempty"`
 	Plugins     map[string]string     `yaml:"plugins,omitempty"`
 	Templates   Templates             `yaml:"templates,omitempty"`
 
 	// Extra HTTP headers not attached to pre-defined datsources. Potentially
 	// used by datasources defined in the template.
 	ExtraHeaders map[string]http.Header `yaml:"-"`
+
+	Input       string   `yaml:"in,omitempty"`
+	InputFiles  []string `yaml:"inputFiles,omitempty,flow"`
+	InputDir    string   `yaml:"inputDir,omitempty"`
+	ExcludeGlob []string `yaml:"excludes,omitempty"`
+
+	OutputFiles []string `yaml:"outputFiles,omitempty,flow"`
+	OutputDir   string   `yaml:"outputDir,omitempty"`
+	OutputMap   string   `yaml:"outputMap,omitempty"`
+	OutMode     string   `yaml:"chmod,omitempty"`
+
+	LDelim string `yaml:"leftDelim,omitempty"`
+	RDelim string `yaml:"rightDelim,omitempty"`
+
+	PostExec []string `yaml:"postExec,omitempty,flow"`
 
 	PluginTimeout time.Duration `yaml:"pluginTimeout,omitempty"`
 
@@ -109,7 +109,7 @@ type Templates map[string]DataSource
 
 // UnmarshalYAML - satisfy the yaml.Umarshaler interface - Templates can be
 // provided as an array of key=value strings, or a map of string to datasources
-func (d *Templates) UnmarshalYAML(value *yaml.Node) (err error) {
+func (d *Templates) UnmarshalYAML(value *yaml.Node) error {
 	*d = Templates{}
 
 	switch value.Kind {
@@ -122,12 +122,13 @@ func (d *Templates) UnmarshalYAML(value *yaml.Node) (err error) {
 			if err != nil {
 				return fmt.Errorf("could not parse datasource URL from %+v: %w", parts, err)
 			}
+
 			ds.URL = u
 			(*d)[alias] = ds
 		}
 	case yaml.MappingNode:
 		m := map[string]DataSource{}
-		err = value.Decode(&m)
+		err := value.Decode(&m)
 		if err != nil {
 			return fmt.Errorf("failed to %s node: %w", value.Tag, err)
 		}
@@ -135,10 +136,10 @@ func (d *Templates) UnmarshalYAML(value *yaml.Node) (err error) {
 			(*d)[k] = v
 		}
 	default:
-		err = fmt.Errorf("cannot unmarshal unexpected type %s", value.Tag)
+		return fmt.Errorf("cannot unmarshal unexpected type %s", value.Tag)
 	}
 
-	return err
+	return nil
 }
 
 // DataSource - datasource configuration
@@ -165,7 +166,7 @@ func (d *DataSource) UnmarshalYAML(value *yaml.Node) (err error) {
 			r.URL = s
 		}
 	} else {
-		err := value.Decode(&r)
+		err = value.Decode(&r)
 		if err != nil {
 			return err
 		}
@@ -178,6 +179,7 @@ func (d *DataSource) UnmarshalYAML(value *yaml.Node) (err error) {
 			return fmt.Errorf("could not parse datasource URL %q: %w", r.URL, err)
 		}
 	}
+
 	*d = DataSource{
 		URL:    u,
 		Header: r.Header,

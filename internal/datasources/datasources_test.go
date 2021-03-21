@@ -12,12 +12,11 @@ import (
 )
 
 func TestReadDataSource(t *testing.T) {
-	ctx := context.Background()
 	contents := "hello world"
 	fname := "foo.txt"
 	fs := afero.NewMemMapFs()
-	requesters["file"] = &fileRequester{fs}
-	defer func() { delete(requesters, "file") }()
+
+	ctx := config.WithFileSystem(context.Background(), fs)
 
 	var uPath string
 	var f afero.File

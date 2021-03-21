@@ -12,9 +12,9 @@ import (
 )
 
 type testKV struct {
+	err   error
 	body  []byte
 	items []string
-	err   error
 }
 
 var _ kvStore = (*testKV)(nil)

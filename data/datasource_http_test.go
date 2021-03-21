@@ -13,16 +13,8 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func must(r interface{}, err error) interface{} {
-	if err != nil {
-		panic(err)
-	}
-	return r
-}
-
-func setupHTTP(code int, mimetype string, body string) (*httptest.Server, *http.Client) {
-	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-
+func setupHTTP(t *testing.T, code int, mimetype string, body string) *httptest.Server {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", mimetype)
 		w.WriteHeader(code)
 		if body == "" {
@@ -33,16 +25,9 @@ func setupHTTP(code int, mimetype string, body string) (*httptest.Server, *http.
 			fmt.Fprintln(w, body)
 		}
 	}))
+	t.Cleanup(srv.Close)
 
-	client := &http.Client{
-		Transport: &http.Transport{
-			Proxy: func(req *http.Request) (*url.URL, error) {
-				return url.Parse(server.URL)
-			},
-		},
-	}
-
-	return server, client
+	return srv
 }
 
 func assertJSONEqual(t *testing.T, expected, actual interface{}) {
@@ -54,20 +39,15 @@ func assertJSONEqual(t *testing.T, expected, actual interface{}) {
 }
 
 func TestHTTPFile(t *testing.T) {
-	server, client := setupHTTP(200, "application/json; charset=utf-8", `{"hello": "world"}`)
-	defer server.Close()
+	srv := setupHTTP(t, 200, "application/json; charset=utf-8", `{"hello": "world"}`)
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
-	ctx = config.WithHTTPClient(ctx, client)
 
+	u, _ := url.Parse(srv.URL)
 	data := &Data{
 		ds: map[string]config.DataSource{
-			"foo": {URL: &url.URL{
-				Scheme: "http",
-				Host:   "example.com",
-				Path:   "/foo",
-			}},
+			"foo": {URL: u},
 		},
 		ctx: ctx,
 	}
@@ -80,26 +60,22 @@ func TestHTTPFile(t *testing.T) {
 	assert.NoError(t, err)
 	assertJSONEqual(t, expected, actual)
 
-	actual, err = data.Datasource(server.URL)
+	actual, err = data.Datasource(srv.URL)
 	assert.NoError(t, err)
 	assertJSONEqual(t, expected, actual)
 }
 
 func TestHTTPFileWithHeaders(t *testing.T) {
-	server, client := setupHTTP(200, jsonMimetype, "")
-	defer server.Close()
+	srv := setupHTTP(t, 200, jsonMimetype, "")
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
-	ctx = config.WithHTTPClient(ctx, client)
 
 	sources := make(map[string]config.DataSource)
+
+	u, _ := url.Parse(srv.URL)
 	sources["foo"] = config.DataSource{
-		URL: &url.URL{
-			Scheme: "http",
-			Host:   "example.com",
-			Path:   "/foo",
-		},
+		URL: u,
 		Header: http.Header{
 			"Foo":             {"bar"},
 			"foo":             {"baz"},
@@ -126,10 +102,10 @@ func TestHTTPFileWithHeaders(t *testing.T) {
 	}
 	data = &Data{
 		ds:           sources,
-		extraHeaders: map[string]http.Header{server.URL: expected},
+		extraHeaders: map[string]http.Header{srv.URL: expected},
 		ctx:          ctx,
 	}
-	actual, err = data.Datasource(server.URL)
+	actual, err = data.Datasource(srv.URL)
 	assert.NoError(t, err)
 	assertJSONEqual(t, expected, actual)
 }

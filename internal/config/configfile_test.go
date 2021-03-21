@@ -507,6 +507,8 @@ func TestParseDataSourceFlags(t *testing.T) {
 		[]string{"baz=foo/bar/baz.json"},
 		[]string{"foo=http://example.com"},
 	)
+	assert.NoError(t, err)
+
 	err = cfg.ParseHeaderFlags([]string{"foo=Accept: application/json",
 		"bar=Authorization: Basic xxxxx"})
 	assert.NoError(t, err)

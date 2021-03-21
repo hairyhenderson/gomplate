@@ -63,6 +63,7 @@ func newGomplate(funcMap template.FuncMap, leftDelim, rightDelim string, nested 
 //
 // Deprecated: use Run instead
 func RunTemplates(o *Config) error {
+	fmt.Println("Warning: RunTemplates is deprecated, use Run instead")
 	cfg, err := o.toNewConfig()
 	if err != nil {
 		return err

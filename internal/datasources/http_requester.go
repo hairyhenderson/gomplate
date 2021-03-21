@@ -13,15 +13,12 @@ import (
 )
 
 type httpRequester struct {
-	hc *http.Client
 }
 
 func (r *httpRequester) Request(ctx context.Context, u *url.URL, header http.Header) (*Response, error) {
-	if r.hc == nil {
-		r.hc = config.HTTPClientFromContext(ctx)
-		if r.hc == http.DefaultClient {
-			r.hc = &http.Client{Timeout: time.Second * 5}
-		}
+	hc := config.HTTPClientFromContext(ctx)
+	if hc == http.DefaultClient {
+		hc = &http.Client{Timeout: time.Second * 5}
 	}
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, u.String(), nil)
@@ -31,7 +28,7 @@ func (r *httpRequester) Request(ctx context.Context, u *url.URL, header http.Hea
 
 	req.Header = header
 
-	res, err := r.hc.Do(req)
+	res, err := hc.Do(req)
 	if err != nil {
 		return nil, err
 	}

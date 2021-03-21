@@ -7,13 +7,10 @@ import (
 	"net/http"
 	"net/url"
 
-	"github.com/spf13/afero"
-
 	"github.com/pkg/errors"
 
 	"github.com/hairyhenderson/gomplate/v3/internal/config"
 	"github.com/hairyhenderson/gomplate/v3/internal/datasources"
-	"github.com/hairyhenderson/gomplate/v3/libkv"
 	"github.com/hairyhenderson/gomplate/v3/vault"
 )
 
@@ -40,7 +37,7 @@ type Data struct {
 
 	ds map[string]config.DataSource
 
-	cache map[string][]byte
+	// cache map[string][]byte
 
 	// headers from the --datasource-header/-H option that don't reference datasources from the commandline
 	extraHeaders map[string]http.Header
@@ -91,13 +88,9 @@ func FromConfig(ctx context.Context, cfg *config.Config) *Data {
 // Source - a data source
 type Source struct {
 	URL               *url.URL
-	fs                afero.Fs                // used for file: URLs, nil otherwise
-	hc                *http.Client            // used for http[s]: URLs, nil otherwise
 	vc                *vault.Vault            // used for vault: URLs, nil otherwise
-	kv                *libkv.LibKV            // used for consul:, etcd:, zookeeper: & boltdb: URLs, nil otherwise
 	asmpg             awssmpGetter            // used for aws+smp:, nil otherwise
 	awsSecretsManager awsSecretsManagerGetter // used for aws+sm, nil otherwise
-	header            http.Header             // used for http[s]: URLs, nil otherwise
 	Alias             string
 	mediaType         string
 }

@@ -128,7 +128,6 @@ func (o *Config) toNewConfig() (*config.Config, error) {
 		OutMode:     o.OutMode,
 		LDelim:      o.LDelim,
 		RDelim:      o.RDelim,
-		Templates:   o.Templates,
 		Stdin:       os.Stdin,
 		Stdout:      &iohelpers.NopCloser{Writer: o.Out},
 		Stderr:      os.Stderr,

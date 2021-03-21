@@ -21,6 +21,11 @@ import (
 	"gocloud.dev/gcp"
 )
 
+const (
+	schemeS3 = "s3"
+	schemeGS = "gs"
+)
+
 type blobRequester struct{}
 
 func (r *blobRequester) Request(ctx context.Context, u *url.URL, header http.Header) (*Response, error) {
@@ -42,24 +47,26 @@ func (r *blobRequester) Request(ctx context.Context, u *url.URL, header http.Hea
 
 	resp := &Response{}
 	if strings.HasSuffix(key, "/") {
-		b, err := r.listBucket(ctx, bucket, key)
-		if err != nil {
-			return nil, err
+		b, lerr := r.listBucket(ctx, bucket, key)
+		if lerr != nil {
+			return nil, lerr
 		}
 		resp.ContentType = jsonArrayMimetype
 		resp.ContentLength = int64(b.Len())
 		resp.Body = ioutil.NopCloser(b)
 	} else {
-		attr, data, err := r.getBlob(ctx, bucket, key)
-		if err != nil {
-			return nil, err
+		attr, data, gerr := r.getBlob(ctx, bucket, key)
+		if gerr != nil {
+			return nil, gerr
 		}
 		resp.ContentType = attr.ContentType
 		resp.ContentLength = attr.Size
 		resp.Body = data
 	}
 
-	if mt, err := mimeType(u, resp.ContentType); err == nil {
+	// try to guess the right media, but fall back to resp.ContentType if it
+	// can't be guessed
+	if mt, merr := mimeType(u, resp.ContentType); merr == nil {
 		resp.ContentType = mt
 	}
 
@@ -69,12 +76,12 @@ func (r *blobRequester) Request(ctx context.Context, u *url.URL, header http.Hea
 // create the correct kind of blob.BucketURLOpener for the given URL
 func (r *blobRequester) newOpener(ctx context.Context, scheme string) (opener blob.BucketURLOpener, err error) {
 	switch scheme {
-	case "s3":
+	case schemeS3:
 		// set up a "regular" gomplate AWS SDK session
 		sess := gaws.SDKSession()
 		// see https://gocloud.dev/concepts/urls/#muxes
 		opener = &s3blob.URLOpener{ConfigProvider: sess}
-	case "gs":
+	case schemeGS:
 		creds, err := gcp.DefaultCredentials(ctx)
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to retrieve GCP credentials")
@@ -144,13 +151,13 @@ func sanitizeURL(u *url.URL) *url.URL {
 
 	for param := range q {
 		switch u.Scheme {
-		case "s3":
+		case schemeS3:
 			switch param {
 			case "region", "endpoint", "disableSSL", "s3ForcePathStyle":
 			default:
 				q.Del(param)
 			}
-		case "gs":
+		case schemeGS:
 			switch param {
 			case "access_id", "private_key_path":
 			default:
@@ -159,7 +166,7 @@ func sanitizeURL(u *url.URL) *url.URL {
 		}
 	}
 
-	if u.Scheme == "s3" {
+	if u.Scheme == schemeS3 {
 		// handle AWS_S3_ENDPOINT env var
 		endpoint := env.Getenv("AWS_S3_ENDPOINT")
 		if endpoint != "" {

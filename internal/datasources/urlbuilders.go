@@ -125,30 +125,33 @@ func (b *awssmURLBuilder) BuildURL(u *url.URL, args ...string) (*url.URL, error)
 	if out.Path == "" && u.Opaque != "" {
 		out.Path = u.Opaque
 	}
-	if len(args) == 1 {
-		p, err := url.Parse(args[0])
-		if err != nil {
-			return nil, fmt.Errorf("bad sub-path %q: %w", args[0], err)
-		}
-		if p.Path != "" {
-			out.Path = path.Join(out.Path, p.Path)
-			if strings.HasSuffix(p.Path, "/") {
-				out.Path += "/"
-			}
-		}
 
-		if p.RawQuery == "" {
-			out.RawQuery = u.RawQuery
-		} else if u.RawQuery != "" {
-			// merge the query params
-			q := u.Query()
-			for k, vs := range p.Query() {
-				for _, v := range vs {
-					q.Set(k, v)
-				}
-			}
-			out.RawQuery = q.Encode()
+	if len(args) != 1 {
+		return out, nil
+	}
+
+	p, err := url.Parse(args[0])
+	if err != nil {
+		return nil, fmt.Errorf("bad sub-path %q: %w", args[0], err)
+	}
+	if p.Path != "" {
+		out.Path = path.Join(out.Path, p.Path)
+		if strings.HasSuffix(p.Path, "/") {
+			out.Path += "/"
 		}
+	}
+
+	if p.RawQuery == "" {
+		out.RawQuery = u.RawQuery
+	} else if u.RawQuery != "" {
+		// merge the query params
+		q := u.Query()
+		for k, vs := range p.Query() {
+			for _, v := range vs {
+				q.Set(k, v)
+			}
+		}
+		out.RawQuery = q.Encode()
 	}
 
 	return out, nil
@@ -169,30 +172,32 @@ func (b *blobURLBuilder) BuildURL(u *url.URL, args ...string) (*url.URL, error) 
 		RawQuery: u.RawQuery,
 	}
 
-	if len(args) == 1 {
-		p, err := url.Parse(args[0])
-		if err != nil {
-			return nil, fmt.Errorf("bad sub-path %q: %w", args[0], err)
-		}
-		if p.Path != "" {
-			out.Path = path.Join(out.Path, p.Path)
-			if strings.HasSuffix(p.Path, "/") {
-				out.Path += "/"
-			}
-		}
+	if len(args) != 1 {
+		return out, nil
+	}
 
-		if p.RawQuery == "" {
-			out.RawQuery = u.RawQuery
-		} else if u.RawQuery != "" {
-			// merge the query params
-			q := u.Query()
-			for k, vs := range p.Query() {
-				for _, v := range vs {
-					q.Set(k, v)
-				}
-			}
-			out.RawQuery = q.Encode()
+	p, err := url.Parse(args[0])
+	if err != nil {
+		return nil, fmt.Errorf("bad sub-path %q: %w", args[0], err)
+	}
+	if p.Path != "" {
+		out.Path = path.Join(out.Path, p.Path)
+		if strings.HasSuffix(p.Path, "/") {
+			out.Path += "/"
 		}
+	}
+
+	if p.RawQuery == "" {
+		out.RawQuery = u.RawQuery
+	} else if u.RawQuery != "" {
+		// merge the query params
+		q := u.Query()
+		for k, vs := range p.Query() {
+			for _, v := range vs {
+				q.Set(k, v)
+			}
+		}
+		out.RawQuery = q.Encode()
 	}
 
 	return out, nil

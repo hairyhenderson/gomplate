@@ -6,15 +6,13 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
-	"net/url"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
 
-func setupHTTP(code int, mimetype string, body string) (*httptest.Server, *http.Client) {
-	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-
+func setupHTTP(t *testing.T, code int, mimetype string, body string) *httptest.Server {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", mimetype)
 		w.WriteHeader(code)
 		if body == "" {
@@ -25,16 +23,9 @@ func setupHTTP(code int, mimetype string, body string) (*httptest.Server, *http.
 			fmt.Fprintln(w, body)
 		}
 	}))
+	t.Cleanup(srv.Close)
 
-	client := &http.Client{
-		Transport: &http.Transport{
-			Proxy: func(req *http.Request) (*url.URL, error) {
-				return url.Parse(server.URL)
-			},
-		},
-	}
-
-	return server, client
+	return srv
 }
 
 func assertJSONEqual(t *testing.T, expected, actual interface{}) {
@@ -46,49 +37,40 @@ func assertJSONEqual(t *testing.T, expected, actual interface{}) {
 }
 
 func TestHTTPRequester(t *testing.T) {
-	server, client := setupHTTP(200, "application/json; charset=utf-8", `{"hello": "world"}`)
-	defer server.Close()
+	srv := setupHTTP(t, 200, "application/json; charset=utf-8", `{"hello": "world"}`)
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	r := &httpRequester{client}
+	r := &httpRequester{}
 
 	expected := map[string]interface{}{
 		"hello": "world",
 	}
 
-	u := mustParseURL("http://example.com/foo")
+	u := mustParseURL(srv.URL)
 	resp, err := r.Request(ctx, u, nil)
 	assert.NoError(t, err)
 
 	actual, err := resp.Parse()
 	assert.NoError(t, err)
 	assertJSONEqual(t, expected, actual)
-
-	u = mustParseURL(server.URL)
-	resp, err = r.Request(ctx, u, nil)
-	assert.NoError(t, err)
-
-	actual, err = resp.Parse()
-	assert.NoError(t, err)
-	assertJSONEqual(t, expected, actual)
 }
 
 func TestHTTPRequesterWithHeaders(t *testing.T) {
-	server, client := setupHTTP(200, jsonMimetype, "")
-	defer server.Close()
+	srv := setupHTTP(t, 200, jsonMimetype, "")
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	r := &httpRequester{client}
+	r := &httpRequester{}
 	expected := http.Header{
 		"Accept-Encoding": {"test"},
 		"Foo":             {"bar", "baz"},
 	}
 
-	u := mustParseURL("http://example.com/foo")
+	u := mustParseURL(srv.URL)
+
 	resp, err := r.Request(ctx, u, http.Header{
 		"Foo":             {"bar"},
 		"foo":             {"baz"},
@@ -106,7 +88,6 @@ func TestHTTPRequesterWithHeaders(t *testing.T) {
 		"Foo":             {"bar", "baz"},
 		"User-Agent":      {"Go-http-client/1.1"},
 	}
-	u = mustParseURL(server.URL)
 	resp, err = r.Request(ctx, u, expected)
 	assert.NoError(t, err)
 

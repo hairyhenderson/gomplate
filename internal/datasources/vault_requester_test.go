@@ -5,20 +5,20 @@ import (
 	"io/ioutil"
 	"testing"
 
+	"github.com/hairyhenderson/gomplate/v3/internal/config"
 	"github.com/hairyhenderson/gomplate/v3/vault"
 
 	"github.com/stretchr/testify/assert"
 )
 
 func TestVaultRequester(t *testing.T) {
-
 	expected := "{\"value\":\"foo\"}\n"
 	server, v := vault.MockServer(200, `{"data":`+expected+`}`)
 	defer server.Close()
 
-	r := &vaultRequester{v}
+	r := &vaultRequester{}
 
-	ctx := context.Background()
+	ctx := config.WithVaultClient(context.Background(), v)
 
 	source := mustParseURL("vault:///secret/foo")
 
@@ -57,7 +57,7 @@ func TestVaultRequester(t *testing.T) {
 	server, v = vault.MockServer(200, `{"data":{"keys":`+expected+`}}`)
 	defer server.Close()
 
-	r.vc = v
+	ctx = config.WithVaultClient(ctx, v)
 
 	source = mustParseURL("vault:///secret/foo/")
 	resp, err = r.Request(ctx, source, nil)

@@ -41,9 +41,9 @@ func (r *mergeRequester) Request(ctx context.Context, u *url.URL, header http.He
 		subSource, err := r.lookup(ctx, part)
 		if err != nil {
 			// maybe it's a relative filename?
-			u, err := config.ParseSourceURL(part)
-			if err != nil {
-				return nil, err
+			u, uerr := config.ParseSourceURL(part)
+			if uerr != nil {
+				return nil, uerr
 			}
 			subSource = config.DataSource{URL: u}
 		}

@@ -11,7 +11,7 @@ import (
 
 // MockServer -
 func MockServer(code int, body string) (*httptest.Server, *Vault) {
-	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(code)
 		// nolint: errcheck
 		fmt.Fprintln(w, body)
@@ -19,15 +19,15 @@ func MockServer(code int, body string) (*httptest.Server, *Vault) {
 
 	tr := &http.Transport{
 		Proxy: func(req *http.Request) (*url.URL, error) {
-			return url.Parse(server.URL)
+			return url.Parse(srv.URL)
 		},
 	}
 	httpClient := &http.Client{Transport: tr}
 	config := &api.Config{
-		Address:    server.URL,
+		Address:    srv.URL,
 		HttpClient: httpClient,
 	}
 	// nolint: gosec
 	c, _ := api.NewClient(config)
-	return server, &Vault{c}
+	return srv, &Vault{c}
 }

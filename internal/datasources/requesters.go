@@ -1,10 +1,10 @@
 package datasources
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/hairyhenderson/gomplate/v3/internal/config"
-	"github.com/spf13/afero"
 )
 
 var requesters = map[string]requester{}
@@ -25,7 +25,7 @@ func registerRequesters() {
 	requesters["consul+https"] = c
 
 	requesters["env"] = &envRequester{}
-	requesters["file"] = &fileRequester{afero.NewOsFs()}
+	requesters["file"] = &fileRequester{}
 
 	h := &httpRequester{}
 	requesters["http"] = h
@@ -54,7 +54,7 @@ func registerRequesters() {
 	requesters["git+ssh"] = g
 }
 
-func lookupRequester(scheme string) (requester, error) {
+func lookupRequester(ctx context.Context, scheme string) (requester, error) {
 	if requester, ok := requesters[scheme]; ok {
 		return requester, nil
 	}

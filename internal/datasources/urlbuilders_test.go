@@ -24,20 +24,21 @@ func TestBoltDBURLBuilder(t *testing.T) {
 	assert.Error(t, err)
 
 	data := []struct {
-		u        *url.URL
-		args     []string
-		expected *url.URL
+		u        string
+		arg      string
+		expected string
 	}{
-		{mustParseURL("boltdb:///tmp/foo.db#Bucket1"), []string{"key1"}, mustParseURL("boltdb:///tmp/foo.db?key=key1#Bucket1")},
-		{mustParseURL("boltdb:///tmp/foo.db?type=application/json#Bucket1"), []string{"key1"}, mustParseURL("boltdb:///tmp/foo.db?key=key1&type=application%2Fjson#Bucket1")},
-		{mustParseURL("boltdb:///tmp/foo.db?type=text/csv#Bucket1"), []string{"key1?type=application/json"}, mustParseURL("boltdb:///tmp/foo.db?key=key1&type=application%2Fjson#Bucket1")},
+		{"boltdb:///tmp/foo.db#Bucket1", "key1", "boltdb:///tmp/foo.db?key=key1#Bucket1"},
+		{"boltdb:///tmp/foo.db?type=application/json#Bucket1", "key1", "boltdb:///tmp/foo.db?key=key1&type=application%2Fjson#Bucket1"},
+		{"boltdb:///tmp/foo.db?type=text/csv#Bucket1", "key1?type=application/json", "boltdb:///tmp/foo.db?key=key1&type=application%2Fjson#Bucket1"},
 	}
 	for i, d := range data {
 		d := d
-		t.Run(fmt.Sprintf("%s_%d", d.u.String(), i), func(t *testing.T) {
-			actual, err := b.BuildURL(d.u, d.args...)
+		t.Run(fmt.Sprintf("%s_%d", d.u, i), func(t *testing.T) {
+			u := mustParseURL(d.u)
+			actual, err := b.BuildURL(u, d.arg)
 			assert.NoError(t, err)
-			assert.EqualValues(t, d.expected, actual)
+			assert.EqualValues(t, mustParseURL(d.expected), actual)
 		})
 	}
 }
@@ -105,22 +106,26 @@ func TestFileURLBuilder(t *testing.T) {
 	assert.Error(t, err)
 
 	data := []struct {
-		u        *url.URL
-		args     []string
-		expected *url.URL
+		u        string
+		arg      string
+		expected string
 	}{
-		{mustParseURL("file:///foo"), nil, mustParseURL("file:///foo")},
-		{mustParseURL("file:///tmp/foo.txt"), []string{"bar.txt"}, mustParseURL("file:///tmp/bar.txt")},
-		{mustParseURL("file:///tmp/partial/"), nil, mustParseURL("file:///tmp/partial/")},
-		{mustParseURL("file:///tmp/partial/?type=application/json"), nil, mustParseURL("file:///tmp/partial/?type=application/json")},
-		{mustParseURL("file:///tmp/partial/?type=application/json"), []string{"foo.txt"}, mustParseURL("file:///tmp/partial/foo.txt?type=application/json")},
+		{"file:///foo", "", "file:///foo"},
+		{"file:///tmp/foo.txt", "bar.txt", "file:///tmp/bar.txt"},
+		{"file:///tmp/partial/", "", "file:///tmp/partial/"},
+		{"file:///tmp/partial/?type=application/json", "", "file:///tmp/partial/?type=application/json"},
+		{"file:///tmp/partial/?type=application/json", "foo.txt", "file:///tmp/partial/foo.txt?type=application/json"},
 	}
 	for i, d := range data {
 		d := d
-		t.Run(fmt.Sprintf("%s_%d", d.u.String(), i), func(t *testing.T) {
-			actual, err := b.BuildURL(d.u, d.args...)
+		t.Run(fmt.Sprintf("%s_%d", d.u, i), func(t *testing.T) {
+			args := []string{d.arg}
+			if d.arg == "" {
+				args = nil
+			}
+			actual, err := b.BuildURL(mustParseURL(d.u), args...)
 			assert.NoError(t, err)
-			assert.EqualValues(t, d.expected, actual)
+			assert.EqualValues(t, mustParseURL(d.expected), actual)
 		})
 	}
 }
@@ -132,33 +137,33 @@ func TestAWSSMURLBuilder(t *testing.T) {
 
 	data := []struct {
 		u        *url.URL
-		args     []string
 		expected *url.URL
+		args     []string
 	}{
-		{mustParseURL("noddy"), nil, mustParseURL("noddy")},
-		{mustParseURL("base"), []string{"extra"}, mustParseURL("base/extra")},
-		{mustParseURL("/foo/"), []string{"/extra"}, mustParseURL("/foo/extra")},
-		{mustParseURL("aws+sm:///foo"), []string{"bar"}, mustParseURL("aws+sm:///foo/bar")},
-		{mustParseURL("aws+sm:foo"), nil, &url.URL{Scheme: "aws+sm", Path: "foo"}},
-		{mustParseURL("aws+sm:foo/bar"), nil, &url.URL{Scheme: "aws+sm", Path: "foo/bar"}},
-		{mustParseURL("aws+sm:/foo/bar"), nil, mustParseURL("aws+sm:///foo/bar")},
-		{mustParseURL("aws+sm:foo"), []string{"baz"}, &url.URL{Scheme: "aws+sm", Path: "foo/baz"}},
-		{mustParseURL("aws+sm:foo/bar"), []string{"baz"}, &url.URL{Scheme: "aws+sm", Path: "foo/bar/baz"}},
-		{mustParseURL("aws+sm:/foo/bar"), []string{"baz"}, mustParseURL("aws+sm:///foo/bar/baz")},
-		{mustParseURL("aws+sm:///foo"), []string{"dir/"}, mustParseURL("aws+sm:///foo/dir/")},
-		{mustParseURL("aws+sm:///foo/"), nil, mustParseURL("aws+sm:///foo/")},
-		{mustParseURL("aws+sm:///foo/"), []string{"baz"}, mustParseURL("aws+sm:///foo/baz")},
+		{u: mustParseURL("noddy"), args: nil, expected: mustParseURL("noddy")},
+		{u: mustParseURL("base"), args: []string{"extra"}, expected: mustParseURL("base/extra")},
+		{u: mustParseURL("/foo/"), args: []string{"/extra"}, expected: mustParseURL("/foo/extra")},
+		{u: mustParseURL("aws+sm:///foo"), args: []string{"bar"}, expected: mustParseURL("aws+sm:///foo/bar")},
+		{u: mustParseURL("aws+sm:foo"), args: nil, expected: &url.URL{Scheme: "aws+sm", Path: "foo"}},
+		{u: mustParseURL("aws+sm:foo/bar"), args: nil, expected: &url.URL{Scheme: "aws+sm", Path: "foo/bar"}},
+		{u: mustParseURL("aws+sm:/foo/bar"), args: nil, expected: mustParseURL("aws+sm:///foo/bar")},
+		{u: mustParseURL("aws+sm:foo"), args: []string{"baz"}, expected: &url.URL{Scheme: "aws+sm", Path: "foo/baz"}},
+		{u: mustParseURL("aws+sm:foo/bar"), args: []string{"baz"}, expected: &url.URL{Scheme: "aws+sm", Path: "foo/bar/baz"}},
+		{u: mustParseURL("aws+sm:/foo/bar"), args: []string{"baz"}, expected: mustParseURL("aws+sm:///foo/bar/baz")},
+		{u: mustParseURL("aws+sm:///foo"), args: []string{"dir/"}, expected: mustParseURL("aws+sm:///foo/dir/")},
+		{u: mustParseURL("aws+sm:///foo/"), args: nil, expected: mustParseURL("aws+sm:///foo/")},
+		{u: mustParseURL("aws+sm:///foo/"), args: []string{"baz"}, expected: mustParseURL("aws+sm:///foo/baz")},
 
-		{mustParseURL("aws+sm:foo?type=text/plain"), []string{"baz"},
-			&url.URL{Scheme: "aws+sm", Path: "foo/baz", RawQuery: "type=text/plain"}},
-		{mustParseURL("aws+sm:foo/bar?type=text/plain"), []string{"baz"},
-			&url.URL{Scheme: "aws+sm", Path: "foo/bar/baz", RawQuery: "type=text/plain"}},
-		{mustParseURL("aws+sm:/foo/bar?type=text/plain"), []string{"baz"},
-			&url.URL{Scheme: "aws+sm", Path: "/foo/bar/baz", RawQuery: "type=text/plain"}},
+		{u: mustParseURL("aws+sm:foo?type=text/plain"), args: []string{"baz"},
+			expected: &url.URL{Scheme: "aws+sm", Path: "foo/baz", RawQuery: "type=text/plain"}},
+		{u: mustParseURL("aws+sm:foo/bar?type=text/plain"), args: []string{"baz"},
+			expected: &url.URL{Scheme: "aws+sm", Path: "foo/bar/baz", RawQuery: "type=text/plain"}},
+		{u: mustParseURL("aws+sm:/foo/bar?type=text/plain"), args: []string{"baz"},
+			expected: &url.URL{Scheme: "aws+sm", Path: "/foo/bar/baz", RawQuery: "type=text/plain"}},
 		{
-			mustParseURL("aws+sm:/foo/bar?type=text/plain"),
-			[]string{"baz/qux?type=application/json&param=quux"},
-			mustParseURL("aws+sm:///foo/bar/baz/qux?param=quux&type=application%2Fjson"),
+			u:        mustParseURL("aws+sm:/foo/bar?type=text/plain"),
+			args:     []string{"baz/qux?type=application/json&param=quux"},
+			expected: mustParseURL("aws+sm:///foo/bar/baz/qux?param=quux&type=application%2Fjson"),
 		},
 	}
 
@@ -179,31 +184,29 @@ func TestBlobBuilder(t *testing.T) {
 
 	data := []struct {
 		u        *url.URL
-		args     []string
 		expected *url.URL
+		args     []string
 	}{
-		{mustParseURL("s3://mybucket/foo"), []string{"bar"}, mustParseURL("s3://mybucket/foo/bar")},
-		{mustParseURL("s3://mybucket/foo/bar"), nil, mustParseURL("s3://mybucket/foo/bar")},
-		{mustParseURL("s3://mybucket/foo/bar"), []string{"baz"}, mustParseURL("s3://mybucket/foo/bar/baz")},
-		{mustParseURL("s3://mybucket/foo"), []string{"dir/"}, mustParseURL("s3://mybucket/foo/dir/")},
-
-		{mustParseURL("s3://mybucket/foo/"), nil, mustParseURL("s3://mybucket/foo/")},
-		{mustParseURL("s3://mybucket/foo/"), []string{"baz"}, mustParseURL("s3://mybucket/foo/baz")},
-		{mustParseURL("s3://mybucket/foo?type=text/plain"), []string{"baz"},
-			&url.URL{Scheme: "s3", Host: "mybucket", Path: "/foo/baz", RawQuery: "type=text/plain"}},
-		{mustParseURL("s3://mybucket/foo/bar?type=text/plain"), []string{"baz"},
-			&url.URL{Scheme: "s3", Host: "mybucket", Path: "/foo/bar/baz", RawQuery: "type=text/plain"}},
-
-		{mustParseURL("s3://mybucket/foo/bar?type=text/plain"), []string{"baz"},
-			&url.URL{Scheme: "s3", Host: "mybucket", Path: "/foo/bar/baz", RawQuery: "type=text/plain"}},
+		{u: mustParseURL("s3://mybucket/foo"), args: []string{"bar"}, expected: mustParseURL("s3://mybucket/foo/bar")},
+		{u: mustParseURL("s3://mybucket/foo/bar"), expected: mustParseURL("s3://mybucket/foo/bar")},
+		{u: mustParseURL("s3://mybucket/foo/bar"), args: []string{"baz"}, expected: mustParseURL("s3://mybucket/foo/bar/baz")},
+		{u: mustParseURL("s3://mybucket/foo"), args: []string{"dir/"}, expected: mustParseURL("s3://mybucket/foo/dir/")},
+		{u: mustParseURL("s3://mybucket/foo/"), expected: mustParseURL("s3://mybucket/foo/")},
+		{u: mustParseURL("s3://mybucket/foo/"), args: []string{"baz"}, expected: mustParseURL("s3://mybucket/foo/baz")},
+		{u: mustParseURL("s3://mybucket/foo?type=text/plain"), args: []string{"baz"},
+			expected: &url.URL{Scheme: "s3", Host: "mybucket", Path: "/foo/baz", RawQuery: "type=text/plain"}},
+		{u: mustParseURL("s3://mybucket/foo/bar?type=text/plain"), args: []string{"baz"},
+			expected: &url.URL{Scheme: "s3", Host: "mybucket", Path: "/foo/bar/baz", RawQuery: "type=text/plain"}},
+		{u: mustParseURL("s3://mybucket/foo/bar?type=text/plain"), args: []string{"baz"},
+			expected: &url.URL{Scheme: "s3", Host: "mybucket", Path: "/foo/bar/baz", RawQuery: "type=text/plain"}},
 		{
-			mustParseURL("s3://mybucket/dir1/?region=us-east-1&disableSSL=true&s3ForcePathStyle=true"),
-			[]string{"?endpoint=example.com"},
-			mustParseURL("s3://mybucket/dir1/?disableSSL=true&endpoint=example.com&region=us-east-1&s3ForcePathStyle=true")},
+			u:        mustParseURL("s3://mybucket/dir1/?region=us-east-1&disableSSL=true&s3ForcePathStyle=true"),
+			args:     []string{"?endpoint=example.com"},
+			expected: mustParseURL("s3://mybucket/dir1/?disableSSL=true&endpoint=example.com&region=us-east-1&s3ForcePathStyle=true")},
 		{
-			mustParseURL("s3://mybucket/foo/bar?type=text/plain"),
-			[]string{"baz/qux?type=application/json&param=quux"},
-			mustParseURL("s3://mybucket/foo/bar/baz/qux?param=quux&type=application%2Fjson"),
+			u:        mustParseURL("s3://mybucket/foo/bar?type=text/plain"),
+			args:     []string{"baz/qux?type=application/json&param=quux"},
+			expected: mustParseURL("s3://mybucket/foo/bar/baz/qux?param=quux&type=application%2Fjson"),
 		},
 	}
 
@@ -243,7 +246,7 @@ func TestGitParseArgPath(t *testing.T) {
 		d := d
 		t.Run(fmt.Sprintf("%d:(%q,%q)==(%q,%q)", i, d.url, d.arg, d.repo, d.path), func(t *testing.T) {
 			t.Parallel()
-			u, _ := url.Parse(d.url)
+			u := mustParseURL(d.url)
 			orig := u.Path
 			repo, subpath := g.parseArgPath(orig, d.arg)
 			assert.Equal(t, d.repo, repo)
@@ -257,127 +260,105 @@ func TestGitURLBuilder(t *testing.T) {
 	b := &gitURLBuilder{}
 
 	data := []struct {
-		url      *url.URL
-		args     []string
+		u        *url.URL
 		expected *url.URL
+		args     []string
 	}{
+		{u: mustParseURL("git+https://github.com/hairyhenderson/gomplate//docs-src/content/functions/aws.yml")},
+		{u: mustParseURL("git+ssh://github.com/hairyhenderson/gomplate.git")},
+		{u: mustParseURL("https://github.com")},
+		{u: mustParseURL("git://example.com/foo//file.txt#someref")},
+		{u: mustParseURL("git+file:///home/foo/repo//file.txt#someref")},
+		{u: mustParseURL("git+file:///repo")},
+		{u: mustParseURL("git+file:///foo//foo")},
 		{
-			mustParseURL("git+https://github.com/hairyhenderson/gomplate//docs-src/content/functions/aws.yml"),
-			nil,
-			mustParseURL("git+https://github.com/hairyhenderson/gomplate//docs-src/content/functions/aws.yml")},
-		{
-			mustParseURL("git+ssh://github.com/hairyhenderson/gomplate.git"),
-			nil,
-			mustParseURL("git+ssh://github.com/hairyhenderson/gomplate.git"),
+			u:        mustParseURL("git+file:///foo//foo"),
+			args:     []string{"/bar"},
+			expected: mustParseURL("git+file:///foo//foo/bar"),
 		},
 		{
-			mustParseURL("https://github.com"),
-			nil,
-			mustParseURL("https://github.com"),
-		},
-		{
-			mustParseURL("git://example.com/foo//file.txt#someref"),
-			nil,
-			mustParseURL("git://example.com/foo//file.txt#someref"),
-		},
-		{
-			mustParseURL("git+file:///home/foo/repo//file.txt#someref"),
-			nil,
-			mustParseURL("git+file:///home/foo/repo//file.txt#someref"),
-		},
-		{
-			mustParseURL("git+file:///repo"),
-			nil,
-			mustParseURL("git+file:///repo"),
-		},
-		{
-			mustParseURL("git+file:///foo//foo"),
-			nil,
-			mustParseURL("git+file:///foo//foo"),
-		},
-		{
-			mustParseURL("git+file:///foo//foo"),
-			[]string{"/bar"},
-			mustParseURL("git+file:///foo//foo/bar"),
-		},
-		{
-			mustParseURL("git+file:///foo//bar"),
+			u: mustParseURL("git+file:///foo//bar"),
 			// in this case the // is meaningless
-			[]string{"/baz//qux"},
-			mustParseURL("git+file:///foo//bar/baz/qux"),
+			args:     []string{"/baz//qux"},
+			expected: mustParseURL("git+file:///foo//bar/baz/qux"),
 		},
 		{
-			mustParseURL("git+https://example.com/foo"),
-			[]string{"/bar"},
-			mustParseURL("git+https://example.com/foo/bar"),
+			u:        mustParseURL("git+https://example.com/foo"),
+			args:     []string{"/bar"},
+			expected: mustParseURL("git+https://example.com/foo/bar"),
 		},
 		{
-			mustParseURL("git+https://example.com/foo"),
-			[]string{"//bar"},
-			mustParseURL("git+https://example.com/foo//bar"),
+			u:        mustParseURL("git+https://example.com/foo"),
+			args:     []string{"//bar"},
+			expected: mustParseURL("git+https://example.com/foo//bar"),
 		},
 		{
-			mustParseURL("git+https://example.com//foo"),
-			[]string{"/bar"},
-			mustParseURL("git+https://example.com//foo/bar"),
+			u:        mustParseURL("git+https://example.com//foo"),
+			args:     []string{"/bar"},
+			expected: mustParseURL("git+https://example.com//foo/bar"),
 		},
 		{
-			mustParseURL("git+https://example.com/foo//bar"),
-			[]string{"//baz"},
-			mustParseURL("git+https://example.com/foo//bar/baz"),
+			u:        mustParseURL("git+https://example.com/foo//bar"),
+			args:     []string{"//baz"},
+			expected: mustParseURL("git+https://example.com/foo//bar/baz"),
 		},
 		{
-			mustParseURL("git+https://example.com/foo"),
-			[]string{"/bar//baz"},
-			mustParseURL("git+https://example.com/foo/bar//baz"),
+			u:        mustParseURL("git+https://example.com/foo"),
+			args:     []string{"/bar//baz"},
+			expected: mustParseURL("git+https://example.com/foo/bar//baz"),
 		},
 		{
-			mustParseURL("git+https://example.com/foo?type=t"),
-			[]string{"/bar//baz"},
-			mustParseURL("git+https://example.com/foo/bar//baz?type=t"),
+			u:        mustParseURL("git+https://example.com/foo?type=t"),
+			args:     []string{"/bar//baz"},
+			expected: mustParseURL("git+https://example.com/foo/bar//baz?type=t"),
 		},
 		{
-			mustParseURL("git+https://example.com/foo#master"),
-			[]string{"/bar//baz"},
-			mustParseURL("git+https://example.com/foo/bar//baz#master"),
+			u:        mustParseURL("git+https://example.com/foo#master"),
+			args:     []string{"/bar//baz"},
+			expected: mustParseURL("git+https://example.com/foo/bar//baz#master"),
 		},
 		{
-			mustParseURL("git+https://example.com/foo"),
-			[]string{"/bar//baz?type=t"},
-			mustParseURL("git+https://example.com/foo/bar//baz?type=t"),
+			u:        mustParseURL("git+https://example.com/foo"),
+			args:     []string{"/bar//baz?type=t"},
+			expected: mustParseURL("git+https://example.com/foo/bar//baz?type=t"),
 		},
 		{
-			mustParseURL("git+https://example.com/foo"),
-			[]string{"/bar//baz#master"},
-			mustParseURL("git+https://example.com/foo/bar//baz#master"),
+			u:        mustParseURL("git+https://example.com/foo"),
+			args:     []string{"/bar//baz#master"},
+			expected: mustParseURL("git+https://example.com/foo/bar//baz#master"),
 		},
 		{
-			mustParseURL("git+https://example.com/foo"),
-			[]string{"//bar?type=t"},
-			mustParseURL("git+https://example.com/foo//bar?type=t"),
+			u:        mustParseURL("git+https://example.com/foo"),
+			args:     []string{"//bar?type=t"},
+			expected: mustParseURL("git+https://example.com/foo//bar?type=t"),
 		},
 		{
-			mustParseURL("git+https://example.com/foo"),
-			[]string{"//bar#master"},
-			mustParseURL("git+https://example.com/foo//bar#master"),
+			u:        mustParseURL("git+https://example.com/foo"),
+			args:     []string{"//bar#master"},
+			expected: mustParseURL("git+https://example.com/foo//bar#master"),
 		},
 		{
-			mustParseURL("git+https://example.com/foo?type=t"),
-			[]string{"//bar#master"},
-			mustParseURL("git+https://example.com/foo//bar?type=t#master"),
+			u:        mustParseURL("git+https://example.com/foo?type=t"),
+			args:     []string{"//bar#master"},
+			expected: mustParseURL("git+https://example.com/foo//bar?type=t#master"),
 		},
 		{
-			mustParseURL("git+https://example.com/foo?type=t#v1"),
-			[]string{"//bar?type=j#v2"},
-			mustParseURL("git+https://example.com/foo//bar?type=t&type=j#v2"),
+			u:        mustParseURL("git+https://example.com/foo?type=t#v1"),
+			args:     []string{"//bar?type=j#v2"},
+			expected: mustParseURL("git+https://example.com/foo//bar?type=t&type=j#v2"),
 		},
 	}
 
 	for i, d := range data {
 		d := d
-		t.Run(fmt.Sprintf("%d:(%q,%q)==(%q)", i, d.url, d.args, d.expected), func(t *testing.T) {
+		t.Run(fmt.Sprintf("%d:(%q,%q)==(%q)", i, d.u, d.args, d.expected), func(t *testing.T) {
 			t.Parallel()
-			out, err := b.BuildURL(d.url, d.args...)
+
+			if d.expected == nil {
+				d.expected = d.u
+			}
+
+			out, err := b.BuildURL(d.u, d.args...)
 			assert.NoError(t, err)
 			assert.EqualValues(t, d.expected, out)
 		})
