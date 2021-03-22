@@ -1,8 +1,8 @@
 package integration
 
 import (
-	"net"
 	"net/http"
+	"net/http/httptest"
 
 	. "gopkg.in/check.v1"
 
@@ -11,7 +11,7 @@ import (
 
 type MergeDatasourceSuite struct {
 	tmpDir *fs.Dir
-	l      *net.TCPListener
+	srv    *httptest.Server
 }
 
 var _ = Suite(&MergeDatasourceSuite{})
@@ -24,18 +24,16 @@ func (s *MergeDatasourceSuite) SetUpSuite(c *C) {
 		}),
 	)
 
-	var err error
-	s.l, err = net.ListenTCP("tcp", &net.TCPAddr{IP: net.ParseIP("127.0.0.1")})
-	handle(c, err)
+	mux := http.NewServeMux()
+	mux.HandleFunc("/foo.json", typeHandler("application/json", `{"foo": "bar"}`))
+	mux.HandleFunc("/1.env", typeHandler("application/x-env", "FOO=1\nBAR=2\n"))
+	mux.HandleFunc("/2.env", typeHandler("application/x-env", "FOO=3\n"))
 
-	http.HandleFunc("/foo.json", typeHandler("application/json", `{"foo": "bar"}`))
-	http.HandleFunc("/1.env", typeHandler("application/x-env", "FOO=1\nBAR=2\n"))
-	http.HandleFunc("/2.env", typeHandler("application/x-env", "FOO=3\n"))
-	go http.Serve(s.l, nil)
+	s.srv = httptest.NewServer(mux)
 }
 
 func (s *MergeDatasourceSuite) TearDownSuite(c *C) {
-	s.l.Close()
+	s.srv.Close()
 	s.tmpDir.Remove()
 }
 
@@ -57,13 +55,13 @@ func (s *MergeDatasourceSuite) TestMergeDatasource(c *C) {
 
 	o, e, err = cmdTest(c,
 		"-d", "default="+s.tmpDir.Join("default.yml"),
-		"-d", "config=merge:http://"+s.l.Addr().String()+"/foo.json|default",
+		"-d", "config=merge:"+s.srv.URL+"/foo.json|default",
 		"-i", `{{ ds "config" | toJSON }}`,
 	)
 	assertSuccess(c, o, e, err, `{"foo":"bar","isDefault":true,"isOverride":false,"other":true}`)
 
 	o, e, err = cmdTest(c,
-		"-c", "merged=merge:http://"+s.l.Addr().String()+"/2.env|http://"+s.l.Addr().String()+"/1.env",
+		"-c", "merged=merge:"+s.srv.URL+"/2.env|"+s.srv.URL+"/1.env",
 		"-i", `FOO is {{ .merged.FOO }}`,
 	)
 	assertSuccess(c, o, e, err, `FOO is 3`)

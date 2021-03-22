@@ -59,10 +59,7 @@ func (s *TmplSuite) TestExec(c *C) {
 	))
 	result.Assert(c, icmd.Expected{ExitCode: 1, Err: `template \"Nope\" not defined`})
 
-	result = icmd.RunCmd(icmd.Command(GomplateBin,
-		"-i", `{{define "T1"}}hello world{{end}}{{ tmpl.Exec "T1" | strings.ToUpper }}`,
-	))
-	result.Assert(c, icmd.Expected{ExitCode: 0, Out: `HELLO WORLD`})
+	inOutTest(c, `{{define "T1"}}hello world{{end}}{{ tmpl.Exec "T1" | strings.ToUpper }}`, `HELLO WORLD`)
 
 	result = icmd.RunCmd(icmd.Command(GomplateBin,
 		"-c", "in=stdin:///in.json",
