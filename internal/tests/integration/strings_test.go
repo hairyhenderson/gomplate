@@ -32,11 +32,9 @@ func (s *StringsSuite) TestIndent(c *C) {
 }
 
 func (s *StringsSuite) TestRepeat(c *C) {
-	result := icmd.RunCommand(GomplateBin, "-i",
-		`ba{{ strings.Repeat 2 "na" }}`)
-	result.Assert(c, icmd.Expected{ExitCode: 0, Out: `banana`})
+	inOutTest(c, `ba{{ strings.Repeat 2 "na" }}`, `banana`)
 
-	result = icmd.RunCommand(GomplateBin, "-i",
+	result := icmd.RunCommand(GomplateBin, "-i",
 		`ba{{ strings.Repeat 9223372036854775807 "na" }}`)
 	result.Assert(c, icmd.Expected{ExitCode: 1, Err: `too long: causes overflow`})
 
@@ -46,19 +44,15 @@ func (s *StringsSuite) TestRepeat(c *C) {
 }
 
 func (s *StringsSuite) TestSlug(c *C) {
-	result := icmd.RunCommand(GomplateBin, "-i",
-		`{{ strings.Slug "Hellö, Wôrld! Free @ last..." }}`)
-	result.Assert(c, icmd.Expected{ExitCode: 0, Out: `hello-world-free-at-last`})
+	inOutTest(c, `{{ strings.Slug "Hellö, Wôrld! Free @ last..." }}`, `hello-world-free-at-last`)
 }
 
 func (s *StringsSuite) TestCaseFuncs(c *C) {
-	result := icmd.RunCommand(GomplateBin, "-i",
-		`{{ strings.CamelCase "Hellö, Wôrld! Free @ last..." }}
+	inOutTest(c, `{{ strings.CamelCase "Hellö, Wôrld! Free @ last..." }}
 {{ strings.SnakeCase "Hellö, Wôrld! Free @ last..." }}
-{{ strings.KebabCase "Hellö, Wôrld! Free @ last..." }}`)
-	result.Assert(c, icmd.Expected{ExitCode: 0, Out: `HellöWôrldFreeLast
+{{ strings.KebabCase "Hellö, Wôrld! Free @ last..." }}`, `HellöWôrldFreeLast
 Hellö_wôrld_free_last
-Hellö-wôrld-free-last`})
+Hellö-wôrld-free-last`)
 }
 
 func (s *StringsSuite) TestWordWrap(c *C) {

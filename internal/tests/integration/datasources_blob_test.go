@@ -4,8 +4,7 @@ package integration
 
 import (
 	"bytes"
-	"net"
-	"net/http"
+	"net/http/httptest"
 	"os"
 
 	"github.com/johannesboyne/gofakes3"
@@ -16,7 +15,8 @@ import (
 )
 
 type BlobDatasourcesSuite struct {
-	l *net.TCPListener
+	addr string
+	srv  *httptest.Server
 }
 
 var _ = Suite(&BlobDatasourcesSuite{})
@@ -24,14 +24,11 @@ var _ = Suite(&BlobDatasourcesSuite{})
 func (s *BlobDatasourcesSuite) SetUpSuite(c *C) {
 	backend := s3mem.New()
 	s3 := gofakes3.New(backend)
-	var err error
-	s.l, err = net.ListenTCP("tcp", &net.TCPAddr{IP: net.ParseIP("127.0.0.1")})
-	handle(c, err)
 
-	http.Handle("/", s3.Server())
-	go http.Serve(s.l, nil)
+	s.srv = httptest.NewServer(s3.Server())
+	s.addr = s.srv.Listener.Addr().String()
 
-	err = backend.CreateBucket("mybucket")
+	err := backend.CreateBucket("mybucket")
 	handle(c, err)
 	contents := `{"value":"json", "name":"foo"}`
 	_, err = backend.PutObject("mybucket", "foo.json", map[string]string{"Content-Type": "application/json"}, bytes.NewBufferString(contents), int64(len(contents)))
@@ -55,7 +52,7 @@ func (s *BlobDatasourcesSuite) SetUpSuite(c *C) {
 }
 
 func (s *BlobDatasourcesSuite) TearDownSuite(c *C) {
-	s.l.Close()
+	s.srv.Close()
 }
 
 func (s *BlobDatasourcesSuite) TestS3Datasource(c *C) {
@@ -74,7 +71,7 @@ func (s *BlobDatasourcesSuite) TestS3Datasource(c *C) {
 		"-c", "data=s3://mybucket/foo.json?"+
 			"region=us-east-1&"+
 			"disableSSL=true&"+
-			"endpoint="+s.l.Addr().String()+"&"+
+			"endpoint="+s.addr+"&"+
 			"s3ForcePathStyle=true",
 		"-i", "{{ .data.value }}",
 	), func(c *icmd.Cmd) {
@@ -94,7 +91,7 @@ func (s *BlobDatasourcesSuite) TestS3Datasource(c *C) {
 	), func(c *icmd.Cmd) {
 		c.Env = []string{
 			"AWS_ANON=true",
-			"AWS_S3_ENDPOINT=" + s.l.Addr().String(),
+			"AWS_S3_ENDPOINT=" + s.addr,
 		}
 	})
 	result.Assert(c, icmd.Expected{ExitCode: 0, Out: "json"})
@@ -116,7 +113,7 @@ func (s *BlobDatasourcesSuite) TestS3Directory(c *C) {
 		"-c", "data=s3://mybucket/a/b/c/?"+
 			"region=us-east-1&"+
 			"disableSSL=true&"+
-			"endpoint="+s.l.Addr().String()+"&"+
+			"endpoint="+s.addr+"&"+
 			"s3ForcePathStyle=true",
 		"-i", "{{ .data }}",
 	), func(c *icmd.Cmd) {
@@ -133,7 +130,7 @@ func (s *BlobDatasourcesSuite) TestS3MIMETypes(c *C) {
 		"-c", "data=s3://mybucket/a/b/c/d?"+
 			"region=us-east-1&"+
 			"disableSSL=true&"+
-			"endpoint="+s.l.Addr().String()+"&"+
+			"endpoint="+s.addr+"&"+
 			"s3ForcePathStyle=true",
 		"-i", "{{ .data.c.cc }}",
 	), func(c *icmd.Cmd) {

@@ -3,8 +3,8 @@
 package integration
 
 import (
-	"net"
 	"net/http"
+	"net/http/httptest"
 
 	. "gopkg.in/check.v1"
 
@@ -12,76 +12,74 @@ import (
 )
 
 type DatasourcesHTTPSuite struct {
-	l *net.TCPListener
+	srv *httptest.Server
 }
 
 var _ = Suite(&DatasourcesHTTPSuite{})
 
 func (s *DatasourcesHTTPSuite) SetUpSuite(c *C) {
-	var err error
-	s.l, err = net.ListenTCP("tcp", &net.TCPAddr{IP: net.ParseIP("127.0.0.1")})
-	handle(c, err)
+	mux := http.NewServeMux()
+	mux.HandleFunc("/mirror", mirrorHandler)
+	mux.HandleFunc("/not.json", typeHandler("application/yaml", "value: notjson\n"))
+	mux.HandleFunc("/foo", typeHandler("application/json", `{"value": "json"}`))
+	mux.HandleFunc("/actually.json", typeHandler("", `{"value": "json"}`))
+	mux.HandleFunc("/bogus.csv", typeHandler("text/plain", `{"value": "json"}`))
+	mux.HandleFunc("/list", typeHandler("application/array+json", `[1, 2, 3, 4, 5]`))
 
-	http.HandleFunc("/mirror", mirrorHandler)
-	http.HandleFunc("/not.json", typeHandler("application/yaml", "value: notjson\n"))
-	http.HandleFunc("/foo", typeHandler("application/json", `{"value": "json"}`))
-	http.HandleFunc("/actually.json", typeHandler("", `{"value": "json"}`))
-	http.HandleFunc("/bogus.csv", typeHandler("text/plain", `{"value": "json"}`))
-	http.HandleFunc("/list", typeHandler("application/array+json", `[1, 2, 3, 4, 5]`))
-	go http.Serve(s.l, nil)
+	s.srv = httptest.NewServer(mux)
 }
 
 func (s *DatasourcesHTTPSuite) TearDownSuite(c *C) {
-	s.l.Close()
+	s.srv.Close()
 }
 
 func (s *DatasourcesHTTPSuite) TestReportsVersion(c *C) {
 	result := icmd.RunCommand(GomplateBin,
-		"-d", "foo=http://"+s.l.Addr().String()+"/mirror",
+		"-d", "foo="+s.srv.URL+"/mirror",
 		"-H", "foo=Foo:bar",
 		"-i", "{{ index (ds `foo`).headers.Foo 0 }}")
 	result.Assert(c, icmd.Expected{ExitCode: 0, Out: "bar"})
 
 	result = icmd.RunCommand(GomplateBin,
 		"-H", "foo=Foo:bar",
-		"-i", "{{defineDatasource `foo` `http://"+s.l.Addr().String()+"/mirror`}}{{ index (ds `foo`).headers.Foo 0 }}")
+		"-i", "{{defineDatasource `foo` `"+s.srv.URL+"/mirror`}}{{ index (ds `foo`).headers.Foo 0 }}")
 	result.Assert(c, icmd.Expected{ExitCode: 0, Out: "bar"})
 
 	result = icmd.RunCommand(GomplateBin,
-		"-i", "{{ $d := ds `http://"+s.l.Addr().String()+"/mirror`}}{{ index (index $d.headers `Accept-Encoding`) 0 }}")
+		"-i", "{{ $d := ds `"+s.srv.URL+"/mirror`}}{{ index (index $d.headers `Accept-Encoding`) 0 }}")
 	result.Assert(c, icmd.Expected{ExitCode: 0, Out: "gzip"})
 }
 
 func (s *DatasourcesHTTPSuite) TestTypeOverridePrecedence(c *C) {
 	result := icmd.RunCommand(GomplateBin,
-		"-d", "foo=http://"+s.l.Addr().String()+"/foo",
+		"-d", "foo="+s.srv.URL+"/foo",
 		"-i", "{{ (ds `foo`).value }}")
 	result.Assert(c, icmd.Expected{ExitCode: 0, Out: "json"})
 
 	result = icmd.RunCommand(GomplateBin,
-		"-d", "foo=http://"+s.l.Addr().String()+"/not.json",
+		"-d", "foo="+s.srv.URL+"/not.json",
 		"-i", "{{ (ds `foo`).value }}")
 	result.Assert(c, icmd.Expected{ExitCode: 0, Out: "notjson"})
 
 	result = icmd.RunCommand(GomplateBin,
-		"-d", "foo=http://"+s.l.Addr().String()+"/actually.json",
+		"-d", "foo="+s.srv.URL+"/actually.json",
 		"-i", "{{ (ds `foo`).value }}")
 	result.Assert(c, icmd.Expected{ExitCode: 0, Out: "json"})
 
 	result = icmd.RunCommand(GomplateBin,
-		"-d", "foo=http://"+s.l.Addr().String()+"/bogus.csv?type=application/json",
+		"-d", "foo="+s.srv.URL+"/bogus.csv?type=application/json",
 		"-i", "{{ (ds `foo`).value }}")
 	result.Assert(c, icmd.Expected{ExitCode: 0, Out: "json"})
 
 	result = icmd.RunCommand(GomplateBin,
-		"-c", ".=http://"+s.l.Addr().String()+"/list?type=application/array+json",
+		"-c", ".="+s.srv.URL+"/list?type=application/array+json",
 		"-i", "{{ range . }}{{ . }}{{ end }}")
 	result.Assert(c, icmd.Expected{ExitCode: 0, Out: "12345"})
 }
 
 func (s *DatasourcesHTTPSuite) TestAppendQueryAfterSubPaths(c *C) {
 	result := icmd.RunCommand(GomplateBin,
-		"-d", "foo=http://"+s.l.Addr().String()+"/?type=application/json",
+		"-d", "foo="+s.srv.URL+"/?type=application/json",
 		"-i", "{{ (ds `foo` `bogus.csv`).value }}")
 	result.Assert(c, icmd.Expected{ExitCode: 0, Out: "json"})
 }

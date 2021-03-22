@@ -5,8 +5,8 @@ package integration
 import (
 	"encoding/pem"
 	"io/ioutil"
-	"net"
 	"net/http"
+	"net/http/httptest"
 	"os"
 	"os/user"
 	"path"
@@ -24,26 +24,27 @@ type VaultEc2DatasourcesSuite struct {
 	vaultAddr   string
 	vaultResult *icmd.Result
 	v           *vaultClient
-	l           *net.TCPListener
+	srv         *httptest.Server
 	cert        []byte
 }
 
 var _ = Suite(&VaultEc2DatasourcesSuite{})
 
 func (s *VaultEc2DatasourcesSuite) SetUpSuite(c *C) {
-	var err error
-	s.l, err = net.ListenTCP("tcp", &net.TCPAddr{IP: net.ParseIP("127.0.0.1")})
-	handle(c, err)
 	priv, der, _ := certificateGenerate()
 	s.cert = pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE", Bytes: der})
-	http.HandleFunc("/latest/dynamic/instance-identity/pkcs7", pkcsHandler(priv, der))
-	http.HandleFunc("/latest/dynamic/instance-identity/document", instanceDocumentHandler)
-	http.HandleFunc("/sts/", stsHandler)
-	http.HandleFunc("/ec2/", ec2Handler)
-	go http.Serve(s.l, nil)
+
+	mux := http.NewServeMux()
+	mux.HandleFunc("/latest/dynamic/instance-identity/pkcs7", pkcsHandler(priv, der))
+	mux.HandleFunc("/latest/dynamic/instance-identity/document", instanceDocumentHandler)
+	mux.HandleFunc("/sts/", stsHandler)
+	mux.HandleFunc("/ec2/", ec2Handler)
+
+	s.srv = httptest.NewServer(mux)
 
 	s.pidDir, s.tmpDir, s.vaultAddr, s.vaultResult = startVault(c)
 
+	var err error
 	s.v, err = createVaultClient(s.vaultAddr, vaultRootToken)
 	handle(c, err)
 
@@ -58,7 +59,7 @@ func (s *VaultEc2DatasourcesSuite) SetUpSuite(c *C) {
 }
 
 func (s *VaultEc2DatasourcesSuite) TearDownSuite(c *C) {
-	s.l.Close()
+	s.srv.Close()
 
 	defer s.tmpDir.Remove()
 	defer s.pidDir.Remove()
@@ -90,9 +91,9 @@ func (s *VaultEc2DatasourcesSuite) TestEc2Auth(c *C) {
 	defer s.v.vc.Sys().DisableAuth("aws")
 	_, err = s.v.vc.Logical().Write("auth/aws/config/client", map[string]interface{}{
 		"secret_key": "secret", "access_key": "access",
-		"endpoint":     "http://" + s.l.Addr().String() + "/ec2",
-		"iam_endpoint": "http://" + s.l.Addr().String() + "/iam",
-		"sts_endpoint": "http://" + s.l.Addr().String() + "/sts",
+		"endpoint":     s.srv.URL + "/ec2",
+		"iam_endpoint": s.srv.URL + "/iam",
+		"sts_endpoint": s.srv.URL + "/sts",
 	})
 	handle(c, err)
 
@@ -113,7 +114,7 @@ func (s *VaultEc2DatasourcesSuite) TestEc2Auth(c *C) {
 	}, map[string]string{
 		"HOME":              s.tmpDir.Join("home"),
 		"VAULT_ADDR":        "http://" + s.v.addr,
-		"AWS_META_ENDPOINT": "http://" + s.l.Addr().String(),
+		"AWS_META_ENDPOINT": s.srv.URL,
 	})
 	assertSuccess(c, o, e, err, "bar")
 }
