@@ -6,6 +6,7 @@ import (
 	"io"
 	stdlog "log"
 	"os"
+	"runtime"
 	"time"
 
 	"github.com/hairyhenderson/gomplate/v3/env"
@@ -50,7 +51,7 @@ func createLogger(format string, out io.Writer) zerolog.Logger {
 	switch format {
 	case "console":
 		useColour := false
-		if f, ok := out.(*os.File); ok && term.IsTerminal(int(f.Fd())) {
+		if f, ok := out.(*os.File); ok && term.IsTerminal(int(f.Fd())) && runtime.GOOS != "windows" {
 			useColour = true
 		}
 		l = l.Output(zerolog.ConsoleWriter{
