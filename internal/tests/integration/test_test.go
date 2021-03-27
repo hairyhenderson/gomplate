@@ -1,104 +1,51 @@
-//+build integration
-
 package integration
 
 import (
-	"bytes"
+	"os"
+	"testing"
 
-	. "gopkg.in/check.v1"
-
-	"gotest.tools/v3/icmd"
+	"gotest.tools/v3/assert"
 )
 
-type TestSuite struct {
+func TestTest_Fail(t *testing.T) {
+	_, _, err := cmd(t, "-i", "{{ fail }}").run()
+	assert.ErrorContains(t, err, `template generation failed`)
+
+	_, _, err = cmd(t, "-i", "{{ fail `some message` }}").run()
+	assert.ErrorContains(t, err, `some message`)
 }
 
-var _ = Suite(&TestSuite{})
+func TestTest_Required(t *testing.T) {
+	os.Unsetenv("FOO")
+	_, _, err := cmd(t, "-i", `{{getenv "FOO" | required "FOO missing" }}`).run()
+	assert.ErrorContains(t, err, "FOO missing")
 
-func (s *TestSuite) SetUpTest(c *C) {
-}
+	o, e, err := cmd(t, "-i", `{{getenv "FOO" | required "FOO missing" }}`).
+		withEnv("FOO", "bar").run()
+	assertSuccess(t, o, e, err, "bar")
 
-func (s *TestSuite) TearDownTest(c *C) {
-}
+	_, _, err = cmd(t, "-d", "in=stdin:///?type=application/yaml",
+		"-i", `{{ (ds "in").foo | required "foo should not be null" }}`).
+		withStdin(`foo: null`).run()
+	assert.ErrorContains(t, err, "foo should not be null")
 
-func (s *TestSuite) TestFail(c *C) {
-	result := icmd.RunCommand(GomplateBin, "-i", "{{ fail }}")
-	result.Assert(c, icmd.Expected{ExitCode: 1, Err: `template generation failed`})
+	o, e, err = cmd(t, "-d", "in=stdin:///?type=application/yaml",
+		"-i", `{{ (ds "in").foo | required }}`).
+		withStdin(`foo: []`).run()
+	assertSuccess(t, o, e, err, "[]")
 
-	result = icmd.RunCommand(GomplateBin, "-i", "{{ fail `some message` }}")
-	result.Assert(c, icmd.Expected{ExitCode: 1, Err: `some message`})
-}
+	o, e, err = cmd(t, "-d", "in=stdin:///?type=application/yaml",
+		"-i", `{{ (ds "in").foo | required }}`).
+		withStdin(`foo: {}`).run()
+	assertSuccess(t, o, e, err, "map[]")
 
-func (s *TestSuite) TestRequired(c *C) {
-	result := icmd.RunCmd(icmd.Command(GomplateBin,
-		"-i", `{{getenv "FOO" | required "FOO missing" }}`))
-	result.Assert(c, icmd.Expected{
-		ExitCode: 1,
-		Err:      "FOO missing",
-	})
+	o, e, err = cmd(t, "-d", "in=stdin:///?type=application/yaml",
+		"-i", `{{ (ds "in").foo | required }}`).
+		withStdin(`foo: 0`).run()
+	assertSuccess(t, o, e, err, "0")
 
-	result = icmd.RunCmd(icmd.Command(GomplateBin,
-		"-i", `{{getenv "FOO" | required "FOO missing" }}`),
-		func(c *icmd.Cmd) {
-			c.Env = []string{"FOO=bar"}
-		})
-	result.Assert(c, icmd.Expected{
-		ExitCode: 0,
-		Out:      "bar",
-	})
-
-	result = icmd.RunCmd(icmd.Command(GomplateBin,
-		"-d", "in=stdin:///?type=application/yaml",
-		"-i", `{{ (ds "in").foo | required "foo should not be null" }}`),
-		func(c *icmd.Cmd) {
-			c.Stdin = bytes.NewBufferString(`foo: null`)
-		})
-	result.Assert(c, icmd.Expected{
-		ExitCode: 1,
-		Err:      "foo should not be null",
-	})
-
-	result = icmd.RunCmd(icmd.Command(GomplateBin,
-		"-d", "in=stdin:///?type=application/yaml",
-		"-i", `{{ (ds "in").foo | required }}`),
-		func(c *icmd.Cmd) {
-			c.Stdin = bytes.NewBufferString(`foo: []`)
-		})
-	result.Assert(c, icmd.Expected{
-		ExitCode: 0,
-		Out:      "[]",
-	})
-
-	result = icmd.RunCmd(icmd.Command(GomplateBin,
-		"-d", "in=stdin:///?type=application/yaml",
-		"-i", `{{ (ds "in").foo | required }}`),
-		func(c *icmd.Cmd) {
-			c.Stdin = bytes.NewBufferString(`foo: {}`)
-		})
-	result.Assert(c, icmd.Expected{
-		ExitCode: 0,
-		Out:      "map[]",
-	})
-
-	result = icmd.RunCmd(icmd.Command(GomplateBin,
-		"-d", "in=stdin:///?type=application/yaml",
-		"-i", `{{ (ds "in").foo | required }}`),
-		func(c *icmd.Cmd) {
-			c.Stdin = bytes.NewBufferString(`foo: 0`)
-		})
-	result.Assert(c, icmd.Expected{
-		ExitCode: 0,
-		Out:      "0",
-	})
-
-	result = icmd.RunCmd(icmd.Command(GomplateBin,
-		"-d", "in=stdin:///?type=application/yaml",
-		"-i", `{{ (ds "in").foo | required }}`),
-		func(c *icmd.Cmd) {
-			c.Stdin = bytes.NewBufferString(`foo: false`)
-		})
-	result.Assert(c, icmd.Expected{
-		ExitCode: 0,
-		Out:      "false",
-	})
+	o, e, err = cmd(t, "-d", "in=stdin:///?type=application/yaml",
+		"-i", `{{ (ds "in").foo | required }}`).
+		withStdin(`foo: false`).run()
+	assertSuccess(t, o, e, err, "false")
 }

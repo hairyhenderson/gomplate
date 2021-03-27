@@ -1,26 +1,15 @@
-//+build integration
-
 package integration
 
 import (
-	"bytes"
-	"io/ioutil"
 	"os"
+	"testing"
 
-	. "gopkg.in/check.v1"
 	"gotest.tools/v3/assert"
 	"gotest.tools/v3/fs"
-	"gotest.tools/v3/icmd"
 )
 
-type TmplSuite struct {
-	tmpDir *fs.Dir
-}
-
-var _ = Suite(&TmplSuite{})
-
-func (s *TmplSuite) SetUpTest(c *C) {
-	s.tmpDir = fs.NewDir(c, "gomplate-tmpltests",
+func setupTestTmplTest(t *testing.T) *fs.Dir {
+	tmpDir := fs.NewDir(t, "gomplate-tmpltests",
 		fs.WithFiles(map[string]string{
 			"toyaml.tmpl": `{{ . | data.ToYAML }}{{"\n"}}`,
 			"services.yaml": `services:
@@ -33,19 +22,18 @@ func (s *TmplSuite) SetUpTest(c *C) {
 `,
 		}),
 	)
+	t.Cleanup(tmpDir.Remove)
+
+	return tmpDir
 }
 
-func (s *TmplSuite) TearDownTest(c *C) {
-	s.tmpDir.Remove()
-}
-
-func (s *TmplSuite) TestInline(c *C) {
-	inOutTest(c, `
+func TestTmpl_TestInline(t *testing.T) {
+	inOutTest(t, `
 		{{- $nums := dict "first" 5 "second" 10 }}
 		{{- tpl "{{ add .first .second }}" $nums }}`,
 		"15")
 
-	inOutTest(c, `
+	inOutTest(t, `
 		{{- $nums := dict "first" 5 "second" 10 }}
 		{{- $othernums := dict "first" 18 "second" -8 }}
 		{{- tmpl.Inline "T" "{{ add .first .second }}" $nums }}
@@ -53,55 +41,51 @@ func (s *TmplSuite) TestInline(c *C) {
 		"1510")
 }
 
-func (s *TmplSuite) TestExec(c *C) {
-	result := icmd.RunCmd(icmd.Command(GomplateBin,
-		"-i", `{{ tmpl.Exec "Nope" }}`,
-	))
-	result.Assert(c, icmd.Expected{ExitCode: 1, Err: `template \"Nope\" not defined`})
+func TestTmpl_TestExec(t *testing.T) {
+	tmpDir := setupTestTmplTest(t)
 
-	inOutTest(c, `{{define "T1"}}hello world{{end}}{{ tmpl.Exec "T1" | strings.ToUpper }}`, `HELLO WORLD`)
+	_, _, err := cmd(t, "-i", `{{ tmpl.Exec "Nope" }}`).run()
+	assert.ErrorContains(t, err, "Nope")
+	assert.ErrorContains(t, err, " not defined")
 
-	result = icmd.RunCmd(icmd.Command(GomplateBin,
+	inOutTest(t, `{{define "T1"}}hello world{{end}}{{ tmpl.Exec "T1" | strings.ToUpper }}`, `HELLO WORLD`)
+
+	o, e, err := cmd(t,
 		"-c", "in=stdin:///in.json",
-		"-t", "toyaml="+s.tmpDir.Join("toyaml.tmpl"),
+		"-t", "toyaml="+tmpDir.Join("toyaml.tmpl"),
 		"-i", `foo:
-{{ tmpl.Exec "toyaml" .in | strings.Indent 2 }}`,
-	), func(cmd *icmd.Cmd) {
-		in := bytes.NewBufferString(`{"a":{"nested": "object"},"b":true}`)
-		cmd.Stdin = in
-	})
-	result.Assert(c, icmd.Expected{ExitCode: 0, Out: `foo:
+{{ tmpl.Exec "toyaml" .in | strings.Indent 2 }}`).
+		withStdin(`{"a":{"nested": "object"},"b":true}`).run()
+	assertSuccess(t, o, e, err, `foo:
   a:
     nested: object
   b: true
-`})
 
-	outDir := s.tmpDir.Join("out")
-	err := os.MkdirAll(outDir, 0755)
+`)
+
+	outDir := tmpDir.Join("out")
+	err = os.MkdirAll(outDir, 0755)
 	if err != nil {
-		assert.NilError(c, err)
+		assert.NilError(t, err)
 	}
-	result = icmd.RunCmd(icmd.Command(GomplateBin,
-		"-d", "services="+s.tmpDir.Join("services.yaml"),
+	o, e, err = cmd(t,
+		"-d", "services="+tmpDir.Join("services.yaml"),
 		"-i", `{{- define "config" }}{{ .config | data.ToJSONPretty " " }}{{ end }}
 {{- range (ds "services").services -}}
 {{- $outPath := path.Join .name "config.json" }}
 {{- tmpl.Exec "config" . | file.Write $outPath }}
-{{- end -}}`,
-	), func(cmd *icmd.Cmd) {
-		cmd.Dir = outDir
-	})
-	result.Assert(c, icmd.Expected{ExitCode: 0})
-	assert.Equal(c, "", result.Stdout())
+{{- end -}}`).
+		withDir(outDir).run()
+	assertSuccess(t, o, e, err, "")
 
-	out, err := ioutil.ReadFile(s.tmpDir.Join("out", "users", "config.json"))
-	assert.NilError(c, err)
-	assert.Equal(c, `{
+	out, err := os.ReadFile(tmpDir.Join("out", "users", "config.json"))
+	assert.NilError(t, err)
+	assert.Equal(t, `{
  "replicas": 2
 }`, string(out))
-	out, err = ioutil.ReadFile(s.tmpDir.Join("out", "products", "config.json"))
-	assert.NilError(c, err)
-	assert.Equal(c, `{
+	out, err = os.ReadFile(tmpDir.Join("out", "products", "config.json"))
+	assert.NilError(t, err)
+	assert.Equal(t, `{
  "replicas": 18
 }`, string(out))
 }

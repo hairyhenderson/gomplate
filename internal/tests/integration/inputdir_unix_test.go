@@ -1,4 +1,3 @@
-//+build integration
 //+build !windows
 
 package integration
@@ -8,13 +7,11 @@ import (
 	"io/ioutil"
 	"math"
 	"os"
-
-	. "gopkg.in/check.v1"
+	"testing"
 
 	"golang.org/x/sys/unix"
 	"gotest.tools/v3/assert"
 	"gotest.tools/v3/fs"
-	"gotest.tools/v3/icmd"
 )
 
 func setFileUlimit(b uint64) error {
@@ -26,14 +23,14 @@ func setFileUlimit(b uint64) error {
 	return err
 }
 
-func (s *InputDirSuite) TestInputDirRespectsUlimit(c *C) {
+func TestInputDir_RespectsUlimit(t *testing.T) {
 	numfiles := 32
 	flist := map[string]string{}
 	for i := 0; i < numfiles; i++ {
 		k := fmt.Sprintf("file_%d", i)
 		flist[k] = fmt.Sprintf("hello world %d\n", i)
 	}
-	testdir := fs.NewDir(c, "ulimittestfiles",
+	testdir := fs.NewDir(t, "ulimittestfiles",
 		fs.WithDir("in", fs.WithFiles(flist)),
 	)
 	defer testdir.Remove()
@@ -44,27 +41,25 @@ func (s *InputDirSuite) TestInputDirRespectsUlimit(c *C) {
 	setFileUlimit(uint64(numfiles))
 	defer setFileUlimit(8192)
 
-	result := icmd.RunCmd(icmd.Command(GomplateBin,
-		"--input-dir", testdir.Join("in"),
-		"--output-dir", testdir.Join("out"),
-	), func(c *icmd.Cmd) {
-		c.Dir = testdir.Path()
-	})
+	o, e, err := cmd(t, "--input-dir", testdir.Join("in"),
+		"--output-dir", testdir.Join("out")).
+		withDir(testdir.Path()).run()
+
 	setFileUlimit(8192)
-	result.Assert(c, icmd.Success)
+	assertSuccess(t, o, e, err, "")
 
 	files, err := ioutil.ReadDir(testdir.Join("out"))
-	assert.NilError(c, err)
-	assert.Equal(c, numfiles, len(files))
+	assert.NilError(t, err)
+	assert.Equal(t, numfiles, len(files))
 
 	for i := 0; i < numfiles; i++ {
 		f := testdir.Join("out", fmt.Sprintf("file_%d", i))
 		_, err := os.Stat(f)
-		assert.NilError(c, err)
+		assert.NilError(t, err)
 
 		content, err := ioutil.ReadFile(f)
-		assert.NilError(c, err)
+		assert.NilError(t, err)
 		expected := fmt.Sprintf("hello world %d\n", i)
-		assert.Equal(c, expected, string(content))
+		assert.Equal(t, expected, string(content))
 	}
 }

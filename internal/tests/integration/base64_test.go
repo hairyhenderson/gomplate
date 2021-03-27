@@ -1,19 +1,13 @@
-//+build integration
-
 package integration
 
 import (
-	"gopkg.in/check.v1"
+	"testing"
 )
 
-type Base64Suite struct{}
-
-var _ = check.Suite(&Base64Suite{})
-
-func (s *Base64Suite) TestBase64Encode(c *check.C) {
-	inOutTest(c, `{{ "foo" | base64.Encode }}`, "Zm9v")
+func TestBase64_Encode(t *testing.T) {
+	inOutTest(t, `{{ "foo" | base64.Encode }}`, "Zm9v")
 }
 
-func (s *Base64Suite) TestBase64Decode(c *check.C) {
-	inOutTest(c, `{{ "Zm9v" | base64.Decode }}`, "foo")
+func TestBase64_Decode(t *testing.T) {
+	inOutTest(t, `{{ "Zm9v" | base64.Decode }}`, "foo")
 }

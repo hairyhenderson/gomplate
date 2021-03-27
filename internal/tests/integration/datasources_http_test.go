@@ -1,24 +1,14 @@
-//+build integration
-
 package integration
 
 import (
 	"net/http"
 	"net/http/httptest"
-
-	. "gopkg.in/check.v1"
-
-	"gotest.tools/v3/icmd"
+	"testing"
 )
 
-type DatasourcesHTTPSuite struct {
-	srv *httptest.Server
-}
-
-var _ = Suite(&DatasourcesHTTPSuite{})
-
-func (s *DatasourcesHTTPSuite) SetUpSuite(c *C) {
+func setupDatasourcesHTTPTest(t *testing.T) *httptest.Server {
 	mux := http.NewServeMux()
+
 	mux.HandleFunc("/mirror", mirrorHandler)
 	mux.HandleFunc("/not.json", typeHandler("application/yaml", "value: notjson\n"))
 	mux.HandleFunc("/foo", typeHandler("application/json", `{"value": "json"}`))
@@ -26,60 +16,65 @@ func (s *DatasourcesHTTPSuite) SetUpSuite(c *C) {
 	mux.HandleFunc("/bogus.csv", typeHandler("text/plain", `{"value": "json"}`))
 	mux.HandleFunc("/list", typeHandler("application/array+json", `[1, 2, 3, 4, 5]`))
 
-	s.srv = httptest.NewServer(mux)
+	srv := httptest.NewServer(mux)
+	t.Cleanup(srv.Close)
+
+	return srv
 }
 
-func (s *DatasourcesHTTPSuite) TearDownSuite(c *C) {
-	s.srv.Close()
-}
+func TestDatasources_HTTP(t *testing.T) {
+	srv := setupDatasourcesHTTPTest(t)
 
-func (s *DatasourcesHTTPSuite) TestReportsVersion(c *C) {
-	result := icmd.RunCommand(GomplateBin,
-		"-d", "foo="+s.srv.URL+"/mirror",
+	o, e, err := cmd(t,
+		"-d", "foo="+srv.URL+"/mirror",
 		"-H", "foo=Foo:bar",
-		"-i", "{{ index (ds `foo`).headers.Foo 0 }}")
-	result.Assert(c, icmd.Expected{ExitCode: 0, Out: "bar"})
+		"-i", "{{ index (ds `foo`).headers.Foo 0 }}").run()
+	assertSuccess(t, o, e, err, "bar")
 
-	result = icmd.RunCommand(GomplateBin,
+	o, e, err = cmd(t,
 		"-H", "foo=Foo:bar",
-		"-i", "{{defineDatasource `foo` `"+s.srv.URL+"/mirror`}}{{ index (ds `foo`).headers.Foo 0 }}")
-	result.Assert(c, icmd.Expected{ExitCode: 0, Out: "bar"})
+		"-i", "{{defineDatasource `foo` `"+srv.URL+"/mirror`}}{{ index (ds `foo`).headers.Foo 0 }}").run()
+	assertSuccess(t, o, e, err, "bar")
 
-	result = icmd.RunCommand(GomplateBin,
-		"-i", "{{ $d := ds `"+s.srv.URL+"/mirror`}}{{ index (index $d.headers `Accept-Encoding`) 0 }}")
-	result.Assert(c, icmd.Expected{ExitCode: 0, Out: "gzip"})
+	o, e, err = cmd(t,
+		"-i", "{{ $d := ds `"+srv.URL+"/mirror`}}{{ index (index $d.headers `Accept-Encoding`) 0 }}").run()
+	assertSuccess(t, o, e, err, "gzip")
 }
 
-func (s *DatasourcesHTTPSuite) TestTypeOverridePrecedence(c *C) {
-	result := icmd.RunCommand(GomplateBin,
-		"-d", "foo="+s.srv.URL+"/foo",
-		"-i", "{{ (ds `foo`).value }}")
-	result.Assert(c, icmd.Expected{ExitCode: 0, Out: "json"})
+func TestDatasources_HTTP_TypeOverridePrecedence(t *testing.T) {
+	srv := setupDatasourcesHTTPTest(t)
 
-	result = icmd.RunCommand(GomplateBin,
-		"-d", "foo="+s.srv.URL+"/not.json",
-		"-i", "{{ (ds `foo`).value }}")
-	result.Assert(c, icmd.Expected{ExitCode: 0, Out: "notjson"})
+	o, e, err := cmd(t,
+		"-d", "foo="+srv.URL+"/foo",
+		"-i", "{{ (ds `foo`).value }}").run()
+	assertSuccess(t, o, e, err, "json")
 
-	result = icmd.RunCommand(GomplateBin,
-		"-d", "foo="+s.srv.URL+"/actually.json",
-		"-i", "{{ (ds `foo`).value }}")
-	result.Assert(c, icmd.Expected{ExitCode: 0, Out: "json"})
+	o, e, err = cmd(t,
+		"-d", "foo="+srv.URL+"/not.json",
+		"-i", "{{ (ds `foo`).value }}").run()
+	assertSuccess(t, o, e, err, "notjson")
 
-	result = icmd.RunCommand(GomplateBin,
-		"-d", "foo="+s.srv.URL+"/bogus.csv?type=application/json",
-		"-i", "{{ (ds `foo`).value }}")
-	result.Assert(c, icmd.Expected{ExitCode: 0, Out: "json"})
+	o, e, err = cmd(t,
+		"-d", "foo="+srv.URL+"/actually.json",
+		"-i", "{{ (ds `foo`).value }}").run()
+	assertSuccess(t, o, e, err, "json")
 
-	result = icmd.RunCommand(GomplateBin,
-		"-c", ".="+s.srv.URL+"/list?type=application/array+json",
-		"-i", "{{ range . }}{{ . }}{{ end }}")
-	result.Assert(c, icmd.Expected{ExitCode: 0, Out: "12345"})
+	o, e, err = cmd(t,
+		"-d", "foo="+srv.URL+"/bogus.csv?type=application/json",
+		"-i", "{{ (ds `foo`).value }}").run()
+	assertSuccess(t, o, e, err, "json")
+
+	o, e, err = cmd(t,
+		"-c", ".="+srv.URL+"/list?type=application/array+json",
+		"-i", "{{ range . }}{{ . }}{{ end }}").run()
+	assertSuccess(t, o, e, err, "12345")
 }
 
-func (s *DatasourcesHTTPSuite) TestAppendQueryAfterSubPaths(c *C) {
-	result := icmd.RunCommand(GomplateBin,
-		"-d", "foo="+s.srv.URL+"/?type=application/json",
-		"-i", "{{ (ds `foo` `bogus.csv`).value }}")
-	result.Assert(c, icmd.Expected{ExitCode: 0, Out: "json"})
+func TestDatasources_HTTP_AppendQueryAfterSubPaths(t *testing.T) {
+	srv := setupDatasourcesHTTPTest(t)
+
+	o, e, err := cmd(t,
+		"-d", "foo="+srv.URL+"/?type=application/json",
+		"-i", "{{ (ds `foo` `bogus.csv`).value }}").run()
+	assertSuccess(t, o, e, err, "json")
 }

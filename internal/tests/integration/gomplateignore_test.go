@@ -1,63 +1,53 @@
-//+build integration
-
 package integration
 
 import (
 	"os"
 	"path/filepath"
 	"sort"
-
-	. "gopkg.in/check.v1"
+	"testing"
 
 	"github.com/spf13/afero"
-	tassert "github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/assert"
 	"gotest.tools/v3/fs"
-	"gotest.tools/v3/icmd"
 )
 
-type GomplateignoreSuite struct {
-	inBuilder func(inFileOps ...fs.PathOp)
-	tmpDir    *fs.Dir
-}
+func setupGomplateignoreTest(t *testing.T) func(inFileOps ...fs.PathOp) *fs.Dir {
+	basedir := "gomplate-gomplateignore-tests"
 
-var _ = Suite(&GomplateignoreSuite{})
-
-func (s *GomplateignoreSuite) SetUpTest(c *C) {
-	const basedir = "gomplate-gomplateignore-tests"
-	s.inBuilder = func(inFileOps ...fs.PathOp) {
-		s.tmpDir = fs.NewDir(c, basedir,
+	inBuilder := func(inFileOps ...fs.PathOp) *fs.Dir {
+		tmpDir := fs.NewDir(t, basedir,
 			fs.WithDir("in", inFileOps...),
 			fs.WithDir("out"),
 		)
+		t.Cleanup(tmpDir.Remove)
+		return tmpDir
 	}
+
+	return inBuilder
 }
 
-func (s *GomplateignoreSuite) TearDownTest(c *C) {
-	s.tmpDir.Remove()
+func execute(t *testing.T, ignoreContent string, inFileOps ...fs.PathOp) ([]string, error) {
+	return executeOpts(t, ignoreContent, []string{}, inFileOps...)
 }
 
-func (s *GomplateignoreSuite) execute(c *C, ignoreContent string, inFileOps ...fs.PathOp) {
-	s.executeOpts(c, ignoreContent, []string{}, inFileOps...)
-}
+func executeOpts(t *testing.T, ignoreContent string, opts []string, inFileOps ...fs.PathOp) ([]string, error) {
+	inBuilder := setupGomplateignoreTest(t)
 
-func (s *GomplateignoreSuite) executeOpts(c *C, ignoreContent string, opts []string, inFileOps ...fs.PathOp) {
 	inFileOps = append(inFileOps, fs.WithFile(".gomplateignore", ignoreContent))
-	s.inBuilder(inFileOps...)
+	tmpDir := inBuilder(inFileOps...)
 
 	argv := []string{}
 	argv = append(argv, opts...)
 	argv = append(argv,
-		"--input-dir", s.tmpDir.Join("in"),
-		"--output-dir", s.tmpDir.Join("out"),
+		"--input-dir", tmpDir.Join("in"),
+		"--output-dir", tmpDir.Join("out"),
 	)
-	result := icmd.RunCommand(GomplateBin, argv...)
-	result.Assert(c, icmd.Success)
-}
+	o, e, err := cmd(t, argv...).run()
+	assertSuccess(t, o, e, err, "")
 
-func (s *GomplateignoreSuite) collectOutFiles() (files []string, err error) {
-	files = []string{}
+	files := []string{}
 
-	fs := afero.NewBasePathFs(afero.NewOsFs(), s.tmpDir.Join("out"))
+	fs := afero.NewBasePathFs(afero.NewOsFs(), tmpDir.Join("out"))
 	afero.Walk(fs, "", func(path string, info os.FileInfo, werr error) error {
 		if werr != nil {
 			err = werr
@@ -70,19 +60,19 @@ func (s *GomplateignoreSuite) collectOutFiles() (files []string, err error) {
 	})
 
 	sort.Strings(files)
-	return
+
+	return files, err
 }
 
-func (s *GomplateignoreSuite) TestGomplateignore_Simple(c *C) {
-	s.execute(c, `# all dot files
+func TestGomplateignore_Simple(t *testing.T) {
+	files, err := execute(t, `# all dot files
 .*
 *.log`,
 		fs.WithFile("empty.log", ""),
 		fs.WithFile("rain.txt", ""))
 
-	files, err := s.collectOutFiles()
-	tassert.NoError(c, err)
-	tassert.Equal(c, []string{"rain.txt"}, files)
+	assert.NoError(t, err)
+	assert.Equal(t, []string{"rain.txt"}, files)
 }
 
 func fromSlashes(paths ...string) []string {
@@ -92,8 +82,8 @@ func fromSlashes(paths ...string) []string {
 	return paths
 }
 
-func (s *GomplateignoreSuite) TestGomplateignore_Folder(c *C) {
-	s.execute(c, `.gomplateignore
+func TestGomplateignore_Folder(t *testing.T) {
+	files, err := execute(t, `.gomplateignore
 f[o]o/bar
 !foo/bar/tool`,
 		fs.WithDir("foo",
@@ -109,14 +99,13 @@ f[o]o/bar
 		),
 	)
 
-	files, err := s.collectOutFiles()
-	tassert.NoError(c, err)
-	tassert.Equal(c, fromSlashes(
+	assert.NoError(t, err)
+	assert.Equal(t, fromSlashes(
 		"foo/bar/tool/lex.txt", "foo/tar/2.txt"), files)
 }
 
-func (s *GomplateignoreSuite) TestGomplateignore_Root(c *C) {
-	s.execute(c, `.gomplateignore
+func TestGomplateignore_Root(t *testing.T) {
+	files, err := execute(t, `.gomplateignore
 /1.txt`,
 		fs.WithDir("sub",
 			fs.WithFile("1.txt", ""),
@@ -125,14 +114,13 @@ func (s *GomplateignoreSuite) TestGomplateignore_Root(c *C) {
 		fs.WithFile("1.txt", ""),
 	)
 
-	files, err := s.collectOutFiles()
-	tassert.NoError(c, err)
-	tassert.Equal(c, fromSlashes(
+	assert.NoError(t, err)
+	assert.Equal(t, fromSlashes(
 		"sub/1.txt", "sub/2.txt"), files)
 }
 
-func (s *GomplateignoreSuite) TestGomplateignore_Exclusion(c *C) {
-	s.execute(c, `.gomplateignore
+func TestGomplateignore_Exclusion(t *testing.T) {
+	files, err := execute(t, `.gomplateignore
 /e*.txt
 !/e2.txt
 en/e3.txt
@@ -148,14 +136,13 @@ en/e3.txt
 		),
 	)
 
-	files, err := s.collectOutFiles()
-	tassert.NoError(c, err)
-	tassert.Equal(c, fromSlashes(
+	assert.NoError(t, err)
+	assert.Equal(t, fromSlashes(
 		"!", "e2.txt", "en/e1.txt", "en/e2.txt"), files)
 }
 
-func (s *GomplateignoreSuite) TestGomplateignore_Nested(c *C) {
-	s.execute(c, `inner/foo.md`,
+func TestGomplateignore_Nested(t *testing.T) {
+	files, err := execute(t, `inner/foo.md`,
 		fs.WithDir("inner",
 			fs.WithDir("inner2",
 				fs.WithFile(".gomplateignore", "moss.ini\n!/jess.ini"),
@@ -168,16 +155,15 @@ func (s *GomplateignoreSuite) TestGomplateignore_Nested(c *C) {
 		fs.WithFile("1.txt", ""),
 	)
 
-	files, err := s.collectOutFiles()
-	tassert.NoError(c, err)
-	tassert.Equal(c, fromSlashes(".gomplateignore", "1.txt",
+	assert.NoError(t, err)
+	assert.Equal(t, fromSlashes(".gomplateignore", "1.txt",
 		"inner/.gomplateignore",
 		"inner/inner2/.gomplateignore",
 		"inner/inner2/jess.ini"), files)
 }
 
-func (s *GomplateignoreSuite) TestGomplateignore_ByName(c *C) {
-	s.execute(c, `.gomplateignore
+func TestGomplateignore_ByName(t *testing.T) {
+	files, err := execute(t, `.gomplateignore
 world.txt`,
 		fs.WithDir("aa",
 			fs.WithDir("a1",
@@ -195,15 +181,14 @@ world.txt`,
 		fs.WithFile("world.txt", ""),
 	)
 
-	files, err := s.collectOutFiles()
-	tassert.NoError(c, err)
-	tassert.Equal(c, fromSlashes(
+	assert.NoError(t, err)
+	assert.Equal(t, fromSlashes(
 		"aa/a1/a2/hello.txt", "aa/a1/hello.txt",
 		"aa/hello.txt", "bb/hello.txt", "hello.txt"), files)
 }
 
-func (s *GomplateignoreSuite) TestGomplateignore_BothName(c *C) {
-	s.execute(c, `.gomplateignore
+func TestGomplateignore_BothName(t *testing.T) {
+	files, err := execute(t, `.gomplateignore
 loss.txt
 !2.log
 `,
@@ -215,14 +200,13 @@ loss.txt
 			fs.WithFile("bare.txt", "")),
 	)
 
-	files, err := s.collectOutFiles()
-	tassert.NoError(c, err)
-	tassert.Equal(c, fromSlashes(
+	assert.NoError(t, err)
+	assert.Equal(t, fromSlashes(
 		"foo/bare.txt", "loss.txt/2.log"), files)
 }
 
-func (s *GomplateignoreSuite) TestGomplateignore_LeadingSpace(c *C) {
-	s.execute(c, `.gomplateignore
+func TestGomplateignore_LeadingSpace(t *testing.T) {
+	files, err := execute(t, `.gomplateignore
   what.txt
 !inner/  what.txt
 *.log
@@ -236,14 +220,13 @@ func (s *GomplateignoreSuite) TestGomplateignore_LeadingSpace(c *C) {
 		fs.WithFile("  what.txt", ""),
 	)
 
-	files, err := s.collectOutFiles()
-	tassert.NoError(c, err)
-	tassert.Equal(c, fromSlashes(
+	assert.NoError(t, err)
+	assert.Equal(t, fromSlashes(
 		"inner/  dart.log", "inner/  what.txt"), files)
 }
 
-func (s *GomplateignoreSuite) TestGomplateignore_WithExcludes(c *C) {
-	s.executeOpts(c, `.gomplateignore
+func TestGomplateignore_WithExcludes(t *testing.T) {
+	files, err := executeOpts(t, `.gomplateignore
 *.log
 `, []string{
 		"--exclude", "crash.bin",
@@ -266,15 +249,14 @@ func (s *GomplateignoreSuite) TestGomplateignore_WithExcludes(c *C) {
 		fs.WithFile("crash.bin", ""),
 	)
 
-	files, err := s.collectOutFiles()
-	tassert.NoError(c, err)
-	tassert.Equal(c, fromSlashes(
+	assert.NoError(t, err)
+	assert.Equal(t, fromSlashes(
 		"logs/archive.zip", "manifest.json", "rules/index.csv",
 		"sprites/demon.xml", "sprites/human.csv"), files)
 }
 
-func (s *GomplateignoreSuite) TestGomplateignore_WithIncludes(c *C) {
-	s.executeOpts(c, `.gomplateignore
+func TestGomplateignore_WithIncludes(t *testing.T) {
+	files, err := executeOpts(t, `.gomplateignore
 *.log
 `, []string{
 		"--include", "rules/*",
@@ -292,7 +274,6 @@ func (s *GomplateignoreSuite) TestGomplateignore_WithIncludes(c *C) {
 		fs.WithFile("crash.bin", ""),
 	)
 
-	files, err := s.collectOutFiles()
-	tassert.NoError(c, err)
-	tassert.Equal(c, fromSlashes("rules/index.csv"), files)
+	assert.NoError(t, err)
+	assert.Equal(t, fromSlashes("rules/index.csv"), files)
 }

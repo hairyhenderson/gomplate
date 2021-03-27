@@ -1,22 +1,13 @@
-//+build integration
-
 package integration
 
 import (
-	. "gopkg.in/check.v1"
+	"testing"
 
 	"gotest.tools/v3/fs"
-	"gotest.tools/v3/icmd"
 )
 
-type CollSuite struct {
-	tmpDir *fs.Dir
-}
-
-var _ = Suite(&CollSuite{})
-
-func (s *CollSuite) SetUpTest(c *C) {
-	s.tmpDir = fs.NewDir(c, "gomplate-inttests",
+func setupCollTest(t *testing.T) *fs.Dir {
+	tmpDir := fs.NewDir(t, "gomplate-inttests",
 		fs.WithFiles(map[string]string{
 			"defaults.yaml": `values:
   one: 1
@@ -35,22 +26,21 @@ func (s *CollSuite) SetUpTest(c *C) {
 				}
 			}`,
 		}))
+	t.Cleanup(tmpDir.Remove)
+
+	return tmpDir
 }
 
-func (s *CollSuite) TearDownTest(c *C) {
-	s.tmpDir.Remove()
-}
-
-func (s *CollSuite) TestMerge(c *C) {
-	result := icmd.RunCmd(icmd.Command(GomplateBin,
-		"-d", "defaults="+s.tmpDir.Join("defaults.yaml"),
-		"-d", "config="+s.tmpDir.Join("config.json"),
+func TestColl_Merge(t *testing.T) {
+	tmpDir := setupCollTest(t)
+	o, e, err := cmd(t,
+		"-d", "defaults="+tmpDir.Join("defaults.yaml"),
+		"-d", "config="+tmpDir.Join("config.json"),
 		"-i", `{{ $defaults := ds "defaults" -}}
 		{{ $config := ds "config" -}}
 		{{ $merged := coll.Merge $config $defaults -}}
-		{{ $merged | data.ToYAML }}
-`))
-	result.Assert(c, icmd.Expected{ExitCode: 0, Out: `values:
+		{{ $merged | data.ToYAML }}`).run()
+	assertSuccess(t, o, e, err, `values:
   four:
     a: eh?
     b: b
@@ -60,17 +50,17 @@ func (s *CollSuite) TestMerge(c *C) {
     - 6
     - 7
   two: 2
-`})
+`)
 }
 
-func (s *CollSuite) TestSort(c *C) {
-	inOutTest(c, `{{ $maps := jsonArray "[{\"a\": \"foo\", \"b\": 1}, {\"a\": \"bar\", \"b\": 8}, {\"a\": \"baz\", \"b\": 3}]" -}}
+func TestColl_Sort(t *testing.T) {
+	inOutTest(t, `{{ $maps := jsonArray "[{\"a\": \"foo\", \"b\": 1}, {\"a\": \"bar\", \"b\": 8}, {\"a\": \"baz\", \"b\": 3}]" -}}
 {{ range coll.Sort "b" $maps -}}
 {{ .a }}
 {{ end -}}
 `, "foo\nbaz\nbar\n")
 
-	inOutTest(c, `
+	inOutTest(t, `
 {{- coll.Sort (slice "b" "a" "c" "aa") }}
 {{ coll.Sort (slice "b" 14 "c" "aa") }}
 {{ coll.Sort (slice 3.14 3.0 4.0) }}
@@ -82,30 +72,29 @@ func (s *CollSuite) TestSort(c *C) {
 `)
 }
 
-func (s *CollSuite) TestJSONPath(c *C) {
-	result := icmd.RunCmd(icmd.Command(GomplateBin,
-		"-c", "config="+s.tmpDir.Join("config.json"),
-		"-i", `{{ .config | jsonpath ".*.three" }}`))
-	result.Assert(c, icmd.Expected{ExitCode: 0, Out: `[5 6 7]`})
+func TestColl_JSONPath(t *testing.T) {
+	tmpDir := setupCollTest(t)
+	o, e, err := cmd(t, "-c", "config="+tmpDir.Join("config.json"),
+		"-i", `{{ .config | jsonpath ".*.three" }}`).run()
+	assertSuccess(t, o, e, err, `[5 6 7]`)
 
-	result = icmd.RunCmd(icmd.Command(GomplateBin,
-		"-c", "config="+s.tmpDir.Join("config.json"),
-		"-i", `{{ .config | coll.JSONPath ".values..a" }}`))
-	result.Assert(c, icmd.Expected{ExitCode: 0, Out: `eh?`})
+	o, e, err = cmd(t, "-c", "config="+tmpDir.Join("config.json"),
+		"-i", `{{ .config | coll.JSONPath ".values..a" }}`).run()
+	assertSuccess(t, o, e, err, `eh?`)
 }
 
-func (s *CollSuite) TestFlatten(c *C) {
+func TestColl_Flatten(t *testing.T) {
 	in := "[[1,2],[],[[3,4],[[[5],6],7]]]"
-	inOutTest(c, "{{ `"+in+"` | jsonArray | coll.Flatten | toJSON }}", "[1,2,3,4,5,6,7]")
-	inOutTest(c, "{{ `"+in+"` | jsonArray | flatten 0 | toJSON }}", in)
-	inOutTest(c, "{{ coll.Flatten 1 (`"+in+"` | jsonArray) | toJSON }}", "[1,2,[3,4],[[[5],6],7]]")
-	inOutTest(c, "{{ `"+in+"` | jsonArray | coll.Flatten 2 | toJSON }}", "[1,2,3,4,[[5],6],7]")
+	inOutTest(t, "{{ `"+in+"` | jsonArray | coll.Flatten | toJSON }}", "[1,2,3,4,5,6,7]")
+	inOutTest(t, "{{ `"+in+"` | jsonArray | flatten 0 | toJSON }}", in)
+	inOutTest(t, "{{ coll.Flatten 1 (`"+in+"` | jsonArray) | toJSON }}", "[1,2,[3,4],[[[5],6],7]]")
+	inOutTest(t, "{{ `"+in+"` | jsonArray | coll.Flatten 2 | toJSON }}", "[1,2,3,4,[[5],6],7]")
 }
 
-func (s *CollSuite) TestPick(c *C) {
-	inOutTest(c, `{{ $data := dict "foo" 1 "bar" 2 "baz" 3 }}{{ coll.Pick "foo" "baz" $data }}`, "map[baz:3 foo:1]")
+func TestColl_Pick(t *testing.T) {
+	inOutTest(t, `{{ $data := dict "foo" 1 "bar" 2 "baz" 3 }}{{ coll.Pick "foo" "baz" $data }}`, "map[baz:3 foo:1]")
 }
 
-func (s *CollSuite) TestOmit(c *C) {
-	inOutTest(c, `{{ $data := dict "foo" 1 "bar" 2 "baz" 3 }}{{ coll.Omit "foo" "baz" $data }}`, "map[bar:2]")
+func TestColl_Omit(t *testing.T) {
+	inOutTest(t, `{{ $data := dict "foo" 1 "bar" 2 "baz" 3 }}{{ coll.Omit "foo" "baz" $data }}`, "map[bar:2]")
 }

@@ -1,15 +1,9 @@
-//+build integration
-
 package integration
 
 import (
-	. "gopkg.in/check.v1"
+	"testing"
 )
 
-type NetSuite struct{}
-
-var _ = Suite(&NetSuite{})
-
-func (s *NetSuite) TestLookupIP(c *C) {
-	inOutTest(c, `{{ net.LookupIP "localhost" }}`, "127.0.0.1")
+func TestNet_LookupIP(t *testing.T) {
+	inOutTest(t, `{{ net.LookupIP "localhost" }}`, "127.0.0.1")
 }

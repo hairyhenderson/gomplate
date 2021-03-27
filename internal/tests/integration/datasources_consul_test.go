@@ -1,225 +1,156 @@
-//+build integration
 //+build !windows
 
 package integration
 
 import (
 	"encoding/base64"
-	"os"
-	"os/user"
-	"path"
 	"strconv"
-
-	. "gopkg.in/check.v1"
+	"testing"
 
 	vaultapi "github.com/hashicorp/vault/api"
+	"github.com/stretchr/testify/require"
 	"gotest.tools/v3/fs"
 	"gotest.tools/v3/icmd"
 )
 
-type ConsulDatasourcesSuite struct {
-	tmpDir       *fs.Dir
-	pidDir       *fs.Dir
-	consulAddr   string
-	consulResult *icmd.Result
-	vaultAddr    string
-	vaultResult  *icmd.Result
-}
-
-var _ = Suite(&ConsulDatasourcesSuite{})
-
 const consulRootToken = "00000000-1111-2222-3333-444455556666"
 
-func (s *ConsulDatasourcesSuite) SetUpSuite(c *C) {
-	s.pidDir = fs.NewDir(c, "gomplate-inttests-pid")
-	s.tmpDir = fs.NewDir(c, "gomplate-inttests",
+func setupDatasourcesConsulTest(t *testing.T) (string, *vaultClient) {
+	pidDir := fs.NewDir(t, "gomplate-inttests-pid")
+	t.Cleanup(pidDir.Remove)
+
+	tmpDir := fs.NewDir(t, "gomplate-inttests",
 		fs.WithFile(
 			"consul.json",
 			`{"acl_datacenter": "dc1", "acl_master_token": "`+consulRootToken+`"}`,
 		),
 		fs.WithFile("vault.json", `{
-			"pid_file": "`+s.pidDir.Join("vault.pid")+`"
-			}`),
+		"pid_file": "`+pidDir.Join("vault.pid")+`"
+		}`),
 	)
-	var port int
-	port, s.consulAddr = freeport()
+	t.Cleanup(tmpDir.Remove)
+
+	port, consulAddr := freeport()
 	consul := icmd.Command("consul", "agent",
 		"-dev",
-		"-config-file="+s.tmpDir.Join("consul.json"),
+		"-config-file="+tmpDir.Join("consul.json"),
 		"-log-level=err",
 		"-http-port="+strconv.Itoa(port),
-		"-pid-file="+s.pidDir.Join("consul.pid"),
+		"-pid-file="+pidDir.Join("consul.pid"),
 	)
-	s.consulResult = icmd.StartCmd(consul)
+	result := icmd.StartCmd(consul)
+	t.Cleanup(func() {
+		err := result.Cmd.Process.Kill()
+		require.NoError(t, err)
 
-	c.Logf("Fired up Consul: %v", consul)
+		result.Cmd.Wait()
 
-	err := waitForURL(c, "http://"+s.consulAddr+"/v1/status/leader")
-	handle(c, err)
+		result.Assert(t, icmd.Expected{ExitCode: 0})
+	})
 
-	s.startVault(c)
+	t.Logf("Fired up Consul: %v", consul)
+
+	err := waitForURL(t, "http://"+consulAddr+"/v1/status/leader")
+	require.NoError(t, err)
+
+	_, vaultClient := startVault(t)
+
+	return consulAddr, vaultClient
 }
 
-func (s *ConsulDatasourcesSuite) startVault(c *C) {
-	// rename any existing token so it doesn't get overridden
-	u, _ := user.Current()
-	homeDir := u.HomeDir
-	tokenFile := path.Join(homeDir, ".vault-token")
-	info, err := os.Stat(tokenFile)
-	if err == nil && info.Mode().IsRegular() {
-		os.Rename(tokenFile, path.Join(homeDir, ".vault-token.bak"))
-	}
-
-	_, s.vaultAddr = freeport()
-	vault := icmd.Command("vault", "server",
-		"-dev",
-		"-dev-root-token-id="+vaultRootToken,
-		"-log-level=err",
-		"-dev-listen-address="+s.vaultAddr,
-		"-config="+s.tmpDir.Join("vault.json"),
-	)
-	s.vaultResult = icmd.StartCmd(vault)
-
-	c.Logf("Fired up Vault: %v", vault)
-
-	err = waitForURL(c, "http://"+s.vaultAddr+"/v1/sys/health")
-	handle(c, err)
-}
-
-func (s *ConsulDatasourcesSuite) TearDownSuite(c *C) {
-	defer s.tmpDir.Remove()
-	defer s.pidDir.Remove()
-
-	err := killByPidFile(s.pidDir.Join("vault.pid"))
-	handle(c, err)
-
-	err = killByPidFile(s.pidDir.Join("consul.pid"))
-	handle(c, err)
-
-	// restore old vault token if it was backed up
-	u, _ := user.Current()
-	homeDir := u.HomeDir
-	tokenFile := path.Join(homeDir, ".vault-token.bak")
-	info, err := os.Stat(tokenFile)
-	if err == nil && info.Mode().IsRegular() {
-		os.Rename(tokenFile, path.Join(homeDir, ".vault-token"))
-	}
-}
-
-func (s *ConsulDatasourcesSuite) consulPut(c *C, k, v string) {
+func consulPut(t *testing.T, consulAddr, k, v string) {
 	result := icmd.RunCmd(icmd.Command("consul", "kv", "put", k, v),
 		func(c *icmd.Cmd) {
-			c.Env = []string{"CONSUL_HTTP_ADDR=http://" + s.consulAddr}
+			c.Env = []string{"CONSUL_HTTP_ADDR=http://" + consulAddr}
 		})
-	result.Assert(c, icmd.Success)
-}
-
-func (s *ConsulDatasourcesSuite) consulDelete(c *C, k string) {
-	result := icmd.RunCmd(icmd.Command("consul", "kv", "delete", k),
-		func(c *icmd.Cmd) {
-			c.Env = []string{"CONSUL_HTTP_ADDR=http://" + s.consulAddr}
-		})
-	result.Assert(c, icmd.Success)
-}
-
-func (s *ConsulDatasourcesSuite) TestConsulDatasource(c *C) {
-	s.consulPut(c, "foo1", "bar")
-	defer s.consulDelete(c, "foo1")
-	result := icmd.RunCmd(icmd.Command(GomplateBin,
-		"-d", "consul=consul://",
-		"-i", `{{(ds "consul" "foo1")}}`,
-	), func(c *icmd.Cmd) {
-		c.Env = []string{"CONSUL_HTTP_ADDR=http://" + s.consulAddr}
+	result.Assert(t, icmd.Success)
+	t.Cleanup(func() {
+		result := icmd.RunCmd(icmd.Command("consul", "kv", "delete", k),
+			func(c *icmd.Cmd) {
+				c.Env = []string{"CONSUL_HTTP_ADDR=http://" + consulAddr}
+			})
+		result.Assert(t, icmd.Success)
 	})
-	result.Assert(c, icmd.Expected{ExitCode: 0, Out: "bar"})
-
-	s.consulPut(c, "foo2", `{"bar": "baz"}`)
-	defer s.consulDelete(c, "foo2")
-	result = icmd.RunCmd(icmd.Command(GomplateBin,
-		"-d", "consul=consul://?type=application/json",
-		"-i", `{{(ds "consul" "foo2").bar}}`,
-	), func(c *icmd.Cmd) {
-		c.Env = []string{"CONSUL_HTTP_ADDR=http://" + s.consulAddr}
-	})
-	result.Assert(c, icmd.Expected{ExitCode: 0, Out: "baz"})
-
-	s.consulPut(c, "foo2", `bar`)
-	defer s.consulDelete(c, "foo2")
-	result = icmd.RunCmd(icmd.Command(GomplateBin,
-		"-d", "consul=consul://"+s.consulAddr,
-		"-i", `{{(ds "consul" "foo2")}}`,
-	))
-	result.Assert(c, icmd.Expected{ExitCode: 0, Out: "bar"})
-
-	s.consulPut(c, "foo3", `bar`)
-	defer s.consulDelete(c, "foo3")
-	result = icmd.RunCmd(icmd.Command(GomplateBin,
-		"-d", "consul=consul+http://"+s.consulAddr,
-		"-i", `{{(ds "consul" "foo3")}}`,
-	))
-	result.Assert(c, icmd.Expected{ExitCode: 0, Out: "bar"})
 }
 
-func (s *ConsulDatasourcesSuite) TestConsulDatasourceListKeys(c *C) {
-	s.consulPut(c, "list-of-keys/foo1", `{"bar1": "bar1"}`)
-	s.consulPut(c, "list-of-keys/foo2", "bar2")
-	defer s.consulDelete(c, "list-of-keys")
+func TestDatasources_Consul(t *testing.T) {
+	consulAddr, _ := setupDatasourcesConsulTest(t)
+	consulPut(t, consulAddr, "foo1", "bar")
+
+	o, e, err := cmd(t, "-d", "consul=consul://",
+		"-i", `{{(ds "consul" "foo1")}}`).
+		withEnv("CONSUL_HTTP_ADDR", "http://"+consulAddr).run()
+	assertSuccess(t, o, e, err, "bar")
+
+	consulPut(t, consulAddr, "foo2", `{"bar": "baz"}`)
+
+	o, e, err = cmd(t, "-d", "consul=consul://?type=application/json",
+		"-i", `{{(ds "consul" "foo2").bar}}`).
+		withEnv("CONSUL_HTTP_ADDR", "http://"+consulAddr).run()
+	assertSuccess(t, o, e, err, "baz")
+
+	consulPut(t, consulAddr, "foo2", `bar`)
+
+	o, e, err = cmd(t, "-d", "consul=consul://"+consulAddr,
+		"-i", `{{(ds "consul" "foo2")}}`).run()
+	assertSuccess(t, o, e, err, "bar")
+
+	consulPut(t, consulAddr, "foo3", `bar`)
+
+	o, e, err = cmd(t, "-d", "consul=consul+http://"+consulAddr,
+		"-i", `{{(ds "consul" "foo3")}}`).run()
+	assertSuccess(t, o, e, err, "bar")
+}
+
+func TestDatasources_Consul_ListKeys(t *testing.T) {
+	consulAddr, _ := setupDatasourcesConsulTest(t)
+	consulPut(t, consulAddr, "list-of-keys/foo1", `{"bar1": "bar1"}`)
+	consulPut(t, consulAddr, "list-of-keys/foo2", "bar2")
 
 	// Get a list of keys using the ds args
-	result := icmd.RunCmd(icmd.Command(GomplateBin,
-		"-d", "consul=consul://",
-		"-i", `{{(ds "consul" "list-of-keys/") | data.ToJSON }}`,
-	), func(c *icmd.Cmd) {
-		c.Env = []string{"CONSUL_HTTP_ADDR=http://" + s.consulAddr}
-	})
 	expectedResult := `[{"key":"foo1","value":"{\"bar1\": \"bar1\"}"},{"key":"foo2","value":"bar2"}]`
-	result.Assert(c, icmd.Expected{ExitCode: 0, Out: expectedResult})
+	o, e, err := cmd(t, "-d", "consul=consul://",
+		"-i", `{{(ds "consul" "list-of-keys/") | data.ToJSON }}`).
+		withEnv("CONSUL_HTTP_ADDR", "http://"+consulAddr).run()
+	assertSuccess(t, o, e, err, expectedResult)
 
 	// Get a list of keys using the ds uri
-	result = icmd.RunCmd(icmd.Command(GomplateBin,
-		"-d", "consul=consul+http://"+s.consulAddr+"/list-of-keys/",
-		"-i", `{{(ds "consul" ) | data.ToJSON }}`,
-	))
 	expectedResult = `[{"key":"foo1","value":"{\"bar1\": \"bar1\"}"},{"key":"foo2","value":"bar2"}]`
-	result.Assert(c, icmd.Expected{ExitCode: 0, Out: expectedResult})
+	o, e, err = cmd(t, "-d", "consul=consul+http://"+consulAddr+"/list-of-keys/",
+		"-i", `{{(ds "consul" ) | data.ToJSON }}`).run()
+	assertSuccess(t, o, e, err, expectedResult)
 
 	// Get a specific value from the list of Consul keys
-	result = icmd.RunCmd(icmd.Command(GomplateBin,
-		"-d", "consul=consul+http://"+s.consulAddr+"/list-of-keys/",
-		"-i", `{{ $data := (ds "consul") }} {{ (index $data 0).value }}`,
-	))
 	expectedResult = `{"bar1": "bar1"}`
-	result.Assert(c, icmd.Expected{ExitCode: 0, Out: expectedResult})
+	o, e, err = cmd(t, "-d", "consul=consul+http://"+consulAddr+"/list-of-keys/",
+		"-i", `{{ $data := ds "consul" }}{{ (index $data 0).value }}`).run()
+	assertSuccess(t, o, e, err, expectedResult)
 }
 
-func (s *ConsulDatasourcesSuite) TestConsulWithVaultAuth(c *C) {
-	v, err := createVaultClient(s.vaultAddr, vaultRootToken)
-	handle(c, err)
+func TestDatasources_Consul_WithVaultAuth(t *testing.T) {
+	consulAddr, v := setupDatasourcesConsulTest(t)
 
-	err = v.vc.Sys().Mount("consul/", &vaultapi.MountInput{Type: "consul"})
-	handle(c, err)
+	err := v.vc.Sys().Mount("consul/", &vaultapi.MountInput{Type: "consul"})
+	require.NoError(t, err)
 	defer v.vc.Sys().Unmount("consul/")
 
 	_, err = v.vc.Logical().Write("consul/config/access", map[string]interface{}{
-		"address": s.consulAddr, "token": consulRootToken,
+		"address": consulAddr, "token": consulRootToken,
 	})
-	handle(c, err)
+	require.NoError(t, err)
 	policy := base64.StdEncoding.EncodeToString([]byte(`key "" { policy = "read" }`))
 	_, err = v.vc.Logical().Write("consul/roles/readonly", map[string]interface{}{"policy": policy})
-	handle(c, err)
+	require.NoError(t, err)
 
-	s.consulPut(c, "foo", "bar")
-	defer s.consulDelete(c, "foo")
-	result := icmd.RunCmd(icmd.Command(GomplateBin,
+	consulPut(t, consulAddr, "foo", "bar")
+
+	o, e, err := cmd(t,
 		"-d", "consul=consul://",
-		"-i", `{{(ds "consul" "foo")}}`,
-	), func(c *icmd.Cmd) {
-		c.Env = []string{
-			"VAULT_TOKEN=" + vaultRootToken,
-			"VAULT_ADDR=http://" + s.vaultAddr,
-			"CONSUL_VAULT_ROLE=readonly",
-			"CONSUL_HTTP_ADDR=http://" + s.consulAddr,
-		}
-	})
-	result.Assert(c, icmd.Expected{ExitCode: 0, Out: "bar"})
+		"-i", `{{(ds "consul" "foo")}}`).
+		withEnv("VAULT_TOKEN", vaultRootToken).
+		withEnv("VAULT_ADDR", "http://"+v.addr).
+		withEnv("CONSUL_VAULT_ROLE", "readonly").
+		withEnv("CONSUL_HTTP_ADDR", "http://"+consulAddr).
+		run()
+	assertSuccess(t, o, e, err, "bar")
 }

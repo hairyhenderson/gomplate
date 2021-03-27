@@ -1,22 +1,13 @@
-//+build integration
-
 package integration
 
 import (
-	. "gopkg.in/check.v1"
+	"testing"
 
 	"gotest.tools/v3/fs"
-	"gotest.tools/v3/icmd"
 )
 
-type FileDatasourcesSuite struct {
-	tmpDir *fs.Dir
-}
-
-var _ = Suite(&FileDatasourcesSuite{})
-
-func (s *FileDatasourcesSuite) SetUpSuite(c *C) {
-	s.tmpDir = fs.NewDir(c, "gomplate-inttests",
+func setupDatasourcesFileTest(t *testing.T) *fs.Dir {
+	tmpDir := fs.NewDir(t, "gomplate-inttests",
 		fs.WithFiles(map[string]string{
 			"config.json": `{"foo": {"bar": "baz"}}`,
 			"ajsonfile":   `{"foo": {"bar": "baz"}}`,
@@ -60,118 +51,86 @@ QUX='single quotes ignore $variables'
 `,
 		})),
 	)
+
+	t.Cleanup(tmpDir.Remove)
+
+	return tmpDir
 }
 
-func (s *FileDatasourcesSuite) TearDownSuite(c *C) {
-	s.tmpDir.Remove()
-}
+func TestDatasourcess_File(t *testing.T) {
+	tmpDir := setupDatasourcesFileTest(t)
 
-func (s *FileDatasourcesSuite) TestFileDatasources(c *C) {
-	result := icmd.RunCommand(GomplateBin,
-		"-d", "config="+s.tmpDir.Join("config.json"),
-		"-i", `{{(datasource "config").foo.bar}}`,
-	)
-	result.Assert(c, icmd.Expected{ExitCode: 0, Out: "baz"})
+	o, e, err := cmd(t,
+		"-d", "config="+tmpDir.Join("config.json"),
+		"-i", `{{(datasource "config").foo.bar}}`).run()
+	assertSuccess(t, o, e, err, "baz")
 
-	result = icmd.RunCommand(GomplateBin,
-		"-d", "dir="+s.tmpDir.Path(),
-		"-i", `{{ (datasource "dir" "config.json").foo.bar }}`,
-	)
-	result.Assert(c, icmd.Expected{ExitCode: 0, Out: "baz"})
+	o, e, err = cmd(t, "-d", "dir="+tmpDir.Path(),
+		"-i", `{{ (datasource "dir" "config.json").foo.bar }}`).run()
+	assertSuccess(t, o, e, err, "baz")
 
-	result = icmd.RunCmd(icmd.Command(GomplateBin,
-		"-d", "config=config.json",
-		"-i", `{{ (ds "config").foo.bar }}`,
-	), func(c *icmd.Cmd) {
-		c.Dir = s.tmpDir.Path()
-	})
-	result.Assert(c, icmd.Expected{ExitCode: 0, Out: "baz"})
+	o, e, err = cmd(t, "-d", "config=config.json",
+		"-i", `{{ (ds "config").foo.bar }}`).withDir(tmpDir.Path()).run()
+	assertSuccess(t, o, e, err, "baz")
 
-	result = icmd.RunCmd(icmd.Command(GomplateBin,
-		"-d", "config.json",
-		"-i", `{{ (ds "config").foo.bar }}`,
-	), func(c *icmd.Cmd) {
-		c.Dir = s.tmpDir.Path()
-	})
-	result.Assert(c, icmd.Expected{ExitCode: 0, Out: "baz"})
+	o, e, err = cmd(t, "-d", "config.json",
+		"-i", `{{ (ds "config").foo.bar }}`).withDir(tmpDir.Path()).run()
+	assertSuccess(t, o, e, err, "baz")
 
-	result = icmd.RunCommand(GomplateBin,
-		"-i", `foo{{defineDatasource "config" `+"`"+s.tmpDir.Join("config.json")+"`"+`}}bar{{(datasource "config").foo.bar}}`,
-	)
-	result.Assert(c, icmd.Expected{ExitCode: 0, Out: "foobarbaz"})
+	o, e, err = cmd(t, "-i",
+		`foo{{defineDatasource "config" `+"`"+tmpDir.Join("config.json")+"`"+`}}bar{{(datasource "config").foo.bar}}`).
+		run()
+	assertSuccess(t, o, e, err, "foobarbaz")
 
-	result = icmd.RunCommand(GomplateBin,
-		"-i", `foo{{defineDatasource "config" `+"`"+s.tmpDir.Join("ajsonfile")+"?type=application/json`"+`}}bar{{(datasource "config").foo.bar}}`,
-	)
-	result.Assert(c, icmd.Expected{ExitCode: 0, Out: "foobarbaz"})
+	o, e, err = cmd(t, "-i",
+		`foo{{defineDatasource "config" `+"`"+tmpDir.Join("ajsonfile")+"?type=application/json`"+`}}bar{{(datasource "config").foo.bar}}`).
+		run()
+	assertSuccess(t, o, e, err, "foobarbaz")
 
-	result = icmd.RunCommand(GomplateBin,
-		"-d", "config="+s.tmpDir.Join("config.yml"),
-		"-i", `{{(datasource "config").foo.bar}}`,
-	)
-	result.Assert(c, icmd.Expected{ExitCode: 0, Out: "baz"})
+	o, e, err = cmd(t, "-d", "config="+tmpDir.Join("config.yml"),
+		"-i", `{{(datasource "config").foo.bar}}`).run()
+	assertSuccess(t, o, e, err, "baz")
 
-	result = icmd.RunCommand(GomplateBin,
-		"-d", "config="+s.tmpDir.Join("config2.yml"),
-		"-i", `{{(ds "config").foo}}`,
-	)
-	result.Assert(c, icmd.Expected{ExitCode: 0, Out: "bar"})
+	o, e, err = cmd(t, "-d", "config="+tmpDir.Join("config2.yml"),
+		"-i", `{{(ds "config").foo}}`).run()
+	assertSuccess(t, o, e, err, "bar")
 
-	result = icmd.RunCommand(GomplateBin,
-		"-c", "config="+s.tmpDir.Join("config2.yml"),
-		"-i", `{{ .config.foo}}`,
-	)
-	result.Assert(c, icmd.Expected{ExitCode: 0, Out: "bar"})
+	o, e, err = cmd(t, "-c", "config="+tmpDir.Join("config2.yml"),
+		"-i", `{{ .config.foo}}`).run()
+	assertSuccess(t, o, e, err, "bar")
 
-	result = icmd.RunCommand(GomplateBin,
-		"-c", ".="+s.tmpDir.Join("config2.yml"),
-		"-i", `{{ .foo}} {{ (ds ".").foo }}`,
-	)
-	result.Assert(c, icmd.Expected{ExitCode: 0, Out: "bar bar"})
+	o, e, err = cmd(t, "-c", ".="+tmpDir.Join("config2.yml"),
+		"-i", `{{ .foo}} {{ (ds ".").foo }}`).run()
+	assertSuccess(t, o, e, err, "bar bar")
 
-	result = icmd.RunCommand(GomplateBin,
-		"-d", "config="+s.tmpDir.Join("config2.yml"),
+	o, e, err = cmd(t, "-d", "config="+tmpDir.Join("config2.yml"),
 		"-i", `{{ if (datasourceReachable "bogus") }}bogus!{{ end -}}
 {{ if (datasourceReachable "config") -}}
 {{ (ds "config").foo -}}
-{{ end }}`,
-	)
-	result.Assert(c, icmd.Expected{ExitCode: 0, Out: "bar"})
+{{ end }}`).run()
+	assertSuccess(t, o, e, err, "bar")
 
-	result = icmd.RunCommand(GomplateBin,
-		"-d", "csv="+s.tmpDir.Join("foo.csv"),
-		"-i", `{{ index (index (ds "csv") 2) 1 }}`,
-	)
-	result.Assert(c, icmd.Expected{ExitCode: 0, Out: `foo"
-bar`})
+	o, e, err = cmd(t, "-d", "csv="+tmpDir.Join("foo.csv"),
+		"-i", `{{ index (index (ds "csv") 2) 1 }}`).run()
+	assertSuccess(t, o, e, err, "foo\"\nbar")
 
-	result = icmd.RunCommand(GomplateBin,
-		"-d", "config="+s.tmpDir.Join("config2.yml"),
-		"-i", `{{ include "config" }}`,
-	)
-	result.Assert(c, icmd.Expected{ExitCode: 0, Out: `foo: bar`})
+	o, e, err = cmd(t, "-d", "config="+tmpDir.Join("config2.yml"),
+		"-i", `{{ include "config" }}`).run()
+	assertSuccess(t, o, e, err, "foo: bar\n")
 
-	result = icmd.RunCommand(GomplateBin,
-		"-d", "dir="+s.tmpDir.Path()+"/",
-		"-i", `{{ range (ds "dir") }}{{ . }} {{ end }}`,
-	)
-	result.Assert(c, icmd.Expected{ExitCode: 0, Out: `config.json config.yml config2.yml encrypted.json foo.csv`})
+	o, e, err = cmd(t, "-d", "dir="+tmpDir.Path()+"/",
+		"-i", `{{ range (ds "dir") }}{{ . }} {{ end }}`).run()
+	assertSuccess(t, o, e, err, "ajsonfile config.json config.yml config2.yml encrypted.json foo.csv sortorder test.env ")
 
-	result = icmd.RunCmd(icmd.Command(GomplateBin,
-		"-d", "enc="+s.tmpDir.Join("encrypted.json"),
-		"-i", `{{ (ds "enc").password }}`,
-	), func(c *icmd.Cmd) {
-		c.Env = []string{
-			"EJSON_KEY=553da5790efd7ddc0e4829b69069478eec9ddddb17b69eca9801da37445b62bf",
-		}
-	})
-	result.Assert(c, icmd.Expected{ExitCode: 0, Out: "swordfish"})
+	o, e, err = cmd(t, "-d", "enc="+tmpDir.Join("encrypted.json"),
+		"-i", `{{ (ds "enc").password }}`).
+		withEnv("EJSON_KEY", "553da5790efd7ddc0e4829b69069478eec9ddddb17b69eca9801da37445b62bf").
+		run()
+	assertSuccess(t, o, e, err, "swordfish")
 
-	result = icmd.RunCommand(GomplateBin,
-		"-d", "core="+s.tmpDir.Join("sortorder", "core.yaml"),
-		"-f", s.tmpDir.Join("sortorder", "template"),
-	)
-	result.Assert(c, icmd.Expected{ExitCode: 0, Out: `aws_zones = {
+	o, e, err = cmd(t, "-d", "core="+tmpDir.Join("sortorder", "core.yaml"),
+		"-f", tmpDir.Join("sortorder", "template")).run()
+	assertSuccess(t, o, e, err, `aws_zones = {
 	zonea = "true"
 	zoneb = "false"
 	zonec = "true"
@@ -179,16 +138,15 @@ bar`})
 	zonee = "false"
 	zonef = "false"
 }
-`})
-	result = icmd.RunCommand(GomplateBin,
-		"-d", "envfile="+s.tmpDir.Join("test.env"),
-		"-i", `{{ (ds "envfile") | data.ToJSONPretty "  " }}`,
-	)
-	result.Assert(c, icmd.Expected{ExitCode: 0, Out: `{
+`)
+
+	o, e, err = cmd(t, "-d", "envfile="+tmpDir.Join("test.env"),
+		"-i", `{{ (ds "envfile") | data.ToJSONPretty "  " }}`).run()
+	assertSuccess(t, o, e, err, `{
   "BAR": "another value, exports are ignored",
   "BAZ": "variable expansion: a regular unquoted value",
   "FOO": "a regular unquoted value",
   "FOO.BAR": "values can be double-quoted, and shell\nescapes are supported",
   "QUX": "single quotes ignore $variables"
-}`})
+}`)
 }

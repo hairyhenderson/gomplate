@@ -1,14 +1,9 @@
-//+build integration
-
 package integration
 
 import (
-	. "gopkg.in/check.v1"
+	"fmt"
+	"testing"
 )
-
-type TypeconvSuite struct{}
-
-var _ = Suite(&TypeconvSuite{})
 
 const (
 	testYAML = "foo:\\n bar:\\n  baz: qux"
@@ -23,15 +18,15 @@ Go	25
 COBOL	357`
 )
 
-func (s *TypeconvSuite) TestTypeconvFuncs(c *C) {
-	inOutTest(c, `{{ has ("`+testYAML+`" | yaml).foo.bar "baz"}}`,
+func TestTypeconv_TypeconvFuncs(t *testing.T) {
+	inOutTest(t, `{{ has ("`+testYAML+`" | yaml).foo.bar "baz"}}`,
 		"true")
 }
 
-func (s *TypeconvSuite) TestJSON(c *C) {
-	inOutTest(c, `{{ "`+testYAML+`" | yaml | toJSON }}`, testJSON)
+func TestTypeconv_JSON(t *testing.T) {
+	inOutTest(t, `{{ "`+testYAML+`" | yaml | toJSON }}`, testJSON)
 
-	inOutTest(c, `{{ `+"`"+testJSON+"`"+` | json | toJSONPretty "   " }}
+	inOutTest(t, `{{ `+"`"+testJSON+"`"+` | json | toJSONPretty "   " }}
 {{ toJSONPretty "" (`+"`"+testJSON+"`"+` | json) }}`,
 		`{
    "foo": {
@@ -49,43 +44,45 @@ func (s *TypeconvSuite) TestJSON(c *C) {
 }`)
 }
 
-func (s *TypeconvSuite) TestJoin(c *C) {
-	inOutTest(c, `{{ $a := "[1, 2, 3]" | jsonArray }}{{ join $a "-" }}`,
+func TestTypeconv_Join(t *testing.T) {
+	inOutTest(t, `{{ $a := "[1, 2, 3]" | jsonArray }}{{ join $a "-" }}`,
 		"1-2-3")
 }
 
-func (s *TypeconvSuite) TestCSV(c *C) {
-	inOutTest(c, `{{ $c := `+"`"+testCsv+"`"+` | csv -}}
-{{ index (index $c 0) 1 }}`,
+func TestTypeconv_CSV(t *testing.T) {
+	inOutTest(t, fmt.Sprintf(`{{ $c := %q | csv -}}
+{{ index (index $c 0) 1 }}`, testCsv),
 		"keywords")
 
-	inOutTest(c, `{{ $c := `+"`"+testCsv+"`"+` | csvByRow -}}
+	inOutTest(t, fmt.Sprintf(`{{ $c := %q | csvByRow -}}
 {{ range $c }}{{ .lang }} has {{ .keywords }} keywords.
-{{end}}`,
+{{end}}`, testCsv),
 		`C has 32 keywords.
 Go has 25 keywords.
-COBOL has 357 keywords.`)
+COBOL has 357 keywords.
+`)
 
-	inOutTest(c, `{{ $c := `+"`"+testTsv+"`"+` | csvByColumn "\t" -}}
-Languages are: {{ join $c.lang " and " }}`,
+	inOutTest(t, fmt.Sprintf(`{{ $c := %q | csvByColumn "\t" -}}
+Languages are: {{ join $c.lang " and " }}`, testTsv),
 		"Languages are: C and Go and COBOL")
 }
 
-func (s *TypeconvSuite) TestTOML(c *C) {
-	inOutTest(c, `{{ $t := `+"`"+`# comment
+func TestTypeconv_TOML(t *testing.T) {
+	tomlIn := `# comment
 foo = "bar"
 
 [baz]
-qux = "quux"`+"`"+` | toml -}}
-{{ $t.baz.qux }}`, "quux")
+qux = "quux"`
+	inOutTest(t, fmt.Sprintf(`{{ $t := %q | toml }}{{ $t.baz.qux }}`, tomlIn), "quux")
 
-	inOutTest(c, `{{ "foo:\n bar:\n  baz: qux" | yaml | toTOML }}`,
+	inOutTest(t, `{{ "foo:\n bar:\n  baz: qux" | yaml | toTOML }}`,
 		`[foo]
   [foo.bar]
-    baz = "qux"`)
+    baz = "qux"
+`)
 }
 
-func (s *TypeconvSuite) TestDict(c *C) {
-	inOutTest(c, `{{ $d := dict true false "foo" "bar" }}{{ data.ToJSON $d }}`,
+func TestTypeconv_Dict(t *testing.T) {
+	inOutTest(t, `{{ $d := dict true false "foo" "bar" }}{{ data.ToJSON $d }}`,
 		`{"foo":"bar","true":false}`)
 }

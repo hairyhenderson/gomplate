@@ -1,226 +1,232 @@
-//+build integration
-
 package integration
 
 import (
-	"bytes"
 	"io/ioutil"
 	"os"
-
-	"gopkg.in/check.v1"
+	"testing"
 
 	"gotest.tools/v3/assert"
 	"gotest.tools/v3/fs"
-	"gotest.tools/v3/icmd"
 )
 
-type ConfigSuite struct {
-	tmpDir *fs.Dir
-}
-
-var _ = check.Suite(&ConfigSuite{})
-
-func (s *ConfigSuite) SetUpTest(c *check.C) {
-	s.tmpDir = fs.NewDir(c, "gomplate-inttests",
+func setupConfigTest(t *testing.T) *fs.Dir {
+	tmpDir := fs.NewDir(t, "gomplate-inttests",
 		fs.WithDir("indir"),
 		fs.WithDir("outdir"),
 		fs.WithFile(".gomplate.yaml", "in: hello world\n"),
 		fs.WithFile("sleep.sh", "#!/bin/sh\n\nexec sleep $1\n", fs.WithMode(0755)),
 	)
+	t.Cleanup(tmpDir.Remove)
+	return tmpDir
 }
 
-func (s *ConfigSuite) writeFile(f, content string) {
-	f = s.tmpDir.Join(f)
+func writeFile(dir *fs.Dir, f, content string) {
+	f = dir.Join(f)
 	err := ioutil.WriteFile(f, []byte(content), 0600)
 	if err != nil {
 		panic(err)
 	}
 }
 
-func (s *ConfigSuite) writeConfig(content string) {
-	s.writeFile(".gomplate.yaml", content)
+func writeConfig(dir *fs.Dir, content string) {
+	writeFile(dir, ".gomplate.yaml", content)
 }
 
-func (s *ConfigSuite) TearDownTest(c *check.C) {
-	s.tmpDir.Remove()
+func TestConfig_ReadsFromSimpleConfigFile(t *testing.T) {
+	tmpDir := setupConfigTest(t)
+
+	o, e, err := cmd(t).withDir(tmpDir.Path()).run()
+	assertSuccess(t, o, e, err, "hello world")
 }
 
-func (s *ConfigSuite) TestReadsFromSimpleConfigFile(c *check.C) {
-	result := icmd.RunCmd(icmd.Command(GomplateBin), func(cmd *icmd.Cmd) {
-		cmd.Dir = s.tmpDir.Path()
-	})
-	result.Assert(c, icmd.Expected{ExitCode: 0, Out: "hello world"})
+func TestConfig_ReadsStdin(t *testing.T) {
+	tmpDir := setupConfigTest(t)
+	writeConfig(tmpDir, "inputFiles: [-]")
+
+	o, e, err := cmd(t).withDir(tmpDir.Path()).withStdin("foo bar").run()
+	assertSuccess(t, o, e, err, "foo bar")
 }
 
-func (s *ConfigSuite) TestReadsStdin(c *check.C) {
-	s.writeConfig("inputFiles: [-]")
-	result := icmd.RunCmd(icmd.Command(GomplateBin), func(cmd *icmd.Cmd) {
-		cmd.Dir = s.tmpDir.Path()
-		cmd.Stdin = bytes.NewBufferString("foo bar")
-	})
-	result.Assert(c, icmd.Expected{ExitCode: 0, Out: "foo bar"})
+func TestConfig_FlagOverridesConfig(t *testing.T) {
+	tmpDir := setupConfigTest(t)
+	writeConfig(tmpDir, "inputFiles: [in]")
+
+	o, e, err := cmd(t, "-i", "hello from the cli").
+		withDir(tmpDir.Path()).run()
+	assertSuccess(t, o, e, err, "hello from the cli")
 }
 
-func (s *ConfigSuite) TestFlagOverridesConfig(c *check.C) {
-	s.writeConfig("inputFiles: [in]")
-	result := icmd.RunCmd(icmd.Command(GomplateBin, "-i", "hello from the cli"), func(cmd *icmd.Cmd) {
-		cmd.Dir = s.tmpDir.Path()
-	})
-	result.Assert(c, icmd.Expected{ExitCode: 0, Out: "hello from the cli"})
+func TestConfig_ReadsFromInputFile(t *testing.T) {
+	tmpDir := setupConfigTest(t)
+	writeConfig(tmpDir, "inputFiles: [in]")
+	writeFile(tmpDir, "in", "blah blah")
+
+	o, e, err := cmd(t).withDir(tmpDir.Path()).run()
+	assertSuccess(t, o, e, err, "blah blah")
 }
 
-func (s *ConfigSuite) TestReadsFromInputFile(c *check.C) {
-	s.writeConfig("inputFiles: [in]")
-	s.writeFile("in", "blah blah")
-	result := icmd.RunCmd(icmd.Command(GomplateBin), func(cmd *icmd.Cmd) {
-		cmd.Dir = s.tmpDir.Path()
-	})
-	result.Assert(c, icmd.Expected{ExitCode: 0, Out: "blah blah"})
-}
-
-func (s *ConfigSuite) TestDatasource(c *check.C) {
-	s.writeConfig(`inputFiles: [in]
+func TestConfig_Datasource(t *testing.T) {
+	tmpDir := setupConfigTest(t)
+	writeConfig(tmpDir, `inputFiles: [in]
 datasources:
   data:
     url: in.yaml
 `)
-	s.writeFile("in", `{{ (ds "data").value }}`)
-	s.writeFile("in.yaml", `value: hello world`)
-	result := icmd.RunCmd(icmd.Command(GomplateBin), func(cmd *icmd.Cmd) {
-		cmd.Dir = s.tmpDir.Path()
-	})
-	result.Assert(c, icmd.Expected{ExitCode: 0, Out: "hello world"})
+	writeFile(tmpDir, "in", `{{ (ds "data").value }}`)
+	writeFile(tmpDir, "in.yaml", `value: hello world`)
+
+	o, e, err := cmd(t).withDir(tmpDir.Path()).run()
+	assertSuccess(t, o, e, err, "hello world")
 }
 
-func (s *ConfigSuite) TestOutputDir(c *check.C) {
-	s.writeConfig(`inputDir: indir/
+func TestConfig_OutputDir(t *testing.T) {
+	tmpDir := setupConfigTest(t)
+
+	writeConfig(tmpDir, `inputDir: indir/
 outputDir: outdir/
 datasources:
   data:
     url: in.yaml
 `)
-	s.writeFile("indir/file", `{{ (ds "data").value }}`)
-	s.writeFile("in.yaml", `value: hello world`)
-	result := icmd.RunCmd(icmd.Command(GomplateBin), func(cmd *icmd.Cmd) {
-		cmd.Dir = s.tmpDir.Path()
-	})
-	result.Assert(c, icmd.Expected{ExitCode: 0})
-	b, err := ioutil.ReadFile(s.tmpDir.Join("outdir", "file"))
-	assert.NilError(c, err)
-	assert.Equal(c, "hello world", string(b))
+	writeFile(tmpDir, "indir/file", `{{ (ds "data").value }}`)
+	writeFile(tmpDir, "in.yaml", `value: hello world`)
+
+	o, e, err := cmd(t).withDir(tmpDir.Path()).run()
+	assertSuccess(t, o, e, err, "")
+
+	b, err := ioutil.ReadFile(tmpDir.Join("outdir", "file"))
+	assert.NilError(t, err)
+	assert.Equal(t, "hello world", string(b))
 }
 
-func (s *ConfigSuite) TestExecPipeOverridesConfigFile(c *check.C) {
+func TestConfig_ExecPipeOverridesConfigFile(t *testing.T) {
+	tmpDir := setupConfigTest(t)
+
 	// make sure exec-pipe works, and outFiles is replaced
-	s.writeConfig(`in: hello world
+	writeConfig(tmpDir, `in: hello world
 outputFiles: ['-']
 `)
-	result := icmd.RunCmd(icmd.Command(GomplateBin, "-i", "hi", "--exec-pipe", "--", "tr", "[a-z]", "[A-Z]"), func(cmd *icmd.Cmd) {
-		cmd.Dir = s.tmpDir.Path()
-	})
-	result.Assert(c, icmd.Expected{ExitCode: 0, Out: "HI"})
+	o, e, err := cmd(t, "-i", "hi", "--exec-pipe", "--", "tr", "[a-z]", "[A-Z]").
+		withDir(tmpDir.Path()).run()
+	assertSuccess(t, o, e, err, "HI")
 }
 
-func (s *ConfigSuite) TestOutFile(c *check.C) {
-	s.writeConfig(`in: hello world
+func TestConfig_OutFile(t *testing.T) {
+	tmpDir := setupConfigTest(t)
+
+	writeConfig(tmpDir, `in: hello world
 outputFiles: [out]
 `)
-	result := icmd.RunCmd(icmd.Command(GomplateBin), func(cmd *icmd.Cmd) {
-		cmd.Dir = s.tmpDir.Path()
-	})
-	result.Assert(c, icmd.Expected{ExitCode: 0})
-	b, err := ioutil.ReadFile(s.tmpDir.Join("out"))
-	assert.NilError(c, err)
-	assert.Equal(c, "hello world", string(b))
+	o, e, err := cmd(t).withDir(tmpDir.Path()).run()
+	assertSuccess(t, o, e, err, "")
+
+	b, err := ioutil.ReadFile(tmpDir.Join("out"))
+	assert.NilError(t, err)
+	assert.Equal(t, "hello world", string(b))
 }
 
-func (s *ConfigSuite) TestAlternateConfigFile(c *check.C) {
-	s.writeFile("config.yaml", `in: this is from an alternate config
+func TestConfig_AlternateConfigFile(t *testing.T) {
+	tmpDir := setupConfigTest(t)
+	writeFile(tmpDir, "config.yaml", `in: this is from an alternate config
 `)
-	result := icmd.RunCmd(icmd.Command(GomplateBin, "--config=config.yaml"), func(cmd *icmd.Cmd) {
-		cmd.Dir = s.tmpDir.Path()
-	})
-	result.Assert(c, icmd.Expected{ExitCode: 0, Out: "this is from an alternate config"})
+
+	o, e, err := cmd(t, "--config=config.yaml").withDir(tmpDir.Path()).run()
+	assertSuccess(t, o, e, err, "this is from an alternate config")
 }
 
-func (s *ConfigSuite) TestEnvConfigFile(c *check.C) {
-	s.writeFile("envconfig.yaml", `in: yet another alternate config
+func TestConfig_EnvConfigFile(t *testing.T) {
+	tmpDir := setupConfigTest(t)
+
+	writeFile(tmpDir, "envconfig.yaml", `in: yet another alternate config
 `)
-	result := icmd.RunCmd(icmd.Command(GomplateBin), func(cmd *icmd.Cmd) {
-		cmd.Dir = s.tmpDir.Path()
-		cmd.Env = []string{"GOMPLATE_CONFIG=./envconfig.yaml"}
-	})
-	result.Assert(c, icmd.Expected{ExitCode: 0, Out: "yet another alternate config"})
+
+	o, e, err := cmd(t).withDir(tmpDir.Path()).
+		withEnv("GOMPLATE_CONFIG", "./envconfig.yaml").run()
+	assertSuccess(t, o, e, err, "yet another alternate config")
 }
 
-func (s *ConfigSuite) TestConfigOverridesEnvDelim(c *check.C) {
-	if !isWindows {
-		s.writeConfig(`inputFiles: [in]
+func TestConfig_ConfigOverridesEnvDelim(t *testing.T) {
+	if isWindows {
+		t.Skip()
+	}
+
+	tmpDir := setupConfigTest(t)
+
+	writeConfig(tmpDir, `inputFiles: [in]
 leftDelim: (╯°□°）╯︵ ┻━┻
 datasources:
   data:
     url: in.yaml
 `)
-		s.writeFile("in", `(╯°□°）╯︵ ┻━┻ (ds "data").value }}`)
-		s.writeFile("in.yaml", `value: hello world`)
-		result := icmd.RunCmd(icmd.Command(GomplateBin), func(cmd *icmd.Cmd) {
-			cmd.Dir = s.tmpDir.Path()
-			cmd.Env = []string{"GOMPLATE_LEFT_DELIM=<<"}
-		})
-		result.Assert(c, icmd.Expected{ExitCode: 0, Out: "hello world"})
-	}
+	writeFile(tmpDir, "in", `(╯°□°）╯︵ ┻━┻ (ds "data").value }}`)
+	writeFile(tmpDir, "in.yaml", `value: hello world`)
+
+	o, e, err := cmd(t).withDir(tmpDir.Path()).
+		withEnv("GOMPLATE_LEFT_DELIM", "<<").run()
+	assert.NilError(t, err)
+	assert.Equal(t, "", e)
+	assert.Equal(t, "hello world", o)
 }
 
-func (s *ConfigSuite) TestFlagOverridesAllDelim(c *check.C) {
-	if !isWindows {
-		s.writeConfig(`inputFiles: [in]
+func TestConfig_FlagOverridesAllDelim(t *testing.T) {
+	if isWindows {
+		t.Skip()
+	}
+
+	tmpDir := setupConfigTest(t)
+
+	writeConfig(tmpDir, `inputFiles: [in]
 leftDelim: (╯°□°）╯︵ ┻━┻
 datasources:
   data:
     url: in.yaml
 `)
-		s.writeFile("in", `{{ (ds "data").value }}`)
-		s.writeFile("in.yaml", `value: hello world`)
-		result := icmd.RunCmd(icmd.Command(GomplateBin, "--left-delim={{"), func(cmd *icmd.Cmd) {
-			cmd.Dir = s.tmpDir.Path()
-			cmd.Env = []string{"GOMPLATE_LEFT_DELIM=<<"}
-		})
-		result.Assert(c, icmd.Expected{ExitCode: 0, Out: "hello world"})
-	}
+	writeFile(tmpDir, "in", `{{ (ds "data").value }}`)
+	writeFile(tmpDir, "in.yaml", `value: hello world`)
+
+	o, e, err := cmd(t, "--left-delim={{").
+		withDir(tmpDir.Path()).
+		withEnv("GOMPLATE_LEFT_DELIM", "<<").run()
+	assert.NilError(t, err)
+	assert.Equal(t, "", e)
+	assert.Equal(t, "hello world", o)
 }
 
-func (s *ConfigSuite) TestConfigOverridesEnvPluginTimeout(c *check.C) {
-	if !isWindows {
-		s.writeConfig(`in: hi there {{ sleep 2 }}
+func TestConfig_ConfigOverridesEnvPluginTimeout(t *testing.T) {
+	if isWindows {
+		t.Skip()
+	}
+
+	tmpDir := setupConfigTest(t)
+
+	writeConfig(tmpDir, `in: hi there {{ sleep 2 }}
 plugins:
   sleep: echo
 
 pluginTimeout: 500ms
 `)
-		result := icmd.RunCmd(icmd.Command(GomplateBin,
-			"--plugin", "sleep="+s.tmpDir.Join("sleep.sh"),
-		), func(cmd *icmd.Cmd) {
-			cmd.Dir = s.tmpDir.Path()
-			cmd.Env = []string{"GOMPLATE_PLUGIN_TIMEOUT=5s"}
-		})
-		result.Assert(c, icmd.Expected{ExitCode: 1, Err: "plugin timed out"})
-	}
+
+	_, _, err := cmd(t, "--plugin", "sleep="+tmpDir.Join("sleep.sh")).
+		withDir(tmpDir.Path()).
+		withEnv("GOMPLATE_PLUGIN_TIMEOUT", "5s").run()
+	assert.ErrorContains(t, err, "plugin timed out")
 }
 
-func (s *ConfigSuite) TestConfigOverridesEnvSuppressEmpty(c *check.C) {
-	s.writeConfig(`in: |
+func TestConfig_ConfigOverridesEnvSuppressEmpty(t *testing.T) {
+	tmpDir := setupConfigTest(t)
+
+	writeConfig(tmpDir, `in: |
   {{- print "\t  \n\n\r\n\t\t     \v\n" -}}
 
   {{ print "   " -}}
 out: ./missing
 suppressEmpty: true
 `)
-	result := icmd.RunCmd(icmd.Command(GomplateBin), func(cmd *icmd.Cmd) {
-		cmd.Dir = s.tmpDir.Path()
-		// should have no effect, as config overrides
-		cmd.Env = []string{"GOMPLATE_SUPPRESS_EMPTY=false"}
-	})
-	result.Assert(c, icmd.Expected{ExitCode: 0})
-	_, err := os.Stat(s.tmpDir.Join("missing"))
-	assert.Equal(c, true, os.IsNotExist(err))
+
+	_, _, err := cmd(t).withDir(tmpDir.Path()).
+		withEnv("GOMPLATE_SUPPRESS_EMPTY", "false").run()
+	assert.NilError(t, err)
+
+	_, err = os.Stat(tmpDir.Join("missing"))
+	assert.Equal(t, true, os.IsNotExist(err))
 }

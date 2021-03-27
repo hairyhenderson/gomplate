@@ -1,23 +1,16 @@
-//+build integration
 //+build !windows
 
 package integration
 
 import (
-	. "gopkg.in/check.v1"
+	"testing"
 
+	"gotest.tools/v3/assert"
 	"gotest.tools/v3/fs"
-	"gotest.tools/v3/icmd"
 )
 
-type PluginsSuite struct {
-	tmpDir *fs.Dir
-}
-
-var _ = Suite(&PluginsSuite{})
-
-func (s *PluginsSuite) SetUpSuite(c *C) {
-	s.tmpDir = fs.NewDir(c, "gomplate-inttests",
+func setupPluginsTest(t *testing.T) *fs.Dir {
+	tmpDir := fs.NewDir(t, "gomplate-inttests",
 		fs.WithFile("foo.sh", "#!/bin/sh\n\necho $*\n", fs.WithMode(0755)),
 		fs.WithFile("foo.ps1", "echo $args\r\n", fs.WithMode(0755)),
 		fs.WithFile("bar.sh", "#!/bin/sh\n\neval \"echo $*\"\n", fs.WithMode(0755)),
@@ -34,57 +27,43 @@ exit $code
 `, fs.WithMode(0755)),
 		fs.WithFile("sleep.sh", "#!/bin/sh\n\nexec sleep $1\n", fs.WithMode(0755)),
 	)
+	t.Cleanup(tmpDir.Remove)
+
+	return tmpDir
 }
 
-func (s *PluginsSuite) TearDownSuite(c *C) {
-	s.tmpDir.Remove()
+func TestPlugins(t *testing.T) {
+	tmpDir := setupPluginsTest(t)
+	o, e, err := cmd(t, "--plugin", "hi="+tmpDir.Join("foo.sh"),
+		"-i", `{{ hi "hello world" }}`).run()
+	assertSuccess(t, o, e, err, "hello world\n")
+
+	o, e, err = cmd(t, "--plugin", "echo="+tmpDir.Join("bar.sh"),
+		"-i", `{{ echo "$HELLO" }}`).
+		withEnv("HELLO", "hello world").run()
+	assertSuccess(t, o, e, err, "hello world\n")
 }
 
-func (s *PluginsSuite) TestPlugins(c *C) {
-	result := icmd.RunCommand(GomplateBin,
-		"--plugin", "hi="+s.tmpDir.Join("foo.sh"),
-		"-i", `{{ hi "hello world" }}`,
-	)
-	result.Assert(c, icmd.Expected{ExitCode: 0, Out: "hello world"})
+func TestPlugins_Errors(t *testing.T) {
+	tmpDir := setupPluginsTest(t)
+	_, _, err := cmd(t, "--plugin", "f=false",
+		"-i", `{{ f }}`).run()
+	assert.ErrorContains(t, err, "exit status 1")
 
-	result = icmd.RunCmd(icmd.Command(GomplateBin,
-		"--plugin", "echo="+s.tmpDir.Join("bar.sh"),
-		"-i", `{{ echo "$HELLO" }}`,
-	), func(c *icmd.Cmd) {
-		c.Env = []string{
-			"HELLO=hello world",
-		}
-	})
-	result.Assert(c, icmd.Expected{ExitCode: 0, Out: "hello world"})
+	_, _, err = cmd(t, "--plugin", "f="+tmpDir.Join("fail.sh"),
+		"-i", `{{ f "all is lost" 5 }}`).run()
+	assert.ErrorContains(t, err, "all is lost")
+	assert.ErrorContains(t, err, "error calling f: exit status 5")
 }
 
-func (s *PluginsSuite) TestPluginErrors(c *C) {
-	result := icmd.RunCmd(icmd.Command(GomplateBin,
-		"--plugin", "f=false",
-		"-i", `{{ f }}`,
-	), func(c *icmd.Cmd) {})
-	result.Assert(c, icmd.Expected{ExitCode: 1})
+func TestPlugins_Timeout(t *testing.T) {
+	tmpDir := setupPluginsTest(t)
+	_, _, err := cmd(t, "--plugin", "sleep="+tmpDir.Join("sleep.sh"),
+		"-i", `{{ sleep 10 }}`).run()
+	assert.ErrorContains(t, err, "plugin timed out")
 
-	result = icmd.RunCmd(icmd.Command(GomplateBin,
-		"--plugin", "f="+s.tmpDir.Join("fail.sh"),
-		"-i", `{{ f "all is lost" 5 }}`,
-	), func(c *icmd.Cmd) {})
-	result.Assert(c, icmd.Expected{ExitCode: 1, Err: "all is lost"})
-	result.Assert(c, icmd.Expected{ExitCode: 1, Err: "error calling f: exit status 5"})
-}
-
-func (s *PluginsSuite) TestPluginTimeout(c *C) {
-	result := icmd.RunCmd(icmd.Command(GomplateBin,
-		"--plugin", "sleep="+s.tmpDir.Join("sleep.sh"),
-		"-i", `{{ sleep 10 }}`,
-	), func(c *icmd.Cmd) {})
-	result.Assert(c, icmd.Expected{ExitCode: 1, Err: "plugin timed out"})
-
-	result = icmd.RunCmd(icmd.Command(GomplateBin,
-		"--plugin", "sleep="+s.tmpDir.Join("sleep.sh"),
-		"-i", `{{ sleep 2 }}`,
-	), func(c *icmd.Cmd) {
-		c.Env = []string{"GOMPLATE_PLUGIN_TIMEOUT=500ms"}
-	})
-	result.Assert(c, icmd.Expected{ExitCode: 1, Err: "plugin timed out"})
+	_, _, err = cmd(t, "--plugin", "sleep="+tmpDir.Join("sleep.sh"),
+		"-i", `{{ sleep 2 }}`).
+		withEnv("GOMPLATE_PLUGIN_TIMEOUT", "500ms").run()
+	assert.ErrorContains(t, err, "plugin timed out")
 }

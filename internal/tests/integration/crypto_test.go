@@ -1,5 +1,3 @@
-//+build integration
-
 package integration
 
 import (
@@ -7,18 +5,10 @@ import (
 	"crypto/rsa"
 	"crypto/x509"
 	"encoding/pem"
-
-	"gopkg.in/check.v1"
+	"testing"
 
 	"gotest.tools/v3/fs"
-	"gotest.tools/v3/icmd"
 )
-
-type CryptoSuite struct {
-	tmpDir *fs.Dir
-}
-
-var _ = check.Suite(&CryptoSuite{})
 
 func genTestKeys() (string, string) {
 	rsaPriv, _ := rsa.GenerateKey(rand.Reader, 4096)
@@ -38,36 +28,35 @@ func genTestKeys() (string, string) {
 	return testPrivKey, testPubKey
 }
 
-func (s *CryptoSuite) SetUpTest(c *check.C) {
+func setupCryptoTest(t *testing.T) *fs.Dir {
 	testPrivKey, testPubKey := genTestKeys()
-	s.tmpDir = fs.NewDir(c, "gomplate-inttests",
+
+	tmpDir := fs.NewDir(t, "gomplate-inttests",
 		fs.WithFile("testPrivKey", testPrivKey),
 		fs.WithFile("testPubKey", testPubKey),
 	)
+	t.Cleanup(tmpDir.Remove)
+
+	return tmpDir
 }
 
-func (s *CryptoSuite) TearDownTest(c *check.C) {
-	s.tmpDir.Remove()
-}
-
-func (s *CryptoSuite) TestRSACrypt(c *check.C) {
-	result := icmd.RunCmd(icmd.Command(GomplateBin,
+func TestCrypto_RSACrypt(t *testing.T) {
+	tmpDir := setupCryptoTest(t)
+	o, e, err := cmd(t,
 		"--experimental",
 		"-i", `{{ crypto.RSAGenerateKey 2048 -}}`,
-		"-o", `key.pem`), func(cmd *icmd.Cmd) {
-		cmd.Dir = s.tmpDir.Path()
-	})
-	result.Assert(c, icmd.Expected{ExitCode: 0})
+		"-o", `key.pem`).
+		withDir(tmpDir.Path()).run()
+	assertSuccess(t, o, e, err, "")
 
-	result = icmd.RunCmd(icmd.Command(GomplateBin,
+	o, e, err = cmd(t,
 		"--experimental",
 		"-c", "privKey=./key.pem",
 		"-i", `{{ $pub := crypto.RSADerivePublicKey .privKey -}}
 {{ $enc := "hello" | crypto.RSAEncrypt $pub -}}
 {{ crypto.RSADecryptBytes .privKey $enc | conv.ToString }}
 {{ crypto.RSADecrypt .privKey $enc }}
-`), func(cmd *icmd.Cmd) {
-		cmd.Dir = s.tmpDir.Path()
-	})
-	result.Assert(c, icmd.Expected{ExitCode: 0, Out: "hello\nhello\n"})
+`).
+		withDir(tmpDir.Path()).run()
+	assertSuccess(t, o, e, err, "hello\nhello\n")
 }

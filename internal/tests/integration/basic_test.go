@@ -1,101 +1,76 @@
-//+build integration
-
 package integration
 
 import (
-	"bytes"
 	"io/ioutil"
 	"os"
+	"testing"
 
 	"github.com/hairyhenderson/gomplate/v3/internal/config"
-
-	. "gopkg.in/check.v1"
 
 	"gotest.tools/v3/assert"
 	"gotest.tools/v3/assert/cmp"
 	"gotest.tools/v3/fs"
-	"gotest.tools/v3/icmd"
 )
 
-type BasicSuite struct {
-	tmpDir *fs.Dir
-}
-
-var _ = Suite(&BasicSuite{})
-
-func (s *BasicSuite) SetUpTest(c *C) {
-	s.tmpDir = fs.NewDir(c, "gomplate-inttests",
+func setupBasicTest(t *testing.T) *fs.Dir {
+	tmpDir := fs.NewDir(t, "gomplate-inttests",
 		fs.WithFile("one", "hi\n", fs.WithMode(0640)),
 		fs.WithFile("two", "hello\n"),
 		fs.WithFile("broken", "", fs.WithMode(0000)))
+	t.Cleanup(tmpDir.Remove)
+	return tmpDir
 }
 
-func (s *BasicSuite) TearDownTest(c *C) {
-	s.tmpDir.Remove()
+func TestBasic_ReportsVersion(t *testing.T) {
+	o, e, err := cmd(t, "-v").run()
+	assert.NilError(t, err)
+	assert.Equal(t, "", e)
+	assert.Assert(t, cmp.Contains(o, "gomplate version "))
 }
 
-func (s *BasicSuite) TestReportsVersion(c *C) {
-	result := icmd.RunCommand(GomplateBin, "-v")
-	result.Assert(c, icmd.Success)
-	assert.Assert(c, cmp.Contains(result.Combined(), "gomplate version "))
+func TestBasic_TakesStdinByDefault(t *testing.T) {
+	o, e, err := cmd(t).withStdin("hello world").run()
+	assertSuccess(t, o, e, err, "hello world")
 }
 
-func (s *BasicSuite) TestTakesStdinByDefault(c *C) {
-	result := icmd.RunCmd(icmd.Command(GomplateBin), func(cmd *icmd.Cmd) {
-		cmd.Stdin = bytes.NewBufferString("hello world")
-	})
-	result.Assert(c, icmd.Expected{ExitCode: 0, Out: "hello world"})
-	assert.Equal(c, "hello world", result.Combined())
+func TestBasic_TakesStdinWithFileFlag(t *testing.T) {
+	o, e, err := cmd(t, "--file", "-").withStdin("hello world").run()
+	assertSuccess(t, o, e, err, "hello world")
 }
 
-func (s *BasicSuite) TestTakesStdinWithFileFlag(c *C) {
-	result := icmd.RunCmd(icmd.Command(GomplateBin, "--file", "-"), func(cmd *icmd.Cmd) {
-		cmd.Stdin = bytes.NewBufferString("hello world")
-	})
-	result.Assert(c, icmd.Expected{ExitCode: 0, Out: "hello world"})
-	assert.Equal(c, "hello world", result.Combined())
-}
-func (s *BasicSuite) TestWritesToStdoutWithOutFlag(c *C) {
-	result := icmd.RunCmd(icmd.Command(GomplateBin, "--out", "-"), func(cmd *icmd.Cmd) {
-		cmd.Stdin = bytes.NewBufferString("hello world")
-	})
-	assert.Equal(c, 0, result.ExitCode)
-	assert.Equal(c, "hello world", result.Combined())
+func TestBasic_WritesToStdoutWithOutFlag(t *testing.T) {
+	o, e, err := cmd(t, "--out", "-").withStdin("hello world").run()
+	assertSuccess(t, o, e, err, "hello world")
 }
 
-func (s *BasicSuite) TestIgnoresStdinWithInFlag(c *C) {
-	result := icmd.RunCmd(icmd.Command(GomplateBin, "--in", "hi"), func(cmd *icmd.Cmd) {
-		cmd.Stdin = bytes.NewBufferString("hello world")
-	})
-	result.Assert(c, icmd.Expected{ExitCode: 0, Out: "hi"})
-	assert.Equal(c, "hi", result.Combined())
+func TestBasic_IgnoresStdinWithInFlag(t *testing.T) {
+	o, e, err := cmd(t, "--in", "hi").withStdin("hello world").run()
+	assertSuccess(t, o, e, err, "hi")
 }
 
-func (s *BasicSuite) TestErrorsWithInputOutputImbalance(c *C) {
-	result := icmd.RunCmd(icmd.Command(GomplateBin,
-		"-f", s.tmpDir.Join("one"),
-		"-f", s.tmpDir.Join("two"),
-		"-o", s.tmpDir.Join("out")), func(cmd *icmd.Cmd) {
-		cmd.Stdin = bytes.NewBufferString("hello world")
-	})
-	result.Assert(c, icmd.Expected{
-		ExitCode: 1,
-		Err:      "must provide same number of 'outputFiles' (1) as 'in' or 'inputFiles' (2) options",
-	})
+func TestBasic_ErrorsWithInputOutputImbalance(t *testing.T) {
+	tmpDir := setupBasicTest(t)
+
+	_, _, err := cmd(t,
+		"-f", tmpDir.Join("one"),
+		"-f", tmpDir.Join("two"),
+		"-o", tmpDir.Join("out"),
+	).run()
+	assert.ErrorContains(t, err, "must provide same number of 'outputFiles' (1) as 'in' or 'inputFiles' (2) options")
 }
 
-func (s *BasicSuite) TestRoutesInputsToProperOutputs(c *C) {
-	oneOut := s.tmpDir.Join("one.out")
-	twoOut := s.tmpDir.Join("two.out")
-	result := icmd.RunCmd(icmd.Command(GomplateBin,
-		"-f", s.tmpDir.Join("one"),
-		"-f", s.tmpDir.Join("two"),
+func TestBasic_RoutesInputsToProperOutputs(t *testing.T) {
+	tmpDir := setupBasicTest(t)
+	oneOut := tmpDir.Join("one.out")
+	twoOut := tmpDir.Join("two.out")
+
+	o, e, err := cmd(t,
+		"-f", tmpDir.Join("one"),
+		"-f", tmpDir.Join("two"),
 		"-o", oneOut,
-		"-o", twoOut), func(cmd *icmd.Cmd) {
-		cmd.Stdin = bytes.NewBufferString("hello world")
-	})
-	result.Assert(c, icmd.Success)
-	assert.Equal(c, "", result.Combined())
+		"-o", twoOut,
+	).run()
+	assertSuccess(t, o, e, err, "")
 
 	testdata := []struct {
 		path    string
@@ -107,130 +82,116 @@ func (s *BasicSuite) TestRoutesInputsToProperOutputs(c *C) {
 	}
 	for _, v := range testdata {
 		info, err := os.Stat(v.path)
-		assert.NilError(c, err)
+		assert.NilError(t, err)
 		m := config.NormalizeFileMode(v.mode)
-		assert.Equal(c, m, info.Mode(), v.path)
+		assert.Equal(t, m, info.Mode(), v.path)
 		content, err := ioutil.ReadFile(v.path)
-		assert.NilError(c, err)
-		assert.Equal(c, v.content, string(content))
+		assert.NilError(t, err)
+		assert.Equal(t, v.content, string(content))
 	}
 }
 
-func (s *BasicSuite) TestFlagRules(c *C) {
-	result := icmd.RunCommand(GomplateBin, "-f", "-", "-i", "HELLO WORLD")
-	result.Assert(c, icmd.Expected{
-		ExitCode: 1,
-		Err:      "only one of these options is supported at a time: 'in', 'inputFiles'",
-	})
+func TestBasic_FlagRules(t *testing.T) {
+	testdata := []struct {
+		args   []string
+		errmsg string
+	}{
+		{
+			[]string{"-f", "-", "-i", "HELLO WORLD"},
+			"only one of these options is supported at a time: 'in', 'inputFiles'",
+		},
+		{
+			[]string{"--output-dir", "."},
+			"these options must be set together: 'outputDir', 'inputDir'",
+		},
+		{
+			[]string{"--input-dir", ".", "--in", "param"},
+			"only one of these options is supported at a time: 'in', 'inputDir'",
+		},
+		{
+			[]string{"--input-dir", ".", "--file", "input.txt"},
+			"only one of these options is supported at a time: 'inputFiles', 'inputDir'",
+		},
+		{
+			[]string{"--output-dir", ".", "--out", "param"},
+			"only one of these options is supported at a time: 'outputFiles', 'outputDir'",
+		},
+		{
+			[]string{"--output-map", ".", "--out", "param"},
+			"only one of these options is supported at a time: 'outputFiles', 'outputMap'",
+		},
+	}
 
-	result = icmd.RunCommand(GomplateBin, "--output-dir", ".")
-	result.Assert(c, icmd.Expected{
-		ExitCode: 1,
-		Err:      "these options must be set together: 'outputDir', 'inputDir'",
-	})
-
-	result = icmd.RunCommand(GomplateBin, "--input-dir", ".", "--in", "param")
-	result.Assert(c, icmd.Expected{
-		ExitCode: 1,
-		Err:      "only one of these options is supported at a time: 'in', 'inputDir'",
-	})
-
-	result = icmd.RunCommand(GomplateBin, "--input-dir", ".", "--file", "input.txt")
-	result.Assert(c, icmd.Expected{
-		ExitCode: 1,
-		Err:      "only one of these options is supported at a time: 'inputFiles', 'inputDir'",
-	})
-
-	result = icmd.RunCommand(GomplateBin, "--output-dir", ".", "--out", "param")
-	result.Assert(c, icmd.Expected{
-		ExitCode: 1,
-		Err:      "only one of these options is supported at a time: 'outputFiles', 'outputDir'",
-	})
-
-	result = icmd.RunCommand(GomplateBin, "--output-map", ".", "--out", "param")
-	result.Assert(c, icmd.Expected{
-		ExitCode: 1,
-		Err:      "only one of these options is supported at a time: 'outputFiles', 'outputMap'",
-	})
+	for _, d := range testdata {
+		_, _, err := cmd(t, d.args...).run()
+		assert.ErrorContains(t, err, d.errmsg)
+	}
 }
 
-func (s *BasicSuite) TestDelimsChangedThroughOpts(c *C) {
-	result := icmd.RunCommand(GomplateBin,
+func TestBasic_DelimsChangedThroughOpts(t *testing.T) {
+	o, e, err := cmd(t,
 		"--left-delim", "((",
 		"--right-delim", "))",
-		"-i", `foo((print "hi"))`)
-	result.Assert(c, icmd.Expected{ExitCode: 0, Out: "foohi"})
+		"-i", `foo((print "hi"))`,
+	).run()
+	assertSuccess(t, o, e, err, "foohi")
 }
 
-func (s *BasicSuite) TestDelimsChangedThroughEnvVars(c *C) {
-	result := icmd.RunCmd(icmd.Command(GomplateBin, "-i", `foo<<print "hi">>`),
-		func(cmd *icmd.Cmd) {
-			cmd.Env = []string{
-				"GOMPLATE_LEFT_DELIM=<<",
-				"GOMPLATE_RIGHT_DELIM=>>",
-			}
-		})
-	result.Assert(c, icmd.Expected{ExitCode: 0, Out: "foohi"})
+func TestBasic_DelimsChangedThroughEnvVars(t *testing.T) {
+	o, e, err := cmd(t, "-i", `foo<<print "hi">>`).
+		withEnv("GOMPLATE_LEFT_DELIM", "<<").
+		withEnv("GOMPLATE_RIGHT_DELIM", ">>").
+		run()
+	assertSuccess(t, o, e, err, "foohi")
 }
 
-func (s *BasicSuite) TestUnknownArgErrors(c *C) {
-	result := icmd.RunCommand(GomplateBin, "-in", "flibbit")
-	result.Assert(c, icmd.Expected{ExitCode: 1, Err: `unknown command "flibbit" for "gomplate"`})
+func TestBasic_UnknownArgErrors(t *testing.T) {
+	_, _, err := cmd(t, "-in", "flibbit").run()
+	assert.ErrorContains(t, err, `unknown command "flibbit" for "gomplate"`)
 }
 
-func (s *BasicSuite) TestExecCommand(c *C) {
-	out := s.tmpDir.Join("out")
-	result := icmd.RunCmd(icmd.Command(GomplateBin,
-		"-i", `{{print "hello world"}}`,
+func TestBasic_ExecCommand(t *testing.T) {
+	tmpDir := setupBasicTest(t)
+	out := tmpDir.Join("out")
+	o, e, err := cmd(t, "-i", `{{print "hello world"}}`,
 		"-o", out,
-		"--", "cat", out))
-	result.Assert(c, icmd.Expected{
-		ExitCode: 0,
-		Out:      "hello world",
-	})
-	assert.Equal(c, "hello world", result.Combined())
+		"--", "cat", out).run()
+	assertSuccess(t, o, e, err, "hello world")
 }
 
-func (s *BasicSuite) TestPostRunExecPipe(c *C) {
-	result := icmd.RunCmd(icmd.Command(GomplateBin,
+func TestBasic_PostRunExecPipe(t *testing.T) {
+	o, e, err := cmd(t,
 		"-i", `{{print "hello world"}}`,
 		"--exec-pipe",
-		"--", "tr", "a-z", "A-Z"))
-	result.Assert(c, icmd.Expected{
-		ExitCode: 0,
-		Out:      "HELLO WORLD",
-	})
-	assert.Equal(c, "HELLO WORLD", result.Combined())
+		"--", "tr", "a-z", "A-Z").run()
+	assertSuccess(t, o, e, err, "HELLO WORLD")
 }
 
-func (s *BasicSuite) TestEmptyOutputSuppression(c *C) {
-	out := s.tmpDir.Join("out")
-	result := icmd.RunCmd(icmd.Command(GomplateBin,
-		"-i",
-		`{{print "\t  \n\n\r\n\t\t     \v\n"}}`,
-		"-o", out),
-		func(cmd *icmd.Cmd) {
-			cmd.Env = []string{
-				"GOMPLATE_SUPPRESS_EMPTY=true",
-			}
-		})
-	result.Assert(c, icmd.Expected{ExitCode: 0})
-	_, err := os.Stat(out)
-	assert.Equal(c, true, os.IsNotExist(err))
+func TestBasic_EmptyOutputSuppression(t *testing.T) {
+	tmpDir := setupBasicTest(t)
+	out := tmpDir.Join("out")
+	o, e, err := cmd(t, "-i", `{{print "\t  \n\n\r\n\t\t     \v\n"}}`,
+		"-o", out).
+		withEnv("GOMPLATE_SUPPRESS_EMPTY", "true").run()
+	assertSuccess(t, o, e, err, "")
+
+	_, err = os.Stat(out)
+	assert.Equal(t, true, os.IsNotExist(err))
 }
 
-func (s *BasicSuite) TestRoutesInputsToProperOutputsWithChmod(c *C) {
-	oneOut := s.tmpDir.Join("one.out")
-	twoOut := s.tmpDir.Join("two.out")
-	result := icmd.RunCmd(icmd.Command(GomplateBin,
-		"-f", s.tmpDir.Join("one"),
-		"-f", s.tmpDir.Join("two"),
+func TestBasic_RoutesInputsToProperOutputsWithChmod(t *testing.T) {
+	tmpDir := setupBasicTest(t)
+	oneOut := tmpDir.Join("one.out")
+	twoOut := tmpDir.Join("two.out")
+
+	o, e, err := cmd(t,
+		"-f", tmpDir.Join("one"),
+		"-f", tmpDir.Join("two"),
 		"-o", oneOut,
 		"-o", twoOut,
-		"--chmod", "0600"), func(cmd *icmd.Cmd) {
-		cmd.Stdin = bytes.NewBufferString("hello world")
-	})
-	result.Assert(c, icmd.Success)
+		"--chmod", "0600").
+		withStdin("hello world").run()
+	assertSuccess(t, o, e, err, "")
 
 	testdata := []struct {
 		path    string
@@ -242,23 +203,24 @@ func (s *BasicSuite) TestRoutesInputsToProperOutputsWithChmod(c *C) {
 	}
 	for _, v := range testdata {
 		info, err := os.Stat(v.path)
-		assert.NilError(c, err)
-		assert.Equal(c, config.NormalizeFileMode(v.mode), info.Mode())
+		assert.NilError(t, err)
+		assert.Equal(t, config.NormalizeFileMode(v.mode), info.Mode())
 		content, err := ioutil.ReadFile(v.path)
-		assert.NilError(c, err)
-		assert.Equal(c, v.content, string(content))
+		assert.NilError(t, err)
+		assert.Equal(t, v.content, string(content))
 	}
 }
 
-func (s *BasicSuite) TestOverridesOutputModeWithChmod(c *C) {
-	out := s.tmpDir.Join("two")
-	result := icmd.RunCmd(icmd.Command(GomplateBin,
-		"-f", s.tmpDir.Join("one"),
+func TestBasic_OverridesOutputModeWithChmod(t *testing.T) {
+	tmpDir := setupBasicTest(t)
+	out := tmpDir.Join("two")
+
+	o, e, err := cmd(t,
+		"-f", tmpDir.Join("one"),
 		"-o", out,
-		"--chmod", "0600"), func(cmd *icmd.Cmd) {
-		cmd.Stdin = bytes.NewBufferString("hello world")
-	})
-	result.Assert(c, icmd.Success)
+		"--chmod", "0600").
+		withStdin("hello world").run()
+	assertSuccess(t, o, e, err, "")
 
 	testdata := []struct {
 		path    string
@@ -269,28 +231,29 @@ func (s *BasicSuite) TestOverridesOutputModeWithChmod(c *C) {
 	}
 	for _, v := range testdata {
 		info, err := os.Stat(v.path)
-		assert.NilError(c, err)
-		assert.Equal(c, config.NormalizeFileMode(v.mode), info.Mode())
+		assert.NilError(t, err)
+		assert.Equal(t, config.NormalizeFileMode(v.mode), info.Mode())
 		content, err := ioutil.ReadFile(v.path)
-		assert.NilError(c, err)
-		assert.Equal(c, v.content, string(content))
+		assert.NilError(t, err)
+		assert.Equal(t, v.content, string(content))
 	}
 }
 
-func (s *BasicSuite) TestAppliesChmodBeforeWrite(c *C) {
+func TestBasic_AppliesChmodBeforeWrite(t *testing.T) {
+	tmpDir := setupBasicTest(t)
+
 	// 'broken' was created with mode 0000
-	out := s.tmpDir.Join("broken")
-	result := icmd.RunCmd(icmd.Command(GomplateBin,
-		"-f", s.tmpDir.Join("one"),
+	out := tmpDir.Join("broken")
+	_, _, err := cmd(t,
+		"-f", tmpDir.Join("one"),
 		"-o", out,
-		"--chmod", "0644"), func(cmd *icmd.Cmd) {
-	})
-	result.Assert(c, icmd.Success)
+		"--chmod", "0644").run()
+	assert.NilError(t, err)
 
 	info, err := os.Stat(out)
-	assert.NilError(c, err)
-	assert.Equal(c, config.NormalizeFileMode(0644), info.Mode())
+	assert.NilError(t, err)
+	assert.Equal(t, config.NormalizeFileMode(0644), info.Mode())
 	content, err := ioutil.ReadFile(out)
-	assert.NilError(c, err)
-	assert.Equal(c, "hi\n", string(content))
+	assert.NilError(t, err)
+	assert.Equal(t, "hi\n", string(content))
 }

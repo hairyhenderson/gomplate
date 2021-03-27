@@ -1,50 +1,40 @@
-//+build integration
-
 package integration
 
 import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"testing"
 
 	"gotest.tools/v3/assert"
-
-	. "gopkg.in/check.v1"
-
 	"gotest.tools/v3/fs"
-	"gotest.tools/v3/icmd"
 )
 
-type FileSuite struct {
-	tmpDir *fs.Dir
-}
-
-var _ = Suite(&FileSuite{})
-
-func (s *FileSuite) SetUpSuite(c *C) {
-	s.tmpDir = fs.NewDir(c, "gomplate-inttests",
+func setupFileTest(t *testing.T) *fs.Dir {
+	tmpDir := fs.NewDir(t, "gomplate-inttests",
 		fs.WithFile("one", "hi\n"),
 		fs.WithFile("two", "hello\n"))
+	t.Cleanup(tmpDir.Remove)
+
+	return tmpDir
 }
 
-func (s *FileSuite) TearDownSuite(c *C) {
-	s.tmpDir.Remove()
+func TestFile_ReadsFile(t *testing.T) {
+	tmpDir := setupFileTest(t)
+
+	inOutTest(t, "{{ file.Read `"+tmpDir.Join("one")+"`}}", "hi\n")
 }
 
-func (s *FileSuite) TestReadsFile(c *C) {
-	inOutTest(c, "{{ file.Read `"+s.tmpDir.Join("one")+"`}}", "hi")
-}
+func TestFile_Write(t *testing.T) {
+	tmpDir := setupFileTest(t)
 
-func (s *FileSuite) TestWrite(c *C) {
-	outDir := s.tmpDir.Join("writeOutput")
+	outDir := tmpDir.Join("writeOutput")
 	os.MkdirAll(outDir, 0755)
-	result := icmd.RunCmd(icmd.Command(GomplateBin,
-		"-i", `{{ "hello world" | file.Write "./out" }}`,
-	), func(cmd *icmd.Cmd) {
-		cmd.Dir = outDir
-	})
-	result.Assert(c, icmd.Expected{ExitCode: 0})
+	o, e, err := cmd(t, "-i", `{{ "hello world" | file.Write "./out" }}`).
+		withDir(outDir).run()
+	assertSuccess(t, o, e, err, "")
+
 	out, err := ioutil.ReadFile(filepath.Join(outDir, "out"))
-	assert.NilError(c, err)
-	assert.Equal(c, "hello world", string(out))
+	assert.NilError(t, err)
+	assert.Equal(t, "hello world", string(out))
 }
