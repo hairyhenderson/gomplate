@@ -5,10 +5,10 @@ go 1.16
 require (
 	github.com/Masterminds/goutils v1.1.1
 	github.com/Shopify/ejson v1.2.2
-	github.com/aws/aws-sdk-go v1.38.1
+	github.com/aws/aws-sdk-go v1.38.7
 	github.com/docker/libkv v0.2.2-0.20180912205406-458977154600
 	github.com/fullsailor/pkcs7 v0.0.0-20190404230743-d7302db945fa
-	github.com/go-git/go-billy/v5 v5.0.0
+	github.com/go-git/go-billy/v5 v5.1.0
 	github.com/go-git/go-git/v5 v5.2.0
 	github.com/google/uuid v1.2.0
 	github.com/gosimple/slug v1.9.0
@@ -19,8 +19,8 @@ require (
 	github.com/johannesboyne/gofakes3 v0.0.0-20210217223559-02ffa763be97
 	github.com/joho/godotenv v1.3.0
 	github.com/pkg/errors v0.9.1
-	github.com/rs/zerolog v1.20.0
-	github.com/spf13/afero v1.5.1
+	github.com/rs/zerolog v1.21.0
+	github.com/spf13/afero v1.6.0
 	github.com/spf13/cobra v1.1.3
 	github.com/stretchr/testify v1.7.0
 	github.com/ugorji/go/codec v1.2.4
