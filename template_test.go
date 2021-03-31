@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/hairyhenderson/gomplate/v3/internal/config"
+	"github.com/hairyhenderson/gomplate/v3/internal/iohelpers"
 	"github.com/spf13/afero"
 
 	"github.com/stretchr/testify/assert"
@@ -31,7 +32,7 @@ func TestOpenOutFile(t *testing.T) {
 
 	i, err := fs.Stat("/tmp/foo")
 	assert.NoError(t, err)
-	assert.Equal(t, config.NormalizeFileMode(0644), i.Mode())
+	assert.Equal(t, iohelpers.NormalizeFileMode(0644), i.Mode())
 
 	cfg.Stdout = &bytes.Buffer{}
 
@@ -90,7 +91,7 @@ func TestGatherTemplates(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Len(t, templates, 1)
 	assert.Equal(t, "out", templates[0].targetPath)
-	assert.Equal(t, config.NormalizeFileMode(0644), templates[0].mode)
+	assert.Equal(t, iohelpers.NormalizeFileMode(0644), templates[0].mode)
 
 	// out file is created only on demand
 	_, err = fs.Stat("out")
@@ -102,7 +103,7 @@ func TestGatherTemplates(t *testing.T) {
 
 	info, err := fs.Stat("out")
 	require.NoError(t, err)
-	assert.Equal(t, config.NormalizeFileMode(0644), info.Mode())
+	assert.Equal(t, iohelpers.NormalizeFileMode(0644), info.Mode())
 	fs.Remove("out")
 
 	cfg = &config.Config{
@@ -122,7 +123,7 @@ func TestGatherTemplates(t *testing.T) {
 
 	info, err = fs.Stat("out")
 	assert.NoError(t, err)
-	assert.Equal(t, config.NormalizeFileMode(0600), info.Mode())
+	assert.Equal(t, iohelpers.NormalizeFileMode(0600), info.Mode())
 	fs.Remove("out")
 
 	cfg = &config.Config{
@@ -136,14 +137,14 @@ func TestGatherTemplates(t *testing.T) {
 	assert.Len(t, templates, 1)
 	assert.Equal(t, "bar", templates[0].contents)
 	assert.NotEqual(t, cfg.Stdout, templates[0].target)
-	assert.Equal(t, config.NormalizeFileMode(0755), templates[0].mode)
+	assert.Equal(t, iohelpers.NormalizeFileMode(0755), templates[0].mode)
 
 	_, err = templates[0].target.Write([]byte("hello world"))
 	assert.NoError(t, err)
 
 	info, err = fs.Stat("out")
 	assert.NoError(t, err)
-	assert.Equal(t, config.NormalizeFileMode(0755), info.Mode())
+	assert.Equal(t, iohelpers.NormalizeFileMode(0755), info.Mode())
 	fs.Remove("out")
 
 	templates, err = gatherTemplates(&config.Config{
@@ -160,13 +161,13 @@ func TestProcessTemplates(t *testing.T) {
 	origfs := fs
 	defer func() { fs = origfs }()
 	fs = afero.NewMemMapFs()
-	afero.WriteFile(fs, "foo", []byte("bar"), config.NormalizeFileMode(0600))
+	afero.WriteFile(fs, "foo", []byte("bar"), iohelpers.NormalizeFileMode(0600))
 
-	afero.WriteFile(fs, "in/1", []byte("foo"), config.NormalizeFileMode(0644))
-	afero.WriteFile(fs, "in/2", []byte("bar"), config.NormalizeFileMode(0640))
-	afero.WriteFile(fs, "in/3", []byte("baz"), config.NormalizeFileMode(0644))
+	afero.WriteFile(fs, "in/1", []byte("foo"), iohelpers.NormalizeFileMode(0644))
+	afero.WriteFile(fs, "in/2", []byte("bar"), iohelpers.NormalizeFileMode(0640))
+	afero.WriteFile(fs, "in/3", []byte("baz"), iohelpers.NormalizeFileMode(0644))
 
-	afero.WriteFile(fs, "existing", []byte(""), config.NormalizeFileMode(0644))
+	afero.WriteFile(fs, "existing", []byte(""), iohelpers.NormalizeFileMode(0644))
 
 	cfg := &config.Config{
 		Stdout: &bytes.Buffer{},
@@ -246,7 +247,7 @@ func TestProcessTemplates(t *testing.T) {
 
 					info, err := fs.Stat(current.targetPath)
 					assert.NoError(t, err)
-					assert.Equal(t, config.NormalizeFileMode(in.modes[i]), info.Mode())
+					assert.Equal(t, iohelpers.NormalizeFileMode(in.modes[i]), info.Mode())
 				}
 			}
 			fs.Remove("out")

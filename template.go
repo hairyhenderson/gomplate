@@ -259,7 +259,7 @@ func openOutFile(cfg *config.Config, filename string, mode os.FileMode, modeOver
 }
 
 func createOutFile(filename string, mode os.FileMode, modeOverride bool) (out io.WriteCloser, err error) {
-	mode = config.NormalizeFileMode(mode.Perm())
+	mode = iohelpers.NormalizeFileMode(mode.Perm())
 	if modeOverride {
 		err = fs.Chmod(filename, mode)
 		if err != nil && !os.IsNotExist(err) {

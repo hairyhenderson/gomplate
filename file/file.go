@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/hairyhenderson/gomplate/v3/internal/config"
+	"github.com/hairyhenderson/gomplate/v3/internal/iohelpers"
 	"github.com/pkg/errors"
 
 	"github.com/spf13/afero"
@@ -60,7 +60,7 @@ func Write(filename string, content []byte) error {
 	if err != nil && !os.IsNotExist(err) {
 		return errors.Wrapf(err, "failed to stat %s", filename)
 	}
-	mode := config.NormalizeFileMode(0o644)
+	mode := iohelpers.NormalizeFileMode(0o644)
 	if fi != nil {
 		mode = fi.Mode()
 	}
