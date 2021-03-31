@@ -5,7 +5,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/hairyhenderson/gomplate/v3/internal/config"
+	"github.com/hairyhenderson/gomplate/v3/internal/iohelpers"
 	tassert "github.com/stretchr/testify/assert"
 	"gotest.tools/v3/assert"
 	"gotest.tools/v3/fs"
@@ -68,7 +68,7 @@ func TestInputDir_InputDir(t *testing.T) {
 	for _, v := range testdata {
 		info, err := os.Stat(v.path)
 		assert.NilError(t, err)
-		m := config.NormalizeFileMode(v.mode)
+		m := iohelpers.NormalizeFileMode(v.mode)
 		assert.Equal(t, m, info.Mode(), v.path)
 		content, err := ioutil.ReadFile(v.path)
 		assert.NilError(t, err)
@@ -107,7 +107,7 @@ func TestInputDir_InputDirWithModeOverride(t *testing.T) {
 	for _, v := range testdata {
 		info, err := os.Stat(v.path)
 		assert.NilError(t, err)
-		m := config.NormalizeFileMode(v.mode)
+		m := iohelpers.NormalizeFileMode(v.mode)
 		assert.Equal(t, m, info.Mode(), v.path)
 		content, err := ioutil.ReadFile(v.path)
 		assert.NilError(t, err)
@@ -145,7 +145,7 @@ func TestInputDir_OutputMapInline(t *testing.T) {
 	for _, v := range testdata {
 		info, err := os.Stat(v.path)
 		assert.NilError(t, err)
-		m := config.NormalizeFileMode(v.mode)
+		m := iohelpers.NormalizeFileMode(v.mode)
 		assert.Equal(t, m, info.Mode(), v.path)
 		content, err := ioutil.ReadFile(v.path)
 		assert.NilError(t, err)
@@ -185,7 +185,7 @@ func TestInputDir_OutputMapExternal(t *testing.T) {
 	for _, v := range testdata {
 		info, err := os.Stat(v.path)
 		assert.NilError(t, err)
-		m := config.NormalizeFileMode(v.mode)
+		m := iohelpers.NormalizeFileMode(v.mode)
 		assert.Equal(t, m, info.Mode(), v.path)
 		content, err := ioutil.ReadFile(v.path)
 		assert.NilError(t, err)
@@ -259,7 +259,7 @@ func TestInputDir_InputDirCwd(t *testing.T) {
 	for _, v := range testdata {
 		info, err := os.Stat(v.path)
 		assert.NilError(t, err)
-		m := config.NormalizeFileMode(v.mode)
+		m := iohelpers.NormalizeFileMode(v.mode)
 		assert.Equal(t, m, info.Mode(), v.path)
 		content, err := ioutil.ReadFile(v.path)
 		assert.NilError(t, err)

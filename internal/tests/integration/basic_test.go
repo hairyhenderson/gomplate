@@ -5,8 +5,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/hairyhenderson/gomplate/v3/internal/config"
-
+	"github.com/hairyhenderson/gomplate/v3/internal/iohelpers"
 	"gotest.tools/v3/assert"
 	"gotest.tools/v3/assert/cmp"
 	"gotest.tools/v3/fs"
@@ -83,7 +82,7 @@ func TestBasic_RoutesInputsToProperOutputs(t *testing.T) {
 	for _, v := range testdata {
 		info, err := os.Stat(v.path)
 		assert.NilError(t, err)
-		m := config.NormalizeFileMode(v.mode)
+		m := iohelpers.NormalizeFileMode(v.mode)
 		assert.Equal(t, m, info.Mode(), v.path)
 		content, err := ioutil.ReadFile(v.path)
 		assert.NilError(t, err)
@@ -204,7 +203,7 @@ func TestBasic_RoutesInputsToProperOutputsWithChmod(t *testing.T) {
 	for _, v := range testdata {
 		info, err := os.Stat(v.path)
 		assert.NilError(t, err)
-		assert.Equal(t, config.NormalizeFileMode(v.mode), info.Mode())
+		assert.Equal(t, iohelpers.NormalizeFileMode(v.mode), info.Mode())
 		content, err := ioutil.ReadFile(v.path)
 		assert.NilError(t, err)
 		assert.Equal(t, v.content, string(content))
@@ -232,7 +231,7 @@ func TestBasic_OverridesOutputModeWithChmod(t *testing.T) {
 	for _, v := range testdata {
 		info, err := os.Stat(v.path)
 		assert.NilError(t, err)
-		assert.Equal(t, config.NormalizeFileMode(v.mode), info.Mode())
+		assert.Equal(t, iohelpers.NormalizeFileMode(v.mode), info.Mode())
 		content, err := ioutil.ReadFile(v.path)
 		assert.NilError(t, err)
 		assert.Equal(t, v.content, string(content))
@@ -252,7 +251,7 @@ func TestBasic_AppliesChmodBeforeWrite(t *testing.T) {
 
 	info, err := os.Stat(out)
 	assert.NilError(t, err)
-	assert.Equal(t, config.NormalizeFileMode(0644), info.Mode())
+	assert.Equal(t, iohelpers.NormalizeFileMode(0644), info.Mode())
 	content, err := ioutil.ReadFile(out)
 	assert.NilError(t, err)
 	assert.Equal(t, "hi\n", string(content))
