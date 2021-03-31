@@ -1,55 +1,46 @@
-//+build integration
-
 package integration
 
 import (
 	"encoding/json"
-	"go/build"
-	"io/ioutil"
+	"io"
 	"log"
 	"net"
 	"net/http"
-	"os"
-	"path/filepath"
 	"runtime"
-	"strconv"
-	"strings"
 	"testing"
 	"time"
 
 	vaultapi "github.com/hashicorp/vault/api"
-	. "gopkg.in/check.v1"
-	"gotest.tools/v3/icmd"
-)
-
-var (
-	GomplateBin string
+	"github.com/stretchr/testify/assert"
 )
 
 const isWindows = runtime.GOOS == "windows"
 
-// nolint: gochecknoinits
-func init() {
-	ext := ""
-	if isWindows {
-		ext = ".exe"
-	}
-	GomplateBin = filepath.Join(build.Default.GOPATH, "src", "github.com", "hairyhenderson", "gomplate", "bin", "gomplate"+ext)
-}
-
-// Hook up gocheck into the "go test" runner.
-func Test(t *testing.T) { TestingT(t) }
-
 // a convenience...
-func inOutTest(c *C, i string, o string) {
-	result := icmd.RunCommand(GomplateBin, "-i", i)
-	result.Assert(c, icmd.Expected{ExitCode: 0, Out: o})
+func inOutTest(t *testing.T, i, o string) {
+	t.Helper()
+
+	stdout, stderr, err := cmd(t, "-i", i).run()
+	assert.NoError(t, err)
+	assert.Equal(t, "", stderr)
+	assert.Equal(t, o, stdout)
 }
 
-func handle(c *C, err error) {
-	if err != nil {
-		c.Fatal(err)
-	}
+func inOutContains(t *testing.T, i, o string) {
+	t.Helper()
+
+	stdout, stderr, err := cmd(t, "-i", i).run()
+	assert.NoError(t, err)
+	assert.Equal(t, "", stderr)
+	assert.Contains(t, stdout, o)
+}
+
+func assertSuccess(t *testing.T, o, e string, err error, expected string) {
+	t.Helper()
+
+	assert.NoError(t, err)
+	assert.Equal(t, "", e)
+	assert.Equal(t, expected, o)
 }
 
 // mirrorHandler - reflects back the HTTP headers from the request
@@ -87,7 +78,7 @@ func freeport() (port int, addr string) {
 }
 
 // waitForURL - waits up to 20s for a given URL to respond with a 200
-func waitForURL(c *C, url string) error {
+func waitForURL(t *testing.T, url string) error {
 	client := http.DefaultClient
 	retries := 100
 	for retries > 0 {
@@ -95,11 +86,11 @@ func waitForURL(c *C, url string) error {
 		time.Sleep(200 * time.Millisecond)
 		resp, err := client.Get(url)
 		if err != nil {
-			c.Logf("Got error, retries left: %d (error: %v)", retries, err)
+			t.Logf("Got error, retries left: %d (error: %v)", retries, err)
 			continue
 		}
-		body, err := ioutil.ReadAll(resp.Body)
-		c.Logf("Body is: %s", body)
+		body, err := io.ReadAll(resp.Body)
+		t.Logf("Body is: %s", body)
 		if err != nil {
 			return err
 		}
@@ -146,19 +137,32 @@ func (v *vaultClient) tokenCreate(policy string, uses int) (string, error) {
 	return token.Auth.ClientToken, nil
 }
 
-func killByPidFile(pidFile string) error {
-	p, err := ioutil.ReadFile(pidFile)
-	if err != nil {
-		return err
+type command struct {
+	t     *testing.T
+	dir   string
+	stdin string
+	env   map[string]string
+	args  []string
+}
+
+func cmd(t *testing.T, args ...string) *command {
+	return &command{t: t, args: args}
+}
+
+func (c *command) withDir(dir string) *command {
+	c.dir = dir
+	return c
+}
+
+func (c *command) withStdin(in string) *command {
+	c.stdin = in
+	return c
+}
+
+func (c *command) withEnv(k, v string) *command {
+	if c.env == nil {
+		c.env = map[string]string{}
 	}
-	pid, err := strconv.Atoi(strings.TrimSpace(string(p)))
-	if err != nil {
-		return err
-	}
-	process, err := os.FindProcess(pid)
-	if err != nil {
-		return err
-	}
-	err = process.Kill()
-	return err
+	c.env[k] = v
+	return c
 }

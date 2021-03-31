@@ -1,62 +1,41 @@
-//+build integration
-
 package integration
 
 import (
-	. "gopkg.in/check.v1"
+	"testing"
 
 	"gotest.tools/v3/fs"
-	"gotest.tools/v3/icmd"
 )
 
-type NestedTemplatesSuite struct {
-	tmpDir *fs.Dir
-}
-
-var _ = Suite(&NestedTemplatesSuite{})
-
-func (s *NestedTemplatesSuite) SetUpSuite(c *C) {
-	s.tmpDir = fs.NewDir(c, "gomplate-inttests",
+func setupNestedTemplatesTest(t *testing.T) *fs.Dir {
+	tmpDir := fs.NewDir(t, "gomplate-inttests",
 		fs.WithFile("hello.t", `Hello {{ . }}!`),
 		fs.WithDir("templates",
 			fs.WithFile("one.t", `{{ . }}`),
 			fs.WithFile("two.t", `{{ range $n := (seq 2) }}{{ $n }}: {{ $ }} {{ end }}`),
 		),
 	)
+	t.Cleanup(tmpDir.Remove)
+
+	return tmpDir
 }
 
-func (s *NestedTemplatesSuite) TearDownSuite(c *C) {
-	s.tmpDir.Remove()
-}
+func TestNestedTemplates(t *testing.T) {
+	tmpDir := setupNestedTemplatesTest(t)
 
-func (s *NestedTemplatesSuite) TestNestedTemplates(c *C) {
-	result := icmd.RunCommand(GomplateBin,
-		"-t", "hello="+s.tmpDir.Join("hello.t"),
+	o, e, err := cmd(t,
+		"-t", "hello="+tmpDir.Join("hello.t"),
 		"-i", `{{ template "hello" "World"}}`,
-	)
-	result.Assert(c, icmd.Expected{ExitCode: 0, Out: "Hello World!"})
+	).run()
+	assertSuccess(t, o, e, err, "Hello World!")
 
-	result = icmd.RunCmd(icmd.Cmd{
-		Command: []string{
-			GomplateBin,
-			"-t", "hello.t",
-			"-i", `{{ template "hello.t" "World"}}`,
-		},
-		Dir: s.tmpDir.Path(),
-	},
-	)
-	result.Assert(c, icmd.Expected{ExitCode: 0, Out: "Hello World!"})
+	o, e, err = cmd(t, "-t", "hello.t",
+		"-i", `{{ template "hello.t" "World"}}`).
+		withDir(tmpDir.Path()).run()
+	assertSuccess(t, o, e, err, "Hello World!")
 
-	result = icmd.RunCmd(icmd.Cmd{
-		Command: []string{
-			GomplateBin,
-			"-t", "templates/",
-			"-i", `{{ template "templates/one.t" "one"}}
-{{ template "templates/two.t" "two"}}`,
-		},
-		Dir: s.tmpDir.Path(),
-	},
-	)
-	result.Assert(c, icmd.Expected{ExitCode: 0, Out: `one
-1: two 2: two`})
+	o, e, err = cmd(t, "-t", "templates/",
+		"-i", `{{ template "templates/one.t" "one"}}
+{{ template "templates/two.t" "two"}}`).
+		withDir(tmpDir.Path()).run()
+	assertSuccess(t, o, e, err, "one\n1: two 2: two ")
 }

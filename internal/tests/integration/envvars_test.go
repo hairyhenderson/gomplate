@@ -1,59 +1,38 @@
-//+build integration
-
 package integration
 
 import (
-	. "gopkg.in/check.v1"
+	"os"
+	"testing"
 
-	"gotest.tools/v3/icmd"
+	"gotest.tools/v3/assert"
 )
 
-type EnvvarsSuite struct{}
+func TestEnvVars_NonExistent(t *testing.T) {
+	os.Unsetenv("FOO")
+	_, _, err := cmd(t, "-i", `{{ .Env.FOO }}`).run()
+	assert.ErrorContains(t, err, "map has no entry for key")
 
-var _ = Suite(&EnvvarsSuite{})
+	inOutTest(t, `{{ getenv "FOO" }}`, "")
+	inOutTest(t, `{{ getenv "FOO" "foo" }}`, "foo")
+	inOutTest(t, `{{env.ExpandEnv "${BAR}foo"}}`, "foo")
 
-func (s *EnvvarsSuite) TestNonExistantEnvVar(c *C) {
-	result := icmd.RunCommand(GomplateBin, "-i",
-		`{{ .Env.FOO }}`)
-	result.Assert(c, icmd.Expected{ExitCode: 1, Err: "map has no entry for key"})
-
-	result = icmd.RunCommand(GomplateBin, "-i",
-		`{{ getenv "FOO" }}`)
-	result.Assert(c, icmd.Expected{ExitCode: 0, Out: ""})
-
-	result = icmd.RunCommand(GomplateBin, "-i",
-		`{{ getenv "FOO" "foo" }}`)
-	result.Assert(c, icmd.Expected{ExitCode: 0, Out: "foo"})
-
-	result = icmd.RunCommand(GomplateBin, "-i",
-		`{{env.ExpandEnv "${BAR}foo"}}`)
-	result.Assert(c, icmd.Expected{ExitCode: 0, Out: "foo"})
-
-	result = icmd.RunCmd(icmd.Command(GomplateBin, "-i", `{{ getenv "FOO" "foo" }}`),
-		func(c *icmd.Cmd) {
-			c.Env = []string{"FOO="}
-		})
-	result.Assert(c, icmd.Expected{ExitCode: 0, Out: "foo"})
+	o, e, err := cmd(t, "-i", `{{ getenv "FOO" "foo" }}`).
+		withEnv("FOO", "").run()
+	assertSuccess(t, o, e, err, "foo")
 }
 
-func (s *EnvvarsSuite) TestExistantEnvVar(c *C) {
-	setFoo := func(c *icmd.Cmd) {
-		c.Env = []string{"FOO=foo"}
+func TestEnvVars_Existent(t *testing.T) {
+	os.Unsetenv("FOO")
+
+	data := []string{
+		`{{ .Env.FOO }}`,
+		`{{ getenv "FOO" }}`,
+		`{{ env.Getenv "FOO" }}`,
+		`{{env.ExpandEnv "${FOO}"}}`,
 	}
-	expected := icmd.Expected{ExitCode: 0, Out: "foo"}
-	result := icmd.RunCmd(icmd.Command(GomplateBin, "-i",
-		`{{ .Env.FOO }}`), setFoo)
-	result.Assert(c, expected)
-
-	result = icmd.RunCmd(icmd.Command(GomplateBin, "-i",
-		`{{ getenv "FOO" }}`), setFoo)
-	result.Assert(c, expected)
-
-	result = icmd.RunCmd(icmd.Command(GomplateBin, "-i",
-		`{{ env.Getenv "FOO" }}`), setFoo)
-	result.Assert(c, expected)
-
-	result = icmd.RunCmd(icmd.Command(GomplateBin, "-i",
-		`{{env.ExpandEnv "${FOO}"}}`), setFoo)
-	result.Assert(c, expected)
+	for _, in := range data {
+		o, e, err := cmd(t, "-i", in).
+			withEnv("FOO", "foo").run()
+		assertSuccess(t, o, e, err, "foo")
+	}
 }

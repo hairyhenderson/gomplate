@@ -30,7 +30,6 @@ require (
 	golang.org/x/crypto v0.0.0-20210317152858-513c2a44f670
 	golang.org/x/sys v0.0.0-20210319071255-635bc2c9138d
 	golang.org/x/term v0.0.0-20210317153231-de623e64d2a6
-	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b
 	gotest.tools/v3 v3.0.3
 	k8s.io/client-go v0.20.5

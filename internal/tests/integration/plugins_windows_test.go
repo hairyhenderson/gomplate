@@ -1,23 +1,17 @@
-//+build integration
 //+build windows
 
 package integration
 
 import (
-	. "gopkg.in/check.v1"
+	"strings"
+	"testing"
 
+	"gotest.tools/v3/assert"
 	"gotest.tools/v3/fs"
-	"gotest.tools/v3/icmd"
 )
 
-type PluginsSuite struct {
-	tmpDir *fs.Dir
-}
-
-var _ = Suite(&PluginsSuite{})
-
-func (s *PluginsSuite) SetUpSuite(c *C) {
-	s.tmpDir = fs.NewDir(c, "gomplate-inttests",
+func setupPluginsTest(t *testing.T) *fs.Dir {
+	tmpDir := fs.NewDir(t, "gomplate-inttests",
 		fs.WithFile("foo.ps1", "echo $args\r\nexit 0\r\n", fs.WithMode(0644)),
 		fs.WithFile("foo.bat", "@ECHO OFF\r\nECHO %1\r\n", fs.WithMode(0644)),
 		fs.WithFile("fail.bat", `@ECHO OFF
@@ -35,31 +29,28 @@ $host.ui.WriteErrorLine($msg)
 $host.SetShouldExit($code)
 `, fs.WithMode(0755)),
 	)
+	t.Cleanup(tmpDir.Remove)
+
+	return tmpDir
 }
 
-func (s *PluginsSuite) TearDownSuite(c *C) {
-	s.tmpDir.Remove()
-}
-
-func (s *PluginsSuite) TestPlugins(c *C) {
-	result := icmd.RunCommand(GomplateBin,
-		"--plugin", "foo="+s.tmpDir.Join("foo.bat"),
+func TestPlugins(t *testing.T) {
+	tmpDir := setupPluginsTest(t)
+	o, e, err := cmd(t,
+		"--plugin", "foo="+tmpDir.Join("foo.bat"),
 		"-i", `{{ foo "hello world" }}`,
-	)
-	result.Assert(c, icmd.Expected{ExitCode: 0, Out: "hello world"})
+	).run()
+	assertSuccess(t, strings.TrimSpace(o), e, err, `"hello world"`)
 }
 
-func (s *PluginsSuite) TestPluginErrors(c *C) {
-	result := icmd.RunCmd(icmd.Command(GomplateBin,
-		"--plugin", "f=false",
-		"-i", `{{ f }}`,
-	), func(c *icmd.Cmd) {})
-	result.Assert(c, icmd.Expected{ExitCode: 1})
+func TestPlugins_Errors(t *testing.T) {
+	tmpDir := setupPluginsTest(t)
+	_, _, err := cmd(t, "--plugin", "f=false",
+		"-i", `{{ f }}`).run()
+	assert.ErrorContains(t, err, "exit status 1")
 
-	result = icmd.RunCmd(icmd.Command(GomplateBin,
-		"--plugin", "f="+s.tmpDir.Join("fail.bat"),
-		"-i", `{{ f "bat failed" 42 }}`,
-	), func(c *icmd.Cmd) {})
-	result.Assert(c, icmd.Expected{ExitCode: 1, Err: "bat failed"})
-	result.Assert(c, icmd.Expected{ExitCode: 1, Err: "error calling f: exit status 42"})
+	_, _, err = cmd(t, "--plugin", "f="+tmpDir.Join("fail.bat"),
+		"-i", `{{ f "bat failed" 42 }}`).run()
+	assert.ErrorContains(t, err, "bat failed")
+	assert.ErrorContains(t, err, "error calling f: exit status 42")
 }
