@@ -6,5 +6,5 @@
 //
 // or:
 //
-//	$ go test -tags=integration ./tests/integration
+//	$ go test ./internal/tests/integration
 package integration

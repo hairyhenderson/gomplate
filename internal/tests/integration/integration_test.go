@@ -1,17 +1,24 @@
 package integration
 
 import (
+	"bytes"
+	"context"
 	"encoding/json"
+	"fmt"
 	"io"
 	"log"
 	"net"
 	"net/http"
+	"os"
 	"runtime"
+	"strings"
 	"testing"
 	"time"
 
+	gcmd "github.com/hairyhenderson/gomplate/v3/internal/cmd"
 	vaultapi "github.com/hashicorp/vault/api"
 	"github.com/stretchr/testify/assert"
+	"gotest.tools/v3/icmd"
 )
 
 const isWindows = runtime.GOOS == "windows"
@@ -142,6 +149,7 @@ type command struct {
 	dir   string
 	stdin string
 	env   map[string]string
+	envK  []string
 	args  []string
 }
 
@@ -163,6 +171,73 @@ func (c *command) withEnv(k, v string) *command {
 	if c.env == nil {
 		c.env = map[string]string{}
 	}
+	if c.envK == nil {
+		c.envK = []string{}
+	}
 	c.env[k] = v
+	c.envK = append(c.envK, k)
 	return c
+}
+
+// set this at 'go test' time to test with a pre-compiled binary instead of
+// running all tests in-process
+var GomplateBinPath = ""
+
+func (c *command) run() (o, e string, err error) {
+	if GomplateBinPath != "" {
+		return c.runCompiled(GomplateBinPath)
+	}
+	return c.runInProcess()
+}
+
+func (c *command) runInProcess() (o, e string, err error) {
+	// iterate env vars by order of insertion
+	for _, k := range c.envK {
+		k := k
+		// clean up after ourselves
+		if orig, ok := os.LookupEnv(k); ok {
+			defer os.Setenv(k, orig)
+		} else {
+			defer os.Unsetenv(k)
+		}
+		os.Setenv(k, c.env[k])
+	}
+
+	if c.dir != "" {
+		//nolint:govet
+		origWd, err := os.Getwd()
+		if err != nil {
+			panic(err)
+		}
+		defer os.Chdir(origWd)
+
+		err = os.Chdir(c.dir)
+		if err != nil {
+			panic(err)
+		}
+	}
+
+	stdin := strings.NewReader(c.stdin)
+
+	ctx := context.Background()
+	stdout, stderr := &bytes.Buffer{}, &bytes.Buffer{}
+	err = gcmd.Main(ctx, c.args, stdin, stdout, stderr)
+	return stdout.String(), stderr.String(), err
+}
+
+func (c *command) runCompiled(bin string) (o, e string, err error) {
+	cmd := icmd.Command(bin, c.args...)
+	cmd.Dir = c.dir
+	cmd.Stdin = strings.NewReader(c.stdin)
+	cmd.Env = os.Environ()
+	cmd.Env = append(cmd.Env, "GOMPLATE_LOG_FORMAT=simple")
+	for k, v := range c.env {
+		cmd.Env = append(cmd.Env, k+"="+v)
+	}
+
+	result := icmd.RunCmd(cmd)
+	if result.Error != nil {
+		result.Error = fmt.Errorf("%w: %s", result.Error, result.Stderr())
+	}
+	return result.Stdout(), result.Stderr(), result.Error
 }
