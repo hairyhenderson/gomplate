@@ -88,8 +88,8 @@ func TestGetCallerIDErrors(t *testing.T) {
 }
 
 type DummyCallerIdentifier struct {
-	account, arn, userID string
 	err                  error
+	account, arn, userID string
 }
 
 func (c *DummyCallerIdentifier) GetCallerIdentity(*sts.GetCallerIdentityInput) (*sts.GetCallerIdentityOutput, error) {

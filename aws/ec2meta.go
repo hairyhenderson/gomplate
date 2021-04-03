@@ -22,11 +22,11 @@ const (
 
 // Ec2Meta -
 type Ec2Meta struct {
-	Endpoint string
 	Client   *http.Client
-	nonAWS   bool
 	cache    map[string]string
+	Endpoint string
 	options  ClientOptions
+	nonAWS   bool
 }
 
 // NewEc2Meta -

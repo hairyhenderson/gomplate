@@ -57,13 +57,13 @@ func TestInputDir_InputDir(t *testing.T) {
 
 	testdata := []struct {
 		path    string
-		mode    os.FileMode
 		content string
+		mode    os.FileMode
 	}{
-		{tmpDir.Join("out", "eins.txt"), 0644, "eins"},
-		{tmpDir.Join("out", "inner", "deux.txt"), 0444, "deux"},
-		{tmpDir.Join("out", "drei.sh"), 0755, `#!/bin/sh\necho "hello world"\n`},
-		{tmpDir.Join("out", "vier.txt"), 0544, "deux * deux"},
+		{tmpDir.Join("out", "eins.txt"), "eins", 0644},
+		{tmpDir.Join("out", "inner", "deux.txt"), "deux", 0444},
+		{tmpDir.Join("out", "drei.sh"), `#!/bin/sh\necho "hello world"\n`, 0755},
+		{tmpDir.Join("out", "vier.txt"), "deux * deux", 0544},
 	}
 	for _, v := range testdata {
 		info, err := os.Stat(v.path)
@@ -96,13 +96,13 @@ func TestInputDir_InputDirWithModeOverride(t *testing.T) {
 
 	testdata := []struct {
 		path    string
-		mode    os.FileMode
 		content string
+		mode    os.FileMode
 	}{
-		{tmpDir.Join("out", "eins.txt"), 0601, "eins"},
-		{tmpDir.Join("out", "inner", "deux.txt"), 0601, "deux"},
-		{tmpDir.Join("out", "drei.sh"), 0601, `#!/bin/sh\necho "hello world"\n`},
-		{tmpDir.Join("out", "vier.txt"), 0601, "deux * deux"},
+		{tmpDir.Join("out", "eins.txt"), "eins", 0601},
+		{tmpDir.Join("out", "inner", "deux.txt"), "deux", 0601},
+		{tmpDir.Join("out", "drei.sh"), `#!/bin/sh\necho "hello world"\n`, 0601},
+		{tmpDir.Join("out", "vier.txt"), "deux * deux", 0601},
 	}
 	for _, v := range testdata {
 		info, err := os.Stat(v.path)
@@ -134,13 +134,13 @@ func TestInputDir_OutputMapInline(t *testing.T) {
 
 	testdata := []struct {
 		path    string
-		mode    os.FileMode
 		content string
+		mode    os.FileMode
 	}{
-		{tmpDir.Join("OUT", "EINS.TXT"), 0644, "eins"},
-		{tmpDir.Join("OUT", "INNER", "DEUX.TXT"), 0444, "deux"},
-		{tmpDir.Join("OUT", "DREI.SH"), 0755, `#!/bin/sh\necho "hello world"\n`},
-		{tmpDir.Join("OUT", "VIER.TXT"), 0544, "deux * deux"},
+		{tmpDir.Join("OUT", "EINS.TXT"), "eins", 0644},
+		{tmpDir.Join("OUT", "INNER", "DEUX.TXT"), "deux", 0444},
+		{tmpDir.Join("OUT", "DREI.SH"), `#!/bin/sh\necho "hello world"\n`, 0755},
+		{tmpDir.Join("OUT", "VIER.TXT"), "deux * deux", 0544},
 	}
 	for _, v := range testdata {
 		info, err := os.Stat(v.path)
@@ -174,13 +174,13 @@ func TestInputDir_OutputMapExternal(t *testing.T) {
 
 	testdata := []struct {
 		path    string
-		mode    os.FileMode
 		content string
+		mode    os.FileMode
 	}{
-		{tmpDir.Join("out", "uno.out"), 0644, "eins"},
-		{tmpDir.Join("out", "inner", "dos.out"), 0444, "deux"},
-		{tmpDir.Join("out", "tres.out"), 0755, `#!/bin/sh\necho "hello world"\n`},
-		{tmpDir.Join("out", "quatro.out"), 0544, "deux * deux"},
+		{tmpDir.Join("out", "uno.out"), "eins", 0644},
+		{tmpDir.Join("out", "inner", "dos.out"), "deux", 0444},
+		{tmpDir.Join("out", "tres.out"), `#!/bin/sh\necho "hello world"\n`, 0755},
+		{tmpDir.Join("out", "quatro.out"), "deux * deux", 0544},
 	}
 	for _, v := range testdata {
 		info, err := os.Stat(v.path)
@@ -249,12 +249,12 @@ func TestInputDir_InputDirCwd(t *testing.T) {
 
 	testdata := []struct {
 		path    string
-		mode    os.FileMode
 		content string
+		mode    os.FileMode
 	}{
-		{tmpDir.Join("in", "eins.out"), 0644, "eins"},
-		{tmpDir.Join("in", "inner", "deux.out"), 0444, "deux"},
-		{tmpDir.Join("in", "vier.out"), 0544, "deux * deux"},
+		{tmpDir.Join("in", "eins.out"), "eins", 0644},
+		{tmpDir.Join("in", "inner", "deux.out"), "deux", 0444},
+		{tmpDir.Join("in", "vier.out"), "deux * deux", 0544},
 	}
 	for _, v := range testdata {
 		info, err := os.Stat(v.path)

@@ -25,8 +25,8 @@ func TestRead(t *testing.T) {
 }
 
 type FakeStore struct {
-	data []*store.KVPair
 	err  error
+	data []*store.KVPair
 }
 
 func (s *FakeStore) Put(key string, value []byte, options *store.WriteOptions) error {

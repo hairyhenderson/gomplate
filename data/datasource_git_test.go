@@ -100,78 +100,78 @@ func TestParseGitPath(t *testing.T) {
 
 	data := []struct {
 		url        string
-		args       []string
+		args       string
 		repo, path string
 	}{
 		{"git+https://github.com/hairyhenderson/gomplate//docs-src/content/functions/aws.yml",
-			nil,
+			"",
 			"git+https://github.com/hairyhenderson/gomplate",
 			"/docs-src/content/functions/aws.yml"},
 		{"git+ssh://github.com/hairyhenderson/gomplate.git",
-			nil,
+			"",
 			"git+ssh://github.com/hairyhenderson/gomplate.git",
 			"/"},
 		{"https://github.com",
-			nil,
+			"",
 			"https://github.com",
 			"/"},
 		{"git://example.com/foo//file.txt#someref",
-			nil,
+			"",
 			"git://example.com/foo#someref", "/file.txt"},
 		{"git+file:///home/foo/repo//file.txt#someref",
-			nil,
+			"",
 			"git+file:///home/foo/repo#someref", "/file.txt"},
 		{"git+file:///repo",
-			nil,
+			"",
 			"git+file:///repo", "/"},
 		{"git+file:///foo//foo",
-			nil,
+			"",
 			"git+file:///foo", "/foo"},
 		{"git+file:///foo//foo",
-			[]string{"/bar"},
+			"/bar",
 			"git+file:///foo", "/foo/bar"},
 		{"git+file:///foo//bar",
 			// in this case the // is meaningless
-			[]string{"/baz//qux"},
+			"/baz//qux",
 			"git+file:///foo", "/bar/baz/qux"},
 		{"git+https://example.com/foo",
-			[]string{"/bar"},
+			"/bar",
 			"git+https://example.com/foo/bar", "/"},
 		{"git+https://example.com/foo",
-			[]string{"//bar"},
+			"//bar",
 			"git+https://example.com/foo", "/bar"},
 		{"git+https://example.com//foo",
-			[]string{"/bar"},
+			"/bar",
 			"git+https://example.com", "/foo/bar"},
 		{"git+https://example.com/foo//bar",
-			[]string{"//baz"},
+			"//baz",
 			"git+https://example.com/foo", "/bar/baz"},
 		{"git+https://example.com/foo",
-			[]string{"/bar//baz"},
+			"/bar//baz",
 			"git+https://example.com/foo/bar", "/baz"},
 		{"git+https://example.com/foo?type=t",
-			[]string{"/bar//baz"},
+			"/bar//baz",
 			"git+https://example.com/foo/bar?type=t", "/baz"},
 		{"git+https://example.com/foo#master",
-			[]string{"/bar//baz"},
+			"/bar//baz",
 			"git+https://example.com/foo/bar#master", "/baz"},
 		{"git+https://example.com/foo",
-			[]string{"/bar//baz?type=t"},
+			"/bar//baz?type=t",
 			"git+https://example.com/foo/bar?type=t", "/baz"},
 		{"git+https://example.com/foo",
-			[]string{"/bar//baz#master"},
+			"/bar//baz#master",
 			"git+https://example.com/foo/bar#master", "/baz"},
 		{"git+https://example.com/foo",
-			[]string{"//bar?type=t"},
+			"//bar?type=t",
 			"git+https://example.com/foo?type=t", "/bar"},
 		{"git+https://example.com/foo",
-			[]string{"//bar#master"},
+			"//bar#master",
 			"git+https://example.com/foo#master", "/bar"},
 		{"git+https://example.com/foo?type=t",
-			[]string{"//bar#master"},
+			"//bar#master",
 			"git+https://example.com/foo?type=t#master", "/bar"},
 		{"git+https://example.com/foo?type=t#v1",
-			[]string{"//bar?type=j#v2"},
+			"//bar?type=j#v2",
 			"git+https://example.com/foo?type=t&type=j#v2", "/bar"},
 	}
 
@@ -180,7 +180,11 @@ func TestParseGitPath(t *testing.T) {
 		t.Run(fmt.Sprintf("%d:(%q,%q)==(%q,%q)", i, d.url, d.args, d.repo, d.path), func(t *testing.T) {
 			t.Parallel()
 			u, _ := url.Parse(d.url)
-			repo, path, err := g.parseGitPath(u, d.args...)
+			args := []string{d.args}
+			if d.args == "" {
+				args = nil
+			}
+			repo, path, err := g.parseGitPath(u, args...)
 			assert.NilError(t, err)
 			assert.Equal(t, d.repo, repo.String())
 			assert.Equal(t, d.path, path)

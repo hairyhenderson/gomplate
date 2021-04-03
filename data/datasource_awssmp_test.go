@@ -15,11 +15,11 @@ import (
 
 // DummyParamGetter - test double
 type DummyParamGetter struct {
+	err              awserr.Error
 	t                *testing.T
 	param            *ssm.Parameter
-	params           []*ssm.Parameter
-	err              awserr.Error
 	mockGetParameter func(*ssm.GetParameterInput) (*ssm.GetParameterOutput, error)
+	params           []*ssm.Parameter
 }
 
 func (d DummyParamGetter) GetParameterWithContext(ctx context.Context, input *ssm.GetParameterInput, opts ...request.Option) (*ssm.GetParameterOutput, error) {

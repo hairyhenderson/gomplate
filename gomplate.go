@@ -23,12 +23,12 @@ import (
 
 // gomplate -
 type gomplate struct {
+	tmplctx         interface{}
 	funcMap         template.FuncMap
-	leftDelim       string
-	rightDelim      string
 	nestedTemplates templateAliases
 	rootTemplate    *template.Template
-	tmplctx         interface{}
+
+	leftDelim, rightDelim string
 }
 
 // runTemplate -

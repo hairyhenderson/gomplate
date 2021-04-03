@@ -181,11 +181,11 @@ func LazyWriteCloser(open func() (io.WriteCloser, error)) io.WriteCloser {
 }
 
 type lazyWriteCloser struct {
-	opened sync.Once
-	w      io.WriteCloser
+	w io.WriteCloser
 	// caches the error that came from open(), if any
 	openErr error
 	open    func() (io.WriteCloser, error)
+	opened  sync.Once
 }
 
 var _ io.WriteCloser = (*lazyWriteCloser)(nil)

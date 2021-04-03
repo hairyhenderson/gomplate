@@ -1,12 +1,12 @@
 linters-settings:
   govet:
     check-shadowing: true
+    enable:
+      - fieldalignment
   golint:
     min-confidence: 0
   gocyclo:
     min-complexity: 10
-  maligned:
-    suggest-new: true
   dupl:
     threshold: 100
   goconst:
@@ -53,9 +53,7 @@ linters:
     - gosimple
     - govet
     - ineffassign
-    # - interfacer
     # - lll
-    - maligned
     - misspell
     - nakedret
     - nestif
@@ -64,7 +62,6 @@ linters:
     # - nolintlint
     - prealloc
     - rowserrcheck
-    - scopelint
     - sqlclosecheck
     - staticcheck
     - structcheck
@@ -80,6 +77,3 @@ linters:
 run:
   concurrency: 4
   timeout: 5m
-  build-tags:
-    - ""
-    - integration
