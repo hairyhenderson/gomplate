@@ -23,7 +23,7 @@ require (
 	github.com/spf13/afero v1.6.0
 	github.com/spf13/cobra v1.1.3
 	github.com/stretchr/testify v1.7.0
-	github.com/ugorji/go/codec v1.2.4
+	github.com/ugorji/go/codec v1.2.5
 	github.com/zealic/xignore v0.3.3
 	go.etcd.io/bbolt v1.3.5
 	gocloud.dev v0.22.0
