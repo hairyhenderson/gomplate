@@ -36,10 +36,10 @@ func bindPlugins(ctx context.Context, cfg *config.Config, funcMap template.FuncM
 
 // plugin represents a custom function that binds to an external process to be executed
 type plugin struct {
-	name, path string
-	timeout    time.Duration
 	ctx        context.Context
 	stderr     io.Writer
+	name, path string
+	timeout    time.Duration
 }
 
 // builds a command that's appropriate for running scripts

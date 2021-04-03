@@ -138,9 +138,7 @@ func FromConfig(ctx context.Context, cfg *config.Config) *Data {
 
 // Source - a data source
 type Source struct {
-	Alias             string
 	URL               *url.URL
-	mediaType         string
 	fs                afero.Fs                // used for file: URLs, nil otherwise
 	hc                *http.Client            // used for http[s]: URLs, nil otherwise
 	vc                *vault.Vault            // used for vault: URLs, nil otherwise
@@ -148,6 +146,8 @@ type Source struct {
 	asmpg             awssmpGetter            // used for aws+smp:, nil otherwise
 	awsSecretsManager awsSecretsManagerGetter // used for aws+sm, nil otherwise
 	header            http.Header             // used for http[s]: URLs, nil otherwise
+	Alias             string
+	mediaType         string
 }
 
 func (s *Source) inherit(parent *Source) {

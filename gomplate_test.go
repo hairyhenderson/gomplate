@@ -172,29 +172,26 @@ func TestParseTemplateArg(t *testing.T) {
 	afero.WriteFile(fs, "dir/foo.t", []byte("hi"), 0600)
 	afero.WriteFile(fs, "dir/bar.t", []byte("hi"), 0600)
 
+	err := parseTemplateArg("bogus.t", templateAliases{})
+	assert.Error(t, err)
+
 	testdata := []struct {
-		arg      string
 		expected map[string]string
-		err      bool
+		arg      string
 	}{
-		{"bogus.t", nil, true},
-		{"foo.t", map[string]string{"foo.t": "foo.t"}, false},
-		{"foo=foo.t", map[string]string{"foo": "foo.t"}, false},
-		{"dir/foo.t", map[string]string{"dir/foo.t": "dir/foo.t"}, false},
-		{"foo=dir/foo.t", map[string]string{"foo": "dir/foo.t"}, false},
-		{"dir/", map[string]string{"dir/foo.t": "dir/foo.t", "dir/bar.t": "dir/bar.t"}, false},
-		{"t=dir/", map[string]string{"t/foo.t": "dir/foo.t", "t/bar.t": "dir/bar.t"}, false},
+		{map[string]string{"foo.t": "foo.t"}, "foo.t"},
+		{map[string]string{"foo": "foo.t"}, "foo=foo.t"},
+		{map[string]string{"dir/foo.t": "dir/foo.t"}, "dir/foo.t"},
+		{map[string]string{"foo": "dir/foo.t"}, "foo=dir/foo.t"},
+		{map[string]string{"dir/foo.t": "dir/foo.t", "dir/bar.t": "dir/bar.t"}, "dir/"},
+		{map[string]string{"t/foo.t": "dir/foo.t", "t/bar.t": "dir/bar.t"}, "t=dir/"},
 	}
 
 	for _, d := range testdata {
 		nested := templateAliases{}
 		err := parseTemplateArg(d.arg, nested)
-		if d.err {
-			assert.Error(t, err, d.arg)
-		} else {
-			assert.NoError(t, err, d.arg)
-			assert.Equal(t, templateAliases(d.expected), nested, d.arg)
-		}
+		assert.NoError(t, err, d.arg)
+		assert.Equal(t, templateAliases(d.expected), nested, d.arg)
 	}
 }
 

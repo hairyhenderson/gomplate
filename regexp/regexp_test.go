@@ -21,14 +21,14 @@ func TestFindAll(t *testing.T) {
 
 	testdata := []struct {
 		re       string
-		n        int
 		in       string
 		expected []string
+		n        int
 	}{
-		{`[a-z]+`, -1, `foo bar baz`, []string{"foo", "bar", "baz"}},
-		{`[a-z]+`, 0, `foo bar baz`, nil},
-		{`[a-z]+`, 2, `foo bar baz`, []string{"foo", "bar"}},
-		{`[a-z]+`, 14, `foo bar baz`, []string{"foo", "bar", "baz"}},
+		{`[a-z]+`, `foo bar baz`, []string{"foo", "bar", "baz"}, -1},
+		{`[a-z]+`, `foo bar baz`, nil, 0},
+		{`[a-z]+`, `foo bar baz`, []string{"foo", "bar"}, 2},
+		{`[a-z]+`, `foo bar baz`, []string{"foo", "bar", "baz"}, 14},
 	}
 
 	for _, d := range testdata {
@@ -91,14 +91,14 @@ func TestSplit(t *testing.T) {
 
 	testdata := []struct {
 		re       string
-		n        int
 		in       string
 		expected []string
+		n        int
 	}{
-		{`\s+`, -1, "foo  bar baz\tqux", []string{"foo", "bar", "baz", "qux"}},
-		{`,`, 0, `foo bar baz`, nil},
-		{` `, 2, `foo bar baz`, []string{"foo", "bar baz"}},
-		{`[\s,.]`, 14, `foo bar.baz,qux`, []string{"foo", "bar", "baz", "qux"}},
+		{`\s+`, "foo  bar baz\tqux", []string{"foo", "bar", "baz", "qux"}, -1},
+		{`,`, `foo bar baz`, nil, 0},
+		{` `, `foo bar baz`, []string{"foo", "bar baz"}, 2},
+		{`[\s,.]`, `foo bar.baz,qux`, []string{"foo", "bar", "baz", "qux"}, 14},
 	}
 
 	for _, d := range testdata {

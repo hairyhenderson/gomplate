@@ -73,11 +73,11 @@ func TestBasic_RoutesInputsToProperOutputs(t *testing.T) {
 
 	testdata := []struct {
 		path    string
-		mode    os.FileMode
 		content string
+		mode    os.FileMode
 	}{
-		{oneOut, 0640, "hi\n"},
-		{twoOut, 0644, "hello\n"},
+		{oneOut, "hi\n", 0640},
+		{twoOut, "hello\n", 0644},
 	}
 	for _, v := range testdata {
 		info, err := os.Stat(v.path)
@@ -92,32 +92,32 @@ func TestBasic_RoutesInputsToProperOutputs(t *testing.T) {
 
 func TestBasic_FlagRules(t *testing.T) {
 	testdata := []struct {
-		args   []string
 		errmsg string
+		args   []string
 	}{
 		{
-			[]string{"-f", "-", "-i", "HELLO WORLD"},
 			"only one of these options is supported at a time: 'in', 'inputFiles'",
+			[]string{"-f", "-", "-i", "HELLO WORLD"},
 		},
 		{
-			[]string{"--output-dir", "."},
 			"these options must be set together: 'outputDir', 'inputDir'",
+			[]string{"--output-dir", "."},
 		},
 		{
-			[]string{"--input-dir", ".", "--in", "param"},
 			"only one of these options is supported at a time: 'in', 'inputDir'",
+			[]string{"--input-dir", ".", "--in", "param"},
 		},
 		{
-			[]string{"--input-dir", ".", "--file", "input.txt"},
 			"only one of these options is supported at a time: 'inputFiles', 'inputDir'",
+			[]string{"--input-dir", ".", "--file", "input.txt"},
 		},
 		{
-			[]string{"--output-dir", ".", "--out", "param"},
 			"only one of these options is supported at a time: 'outputFiles', 'outputDir'",
+			[]string{"--output-dir", ".", "--out", "param"},
 		},
 		{
-			[]string{"--output-map", ".", "--out", "param"},
 			"only one of these options is supported at a time: 'outputFiles', 'outputMap'",
+			[]string{"--output-map", ".", "--out", "param"},
 		},
 	}
 
@@ -194,11 +194,11 @@ func TestBasic_RoutesInputsToProperOutputsWithChmod(t *testing.T) {
 
 	testdata := []struct {
 		path    string
-		mode    os.FileMode
 		content string
+		mode    os.FileMode
 	}{
-		{oneOut, 0600, "hi\n"},
-		{twoOut, 0600, "hello\n"},
+		{oneOut, "hi\n", 0600},
+		{twoOut, "hello\n", 0600},
 	}
 	for _, v := range testdata {
 		info, err := os.Stat(v.path)
@@ -223,10 +223,10 @@ func TestBasic_OverridesOutputModeWithChmod(t *testing.T) {
 
 	testdata := []struct {
 		path    string
-		mode    os.FileMode
 		content string
+		mode    os.FileMode
 	}{
-		{out, 0600, "hi\n"},
+		{out, "hi\n", 0600},
 	}
 	for _, v := range testdata {
 		info, err := os.Stat(v.path)

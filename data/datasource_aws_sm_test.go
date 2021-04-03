@@ -45,52 +45,54 @@ func TestAWSSecretsManager_ParseAWSSecretsManagerArgs(t *testing.T) {
 	_, _, err := parseDatasourceURLArgs(mustParseURL("base"), "extra", "too many!")
 	assert.Error(t, err)
 
-	data := []struct {
-		u              *url.URL
-		args           []string
-		expectedParams map[string]interface{}
-		expectedPath   string
-	}{
-		{mustParseURL("noddy"), nil, nil, "noddy"},
-		{mustParseURL("base"), []string{"extra"}, nil, "base/extra"},
-		{mustParseURL("/foo/"), []string{"/extra"}, nil, "/foo/extra"},
-		{mustParseURL("aws+sm:///foo"), []string{"bar"}, nil, "/foo/bar"},
-		{mustParseURL("aws+sm:foo"), nil, nil, "foo"},
-		{mustParseURL("aws+sm:foo/bar"), nil, nil, "foo/bar"},
-		{mustParseURL("aws+sm:/foo/bar"), nil, nil, "/foo/bar"},
-		{mustParseURL("aws+sm:foo"), []string{"baz"}, nil, "foo/baz"},
-		{mustParseURL("aws+sm:foo/bar"), []string{"baz"}, nil, "foo/bar/baz"},
-		{mustParseURL("aws+sm:/foo/bar"), []string{"baz"}, nil, "/foo/bar/baz"},
-		{mustParseURL("aws+sm:///foo"), []string{"dir/"}, nil, "/foo/dir/"},
-		{mustParseURL("aws+sm:///foo/"), nil, nil, "/foo/"},
-		{mustParseURL("aws+sm:///foo/"), []string{"baz"}, nil, "/foo/baz"},
+	tplain := map[string]interface{}{"type": "text/plain"}
 
-		{mustParseURL("aws+sm:foo?type=text/plain"), []string{"baz"},
-			map[string]interface{}{"type": "text/plain"}, "foo/baz"},
-		{mustParseURL("aws+sm:foo/bar?type=text/plain"), []string{"baz"},
-			map[string]interface{}{"type": "text/plain"}, "foo/bar/baz"},
-		{mustParseURL("aws+sm:/foo/bar?type=text/plain"), []string{"baz"},
-			map[string]interface{}{"type": "text/plain"}, "/foo/bar/baz"},
+	data := []struct {
+		eParams map[string]interface{}
+		u       string
+		ePath   string
+		args    string
+	}{
+		{u: "noddy", ePath: "noddy"},
+		{u: "base", ePath: "base/extra", args: "extra"},
+		{u: "/foo/", ePath: "/foo/extra", args: "/extra"},
+		{u: "aws+sm:///foo", ePath: "/foo/bar", args: "bar"},
+		{u: "aws+sm:foo", ePath: "foo"},
+		{u: "aws+sm:foo/bar", ePath: "foo/bar"},
+		{u: "aws+sm:/foo/bar", ePath: "/foo/bar"},
+		{u: "aws+sm:foo", ePath: "foo/baz", args: "baz"},
+		{u: "aws+sm:foo/bar", ePath: "foo/bar/baz", args: "baz"},
+		{u: "aws+sm:/foo/bar", ePath: "/foo/bar/baz", args: "baz"},
+		{u: "aws+sm:///foo", ePath: "/foo/dir/", args: "dir/"},
+		{u: "aws+sm:///foo/", ePath: "/foo/"},
+		{u: "aws+sm:///foo/", ePath: "/foo/baz", args: "baz"},
+		{eParams: tplain, u: "aws+sm:foo?type=text/plain", ePath: "foo/baz", args: "baz"},
+		{eParams: tplain, u: "aws+sm:foo/bar?type=text/plain", ePath: "foo/bar/baz", args: "baz"},
+		{eParams: tplain, u: "aws+sm:/foo/bar?type=text/plain", ePath: "/foo/bar/baz", args: "baz"},
 		{
-			mustParseURL("aws+sm:/foo/bar?type=text/plain"),
-			[]string{"baz/qux?type=application/json&param=quux"},
-			map[string]interface{}{
+			eParams: map[string]interface{}{
 				"type":  "application/json",
 				"param": "quux",
 			},
-			"/foo/bar/baz/qux",
+			u:     "aws+sm:/foo/bar?type=text/plain",
+			ePath: "/foo/bar/baz/qux",
+			args:  "baz/qux?type=application/json&param=quux",
 		},
 	}
 
 	for _, d := range data {
-		params, p, err := parseDatasourceURLArgs(d.u, d.args...)
+		args := []string{d.args}
+		if d.args == "" {
+			args = nil
+		}
+		params, p, err := parseDatasourceURLArgs(mustParseURL(d.u), args...)
 		assert.NoError(t, err)
-		if d.expectedParams == nil {
+		if d.eParams == nil {
 			assert.Empty(t, params)
 		} else {
-			assert.EqualValues(t, d.expectedParams, params)
+			assert.EqualValues(t, d.eParams, params)
 		}
-		assert.Equal(t, d.expectedPath, p)
+		assert.Equal(t, d.ePath, p)
 	}
 }
 

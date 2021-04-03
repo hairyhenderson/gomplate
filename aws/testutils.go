@@ -13,7 +13,13 @@ import (
 func MockServer(code int, body string) (*httptest.Server, *Ec2Meta) {
 	server, httpClient := MockHTTPServer(code, body)
 
-	client := &Ec2Meta{server.URL + "/", httpClient, false, make(map[string]string), ClientOptions{}}
+	client := &Ec2Meta{
+		Client:   httpClient,
+		cache:    make(map[string]string),
+		Endpoint: server.URL + "/",
+		options:  ClientOptions{},
+		nonAWS:   false,
+	}
 	return server, client
 }
 

@@ -51,9 +51,9 @@ func GetClientOptions() ClientOptions {
 // metadata service version 1.
 type MetaClient struct {
 	client   *http.Client
+	cache    map[string]string
 	endpoint string
 	options  ClientOptions
-	cache    map[string]string
 }
 
 // NewMetaClient constructs a new MetaClient with the given ClientOptions. If the environment

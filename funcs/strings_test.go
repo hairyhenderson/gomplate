@@ -19,13 +19,13 @@ func TestIndent(t *testing.T) {
 	sf := &StringFuncs{}
 
 	testdata := []struct {
-		args []interface{}
 		out  string
+		args []interface{}
 	}{
-		{[]interface{}{"foo\nbar\nbaz"}, " foo\n bar\n baz"},
-		{[]interface{}{"  ", "foo\nbar\nbaz"}, "  foo\n  bar\n  baz"},
-		{[]interface{}{3, "-", "foo\nbar\nbaz"}, "---foo\n---bar\n---baz"},
-		{[]interface{}{3, "foo\nbar\nbaz"}, "   foo\n   bar\n   baz"},
+		{" foo\n bar\n baz", []interface{}{"foo\nbar\nbaz"}},
+		{"  foo\n  bar\n  baz", []interface{}{"  ", "foo\nbar\nbaz"}},
+		{"---foo\n---bar\n---baz", []interface{}{3, "-", "foo\nbar\nbaz"}},
+		{"   foo\n   bar\n   baz", []interface{}{3, "foo\nbar\nbaz"}},
 	}
 
 	for _, d := range testdata {

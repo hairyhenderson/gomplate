@@ -308,19 +308,31 @@ func TestToBool(t *testing.T) {
 
 func TestDict(t *testing.T) {
 	testdata := []struct {
-		args     []interface{}
 		expected map[string]interface{}
+		args     []interface{}
 	}{
-		{nil, map[string]interface{}{}},
-		{[]interface{}{}, map[string]interface{}{}},
-		{[]interface{}{"foo"}, map[string]interface{}{"foo": ""}},
-		{[]interface{}{42}, map[string]interface{}{"42": ""}},
-		{[]interface{}{"foo", nil}, map[string]interface{}{"foo": nil}},
-		{[]interface{}{"foo", "bar"}, map[string]interface{}{"foo": "bar"}},
-		{[]interface{}{"foo", "bar", "baz", true}, map[string]interface{}{
-			"foo": "bar",
-			"baz": true,
-		}},
+		{expected: map[string]interface{}{}},
+		{
+			args:     []interface{}{},
+			expected: map[string]interface{}{}},
+		{
+			args:     []interface{}{"foo"},
+			expected: map[string]interface{}{"foo": ""}},
+		{
+			args:     []interface{}{42},
+			expected: map[string]interface{}{"42": ""}},
+		{
+			args:     []interface{}{"foo", nil},
+			expected: map[string]interface{}{"foo": nil}},
+		{
+			args:     []interface{}{"foo", "bar"},
+			expected: map[string]interface{}{"foo": "bar"}},
+		{
+			args: []interface{}{"foo", "bar", "baz", true},
+			expected: map[string]interface{}{
+				"foo": "bar",
+				"baz": true,
+			}},
 	}
 
 	for _, d := range testdata {

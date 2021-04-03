@@ -110,9 +110,9 @@ func waitForURL(t *testing.T, url string) error {
 }
 
 type vaultClient struct {
+	vc        *vaultapi.Client
 	addr      string
 	rootToken string
-	vc        *vaultapi.Client
 }
 
 func createVaultClient(addr string, rootToken string) (*vaultClient, error) {
@@ -123,9 +123,9 @@ func createVaultClient(addr string, rootToken string) (*vaultClient, error) {
 		return nil, err
 	}
 	v := &vaultClient{
+		vc:        client,
 		addr:      addr,
 		rootToken: rootToken,
-		vc:        client,
 	}
 	client.SetToken(rootToken)
 	return v, nil
@@ -231,8 +231,8 @@ func (c *command) runCompiled(bin string) (o, e string, err error) {
 	cmd.Stdin = strings.NewReader(c.stdin)
 	cmd.Env = os.Environ()
 	cmd.Env = append(cmd.Env, "GOMPLATE_LOG_FORMAT=simple")
-	for k, v := range c.env {
-		cmd.Env = append(cmd.Env, k+"="+v)
+	for _, k := range c.envK {
+		cmd.Env = append(cmd.Env, k+"="+c.env[k])
 	}
 
 	result := icmd.RunCmd(cmd)

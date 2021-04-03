@@ -32,39 +32,43 @@ func Parse(in io.Reader) (*Config, error) {
 
 // Config - configures the gomplate execution
 type Config struct {
+	Stdin  io.Reader `yaml:"-"`
+	Stdout io.Writer `yaml:"-"`
+	Stderr io.Writer `yaml:"-"`
+
+	// internal use only, can't be injected in YAML
+	PostExecInput io.Reader `yaml:"-"`
+
 	Input       string   `yaml:"in,omitempty"`
-	InputFiles  []string `yaml:"inputFiles,omitempty,flow"`
 	InputDir    string   `yaml:"inputDir,omitempty"`
+	InputFiles  []string `yaml:"inputFiles,omitempty,flow"`
 	ExcludeGlob []string `yaml:"excludes,omitempty"`
-	OutputFiles []string `yaml:"outputFiles,omitempty,flow"`
+
 	OutputDir   string   `yaml:"outputDir,omitempty"`
 	OutputMap   string   `yaml:"outputMap,omitempty"`
+	OutputFiles []string `yaml:"outputFiles,omitempty,flow"`
+	OutMode     string   `yaml:"chmod,omitempty"`
 
-	Experimental bool `yaml:"experimental,omitempty"`
+	LDelim string `yaml:"leftDelim,omitempty"`
+	RDelim string `yaml:"rightDelim,omitempty"`
 
-	SuppressEmpty bool     `yaml:"suppressEmpty,omitempty"`
-	ExecPipe      bool     `yaml:"execPipe,omitempty"`
-	PostExec      []string `yaml:"postExec,omitempty,flow"`
+	PostExec []string `yaml:"postExec,omitempty,flow"`
 
-	OutMode       string                `yaml:"chmod,omitempty"`
-	LDelim        string                `yaml:"leftDelim,omitempty"`
-	RDelim        string                `yaml:"rightDelim,omitempty"`
-	DataSources   map[string]DataSource `yaml:"datasources,omitempty"`
-	Context       map[string]DataSource `yaml:"context,omitempty"`
-	Plugins       map[string]string     `yaml:"plugins,omitempty"`
-	PluginTimeout time.Duration         `yaml:"pluginTimeout,omitempty"`
-	Templates     []string              `yaml:"templates,omitempty"`
+	DataSources map[string]DataSource `yaml:"datasources,omitempty"`
+	Context     map[string]DataSource `yaml:"context,omitempty"`
+	Plugins     map[string]string     `yaml:"plugins,omitempty"`
 
 	// Extra HTTP headers not attached to pre-defined datsources. Potentially
 	// used by datasources defined in the template.
 	ExtraHeaders map[string]http.Header `yaml:"-"`
 
-	// internal use only, can't be injected in YAML
-	PostExecInput io.Reader `yaml:"-"`
+	Templates []string `yaml:"templates,omitempty"`
 
-	Stdin  io.Reader `yaml:"-"`
-	Stdout io.Writer `yaml:"-"`
-	Stderr io.Writer `yaml:"-"`
+	PluginTimeout time.Duration `yaml:"pluginTimeout,omitempty"`
+
+	ExecPipe      bool `yaml:"execPipe,omitempty"`
+	SuppressEmpty bool `yaml:"suppressEmpty,omitempty"`
+	Experimental  bool `yaml:"experimental,omitempty"`
 }
 
 var cfgContextKey = struct{}{}
@@ -111,8 +115,8 @@ type DataSource struct {
 // well supported, and anyway we need to do some extra parsing
 func (d *DataSource) UnmarshalYAML(value *yaml.Node) error {
 	type raw struct {
-		URL    string
 		Header http.Header
+		URL    string
 	}
 	r := raw{}
 	err := value.Decode(&r)
@@ -134,8 +138,8 @@ func (d *DataSource) UnmarshalYAML(value *yaml.Node) error {
 // well supported, and anyway we need to do some extra parsing
 func (d DataSource) MarshalYAML() (interface{}, error) {
 	type raw struct {
-		URL    string
 		Header http.Header
+		URL    string
 	}
 	r := raw{
 		URL:    d.URL.String(),

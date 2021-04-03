@@ -153,17 +153,17 @@ func BenchmarkIsFloat(b *testing.B) {
 func TestMax(t *testing.T) {
 	m := MathNS()
 	data := []struct {
-		n        []interface{}
 		expected interface{}
+		n        []interface{}
 	}{
-		{[]interface{}{nil}, int64(0)},
-		{[]interface{}{0}, int64(0)},
-		{[]interface{}{"not a number"}, int64(0)},
-		{[]interface{}{1}, int64(1)},
-		{[]interface{}{-1}, int64(-1)},
-		{[]interface{}{-1, 0, 1}, int64(1)},
-		{[]interface{}{3.14, 3, 3.9}, 3.9},
-		{[]interface{}{"14", "0xff", -5}, int64(255)},
+		{int64(0), []interface{}{nil}},
+		{int64(0), []interface{}{0}},
+		{int64(0), []interface{}{"not a number"}},
+		{int64(1), []interface{}{1}},
+		{int64(-1), []interface{}{-1}},
+		{int64(1), []interface{}{-1, 0, 1}},
+		{3.9, []interface{}{3.14, 3, 3.9}},
+		{int64(255), []interface{}{"14", "0xff", -5}},
 	}
 	for _, d := range data {
 		d := d
@@ -182,17 +182,17 @@ func TestMax(t *testing.T) {
 func TestMin(t *testing.T) {
 	m := MathNS()
 	data := []struct {
-		n        []interface{}
 		expected interface{}
+		n        []interface{}
 	}{
-		{[]interface{}{nil}, int64(0)},
-		{[]interface{}{0}, int64(0)},
-		{[]interface{}{"not a number"}, int64(0)},
-		{[]interface{}{1}, int64(1)},
-		{[]interface{}{-1}, int64(-1)},
-		{[]interface{}{-1, 0, 1}, int64(-1)},
-		{[]interface{}{3.14, 3, 3.9}, 3.},
-		{[]interface{}{"14", "0xff", -5}, int64(-5)},
+		{int64(0), []interface{}{nil}},
+		{int64(0), []interface{}{0}},
+		{int64(0), []interface{}{"not a number"}},
+		{int64(1), []interface{}{1}},
+		{int64(-1), []interface{}{-1}},
+		{int64(-1), []interface{}{-1, 0, 1}},
+		{3., []interface{}{3.14, 3, 3.9}},
+		{int64(-5), []interface{}{"14", "0xff", -5}},
 	}
 	for _, d := range data {
 		d := d

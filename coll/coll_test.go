@@ -43,16 +43,16 @@ func TestHas(t *testing.T) {
 
 func TestDict(t *testing.T) {
 	testdata := []struct {
-		args     []interface{}
 		expected map[string]interface{}
+		args     []interface{}
 	}{
-		{nil, map[string]interface{}{}},
-		{[]interface{}{}, map[string]interface{}{}},
-		{[]interface{}{"foo"}, map[string]interface{}{"foo": ""}},
-		{[]interface{}{42}, map[string]interface{}{"42": ""}},
-		{[]interface{}{"foo", nil}, map[string]interface{}{"foo": nil}},
-		{[]interface{}{"foo", "bar"}, map[string]interface{}{"foo": "bar"}},
-		{[]interface{}{"foo", "bar", "baz", true}, map[string]interface{}{
+		{expected: map[string]interface{}{}},
+		{args: []interface{}{}, expected: map[string]interface{}{}},
+		{args: []interface{}{"foo"}, expected: map[string]interface{}{"foo": ""}},
+		{args: []interface{}{42}, expected: map[string]interface{}{"42": ""}},
+		{args: []interface{}{"foo", nil}, expected: map[string]interface{}{"foo": nil}},
+		{args: []interface{}{"foo", "bar"}, expected: map[string]interface{}{"foo": "bar"}},
+		{args: []interface{}{"foo", "bar", "baz", true}, expected: map[string]interface{}{
 			"foo": "bar",
 			"baz": true,
 		}},
@@ -307,27 +307,36 @@ func TestSameTypes(t *testing.T) {
 
 func TestLessThan(t *testing.T) {
 	data := []struct {
-		key         string
 		left, right interface{}
+		key         string
 		out         bool
 	}{
-		{"", nil, nil, false},
-		{"", "a", "b", true},
-		{"", "a", "a", false},
-		{"", "b", "a", false},
-		{"", 1.00, 3.14, true},
-		{"", 'a', 'A', false},
-		{"", 'a', 'b', true},
-		{"", uint(0xff), uint(0x32), false},
-		{"", 1, 3, true},
-		{"", true, false, false},
-		{"", map[string]interface{}{"foo": 1}, map[string]interface{}{"foo": 2}, false},
-		{"foo", map[string]interface{}{"foo": 1}, map[string]interface{}{"foo": 2}, true},
-		{"bar", map[string]interface{}{"foo": 1}, map[string]interface{}{"foo": 2}, false},
-		{"X", coords{}, coords{-1, 2}, false},
-		{"Y", &coords{1, 1}, &coords{-1, 2}, true},
-		{"", &coords{1, 1}, &coords{-1, 2}, false},
-		{"foo", &coords{1, 1}, &coords{-1, 2}, false},
+		{key: ""},
+		{left: "a", right: "b", out: true},
+		{left: "a", right: "a"},
+		{left: "b", right: "a"},
+		{left: 1.00, right: 3.14, out: true},
+		{left: 'a', right: 'A'},
+		{left: 'a', right: 'b', out: true},
+		{left: uint(0xff), right: uint(0x32)},
+		{left: 1, right: 3, out: true},
+		{left: true, right: false, out: false},
+		{left: map[string]interface{}{"foo": 1}, right: map[string]interface{}{"foo": 2}},
+		{
+			key:   "foo",
+			left:  map[string]interface{}{"foo": 1},
+			right: map[string]interface{}{"foo": 2},
+			out:   true,
+		},
+		{
+			key:   "bar",
+			left:  map[string]interface{}{"foo": 1},
+			right: map[string]interface{}{"foo": 2},
+		},
+		{key: "X", left: coords{}, right: coords{-1, 2}},
+		{key: "Y", left: &coords{1, 1}, right: &coords{-1, 2}, out: true},
+		{left: &coords{1, 1}, right: &coords{-1, 2}},
+		{key: "foo", left: &coords{1, 1}, right: &coords{-1, 2}},
 	}
 
 	for _, d := range data {
@@ -461,38 +470,32 @@ func TestSort(t *testing.T) {
 
 func TestFlatten(t *testing.T) {
 	data := []struct {
-		depth    int
 		in       interface{}
 		expected []interface{}
+		depth    int
 	}{
-		{0, []int{1, 2, 3}, []interface{}{1, 2, 3}},
-		{0, [3]int{1, 2, 3}, []interface{}{1, 2, 3}},
-		{0,
-			[]interface{}{[]string{}, []int{1, 2}, 3},
-			[]interface{}{[]string{}, []int{1, 2}, 3},
+		{in: []int{1, 2, 3}, expected: []interface{}{1, 2, 3}},
+		{in: [3]int{1, 2, 3}, expected: []interface{}{1, 2, 3}},
+		{in: []interface{}{[]string{}, []int{1, 2}, 3}, expected: []interface{}{[]string{}, []int{1, 2}, 3}},
+		{in: []interface{}{[]string{"one"}, [][]int{{1, 2}}, 3},
+			expected: []interface{}{[]string{"one"}, [][]int{{1, 2}}, 3},
 		},
-		{0,
-			[]interface{}{[]string{"one"}, [][]int{{1, 2}}, 3},
-			[]interface{}{[]string{"one"}, [][]int{{1, 2}}, 3},
+		{depth: 1, in: []int{1, 2, 3}, expected: []interface{}{1, 2, 3}},
+		{depth: 1, in: [3]int{1, 2, 3}, expected: []interface{}{1, 2, 3}},
+		{depth: 1, in: []interface{}{[]string{}, []int{1, 2}, 3}, expected: []interface{}{1, 2, 3}},
+		{depth: 1,
+			in:       []interface{}{[]string{"one"}, [][]int{{1, 2}}, 3},
+			expected: []interface{}{"one", []int{1, 2}, 3},
 		},
-
-		{1, []int{1, 2, 3}, []interface{}{1, 2, 3}},
-		{1, [3]int{1, 2, 3}, []interface{}{1, 2, 3}},
-		{1, []interface{}{[]string{}, []int{1, 2}, 3}, []interface{}{1, 2, 3}},
-		{1,
-			[]interface{}{[]string{"one"}, [][]int{{1, 2}}, 3},
-			[]interface{}{"one", []int{1, 2}, 3},
+		{depth: 2, in: []int{1, 2, 3}, expected: []interface{}{1, 2, 3}},
+		{depth: 2, in: [3]int{1, 2, 3}, expected: []interface{}{1, 2, 3}},
+		{depth: 2, in: []interface{}{[]string{}, []int{1, 2}, 3}, expected: []interface{}{1, 2, 3}},
+		{depth: 2,
+			in:       []interface{}{[]string{"one"}, [][]int{{1, 2}}, 3},
+			expected: []interface{}{"one", 1, 2, 3},
 		},
-
-		{2, []int{1, 2, 3}, []interface{}{1, 2, 3}},
-		{2, [3]int{1, 2, 3}, []interface{}{1, 2, 3}},
-		{2, []interface{}{[]string{}, []int{1, 2}, 3}, []interface{}{1, 2, 3}},
-		{2,
-			[]interface{}{[]string{"one"}, [][]int{{1, 2}}, 3},
-			[]interface{}{"one", 1, 2, 3},
-		},
-		{2,
-			[]interface{}{
+		{depth: 2,
+			in: []interface{}{
 				[]string{"one"},
 				[]interface{}{
 					[]interface{}{
@@ -503,18 +506,17 @@ func TestFlatten(t *testing.T) {
 				},
 				6,
 			},
-			[]interface{}{"one", []int{1}, []interface{}{2, []int{3}}, 4, 5, 6},
+			expected: []interface{}{"one", []int{1}, []interface{}{2, []int{3}}, 4, 5, 6},
 		},
-
-		{-1, []int{1, 2, 3}, []interface{}{1, 2, 3}},
-		{-1, [3]int{1, 2, 3}, []interface{}{1, 2, 3}},
-		{-1, []interface{}{[]string{}, []int{1, 2}, 3}, []interface{}{1, 2, 3}},
-		{-1,
-			[]interface{}{[]string{"one"}, [][]int{{1, 2}}, 3},
-			[]interface{}{"one", 1, 2, 3},
+		{depth: -1, in: []int{1, 2, 3}, expected: []interface{}{1, 2, 3}},
+		{depth: -1, in: [3]int{1, 2, 3}, expected: []interface{}{1, 2, 3}},
+		{depth: -1, in: []interface{}{[]string{}, []int{1, 2}, 3}, expected: []interface{}{1, 2, 3}},
+		{depth: -1,
+			in:       []interface{}{[]string{"one"}, [][]int{{1, 2}}, 3},
+			expected: []interface{}{"one", 1, 2, 3},
 		},
-		{-1,
-			[]interface{}{
+		{depth: -1,
+			in: []interface{}{
 				[]string{"one"},
 				[]interface{}{
 					[]interface{}{
@@ -525,7 +527,7 @@ func TestFlatten(t *testing.T) {
 				},
 				6,
 			},
-			[]interface{}{"one", 1, 2, 3, 4, 5, 6},
+			expected: []interface{}{"one", 1, 2, 3, 4, 5, 6},
 		},
 	}
 

@@ -15,11 +15,11 @@ func LazyReadCloser(open func() (io.ReadCloser, error)) io.ReadCloser {
 }
 
 type lazyReadCloser struct {
-	opened sync.Once
-	r      io.ReadCloser
+	r io.ReadCloser
 	// caches the error that came from open(), if any
 	openErr error
 	open    func() (io.ReadCloser, error)
+	opened  sync.Once
 }
 
 var _ io.ReadCloser = (*lazyReadCloser)(nil)

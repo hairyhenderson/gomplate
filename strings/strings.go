@@ -92,11 +92,11 @@ func CamelCase(in string) string {
 
 // WordWrapOpts defines the options to apply to the WordWrap function
 type WordWrapOpts struct {
-	// The desired maximum line length in characters (defaults to 80)
-	Width uint
-
 	// Line-break sequence to insert (defaults to "\n")
 	LBSeq string
+
+	// The desired maximum line length in characters (defaults to 80)
+	Width uint
 }
 
 // applies default options

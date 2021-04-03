@@ -197,102 +197,85 @@ func TestPickConfigFile(t *testing.T) {
 }
 
 func TestApplyEnvVars(t *testing.T) {
+	os.Setenv("GOMPLATE_PLUGIN_TIMEOUT", "bogus")
+	_, err := applyEnvVars(context.Background(), &config.Config{})
+	os.Unsetenv("GOMPLATE_PLUGIN_TIMEOUT")
+	assert.Error(t, err)
+
 	data := []struct {
+		input, expected *config.Config
 		env             string
 		value           string
-		shouldErr       bool
-		input, expected *config.Config
 	}{
 		{
-			"GOMPLATE_PLUGIN_TIMEOUT", "bogus",
-			true,
-			&config.Config{}, nil,
-		},
-		{
-			"GOMPLATE_PLUGIN_TIMEOUT", "bogus",
-			false,
 			&config.Config{PluginTimeout: 2 * time.Second},
 			&config.Config{PluginTimeout: 2 * time.Second},
+			"GOMPLATE_PLUGIN_TIMEOUT", "bogus",
 		},
 		{
-			"GOMPLATE_PLUGIN_TIMEOUT", "2s",
-			false,
 			&config.Config{},
 			&config.Config{PluginTimeout: 2 * time.Second},
-		},
-		{
 			"GOMPLATE_PLUGIN_TIMEOUT", "2s",
-			false,
-			&config.Config{PluginTimeout: 100 * time.Millisecond},
-			&config.Config{PluginTimeout: 100 * time.Millisecond},
 		},
-
 		{
-			"GOMPLATE_SUPPRESS_EMPTY", "bogus",
-			false,
+			&config.Config{PluginTimeout: 100 * time.Millisecond},
+			&config.Config{PluginTimeout: 100 * time.Millisecond},
+			"GOMPLATE_PLUGIN_TIMEOUT", "2s",
+		},
+		{
 			&config.Config{},
 			&config.Config{SuppressEmpty: false},
+			"GOMPLATE_SUPPRESS_EMPTY", "bogus",
 		},
 		{
-			"GOMPLATE_SUPPRESS_EMPTY", "true",
-			false,
 			&config.Config{},
 			&config.Config{SuppressEmpty: true},
+			"GOMPLATE_SUPPRESS_EMPTY", "true",
 		},
 		{
+			&config.Config{SuppressEmpty: true},
+			&config.Config{SuppressEmpty: true},
 			"GOMPLATE_SUPPRESS_EMPTY", "false",
-			false,
-			&config.Config{SuppressEmpty: true},
-			&config.Config{SuppressEmpty: true},
 		},
-
 		{
-			"GOMPLATE_EXPERIMENTAL", "bogus",
-			false,
 			&config.Config{},
 			&config.Config{Experimental: false},
+			"GOMPLATE_EXPERIMENTAL", "bogus",
 		},
 		{
-			"GOMPLATE_EXPERIMENTAL", "true",
-			false,
 			&config.Config{},
 			&config.Config{Experimental: true},
+			"GOMPLATE_EXPERIMENTAL", "true",
 		},
 		{
+			&config.Config{Experimental: true},
+			&config.Config{Experimental: true},
 			"GOMPLATE_EXPERIMENTAL", "false",
-			false,
-			&config.Config{Experimental: true},
-			&config.Config{Experimental: true},
 		},
 		{
-			"GOMPLATE_LEFT_DELIM", "--",
-			false,
 			&config.Config{},
 			&config.Config{LDelim: "--"},
-		},
-		{
 			"GOMPLATE_LEFT_DELIM", "--",
-			false,
-			&config.Config{LDelim: "{{"},
-			&config.Config{LDelim: "{{"},
 		},
 		{
-			"GOMPLATE_RIGHT_DELIM", ")>",
-			false,
+			&config.Config{LDelim: "{{"},
+			&config.Config{LDelim: "{{"},
+			"GOMPLATE_LEFT_DELIM", "--",
+		},
+		{
 			&config.Config{},
 			&config.Config{RDelim: ")>"},
-		},
-		{
 			"GOMPLATE_RIGHT_DELIM", ")>",
-			false,
-			&config.Config{RDelim: "}}"},
-			&config.Config{RDelim: "}}"},
 		},
 		{
+			&config.Config{RDelim: "}}"},
+			&config.Config{RDelim: "}}"},
+			"GOMPLATE_RIGHT_DELIM", ")>",
+		},
+		{
+			&config.Config{RDelim: "}}"},
+			&config.Config{RDelim: "}}"},
 			"GOMPLATE_RIGHT_DELIM", "",
-			false,
-			&config.Config{RDelim: "}}"},
-			&config.Config{RDelim: "}}"},
 		},
 	}
 
@@ -303,12 +286,8 @@ func TestApplyEnvVars(t *testing.T) {
 
 			actual, err := applyEnvVars(context.Background(), d.input)
 			os.Unsetenv(d.env)
-			if d.shouldErr {
-				assert.Error(t, err)
-			} else {
-				assert.NoError(t, err)
-				assert.EqualValues(t, d.expected, actual)
-			}
+			assert.NoError(t, err)
+			assert.EqualValues(t, d.expected, actual)
 		})
 	}
 }
