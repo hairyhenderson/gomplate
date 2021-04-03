@@ -86,6 +86,8 @@ func freeport() (port int, addr string) {
 
 // waitForURL - waits up to 20s for a given URL to respond with a 200
 func waitForURL(t *testing.T, url string) error {
+	t.Helper()
+
 	client := http.DefaultClient
 	retries := 100
 	for retries > 0 {

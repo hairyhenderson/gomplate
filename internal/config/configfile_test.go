@@ -624,15 +624,15 @@ pluginTimeout: 5s
 		},
 	}
 	expected = `---
-in: foo
-outputFiles: ['-']
-leftDelim: L
-rightDelim: R
 templates:
   bar:
     url: file:///bar
   foo:
     url: http://example.com/foo.tmpl
+in: foo
+outputFiles: ['-']
+leftDelim: L
+rightDelim: R
 `
 	assert.Equal(t, expected, c.String())
 
@@ -647,15 +647,15 @@ templates:
 		},
 	}
 	expected = `---
-in: long inp...
-outputFiles: ['-']
-leftDelim: L
-rightDelim: R
 templates:
   bar:
     url: file:///bar
   foo:
     url: http://example.com/foo.tmpl
+in: long inp...
+outputFiles: ['-']
+leftDelim: L
+rightDelim: R
 `
 	assert.Equal(t, expected, c.String())
 
@@ -675,16 +675,16 @@ templates:
 		},
 	}
 	expected = `---
-inputDir: in/
-outputDir: out/
 context:
   data:
     url: foo://bar
   data2:
-    url: http://example.com/data.json
     header:
       Accept:
         - text/plain
+    url: http://example.com/data.json
+inputDir: in/
+outputDir: out/
 `
 	assert.Equal(t, expected, c.String())
 
@@ -870,6 +870,14 @@ func TestParseSourceURL(t *testing.T) {
 		Path:   path.Join(filepath.ToSlash(wd), "foo/bar.json"),
 	}
 	u, err = ParseSourceURL("./foo/bar.json")
+	assert.NoError(t, err)
+	assert.EqualValues(t, expected, u)
+
+	expected = &url.URL{
+		Scheme: "file",
+		Path:   filepath.ToSlash(wd) + "/",
+	}
+	u, err = ParseSourceURL(wd)
 	assert.NoError(t, err)
 	assert.EqualValues(t, expected, u)
 }

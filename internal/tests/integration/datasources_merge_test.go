@@ -42,7 +42,7 @@ func TestDatasources_Merge(t *testing.T) {
 	o, e, err = cmd(t,
 		"-d", "default="+tmpDir.Join("default.yml"),
 		"-d", "config=merge:user|default",
-		"-i", `{{ defineDatasource "user" `+"`"+tmpDir.Join("config.json")+"`"+` }}{{ ds "config" | toJSON }}`,
+		"-i", `{{ defineDatasource "user" "`+tmpDir.Join("config.json")+`" }}{{ ds "config" | toJSON }}`,
 	).run()
 	assertSuccess(t, o, e, err, `{"foo":{"bar":"baz"},"isDefault":false,"isOverride":true,"other":true}`)
 

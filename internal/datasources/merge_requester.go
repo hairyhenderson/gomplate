@@ -43,7 +43,7 @@ func (r *mergeRequester) Request(ctx context.Context, u *url.URL, header http.He
 			// maybe it's a relative filename?
 			u, uerr := config.ParseSourceURL(part)
 			if uerr != nil {
-				return nil, uerr
+				return nil, fmt.Errorf("failed to lookup datasource %s: %v, %w", part, err, uerr)
 			}
 			subSource = config.DataSource{URL: u}
 		}

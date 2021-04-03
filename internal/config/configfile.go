@@ -639,6 +639,12 @@ func absFileURL(value string) (*url.URL, error) {
 		Scheme: "file",
 		Path:   wd + "/",
 	}
+
+	// If this is a directory but doesn't end with a /, add a /
+	if shouldAddSlash(value) {
+		value += "/"
+	}
+
 	relURL, err := url.Parse(value)
 	if err != nil {
 		return nil, fmt.Errorf("can't parse value %s as URL: %w", value, err)
@@ -649,4 +655,21 @@ func absFileURL(value string) (*url.URL, error) {
 		resolved.Path = resolved.Path[1:]
 	}
 	return resolved, nil
+}
+
+func shouldAddSlash(value string) bool {
+	if strings.HasSuffix(value, "/") {
+		// already got one
+		return false
+	}
+
+	fs := os.DirFS(filepath.Dir(value))
+	f, err := fs.Open(filepath.Base(value))
+	if err == nil {
+		fi, err := f.Stat()
+		if err == nil && fi.IsDir() {
+			return true
+		}
+	}
+	return false
 }

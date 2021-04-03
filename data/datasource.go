@@ -147,7 +147,11 @@ func (d *Data) Include(alias string, args ...string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	_, b, err := datasources.ReadDataSource(d.ctx, ds, args...)
+
+	// TODO: find a way around this hack... global ds registration maybe?
+	ctx := config.WithDataSources(d.ctx, d.ds)
+
+	_, b, err := datasources.ReadDataSource(ctx, ds, args...)
 	return string(b), err
 }
 
@@ -157,7 +161,11 @@ func (d *Data) Datasource(alias string, args ...string) (interface{}, error) {
 	if err != nil {
 		return "", err
 	}
-	resp, err := datasources.Request(d.ctx, ds, args...)
+
+	// TODO: find a way around this hack... global ds registration maybe?
+	ctx := config.WithDataSources(d.ctx, d.ds)
+
+	resp, err := datasources.Request(ctx, ds, args...)
 	if err != nil {
 		return nil, err
 	}
@@ -168,10 +176,14 @@ func (d *Data) Datasource(alias string, args ...string) (interface{}, error) {
 // DatasourceReachable - Determines if the named datasource is reachable with
 // the given arguments. Reads from the datasource, and discards the returned data.
 func (d *Data) DatasourceReachable(alias string, args ...string) bool {
-	source, ok := d.ds[alias]
+	ds, ok := d.ds[alias]
 	if !ok {
 		return false
 	}
-	_, _, err := datasources.ReadDataSource(d.ctx, source, args...)
+
+	// TODO: find a way around this hack... global ds registration maybe?
+	ctx := config.WithDataSources(d.ctx, d.ds)
+
+	_, _, err := datasources.ReadDataSource(ctx, ds, args...)
 	return err == nil
 }
