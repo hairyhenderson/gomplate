@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1.2.1-labs
 FROM --platform=linux/amd64 hairyhenderson/upx:3.94 AS upx
 
-FROM --platform=linux/amd64 golang:1.16.2-alpine3.13 AS build
+FROM --platform=linux/amd64 golang:1.16.3-alpine AS build
 
 ARG TARGETOS
 ARG TARGETARCH
@@ -25,7 +25,7 @@ RUN --mount=type=cache,id=go-build-${TARGETOS}-${TARGETARCH}${TARGETVARIANT},tar
 		make build
 RUN mv bin/gomplate* /bin/
 
-FROM --platform=linux/amd64 alpine:3.13.3 AS compress
+FROM --platform=linux/amd64 alpine:3.13.4 AS compress
 
 ARG TARGETOS
 ARG TARGETARCH
@@ -61,7 +61,7 @@ COPY --from=build /bin/gomplate_${TARGETOS}-${TARGETARCH}${TARGETVARIANT} /gompl
 
 ENTRYPOINT [ "/gomplate" ]
 
-FROM alpine:3.13.3 AS gomplate-alpine
+FROM alpine:3.13.4 AS gomplate-alpine
 
 ARG VCS_REF
 ARG TARGETOS
