@@ -38,6 +38,8 @@ func setupDatasourcesVaultTest(t *testing.T) *vaultClient {
 }
 
 func startVault(t *testing.T) (*fs.Dir, *vaultClient) {
+	t.Helper()
+
 	pidDir := fs.NewDir(t, "gomplate-inttests-vaultpid")
 	t.Cleanup(pidDir.Remove)
 
@@ -73,8 +75,18 @@ func startVault(t *testing.T) (*fs.Dir, *vaultClient) {
 	err = waitForURL(t, "http://"+vaultAddr+"/v1/sys/health")
 	require.NoError(t, err)
 
-	vaultClient, err := createVaultClient(vaultAddr, vaultRootToken)
+	config := vaultapi.DefaultConfig()
+	config.Address = "http://" + vaultAddr
+	client, err := vaultapi.NewClient(config)
 	require.NoError(t, err)
+
+	t.Logf("vaultAddr is %s", vaultAddr)
+
+	vaultClient := &vaultClient{
+		vc:   client,
+		addr: vaultAddr,
+	}
+	client.SetToken(vaultRootToken)
 
 	t.Cleanup(func() {
 		err := result.Cmd.Process.Kill()
@@ -95,6 +107,24 @@ func startVault(t *testing.T) (*fs.Dir, *vaultClient) {
 	})
 
 	return tmpDir, vaultClient
+}
+
+type vaultClient struct {
+	vc   *vaultapi.Client
+	addr string
+}
+
+func (v *vaultClient) tokenCreate(policy string, uses int) (string, error) {
+	opts := &vaultapi.TokenCreateRequest{
+		Policies: []string{policy},
+		TTL:      "1m",
+		NumUses:  uses,
+	}
+	token, err := v.vc.Auth().Token().Create(opts)
+	if err != nil {
+		return "", err
+	}
+	return token.Auth.ClientToken, nil
 }
 
 func TestDatasources_Vault_TokenAuth(t *testing.T) {

@@ -16,7 +16,6 @@ import (
 	"time"
 
 	gcmd "github.com/hairyhenderson/gomplate/v3/internal/cmd"
-	vaultapi "github.com/hashicorp/vault/api"
 	"github.com/stretchr/testify/assert"
 	"gotest.tools/v3/icmd"
 )
@@ -109,41 +108,6 @@ func waitForURL(t *testing.T, url string) error {
 		}
 	}
 	return nil
-}
-
-type vaultClient struct {
-	vc        *vaultapi.Client
-	addr      string
-	rootToken string
-}
-
-func createVaultClient(addr string, rootToken string) (*vaultClient, error) {
-	config := vaultapi.DefaultConfig()
-	config.Address = "http://" + addr
-	client, err := vaultapi.NewClient(config)
-	if err != nil {
-		return nil, err
-	}
-	v := &vaultClient{
-		vc:        client,
-		addr:      addr,
-		rootToken: rootToken,
-	}
-	client.SetToken(rootToken)
-	return v, nil
-}
-
-func (v *vaultClient) tokenCreate(policy string, uses int) (string, error) {
-	opts := &vaultapi.TokenCreateRequest{
-		Policies: []string{policy},
-		TTL:      "1m",
-		NumUses:  uses,
-	}
-	token, err := v.vc.Auth().Token().Create(opts)
-	if err != nil {
-		return "", err
-	}
-	return token.Auth.ClientToken, nil
 }
 
 type command struct {

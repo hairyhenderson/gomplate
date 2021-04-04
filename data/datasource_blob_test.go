@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	"github.com/hairyhenderson/gomplate/v3/internal/config"
+	"github.com/hairyhenderson/gomplate/v3/internal/datasources"
 	"github.com/johannesboyne/gofakes3"
 	"github.com/johannesboyne/gofakes3/backend/s3mem"
 
@@ -58,12 +59,10 @@ func putFile(backend gofakes3.Backend, bucket, file, mime, content string) error
 }
 
 func testData(alias, u string) *Data {
-	return &Data{
-		ds: map[string]config.DataSource{
-			alias: {URL: mustParseURL(u)},
-		},
-		ctx: context.Background(),
-	}
+	reg := datasources.NewRegistry()
+	reg.Register(alias, config.DataSource{URL: mustParseURL(u)})
+
+	return &Data{ctx: context.Background(), reg: reg}
 }
 
 func TestReadBlob(t *testing.T) {

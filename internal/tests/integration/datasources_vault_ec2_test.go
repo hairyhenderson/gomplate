@@ -13,6 +13,8 @@ import (
 )
 
 func setupDatasourcesVaultEc2Test(t *testing.T) (*fs.Dir, *vaultClient, *httptest.Server, []byte) {
+	t.Helper()
+
 	priv, der, _ := certificateGenerate()
 	cert := pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE", Bytes: der})
 

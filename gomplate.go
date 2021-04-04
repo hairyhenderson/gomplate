@@ -15,6 +15,7 @@ import (
 
 	"github.com/hairyhenderson/gomplate/v3/data"
 	"github.com/hairyhenderson/gomplate/v3/internal/config"
+	"github.com/hairyhenderson/gomplate/v3/internal/datasources"
 	"github.com/pkg/errors"
 	"github.com/rs/zerolog"
 )
@@ -77,6 +78,14 @@ func Run(ctx context.Context, cfg *config.Config) error {
 
 	Metrics = newMetrics()
 	defer runCleanupHooks()
+
+	// register datasources
+	for k, v := range cfg.DataSources {
+		datasources.DefaultRegistry.Register(k, v)
+	}
+	for k, v := range cfg.Context {
+		datasources.DefaultRegistry.Register(k, v)
+	}
 
 	d := data.FromConfig(ctx, cfg)
 	log.Debug().Str("data", fmt.Sprintf("%+v", d)).Msg("created data from config")

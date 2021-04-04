@@ -6,9 +6,48 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"sync"
 
 	"github.com/hairyhenderson/gomplate/v3/internal/config"
 )
+
+// dsRegistry is the global datasource registry
+var DefaultRegistry Registry = NewRegistry()
+
+type Registry interface {
+	// Register a datasource
+	Register(alias string, ds config.DataSource)
+	// Lookup a registered datasource
+	Lookup(alias string) (config.DataSource, bool)
+}
+
+func NewRegistry() Registry {
+	return &defaultRegistry{
+		RWMutex: &sync.RWMutex{},
+		m:       map[string]config.DataSource{},
+	}
+}
+
+type defaultRegistry struct {
+	*sync.RWMutex
+	m map[string]config.DataSource
+}
+
+// Register a datasource
+func (r *defaultRegistry) Register(alias string, ds config.DataSource) {
+	r.Lock()
+	defer r.Unlock()
+	r.m[alias] = ds
+}
+
+// Lookup a registered datasource
+func (r *defaultRegistry) Lookup(alias string) (config.DataSource, bool) {
+	r.RLock()
+	defer r.RUnlock()
+
+	ds, ok := r.m[alias]
+	return ds, ok
+}
 
 // requester is the interface that wraps the Request method. Implementations
 // will not typically support many different URL schemes.

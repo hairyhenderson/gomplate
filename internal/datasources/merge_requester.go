@@ -25,7 +25,7 @@ import (
 // separate sources first and specify the alias names. HTTP headers are also not
 // supported directly.
 type mergeRequester struct {
-	ds map[string]config.DataSource
+	Registry
 }
 
 func (r *mergeRequester) Request(ctx context.Context, u *url.URL, header http.Header) (*Response, error) {
@@ -74,12 +74,8 @@ func (r *mergeRequester) Request(ctx context.Context, u *url.URL, header http.He
 }
 
 func (r *mergeRequester) lookup(ctx context.Context, alias string) (config.DataSource, error) {
-	d := config.DataSourcesFromContext(ctx)
-	for k, v := range d {
-		r.ds[k] = v
-	}
-
-	ds, ok := r.ds[alias]
+	ds, ok := r.Lookup(alias)
+	// ds, ok := dsRegistry[alias]
 	if !ok {
 		srcURL, err := url.Parse(alias)
 		if err != nil || !srcURL.IsAbs() {
@@ -87,10 +83,13 @@ func (r *mergeRequester) lookup(ctx context.Context, alias string) (config.DataS
 		}
 
 		ds.URL = srcURL
-		// we can't support HTTP headers directly...
-		// ds.Header = d.extraHeaders[alias]
 
-		r.ds[alias] = ds
+		// if any extra HTTP headers are present, add them
+		cfg := config.FromContext(ctx)
+		ds.Header = cfg.ExtraHeaders[alias]
+
+		// it's new! let's register it...
+		r.Register(alias, ds)
 	}
 
 	return ds, nil

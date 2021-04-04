@@ -6,6 +6,7 @@ import (
 	"net/url"
 	"os"
 	"path/filepath"
+	"sync"
 	"testing"
 
 	"github.com/hairyhenderson/gomplate/v3/internal/config"
@@ -50,8 +51,9 @@ func TestReadMerge(t *testing.T) {
 
 	u := mustParseURL("merge:file:///tmp/jsonfile.json|file:///tmp/yamlfile.yaml")
 
-	r := &mergeRequester{
-		ds: map[string]config.DataSource{
+	dsRegistry := &defaultRegistry{
+		RWMutex: &sync.RWMutex{},
+		m: map[string]config.DataSource{
 			"foo":       {URL: u},
 			"bar":       {URL: mustParseURL("file:///tmp/jsonfile.json")},
 			"baz":       {URL: mustParseURL("file:///tmp/yamlfile.yaml")},
@@ -61,6 +63,8 @@ func TestReadMerge(t *testing.T) {
 			"array":     {URL: mustParseURL("file:///tmp/array.json?type=" + url.QueryEscape(jsonArrayMimetype))},
 		},
 	}
+
+	r := &mergeRequester{dsRegistry}
 
 	actual, err := r.Request(ctx, u, nil)
 	assert.NoError(t, err)
@@ -83,9 +87,7 @@ func TestReadMerge(t *testing.T) {
 	assert.Equal(t, yamlMimetype, actual.ContentType)
 
 	oldCtx := ctx
-	ctx = config.WithDataSources(ctx, map[string]config.DataSource{
-		"incontext": {URL: mustParseURL("file:///tmp/jsonfile.json")},
-	})
+	dsRegistry.Register("incontext", config.DataSource{URL: mustParseURL("file:///tmp/jsonfile.json")})
 	u = mustParseURL("merge:incontext|baz")
 	actual, err = r.Request(ctx, u, nil)
 	assert.NoError(t, err)

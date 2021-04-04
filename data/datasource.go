@@ -35,7 +35,7 @@ func init() {
 type Data struct {
 	ctx context.Context
 
-	ds map[string]config.DataSource
+	reg datasources.Registry
 
 	// cache map[string][]byte
 
@@ -65,23 +65,24 @@ func NewData(datasourceArgs, headerArgs []string) (*Data, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	data := FromConfig(context.Background(), cfg)
+
 	return data, nil
 }
 
 // FromConfig - internal use only!
+// Deprecated: will be removed!
 func FromConfig(ctx context.Context, cfg *config.Config) *Data {
-	ds := make(map[string]config.DataSource, len(cfg.DataSources)+len(cfg.Context))
-	for alias, d := range cfg.DataSources {
-		ds[alias] = d
+	// we can't store them in *Data anymore - register directly
+	for alias, ds := range cfg.DataSources {
+		datasources.DefaultRegistry.Register(alias, ds)
 	}
-	for alias, d := range cfg.Context {
-		ds[alias] = d
-	}
+
 	return &Data{
 		ctx:          ctx,
-		ds:           ds,
 		extraHeaders: cfg.ExtraHeaders,
+		reg:          datasources.DefaultRegistry,
 	}
 }
 
@@ -111,23 +112,20 @@ func (d *Data) DefineDatasource(alias, value string) (string, error) {
 		URL:    srcURL,
 		Header: d.extraHeaders[alias],
 	}
-	if d.ds == nil {
-		d.ds = make(map[string]config.DataSource)
-	}
-	d.ds[alias] = s
-	d.ctx = config.WithDataSources(d.ctx, d.ds)
+	d.reg.Register(alias, s)
+
 	return "", nil
 }
 
 // DatasourceExists -
 func (d *Data) DatasourceExists(alias string) bool {
-	_, ok := d.ds[alias]
+	_, ok := d.reg.Lookup(alias)
 	return ok
 }
 
-func (d *Data) lookupSource(alias string) (ds config.DataSource, err error) {
-	var ok bool
-	ds, ok = d.ds[alias]
+func (d *Data) lookupSource(alias string) (config.DataSource, error) {
+	// var ok bool
+	ds, ok := d.reg.Lookup(alias)
 	if !ok {
 		srcURL, err := url.Parse(alias)
 		if err != nil || !srcURL.IsAbs() {
@@ -136,7 +134,7 @@ func (d *Data) lookupSource(alias string) (ds config.DataSource, err error) {
 		ds.URL = srcURL
 		ds.Header = d.extraHeaders[alias]
 
-		d.ds[alias] = ds
+		d.reg.Register(alias, ds)
 	}
 	return ds, nil
 }
@@ -148,10 +146,7 @@ func (d *Data) Include(alias string, args ...string) (string, error) {
 		return "", err
 	}
 
-	// TODO: find a way around this hack... global ds registration maybe?
-	ctx := config.WithDataSources(d.ctx, d.ds)
-
-	_, b, err := datasources.ReadDataSource(ctx, ds, args...)
+	_, b, err := datasources.ReadDataSource(d.ctx, ds, args...)
 	return string(b), err
 }
 
@@ -162,10 +157,7 @@ func (d *Data) Datasource(alias string, args ...string) (interface{}, error) {
 		return "", err
 	}
 
-	// TODO: find a way around this hack... global ds registration maybe?
-	ctx := config.WithDataSources(d.ctx, d.ds)
-
-	resp, err := datasources.Request(ctx, ds, args...)
+	resp, err := datasources.Request(d.ctx, ds, args...)
 	if err != nil {
 		return nil, err
 	}
@@ -176,14 +168,11 @@ func (d *Data) Datasource(alias string, args ...string) (interface{}, error) {
 // DatasourceReachable - Determines if the named datasource is reachable with
 // the given arguments. Reads from the datasource, and discards the returned data.
 func (d *Data) DatasourceReachable(alias string, args ...string) bool {
-	ds, ok := d.ds[alias]
+	ds, ok := d.reg.Lookup(alias)
 	if !ok {
 		return false
 	}
 
-	// TODO: find a way around this hack... global ds registration maybe?
-	ctx := config.WithDataSources(d.ctx, d.ds)
-
-	_, _, err := datasources.ReadDataSource(ctx, ds, args...)
+	_, _, err := datasources.ReadDataSource(d.ctx, ds, args...)
 	return err == nil
 }

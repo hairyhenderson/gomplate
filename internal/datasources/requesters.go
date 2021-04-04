@@ -3,8 +3,6 @@ package datasources
 import (
 	"context"
 	"fmt"
-
-	"github.com/hairyhenderson/gomplate/v3/internal/config"
 )
 
 var requesters = map[string]requester{}
@@ -31,9 +29,7 @@ func registerRequesters() {
 	requesters["http"] = h
 	requesters["https"] = h
 
-	requesters["merge"] = &mergeRequester{
-		ds: map[string]config.DataSource{},
-	}
+	requesters["merge"] = &mergeRequester{DefaultRegistry}
 
 	requesters["stdin"] = &stdinRequester{}
 

@@ -10,6 +10,7 @@ import (
 	"testing"
 
 	"github.com/hairyhenderson/gomplate/v3/internal/config"
+	"github.com/hairyhenderson/gomplate/v3/internal/datasources"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -45,12 +46,8 @@ func TestHTTPFile(t *testing.T) {
 	defer cancel()
 
 	u, _ := url.Parse(srv.URL)
-	data := &Data{
-		ds: map[string]config.DataSource{
-			"foo": {URL: u},
-		},
-		ctx: ctx,
-	}
+	data := &Data{ctx: ctx, reg: datasources.NewRegistry()}
+	data.reg.Register("foo", config.DataSource{URL: u})
 
 	expected := map[string]interface{}{
 		"hello": "world",
@@ -71,10 +68,9 @@ func TestHTTPFileWithHeaders(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	sources := make(map[string]config.DataSource)
-
 	u, _ := url.Parse(srv.URL)
-	sources["foo"] = config.DataSource{
+	data := &Data{ctx: ctx, reg: datasources.NewRegistry()}
+	data.reg.Register("foo", config.DataSource{
 		URL: u,
 		Header: http.Header{
 			"Foo":             {"bar"},
@@ -82,11 +78,8 @@ func TestHTTPFileWithHeaders(t *testing.T) {
 			"User-Agent":      {},
 			"Accept-Encoding": {"test"},
 		},
-	}
-	data := &Data{
-		ds:  sources,
-		ctx: ctx,
-	}
+	})
+
 	expected := http.Header{
 		"Accept-Encoding": {"test"},
 		"Foo":             {"bar", "baz"},
@@ -101,9 +94,9 @@ func TestHTTPFileWithHeaders(t *testing.T) {
 		"User-Agent":      {"Go-http-client/1.1"},
 	}
 	data = &Data{
-		ds:           sources,
 		extraHeaders: map[string]http.Header{srv.URL: expected},
 		ctx:          ctx,
+		reg:          datasources.NewRegistry(),
 	}
 	actual, err = data.Datasource(srv.URL)
 	assert.NoError(t, err)
