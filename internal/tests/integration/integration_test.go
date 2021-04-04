@@ -150,6 +150,8 @@ func (c *command) withEnv(k, v string) *command {
 var GomplateBinPath = ""
 
 func (c *command) run() (o, e string, err error) {
+	c.t.Helper()
+
 	if GomplateBinPath != "" {
 		return c.runCompiled(GomplateBinPath)
 	}
@@ -167,6 +169,7 @@ func (c *command) runInProcess() (o, e string, err error) {
 			defer os.Unsetenv(k)
 		}
 		os.Setenv(k, c.env[k])
+		// c.t.Logf("os.Setenv(%s, %s)", k, c.env[k])
 	}
 
 	if c.dir != "" {

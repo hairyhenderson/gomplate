@@ -158,7 +158,7 @@ func consulVaultAuthTest(consulAddr string, v *vaultClient) func(t *testing.T) {
 			"-d", "consul=consul://",
 			"-i", `{{(ds "consul" "foo")}}`).
 			withEnv("VAULT_TOKEN", vaultRootToken).
-			withEnv("VAULT_ADDR", "http://"+v.addr).
+			withEnv("VAULT_ADDR", v.vc.Address()).
 			withEnv("CONSUL_VAULT_ROLE", "readonly").
 			withEnv("CONSUL_HTTP_ADDR", "http://"+consulAddr).
 			run()

@@ -3,7 +3,9 @@
 package integration
 
 import (
+	"errors"
 	"os"
+	"os/exec"
 	"os/user"
 	"path"
 	"testing"
@@ -80,21 +82,24 @@ func startVault(t *testing.T) (*fs.Dir, *vaultClient) {
 	client, err := vaultapi.NewClient(config)
 	require.NoError(t, err)
 
-	t.Logf("vaultAddr is %s", vaultAddr)
-
-	vaultClient := &vaultClient{
-		vc:   client,
-		addr: vaultAddr,
-	}
 	client.SetToken(vaultRootToken)
+	vaultClient := &vaultClient{client}
+	assert.Equal(t, "http://"+vaultAddr, client.Address())
 
 	t.Cleanup(func() {
 		err := result.Cmd.Process.Kill()
 		require.NoError(t, err)
 
-		result.Cmd.Wait()
-
-		result.Assert(t, icmd.Expected{ExitCode: 0})
+		err = result.Cmd.Wait()
+		require.Error(t, err)
+		var exerr *exec.ExitError
+		if errors.As(err, &exerr) {
+			require.Equal(t, "signal: killed", exerr.Error())
+			err = nil
+		}
+		require.NoError(t, err)
+		// should exit with -1 since we killed it!
+		require.Equal(t, -1, result.Cmd.ProcessState.ExitCode())
 
 		// restore old token if it was backed up
 		u, _ := user.Current()
@@ -110,8 +115,7 @@ func startVault(t *testing.T) (*fs.Dir, *vaultClient) {
 }
 
 type vaultClient struct {
-	vc   *vaultapi.Client
-	addr string
+	vc *vaultapi.Client
 }
 
 func (v *vaultClient) tokenCreate(policy string, uses int) (string, error) {
@@ -137,30 +141,30 @@ func TestDatasources_Vault_TokenAuth(t *testing.T) {
 
 	o, e, err := cmd(t, "-d", "vault=vault:///secret",
 		"-i", `{{(ds "vault" "foo").value}}`).
-		withEnv("VAULT_ADDR", "http://"+v.addr).
+		withEnv("VAULT_ADDR", v.vc.Address()).
 		withEnv("VAULT_TOKEN", tok).
 		run()
 	assertSuccess(t, o, e, err, "bar")
 
-	o, e, err = cmd(t, "-d", "vault=vault+http://"+v.addr+"/secret",
+	o, e, err = cmd(t, "-d", "vault=vault+"+v.vc.Address()+"/secret",
 		"-i", `{{(ds "vault" "foo").value}}`).
 		withEnv("VAULT_TOKEN", tok).
 		run()
 	assertSuccess(t, o, e, err, "bar")
 
 	_, _, err = cmd(t, "-d", "vault=vault:///secret",
-		"-i", `{{(ds "vault" "bar").value}}`).
-		withEnv("VAULT_ADDR", "http://"+v.addr).
+		"-i", `{{(ds "vault" "bar")}}`).
+		withEnv("VAULT_ADDR", v.vc.Address()).
 		withEnv("VAULT_TOKEN", tok).
 		run()
-	assert.ErrorContains(t, err, "error calling ds: Couldn't read datasource 'vault': no value found for path /secret/bar")
+	assert.ErrorContains(t, err, "error calling ds: failed to request vault:///secret/bar: no value found for path /secret/bar")
 
 	tokFile := fs.NewFile(t, "test-vault-token", fs.WithContent(tok))
 	defer tokFile.Remove()
 
 	o, e, err = cmd(t, "-d", "vault=vault:///secret",
 		"-i", `{{(ds "vault" "foo").value}}`).
-		withEnv("VAULT_ADDR", "http://"+v.addr).
+		withEnv("VAULT_ADDR", v.vc.Address()).
 		withEnv("VAULT_TOKEN_FILE", tokFile.Path()).
 		run()
 	assertSuccess(t, o, e, err, "bar")
@@ -186,7 +190,7 @@ func TestDatasources_Vault_UserPassAuth(t *testing.T) {
 
 	o, e, err := cmd(t, "-d", "vault=vault:///secret",
 		"-i", `{{(ds "vault" "foo").value}}`).
-		withEnv("VAULT_ADDR", "http://"+v.addr).
+		withEnv("VAULT_ADDR", v.vc.Address()).
 		withEnv("VAULT_AUTH_USERNAME", "dave").
 		withEnv("VAULT_AUTH_PASSWORD", "foo").
 		run()
@@ -199,7 +203,7 @@ func TestDatasources_Vault_UserPassAuth(t *testing.T) {
 	o, e, err = cmd(t,
 		"-d", "vault=vault:///secret",
 		"-i", `{{(ds "vault" "foo").value}}`).
-		withEnv("VAULT_ADDR", "http://"+v.addr).
+		withEnv("VAULT_ADDR", v.vc.Address()).
 		withEnv("VAULT_AUTH_USERNAME_FILE", userFile.Path()).
 		withEnv("VAULT_AUTH_PASSWORD_FILE", passFile.Path()).
 		run()
@@ -208,7 +212,7 @@ func TestDatasources_Vault_UserPassAuth(t *testing.T) {
 	o, e, err = cmd(t,
 		"-d", "vault=vault:///secret",
 		"-i", `{{(ds "vault" "foo").value}}`).
-		withEnv("VAULT_ADDR", "http://"+v.addr).
+		withEnv("VAULT_ADDR", v.vc.Address()).
 		withEnv("VAULT_AUTH_USERNAME", "dave").
 		withEnv("VAULT_AUTH_PASSWORD", "bar").
 		withEnv("VAULT_AUTH_USERPASS_MOUNT", "userpass2").
@@ -245,7 +249,7 @@ func TestDatasources_Vault_AppRoleAuth(t *testing.T) {
 	o, e, err := cmd(t,
 		"-d", "vault=vault:///secret",
 		"-i", `{{(ds "vault" "foo").value}}`).
-		withEnv("VAULT_ADDR", "http://"+v.addr).
+		withEnv("VAULT_ADDR", v.vc.Address()).
 		withEnv("VAULT_ROLE_ID", roleID).
 		withEnv("VAULT_SECRET_ID", secretID).
 		run()
@@ -258,7 +262,7 @@ func TestDatasources_Vault_AppRoleAuth(t *testing.T) {
 	o, e, err = cmd(t,
 		"-d", "vault=vault:///secret",
 		"-i", `{{(ds "vault" "foo").value}}`).
-		withEnv("VAULT_ADDR", "http://"+v.addr).
+		withEnv("VAULT_ADDR", v.vc.Address()).
 		withEnv("VAULT_ROLE_ID", roleID).
 		withEnv("VAULT_SECRET_ID", secretID).
 		withEnv("VAULT_AUTH_APPROLE_MOUNT", "approle2").
@@ -297,7 +301,7 @@ func TestDatasources_Vault_AppIDAuth(t *testing.T) {
 	o, e, err := cmd(t,
 		"-d", "vault=vault:///secret",
 		"-i", `{{(ds "vault" "foo").value}}`).
-		withEnv("VAULT_ADDR", "http://"+v.addr).
+		withEnv("VAULT_ADDR", v.vc.Address()).
 		withEnv("VAULT_APP_ID", "testappid").
 		withEnv("VAULT_USER_ID", "testuserid").
 		run()
@@ -306,7 +310,7 @@ func TestDatasources_Vault_AppIDAuth(t *testing.T) {
 	o, e, err = cmd(t,
 		"-d", "vault=vault:///secret",
 		"-i", `{{(ds "vault" "foo").value}}`).
-		withEnv("VAULT_ADDR", "http://"+v.addr).
+		withEnv("VAULT_ADDR", v.vc.Address()).
 		withEnv("VAULT_APP_ID", "testappid").
 		withEnv("VAULT_USER_ID", "testuserid").
 		withEnv("VAULT_AUTH_APP_ID_MOUNT", "app-id2").
@@ -319,7 +323,8 @@ func TestDatasources_Vault_DynamicAuth(t *testing.T) {
 
 	err := v.vc.Sys().Mount("ssh/", &vaultapi.MountInput{Type: "ssh"})
 	require.NoError(t, err)
-	defer v.vc.Sys().Unmount("ssh")
+
+	t.Cleanup(func() { v.vc.Sys().Unmount("ssh") })
 
 	_, err = v.vc.Logical().Write("ssh/roles/test", map[string]interface{}{
 		"key_type": "otp", "default_user": "user", "cidr_list": "10.0.0.0/8",
@@ -337,11 +342,14 @@ func TestDatasources_Vault_DynamicAuth(t *testing.T) {
 	require.NoError(t, err)
 
 	for _, tc := range testCommands {
-		o, e, err := cmd(t, "-d", tc.ds, "-i", tc.in).
-			withEnv("VAULT_ADDR", "http://"+v.addr).
-			withEnv("VAULT_TOKEN", tok).
-			run()
-		assertSuccess(t, o, e, err, "10.1.2.3")
+		tc := tc
+		t.Run(tc.ds, func(t *testing.T) {
+			o, e, err := cmd(t, "-d", tc.ds, "-i", tc.in).
+				withEnv("VAULT_ADDR", v.vc.Address()).
+				withEnv("VAULT_TOKEN", tok).
+				run()
+			assertSuccess(t, o, e, err, "10.1.2.3")
+		})
 	}
 }
 
@@ -358,13 +366,13 @@ func TestDatasources_Vault_List(t *testing.T) {
 	o, e, err := cmd(t,
 		"-d", "vault=vault:///secret/dir/",
 		"-i", `{{ range (ds "vault" ) }}{{ . }}: {{ (ds "vault" .).value }} {{end}}`).
-		withEnv("VAULT_ADDR", "http://"+v.addr).
+		withEnv("VAULT_ADDR", v.vc.Address()).
 		withEnv("VAULT_TOKEN", tok).
 		run()
 	assertSuccess(t, o, e, err, "bar: two foo: one ")
 
 	o, e, err = cmd(t,
-		"-d", "vault=vault+http://"+v.addr+"/secret",
+		"-d", "vault=vault+"+v.vc.Address()+"/secret",
 		"-i", `{{ range (ds "vault" "dir/" ) }}{{ . }} {{end}}`).
 		withEnv("VAULT_TOKEN", tok).
 		run()

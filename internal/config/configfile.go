@@ -349,14 +349,32 @@ func (c *Config) ParseDataSourceFlags(datasources, contexts []string) error {
 // key=value format flags as provided at the command-line
 func (c *Config) ParseTemplateFlags(templates []string) error {
 	for _, d := range templates {
-		k, tpl, err := parseDatasourceArg(d)
+		value := d
+		ds := DataSource{}
+		k := ""
+		var err error
+
+		parts := strings.SplitN(value, "=", 2)
+		if len(parts) == 1 {
+			f := parts[0]
+			if path.Base(f) != f {
+				return fmt.Errorf("invalid datasource (%s): must provide an alias with files not in working directory", value)
+			}
+			// k = strings.SplitN(value, ".", 2)[0]
+			k = value
+			ds.URL, err = ParseSourceURL(f)
+		} else if len(parts) == 2 {
+			k = parts[0]
+			ds.URL, err = ParseSourceURL(parts[1])
+		}
+
 		if err != nil {
 			return err
 		}
 		if c.Templates == nil {
 			c.Templates = map[string]DataSource{}
 		}
-		c.Templates[k] = tpl
+		c.Templates[k] = ds
 	}
 
 	return nil

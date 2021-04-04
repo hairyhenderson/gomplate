@@ -13,10 +13,12 @@ func lookupURLBuilder(scheme string) (b urlBuilder, err error) {
 		b = &noopURLBuilder{}
 	case "boltdb":
 		b = &boltDBURLBuilder{}
-	case "http", "https", "file",
-		"consul", "consul+http", "consul+https",
-		"vault", "vault+http", "vault+https":
+	case "http", "https":
 		b = &httpURLBuilder{}
+	case "file",
+		"vault", "vault+http", "vault+https",
+		"consul", "consul+http", "consul+https":
+		b = &vaultURLBuilder{}
 	case "aws+sm", "aws+smp":
 		b = &awssmURLBuilder{}
 	case "s3", "gs":
@@ -106,6 +108,51 @@ func (b *httpURLBuilder) BuildURL(u *url.URL, args ...string) (*url.URL, error) 
 	}
 
 	return out, nil
+}
+
+type vaultURLBuilder struct{}
+
+func (b *vaultURLBuilder) BuildURL(u *url.URL, args ...string) (*url.URL, error) {
+	if len(args) >= 2 {
+		return nil, fmt.Errorf("too many args for building %q URL: found %d",
+			u.Scheme, len(args))
+	}
+
+	out := *u
+
+	if out.Path == "" && u.Opaque != "" {
+		out.Path = u.Opaque
+	}
+
+	if len(args) != 1 {
+		return &out, nil
+	}
+
+	p, err := url.Parse(args[0])
+	if err != nil {
+		return nil, fmt.Errorf("bad sub-path %q: %w", args[0], err)
+	}
+	if p.Path != "" {
+		out.Path = path.Join(out.Path, p.Path)
+		if strings.HasSuffix(p.Path, "/") {
+			out.Path += "/"
+		}
+	}
+
+	if p.RawQuery == "" {
+		return &out, nil
+	}
+
+	// merge the query params
+	q := u.Query()
+	for k, vs := range p.Query() {
+		for _, v := range vs {
+			q.Set(k, v)
+		}
+	}
+	out.RawQuery = q.Encode()
+
+	return &out, nil
 }
 
 type awssmURLBuilder struct{}

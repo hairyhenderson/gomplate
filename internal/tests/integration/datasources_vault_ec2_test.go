@@ -71,7 +71,7 @@ func TestDatasources_VaultEc2(t *testing.T) {
 	o, e, err := cmd(t, "-d", "vault=vault:///secret",
 		"-i", `{{(ds "vault" "foo").value}}`).
 		withEnv("HOME", tmpDir.Join("home")).
-		withEnv("VAULT_ADDR", "http://"+v.addr).
+		withEnv("VAULT_ADDR", v.vc.Address()).
 		withEnv("AWS_META_ENDPOINT", srv.URL).
 		run()
 	assertSuccess(t, o, e, err, "bar")

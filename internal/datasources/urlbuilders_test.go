@@ -130,6 +130,33 @@ func TestFileURLBuilder(t *testing.T) {
 	}
 }
 
+func TestVaultURLBuilder(t *testing.T) {
+	b := &vaultURLBuilder{}
+	_, err := b.BuildURL(mustParseURL("base"), "extra", "too many!")
+	assert.Error(t, err)
+
+	data := []struct {
+		u        *url.URL
+		expected *url.URL
+		args     []string
+	}{
+		{
+			u:        mustParseURL("vault:///"),
+			args:     []string{"ssh/creds/test?ip=10.1.2.3&username=user"},
+			expected: mustParseURL("vault:///ssh/creds/test?ip=10.1.2.3&username=user"),
+		},
+	}
+
+	for i, d := range data {
+		d := d
+		t.Run(fmt.Sprintf("%s_%d", d.u.String(), i), func(t *testing.T) {
+			actual, err := b.BuildURL(d.u, d.args...)
+			assert.NoError(t, err)
+			assert.EqualValues(t, d.expected, actual)
+		})
+	}
+}
+
 func TestAWSSMURLBuilder(t *testing.T) {
 	b := &awssmURLBuilder{}
 	_, err := b.BuildURL(mustParseURL("base"), "extra", "too many!")
