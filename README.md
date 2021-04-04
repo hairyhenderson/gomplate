@@ -17,6 +17,9 @@ _Read the docs at [docs.gomplate.ca][docs-url], chat with developers and communi
 [![DockerHub Latest Version ][microbadger-version-image]][microbadger-url]
 [![DockerHub Latest Commit][microbadger-commit-image]][microbadger-url]
 
+[![Chocolatey](https://img.shields.io/chocolatey/v/gomplate.svg)](https://chocolatey.org/packages/gomplate)
+[![Chocolatey](https://img.shields.io/chocolatey/dt/gomplate.svg)](https://chocolatey.org/packages/gomplate)
+
 [![Install Docs][install-docs-image]][install-docs-url]
 [![Slack][slack-image]][slack-url]
 [![Discussions][discussions-image]][discussions-url]
