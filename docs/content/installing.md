@@ -19,6 +19,16 @@ $ brew install gomplate
 🍺  /home/linuxbrew/.linuxbrew/Cellar/gomplate/3.8.0: 6 files, 7.8MB
 ```
 
+## [![Chocolatey](https://img.shields.io/chocolatey/v/gomplate.svg)](https://chocolatey.org/packages/gomplate) Ms Windows with Chocolatey
+
+The simplest method for MS Windows is to use [choco](https://community.chocolatey.org/packages/gomplate):
+
+```console
+choco install gomplate
+```
+
+
+
 ## Alpine Linux
 
 `gomplate` is available in Alpine's `community` repository.
