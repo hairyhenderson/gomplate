@@ -15,7 +15,7 @@ import (
 	"time"
 
 	"github.com/hairyhenderson/gomplate/v3/internal/iohelpers"
-	"github.com/pkg/errors"
+	"github.com/spf13/afero"
 	"gopkg.in/yaml.v3"
 )
 
@@ -31,14 +31,9 @@ func Parse(in io.Reader) (*Config, error) {
 }
 
 // Config - configures the gomplate execution
+//
+//nolint:govet
 type Config struct {
-	Stdin  io.Reader `yaml:"-"`
-	Stdout io.Writer `yaml:"-"`
-	Stderr io.Writer `yaml:"-"`
-
-	// internal use only, can't be injected in YAML
-	PostExecInput io.Reader `yaml:"-"`
-
 	Input       string   `yaml:"in,omitempty"`
 	InputDir    string   `yaml:"inputDir,omitempty"`
 	InputFiles  []string `yaml:"inputFiles,omitempty,flow"`
@@ -52,8 +47,7 @@ type Config struct {
 	LDelim string `yaml:"leftDelim,omitempty"`
 	RDelim string `yaml:"rightDelim,omitempty"`
 
-	PostExec []string `yaml:"postExec,omitempty,flow"`
-
+	Templates   Templates             `yaml:"templates,omitempty"`
 	DataSources map[string]DataSource `yaml:"datasources,omitempty"`
 	Context     map[string]DataSource `yaml:"context,omitempty"`
 	Plugins     map[string]string     `yaml:"plugins,omitempty"`
@@ -62,13 +56,22 @@ type Config struct {
 	// used by datasources defined in the template.
 	ExtraHeaders map[string]http.Header `yaml:"-"`
 
-	Templates []string `yaml:"templates,omitempty"`
+	PostExec []string `yaml:"postExec,omitempty,flow"`
+
+	// internal use only, can't be injected in YAML
+	PostExecInput io.Reader `yaml:"-"`
+
+	Stdout io.Writer `yaml:"-"`
+	Stderr io.Writer `yaml:"-"`
+	Stdin  io.Reader `yaml:"-"`
 
 	PluginTimeout time.Duration `yaml:"pluginTimeout,omitempty"`
 
 	ExecPipe      bool `yaml:"execPipe,omitempty"`
 	SuppressEmpty bool `yaml:"suppressEmpty,omitempty"`
 	Experimental  bool `yaml:"experimental,omitempty"`
+
+	fs afero.Fs
 }
 
 var cfgContextKey = struct{}{}
@@ -105,6 +108,65 @@ func mergeDataSources(d, o map[string]DataSource) map[string]DataSource {
 	return d
 }
 
+// mergeTemplates - use d as defaults, and override with values from o
+func mergeTemplates(d, o Templates) Templates {
+	if d == nil {
+		return o
+	}
+	if o == nil {
+		return d
+	}
+
+	for k, v := range o {
+		c, ok := d[k]
+		if ok {
+			d[k] = c.mergeFrom(v)
+		} else {
+			d[k] = v
+		}
+	}
+	return d
+}
+
+// Templates - mapping type for templates, can be unmarshaled from an array or map
+type Templates map[string]DataSource
+
+// UnmarshalYAML - satisfy the yaml.Umarshaler interface - Templates can be
+// provided as an array of key=value strings, or a map of string to datasources
+func (d *Templates) UnmarshalYAML(value *yaml.Node) error {
+	*d = Templates{}
+
+	switch value.Kind {
+	case yaml.SequenceNode:
+		for _, item := range value.Content {
+			parts := strings.SplitN(item.Value, "=", 2)
+			ds := DataSource{}
+			alias := parts[0]
+
+			u, err := ParseSourceURL(parts[len(parts)-1])
+			if err != nil {
+				return fmt.Errorf("could not parse datasource URL from %+v: %w", parts, err)
+			}
+
+			ds.URL = u
+			(*d)[alias] = ds
+		}
+	case yaml.MappingNode:
+		m := map[string]DataSource{}
+		err := value.Decode(&m)
+		if err != nil {
+			return fmt.Errorf("failed to %s node: %w", value.Tag, err)
+		}
+		for k, v := range m {
+			(*d)[k] = v
+		}
+	default:
+		return fmt.Errorf("cannot unmarshal unexpected type %s", value.Tag)
+	}
+
+	return nil
+}
+
 // DataSource - datasource configuration
 type DataSource struct {
 	URL    *url.URL    `yaml:"-"`
@@ -123,6 +185,7 @@ func (d *DataSource) UnmarshalYAML(value *yaml.Node) error {
 	if err != nil {
 		return err
 	}
+
 	u, err := ParseSourceURL(r.URL)
 	if err != nil {
 		return fmt.Errorf("could not parse datasource URL %q: %w", r.URL, err)
@@ -138,9 +201,10 @@ func (d *DataSource) UnmarshalYAML(value *yaml.Node) error {
 // well supported, and anyway we need to do some extra parsing
 func (d DataSource) MarshalYAML() (interface{}, error) {
 	type raw struct {
-		Header http.Header
+		Header http.Header `yaml:"header,omitempty,flow"`
 		URL    string
 	}
+
 	r := raw{
 		URL:    d.URL.String(),
 		Header: d.Header,
@@ -220,11 +284,9 @@ func (c *Config) MergeFrom(o *Config) *Config {
 	if !isZero(o.RDelim) {
 		c.RDelim = o.RDelim
 	}
-	if !isZero(o.Templates) {
-		c.Templates = o.Templates
-	}
 	mergeDataSources(c.DataSources, o.DataSources)
 	mergeDataSources(c.Context, o.Context)
+	mergeTemplates(c.Templates, o.Templates)
 	if len(o.Plugins) > 0 {
 		for k, v := range o.Plugins {
 			c.Plugins[k] = v
@@ -234,9 +296,9 @@ func (c *Config) MergeFrom(o *Config) *Config {
 	return c
 }
 
-// ParseDataSourceFlags - sets the DataSources and Context fields from the
-// key=value format flags as provided at the command-line
-func (c *Config) ParseDataSourceFlags(datasources, contexts, headers []string) error {
+// ParseDataSourceFlags - sets the DataSources, Context, and Templates fields
+// from the key=value format flags as provided at the command-line
+func (c *Config) ParseDataSourceFlags(datasources, contexts, templates, headers []string) error {
 	for _, d := range datasources {
 		k, ds, err := parseDatasourceArg(d)
 		if err != nil {
@@ -258,6 +320,18 @@ func (c *Config) ParseDataSourceFlags(datasources, contexts, headers []string) e
 		c.Context[k] = ds
 	}
 
+	fsys := c.fs
+	if c.fs == nil {
+		// if c.fs is unset, don't persist this...
+		fsys = afero.NewOsFs()
+	}
+
+	parsed, err := parseTemplateArgs(fsys, templates)
+	if err != nil {
+		return fmt.Errorf("failed to parse template args for %v: %w", templates, err)
+	}
+	c.Templates = parsed
+
 	hdrs, err := parseHeaderArgs(headers)
 	if err != nil {
 		return err
@@ -272,6 +346,11 @@ func (c *Config) ParseDataSourceFlags(datasources, contexts, headers []string) e
 		if d, ok := c.DataSources[k]; ok {
 			d.Header = v
 			c.DataSources[k] = d
+			delete(hdrs, k)
+		}
+		if d, ok := c.Templates[k]; ok {
+			d.Header = v
+			c.Templates[k] = d
 			delete(hdrs, k)
 		}
 	}
@@ -296,6 +375,94 @@ func (c *Config) ParsePluginFlags(plugins []string) error {
 	}
 	return nil
 }
+
+// ///////////////////////
+
+func parseTemplateArgs(fsys afero.Fs, args []string) (Templates, error) {
+	var templates Templates
+	for _, arg := range args {
+		t, err := parseTemplateArg(fsys, arg)
+		if err != nil {
+			return nil, err
+		}
+		templates = mergeTemplates(templates, t)
+	}
+	return templates, nil
+}
+
+// parseTemplateArg - like parseDatasourceArg, except single-part names are
+// aliased by the full filename with extension
+func parseTemplateArg(fsys afero.Fs, arg string) (Templates, error) {
+	templates := Templates{}
+	parts := strings.SplitN(arg, "=", 2)
+	pth := parts[0]
+	key := pth
+	if len(parts) > 1 {
+		pth = parts[1]
+	}
+
+	wasAbsolute := false
+	pth = filepath.ToSlash(pth)
+	u, err := url.Parse(pth)
+	if err == nil && u.IsAbs() {
+		wasAbsolute = true
+	}
+
+	u, err = ParseSourceURL(pth)
+	if err != nil {
+		return templates, fmt.Errorf("failed to parse URL for %q: %w", pth, err)
+	}
+
+	if u.Scheme != "file" {
+		templates[key] = DataSource{URL: u}
+		return templates, nil
+	}
+
+	if wasAbsolute {
+		pth = u.Path
+	}
+
+	if !strings.HasSuffix(pth, "/") {
+		pth = filepath.Clean(pth)
+
+		//nolint:govet
+		f, err := fsys.Open(pth)
+		if err != nil {
+			return nil, fmt.Errorf("failed to open %q: (%T) %w", pth, err, err)
+		}
+
+		fi, err := f.Stat()
+		if err != nil {
+			return nil, fmt.Errorf("failed to stat %q: %w", f, err)
+		}
+
+		if !fi.IsDir() {
+			templates[key] = DataSource{URL: u}
+			return templates, nil
+		}
+	}
+
+	pth = filepath.Clean(pth)
+	files, err := afero.ReadDir(fsys, pth)
+	if err != nil {
+		return nil, fmt.Errorf("failed to readDir %q: %w", pth, err)
+	}
+
+	// track all of the files within this directory, but no recursion
+	for _, f := range files {
+		if !f.IsDir() {
+			u, err = ParseSourceURL(path.Join(pth, f.Name()))
+			if err != nil {
+				return templates, err
+			}
+			templates[path.Join(key, f.Name())] = DataSource{URL: u}
+		}
+	}
+
+	return templates, nil
+}
+
+// ///////////////////////
 
 func parseDatasourceArg(value string) (key string, ds DataSource, err error) {
 	parts := strings.SplitN(value, "=", 2)
@@ -551,12 +718,12 @@ func ParseSourceURL(value string) (*url.URL, error) {
 func absFileURL(value string) (*url.URL, error) {
 	wd, err := os.Getwd()
 	if err != nil {
-		return nil, errors.Wrapf(err, "can't get working directory")
+		return nil, fmt.Errorf("can't get working directory: %w", err)
 	}
 	wd = filepath.ToSlash(wd)
 	baseURL := &url.URL{
 		Scheme: "file",
-		Path:   wd + "/",
+		Path:   filepath.ToSlash(filepath.Clean(wd)) + "/",
 	}
 	relURL, err := url.Parse(value)
 	if err != nil {

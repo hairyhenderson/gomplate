@@ -15,6 +15,11 @@ import (
 // Deprecated: this type will be phased out, internal/config.Config is used
 // everywhere else, and will be exposed as API in a future version
 type Config struct {
+	Out io.Writer
+
+	LDelim string
+	RDelim string
+
 	Input       string
 	InputFiles  []string
 	InputDir    string
@@ -23,18 +28,13 @@ type Config struct {
 	OutputDir   string
 	OutputMap   string
 	OutMode     string
-	Out         io.Writer
 
 	DataSources       []string
 	DataSourceHeaders []string
 	Contexts          []string
+	Templates         []string
 
 	Plugins []string
-
-	LDelim string
-	RDelim string
-
-	Templates []string
 }
 
 // defaults - sets any unset fields to their default value (if applicable)
@@ -128,7 +128,6 @@ func (o *Config) toNewConfig() (*config.Config, error) {
 		OutMode:     o.OutMode,
 		LDelim:      o.LDelim,
 		RDelim:      o.RDelim,
-		Templates:   o.Templates,
 		Stdin:       os.Stdin,
 		Stdout:      &iohelpers.NopCloser{Writer: o.Out},
 		Stderr:      os.Stderr,
@@ -137,7 +136,7 @@ func (o *Config) toNewConfig() (*config.Config, error) {
 	if err != nil {
 		return nil, err
 	}
-	err = cfg.ParseDataSourceFlags(o.DataSources, o.Contexts, o.DataSourceHeaders)
+	err = cfg.ParseDataSourceFlags(o.DataSources, o.Contexts, o.Templates, o.DataSourceHeaders)
 	if err != nil {
 		return nil, err
 	}

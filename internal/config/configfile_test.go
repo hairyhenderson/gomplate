@@ -2,6 +2,7 @@ package config
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"net/url"
 	"os"
@@ -13,6 +14,7 @@ import (
 	"time"
 
 	"github.com/hairyhenderson/gomplate/v3/internal/iohelpers"
+	"github.com/spf13/afero"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -324,17 +326,18 @@ func TestMergeFrom(t *testing.T) {
 
 func TestParseDataSourceFlags(t *testing.T) {
 	t.Parallel()
+
 	cfg := &Config{}
-	err := cfg.ParseDataSourceFlags(nil, nil, nil)
+	err := cfg.ParseDataSourceFlags(nil, nil, nil, nil)
 	assert.NoError(t, err)
 	assert.EqualValues(t, &Config{}, cfg)
 
 	cfg = &Config{}
-	err = cfg.ParseDataSourceFlags([]string{"foo/bar/baz.json"}, nil, nil)
+	err = cfg.ParseDataSourceFlags([]string{"foo/bar/baz.json"}, nil, nil, nil)
 	assert.Error(t, err)
 
 	cfg = &Config{}
-	err = cfg.ParseDataSourceFlags([]string{"baz=foo/bar/baz.json"}, nil, nil)
+	err = cfg.ParseDataSourceFlags([]string{"baz=foo/bar/baz.json"}, nil, nil, nil)
 	assert.NoError(t, err)
 	expected := &Config{
 		DataSources: map[string]DataSource{
@@ -346,6 +349,7 @@ func TestParseDataSourceFlags(t *testing.T) {
 	cfg = &Config{}
 	err = cfg.ParseDataSourceFlags(
 		[]string{"baz=foo/bar/baz.json"},
+		nil,
 		nil,
 		[]string{"baz=Accept: application/json"})
 	assert.NoError(t, err)
@@ -360,14 +364,22 @@ func TestParseDataSourceFlags(t *testing.T) {
 		},
 	}, cfg)
 
-	cfg = &Config{}
+	memfs := afero.NewMemMapFs()
+	cfg = &Config{
+		fs: memfs,
+	}
+	_ = afero.WriteFile(memfs, "template.t", []byte("foo"), 0600)
+
 	err = cfg.ParseDataSourceFlags(
 		[]string{"baz=foo/bar/baz.json"},
 		[]string{"foo=http://example.com"},
+		[]string{"template.t"},
 		[]string{"foo=Accept: application/json",
 			"bar=Authorization: Basic xxxxx"})
 	assert.NoError(t, err)
-	assert.EqualValues(t, &Config{
+
+	expected = &Config{
+		fs: memfs,
 		DataSources: map[string]DataSource{
 			"baz": {URL: mustURL("foo/bar/baz.json")},
 		},
@@ -379,10 +391,139 @@ func TestParseDataSourceFlags(t *testing.T) {
 				},
 			},
 		},
+		Templates: Templates{
+			"template.t": {URL: mustURL("template.t")},
+		},
 		ExtraHeaders: map[string]http.Header{
 			"bar": {"Authorization": {"Basic xxxxx"}},
 		},
-	}, cfg)
+	}
+	assert.EqualValues(t, expected, cfg)
+
+	cfg = &Config{}
+	err = cfg.ParseDataSourceFlags(
+		nil,
+		nil,
+		[]string{"mytemplate=https://example.com/mytemplate.tmpl"},
+		[]string{"mytemplate=Authorization: Bearer foo"})
+	assert.NoError(t, err)
+
+	expected = &Config{
+		Templates: Templates{
+			"mytemplate": {
+				URL: mustURL("https://example.com/mytemplate.tmpl"),
+				Header: http.Header{
+					"Authorization": {"Bearer foo"},
+				},
+			},
+		},
+	}
+	assert.EqualValues(t, expected, cfg)
+}
+
+func TestParseTemplateArg(t *testing.T) {
+	// memfs := fstest.MapFS{}
+	// memfs["foo.t"] = &fstest.MapFile{Data: []byte("hi"), Mode: 0600}
+	// memfs["dir/foo.t"] = &fstest.MapFile{Data: []byte("hi"), Mode: 0600}
+	// memfs["dir/bar.t"] = &fstest.MapFile{Data: []byte("hi"), Mode: 0600}
+
+	// assert.Equal(t, fs.FileMode(0600), memfs["foo.t"].Mode.Perm())
+	// assert.False(t, memfs["foo.t"].Mode.IsDir())
+
+	memfs := afero.NewMemMapFs()
+	afero.WriteFile(memfs, "foo.t", []byte("hi"), 0600)
+	_ = memfs.MkdirAll("dir", 0755)
+	afero.WriteFile(memfs, "dir/foo.t", []byte("hi"), 0600)
+	afero.WriteFile(memfs, "dir/bar.t", []byte("hi"), 0600)
+
+	// _, err := parseTemplateArg(memfs, "bogus.t")
+	// assert.Error(t, err)
+
+	testdata := []struct {
+		expected Templates
+		arg      string
+	}{
+		{
+			arg:      "foo.t",
+			expected: Templates{"foo.t": DataSource{URL: mustURL("foo.t")}},
+		},
+		{
+			arg:      "foo=foo.t",
+			expected: Templates{"foo": DataSource{URL: mustURL("foo.t")}},
+		},
+		{
+			arg:      "dir/foo.t",
+			expected: Templates{"dir/foo.t": DataSource{URL: mustURL("dir/foo.t")}},
+		},
+		{
+			arg:      "foo=dir/foo.t",
+			expected: Templates{"foo": DataSource{URL: mustURL("dir/foo.t")}},
+		},
+		{
+			arg: "dir/",
+			expected: Templates{
+				"dir/foo.t": DataSource{URL: mustURL("dir/foo.t")},
+				"dir/bar.t": DataSource{URL: mustURL("dir/bar.t")},
+			},
+		},
+		{
+			arg: "t=dir/",
+			expected: Templates{
+				"t/foo.t": DataSource{URL: mustURL("dir/foo.t")},
+				"t/bar.t": DataSource{URL: mustURL("dir/bar.t")},
+			},
+		},
+	}
+
+	for _, d := range testdata {
+		nested, err := parseTemplateArg(memfs, d.arg)
+		assert.NoError(t, err)
+		assert.EqualValues(t, d.expected, nested)
+	}
+}
+
+func TestParseTemplateArgs(t *testing.T) {
+	memfs := afero.NewMemMapFs()
+	afero.WriteFile(memfs, "foo.t", []byte("hi"), 0600)
+
+	afero.WriteFile(memfs, "dir/foo.t", []byte("hi"), 0600)
+	afero.WriteFile(memfs, "dir/bar.t", []byte("hi"), 0600)
+
+	// We prefix with / because of an afero memmapfs quirk...
+	afero.WriteFile(memfs, "/dir/foo.t", []byte("hi"), 0600)
+	afero.WriteFile(memfs, "/dir/bar.t", []byte("hi"), 0600)
+	afero.WriteFile(memfs, "/dir2/baz.t", []byte("hi"), 0600)
+
+	args := []string{"foo.t",
+		"foo=foo.t",
+		"bar=dir/foo.t",
+		"dir/",
+		"t=dir/",
+		"x=/dir/",
+		"baz=file:///dir2/baz.t",
+		"remote=http://example.com/foo.json",
+	}
+
+	expected := Templates{
+		"foo.t":     DataSource{URL: mustURL("foo.t")},
+		"foo":       DataSource{URL: mustURL("foo.t")},
+		"bar":       DataSource{URL: mustURL("dir/foo.t")},
+		"dir/foo.t": DataSource{URL: mustURL("dir/foo.t")},
+		"dir/bar.t": DataSource{URL: mustURL("dir/bar.t")},
+		"x/foo.t":   DataSource{URL: mustURL("/dir/foo.t")},
+		"x/bar.t":   DataSource{URL: mustURL("/dir/bar.t")},
+		"t/foo.t":   DataSource{URL: mustURL("dir/foo.t")},
+		"t/bar.t":   DataSource{URL: mustURL("dir/bar.t")},
+		"baz":       DataSource{URL: mustURL("file:///dir2/baz.t")},
+		"remote":    DataSource{URL: mustURL("http://example.com/foo.json")},
+	}
+
+	nested, err := parseTemplateArgs(memfs, args)
+	assert.NoError(t, err)
+	assert.Equal(t, expected, nested)
+
+	_, err = parseTemplateArgs(memfs, []string{"bogus.t"})
+	assert.Error(t, err)
 }
 
 func TestParsePluginFlags(t *testing.T) {
@@ -410,22 +551,30 @@ pluginTimeout: 5s
 `
 	assert.Equal(t, expected, c.String())
 
+	urlBar := mustURL("bar.t")
+	urlFoo := mustURL("foo.t")
+
 	c = &Config{
 		LDelim:      "L",
 		RDelim:      "R",
 		Input:       "foo",
 		OutputFiles: []string{"-"},
-		Templates:   []string{"foo=foo.t", "bar=bar.t"},
+		Templates: Templates{
+			"bar": {URL: urlBar},
+			"foo": {URL: urlFoo},
+		},
 	}
-	expected = `---
+	expected = fmt.Sprintf(`---
 in: foo
 outputFiles: ['-']
 leftDelim: L
 rightDelim: R
 templates:
-  - foo=foo.t
-  - bar=bar.t
-`
+  bar:
+    url: %s
+  foo:
+    url: %s
+`, urlBar, urlFoo)
 	assert.Equal(t, expected, c.String())
 
 	c = &Config{
@@ -433,17 +582,22 @@ templates:
 		RDelim:      "R",
 		Input:       "long input that should be truncated",
 		OutputFiles: []string{"-"},
-		Templates:   []string{"foo=foo.t", "bar=bar.t"},
+		Templates: Templates{
+			"foo": {URL: urlFoo},
+			"bar": {URL: urlBar},
+		},
 	}
-	expected = `---
+	expected = fmt.Sprintf(`---
 in: long inp...
 outputFiles: ['-']
 leftDelim: L
 rightDelim: R
 templates:
-  - foo=foo.t
-  - bar=bar.t
-`
+  bar:
+    url: %s
+  foo:
+    url: %s
+`, urlBar, urlFoo)
 	assert.Equal(t, expected, c.String())
 
 	c = &Config{
@@ -624,11 +778,20 @@ func TestParseSourceURL(t *testing.T) {
 
 	wd, err := os.Getwd()
 	assert.NoError(t, err)
+
 	expected = &url.URL{
 		Scheme: "file",
 		Path:   path.Join(filepath.ToSlash(wd), "foo/bar.json"),
 	}
 	u, err = ParseSourceURL("./foo/bar.json")
+	assert.NoError(t, err)
+	assert.EqualValues(t, expected, u)
+
+	expected = &url.URL{
+		Scheme: "file",
+		Path:   path.Join(filepath.ToSlash(wd), "somedir") + "/",
+	}
+	u, err = ParseSourceURL("somedir/")
 	assert.NoError(t, err)
 	assert.EqualValues(t, expected, u)
 }

@@ -3,11 +3,14 @@ package gomplate
 import (
 	"fmt"
 	"io"
+	"io/fs"
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"strings"
 	"text/template"
 
+	"github.com/hairyhenderson/go-fsimpl/autofs"
 	"github.com/hairyhenderson/gomplate/v3/internal/config"
 	"github.com/hairyhenderson/gomplate/v3/internal/iohelpers"
 	"github.com/hairyhenderson/gomplate/v3/tmpl"
@@ -20,7 +23,7 @@ import (
 const gomplateignore = ".gomplateignore"
 
 // for overriding in tests
-var fs = afero.NewOsFs()
+var osFS = afero.NewOsFs()
 
 // tplate - models a gomplate template file...
 type tplate struct {
@@ -28,7 +31,7 @@ type tplate struct {
 	targetPath   string
 	target       io.Writer
 	contents     string
-	mode         os.FileMode
+	mode         fs.FileMode
 	modeOverride bool
 }
 
@@ -39,7 +42,7 @@ func addTmplFuncs(f template.FuncMap, root *template.Template, ctx interface{}) 
 	f["tpl"] = t.Inline
 }
 
-func (t *tplate) toGoTemplate(g *gomplate) (tmpl *template.Template, err error) {
+func (t *tplate) toGoTemplate(fsys afero.Fs, g *gomplate) (tmpl *template.Template, err error) {
 	if g.rootTemplate != nil {
 		tmpl = g.rootTemplate.New(t.name)
 	} else {
@@ -55,11 +58,21 @@ func (t *tplate) toGoTemplate(g *gomplate) (tmpl *template.Template, err error) 
 	if err != nil {
 		return nil, err
 	}
-	for alias, path := range g.nestedTemplates {
-		// nolint: gosec
-		b, err := ioutil.ReadFile(path)
+	for alias, nt := range g.nestedTemplates {
+		fsys, err := autofs.Lookup(nt.URL.String())
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("lookup: %w", err)
+		}
+
+		f, err := fsys.Open(nt.URL.Path)
+		if err != nil {
+			return nil, fmt.Errorf("failed to open file %q: %w", nt.URL.Path, err)
+		}
+		defer f.Close()
+
+		b, err := io.ReadAll(f)
+		if err != nil {
+			return nil, fmt.Errorf("failed to read file at %s: %w", nt.URL.Path, err)
 		}
 		_, err = tmpl.New(alias).Parse(string(b))
 		if err != nil {
@@ -69,10 +82,31 @@ func (t *tplate) toGoTemplate(g *gomplate) (tmpl *template.Template, err error) 
 	return tmpl, nil
 }
 
+// fsysFor returns the filesystem and the relative path for an absolute path.
+// Handles Windows by not assuming all paths are rooted at /
+func fsysFor(path string) (fs.FS, string) {
+	parts := strings.SplitAfterN(path, "/", 2)
+
+	root := parts[0]
+	if root == "" {
+		root = "/"
+	}
+
+	if len(parts) > 1 {
+		path = parts[1]
+	}
+
+	if path == "" {
+		path = "."
+	}
+
+	return os.DirFS(root), path
+}
+
 // loadContents - reads the template
 func (t *tplate) loadContents(in io.Reader) ([]byte, error) {
 	if in == nil {
-		f, err := fs.OpenFile(t.name, os.O_RDONLY, 0)
+		f, err := osFS.Open(t.name)
 		if err != nil {
 			return nil, fmt.Errorf("failed to open %s: %w", t.name, err)
 		}
@@ -163,14 +197,14 @@ func processTemplates(cfg *config.Config, templates []*tplate) ([]*tplate, error
 func walkDir(dir string, outFileNamer func(string) (string, error), excludeGlob []string, mode os.FileMode, modeOverride bool) ([]*tplate, error) {
 	dir = filepath.Clean(dir)
 
-	dirStat, err := fs.Stat(dir)
+	dirStat, err := osFS.Stat(dir)
 	if err != nil {
 		return nil, fmt.Errorf("couldn't stat %s: %w", dir, err)
 	}
 	dirMode := dirStat.Mode()
 
 	templates := make([]*tplate, 0)
-	matcher := xignore.NewMatcher(fs)
+	matcher := xignore.NewMatcher(osFS)
 
 	// work around bug in xignore - a basedir of '.' doesn't work
 	basedir := dir
@@ -197,7 +231,7 @@ func walkDir(dir string, outFileNamer func(string) (string, error), excludeGlob 
 
 		fMode := mode
 		if mode == 0 {
-			stat, perr := fs.Stat(nextInPath)
+			stat, perr := osFS.Stat(nextInPath)
 			if perr == nil {
 				fMode = stat.Mode()
 			} else {
@@ -206,7 +240,7 @@ func walkDir(dir string, outFileNamer func(string) (string, error), excludeGlob 
 		}
 
 		// Ensure file parent dirs
-		if err = fs.MkdirAll(filepath.Dir(nextOutPath), dirMode); err != nil {
+		if err = osFS.MkdirAll(filepath.Dir(nextOutPath), dirMode); err != nil {
 			return nil, err
 		}
 
@@ -223,7 +257,7 @@ func walkDir(dir string, outFileNamer func(string) (string, error), excludeGlob 
 
 func fileToTemplates(inFile, outFile string, mode os.FileMode, modeOverride bool) (*tplate, error) {
 	if inFile != "-" {
-		si, err := fs.Stat(inFile)
+		si, err := osFS.Stat(inFile)
 		if err != nil {
 			return nil, err
 		}
@@ -261,14 +295,14 @@ func openOutFile(cfg *config.Config, filename string, mode os.FileMode, modeOver
 func createOutFile(filename string, mode os.FileMode, modeOverride bool) (out io.WriteCloser, err error) {
 	mode = iohelpers.NormalizeFileMode(mode.Perm())
 	if modeOverride {
-		err = fs.Chmod(filename, mode)
+		err = osFS.Chmod(filename, mode)
 		if err != nil && !os.IsNotExist(err) {
 			return nil, fmt.Errorf("failed to chmod output file '%s' with mode %q: %w", filename, mode, err)
 		}
 	}
 
 	open := func() (out io.WriteCloser, err error) {
-		out, err = fs.OpenFile(filename, os.O_RDWR|os.O_CREATE|os.O_TRUNC, mode)
+		out, err = osFS.OpenFile(filename, os.O_RDWR|os.O_CREATE|os.O_TRUNC, mode)
 		if err != nil {
 			return out, fmt.Errorf("failed to open output file '%s' for writing: %w", filename, err)
 		}
@@ -277,7 +311,7 @@ func createOutFile(filename string, mode os.FileMode, modeOverride bool) (out io
 	}
 
 	// if the output file already exists, we'll use a SameSkipper
-	fi, err := fs.Stat(filename)
+	fi, err := osFS.Stat(filename)
 	if err != nil {
 		// likely means the file just doesn't exist - further errors will be more useful
 		return iohelpers.LazyWriteCloser(open), nil
@@ -288,7 +322,7 @@ func createOutFile(filename string, mode os.FileMode, modeOverride bool) (out io
 	}
 
 	out = iohelpers.SameSkipper(iohelpers.LazyReadCloser(func() (io.ReadCloser, error) {
-		return fs.OpenFile(filename, os.O_RDONLY, mode)
+		return osFS.OpenFile(filename, os.O_RDONLY, mode)
 	}), open)
 
 	return out, err
