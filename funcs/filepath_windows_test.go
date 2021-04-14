@@ -9,7 +9,7 @@ import (
 )
 
 func TestFilePathFuncs(t *testing.T) {
-	f := FilePathNS()
+	f := &FilePathFuncs{}
 	assert.Equal(t, "bar", f.Base(`foo\bar`))
 	assert.Equal(t, "bar", f.Base("C:/foo/bar"))
 	assert.Equal(t, "bar", f.Base(`C:\foo\bar`))

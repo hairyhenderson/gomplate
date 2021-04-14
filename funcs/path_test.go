@@ -1,13 +1,30 @@
 package funcs
 
 import (
+	"context"
+	"strconv"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
 
+func TestCreatePathFuncs(t *testing.T) {
+	for i := 0; i < 10; i++ {
+		// Run this a bunch to catch race conditions
+		t.Run(strconv.Itoa(i), func(t *testing.T) {
+			t.Parallel()
+
+			ctx := context.Background()
+			fmap := CreatePathFuncs(ctx)
+			actual := fmap["path"].(func() interface{})
+
+			assert.Same(t, ctx, actual().(*PathFuncs).ctx)
+		})
+	}
+}
+
 func TestPathFuncs(t *testing.T) {
-	p := PathNS()
+	p := PathFuncs{}
 	assert.Equal(t, "bar", p.Base("foo/bar"))
 	assert.Equal(t, "bar", p.Base("/foo/bar"))
 

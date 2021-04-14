@@ -2,6 +2,7 @@ package funcs
 
 import (
 	"context"
+	"strconv"
 	"strings"
 	"testing"
 
@@ -9,19 +10,35 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func TestCreateCryptoFuncs(t *testing.T) {
+	for i := 0; i < 10; i++ {
+		// Run this a bunch to catch race conditions
+		t.Run(strconv.Itoa(i), func(t *testing.T) {
+			t.Parallel()
+
+			ctx := context.Background()
+			fmap := CreateCryptoFuncs(ctx)
+			actual := fmap["crypto"].(func() interface{})
+
+			assert.Same(t, ctx, actual().(*CryptoFuncs).ctx)
+		})
+	}
+}
+
 func testCryptoNS() *CryptoFuncs {
 	ctx := context.Background()
 	cfg := config.FromContext(ctx)
 	cfg.Experimental = true
 	ctx = config.ContextWithConfig(ctx, cfg)
-	c := CryptoNS()
-	c.ctx = ctx
-	return c
+
+	return &CryptoFuncs{
+		ctx: ctx,
+	}
 }
 
 func TestPBKDF2(t *testing.T) {
 	c := testCryptoNS()
-	dk, err := cryptoNS.PBKDF2("password", []byte("IEEE"), "4096", 32)
+	dk, err := c.PBKDF2("password", []byte("IEEE"), "4096", 32)
 	assert.Equal(t, "f42c6fc52df0ebef9ebb4b90b38a5f902e83fe1b135a70e23aed762e9710a12e", dk)
 	assert.NoError(t, err)
 
@@ -34,7 +51,8 @@ func TestPBKDF2(t *testing.T) {
 }
 
 func TestWPAPSK(t *testing.T) {
-	dk, err := cryptoNS.WPAPSK("password", "MySSID")
+	c := testCryptoNS()
+	dk, err := c.WPAPSK("password", "MySSID")
 	assert.Equal(t, "3a98def84b11644a17ebcc9b17955d2360ce8b8a85b8a78413fc551d722a84e7", dk)
 	assert.NoError(t, err)
 }
@@ -59,6 +77,10 @@ func TestSHA(t *testing.T) {
 }
 
 func TestBcrypt(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping slow test")
+	}
+
 	in := "foo"
 	c := testCryptoNS()
 	actual, err := c.Bcrypt(in)
@@ -94,6 +116,10 @@ func TestRSAGenerateKey(t *testing.T) {
 }
 
 func TestRSACrypt(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping slow test")
+	}
+
 	c := testCryptoNS()
 	key, err := c.RSAGenerateKey()
 	assert.NoError(t, err)

@@ -5,7 +5,7 @@ import (
 	"text/template"
 
 	"github.com/hairyhenderson/gomplate/v3/data"
-	"github.com/hairyhenderson/gomplate/v3/funcs"
+	"github.com/hairyhenderson/gomplate/v3/funcs" //nolint:staticcheck
 	"github.com/hairyhenderson/gomplate/v3/internal/config"
 )
 

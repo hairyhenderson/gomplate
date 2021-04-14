@@ -1,10 +1,27 @@
 package funcs
 
 import (
+	"context"
+	"strconv"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
+
+func TestCreateStringFuncs(t *testing.T) {
+	for i := 0; i < 10; i++ {
+		// Run this a bunch to catch race conditions
+		t.Run(strconv.Itoa(i), func(t *testing.T) {
+			t.Parallel()
+
+			ctx := context.Background()
+			fmap := CreateStringFuncs(ctx)
+			actual := fmap["strings"].(func() interface{})
+
+			assert.Same(t, ctx, actual().(*StringFuncs).ctx)
+		})
+	}
+}
 
 func TestReplaceAll(t *testing.T) {
 	sf := &StringFuncs{}

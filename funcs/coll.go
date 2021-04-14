@@ -2,7 +2,6 @@ package funcs
 
 import (
 	"context"
-	"sync"
 
 	"github.com/hairyhenderson/gomplate/v3/conv"
 
@@ -10,18 +9,14 @@ import (
 	"github.com/pkg/errors"
 )
 
-var (
-	collNS     *CollFuncs
-	collNSInit sync.Once
-)
-
 // CollNS -
+// Deprecated: don't use
 func CollNS() *CollFuncs {
-	collNSInit.Do(func() { collNS = &CollFuncs{} })
-	return collNS
+	return &CollFuncs{}
 }
 
 // AddCollFuncs -
+// Deprecated: use CreateCollFuncs instead
 func AddCollFuncs(f map[string]interface{}) {
 	for k, v := range CreateCollFuncs(context.Background()) {
 		f[k] = v
@@ -30,24 +25,24 @@ func AddCollFuncs(f map[string]interface{}) {
 
 // CreateCollFuncs -
 func CreateCollFuncs(ctx context.Context) map[string]interface{} {
-	ns := CollNS()
-	ns.ctx = ctx
 	f := map[string]interface{}{}
-	f["coll"] = CollNS
 
-	f["has"] = CollNS().Has
-	f["slice"] = CollNS().Slice
-	f["dict"] = CollNS().Dict
-	f["keys"] = CollNS().Keys
-	f["values"] = CollNS().Values
-	f["append"] = CollNS().Append
-	f["prepend"] = CollNS().Prepend
-	f["uniq"] = CollNS().Uniq
-	f["reverse"] = CollNS().Reverse
-	f["merge"] = CollNS().Merge
-	f["sort"] = CollNS().Sort
-	f["jsonpath"] = CollNS().JSONPath
-	f["flatten"] = CollNS().Flatten
+	ns := &CollFuncs{ctx}
+	f["coll"] = func() interface{} { return ns }
+
+	f["has"] = ns.Has
+	f["slice"] = ns.Slice
+	f["dict"] = ns.Dict
+	f["keys"] = ns.Keys
+	f["values"] = ns.Values
+	f["append"] = ns.Append
+	f["prepend"] = ns.Prepend
+	f["uniq"] = ns.Uniq
+	f["reverse"] = ns.Reverse
+	f["merge"] = ns.Merge
+	f["sort"] = ns.Sort
+	f["jsonpath"] = ns.JSONPath
+	f["flatten"] = ns.Flatten
 	return f
 }
 
@@ -57,57 +52,57 @@ type CollFuncs struct {
 }
 
 // Slice -
-func (f *CollFuncs) Slice(args ...interface{}) []interface{} {
+func (CollFuncs) Slice(args ...interface{}) []interface{} {
 	return coll.Slice(args...)
 }
 
 // Has -
-func (f *CollFuncs) Has(in interface{}, key string) bool {
+func (CollFuncs) Has(in interface{}, key string) bool {
 	return coll.Has(in, key)
 }
 
 // Dict -
-func (f *CollFuncs) Dict(in ...interface{}) (map[string]interface{}, error) {
+func (CollFuncs) Dict(in ...interface{}) (map[string]interface{}, error) {
 	return coll.Dict(in...)
 }
 
 // Keys -
-func (f *CollFuncs) Keys(in ...map[string]interface{}) ([]string, error) {
+func (CollFuncs) Keys(in ...map[string]interface{}) ([]string, error) {
 	return coll.Keys(in...)
 }
 
 // Values -
-func (f *CollFuncs) Values(in ...map[string]interface{}) ([]interface{}, error) {
+func (CollFuncs) Values(in ...map[string]interface{}) ([]interface{}, error) {
 	return coll.Values(in...)
 }
 
 // Append -
-func (f *CollFuncs) Append(v interface{}, list interface{}) ([]interface{}, error) {
+func (CollFuncs) Append(v interface{}, list interface{}) ([]interface{}, error) {
 	return coll.Append(v, list)
 }
 
 // Prepend -
-func (f *CollFuncs) Prepend(v interface{}, list interface{}) ([]interface{}, error) {
+func (CollFuncs) Prepend(v interface{}, list interface{}) ([]interface{}, error) {
 	return coll.Prepend(v, list)
 }
 
 // Uniq -
-func (f *CollFuncs) Uniq(in interface{}) ([]interface{}, error) {
+func (CollFuncs) Uniq(in interface{}) ([]interface{}, error) {
 	return coll.Uniq(in)
 }
 
 // Reverse -
-func (f *CollFuncs) Reverse(in interface{}) ([]interface{}, error) {
+func (CollFuncs) Reverse(in interface{}) ([]interface{}, error) {
 	return coll.Reverse(in)
 }
 
 // Merge -
-func (f *CollFuncs) Merge(dst map[string]interface{}, src ...map[string]interface{}) (map[string]interface{}, error) {
+func (CollFuncs) Merge(dst map[string]interface{}, src ...map[string]interface{}) (map[string]interface{}, error) {
 	return coll.Merge(dst, src...)
 }
 
 // Sort -
-func (f *CollFuncs) Sort(args ...interface{}) ([]interface{}, error) {
+func (CollFuncs) Sort(args ...interface{}) ([]interface{}, error) {
 	var (
 		key  string
 		list interface{}
@@ -126,12 +121,12 @@ func (f *CollFuncs) Sort(args ...interface{}) ([]interface{}, error) {
 }
 
 // JSONPath -
-func (f *CollFuncs) JSONPath(p string, in interface{}) (interface{}, error) {
+func (CollFuncs) JSONPath(p string, in interface{}) (interface{}, error) {
 	return coll.JSONPath(p, in)
 }
 
 // Flatten -
-func (f *CollFuncs) Flatten(args ...interface{}) ([]interface{}, error) {
+func (CollFuncs) Flatten(args ...interface{}) ([]interface{}, error) {
 	if len(args) == 0 || len(args) > 2 {
 		return nil, errors.Errorf("wrong number of args: wanted 1 or 2, got %d", len(args))
 	}
@@ -166,7 +161,7 @@ func pickOmitArgs(args ...interface{}) (map[string]interface{}, []string, error)
 }
 
 // Pick -
-func (f *CollFuncs) Pick(args ...interface{}) (map[string]interface{}, error) {
+func (CollFuncs) Pick(args ...interface{}) (map[string]interface{}, error) {
 	m, keys, err := pickOmitArgs(args...)
 	if err != nil {
 		return nil, err
@@ -175,7 +170,7 @@ func (f *CollFuncs) Pick(args ...interface{}) (map[string]interface{}, error) {
 }
 
 // Omit -
-func (f *CollFuncs) Omit(args ...interface{}) (map[string]interface{}, error) {
+func (CollFuncs) Omit(args ...interface{}) (map[string]interface{}, error) {
 	m, keys, err := pickOmitArgs(args...)
 	if err != nil {
 		return nil, err

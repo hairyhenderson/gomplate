@@ -7,23 +7,14 @@ import (
 	"github.com/hairyhenderson/gomplate/v3/gcp"
 )
 
-var (
-	gcpf     *GcpFuncs
-	gcpfInit sync.Once
-)
-
 // GCPNS - the gcp namespace
+// Deprecated: don't use
 func GCPNS() *GcpFuncs {
-	gcpfInit.Do(func() {
-		gcpf = &GcpFuncs{
-			gcpopts: gcp.GetClientOptions(),
-		}
-	})
-	return gcpf
+	return &GcpFuncs{gcpopts: gcp.GetClientOptions()}
 }
 
 // AddGCPFuncs -
-// Deprecated: use CreateGCPFuncs
+// Deprecated: use CreateGCPFuncs instead
 func AddGCPFuncs(f map[string]interface{}) {
 	for k, v := range CreateGCPFuncs(context.Background()) {
 		f[k] = v
@@ -32,11 +23,13 @@ func AddGCPFuncs(f map[string]interface{}) {
 
 // CreateGCPFuncs -
 func CreateGCPFuncs(ctx context.Context) map[string]interface{} {
-	f := map[string]interface{}{}
-	ns := GCPNS()
-	ns.ctx = ctx
-	f["gcp"] = GCPNS
-	return f
+	ns := &GcpFuncs{
+		ctx:     ctx,
+		gcpopts: gcp.GetClientOptions(),
+	}
+	return map[string]interface{}{
+		"gcp": func() interface{} { return ns },
+	}
 }
 
 // GcpFuncs -

@@ -8,22 +8,15 @@ import (
 	"github.com/hairyhenderson/gomplate/v3/conv"
 )
 
-var (
-	af     *Funcs
-	afInit sync.Once
-)
-
 // AWSNS - the aws namespace
+// Deprecated: don't use
+//nolint:golint
 func AWSNS() *Funcs {
-	afInit.Do(func() {
-		af = &Funcs{
-			awsopts: aws.GetClientOptions(),
-		}
-	})
-	return af
+	return &Funcs{}
 }
 
 // AWSFuncs -
+// Deprecated: use CreateAWSFuncs instead
 func AWSFuncs(f map[string]interface{}) {
 	f2 := CreateAWSFuncs(context.Background())
 	for k, v := range f2 {
@@ -34,10 +27,13 @@ func AWSFuncs(f map[string]interface{}) {
 // CreateAWSFuncs -
 func CreateAWSFuncs(ctx context.Context) map[string]interface{} {
 	f := map[string]interface{}{}
-	ns := AWSNS()
-	ns.ctx = ctx
 
-	f["aws"] = AWSNS
+	ns := &Funcs{
+		ctx:     ctx,
+		awsopts: aws.GetClientOptions(),
+	}
+
+	f["aws"] = func() interface{} { return ns }
 
 	// global aliases - for backwards compatibility
 	f["ec2meta"] = ns.EC2Meta
