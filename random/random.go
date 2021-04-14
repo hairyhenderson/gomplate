@@ -11,10 +11,9 @@ import (
 	"github.com/pkg/errors"
 )
 
-// Rnd -
-//
-//nolint:gosec
-var Rnd = rand.New(rand.NewSource(time.Now().UnixNano()))
+func init() {
+	rand.Seed(time.Now().UnixNano())
+}
 
 // Default set, matches "[a-zA-Z0-9_.-]"
 const defaultSet = "-.0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz"
@@ -49,7 +48,8 @@ func StringBounds(count int, lower, upper rune) (r string, err error) {
 func rndString(count int, chars []rune) (string, error) {
 	s := make([]rune, count)
 	for i := range s {
-		s[i] = chars[Rnd.Intn(len(chars))]
+		//nolint:gosec
+		s[i] = chars[rand.Intn(len(chars))]
 	}
 	return string(s), nil
 }
@@ -87,7 +87,9 @@ func Item(items []interface{}) (interface{}, error) {
 	if len(items) == 1 {
 		return items[0], nil
 	}
-	n := Rnd.Intn(len(items))
+
+	//nolint:gosec
+	n := rand.Intn(len(items))
 	return items[n], nil
 }
 
@@ -102,10 +104,13 @@ func Number(min, max int64) (int64, error) {
 	if max-min >= (math.MaxInt64 >> 1) {
 		return 0, errors.Errorf("spread between min and max too high - must not be greater than 63-bit maximum (%d - %d = %d)", max, min, max-min)
 	}
-	return Rnd.Int63n(max-min+1) + min, nil
+
+	//nolint:gosec
+	return rand.Int63n(max-min+1) + min, nil
 }
 
 // Float - For now this is really just a wrapper around `rand.Float64`
 func Float(min, max float64) (float64, error) {
-	return min + Rnd.Float64()*(max-min), nil
+	//nolint:gosec
+	return min + rand.Float64()*(max-min), nil
 }

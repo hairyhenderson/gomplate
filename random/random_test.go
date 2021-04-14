@@ -2,6 +2,7 @@ package random
 
 import (
 	"math"
+	"strconv"
 	"testing"
 	"unicode/utf8"
 
@@ -9,26 +10,36 @@ import (
 )
 
 func TestMatchChars(t *testing.T) {
-	in := "[a-g]"
-	expected := []rune("abcdefg")
-	out, err := matchChars(in)
-	assert.NoError(t, err)
-	assert.EqualValues(t, expected, out)
+	if testing.Short() {
+		t.Skip("skipping slow test")
+	}
 
-	in = "[a-zA-Z0-9_.-]"
-	expected = []rune(defaultSet)
-	out, err = matchChars(in)
-	assert.NoError(t, err)
-	assert.Equal(t, expected, out)
+	t.Parallel()
 
-	in = "[[:alpha:]]"
-	expected = []rune("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz")
-	out, err = matchChars(in)
-	assert.NoError(t, err)
-	assert.Equal(t, expected, out)
+	testdata := []struct {
+		in       string
+		expected string
+	}{
+		{"[a-g]", "abcdefg"},
+		{"[a-zA-Z0-9_.-]", defaultSet},
+		{"[[:alpha:]]", "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"},
+	}
+
+	for i, d := range testdata {
+		d := d
+		t.Run(strconv.Itoa(i), func(t *testing.T) {
+			t.Parallel()
+
+			out, err := matchChars(d.in)
+			assert.NoError(t, err)
+			assert.EqualValues(t, d.expected, out)
+		})
+	}
 }
 
 func TestStringRE(t *testing.T) {
+	t.Parallel()
+
 	r, err := StringRE(15, "[\\p{Yi}[:alnum:]]")
 	assert.NoError(t, err)
 	assert.Equal(t, 15, utf8.RuneCountInString(r))
@@ -38,6 +49,8 @@ func TestStringRE(t *testing.T) {
 }
 
 func TestStringBounds(t *testing.T) {
+	t.Parallel()
+
 	_, err := StringBounds(15, 0, 19)
 	assert.Error(t, err)
 
@@ -64,6 +77,8 @@ func TestStringBounds(t *testing.T) {
 }
 
 func TestItem(t *testing.T) {
+	t.Parallel()
+
 	_, err := Item(nil)
 	assert.Error(t, err)
 
@@ -83,6 +98,8 @@ func TestItem(t *testing.T) {
 }
 
 func TestNumber(t *testing.T) {
+	t.Parallel()
+
 	_, err := Number(0, -1)
 	assert.Error(t, err)
 	_, err = Number(0, math.MaxInt64)
@@ -108,6 +125,8 @@ func TestNumber(t *testing.T) {
 }
 
 func TestFloat(t *testing.T) {
+	t.Parallel()
+
 	testdata := []struct {
 		min, max, expected float64
 		delta              float64
