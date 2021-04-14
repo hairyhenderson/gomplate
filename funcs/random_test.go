@@ -1,14 +1,31 @@
 package funcs
 
 import (
+	"context"
+	"strconv"
 	"testing"
 	"unicode/utf8"
 
 	"github.com/stretchr/testify/assert"
 )
 
+func TestCreateRandomFuncs(t *testing.T) {
+	for i := 0; i < 10; i++ {
+		// Run this a bunch to catch race conditions
+		t.Run(strconv.Itoa(i), func(t *testing.T) {
+			t.Parallel()
+
+			ctx := context.Background()
+			fmap := CreateRandomFuncs(ctx)
+			actual := fmap["random"].(func() interface{})
+
+			assert.Same(t, ctx, actual().(*RandomFuncs).ctx)
+		})
+	}
+}
+
 func TestASCII(t *testing.T) {
-	f := &RandomFuncs{}
+	f := RandomFuncs{}
 	s, err := f.ASCII(0)
 	assert.NoError(t, err)
 	assert.Empty(t, s)
@@ -20,7 +37,11 @@ func TestASCII(t *testing.T) {
 }
 
 func TestAlpha(t *testing.T) {
-	f := &RandomFuncs{}
+	if testing.Short() {
+		t.Skip("skipping slow test")
+	}
+
+	f := RandomFuncs{}
 	s, err := f.Alpha(0)
 	assert.NoError(t, err)
 	assert.Empty(t, s)
@@ -32,7 +53,11 @@ func TestAlpha(t *testing.T) {
 }
 
 func TestAlphaNum(t *testing.T) {
-	f := &RandomFuncs{}
+	if testing.Short() {
+		t.Skip("skipping slow test")
+	}
+
+	f := RandomFuncs{}
 	s, err := f.AlphaNum(0)
 	assert.NoError(t, err)
 	assert.Empty(t, s)
@@ -72,7 +97,11 @@ func TestToCodePoints(t *testing.T) {
 }
 
 func TestString(t *testing.T) {
-	f := &RandomFuncs{}
+	if testing.Short() {
+		t.Skip("skipping slow test")
+	}
+
+	f := RandomFuncs{}
 	out, err := f.String(1)
 	assert.NoError(t, err)
 	assert.Len(t, out, 1)
@@ -111,7 +140,7 @@ func TestString(t *testing.T) {
 }
 
 func TestItem(t *testing.T) {
-	f := &RandomFuncs{}
+	f := RandomFuncs{}
 	_, err := f.Item(nil)
 	assert.Error(t, err)
 
@@ -134,7 +163,7 @@ func TestItem(t *testing.T) {
 }
 
 func TestNumber(t *testing.T) {
-	f := &RandomFuncs{}
+	f := RandomFuncs{}
 	n, err := f.Number()
 	assert.NoError(t, err)
 	assert.True(t, 0 <= n && n <= 100, n)
@@ -156,7 +185,7 @@ func TestNumber(t *testing.T) {
 }
 
 func TestFloat(t *testing.T) {
-	f := &RandomFuncs{}
+	f := RandomFuncs{}
 	n, err := f.Float()
 	assert.NoError(t, err)
 	assert.InDelta(t, 0.5, n, 0.5)

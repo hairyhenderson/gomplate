@@ -2,24 +2,19 @@ package funcs
 
 import (
 	"context"
-	"sync"
 
 	"github.com/hairyhenderson/gomplate/v3/conv"
 	"github.com/hairyhenderson/gomplate/v3/data"
 )
 
-var (
-	dataNS     *DataFuncs
-	dataNSInit sync.Once
-)
-
 // DataNS -
+// Deprecated: don't use
 func DataNS() *DataFuncs {
-	dataNSInit.Do(func() { dataNS = &DataFuncs{} })
-	return dataNS
+	return &DataFuncs{}
 }
 
 // AddDataFuncs -
+// Deprecated: use CreateDataFuncs instead
 func AddDataFuncs(f map[string]interface{}, d *data.Data) {
 	for k, v := range CreateDataFuncs(context.Background(), d) {
 		f[k] = v
@@ -36,10 +31,9 @@ func CreateDataFuncs(ctx context.Context, d *data.Data) map[string]interface{} {
 	f["defineDatasource"] = d.DefineDatasource
 	f["include"] = d.Include
 
-	ns := DataNS()
-	ns.ctx = ctx
+	ns := &DataFuncs{ctx}
 
-	f["data"] = DataNS
+	f["data"] = func() interface{} { return ns }
 
 	f["json"] = ns.JSON
 	f["jsonArray"] = ns.JSONArray

@@ -2,24 +2,19 @@ package funcs
 
 import (
 	"context"
-	"sync"
 
 	"github.com/hairyhenderson/gomplate/v3/conv"
 	"github.com/hairyhenderson/gomplate/v3/env"
 )
 
-var (
-	ef     *EnvFuncs
-	efInit sync.Once
-)
-
 // EnvNS - the Env namespace
+// Deprecated: don't use
 func EnvNS() *EnvFuncs {
-	efInit.Do(func() { ef = &EnvFuncs{} })
-	return ef
+	return &EnvFuncs{}
 }
 
 // AddEnvFuncs -
+// Deprecated: use CreateEnvFuncs instead
 func AddEnvFuncs(f map[string]interface{}) {
 	for k, v := range CreateEnvFuncs(context.Background()) {
 		f[k] = v
@@ -28,10 +23,10 @@ func AddEnvFuncs(f map[string]interface{}) {
 
 // CreateEnvFuncs -
 func CreateEnvFuncs(ctx context.Context) map[string]interface{} {
-	ns := EnvNS()
-	ns.ctx = ctx
+	ns := &EnvFuncs{ctx}
+
 	return map[string]interface{}{
-		"env":    EnvNS,
+		"env":    func() interface{} { return ns },
 		"getenv": ns.Getenv,
 	}
 }
@@ -42,11 +37,11 @@ type EnvFuncs struct {
 }
 
 // Getenv -
-func (f *EnvFuncs) Getenv(key interface{}, def ...string) string {
+func (EnvFuncs) Getenv(key interface{}, def ...string) string {
 	return env.Getenv(conv.ToString(key), def...)
 }
 
 // ExpandEnv -
-func (f *EnvFuncs) ExpandEnv(s interface{}) string {
+func (EnvFuncs) ExpandEnv(s interface{}) string {
 	return env.ExpandEnv(conv.ToString(s))
 }

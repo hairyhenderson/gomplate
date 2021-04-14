@@ -3,25 +3,20 @@ package funcs
 import (
 	"context"
 	"os"
-	"sync"
 
 	"github.com/hairyhenderson/gomplate/v3/conv"
 	"github.com/hairyhenderson/gomplate/v3/file"
 	"github.com/spf13/afero"
 )
 
-var (
-	ff     *FileFuncs
-	ffInit sync.Once
-)
-
 // FileNS - the File namespace
+// Deprecated: don't use
 func FileNS() *FileFuncs {
-	ffInit.Do(func() { ff = &FileFuncs{fs: afero.NewOsFs()} })
-	return ff
+	return &FileFuncs{}
 }
 
 // AddFileFuncs -
+// Deprecated: use CreateFileFuncs instead
 func AddFileFuncs(f map[string]interface{}) {
 	for k, v := range CreateFileFuncs(context.Background()) {
 		f[k] = v
@@ -30,9 +25,13 @@ func AddFileFuncs(f map[string]interface{}) {
 
 // CreateFileFuncs -
 func CreateFileFuncs(ctx context.Context) map[string]interface{} {
-	ns := FileNS()
-	ns.ctx = ctx
-	return map[string]interface{}{"file": FileNS}
+	ns := &FileFuncs{
+		ctx: ctx,
+		fs:  afero.NewOsFs(),
+	}
+	return map[string]interface{}{
+		"file": func() interface{} { return ns },
+	}
 }
 
 // FileFuncs -

@@ -7,7 +7,6 @@ import (
 	"crypto/sha256"
 	"crypto/sha512"
 	"fmt"
-	"sync"
 
 	"golang.org/x/crypto/bcrypt"
 
@@ -17,18 +16,14 @@ import (
 	"github.com/hairyhenderson/gomplate/v3/crypto"
 )
 
-var (
-	cryptoNS     *CryptoFuncs
-	cryptoNSInit sync.Once
-)
-
 // CryptoNS - the crypto namespace
+// Deprecated: don't use
 func CryptoNS() *CryptoFuncs {
-	cryptoNSInit.Do(func() { cryptoNS = &CryptoFuncs{} })
-	return cryptoNS
+	return &CryptoFuncs{}
 }
 
 // AddCryptoFuncs -
+// Deprecated: use CreateCryptoFuncs instead
 func AddCryptoFuncs(f map[string]interface{}) {
 	for k, v := range CreateCryptoFuncs(context.Background()) {
 		f[k] = v
@@ -37,10 +32,12 @@ func AddCryptoFuncs(f map[string]interface{}) {
 
 // CreateCryptoFuncs -
 func CreateCryptoFuncs(ctx context.Context) map[string]interface{} {
-	ns := CryptoNS()
-	ns.ctx = ctx
+	f := map[string]interface{}{}
 
-	return map[string]interface{}{"crypto": CryptoNS}
+	ns := &CryptoFuncs{ctx}
+
+	f["crypto"] = func() interface{} { return ns }
+	return f
 }
 
 // CryptoFuncs -
@@ -51,7 +48,7 @@ type CryptoFuncs struct {
 // PBKDF2 - Run the Password-Based Key Derivation Function #2 as defined in
 // RFC 2898 (PKCS #5 v2.0). This function outputs the binary result in hex
 // format.
-func (f *CryptoFuncs) PBKDF2(password, salt, iter, keylen interface{}, hashFunc ...string) (k string, err error) {
+func (CryptoFuncs) PBKDF2(password, salt, iter, keylen interface{}, hashFunc ...string) (k string, err error) {
 	var h gcrypto.Hash
 	if len(hashFunc) == 0 {
 		h = gcrypto.SHA1
@@ -71,12 +68,12 @@ func (f *CryptoFuncs) PBKDF2(password, salt, iter, keylen interface{}, hashFunc 
 }
 
 // WPAPSK - Convert an ASCII passphrase to WPA PSK for a given SSID
-func (f *CryptoFuncs) WPAPSK(ssid, password interface{}) (string, error) {
+func (f CryptoFuncs) WPAPSK(ssid, password interface{}) (string, error) {
 	return f.PBKDF2(password, ssid, 4096, 32)
 }
 
 // SHA1 - Note: SHA-1 is cryptographically broken and should not be used for secure applications.
-func (f *CryptoFuncs) SHA1(input interface{}) string {
+func (CryptoFuncs) SHA1(input interface{}) string {
 	in := toBytes(input)
 	// nolint: gosec
 	out := sha1.Sum(in)
@@ -84,28 +81,28 @@ func (f *CryptoFuncs) SHA1(input interface{}) string {
 }
 
 // SHA224 -
-func (f *CryptoFuncs) SHA224(input interface{}) string {
+func (CryptoFuncs) SHA224(input interface{}) string {
 	in := toBytes(input)
 	out := sha256.Sum224(in)
 	return fmt.Sprintf("%02x", out)
 }
 
 // SHA256 -
-func (f *CryptoFuncs) SHA256(input interface{}) string {
+func (CryptoFuncs) SHA256(input interface{}) string {
 	in := toBytes(input)
 	out := sha256.Sum256(in)
 	return fmt.Sprintf("%02x", out)
 }
 
 // SHA384 -
-func (f *CryptoFuncs) SHA384(input interface{}) string {
+func (CryptoFuncs) SHA384(input interface{}) string {
 	in := toBytes(input)
 	out := sha512.Sum384(in)
 	return fmt.Sprintf("%02x", out)
 }
 
 // SHA512 -
-func (f *CryptoFuncs) SHA512(input interface{}) string {
+func (CryptoFuncs) SHA512(input interface{}) string {
 	in := toBytes(input)
 	out := sha512.Sum512(in)
 	return fmt.Sprintf("%02x", out)
@@ -113,7 +110,7 @@ func (f *CryptoFuncs) SHA512(input interface{}) string {
 
 // SHA512_224 -
 //nolint: golint,stylecheck
-func (f *CryptoFuncs) SHA512_224(input interface{}) string {
+func (CryptoFuncs) SHA512_224(input interface{}) string {
 	in := toBytes(input)
 	out := sha512.Sum512_224(in)
 	return fmt.Sprintf("%02x", out)
@@ -121,14 +118,14 @@ func (f *CryptoFuncs) SHA512_224(input interface{}) string {
 
 // SHA512_256 -
 //nolint: golint,stylecheck
-func (f *CryptoFuncs) SHA512_256(input interface{}) string {
+func (CryptoFuncs) SHA512_256(input interface{}) string {
 	in := toBytes(input)
 	out := sha512.Sum512_256(in)
 	return fmt.Sprintf("%02x", out)
 }
 
 // Bcrypt -
-func (f *CryptoFuncs) Bcrypt(args ...interface{}) (string, error) {
+func (CryptoFuncs) Bcrypt(args ...interface{}) (string, error) {
 	input := ""
 	cost := bcrypt.DefaultCost
 	if len(args) == 0 {

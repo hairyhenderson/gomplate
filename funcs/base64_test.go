@@ -2,10 +2,27 @@ package funcs
 
 import (
 	"bytes"
+	"context"
+	"strconv"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
+
+func TestCreateBase64Funcs(t *testing.T) {
+	for i := 0; i < 10; i++ {
+		// Run this a bunch to catch race conditions
+		t.Run(strconv.Itoa(i), func(t *testing.T) {
+			t.Parallel()
+
+			ctx := context.Background()
+			fmap := CreateBase64Funcs(ctx)
+			actual := fmap["base64"].(func() interface{})
+
+			assert.Same(t, ctx, actual().(*Base64Funcs).ctx)
+		})
+	}
+}
 
 func TestBase64Encode(t *testing.T) {
 	bf := &Base64Funcs{}

@@ -1,15 +1,32 @@
 package funcs
 
 import (
+	"context"
 	"fmt"
 	gmath "math"
+	"strconv"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
 
+func TestCreateMathFuncs(t *testing.T) {
+	for i := 0; i < 10; i++ {
+		// Run this a bunch to catch race conditions
+		t.Run(strconv.Itoa(i), func(t *testing.T) {
+			t.Parallel()
+
+			ctx := context.Background()
+			fmap := CreateMathFuncs(ctx)
+			actual := fmap["math"].(func() interface{})
+
+			assert.Same(t, ctx, actual().(*MathFuncs).ctx)
+		})
+	}
+}
+
 func TestAdd(t *testing.T) {
-	m := MathNS()
+	m := MathFuncs{}
 	assert.Equal(t, int64(12), m.Add(1, 1, 2, 3, 5))
 	assert.Equal(t, int64(2), m.Add(1, 1))
 	assert.Equal(t, int64(1), m.Add(1))
@@ -18,7 +35,7 @@ func TestAdd(t *testing.T) {
 }
 
 func TestMul(t *testing.T) {
-	m := MathNS()
+	m := MathFuncs{}
 	assert.Equal(t, int64(30), m.Mul(1, 1, 2, 3, 5))
 	assert.Equal(t, int64(1), m.Mul(1, 1))
 	assert.Equal(t, int64(1), m.Mul(1))
@@ -28,7 +45,7 @@ func TestMul(t *testing.T) {
 }
 
 func TestSub(t *testing.T) {
-	m := MathNS()
+	m := MathFuncs{}
 	assert.Equal(t, int64(0), m.Sub(1, 1))
 	assert.Equal(t, int64(-10), m.Sub(-5, 5))
 	assert.Equal(t, int64(-41), m.Sub(true, "42"))
@@ -36,7 +53,7 @@ func TestSub(t *testing.T) {
 }
 
 func mustDiv(a, b interface{}) interface{} {
-	m := MathNS()
+	m := MathFuncs{}
 	r, err := m.Div(a, b)
 	if err != nil {
 		return -1
@@ -45,7 +62,7 @@ func mustDiv(a, b interface{}) interface{} {
 }
 
 func TestDiv(t *testing.T) {
-	m := MathNS()
+	m := MathFuncs{}
 	_, err := m.Div(1, 0)
 	assert.Error(t, err)
 	assert.Equal(t, 1., mustDiv(1, 1))
@@ -55,19 +72,19 @@ func TestDiv(t *testing.T) {
 }
 
 func TestRem(t *testing.T) {
-	m := MathNS()
+	m := MathFuncs{}
 	assert.Equal(t, int64(0), m.Rem(1, 1))
 	assert.Equal(t, int64(2), m.Rem(5, 3.0))
 }
 
 func TestPow(t *testing.T) {
-	m := MathNS()
+	m := MathFuncs{}
 	assert.Equal(t, int64(4), m.Pow(2, "2"))
 	assert.Equal(t, 2.25, m.Pow(1.5, 2))
 }
 
 func mustSeq(n ...interface{}) []int64 {
-	m := MathNS()
+	m := MathFuncs{}
 	s, err := m.Seq(n...)
 	if err != nil {
 		panic(err)
@@ -75,7 +92,7 @@ func mustSeq(n ...interface{}) []int64 {
 	return s
 }
 func TestSeq(t *testing.T) {
-	m := MathNS()
+	m := MathFuncs{}
 	assert.EqualValues(t, []int64{0, 1, 2, 3}, mustSeq(0, 3))
 	assert.EqualValues(t, []int64{1, 0}, mustSeq(0))
 	assert.EqualValues(t, []int64{0, 2, 4}, mustSeq(0, 4, 2))
@@ -124,7 +141,7 @@ func TestIsIntFloatNum(t *testing.T) {
 		{nil, false, false},
 		{true, false, false},
 	}
-	m := MathNS()
+	m := MathFuncs{}
 	for _, tt := range tests {
 		tt := tt
 		t.Run(fmt.Sprintf("%T(%#v)", tt.in, tt.in), func(t *testing.T) {
@@ -139,7 +156,7 @@ func BenchmarkIsFloat(b *testing.B) {
 	data := []interface{}{
 		0, 1, -1, uint(42), uint8(255), uint16(42), uint32(42), uint64(42), int(42), int8(127), int16(42), int32(42), int64(42), float32(18.3), float64(18.3), 1.5, -18.6, "42", "052", "0xff", "-42", "-0", "3.14", "-3.14", "0.00", "NaN", "-Inf", "+Inf", "", "foo", nil, true,
 	}
-	m := MathNS()
+	m := MathFuncs{}
 	for _, n := range data {
 		n := n
 		b.Run(fmt.Sprintf("%T(%v)", n, n), func(b *testing.B) {
@@ -151,7 +168,7 @@ func BenchmarkIsFloat(b *testing.B) {
 }
 
 func TestMax(t *testing.T) {
-	m := MathNS()
+	m := MathFuncs{}
 	data := []struct {
 		expected interface{}
 		n        []interface{}
@@ -180,7 +197,7 @@ func TestMax(t *testing.T) {
 }
 
 func TestMin(t *testing.T) {
-	m := MathNS()
+	m := MathFuncs{}
 	data := []struct {
 		expected interface{}
 		n        []interface{}
@@ -209,7 +226,7 @@ func TestMin(t *testing.T) {
 }
 
 func TestContainsFloat(t *testing.T) {
-	m := MathNS()
+	m := MathFuncs{}
 	data := []struct {
 		n        []interface{}
 		expected bool
@@ -239,7 +256,7 @@ func TestContainsFloat(t *testing.T) {
 }
 
 func TestCeil(t *testing.T) {
-	m := MathNS()
+	m := MathFuncs{}
 	data := []struct {
 		n interface{}
 		a float64
@@ -261,7 +278,7 @@ func TestCeil(t *testing.T) {
 }
 
 func TestFloor(t *testing.T) {
-	m := MathNS()
+	m := MathFuncs{}
 	data := []struct {
 		n interface{}
 		a float64
@@ -283,7 +300,7 @@ func TestFloor(t *testing.T) {
 }
 
 func TestRound(t *testing.T) {
-	m := MathNS()
+	m := MathFuncs{}
 	data := []struct {
 		n interface{}
 		a float64
@@ -309,7 +326,7 @@ func TestRound(t *testing.T) {
 }
 
 func TestAbs(t *testing.T) {
-	m := MathNS()
+	m := MathFuncs{}
 	data := []struct {
 		n interface{}
 		a interface{}

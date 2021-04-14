@@ -1,16 +1,27 @@
 package funcs
 
 import (
+	"context"
+	"strconv"
 	"testing"
 
 	"github.com/hairyhenderson/gomplate/v3/aws"
 	"github.com/stretchr/testify/assert"
 )
 
-func TestNSIsIdempotent(t *testing.T) {
-	left := AWSNS()
-	right := AWSNS()
-	assert.True(t, left == right)
+func TestCreateAWSFuncs(t *testing.T) {
+	for i := 0; i < 10; i++ {
+		// Run this a bunch to catch race conditions
+		t.Run(strconv.Itoa(i), func(t *testing.T) {
+			t.Parallel()
+
+			ctx := context.Background()
+			fmap := CreateAWSFuncs(ctx)
+			actual := fmap["aws"].(func() interface{})
+
+			assert.Same(t, ctx, actual().(*Funcs).ctx)
+		})
+	}
 }
 
 func TestAWSFuncs(t *testing.T) {

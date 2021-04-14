@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
-	"sync"
 	gotime "time"
 
 	"github.com/hairyhenderson/gomplate/v3/conv"
@@ -13,36 +12,30 @@ import (
 	"github.com/hairyhenderson/gomplate/v3/time"
 )
 
-var (
-	timeNS     *TimeFuncs
-	timeNSInit sync.Once
-)
-
 // TimeNS -
+// Deprecated: don't use
 func TimeNS() *TimeFuncs {
-	timeNSInit.Do(func() {
-		timeNS = &TimeFuncs{
-			ANSIC:       gotime.ANSIC,
-			UnixDate:    gotime.UnixDate,
-			RubyDate:    gotime.RubyDate,
-			RFC822:      gotime.RFC822,
-			RFC822Z:     gotime.RFC822Z,
-			RFC850:      gotime.RFC850,
-			RFC1123:     gotime.RFC1123,
-			RFC1123Z:    gotime.RFC1123Z,
-			RFC3339:     gotime.RFC3339,
-			RFC3339Nano: gotime.RFC3339Nano,
-			Kitchen:     gotime.Kitchen,
-			Stamp:       gotime.Stamp,
-			StampMilli:  gotime.StampMilli,
-			StampMicro:  gotime.StampMicro,
-			StampNano:   gotime.StampNano,
-		}
-	})
-	return timeNS
+	return &TimeFuncs{
+		ANSIC:       gotime.ANSIC,
+		UnixDate:    gotime.UnixDate,
+		RubyDate:    gotime.RubyDate,
+		RFC822:      gotime.RFC822,
+		RFC822Z:     gotime.RFC822Z,
+		RFC850:      gotime.RFC850,
+		RFC1123:     gotime.RFC1123,
+		RFC1123Z:    gotime.RFC1123Z,
+		RFC3339:     gotime.RFC3339,
+		RFC3339Nano: gotime.RFC3339Nano,
+		Kitchen:     gotime.Kitchen,
+		Stamp:       gotime.Stamp,
+		StampMilli:  gotime.StampMilli,
+		StampMicro:  gotime.StampMicro,
+		StampNano:   gotime.StampNano,
+	}
 }
 
 // AddTimeFuncs -
+// Deprecated: use CreateTimeFuncs instead
 func AddTimeFuncs(f map[string]interface{}) {
 	for k, v := range CreateTimeFuncs(context.Background()) {
 		f[k] = v
@@ -51,10 +44,28 @@ func AddTimeFuncs(f map[string]interface{}) {
 
 // CreateTimeFuncs -
 func CreateTimeFuncs(ctx context.Context) map[string]interface{} {
-	ns := TimeNS()
-	ns.ctx = ctx
+	ns := &TimeFuncs{
+		ctx:         ctx,
+		ANSIC:       gotime.ANSIC,
+		UnixDate:    gotime.UnixDate,
+		RubyDate:    gotime.RubyDate,
+		RFC822:      gotime.RFC822,
+		RFC822Z:     gotime.RFC822Z,
+		RFC850:      gotime.RFC850,
+		RFC1123:     gotime.RFC1123,
+		RFC1123Z:    gotime.RFC1123Z,
+		RFC3339:     gotime.RFC3339,
+		RFC3339Nano: gotime.RFC3339Nano,
+		Kitchen:     gotime.Kitchen,
+		Stamp:       gotime.Stamp,
+		StampMilli:  gotime.StampMilli,
+		StampMicro:  gotime.StampMicro,
+		StampNano:   gotime.StampNano,
+	}
 
-	return map[string]interface{}{"time": TimeNS}
+	return map[string]interface{}{
+		"time": func() interface{} { return ns },
+	}
 }
 
 // TimeFuncs -
@@ -78,28 +89,28 @@ type TimeFuncs struct {
 }
 
 // ZoneName - return the local system's time zone's name
-func (f *TimeFuncs) ZoneName() string {
+func (TimeFuncs) ZoneName() string {
 	return time.ZoneName()
 }
 
 // ZoneOffset - return the local system's time zone's name
-func (f *TimeFuncs) ZoneOffset() int {
+func (TimeFuncs) ZoneOffset() int {
 	return time.ZoneOffset()
 }
 
 // Parse -
-func (f *TimeFuncs) Parse(layout string, value interface{}) (gotime.Time, error) {
+func (TimeFuncs) Parse(layout string, value interface{}) (gotime.Time, error) {
 	return gotime.Parse(layout, conv.ToString(value))
 }
 
 // ParseLocal -
-func (f *TimeFuncs) ParseLocal(layout string, value interface{}) (gotime.Time, error) {
+func (f TimeFuncs) ParseLocal(layout string, value interface{}) (gotime.Time, error) {
 	tz := env.Getenv("TZ", "Local")
 	return f.ParseInLocation(layout, tz, value)
 }
 
 // ParseInLocation -
-func (f *TimeFuncs) ParseInLocation(layout, location string, value interface{}) (gotime.Time, error) {
+func (TimeFuncs) ParseInLocation(layout, location string, value interface{}) (gotime.Time, error) {
 	loc, err := gotime.LoadLocation(location)
 	if err != nil {
 		return gotime.Time{}, err
@@ -108,13 +119,13 @@ func (f *TimeFuncs) ParseInLocation(layout, location string, value interface{}) 
 }
 
 // Now -
-func (f *TimeFuncs) Now() gotime.Time {
+func (TimeFuncs) Now() gotime.Time {
 	return gotime.Now()
 }
 
 // Unix - convert UNIX time (in seconds since the UNIX epoch) into a time.Time for further processing
 // Takes a string or number (int or float)
-func (f *TimeFuncs) Unix(in interface{}) (gotime.Time, error) {
+func (TimeFuncs) Unix(in interface{}) (gotime.Time, error) {
 	sec, nsec, err := parseNum(in)
 	if err != nil {
 		return gotime.Time{}, err
@@ -123,47 +134,47 @@ func (f *TimeFuncs) Unix(in interface{}) (gotime.Time, error) {
 }
 
 // Nanosecond -
-func (f *TimeFuncs) Nanosecond(n interface{}) gotime.Duration {
+func (TimeFuncs) Nanosecond(n interface{}) gotime.Duration {
 	return gotime.Nanosecond * gotime.Duration(conv.ToInt64(n))
 }
 
 // Microsecond -
-func (f *TimeFuncs) Microsecond(n interface{}) gotime.Duration {
+func (TimeFuncs) Microsecond(n interface{}) gotime.Duration {
 	return gotime.Microsecond * gotime.Duration(conv.ToInt64(n))
 }
 
 // Millisecond -
-func (f *TimeFuncs) Millisecond(n interface{}) gotime.Duration {
+func (TimeFuncs) Millisecond(n interface{}) gotime.Duration {
 	return gotime.Millisecond * gotime.Duration(conv.ToInt64(n))
 }
 
 // Second -
-func (f *TimeFuncs) Second(n interface{}) gotime.Duration {
+func (TimeFuncs) Second(n interface{}) gotime.Duration {
 	return gotime.Second * gotime.Duration(conv.ToInt64(n))
 }
 
 // Minute -
-func (f *TimeFuncs) Minute(n interface{}) gotime.Duration {
+func (TimeFuncs) Minute(n interface{}) gotime.Duration {
 	return gotime.Minute * gotime.Duration(conv.ToInt64(n))
 }
 
 // Hour -
-func (f *TimeFuncs) Hour(n interface{}) gotime.Duration {
+func (TimeFuncs) Hour(n interface{}) gotime.Duration {
 	return gotime.Hour * gotime.Duration(conv.ToInt64(n))
 }
 
 // ParseDuration -
-func (f *TimeFuncs) ParseDuration(n interface{}) (gotime.Duration, error) {
+func (TimeFuncs) ParseDuration(n interface{}) (gotime.Duration, error) {
 	return gotime.ParseDuration(conv.ToString(n))
 }
 
 // Since -
-func (f *TimeFuncs) Since(n gotime.Time) gotime.Duration {
+func (TimeFuncs) Since(n gotime.Time) gotime.Duration {
 	return gotime.Since(n)
 }
 
 // Until -
-func (f *TimeFuncs) Until(n gotime.Time) gotime.Duration {
+func (TimeFuncs) Until(n gotime.Time) gotime.Duration {
 	return gotime.Until(n)
 }
 

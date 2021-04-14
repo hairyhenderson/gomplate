@@ -3,7 +3,6 @@ package funcs
 import (
 	"context"
 	"reflect"
-	"sync"
 
 	"github.com/hairyhenderson/gomplate/v3/conv"
 	"github.com/pkg/errors"
@@ -11,18 +10,14 @@ import (
 	"github.com/hairyhenderson/gomplate/v3/test"
 )
 
-var (
-	testNS     *TestFuncs
-	testNSInit sync.Once
-)
-
 // TestNS -
+// Deprecated: don't use
 func TestNS() *TestFuncs {
-	testNSInit.Do(func() { testNS = &TestFuncs{} })
-	return testNS
+	return &TestFuncs{}
 }
 
 // AddTestFuncs -
+// Deprecated: use CreateTestFuncs instead
 func AddTestFuncs(f map[string]interface{}) {
 	for k, v := range CreateTestFuncs(context.Background()) {
 		f[k] = v
@@ -32,9 +27,9 @@ func AddTestFuncs(f map[string]interface{}) {
 // CreateTestFuncs -
 func CreateTestFuncs(ctx context.Context) map[string]interface{} {
 	f := map[string]interface{}{}
-	ns := TestNS()
-	ns.ctx = ctx
-	f["test"] = TestNS
+
+	ns := &TestFuncs{ctx}
+	f["test"] = func() interface{} { return ns }
 
 	f["assert"] = ns.Assert
 	f["fail"] = ns.Fail
@@ -51,7 +46,7 @@ type TestFuncs struct {
 }
 
 // Assert -
-func (f *TestFuncs) Assert(args ...interface{}) (string, error) {
+func (TestFuncs) Assert(args ...interface{}) (string, error) {
 	input := conv.ToBool(args[len(args)-1])
 	switch len(args) {
 	case 1:
@@ -68,7 +63,7 @@ func (f *TestFuncs) Assert(args ...interface{}) (string, error) {
 }
 
 // Fail -
-func (f *TestFuncs) Fail(args ...interface{}) (string, error) {
+func (TestFuncs) Fail(args ...interface{}) (string, error) {
 	switch len(args) {
 	case 0:
 		return "", test.Fail("")
@@ -80,7 +75,7 @@ func (f *TestFuncs) Fail(args ...interface{}) (string, error) {
 }
 
 // Required -
-func (f *TestFuncs) Required(args ...interface{}) (interface{}, error) {
+func (TestFuncs) Required(args ...interface{}) (interface{}, error) {
 	switch len(args) {
 	case 1:
 		return test.Required("", args[0])
@@ -96,7 +91,7 @@ func (f *TestFuncs) Required(args ...interface{}) (interface{}, error) {
 }
 
 // Ternary -
-func (f *TestFuncs) Ternary(tval, fval, b interface{}) interface{} {
+func (TestFuncs) Ternary(tval, fval, b interface{}) interface{} {
 	if conv.ToBool(b) {
 		return tval
 	}
@@ -104,12 +99,12 @@ func (f *TestFuncs) Ternary(tval, fval, b interface{}) interface{} {
 }
 
 // Kind - return the kind of the argument
-func (f *TestFuncs) Kind(arg interface{}) string {
+func (TestFuncs) Kind(arg interface{}) string {
 	return reflect.ValueOf(arg).Kind().String()
 }
 
 // IsKind - return whether or not the argument is of the given kind
-func (f *TestFuncs) IsKind(kind string, arg interface{}) bool {
+func (f TestFuncs) IsKind(kind string, arg interface{}) bool {
 	k := f.Kind(arg)
 	if kind == "number" {
 		switch k {

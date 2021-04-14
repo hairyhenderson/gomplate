@@ -1,11 +1,28 @@
 package funcs
 
 import (
+	"context"
 	"os"
+	"strconv"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
+
+func TestCreateEnvFuncs(t *testing.T) {
+	for i := 0; i < 10; i++ {
+		// Run this a bunch to catch race conditions
+		t.Run(strconv.Itoa(i), func(t *testing.T) {
+			t.Parallel()
+
+			ctx := context.Background()
+			fmap := CreateEnvFuncs(ctx)
+			actual := fmap["env"].(func() interface{})
+
+			assert.Same(t, ctx, actual().(*EnvFuncs).ctx)
+		})
+	}
+}
 
 func TestEnvGetenv(t *testing.T) {
 	ef := &EnvFuncs{}

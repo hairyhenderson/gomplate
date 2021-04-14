@@ -1,11 +1,28 @@
 package funcs
 
 import (
+	"context"
 	"net/url"
+	"strconv"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
+
+func TestCreateUUIDFuncs(t *testing.T) {
+	for i := 0; i < 10; i++ {
+		// Run this a bunch to catch race conditions
+		t.Run(strconv.Itoa(i), func(t *testing.T) {
+			t.Parallel()
+
+			ctx := context.Background()
+			fmap := CreateUUIDFuncs(ctx)
+			actual := fmap["uuid"].(func() interface{})
+
+			assert.Same(t, ctx, actual().(*UUIDFuncs).ctx)
+		})
+	}
+}
 
 const (
 	uuidV1Pattern = "^[[:xdigit:]]{8}-[[:xdigit:]]{4}-1[[:xdigit:]]{3}-[89ab][[:xdigit:]]{3}-[[:xdigit:]]{12}$"

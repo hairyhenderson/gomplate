@@ -1,12 +1,29 @@
 package funcs
 
 import (
+	"context"
 	"path/filepath"
+	"strconv"
 	"testing"
 
 	"github.com/spf13/afero"
 	"github.com/stretchr/testify/assert"
 )
+
+func TestCreateFileFuncs(t *testing.T) {
+	for i := 0; i < 10; i++ {
+		// Run this a bunch to catch race conditions
+		t.Run(strconv.Itoa(i), func(t *testing.T) {
+			t.Parallel()
+
+			ctx := context.Background()
+			fmap := CreateFileFuncs(ctx)
+			actual := fmap["file"].(func() interface{})
+
+			assert.Same(t, ctx, actual().(*FileFuncs).ctx)
+		})
+	}
+}
 
 func TestFileExists(t *testing.T) {
 	fs := afero.NewMemMapFs()

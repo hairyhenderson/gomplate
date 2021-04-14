@@ -2,7 +2,6 @@ package funcs
 
 import (
 	"context"
-	"sync"
 
 	"github.com/pkg/errors"
 
@@ -10,18 +9,14 @@ import (
 	"github.com/hairyhenderson/gomplate/v3/regexp"
 )
 
-var (
-	reNS     *ReFuncs
-	reNSInit sync.Once
-)
-
 // ReNS -
+// Deprecated: don't use
 func ReNS() *ReFuncs {
-	reNSInit.Do(func() { reNS = &ReFuncs{} })
-	return reNS
+	return &ReFuncs{}
 }
 
 // AddReFuncs -
+// Deprecated: use CreateReFuncs instead
 func AddReFuncs(f map[string]interface{}) {
 	for k, v := range CreateReFuncs(context.Background()) {
 		f[k] = v
@@ -30,9 +25,10 @@ func AddReFuncs(f map[string]interface{}) {
 
 // CreateReFuncs -
 func CreateReFuncs(ctx context.Context) map[string]interface{} {
-	ns := ReNS()
-	ns.ctx = ctx
-	return map[string]interface{}{"regexp": ReNS}
+	ns := &ReFuncs{ctx}
+	return map[string]interface{}{
+		"regexp": func() interface{} { return ns },
+	}
 }
 
 // ReFuncs -
@@ -41,12 +37,12 @@ type ReFuncs struct {
 }
 
 // Find -
-func (f *ReFuncs) Find(re, input interface{}) (string, error) {
+func (ReFuncs) Find(re, input interface{}) (string, error) {
 	return regexp.Find(conv.ToString(re), conv.ToString(input))
 }
 
 // FindAll -
-func (f *ReFuncs) FindAll(args ...interface{}) ([]string, error) {
+func (ReFuncs) FindAll(args ...interface{}) ([]string, error) {
 	re := ""
 	n := 0
 	input := ""
@@ -66,31 +62,31 @@ func (f *ReFuncs) FindAll(args ...interface{}) ([]string, error) {
 }
 
 // Match -
-func (f *ReFuncs) Match(re, input interface{}) bool {
+func (ReFuncs) Match(re, input interface{}) bool {
 	return regexp.Match(conv.ToString(re), conv.ToString(input))
 }
 
 // QuoteMeta -
-func (f *ReFuncs) QuoteMeta(in interface{}) string {
+func (ReFuncs) QuoteMeta(in interface{}) string {
 	return regexp.QuoteMeta(conv.ToString(in))
 }
 
 // Replace -
-func (f *ReFuncs) Replace(re, replacement, input interface{}) string {
+func (ReFuncs) Replace(re, replacement, input interface{}) string {
 	return regexp.Replace(conv.ToString(re),
 		conv.ToString(replacement),
 		conv.ToString(input))
 }
 
 // ReplaceLiteral -
-func (f *ReFuncs) ReplaceLiteral(re, replacement, input interface{}) (string, error) {
+func (ReFuncs) ReplaceLiteral(re, replacement, input interface{}) (string, error) {
 	return regexp.ReplaceLiteral(conv.ToString(re),
 		conv.ToString(replacement),
 		conv.ToString(input))
 }
 
 // Split -
-func (f *ReFuncs) Split(args ...interface{}) ([]string, error) {
+func (ReFuncs) Split(args ...interface{}) ([]string, error) {
 	re := ""
 	n := -1
 	input := ""

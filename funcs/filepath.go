@@ -3,23 +3,18 @@ package funcs
 import (
 	"context"
 	"path/filepath"
-	"sync"
 
 	"github.com/hairyhenderson/gomplate/v3/conv"
 )
 
-var (
-	fpf     *FilePathFuncs
-	fpfInit sync.Once
-)
-
 // FilePathNS - the Path namespace
+// Deprecated: don't use
 func FilePathNS() *FilePathFuncs {
-	fpfInit.Do(func() { fpf = &FilePathFuncs{} })
-	return fpf
+	return &FilePathFuncs{}
 }
 
 // AddFilePathFuncs -
+// Deprecated: use CreateFilePathFuncs instead
 func AddFilePathFuncs(f map[string]interface{}) {
 	for k, v := range CreateFilePathFuncs(context.Background()) {
 		f[k] = v
@@ -28,9 +23,11 @@ func AddFilePathFuncs(f map[string]interface{}) {
 
 // CreateFilePathFuncs -
 func CreateFilePathFuncs(ctx context.Context) map[string]interface{} {
-	ns := FilePathNS()
-	ns.ctx = ctx
-	return map[string]interface{}{"filepath": FilePathNS}
+	ns := &FilePathFuncs{ctx}
+
+	return map[string]interface{}{
+		"filepath": func() interface{} { return ns },
+	}
 }
 
 // FilePathFuncs -

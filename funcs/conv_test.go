@@ -1,15 +1,32 @@
 package funcs
 
 import (
+	"context"
 	"fmt"
+	"strconv"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
 
+func TestCreateConvFuncs(t *testing.T) {
+	for i := 0; i < 10; i++ {
+		// Run this a bunch to catch race conditions
+		t.Run(strconv.Itoa(i), func(t *testing.T) {
+			t.Parallel()
+
+			ctx := context.Background()
+			fmap := CreateConvFuncs(ctx)
+			actual := fmap["conv"].(func() interface{})
+
+			assert.Same(t, ctx, actual().(*ConvFuncs).ctx)
+		})
+	}
+}
+
 func TestDefault(t *testing.T) {
 	s := struct{}{}
-	c := ConvNS()
+	c := &ConvFuncs{}
 	def := "DEFAULT"
 	data := []struct {
 		val   interface{}

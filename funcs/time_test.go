@@ -1,12 +1,29 @@
 package funcs
 
 import (
+	"context"
 	"math"
 	"math/big"
+	"strconv"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
+
+func TestCreateTimeFuncs(t *testing.T) {
+	for i := 0; i < 10; i++ {
+		// Run this a bunch to catch race conditions
+		t.Run(strconv.Itoa(i), func(t *testing.T) {
+			t.Parallel()
+
+			ctx := context.Background()
+			fmap := CreateTimeFuncs(ctx)
+			actual := fmap["time"].(func() interface{})
+
+			assert.Same(t, ctx, actual().(*TimeFuncs).ctx)
+		})
+	}
+}
 
 func TestParseNum(t *testing.T) {
 	i, f, _ := parseNum("42")

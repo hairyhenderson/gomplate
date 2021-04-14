@@ -9,7 +9,6 @@ import (
 	"context"
 	"fmt"
 	"reflect"
-	"sync"
 	"unicode/utf8"
 
 	"github.com/Masterminds/goutils"
@@ -22,18 +21,14 @@ import (
 	gompstrings "github.com/hairyhenderson/gomplate/v3/strings"
 )
 
-var (
-	strNS     *StringFuncs
-	strNSInit sync.Once
-)
-
 // StrNS -
+// Deprecated: don't use
 func StrNS() *StringFuncs {
-	strNSInit.Do(func() { strNS = &StringFuncs{} })
-	return strNS
+	return &StringFuncs{}
 }
 
 // AddStringFuncs -
+// Deprecated: use CreateStringFuncs instead
 func AddStringFuncs(f map[string]interface{}) {
 	for k, v := range CreateStringFuncs(context.Background()) {
 		f[k] = v
@@ -43,10 +38,9 @@ func AddStringFuncs(f map[string]interface{}) {
 // CreateStringFuncs -
 func CreateStringFuncs(ctx context.Context) map[string]interface{} {
 	f := map[string]interface{}{}
-	ns := StrNS()
-	ns.ctx = ctx
 
-	f["strings"] = StrNS
+	ns := &StringFuncs{ctx}
+	f["strings"] = func() interface{} { return ns }
 
 	f["replaceAll"] = ns.ReplaceAll
 	f["title"] = ns.Title
@@ -75,7 +69,7 @@ type StringFuncs struct {
 }
 
 // Abbrev -
-func (f *StringFuncs) Abbrev(args ...interface{}) (string, error) {
+func (StringFuncs) Abbrev(args ...interface{}) (string, error) {
 	str := ""
 	offset := 0
 	maxWidth := 0
@@ -98,27 +92,27 @@ func (f *StringFuncs) Abbrev(args ...interface{}) (string, error) {
 }
 
 // ReplaceAll -
-func (f *StringFuncs) ReplaceAll(old, new string, s interface{}) string {
+func (StringFuncs) ReplaceAll(old, new string, s interface{}) string {
 	return strings.ReplaceAll(conv.ToString(s), old, new)
 }
 
 // Contains -
-func (f *StringFuncs) Contains(substr string, s interface{}) bool {
+func (StringFuncs) Contains(substr string, s interface{}) bool {
 	return strings.Contains(conv.ToString(s), substr)
 }
 
 // HasPrefix -
-func (f *StringFuncs) HasPrefix(prefix string, s interface{}) bool {
+func (StringFuncs) HasPrefix(prefix string, s interface{}) bool {
 	return strings.HasPrefix(conv.ToString(s), prefix)
 }
 
 // HasSuffix -
-func (f *StringFuncs) HasSuffix(suffix string, s interface{}) bool {
+func (StringFuncs) HasSuffix(suffix string, s interface{}) bool {
 	return strings.HasSuffix(conv.ToString(s), suffix)
 }
 
 // Repeat -
-func (f *StringFuncs) Repeat(count int, s interface{}) (string, error) {
+func (StringFuncs) Repeat(count int, s interface{}) (string, error) {
 	if count < 0 {
 		return "", errors.Errorf("negative count %d", count)
 	}
@@ -132,7 +126,7 @@ func (f *StringFuncs) Repeat(count int, s interface{}) (string, error) {
 // Sort -
 //
 // Deprecated: use coll.Sort instead
-func (f *StringFuncs) Sort(list interface{}) ([]string, error) {
+func (StringFuncs) Sort(list interface{}) ([]string, error) {
 	switch v := list.(type) {
 	case []string:
 		return gompstrings.Sort(v), nil
@@ -149,57 +143,57 @@ func (f *StringFuncs) Sort(list interface{}) ([]string, error) {
 }
 
 // Split -
-func (f *StringFuncs) Split(sep string, s interface{}) []string {
+func (StringFuncs) Split(sep string, s interface{}) []string {
 	return strings.Split(conv.ToString(s), sep)
 }
 
 // SplitN -
-func (f *StringFuncs) SplitN(sep string, n int, s interface{}) []string {
+func (StringFuncs) SplitN(sep string, n int, s interface{}) []string {
 	return strings.SplitN(conv.ToString(s), sep, n)
 }
 
 // Trim -
-func (f *StringFuncs) Trim(cutset string, s interface{}) string {
+func (StringFuncs) Trim(cutset string, s interface{}) string {
 	return strings.Trim(conv.ToString(s), cutset)
 }
 
 // TrimPrefix -
-func (f *StringFuncs) TrimPrefix(cutset string, s interface{}) string {
+func (StringFuncs) TrimPrefix(cutset string, s interface{}) string {
 	return strings.TrimPrefix(conv.ToString(s), cutset)
 }
 
 // TrimSuffix -
-func (f *StringFuncs) TrimSuffix(cutset string, s interface{}) string {
+func (StringFuncs) TrimSuffix(cutset string, s interface{}) string {
 	return strings.TrimSuffix(conv.ToString(s), cutset)
 }
 
 // Title -
-func (f *StringFuncs) Title(s interface{}) string {
+func (StringFuncs) Title(s interface{}) string {
 	return strings.Title(conv.ToString(s))
 }
 
 // ToUpper -
-func (f *StringFuncs) ToUpper(s interface{}) string {
+func (StringFuncs) ToUpper(s interface{}) string {
 	return strings.ToUpper(conv.ToString(s))
 }
 
 // ToLower -
-func (f *StringFuncs) ToLower(s interface{}) string {
+func (StringFuncs) ToLower(s interface{}) string {
 	return strings.ToLower(conv.ToString(s))
 }
 
 // TrimSpace -
-func (f *StringFuncs) TrimSpace(s interface{}) string {
+func (StringFuncs) TrimSpace(s interface{}) string {
 	return strings.TrimSpace(conv.ToString(s))
 }
 
 // Trunc -
-func (f *StringFuncs) Trunc(length int, s interface{}) string {
+func (StringFuncs) Trunc(length int, s interface{}) string {
 	return gompstrings.Trunc(length, conv.ToString(s))
 }
 
 // Indent -
-func (f *StringFuncs) Indent(args ...interface{}) (string, error) {
+func (StringFuncs) Indent(args ...interface{}) (string, error) {
 	input := conv.ToString(args[len(args)-1])
 	indent := " "
 	width := 1
@@ -228,17 +222,17 @@ func (f *StringFuncs) Indent(args ...interface{}) (string, error) {
 }
 
 // Slug -
-func (f *StringFuncs) Slug(in interface{}) string {
+func (StringFuncs) Slug(in interface{}) string {
 	return slug.Make(conv.ToString(in))
 }
 
 // Quote -
-func (f *StringFuncs) Quote(in interface{}) string {
+func (StringFuncs) Quote(in interface{}) string {
 	return fmt.Sprintf("%q", conv.ToString(in))
 }
 
 // ShellQuote -
-func (f *StringFuncs) ShellQuote(in interface{}) string {
+func (StringFuncs) ShellQuote(in interface{}) string {
 	val := reflect.ValueOf(in)
 	switch val.Kind() {
 	case reflect.Array, reflect.Slice:
@@ -256,29 +250,29 @@ func (f *StringFuncs) ShellQuote(in interface{}) string {
 }
 
 // Squote -
-func (f *StringFuncs) Squote(in interface{}) string {
+func (StringFuncs) Squote(in interface{}) string {
 	s := conv.ToString(in)
 	s = strings.ReplaceAll(s, `'`, `''`)
 	return fmt.Sprintf("'%s'", s)
 }
 
 // SnakeCase -
-func (f *StringFuncs) SnakeCase(in interface{}) (string, error) {
+func (StringFuncs) SnakeCase(in interface{}) (string, error) {
 	return gompstrings.SnakeCase(conv.ToString(in)), nil
 }
 
 // CamelCase -
-func (f *StringFuncs) CamelCase(in interface{}) (string, error) {
+func (StringFuncs) CamelCase(in interface{}) (string, error) {
 	return gompstrings.CamelCase(conv.ToString(in)), nil
 }
 
 // KebabCase -
-func (f *StringFuncs) KebabCase(in interface{}) (string, error) {
+func (StringFuncs) KebabCase(in interface{}) (string, error) {
 	return gompstrings.KebabCase(conv.ToString(in)), nil
 }
 
 // WordWrap -
-func (f *StringFuncs) WordWrap(args ...interface{}) (string, error) {
+func (StringFuncs) WordWrap(args ...interface{}) (string, error) {
 	if len(args) == 0 || len(args) > 3 {
 		return "", errors.Errorf("expected 1, 2, or 3 args, got %d", len(args))
 	}
@@ -301,7 +295,7 @@ func (f *StringFuncs) WordWrap(args ...interface{}) (string, error) {
 }
 
 // RuneCount - like len(s), but for runes
-func (f *StringFuncs) RuneCount(args ...interface{}) (int, error) {
+func (StringFuncs) RuneCount(args ...interface{}) (int, error) {
 	s := ""
 	for _, arg := range args {
 		s += conv.ToString(arg)
