@@ -35,7 +35,7 @@ func (r *gitRequester) Request(ctx context.Context, u *url.URL, header http.Head
 		depth = 0
 	}
 
-	repoPath, path, err := r.splitRepoPath(u.Path)
+	repoPath, path, err := splitRepoPath(u.Path)
 	if err != nil {
 		return nil, err
 	}
@@ -85,7 +85,7 @@ func (r *gitRequester) Request(ctx context.Context, u *url.URL, header http.Head
 }
 
 // Split the git repo path from the subpath, delimited by "//"
-func (r *gitRequester) splitRepoPath(repopath string) (repo, subpath string, err error) {
+func splitRepoPath(repopath string) (repo, subpath string, err error) {
 	parts := strings.SplitN(repopath, "//", 2)
 	switch len(parts) {
 	case 1:

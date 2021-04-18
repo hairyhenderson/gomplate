@@ -31,7 +31,6 @@ import (
 
 func TestSplitRepoPath(t *testing.T) {
 	t.Parallel()
-	g := &gitRequester{}
 
 	u := mustParseURL("http://example.com//foo")
 	assert.Equal(t, "//foo", u.Path)
@@ -63,7 +62,7 @@ func TestSplitRepoPath(t *testing.T) {
 		t.Run(fmt.Sprintf("%d:(%q)==(%q,%q)", i, d.in, d.repo, d.path), func(t *testing.T) {
 			t.Parallel()
 
-			repo, path, err := g.splitRepoPath(d.in)
+			repo, path, err := splitRepoPath(d.in)
 			assert.NilError(t, err)
 			assert.Equal(t, d.repo, repo)
 			assert.Equal(t, d.path, path)

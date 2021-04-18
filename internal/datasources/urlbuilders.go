@@ -33,10 +33,9 @@ func lookupURLBuilder(scheme string) (b urlBuilder, err error) {
 	return nil, fmt.Errorf("no URL builder found for scheme %s (not registered?)", scheme)
 }
 
-//nolint: interfacer
 func cloneURL(u *url.URL) *url.URL {
-	out, _ := url.Parse(u.String())
-	return out
+	out := *u
+	return &out
 }
 
 type noopURLBuilder struct{}
