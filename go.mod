@@ -5,7 +5,7 @@ go 1.16
 require (
 	github.com/Masterminds/goutils v1.1.1
 	github.com/Shopify/ejson v1.2.2
-	github.com/aws/aws-sdk-go v1.38.12
+	github.com/aws/aws-sdk-go v1.38.21
 	github.com/docker/libkv v0.2.2-0.20180912205406-458977154600
 	github.com/fullsailor/pkcs7 v0.0.0-20190404230743-d7302db945fa
 	github.com/go-git/go-billy/v5 v5.1.0
@@ -16,7 +16,7 @@ require (
 	github.com/hashicorp/consul/api v1.8.1
 	github.com/hashicorp/go-sockaddr v1.0.2
 	github.com/hashicorp/vault/api v1.1.0
-	github.com/johannesboyne/gofakes3 v0.0.0-20210217223559-02ffa763be97
+	github.com/johannesboyne/gofakes3 v0.0.0-20210415062230-4b6b67a85d38
 	github.com/joho/godotenv v1.3.0
 	github.com/pkg/errors v0.9.1
 	github.com/rs/zerolog v1.21.0
@@ -27,10 +27,10 @@ require (
 	github.com/zealic/xignore v0.3.3
 	go.etcd.io/bbolt v1.3.5
 	gocloud.dev v0.22.0
-	golang.org/x/crypto v0.0.0-20210322153248-0c34fe9e7dc2
-	golang.org/x/sys v0.0.0-20210403161142-5e06dd20ab57
-	golang.org/x/term v0.0.0-20210317153231-de623e64d2a6
+	golang.org/x/crypto v0.0.0-20210415154028-4f45737414dc
+	golang.org/x/sys v0.0.0-20210415045647-66c3f260301c
+	golang.org/x/term v0.0.0-20210406210042-72f3dc4e9b72
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b
 	gotest.tools/v3 v3.0.3
-	k8s.io/client-go v0.20.5
+	k8s.io/client-go v0.21.0
 )
