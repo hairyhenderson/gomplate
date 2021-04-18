@@ -409,7 +409,7 @@ The _scheme_ and either the _path_ or the _opaque_ part are used, and the _query
 $ gomplate -d user=env:USER -i 'Hello {{ include "user" }}!'
 Hello hairyhenderson!
 
-$ gomplate -d homedir=env:///HOME -i '{{ files.IsDir (ds "homedir") }}'
+$ gomplate -d homedir=env:///HOME -i '{{ file.IsDir (ds "homedir") }}'
 true
 
 $ export foo='{"one":1, "two":2}'
