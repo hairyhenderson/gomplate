@@ -1,0 +1,18 @@
+version: 2
+updates:
+- package-ecosystem: gomod
+  directory: "/"
+  schedule:
+    interval: weekly
+    day: saturday
+    time: "02:00"
+    timezone: Canada/Eastern
+  open-pull-requests-limit: 10
+- package-ecosystem: docker
+  directory: "/"
+  schedule:
+    interval: weekly
+    day: saturday
+    time: "02:00"
+    timezone: Canada/Eastern
+  open-pull-requests-limit: 10
