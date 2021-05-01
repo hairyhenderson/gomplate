@@ -1,0 +1,32 @@
+name: Docker Image Scan
+on:
+  pull_request:
+  push:
+    branches:
+      - master
+
+jobs:
+  docker-build:
+    runs-on: ubuntu-latest
+    env:
+      DOCKER_BUILDKIT: 1
+      DOCKER_CLI_EXPERIMENTAL: enabled
+    steps:
+    - uses: actions/checkout@v2
+    - name: Quick build (linux/alpine only)
+      run: |
+        docker build --target gomplate-alpine -t gomplate .
+    - name: Scan with Trivy
+      uses: aquasecurity/trivy-action@master
+      with:
+        image-ref: 'gomplate'
+        format: 'template'
+        template: '@/contrib/sarif.tpl'
+        output: 'trivy-results.sarif'
+        exit-code: 1
+        ignore-unfixed: true
+    - name: Upload Trivy scan results to GitHub Security tab
+      uses: github/codeql-action/upload-sarif@v1
+      with:
+        sarif_file: 'trivy-results.sarif'
+      if: always() && github.repository == 'hairyhenderson/gomplate'
