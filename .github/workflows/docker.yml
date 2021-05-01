@@ -48,6 +48,7 @@ jobs:
       run: |
         # NOTE: DOCKERHUB_TOKEN and DOCKERHUB_USERNAME must be present in https://github.com/hairyhenderson/gomplate/settings
         echo ${{ secrets.DOCKERHUB_TOKEN }} | docker login --username ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
+      if: github.repository == 'hairyhenderson/gomplate'
     - name: Build & Push (non-master)
       run: |
         set -ex
