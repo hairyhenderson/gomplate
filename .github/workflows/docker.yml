@@ -33,7 +33,7 @@ jobs:
         docker ps
         docker images
     - run: docker info && docker version
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v2
     - name: determine if this is a tag
       run: |
         if (git describe --abbrev=0 --exact-match &>/dev/null); then
