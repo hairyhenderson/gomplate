@@ -44,11 +44,6 @@ jobs:
           echo "major_version=${tag%%\.*}" >> $GITHUB_ENV
         fi
       if: github.repository == 'hairyhenderson/gomplate'
-    - name: login
-      run: |
-        # NOTE: DOCKERHUB_TOKEN and DOCKERHUB_USERNAME must be present in https://github.com/hairyhenderson/gomplate/settings
-        echo ${{ secrets.DOCKERHUB_TOKEN }} | docker login --username ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
-      if: github.repository == 'hairyhenderson/gomplate'
     - name: Build & Push (non-master)
       run: |
         set -ex
@@ -58,6 +53,11 @@ jobs:
         docker buildx imagetools create --dry-run -t localhost:5000/gomplate:dev-slim localhost:5000/gomplate:slim
         docker buildx imagetools create --dry-run -t localhost:5000/gomplate:dev-alpine localhost:5000/gomplate:alpine
       if: github.repository != 'hairyhenderson/gomplate' || github.ref != 'refs/heads/master'
+    - name: login
+      run: |
+        # NOTE: DOCKERHUB_TOKEN and DOCKERHUB_USERNAME must be present in https://github.com/hairyhenderson/gomplate/settings
+        echo ${{ secrets.DOCKERHUB_TOKEN }} | docker login --username ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
+      if: github.repository == 'hairyhenderson/gomplate' && github.ref == 'refs/heads/master'
     - name: Build & Push (master)
       run: |
         make docker-multi COMMIT=${{ github.sha }} DOCKER_REPO=hairyhenderson/gomplate BUILDX_ACTION=--push
