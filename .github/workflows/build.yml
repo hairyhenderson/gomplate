@@ -1,9 +1,6 @@
 name: Build
 on:
   push:
-    branches:
-      - master
-  pull_request:
 
 jobs:
   linux-build:
@@ -27,11 +24,15 @@ jobs:
           path: bin/gomplate
       - name: make test
         run: |
-          cc-test-reporter before-build
+          [ -n "$CC_TEST_REPORTER_ID" ] && cc-test-reporter before-build
           make test
-          # workaround from https://github.com/codeclimate/test-reporter/issues/378
-          export PREFIX=$(basename $(go list -m))
-          cc-test-reporter after-build -t gocov -p $PREFIX --exit-code $?
+          EXIT_CODE=$?
+
+          if [ -n "$CC_TEST_REPORTER_ID" ]; then
+            # workaround from https://github.com/codeclimate/test-reporter/issues/378
+            export PREFIX=$(basename $(go list -m))
+            cc-test-reporter after-build -t gocov -p $PREFIX --exit-code $EXIT_CODE
+          fi
         env:
           CC_TEST_REPORTER_ID: ${{ secrets.CC_TEST_REPORTER_ID }}
           GOPATH: ${{ runner.workspace }}
