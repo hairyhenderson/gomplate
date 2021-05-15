@@ -19,7 +19,7 @@ require (
 	github.com/johannesboyne/gofakes3 v0.0.0-20210415062230-4b6b67a85d38
 	github.com/joho/godotenv v1.3.0
 	github.com/pkg/errors v0.9.1
-	github.com/rs/zerolog v1.21.0
+	github.com/rs/zerolog v1.22.0
 	github.com/spf13/afero v1.6.0
 	github.com/spf13/cobra v1.1.3
 	github.com/stretchr/testify v1.7.0
