@@ -26,9 +26,9 @@ require (
 	github.com/ugorji/go/codec v1.2.6
 	github.com/zealic/xignore v0.3.3
 	go.etcd.io/bbolt v1.3.5
-	gocloud.dev v0.22.0
-	golang.org/x/crypto v0.0.0-20210421170649-83a5a9bb288b
-	golang.org/x/sys v0.0.0-20210502180810-71e4cd670f79
+	gocloud.dev v0.23.0
+	golang.org/x/crypto v0.0.0-20210506145944-38f3c27a63bf
+	golang.org/x/sys v0.0.0-20210503173754-0981d6026fa6
 	golang.org/x/term v0.0.0-20210406210042-72f3dc4e9b72
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b
 	gotest.tools/v3 v3.0.3
