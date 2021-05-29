@@ -1,2 +1,3 @@
-# ignoring this one - the k8s client libs are versioned strangely and so this gets picked up even though we're fine
+# ignoring these - the k8s client libs are versioned strangely and so this gets picked up even though we're fine
 CVE-2019-11250
+CVE-2020-8565
