@@ -1,17 +1,22 @@
-package data
+package datasources
 
 import (
+	"context"
+	"io/ioutil"
 	"net/url"
 	"os"
 	"path/filepath"
+	"sync"
 	"testing"
 
+	"github.com/hairyhenderson/gomplate/v3/internal/config"
 	"github.com/spf13/afero"
-
 	"github.com/stretchr/testify/assert"
 )
 
 func TestReadMerge(t *testing.T) {
+	registerRequesters()
+
 	jsonContent := `{"hello": "world"}`
 	yamlContent := "hello: earth\ngoodnight: moon\n"
 	arrayContent := `["hello", "world"]`
@@ -19,6 +24,9 @@ func TestReadMerge(t *testing.T) {
 	mergedContent := "goodnight: moon\nhello: world\n"
 
 	fs := afero.NewMemMapFs()
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	ctx = config.WithFileSystem(ctx, fs)
 
 	_ = fs.Mkdir("/tmp", 0777)
 	f, _ := fs.Create("/tmp/jsonfile.json")
@@ -41,52 +49,79 @@ func TestReadMerge(t *testing.T) {
 	f, _ = fs.Create(filepath.Join(wd, "textfile.txt"))
 	_, _ = f.WriteString(`plain text...`)
 
-	source := &Source{Alias: "foo", URL: mustParseURL("merge:file:///tmp/jsonfile.json|file:///tmp/yamlfile.yaml")}
-	source.fs = fs
-	d := &Data{
-		Sources: map[string]*Source{
-			"foo":       source,
-			"bar":       {Alias: "bar", URL: mustParseURL("file:///tmp/jsonfile.json")},
-			"baz":       {Alias: "baz", URL: mustParseURL("file:///tmp/yamlfile.yaml")},
-			"text":      {Alias: "text", URL: mustParseURL("file:///tmp/textfile.txt")},
-			"badscheme": {Alias: "badscheme", URL: mustParseURL("bad:///scheme.json")},
-			"badtype":   {Alias: "badtype", URL: mustParseURL("file:///tmp/textfile.txt?type=foo/bar")},
-			"array":     {Alias: "array", URL: mustParseURL("file:///tmp/array.json?type=" + url.QueryEscape(jsonArrayMimetype))},
+	u := mustParseURL("merge:file:///tmp/jsonfile.json|file:///tmp/yamlfile.yaml")
+
+	dsRegistry := &defaultRegistry{
+		RWMutex: &sync.RWMutex{},
+		m: map[string]config.DataSource{
+			"foo":       {URL: u},
+			"bar":       {URL: mustParseURL("file:///tmp/jsonfile.json")},
+			"baz":       {URL: mustParseURL("file:///tmp/yamlfile.yaml")},
+			"text":      {URL: mustParseURL("file:///tmp/textfile.txt")},
+			"badscheme": {URL: mustParseURL("bad:///scheme.json")},
+			"badtype":   {URL: mustParseURL("file:///tmp/textfile.txt?type=foo/bar")},
+			"array":     {URL: mustParseURL("file:///tmp/array.json?type=" + url.QueryEscape(jsonArrayMimetype))},
 		},
 	}
 
-	actual, err := d.readMerge(source)
+	r := &mergeRequester{dsRegistry}
+
+	actual, err := r.Request(ctx, u, nil)
 	assert.NoError(t, err)
-	assert.Equal(t, mergedContent, string(actual))
+	b, _ := ioutil.ReadAll(actual.Body)
+	assert.Equal(t, mergedContent, string(b))
+	assert.Equal(t, yamlMimetype, actual.ContentType)
 
-	source.URL = mustParseURL("merge:bar|baz")
-	actual, err = d.readMerge(source)
+	u = mustParseURL("merge:bar|baz")
+	actual, err = r.Request(ctx, u, nil)
 	assert.NoError(t, err)
-	assert.Equal(t, mergedContent, string(actual))
+	b, _ = ioutil.ReadAll(actual.Body)
+	assert.Equal(t, mergedContent, string(b))
+	assert.Equal(t, yamlMimetype, actual.ContentType)
 
-	source.URL = mustParseURL("merge:./jsonfile.json|baz")
-	actual, err = d.readMerge(source)
+	u = mustParseURL("merge:./jsonfile.json|baz")
+	actual, err = r.Request(ctx, u, nil)
 	assert.NoError(t, err)
-	assert.Equal(t, mergedContent, string(actual))
+	b, _ = ioutil.ReadAll(actual.Body)
+	assert.Equal(t, mergedContent, string(b))
+	assert.Equal(t, yamlMimetype, actual.ContentType)
 
-	source.URL = mustParseURL("merge:file:///tmp/jsonfile.json")
-	_, err = d.readMerge(source)
+	oldCtx := ctx
+	dsRegistry.Register("incontext", config.DataSource{URL: mustParseURL("file:///tmp/jsonfile.json")})
+	u = mustParseURL("merge:incontext|baz")
+	actual, err = r.Request(ctx, u, nil)
+	assert.NoError(t, err)
+	b, _ = ioutil.ReadAll(actual.Body)
+	assert.Equal(t, mergedContent, string(b))
+	assert.Equal(t, yamlMimetype, actual.ContentType)
+
+	ctx = oldCtx
+	// it must be added by now
+	u = mustParseURL("merge:incontext|baz")
+	actual, err = r.Request(ctx, u, nil)
+	assert.NoError(t, err)
+	b, _ = ioutil.ReadAll(actual.Body)
+	assert.Equal(t, mergedContent, string(b))
+	assert.Equal(t, yamlMimetype, actual.ContentType)
+
+	u = mustParseURL("merge:file:///tmp/jsonfile.json")
+	_, err = r.Request(ctx, u, nil)
 	assert.Error(t, err)
 
-	source.URL = mustParseURL("merge:bogusalias|file:///tmp/jsonfile.json")
-	_, err = d.readMerge(source)
+	u = mustParseURL("merge:bogusalias|file:///tmp/jsonfile.json")
+	_, err = r.Request(ctx, u, nil)
 	assert.Error(t, err)
 
-	source.URL = mustParseURL("merge:file:///tmp/jsonfile.json|badscheme")
-	_, err = d.readMerge(source)
+	u = mustParseURL("merge:file:///tmp/jsonfile.json|badscheme")
+	_, err = r.Request(ctx, u, nil)
 	assert.Error(t, err)
 
-	source.URL = mustParseURL("merge:file:///tmp/jsonfile.json|badtype")
-	_, err = d.readMerge(source)
+	u = mustParseURL("merge:file:///tmp/jsonfile.json|badtype")
+	_, err = r.Request(ctx, u, nil)
 	assert.Error(t, err)
 
-	source.URL = mustParseURL("merge:file:///tmp/jsonfile.json|array")
-	_, err = d.readMerge(source)
+	u = mustParseURL("merge:file:///tmp/jsonfile.json|array")
+	_, err = r.Request(ctx, u, nil)
 	assert.Error(t, err)
 }
 

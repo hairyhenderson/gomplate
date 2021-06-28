@@ -16,7 +16,6 @@ import (
 	"time"
 
 	gcmd "github.com/hairyhenderson/gomplate/v3/internal/cmd"
-	vaultapi "github.com/hashicorp/vault/api"
 	"github.com/stretchr/testify/assert"
 	"gotest.tools/v3/icmd"
 )
@@ -86,6 +85,8 @@ func freeport() (port int, addr string) {
 
 // waitForURL - waits up to 20s for a given URL to respond with a 200
 func waitForURL(t *testing.T, url string) error {
+	t.Helper()
+
 	client := http.DefaultClient
 	retries := 100
 	for retries > 0 {
@@ -107,41 +108,6 @@ func waitForURL(t *testing.T, url string) error {
 		}
 	}
 	return nil
-}
-
-type vaultClient struct {
-	vc        *vaultapi.Client
-	addr      string
-	rootToken string
-}
-
-func createVaultClient(addr string, rootToken string) (*vaultClient, error) {
-	config := vaultapi.DefaultConfig()
-	config.Address = "http://" + addr
-	client, err := vaultapi.NewClient(config)
-	if err != nil {
-		return nil, err
-	}
-	v := &vaultClient{
-		vc:        client,
-		addr:      addr,
-		rootToken: rootToken,
-	}
-	client.SetToken(rootToken)
-	return v, nil
-}
-
-func (v *vaultClient) tokenCreate(policy string, uses int) (string, error) {
-	opts := &vaultapi.TokenCreateRequest{
-		Policies: []string{policy},
-		TTL:      "1m",
-		NumUses:  uses,
-	}
-	token, err := v.vc.Auth().Token().Create(opts)
-	if err != nil {
-		return "", err
-	}
-	return token.Auth.ClientToken, nil
 }
 
 type command struct {
@@ -184,6 +150,8 @@ func (c *command) withEnv(k, v string) *command {
 var GomplateBinPath = ""
 
 func (c *command) run() (o, e string, err error) {
+	c.t.Helper()
+
 	if GomplateBinPath != "" {
 		return c.runCompiled(GomplateBinPath)
 	}
@@ -201,6 +169,7 @@ func (c *command) runInProcess() (o, e string, err error) {
 			defer os.Unsetenv(k)
 		}
 		os.Setenv(k, c.env[k])
+		// c.t.Logf("os.Setenv(%s, %s)", k, c.env[k])
 	}
 
 	if c.dir != "" {

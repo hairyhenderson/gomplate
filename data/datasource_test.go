@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	"github.com/hairyhenderson/gomplate/v3/internal/config"
+	"github.com/hairyhenderson/gomplate/v3/internal/datasources"
 	"github.com/spf13/afero"
 
 	"github.com/stretchr/testify/assert"
@@ -17,28 +18,35 @@ import (
 const osWindows = "windows"
 
 func TestNewData(t *testing.T) {
-	d, err := NewData(nil, nil)
-	assert.NoError(t, err)
-	assert.Len(t, d.Sources, 0)
+	datasources.DefaultRegistry = datasources.NewRegistry()
 
-	d, err = NewData([]string{"foo=http:///foo.json"}, nil)
+	_, err := NewData(nil, nil)
 	assert.NoError(t, err)
-	assert.Equal(t, "/foo.json", d.Sources["foo"].URL.Path)
+
+	d, err := NewData([]string{"foo=http:///foo.json"}, nil)
+	assert.NoError(t, err)
+	ds, ok := d.reg.Lookup("foo")
+	assert.True(t, ok)
+	assert.Equal(t, "/foo.json", ds.URL.Path)
 
 	d, err = NewData([]string{"foo=http:///foo.json"}, []string{})
 	assert.NoError(t, err)
-	assert.Equal(t, "/foo.json", d.Sources["foo"].URL.Path)
-	assert.Empty(t, d.Sources["foo"].header)
+	ds, _ = d.reg.Lookup("foo")
+	assert.Equal(t, "/foo.json", ds.URL.Path)
+	assert.Empty(t, ds.Header)
 
 	d, err = NewData([]string{"foo=http:///foo.json"}, []string{"bar=Accept: blah"})
 	assert.NoError(t, err)
-	assert.Equal(t, "/foo.json", d.Sources["foo"].URL.Path)
-	assert.Empty(t, d.Sources["foo"].header)
+	ds, _ = d.reg.Lookup("foo")
+	assert.Equal(t, "/foo.json", ds.URL.Path)
+	assert.Empty(t, ds.Header)
+	assert.Equal(t, http.Header{"Accept": []string{"blah"}}, d.extraHeaders["bar"])
 
 	d, err = NewData([]string{"foo=http:///foo.json"}, []string{"foo=Accept: blah"})
 	assert.NoError(t, err)
-	assert.Equal(t, "/foo.json", d.Sources["foo"].URL.Path)
-	assert.Equal(t, "blah", d.Sources["foo"].header["Accept"][0])
+	ds, _ = d.reg.Lookup("foo")
+	assert.Equal(t, "/foo.json", ds.URL.Path)
+	assert.EqualValues(t, []string{"blah"}, ds.Header["Accept"])
 }
 
 func TestDatasource(t *testing.T) {
@@ -58,15 +66,11 @@ func TestDatasource(t *testing.T) {
 		}
 		_, _ = f.Write(contents)
 
-		sources := map[string]*Source{
-			"foo": {
-				Alias:     "foo",
-				URL:       &url.URL{Scheme: "file", Path: uPath},
-				mediaType: mime,
-				fs:        fs,
-			},
-		}
-		return &Data{Sources: sources}
+		reg := datasources.NewRegistry()
+		reg.Register("foo", config.DataSource{URL: &url.URL{Scheme: "file", Path: uPath}})
+
+		ctx := config.WithFileSystem(context.Background(), fs)
+		return &Data{reg: reg, ctx: ctx}
 	}
 	test := func(ext, mime string, contents []byte, expected interface{}) {
 		data := setup(ext, mime, contents)
@@ -115,30 +119,23 @@ func TestDatasourceReachable(t *testing.T) {
 	}
 	_, _ = f.Write([]byte("{}"))
 
-	sources := map[string]*Source{
-		"foo": {
-			Alias:     "foo",
-			URL:       &url.URL{Scheme: "file", Path: uPath},
-			mediaType: jsonMimetype,
-			fs:        fs,
-		},
-		"bar": {
-			Alias: "bar",
-			URL:   &url.URL{Scheme: "file", Path: "/bogus"},
-			fs:    fs,
-		},
-	}
-	data := &Data{Sources: sources}
+	reg := datasources.NewRegistry()
+	reg.Register("foo", config.DataSource{URL: &url.URL{Scheme: "file", Path: uPath}})
+	reg.Register("bar", config.DataSource{URL: &url.URL{Scheme: "file", Path: "/bogus"}})
+
+	ctx := config.WithFileSystem(context.Background(), fs)
+	data := &Data{reg: reg, ctx: ctx}
 
 	assert.True(t, data.DatasourceReachable("foo"))
 	assert.False(t, data.DatasourceReachable("bar"))
 }
 
 func TestDatasourceExists(t *testing.T) {
-	sources := map[string]*Source{
-		"foo": {Alias: "foo"},
-	}
-	data := &Data{Sources: sources}
+	reg := datasources.NewRegistry()
+	reg.Register("foo", config.DataSource{})
+
+	ctx := context.Background()
+	data := &Data{reg: reg, ctx: ctx}
 	assert.True(t, data.DatasourceExists("foo"))
 	assert.False(t, data.DatasourceExists("bar"))
 }
@@ -162,17 +159,11 @@ func TestInclude(t *testing.T) {
 	}
 	_, _ = f.Write([]byte(contents))
 
-	sources := map[string]*Source{
-		"foo": {
-			Alias:     "foo",
-			URL:       &url.URL{Scheme: "file", Path: uPath},
-			mediaType: textMimetype,
-			fs:        fs,
-		},
-	}
-	data := &Data{
-		Sources: sources,
-	}
+	reg := datasources.NewRegistry()
+	reg.Register("foo", config.DataSource{URL: &url.URL{Scheme: "file", Path: uPath}})
+
+	ctx := config.WithFileSystem(context.Background(), fs)
+	data := &Data{reg: reg, ctx: ctx}
 	actual, err := data.Include("foo")
 	assert.NoError(t, err)
 	assert.Equal(t, contents, actual)
@@ -186,169 +177,64 @@ func (e errorReader) Read(p []byte) (n int, err error) {
 
 // nolint: megacheck
 func TestDefineDatasource(t *testing.T) {
-	d := &Data{}
+	ctx := context.Background()
+	d := &Data{ctx: ctx, reg: datasources.NewRegistry()}
 	_, err := d.DefineDatasource("", "foo.json")
 	assert.Error(t, err)
 
-	d = &Data{}
+	d = &Data{ctx: ctx, reg: datasources.NewRegistry()}
 	_, err = d.DefineDatasource("", "../foo.json")
 	assert.Error(t, err)
 
-	d = &Data{}
+	d = &Data{ctx: ctx, reg: datasources.NewRegistry()}
 	_, err = d.DefineDatasource("", "ftp://example.com/foo.yml")
 	assert.Error(t, err)
 
-	d = &Data{}
+	d = &Data{ctx: ctx, reg: datasources.NewRegistry()}
 	_, err = d.DefineDatasource("data", "foo.json")
-	s := d.Sources["data"]
 	assert.NoError(t, err)
-	assert.Equal(t, "data", s.Alias)
+	s, ok := d.reg.Lookup("data")
+	assert.True(t, ok)
 	assert.Equal(t, "file", s.URL.Scheme)
 	assert.True(t, s.URL.IsAbs())
 
-	d = &Data{}
+	d = &Data{ctx: ctx, reg: datasources.NewRegistry()}
 	_, err = d.DefineDatasource("data", "/otherdir/foo.json")
-	s = d.Sources["data"]
 	assert.NoError(t, err)
-	assert.Equal(t, "data", s.Alias)
+	s, ok = d.reg.Lookup("data")
+	assert.True(t, ok)
 	assert.Equal(t, "file", s.URL.Scheme)
 	assert.True(t, s.URL.IsAbs())
 	assert.Equal(t, "/otherdir/foo.json", s.URL.Path)
 
-	d = &Data{}
+	d = &Data{ctx: ctx, reg: datasources.NewRegistry()}
 	_, err = d.DefineDatasource("data", "sftp://example.com/blahblah/foo.json")
-	s = d.Sources["data"]
 	assert.NoError(t, err)
-	assert.Equal(t, "data", s.Alias)
+	s, ok = d.reg.Lookup("data")
+	assert.True(t, ok)
 	assert.Equal(t, "sftp", s.URL.Scheme)
 	assert.True(t, s.URL.IsAbs())
 	assert.Equal(t, "/blahblah/foo.json", s.URL.Path)
 
-	d = &Data{
-		Sources: map[string]*Source{
-			"data": {Alias: "data"},
-		},
-	}
+	d = &Data{ctx: ctx, reg: datasources.NewRegistry()}
+	d.reg.Register("data", config.DataSource{})
 	_, err = d.DefineDatasource("data", "/otherdir/foo.json")
-	s = d.Sources["data"]
 	assert.NoError(t, err)
-	assert.Equal(t, "data", s.Alias)
+	s, ok = d.reg.Lookup("data")
+	assert.True(t, ok)
 	assert.Nil(t, s.URL)
 
-	d = &Data{}
+	d = &Data{ctx: ctx, reg: datasources.NewRegistry()}
 	_, err = d.DefineDatasource("data", "/otherdir/foo?type=application/x-env")
-	s = d.Sources["data"]
 	assert.NoError(t, err)
-	assert.Equal(t, "data", s.Alias)
-	m, err := s.mimeType("")
-	assert.NoError(t, err)
-	assert.Equal(t, "application/x-env", m)
-}
-
-func TestMimeType(t *testing.T) {
-	s := &Source{URL: mustParseURL("http://example.com/list?type=a/b/c")}
-	_, err := s.mimeType("")
-	assert.Error(t, err)
-
-	data := []struct {
-		url       string
-		mediaType string
-		expected  string
-	}{
-		{"http://example.com/foo.json",
-			"",
-			jsonMimetype},
-		{"http://example.com/foo.json",
-			"text/foo",
-			"text/foo"},
-		{"http://example.com/foo.json?type=application/yaml",
-			"text/foo",
-			"application/yaml"},
-		{"http://example.com/list?type=application/array%2Bjson",
-			"text/foo",
-			"application/array+json"},
-		{"http://example.com/list?type=application/array+json",
-			"",
-			"application/array+json"},
-		{"http://example.com/unknown",
-			"",
-			"text/plain"},
-	}
-
-	for i, d := range data {
-		d := d
-		t.Run(fmt.Sprintf("%d:%q,%q==%q", i, d.url, d.mediaType, d.expected), func(t *testing.T) {
-			s := &Source{URL: mustParseURL(d.url), mediaType: d.mediaType}
-			mt, err := s.mimeType("")
-			assert.NoError(t, err)
-			assert.Equal(t, d.expected, mt)
-		})
-	}
-}
-
-func TestMimeTypeWithArg(t *testing.T) {
-	s := &Source{URL: mustParseURL("http://example.com")}
-	_, err := s.mimeType("h\nttp://foo")
-	assert.Error(t, err)
-
-	data := []struct {
-		url       string
-		mediaType string
-		arg       string
-		expected  string
-	}{
-		{"http://example.com/unknown",
-			"",
-			"/foo.json",
-			"application/json"},
-		{"http://example.com/unknown",
-			"",
-			"foo.json",
-			"application/json"},
-		{"http://example.com/",
-			"text/foo",
-			"/foo.json",
-			"text/foo"},
-		{"git+https://example.com/myrepo",
-			"",
-			"//foo.yaml",
-			"application/yaml"},
-		{"http://example.com/foo.json",
-			"",
-			"/foo.yaml",
-			"application/yaml"},
-		{"http://example.com/foo.json?type=application/array+yaml",
-			"",
-			"/foo.yaml",
-			"application/array+yaml"},
-		{"http://example.com/foo.json?type=application/array+yaml",
-			"",
-			"/foo.yaml?type=application/yaml",
-			"application/yaml"},
-		{"http://example.com/foo.json?type=application/array+yaml",
-			"text/plain",
-			"/foo.yaml?type=application/yaml",
-			"application/yaml"},
-	}
-
-	for i, d := range data {
-		d := d
-		t.Run(fmt.Sprintf("%d:%q,%q,%q==%q", i, d.url, d.mediaType, d.arg, d.expected), func(t *testing.T) {
-			s := &Source{URL: mustParseURL(d.url), mediaType: d.mediaType}
-			mt, err := s.mimeType(d.arg)
-			assert.NoError(t, err)
-			assert.Equal(t, d.expected, mt)
-		})
-	}
+	s, ok = d.reg.Lookup("data")
+	assert.True(t, ok)
 }
 
 func TestFromConfig(t *testing.T) {
 	ctx := context.Background()
 	cfg := &config.Config{}
-	expected := &Data{
-		ctx:     ctx,
-		Sources: map[string]*Source{},
-	}
+	expected := &Data{ctx: ctx, reg: datasources.DefaultRegistry}
 	assert.EqualValues(t, expected, FromConfig(ctx, cfg))
 
 	cfg = &config.Config{
@@ -360,12 +246,7 @@ func TestFromConfig(t *testing.T) {
 	}
 	expected = &Data{
 		ctx: ctx,
-		Sources: map[string]*Source{
-			"foo": {
-				Alias: "foo",
-				URL:   mustParseURL("http://example.com"),
-			},
-		},
+		reg: datasources.DefaultRegistry,
 	}
 	assert.EqualValues(t, expected, FromConfig(ctx, cfg))
 
@@ -391,19 +272,7 @@ func TestFromConfig(t *testing.T) {
 	}
 	expected = &Data{
 		ctx: ctx,
-		Sources: map[string]*Source{
-			"foo": {
-				Alias: "foo",
-				URL:   mustParseURL("http://foo.com"),
-			},
-			"bar": {
-				Alias: "bar",
-				URL:   mustParseURL("http://bar.com"),
-				header: http.Header{
-					"Foo": []string{"bar"},
-				},
-			},
-		},
+		reg: datasources.DefaultRegistry,
 		extraHeaders: map[string]http.Header{
 			"baz": {
 				"Foo": []string{"bar"},

@@ -57,7 +57,7 @@ QUX='single quotes ignore $variables'
 	return tmpDir
 }
 
-func TestDatasourcess_File(t *testing.T) {
+func TestDatasources_File(t *testing.T) {
 	tmpDir := setupDatasourcesFileTest(t)
 
 	o, e, err := cmd(t,
@@ -65,6 +65,12 @@ func TestDatasourcess_File(t *testing.T) {
 		"-i", `{{(datasource "config").foo.bar}}`).run()
 	assertSuccess(t, o, e, err, "baz")
 
+	o, e, err = cmd(t, "-d", "dir="+tmpDir.Path()+"/",
+		"-i", `{{ (datasource "dir" "config.json").foo.bar }}`).run()
+	assertSuccess(t, o, e, err, "baz")
+
+	// special-case for file datasources - if the path is a dir, it should
+	// behave as if there was a '/' at the end.
 	o, e, err = cmd(t, "-d", "dir="+tmpDir.Path(),
 		"-i", `{{ (datasource "dir" "config.json").foo.bar }}`).run()
 	assertSuccess(t, o, e, err, "baz")

@@ -3,6 +3,7 @@ package libkv
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"strings"
 
 	"github.com/docker/libkv/store"
@@ -26,7 +27,7 @@ func (kv *LibKV) Logout() {
 func (kv *LibKV) Read(path string) ([]byte, error) {
 	data, err := kv.store.Get(path)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("libkv Read failed for key %q: %w", path, err)
 	}
 
 	return data.Value, nil

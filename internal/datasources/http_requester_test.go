@@ -1,4 +1,4 @@
-package data
+package datasources
 
 import (
 	"context"
@@ -6,11 +6,8 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
-	"net/url"
 	"testing"
 
-	"github.com/hairyhenderson/gomplate/v3/internal/config"
-	"github.com/hairyhenderson/gomplate/v3/internal/datasources"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -39,52 +36,50 @@ func assertJSONEqual(t *testing.T, expected, actual interface{}) {
 	assert.Equal(t, string(e), string(a))
 }
 
-func TestHTTPFile(t *testing.T) {
+func TestHTTPRequester(t *testing.T) {
 	srv := setupHTTP(t, 200, "application/json; charset=utf-8", `{"hello": "world"}`)
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	u, _ := url.Parse(srv.URL)
-	data := &Data{ctx: ctx, reg: datasources.NewRegistry()}
-	data.reg.Register("foo", config.DataSource{URL: u})
+	r := &httpRequester{}
 
 	expected := map[string]interface{}{
 		"hello": "world",
 	}
 
-	actual, err := data.Datasource("foo")
+	u := mustParseURL(srv.URL)
+	resp, err := r.Request(ctx, u, nil)
 	assert.NoError(t, err)
-	assertJSONEqual(t, expected, actual)
 
-	actual, err = data.Datasource(srv.URL)
+	actual, err := resp.Parse()
 	assert.NoError(t, err)
 	assertJSONEqual(t, expected, actual)
 }
 
-func TestHTTPFileWithHeaders(t *testing.T) {
+func TestHTTPRequesterWithHeaders(t *testing.T) {
 	srv := setupHTTP(t, 200, jsonMimetype, "")
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	u, _ := url.Parse(srv.URL)
-	data := &Data{ctx: ctx, reg: datasources.NewRegistry()}
-	data.reg.Register("foo", config.DataSource{
-		URL: u,
-		Header: http.Header{
-			"Foo":             {"bar"},
-			"foo":             {"baz"},
-			"User-Agent":      {},
-			"Accept-Encoding": {"test"},
-		},
-	})
-
+	r := &httpRequester{}
 	expected := http.Header{
 		"Accept-Encoding": {"test"},
 		"Foo":             {"bar", "baz"},
 	}
-	actual, err := data.Datasource("foo")
+
+	u := mustParseURL(srv.URL)
+
+	resp, err := r.Request(ctx, u, http.Header{
+		"Foo":             {"bar"},
+		"foo":             {"baz"},
+		"User-Agent":      {},
+		"Accept-Encoding": {"test"},
+	})
+	assert.NoError(t, err)
+
+	actual, err := resp.Parse()
 	assert.NoError(t, err)
 	assertJSONEqual(t, expected, actual)
 
@@ -93,12 +88,10 @@ func TestHTTPFileWithHeaders(t *testing.T) {
 		"Foo":             {"bar", "baz"},
 		"User-Agent":      {"Go-http-client/1.1"},
 	}
-	data = &Data{
-		extraHeaders: map[string]http.Header{srv.URL: expected},
-		ctx:          ctx,
-		reg:          datasources.NewRegistry(),
-	}
-	actual, err = data.Datasource(srv.URL)
+	resp, err = r.Request(ctx, u, expected)
+	assert.NoError(t, err)
+
+	actual, err = resp.Parse()
 	assert.NoError(t, err)
 	assertJSONEqual(t, expected, actual)
 }

@@ -35,12 +35,12 @@ func TestCreateContext(t *testing.T) {
 	barURL := "env:///bar?type=application/yaml"
 	uf, _ := url.Parse(fooURL)
 	ub, _ := url.Parse(barURL)
-	d := &data.Data{
-		Sources: map[string]*data.Source{
+	d := data.FromConfig(ctx, &config.Config{
+		DataSources: map[string]config.DataSource{
 			"foo": {URL: uf},
 			".":   {URL: ub},
 		},
-	}
+	})
 	os.Setenv("foo", "foo: bar")
 	defer os.Unsetenv("foo")
 	c, err = createTmplContext(ctx, map[string]config.DataSource{"foo": {URL: uf}}, d)
