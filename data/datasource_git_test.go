@@ -307,6 +307,9 @@ func setupGitRepo(t *testing.T) billy.Filesystem {
 	})
 	assert.NilError(t, err)
 
+	overrideFSLoader(fs)
+	t.Cleanup(func() { overrideFSLoader(osfs.New("")) })
+
 	return fs
 }
 
@@ -317,11 +320,8 @@ func overrideFSLoader(fs billy.Filesystem) {
 
 func TestOpenFileRepo(t *testing.T) {
 	ctx := context.Background()
-	repoFS := setupGitRepo(t)
+	_ = setupGitRepo(t)
 	g := gitsource{}
-
-	overrideFSLoader(repoFS)
-	defer overrideFSLoader(osfs.New(""))
 
 	fs, _, err := g.clone(ctx, mustParseURL("git+file:///repo"), 0)
 	assert.NilError(t, err)

@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"path"
 	"path/filepath"
 	"strings"
 	"text/template"
@@ -25,7 +24,7 @@ import (
 type gomplate struct {
 	tmplctx         interface{}
 	funcMap         template.FuncMap
-	nestedTemplates templateAliases
+	nestedTemplates config.Templates
 	rootTemplate    *template.Template
 
 	leftDelim, rightDelim string
@@ -33,7 +32,7 @@ type gomplate struct {
 
 // runTemplate -
 func (g *gomplate) runTemplate(_ context.Context, t *tplate) error {
-	tmpl, err := t.toGoTemplate(g)
+	tmpl, err := t.toGoTemplate(afero.NewOsFs(), g)
 	if err != nil {
 		return err
 	}
@@ -50,10 +49,8 @@ func (g *gomplate) runTemplate(_ context.Context, t *tplate) error {
 	return err
 }
 
-type templateAliases map[string]string
-
 // newGomplate -
-func newGomplate(funcMap template.FuncMap, leftDelim, rightDelim string, nested templateAliases, tctx interface{}) *gomplate {
+func newGomplate(funcMap template.FuncMap, leftDelim, rightDelim string, nested config.Templates, tctx interface{}) *gomplate {
 	return &gomplate{
 		leftDelim:       leftDelim,
 		rightDelim:      rightDelim,
@@ -61,53 +58,6 @@ func newGomplate(funcMap template.FuncMap, leftDelim, rightDelim string, nested 
 		nestedTemplates: nested,
 		tmplctx:         tctx,
 	}
-}
-
-func parseTemplateArgs(templateArgs []string) (templateAliases, error) {
-	nested := templateAliases{}
-	for _, templateArg := range templateArgs {
-		err := parseTemplateArg(templateArg, nested)
-		if err != nil {
-			return nil, err
-		}
-	}
-	return nested, nil
-}
-
-func parseTemplateArg(templateArg string, ta templateAliases) error {
-	parts := strings.SplitN(templateArg, "=", 2)
-	pth := parts[0]
-	alias := ""
-	if len(parts) > 1 {
-		alias = parts[0]
-		pth = parts[1]
-	}
-
-	switch fi, err := fs.Stat(pth); {
-	case err != nil:
-		return err
-	case fi.IsDir():
-		files, err := afero.ReadDir(fs, pth)
-		if err != nil {
-			return err
-		}
-		prefix := pth
-		if alias != "" {
-			prefix = alias
-		}
-		for _, f := range files {
-			if !f.IsDir() { // one-level only
-				ta[path.Join(prefix, f.Name())] = path.Join(pth, f.Name())
-			}
-		}
-	default:
-		if alias != "" {
-			ta[alias] = pth
-		} else {
-			ta[pth] = pth
-		}
-	}
-	return nil
 }
 
 // RunTemplates - run all gomplate templates specified by the given configuration
@@ -132,10 +82,7 @@ func Run(ctx context.Context, cfg *config.Config) error {
 	log.Debug().Str("data", fmt.Sprintf("%+v", d)).Msg("created data from config")
 
 	addCleanupHook(d.Cleanup)
-	nested, err := parseTemplateArgs(cfg.Templates)
-	if err != nil {
-		return err
-	}
+
 	c, err := createTmplContext(ctx, cfg.Context, d)
 	if err != nil {
 		return err
@@ -145,7 +92,7 @@ func Run(ctx context.Context, cfg *config.Config) error {
 	if err != nil {
 		return err
 	}
-	g := newGomplate(funcMap, cfg.LDelim, cfg.RDelim, nested, c)
+	g := newGomplate(funcMap, cfg.LDelim, cfg.RDelim, cfg.Templates, c)
 
 	return g.runTemplates(ctx, cfg)
 }
@@ -196,7 +143,7 @@ func mappingNamer(outMap string, g *gomplate) func(string) (string, error) {
 			contents: outMap,
 			target:   out,
 		}
-		tpl, err := t.toGoTemplate(g)
+		tpl, err := t.toGoTemplate(afero.NewOsFs(), g)
 		if err != nil {
 			return "", err
 		}

@@ -32,7 +32,7 @@ func readBlob(source *Source, args ...string) (output []byte, err error) {
 		key = path.Join(key, args[0])
 	}
 
-	opener, err := newOpener(ctx, source.URL)
+	opener, err := newOpener(ctx, source.URL.Scheme)
 	if err != nil {
 		return nil, err
 	}
@@ -62,8 +62,8 @@ func readBlob(source *Source, args ...string) (output []byte, err error) {
 }
 
 // create the correct kind of blob.BucketURLOpener for the given URL
-func newOpener(ctx context.Context, u *url.URL) (opener blob.BucketURLOpener, err error) {
-	switch u.Scheme {
+func newOpener(ctx context.Context, scheme string) (opener blob.BucketURLOpener, err error) {
+	switch scheme {
 	case "s3":
 		// set up a "regular" gomplate AWS SDK session
 		sess := gaws.SDKSession()

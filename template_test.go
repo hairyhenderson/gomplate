@@ -4,8 +4,10 @@ import (
 	"bytes"
 	"fmt"
 	"io"
+	"net/url"
 	"os"
 	"testing"
+	"text/template"
 
 	"github.com/hairyhenderson/gomplate/v3/internal/config"
 	"github.com/hairyhenderson/gomplate/v3/internal/iohelpers"
@@ -264,4 +266,49 @@ func TestCreateOutFile(t *testing.T) {
 	_, err := createOutFile("in", 0644, false)
 	assert.Error(t, err)
 	assert.IsType(t, &os.PathError{}, err)
+}
+
+func TestToGoTemplate(t *testing.T) {
+	memfs := afero.NewMemMapFs()
+	_ = afero.WriteFile(memfs, "foo.tmpl", []byte("hello template"), 0600)
+
+	tp := &tplate{
+		name:     "root",
+		contents: "hello world",
+	}
+	gomp := &gomplate{
+		funcMap: template.FuncMap{},
+	}
+	tmpl, err := tp.toGoTemplate(memfs, gomp)
+	assert.NoError(t, err)
+	assert.Equal(t, "root", tmpl.Name())
+
+	out := &bytes.Buffer{}
+	err = tmpl.Execute(out, nil)
+	assert.NoError(t, err)
+	assert.Equal(t, "hello world", out.String())
+
+	gomp.nestedTemplates = config.Templates{
+		"foo": config.DataSource{
+			URL: &url.URL{Scheme: "bogus"},
+		},
+	}
+
+	_, err = tp.toGoTemplate(memfs, gomp)
+	assert.Error(t, err)
+
+	tp.contents = "{{template `foo`}}"
+	gomp.nestedTemplates = config.Templates{
+		"foo": config.DataSource{
+			URL: &url.URL{Scheme: "file", Path: "foo.tmpl"},
+		},
+	}
+
+	tmpl, err = tp.toGoTemplate(memfs, gomp)
+	assert.NoError(t, err)
+
+	out.Reset()
+	err = tmpl.Execute(out, nil)
+	assert.NoError(t, err)
+	assert.Equal(t, "hello template", out.String())
 }

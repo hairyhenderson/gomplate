@@ -39,7 +39,7 @@ func addTmplFuncs(f template.FuncMap, root *template.Template, ctx interface{}) 
 	f["tpl"] = t.Inline
 }
 
-func (t *tplate) toGoTemplate(g *gomplate) (tmpl *template.Template, err error) {
+func (t *tplate) toGoTemplate(fsys afero.Fs, g *gomplate) (tmpl *template.Template, err error) {
 	if g.rootTemplate != nil {
 		tmpl = g.rootTemplate.New(t.name)
 	} else {
@@ -55,15 +55,26 @@ func (t *tplate) toGoTemplate(g *gomplate) (tmpl *template.Template, err error) 
 	if err != nil {
 		return nil, err
 	}
-	for alias, path := range g.nestedTemplates {
-		// nolint: gosec
-		b, err := ioutil.ReadFile(path)
-		if err != nil {
-			return nil, err
-		}
-		_, err = tmpl.New(alias).Parse(string(b))
-		if err != nil {
-			return nil, err
+	for alias, nt := range g.nestedTemplates {
+		// TODO: read these like regular datasources - until then, this is a
+		// short-term hack...
+		if nt.URL.Scheme == "file" {
+			f, err := fsys.Open(nt.URL.Path)
+			if err != nil {
+				return nil, fmt.Errorf("failed to open file %q: %w", nt.URL.Path, err)
+			}
+			defer f.Close()
+
+			b, err := io.ReadAll(f)
+			if err != nil {
+				return nil, fmt.Errorf("failed to read file at %s: %w", nt.URL.Path, err)
+			}
+			_, err = tmpl.New(alias).Parse(string(b))
+			if err != nil {
+				return nil, err
+			}
+		} else {
+			return nil, fmt.Errorf("%q scheme not supported (yet)", nt.URL.Scheme)
 		}
 	}
 	return tmpl, nil

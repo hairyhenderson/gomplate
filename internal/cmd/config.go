@@ -134,10 +134,6 @@ func cobraConfig(cmd *cobra.Command, args []string) (cfg *config.Config, err err
 	if err != nil {
 		return nil, err
 	}
-	cfg.Templates, err = getStringSlice(cmd, "template")
-	if err != nil {
-		return nil, err
-	}
 	cfg.OutputDir, err = getString(cmd, "output-dir")
 	if err != nil {
 		return nil, err
@@ -185,7 +181,11 @@ func cobraConfig(cmd *cobra.Command, args []string) (cfg *config.Config, err err
 	if err != nil {
 		return nil, err
 	}
-	err = cfg.ParseDataSourceFlags(ds, cx, hdr)
+	tp, err := getStringSlice(cmd, "template")
+	if err != nil {
+		return nil, err
+	}
+	err = cfg.ParseDataSourceFlags(ds, cx, tp, hdr)
 	if err != nil {
 		return nil, err
 	}
