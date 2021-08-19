@@ -51,7 +51,7 @@ func TestCrypto_RSACrypt(t *testing.T) {
 
 	o, e, err = cmd(t,
 		"--experimental",
-		"-c", "privKey=./key.pem",
+		"-c", "privKey=./key.pem?type=text/plain",
 		"-i", `{{ $pub := crypto.RSADerivePublicKey .privKey -}}
 {{ $enc := "hello" | crypto.RSAEncrypt $pub -}}
 {{ crypto.RSADecryptBytes .privKey $enc | conv.ToString }}
