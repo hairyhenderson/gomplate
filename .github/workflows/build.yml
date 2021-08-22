@@ -46,7 +46,7 @@ jobs:
     steps:
       - uses: actions/setup-go@v1
         with:
-          go-version: 1.16.x
+          go-version: 1.17.x
       - run: |
           git config --global user.email "bogus@example.com"
           git config --global user.name "Someone"
