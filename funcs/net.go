@@ -5,8 +5,8 @@ import (
 	stdnet "net"
 
 	"github.com/hairyhenderson/gomplate/v3/conv"
-
 	"github.com/hairyhenderson/gomplate/v3/net"
+	"inet.af/netaddr"
 )
 
 // NetNS - the net namespace
@@ -64,4 +64,19 @@ func (f NetFuncs) LookupSRVs(name interface{}) ([]*stdnet.SRV, error) {
 // LookupTXT -
 func (f NetFuncs) LookupTXT(name interface{}) ([]string, error) {
 	return net.LookupTXT(conv.ToString(name))
+}
+
+// ParseIP -
+func (f NetFuncs) ParseIP(ip interface{}) (netaddr.IP, error) {
+	return netaddr.ParseIP(conv.ToString(ip))
+}
+
+// ParseIPPrefix -
+func (f NetFuncs) ParseIPPrefix(ipprefix interface{}) (netaddr.IPPrefix, error) {
+	return netaddr.ParseIPPrefix(conv.ToString(ipprefix))
+}
+
+// ParseIPRange -
+func (f NetFuncs) ParseIPRange(iprange interface{}) (netaddr.IPRange, error) {
+	return netaddr.ParseIPRange(conv.ToString(iprange))
 }
