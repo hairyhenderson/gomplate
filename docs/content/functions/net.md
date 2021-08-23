@@ -5,6 +5,14 @@ menu:
     parent: functions
 ---
 
+The `net` namespace contains functions that can help deal with network-related
+lookups and calculations. Some of these functions return specifically-typed
+values that contain additional methods useful for formatting or further
+calculations.
+
+[RFC 4632]: http://tools.ietf.org/html/rfc4632
+[RFC 4291]: http://tools.ietf.org/html/rfc4291
+[`inet.af/netaddr`]: https://pkg.go.dev/inet.af/netaddr
 
 ## `net.LookupIP`
 
@@ -202,4 +210,113 @@ $ gomplate -i '{{net.LookupTXT "example.com" | data.ToJSONPretty "  " }}'
 [
   "v=spf1 -all"
 ]
+```
+
+## `net.ParseIP`
+
+Parse the given string as an IP address (a `netaddr.IP` from the
+[`inet.af/netaddr`](https://pkg.go.dev/inet.af/netaddr) package).
+
+Any of `netaddr.IP`'s methods may be called on the resulting value. See
+[the docs](https://pkg.go.dev/inet.af/netaddr) for details.
+
+### Usage
+
+```go
+net.ParseIP ip
+```
+```go
+ip | net.ParseIP
+```
+
+### Arguments
+
+| name | description |
+|------|-------------|
+| `ip` | _(required)_ The IP string to parse. It must be either an IPv4 or IPv6 address. |
+
+### Examples
+
+```console
+$ gomplate -i '{{ (net.ParseIP "192.168.0.1").IsPrivate }}'
+true
+$ gomplate -i '{{ $ip := net.ParseIP (net.LookupIP "example.com") -}}
+  {{ $ip.Prefix 12 }}'
+93.176.0.0/12
+```
+
+## `net.ParseIPPrefix`
+
+Parse the given string as an IP address prefix (CIDR) representing an IP
+network (a `netaddr.IPPrefix` from the
+[`inet.af/netaddr`][] package).
+
+The string can be in the form `"192.168.1.0/24"` or `"2001::db8::/32"`,
+the CIDR notations defined in [RFC 4632][] and [RFC 4291][].
+
+Any of `netaddr.IPPrefix`'s methods may be called on the resulting value.
+See [the docs][`inet.af/netaddr`] for details.
+
+### Usage
+
+```go
+net.ParseIPPrefix ipprefix
+```
+```go
+ipprefix | net.ParseIPPrefix
+```
+
+### Arguments
+
+| name | description |
+|------|-------------|
+| `ipprefix` | _(required)_ The IP address prefix to parse. It must represent either an IPv4 or IPv6 prefix, containing a `/`. |
+
+### Examples
+
+```console
+$ gomplate -i '{{ (net.ParseIPPrefix "192.168.0.0/24").Range }}'
+192.168.0.0-192.168.0.255
+$ gomplate -i '{{ $ip := net.ParseIP (net.LookupIP "example.com") -}}
+  {{ $net := net.ParseIPPrefix "93.184.0.0/16" -}}
+  {{ $net.Contains $ip }}'
+true
+$ gomplate -i '{{ $net := net.ParseIPPrefix "93.184.0.0/12" -}}
+  {{ $net.Range }}'
+93.176.0.0-93.191.255.255
+```
+
+## `net.ParseIPRange`
+
+Parse the given string as an inclusive range of IP addresses from the same
+address family (a `netaddr.IPRange` from the [`inet.af/netaddr`][] package).
+
+The string must contain a hyphen (`-`).
+
+Any of `netaddr.IPRange`'s methods may be called on the resulting value.
+See [the docs][`inet.af/netaddr`] for details.
+
+### Usage
+
+```go
+net.ParseIPRange iprange
+```
+```go
+iprange | net.ParseIPRange
+```
+
+### Arguments
+
+| name | description |
+|------|-------------|
+| `iprange` | _(required)_ The IP address range to parse. It must represent either an IPv4 or IPv6 range, containing a `-`. |
+
+### Examples
+
+```console
+$ gomplate -i '{{ (net.ParseIPRange "192.168.0.0-192.168.0.255").To }}'
+192.168.0.255
+$ gomplate -i '{{ $range := net.ParseIPRange "1.2.3.0-1.2.3.233" -}}
+  {{ $range.Prefixes }}'
+[1.2.3.0/25 1.2.3.128/26 1.2.3.192/27]
 ```
