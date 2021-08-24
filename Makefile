@@ -46,6 +46,12 @@ clean:
 
 build-x: $(patsubst %,$(PREFIX)/bin/$(PKG_NAME)_%,$(platforms))
 
+$(PREFIX)/bin/%.zip: $(PREFIX)/bin/%
+	@zip -j $@ $^
+
+$(PREFIX)/bin/$(PKG_NAME)_windows-%.zip: $(PREFIX)/bin/$(PKG_NAME)_windows-%.exe
+	@zip -j $@ $^
+
 compress-all: $(patsubst %,$(PREFIX)/bin/$(PKG_NAME)_%,$(compressed-platforms))
 
 UPX_VERSION := $(shell upx --version | head -n1 | cut -f2 -d\ )
