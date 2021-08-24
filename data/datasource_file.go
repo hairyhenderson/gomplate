@@ -51,6 +51,8 @@ func readFile(source *Source, args ...string) ([]byte, error) {
 		return nil, errors.Wrapf(err, "Can't open %s", p)
 	}
 
+	defer f.Close()
+
 	b, err := ioutil.ReadAll(f)
 	if err != nil {
 		return nil, errors.Wrapf(err, "Can't read %s", p)

@@ -21,6 +21,7 @@ func TestReadFile(t *testing.T) {
 	_, _ = f.Write(content)
 	_, _ = fs.Create("/tmp/partial/bar.txt")
 	_, _ = fs.Create("/tmp/partial/baz.txt")
+	_ = f.Close()
 
 	source := &Source{Alias: "foo", URL: mustParseURL("file:///tmp/foo")}
 	source.fs = fs
