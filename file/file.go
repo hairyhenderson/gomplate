@@ -72,6 +72,9 @@ func Write(filename string, content []byte) error {
 	if err != nil {
 		return errors.Wrapf(err, "failed to open %s", filename)
 	}
+
+	defer inFile.Close()
+
 	n, err := inFile.Write(content)
 	if err != nil {
 		return errors.Wrapf(err, "failed to write %s", filename)
