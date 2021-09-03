@@ -59,7 +59,7 @@ It can be pretty awkward to always type `docker run hairyhenderson/gomplate`,
 so this can be made simpler with a shell alias:
 
 ```console
-$ alias gomplate=docker run hairyhenderson/gomplate
+$ alias gomplate='docker run hairyhenderson/gomplate'
 $ gomplate --version
 gomplate version 3.8.0
 ```
