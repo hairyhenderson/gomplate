@@ -43,7 +43,8 @@ _Note: the Alpine version of gomplate may lag behind the latest release of gompl
 A simple way to get started is with one of the [hairyhenderson/gomplate][] Docker images. Images containing [`slim` binaries](#slim-binaries) are tagged as `:slim` or `:vX.Y.Z-slim`.
 
 ```console
-$ docker run hairyhenderson/gomplate --version
+$ docker run hairyhenderson/gomplate:stable --version
+gomplate version 3.9.0
 ```
 
 Of course, there are some drawbacks - any files to be used for [datasources][]
@@ -55,13 +56,13 @@ $ echo 'My voice is my {{.Env.THING}}. {{(datasource "vault").value}}' \
 My voice is my passport. Verify me.
 ```
 
-It can be pretty awkward to always type `docker run hairyhenderson/gomplate`,
+It can be pretty awkward to always type `docker run hairyhenderson/gomplate:stable`,
 so this can be made simpler with a shell alias:
 
 ```console
-$ alias gomplate='docker run hairyhenderson/gomplate'
+$ alias gomplate='docker run hairyhenderson/gomplate:stable'
 $ gomplate --version
-gomplate version 3.8.0
+gomplate version 3.9.0
 ```
 
 ### use inside a container
@@ -72,7 +73,7 @@ Use the `COPY` instruction's `--from` flag to accomplish this:
 
 ```Dockerfile
 ...
-COPY --from=hairyhenderson/gomplate:v3.8.0 /gomplate /bin/gomplate
+COPY --from=hairyhenderson/gomplate:stable /gomplate /bin/gomplate
 ```
 
 Now, `gomplate` will be available in the `/bin` directory inside the container image.
@@ -82,7 +83,7 @@ Note that when using `gomplate` with HTTPS-based datasources, you will likely ne
 ```Dockerfile
 FROM alpine
 
-COPY --from=hairyhenderson/gomplate:v3.8.0-slim /gomplate /bin/gomplate
+COPY --from=hairyhenderson/gomplate:stable /gomplate /bin/gomplate
 RUN apk add --no-cache ca-certificates
 ```
 
