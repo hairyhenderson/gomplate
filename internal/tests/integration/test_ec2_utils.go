@@ -10,6 +10,7 @@ import (
 	"log"
 	"math/big"
 	"net/http"
+	"time"
 
 	"github.com/fullsailor/pkcs7"
 )
@@ -56,6 +57,8 @@ func certificateGenerate() (priv *rsa.PrivateKey, derBytes []byte, err error) {
 		Subject: pkix.Name{
 			Organization: []string{"Test"},
 		},
+		NotBefore: time.Now().Add(-24 * time.Hour),
+		NotAfter:  time.Now().Add(365 * 24 * time.Hour),
 	}
 
 	derBytes, err = x509.CreateCertificate(rand.Reader, &template, &template, &priv.PublicKey, priv)

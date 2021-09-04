@@ -1,4 +1,5 @@
-//+build !windows
+//go:build !windows
+// +build !windows
 
 package integration
 
@@ -44,9 +45,11 @@ func TestDatasources_VaultEc2(t *testing.T) {
 
 	v.vc.Logical().Write("secret/foo", map[string]interface{}{"value": "bar"})
 	defer v.vc.Logical().Delete("secret/foo")
+
 	err := v.vc.Sys().EnableAuth("aws", "aws", "")
 	require.NoError(t, err)
 	defer v.vc.Sys().DisableAuth("aws")
+
 	_, err = v.vc.Logical().Write("auth/aws/config/client", map[string]interface{}{
 		"secret_key": "secret", "access_key": "access",
 		"endpoint":     srv.URL + "/ec2",
