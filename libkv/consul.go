@@ -4,9 +4,8 @@ import (
 	"fmt"
 	"net/url"
 	"os"
+	"strings"
 	"time"
-
-	"github.com/pkg/errors"
 
 	yaml "gopkg.in/yaml.v3"
 
@@ -22,11 +21,17 @@ import (
 const (
 	http  = "http"
 	https = "https"
+
+	// environment variables which aren't used by the consul client
+	consulVaultRoleEnv  = "CONSUL_VAULT_ROLE"
+	consulVaultMountEnv = "CONSUL_VAULT_MOUNT"
+	consulTimeoutEnv    = "CONSUL_TIMEOUT"
 )
 
 // NewConsul - instantiate a new Consul datasource handler
 func NewConsul(u *url.URL) (*LibKV, error) {
 	consul.Register()
+
 	c, err := consulURL(u)
 	if err != nil {
 		return nil, err
@@ -35,64 +40,111 @@ func NewConsul(u *url.URL) (*LibKV, error) {
 	if err != nil {
 		return nil, err
 	}
-	if role := env.Getenv("CONSUL_VAULT_ROLE", ""); role != "" {
-		mount := env.Getenv("CONSUL_VAULT_MOUNT", "consul")
 
-		var client *vault.Vault
-		client, err = vault.New(nil)
-		if err != nil {
-			return nil, err
-		}
-		err = client.Login()
-		defer client.Logout()
-		if err != nil {
-			return nil, err
-		}
-
-		path := fmt.Sprintf("%s/creds/%s", mount, role)
-
-		var data []byte
-		data, err = client.Read(path)
-		if err != nil {
-			return nil, errors.Wrapf(err, "vault consul auth failed")
-		}
-
-		decoded := make(map[string]interface{})
-		err = yaml.Unmarshal(data, &decoded)
-		if err != nil {
-			return nil, errors.Wrapf(err, "Unable to unmarshal object")
-		}
-
-		token := decoded["token"].(string)
-
-		// nolint: gosec
-		_ = os.Setenv("CONSUL_HTTP_TOKEN", token)
-	}
-	var kv store.Store
-	kv, err = libkv.NewStore(store.CONSUL, []string{c.String()}, config)
+	token, err := consulTokenFromVault()
 	if err != nil {
-		return nil, errors.Wrapf(err, "Consul setup failed")
+		return nil, fmt.Errorf("failed to set Consul Vault token: %w", err)
 	}
+
+	if token != "" {
+		// set CONSUL_HTTP_TOKEN before creating the client
+		// nolint: gosec
+		_ = os.Setenv(consulapi.HTTPTokenEnvName, token)
+	}
+
+	kv, err := libkv.NewStore(store.CONSUL, []string{c.String()}, config)
+	if err != nil {
+		return nil, fmt.Errorf("consul setup failed: %w", err)
+	}
+
 	return &LibKV{kv}, nil
 }
 
-// -- converts a gomplate datasource URL into a usable Consul URL
-func consulURL(u *url.URL) (*url.URL, error) {
-	addrEnv := env.Getenv("CONSUL_HTTP_ADDR")
-	c, err := url.Parse(addrEnv)
+func consulTokenFromVault() (string, error) {
+	role := env.Getenv(consulVaultRoleEnv)
+	if role == "" {
+		return "", nil
+	}
+
+	client, err := vault.New(nil)
 	if err != nil {
-		return nil, errors.Wrapf(err, "invalid URL '%s' in CONSUL_HTTP_ADDR", addrEnv)
+		return "", err
 	}
-	if c.Scheme == "" {
-		c.Scheme = u.Scheme
+
+	err = client.Login()
+	defer client.Logout()
+	if err != nil {
+		return "", err
 	}
+
+	mount := env.Getenv(consulVaultMountEnv, "consul")
+	path := fmt.Sprintf("%s/creds/%s", mount, role)
+
+	data, err := client.Read(path)
+	if err != nil {
+		return "", fmt.Errorf("vault auth failed: %w", err)
+	}
+
+	decoded := make(map[string]interface{})
+	err = yaml.Unmarshal(data, &decoded)
+	if err != nil {
+		return "", fmt.Errorf("YAML unmarshal: %w", err)
+	}
+
+	token := decoded["token"].(string)
+
+	return token, nil
+}
+
+// consulAddrFromEnv parses the given address as either a URL or a host:port
+// pair. Given no schema, the URL will need to have a schema set separately.
+func consulAddrFromEnv(addr string) (*url.URL, error) {
+	parts := strings.SplitN(addr, "://", 2)
+	if len(parts) < 2 {
+		// temporary schema so it parses correctly
+		addr = "temp://" + addr
+	}
+
+	u, err := url.Parse(addr)
+	if err != nil {
+		return nil, err
+	}
+
+	if u.Scheme == "temp" {
+		u.Scheme = ""
+	}
+
+	return u, nil
+}
+
+// consulURL gets the Consul URL from either the given URL or the
+// CONSUL_HTTP_ADDR environment variable. The given URL takes precedence.
+func consulURL(u *url.URL) (c *url.URL, err error) {
+	if u.Host == "" {
+		addrEnv := env.Getenv(consulapi.HTTPAddrEnvName)
+		c, err = consulAddrFromEnv(addrEnv)
+		if err != nil {
+			return nil, fmt.Errorf("invalid URL %q: %w", addrEnv, err)
+		}
+
+		if c.Scheme == "" {
+			c.Scheme = u.Scheme
+		}
+	} else {
+		// We don't want the full URL here, just the scheme and host
+		c = &url.URL{
+			Scheme: u.Scheme,
+			Host:   u.Host,
+		}
+	}
+
 	switch c.Scheme {
 	case "consul+http", http:
 		c.Scheme = http
 	case "consul+https", https:
 		c.Scheme = https
 	case "consul":
-		if conv.Bool(env.Getenv("CONSUL_HTTP_SSL")) {
+		if conv.Bool(env.Getenv(consulapi.HTTPSSLEnvName)) {
 			c.Scheme = https
 		} else {
 			c.Scheme = http
@@ -101,40 +153,42 @@ func consulURL(u *url.URL) (*url.URL, error) {
 
 	if c.Host == "" && u.Host == "" {
 		c.Host = "localhost:8500"
-	} else if c.Host == "" {
-		c.Host = u.Host
 	}
 
 	return c, nil
 }
 
 func consulConfig(useTLS bool) (*store.Config, error) {
-	t := conv.MustAtoi(env.Getenv("CONSUL_TIMEOUT"))
+	t := conv.MustAtoi(env.Getenv(consulTimeoutEnv))
 	config := &store.Config{
 		ConnectionTimeout: time.Duration(t) * time.Second,
 	}
+
 	if useTLS {
-		tconf := setupTLS("CONSUL")
+		tconf := setupTLS()
+
 		var err error
 		config.TLS, err = consulapi.SetupTLSConfig(tconf)
 		if err != nil {
-			return nil, errors.Wrapf(err, "TLS Config setup failed")
+			return nil, fmt.Errorf("TLS config setup failed: %w", err)
 		}
 	}
+
 	return config, nil
 }
 
-func setupTLS(prefix string) *consulapi.TLSConfig {
-	tlsConfig := &consulapi.TLSConfig{
-		Address:  env.Getenv(prefix + "_TLS_SERVER_NAME"),
-		CAFile:   env.Getenv(prefix + "_CACERT"),
-		CAPath:   env.Getenv(prefix + "_CAPATH"),
-		CertFile: env.Getenv(prefix + "_CLIENT_CERT"),
-		KeyFile:  env.Getenv(prefix + "_CLIENT_KEY"),
+func setupTLS() *consulapi.TLSConfig {
+	tlsConfig := consulapi.TLSConfig{
+		Address:  env.Getenv(consulapi.HTTPTLSServerName),
+		CAFile:   env.Getenv(consulapi.HTTPCAFile),
+		CAPath:   env.Getenv(consulapi.HTTPCAPath),
+		CertFile: env.Getenv(consulapi.HTTPClientCert),
+		KeyFile:  env.Getenv(consulapi.HTTPClientKey),
 	}
-	if v := env.Getenv(prefix + "_HTTP_SSL_VERIFY"); v != "" {
+
+	if v := env.Getenv(consulapi.HTTPSSLVerifyEnvName); v != "" {
 		verify := conv.Bool(v)
 		tlsConfig.InsecureSkipVerify = !verify
 	}
-	return tlsConfig
+	return &tlsConfig
 }
