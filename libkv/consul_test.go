@@ -43,6 +43,7 @@ func TestConsulURL(t *testing.T) {
 	assert.Equal(t, expected, actual)
 
 	u, _ = url.Parse("consul://myconsul.server:3456/foo/bar/baz")
+
 	expected = &url.URL{Host: "myconsul.server:3456", Scheme: "http"}
 	actual, err = consulURL(u)
 	assert.NoError(t, err)
@@ -50,10 +51,49 @@ func TestConsulURL(t *testing.T) {
 
 	defer os.Unsetenv("CONSUL_HTTP_ADDR")
 	os.Setenv("CONSUL_HTTP_ADDR", "https://foo:8500")
+
+	// given URL takes precedence over env var
+	expected = &url.URL{Host: "myconsul.server:3456", Scheme: "http"}
+	actual, err = consulURL(u)
+	assert.NoError(t, err)
+	assert.Equal(t, expected, actual)
+
+	u, _ = url.Parse("consul://")
+
+	defer os.Unsetenv("CONSUL_HTTP_SSL")
+	os.Setenv("CONSUL_HTTP_SSL", "true")
+
+	// TLS enabled, HTTP_ADDR is set, URL has no host and ambiguous scheme
 	expected = &url.URL{Host: "foo:8500", Scheme: "https"}
 	actual, err = consulURL(u)
 	assert.NoError(t, err)
 	assert.Equal(t, expected, actual)
+
+	defer os.Unsetenv("CONSUL_HTTP_ADDR")
+	os.Setenv("CONSUL_HTTP_ADDR", "localhost:8501")
+	expected = &url.URL{Host: "localhost:8501", Scheme: "https"}
+	actual, err = consulURL(u)
+	assert.NoError(t, err)
+	assert.Equal(t, expected, actual)
+}
+
+func TestConsulAddrFromEnv(t *testing.T) {
+	in := ""
+
+	_, err := consulAddrFromEnv("bogus:url:xxx")
+	assert.Error(t, err)
+
+	addr, err := consulAddrFromEnv(in)
+	assert.NoError(t, err)
+	assert.Empty(t, addr)
+
+	addr, err = consulAddrFromEnv("https://foo:8500")
+	assert.NoError(t, err)
+	assert.Equal(t, &url.URL{Scheme: "https", Host: "foo:8500"}, addr)
+
+	addr, err = consulAddrFromEnv("foo:8500")
+	assert.NoError(t, err)
+	assert.Equal(t, &url.URL{Host: "foo:8500"}, addr)
 }
 
 func TestSetupTLS(t *testing.T) {
@@ -76,16 +116,16 @@ func TestSetupTLS(t *testing.T) {
 	os.Setenv("CONSUL_CLIENT_CERT", expected.CertFile)
 	os.Setenv("CONSUL_CLIENT_KEY", expected.KeyFile)
 
-	assert.Equal(t, expected, setupTLS("CONSUL"))
+	assert.Equal(t, expected, setupTLS())
 
 	expected.InsecureSkipVerify = false
 	defer os.Unsetenv("CONSUL_HTTP_SSL_VERIFY")
 	os.Setenv("CONSUL_HTTP_SSL_VERIFY", "true")
-	assert.Equal(t, expected, setupTLS("CONSUL"))
+	assert.Equal(t, expected, setupTLS())
 
 	expected.InsecureSkipVerify = true
 	os.Setenv("CONSUL_HTTP_SSL_VERIFY", "false")
-	assert.Equal(t, expected, setupTLS("CONSUL"))
+	assert.Equal(t, expected, setupTLS())
 }
 
 func TestConsulConfig(t *testing.T) {
