@@ -84,7 +84,10 @@ func TestRSAGenerateKey(t *testing.T) {
 	_, err := RSAGenerateKey(0)
 	assert.Error(t, err)
 
-	key, err := RSAGenerateKey(12)
+	_, err = RSAGenerateKey(12)
+	assert.Error(t, err)
+
+	key, err := RSAGenerateKey(2048)
 	assert.NoError(t, err)
 	assert.True(t, strings.HasPrefix(string(key),
 		"-----BEGIN RSA PRIVATE KEY-----"))
