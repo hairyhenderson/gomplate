@@ -472,6 +472,11 @@ on platform). This is similar to [`conv.ToInt64`](#conv-toint64) on 64-bit
 platforms, but is useful when input to another function must be provided
 as an `int`.
 
+On 32-bit systems, given a number that is too large to fit in an `int`,
+the result is `-1`. This is done to protect against
+[CWE-190](https://cwe.mitre.org/data/definitions/190.html) and
+[CWE-681](https://cwe.mitre.org/data/definitions/681.html).
+
 See also [`conv.ToInt64`](#conv-toint64).
 
 ### Usage
