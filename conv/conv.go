@@ -3,6 +3,7 @@ package conv
 
 import (
 	"fmt"
+	"math"
 	"reflect"
 	"strconv"
 	"strings"
@@ -211,7 +212,15 @@ func ToInt64(v interface{}) int64 {
 
 // ToInt -
 func ToInt(in interface{}) int {
-	return int(ToInt64(in))
+	// Protect against CWE-190 and CWE-681
+	// https://cwe.mitre.org/data/definitions/190.html
+	// https://cwe.mitre.org/data/definitions/681.html
+	if i := ToInt64(in); i <= math.MaxInt || i >= math.MinInt {
+		return int(i)
+	}
+
+	// we're probably on a 32-bit system, so we can't represent this number
+	return -1
 }
 
 // ToInt64s -
