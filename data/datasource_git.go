@@ -14,12 +14,14 @@ import (
 
 	"github.com/hairyhenderson/gomplate/v3/base64"
 	"github.com/hairyhenderson/gomplate/v3/env"
+	"github.com/rs/zerolog"
 
 	"github.com/go-git/go-billy/v5"
 	"github.com/go-git/go-billy/v5/memfs"
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing"
 	"github.com/go-git/go-git/v5/plumbing/transport"
+	"github.com/go-git/go-git/v5/plumbing/transport/client"
 	"github.com/go-git/go-git/v5/plumbing/transport/http"
 	"github.com/go-git/go-git/v5/plumbing/transport/ssh"
 	"github.com/go-git/go-git/v5/storage/memory"
@@ -141,6 +143,7 @@ func cloneURL(u *url.URL) *url.URL {
 	return out
 }
 
+// refFromURL - extract the ref from the URL fragment if present
 func (g gitsource) refFromURL(u *url.URL) plumbing.ReferenceName {
 	switch {
 	case strings.HasPrefix(u.Fragment, "refs/"):
@@ -150,6 +153,44 @@ func (g gitsource) refFromURL(u *url.URL) plumbing.ReferenceName {
 	default:
 		return plumbing.ReferenceName("")
 	}
+}
+
+// refFromRemoteHead - extract the ref from the remote HEAD, to work around
+// hard-coded 'master' default branch in go-git.
+// Should be unnecessary once https://github.com/go-git/go-git/issues/249 is
+// fixed.
+func (g gitsource) refFromRemoteHead(ctx context.Context, u *url.URL, auth transport.AuthMethod) (plumbing.ReferenceName, error) {
+	e, err := transport.NewEndpoint(u.String())
+	if err != nil {
+		return "", err
+	}
+
+	cli, err := client.NewClient(e)
+	if err != nil {
+		return "", err
+	}
+
+	s, err := cli.NewUploadPackSession(e, auth)
+	if err != nil {
+		return "", err
+	}
+
+	info, err := s.AdvertisedReferencesContext(ctx)
+	if err != nil {
+		return "", err
+	}
+
+	refs, err := info.AllReferences()
+	if err != nil {
+		return "", err
+	}
+
+	headRef, ok := refs["HEAD"]
+	if !ok {
+		return "", fmt.Errorf("no HEAD ref found")
+	}
+
+	return headRef.Target(), nil
 }
 
 // clone a repo for later reading through http(s), git, or ssh. u must be the URL to the repo
@@ -174,6 +215,17 @@ func (g gitsource) clone(ctx context.Context, repoURL *url.URL, depth int) (bill
 	ref := g.refFromURL(u)
 	u.Fragment = ""
 	u.RawQuery = ""
+
+	// attempt to get the ref from the remote so we don't default to master
+	if ref == "" {
+		ref, err = g.refFromRemoteHead(ctx, u, auth)
+		if err != nil {
+			zerolog.Ctx(ctx).Warn().
+				Stringer("repoURL", u).
+				Err(err).
+				Msg("failed to get ref from remote, using default")
+		}
+	}
 
 	opts := &git.CloneOptions{
 		URL:           u.String(),
