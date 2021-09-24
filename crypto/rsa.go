@@ -62,6 +62,11 @@ func RSADecrypt(key string, in []byte) ([]byte, error) {
 
 // RSAGenerateKey -
 func RSAGenerateKey(bits int) ([]byte, error) {
+	// Protect against CWE-326: Inadequate Encryption Strength
+	// https://cwe.mitre.org/data/definitions/326.html
+	if bits < 2048 {
+		return nil, fmt.Errorf("RSA key size must be at least 2048 bits")
+	}
 	priv, err := rsa.GenerateKey(rand.Reader, bits)
 	if err != nil {
 		return nil, fmt.Errorf("failed to generate RSA private key: %w", err)

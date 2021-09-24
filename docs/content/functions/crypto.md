@@ -237,6 +237,9 @@ form.
 Default key length is 4096 bits, which should be safe enough for most
 uses, but can be overridden with the optional `bits` parameter.
 
+In order to protect against [CWE-326](https://cwe.mitre.org/data/definitions/326.html),
+keys shorter than `2048` bits may not be generated.
+
 The output is a string, suitable for use with the other `crypto.RSA*`
 functions.
 
@@ -253,7 +256,7 @@ bits | crypto.RSAGenerateKey
 
 | name | description |
 |------|-------------|
-| `bits` | _(optional)_ bit size of the generated key. Defaults to `4096` |
+| `bits` | _(optional)_ Length in bits of the generated key. Must be at least `2048`. Defaults to `4096` |
 
 ### Examples
 
