@@ -70,7 +70,7 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     container:
-      image: 'hairyhenderson/gomplate-ci-build:latest'
+      image: ghcr.io/hairyhenderson/gomplate-ci-build:latest
     steps:
       - uses: actions/checkout@v1
         with:
