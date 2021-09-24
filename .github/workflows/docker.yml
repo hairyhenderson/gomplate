@@ -17,21 +17,18 @@ jobs:
       run: |
         mkdir -p ~/.docker
         echo '{"experimental": "enabled"}' > ~/.docker/config.json
-    - name: Install BuildX
-      run: |
-        mkdir -p ~/.docker/cli-plugins
-        curl -SL -o ~/.docker/cli-plugins/docker-buildx https://github.com/docker/buildx/releases/download/v0.5.1/buildx-v0.5.1.linux-amd64
-        chmod 755 ~/.docker/cli-plugins/docker-buildx
-    - name: Create BuildX Builder
-      run: |
-        docker buildx create \
-          --name builder \
-          --platform linux/amd64,linux/arm64,linux/arm/v6,linux/arm/v7,linux/ppc64le,linux/s390x,linux/386 \
-          --use \
-          --driver docker-container --driver-opt image=moby/buildkit:buildx-stable-1,network=host
-        docker buildx ls
-        docker ps
-        docker images
+    - name: Set up QEMU
+      uses: docker/setup-qemu-action@v1.2.0
+    - name: Set up Docker Buildx
+      id: buildx
+      uses: docker/setup-buildx-action@v1.6.0
+      with:
+        version: v0.5.1
+        driver-opts: |
+          image=moby/buildkit:buildx-stable-1
+          network=host
+    - name: Available platforms
+      run: echo {{ `${{ steps.buildx.outputs.platforms }}` }}
     - run: docker info && docker version
     - uses: actions/checkout@v2
     - name: determine if this is a tag
@@ -53,29 +50,55 @@ jobs:
         docker buildx imagetools create --dry-run -t localhost:5000/gomplate:dev-slim localhost:5000/gomplate:slim
         docker buildx imagetools create --dry-run -t localhost:5000/gomplate:dev-alpine localhost:5000/gomplate:alpine
       if: github.repository != 'hairyhenderson/gomplate' || github.ref != 'refs/heads/master'
-    - name: login
-      run: |
-        # NOTE: DOCKERHUB_TOKEN and DOCKERHUB_USERNAME must be present in https://github.com/hairyhenderson/gomplate/settings
-        echo ${{ secrets.DOCKERHUB_TOKEN }} | docker login --username ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
+    - name: Login to GHCR
+      uses: docker/login-action@v1.10.0
+      with:
+          registry: ghcr.io
+          username: '{{ `${{ github.actor }}` }}'
+          password: '{{ `${{ secrets.GHCR_TOKEN }}` }}'
+      if: github.repository == 'hairyhenderson/gomplate' && (github.ref == 'refs/heads/master' || env.is_tag == 'true')
+    - name: Login to DockerHub
+      uses: docker/login-action@v1.10.0
+      with:
+          # NOTE: DOCKERHUB_TOKEN and DOCKERHUB_USERNAME must be present in https://github.com/hairyhenderson/gomplate/settings
+          username: '{{ `${{ secrets.DOCKERHUB_USERNAME }}` }}'
+          password: '{{ `${{ secrets.DOCKERHUB_TOKEN }}` }}'
       if: github.repository == 'hairyhenderson/gomplate' && (github.ref == 'refs/heads/master' || env.is_tag == 'true')
     - name: Build & Push (master)
       run: |
         make docker-multi COMMIT=${{ github.sha }} DOCKER_REPO=hairyhenderson/gomplate BUILDX_ACTION=--push
+        make docker-multi COMMIT=${{ github.sha }} DOCKER_REPO=ghcr.io/hairyhenderson/gomplate BUILDX_ACTION=--push
       if: github.repository == 'hairyhenderson/gomplate' && github.ref == 'refs/heads/master'
     - name: Build & Push (tagged release)
       run: |
         make docker-multi COMMIT=${{ github.sha }} DOCKER_REPO=hairyhenderson/gomplate BUILDX_ACTION=--push
+        make docker-multi COMMIT=${{ github.sha }} DOCKER_REPO=ghcr.io/hairyhenderson/gomplate BUILDX_ACTION=--push
 
         set -x
-        docker buildx imagetools create -t hairyhenderson/gomplate:stable hairyhenderson/gomplate:latest
-        docker buildx imagetools create -t hairyhenderson/gomplate:${git_tag} hairyhenderson/gomplate:latest
-        docker buildx imagetools create -t hairyhenderson/gomplate:${major_version} hairyhenderson/gomplate:latest
+        repo=hairyhenderson/gomplate
+        docker buildx imagetools create -t ${repo}:stable ${repo}:latest
+        docker buildx imagetools create -t ${repo}:${git_tag} ${repo}:latest
+        docker buildx imagetools create -t ${repo}:${major_version} ${repo}:latest
 
-        docker buildx imagetools create -t hairyhenderson/gomplate:stable-slim hairyhenderson/gomplate:slim
-        docker buildx imagetools create -t hairyhenderson/gomplate:${git_tag}-slim hairyhenderson/gomplate:slim
-        docker buildx imagetools create -t hairyhenderson/gomplate:${major_version}-slim hairyhenderson/gomplate:slim
+        docker buildx imagetools create -t ${repo}:stable-slim ${repo}:slim
+        docker buildx imagetools create -t ${repo}:${git_tag}-slim ${repo}:slim
+        docker buildx imagetools create -t ${repo}:${major_version}-slim ${repo}:slim
 
-        docker buildx imagetools create -t hairyhenderson/gomplate:stable-alpine hairyhenderson/gomplate:alpine
-        docker buildx imagetools create -t hairyhenderson/gomplate:${git_tag}-alpine hairyhenderson/gomplate:alpine
-        docker buildx imagetools create -t hairyhenderson/gomplate:${major_version}-alpine hairyhenderson/gomplate:alpine
+        docker buildx imagetools create -t ${repo}:stable-alpine ${repo}:alpine
+        docker buildx imagetools create -t ${repo}:${git_tag}-alpine ${repo}:alpine
+        docker buildx imagetools create -t ${repo}:${major_version}-alpine ${repo}:alpine
+
+        # and now GHCR
+        repo=ghcr.io/hairyhenderson/gomplate
+        docker buildx imagetools create -t ${repo}:stable ${repo}:latest
+        docker buildx imagetools create -t ${repo}:${git_tag} ${repo}:latest
+        docker buildx imagetools create -t ${repo}:${major_version} ${repo}:latest
+
+        docker buildx imagetools create -t ${repo}:stable-slim ${repo}:slim
+        docker buildx imagetools create -t ${repo}:${git_tag}-slim ${repo}:slim
+        docker buildx imagetools create -t ${repo}:${major_version}-slim ${repo}:slim
+
+        docker buildx imagetools create -t ${repo}:stable-alpine ${repo}:alpine
+        docker buildx imagetools create -t ${repo}:${git_tag}-alpine ${repo}:alpine
+        docker buildx imagetools create -t ${repo}:${major_version}-alpine ${repo}:alpine
       if: github.repository == 'hairyhenderson/gomplate' && env.is_tag == 'true'
