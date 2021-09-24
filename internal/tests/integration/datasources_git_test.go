@@ -117,6 +117,13 @@ func TestDatasources_GitHTTPDatasource(t *testing.T) {
 		"-i", `{{ .short.glossary.title}}`,
 	).run()
 	assertSuccess(t, o, e, err, "example glossary")
+
+	// and one with a default branch of 'main'
+	o, e, err = cmd(t,
+		"-c", "data=git+https://github.com/hairyhenderson/git-fixtures.git//small_test.json",
+		"-i", `{{ .data.foo}}`,
+	).run()
+	assertSuccess(t, o, e, err, "bar")
 }
 
 func TestDatasources_GitSSHDatasource(t *testing.T) {

@@ -229,10 +229,18 @@ func setupGitRepo(t *testing.T) billy.Filesystem {
 	r, err := git.Init(s, repo)
 	assert.NilError(t, err)
 
+	// default to main
+	h := plumbing.NewSymbolicReference(plumbing.HEAD, plumbing.ReferenceName("refs/heads/main"))
+	err = s.SetReference(h)
+	assert.NilError(t, err)
+
 	// config needs to be created after setting up a "normal" fs repo
 	// this is possibly a bug in git-go?
 	c, err := r.Config()
 	assert.NilError(t, err)
+
+	c.Init.DefaultBranch = "main"
+
 	s.SetConfig(c)
 	assert.NilError(t, err)
 
@@ -331,12 +339,12 @@ func TestOpenFileRepo(t *testing.T) {
 	b, _ := ioutil.ReadAll(f)
 	assert.Equal(t, "hello world", string(b))
 
-	_, repo, err := g.clone(ctx, mustParseURL("git+file:///repo#master"), 0)
+	_, repo, err := g.clone(ctx, mustParseURL("git+file:///repo#main"), 0)
 	assert.NilError(t, err)
 
-	ref, err := repo.Reference(plumbing.NewBranchReferenceName("master"), true)
+	ref, err := repo.Reference(plumbing.NewBranchReferenceName("main"), true)
 	assert.NilError(t, err)
-	assert.Equal(t, "refs/heads/master", ref.Name().String())
+	assert.Equal(t, "refs/heads/main", ref.Name().String())
 
 	_, repo, err = g.clone(ctx, mustParseURL("git+file:///repo#refs/tags/v1"), 0)
 	assert.NilError(t, err)

@@ -475,7 +475,7 @@ The _scheme_, _authority_ (with _userinfo_), _path_, and _fragment_ are used, an
 - the _authority_ component points to the remote git server hostname (and optional port, if applicable). The _userinfo_ subcomponent can be used for authenticated datasources like `git+https` and `git+ssh`.
 - the _path_ component is a composite of the path to the repository, and the path to the file or directory being referenced within. The `//` sequence (double forward-slash) is used to separate the repository from the path. If no `//` is present in the URL, the datasource will point to the root directory of the repository.
 - the _fragment_ component can be used to specify which branch or tag to reference. By default, the repository's default branch will be chosen.
-  - branches can be referenced by short name or by the long form. Valid fragments are `#master`, `#develop`, `#refs/heads/mybranch`, etc...
+  - branches can be referenced by short name or by the long form. Valid fragments are `#main`, `#master`, `#develop`, `#refs/heads/mybranch`, etc...
   - tags must use the long form prefixed by `refs/tags/`, i.e. `#refs/tags/v1` for the `v1` tag
 
 ### Authentication
@@ -701,7 +701,7 @@ This table describes the currently-supported authentication mechanisms and how t
 
 _**Note:**_ The secret values listed in the above table can either be set in environment variables or provided in files. This can increase security when using [Docker Swarm Secrets](https://docs.docker.com/engine/swarm/secrets/), for example. To use files, specify the filename by appending `_FILE` to the environment variable, (i.e. `VAULT_USER_ID_FILE`). If the non-file variable is set, this will override any `_FILE` variable and the secret file will be ignored.
 
-### Vault Permissions 
+### Vault Permissions
 
 The correct capabilities must be allowed for the [authenticated](#vault-authentication) credentials. See the [Vault documentation](https://www.vaultproject.io/docs/concepts/policies.html#capabilities) for full details.
 
