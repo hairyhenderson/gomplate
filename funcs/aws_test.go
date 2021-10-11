@@ -10,6 +10,8 @@ import (
 )
 
 func TestCreateAWSFuncs(t *testing.T) {
+	t.Parallel()
+
 	for i := 0; i < 10; i++ {
 		// Run this a bunch to catch race conditions
 		t.Run(strconv.Itoa(i), func(t *testing.T) {
@@ -25,6 +27,8 @@ func TestCreateAWSFuncs(t *testing.T) {
 }
 
 func TestAWSFuncs(t *testing.T) {
+	t.Parallel()
+
 	m := aws.NewDummyEc2Meta()
 	i := aws.NewDummyEc2Info(m)
 	af := &Funcs{meta: m, info: i}

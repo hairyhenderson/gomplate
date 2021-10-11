@@ -49,38 +49,62 @@ func derivePKCS1PubKey(priv *rsa.PrivateKey) string {
 }
 
 func TestRSACrypt(t *testing.T) {
+	t.Parallel()
+
 	priv, testPrivKey := genPKCS1PrivKey()
-	testPubKey := derivePKIXPubKey(priv)
 
-	in := []byte("hello world")
-	key := "bad key"
-	_, err := RSAEncrypt(key, in)
-	assert.Error(t, err)
+	testdata := []struct {
+		name   string
+		encKey string
+		decKey string
+		in     []byte
+	}{
+		{"pkix key", derivePKIXPubKey(priv), testPrivKey, []byte("hello world")},
+		{"pkcs1 key", derivePKCS1PubKey(priv), testPrivKey, []byte("hello world")},
+	}
 
-	_, err = RSADecrypt(key, in)
-	assert.Error(t, err)
+	for _, d := range testdata {
+		d := d
+		t.Run(d.name, func(t *testing.T) {
+			t.Parallel()
 
-	key = ""
-	_, err = RSAEncrypt(key, in)
-	assert.Error(t, err)
-	_, err = RSADecrypt(key, in)
-	assert.Error(t, err)
+			enc, err := RSAEncrypt(d.encKey, d.in)
+			assert.NoError(t, err)
 
-	enc, err := RSAEncrypt(testPubKey, in)
-	assert.NoError(t, err)
-	dec, err := RSADecrypt(testPrivKey, enc)
-	assert.NoError(t, err)
-	assert.Equal(t, in, dec)
+			dec, err := RSADecrypt(d.decKey, enc)
+			assert.NoError(t, err)
+			assert.Equal(t, d.in, dec)
+		})
+	}
 
-	testPubKey = derivePKCS1PubKey(priv)
-	enc, err = RSAEncrypt(testPubKey, in)
-	assert.NoError(t, err)
-	dec, err = RSADecrypt(testPrivKey, enc)
-	assert.NoError(t, err)
-	assert.Equal(t, in, dec)
+	t.Run("bad key", func(t *testing.T) {
+		t.Parallel()
+
+		in := []byte("hello world")
+		key := "bad key"
+		_, err := RSAEncrypt(key, in)
+		assert.Error(t, err)
+
+		_, err = RSADecrypt(key, in)
+		assert.Error(t, err)
+	})
+
+	t.Run("empty key", func(t *testing.T) {
+		t.Parallel()
+
+		in := []byte("hello world")
+		key := ""
+		_, err := RSAEncrypt(key, in)
+		assert.Error(t, err)
+
+		_, err = RSADecrypt(key, in)
+		assert.Error(t, err)
+	})
 }
 
 func TestRSAGenerateKey(t *testing.T) {
+	t.Parallel()
+
 	_, err := RSAGenerateKey(0)
 	assert.Error(t, err)
 
@@ -96,6 +120,8 @@ func TestRSAGenerateKey(t *testing.T) {
 }
 
 func TestRSADerivePublicKey(t *testing.T) {
+	t.Parallel()
+
 	_, err := RSADerivePublicKey(nil)
 	assert.Error(t, err)
 

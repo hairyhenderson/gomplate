@@ -9,6 +9,8 @@ import (
 )
 
 func TestCreatePathFuncs(t *testing.T) {
+	t.Parallel()
+
 	for i := 0; i < 10; i++ {
 		// Run this a bunch to catch race conditions
 		t.Run(strconv.Itoa(i), func(t *testing.T) {
@@ -24,6 +26,8 @@ func TestCreatePathFuncs(t *testing.T) {
 }
 
 func TestPathFuncs(t *testing.T) {
+	t.Parallel()
+
 	p := PathFuncs{}
 	assert.Equal(t, "bar", p.Base("foo/bar"))
 	assert.Equal(t, "bar", p.Base("/foo/bar"))

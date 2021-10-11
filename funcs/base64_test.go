@@ -10,6 +10,8 @@ import (
 )
 
 func TestCreateBase64Funcs(t *testing.T) {
+	t.Parallel()
+
 	for i := 0; i < 10; i++ {
 		// Run this a bunch to catch race conditions
 		t.Run(strconv.Itoa(i), func(t *testing.T) {
@@ -25,16 +27,22 @@ func TestCreateBase64Funcs(t *testing.T) {
 }
 
 func TestBase64Encode(t *testing.T) {
+	t.Parallel()
+
 	bf := &Base64Funcs{}
 	assert.Equal(t, "Zm9vYmFy", must(bf.Encode("foobar")))
 }
 
 func TestBase64Decode(t *testing.T) {
+	t.Parallel()
+
 	bf := &Base64Funcs{}
 	assert.Equal(t, "foobar", must(bf.Decode("Zm9vYmFy")))
 }
 
 func TestBase64DecodeBytes(t *testing.T) {
+	t.Parallel()
+
 	bf := &Base64Funcs{}
 	out, err := bf.DecodeBytes("Zm9vYmFy")
 	assert.NoError(t, err)
@@ -42,6 +50,8 @@ func TestBase64DecodeBytes(t *testing.T) {
 }
 
 func TestToBytes(t *testing.T) {
+	t.Parallel()
+
 	assert.Equal(t, []byte{0, 1, 2, 3}, toBytes([]byte{0, 1, 2, 3}))
 
 	buf := &bytes.Buffer{}

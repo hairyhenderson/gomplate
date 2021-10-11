@@ -9,6 +9,8 @@ import (
 )
 
 func TestCreateTestFuncs(t *testing.T) {
+	t.Parallel()
+
 	for i := 0; i < 10; i++ {
 		// Run this a bunch to catch race conditions
 		t.Run(strconv.Itoa(i), func(t *testing.T) {
@@ -24,6 +26,8 @@ func TestCreateTestFuncs(t *testing.T) {
 }
 
 func TestAssert(t *testing.T) {
+	t.Parallel()
+
 	f := TestNS()
 	_, err := f.Assert(false)
 	assert.Error(t, err)
@@ -39,6 +43,8 @@ func TestAssert(t *testing.T) {
 }
 
 func TestRequired(t *testing.T) {
+	t.Parallel()
+
 	f := TestNS()
 	errMsg := "can not render template: a required value was not set"
 	v, err := f.Required("")
@@ -82,6 +88,8 @@ func TestRequired(t *testing.T) {
 }
 
 func TestTernary(t *testing.T) {
+	t.Parallel()
+
 	f := TestNS()
 	testdata := []struct {
 		tval, fval, b interface{}
@@ -97,6 +105,8 @@ func TestTernary(t *testing.T) {
 }
 
 func TestKind(t *testing.T) {
+	t.Parallel()
+
 	f := TestNS()
 	testdata := []struct {
 		arg      interface{}
@@ -118,6 +128,8 @@ func TestKind(t *testing.T) {
 }
 
 func TestIsKind(t *testing.T) {
+	t.Parallel()
+
 	f := TestNS()
 	truedata := []struct {
 		arg  interface{}

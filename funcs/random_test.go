@@ -10,6 +10,8 @@ import (
 )
 
 func TestCreateRandomFuncs(t *testing.T) {
+	t.Parallel()
+
 	for i := 0; i < 10; i++ {
 		// Run this a bunch to catch race conditions
 		t.Run(strconv.Itoa(i), func(t *testing.T) {
@@ -25,6 +27,8 @@ func TestCreateRandomFuncs(t *testing.T) {
 }
 
 func TestASCII(t *testing.T) {
+	t.Parallel()
+
 	f := RandomFuncs{}
 	s, err := f.ASCII(0)
 	assert.NoError(t, err)
@@ -37,6 +41,8 @@ func TestASCII(t *testing.T) {
 }
 
 func TestAlpha(t *testing.T) {
+	t.Parallel()
+
 	if testing.Short() {
 		t.Skip("skipping slow test")
 	}
@@ -53,6 +59,8 @@ func TestAlpha(t *testing.T) {
 }
 
 func TestAlphaNum(t *testing.T) {
+	t.Parallel()
+
 	if testing.Short() {
 		t.Skip("skipping slow test")
 	}
@@ -69,6 +77,8 @@ func TestAlphaNum(t *testing.T) {
 }
 
 func TestToCodePoints(t *testing.T) {
+	t.Parallel()
+
 	l, u, err := toCodePoints("a", "b")
 	assert.NoError(t, err)
 	assert.Equal(t, 'a', l)
@@ -97,6 +107,8 @@ func TestToCodePoints(t *testing.T) {
 }
 
 func TestString(t *testing.T) {
+	t.Parallel()
+
 	if testing.Short() {
 		t.Skip("skipping slow test")
 	}
@@ -140,6 +152,8 @@ func TestString(t *testing.T) {
 }
 
 func TestItem(t *testing.T) {
+	t.Parallel()
+
 	f := RandomFuncs{}
 	_, err := f.Item(nil)
 	assert.Error(t, err)
@@ -163,6 +177,8 @@ func TestItem(t *testing.T) {
 }
 
 func TestNumber(t *testing.T) {
+	t.Parallel()
+
 	f := RandomFuncs{}
 	n, err := f.Number()
 	assert.NoError(t, err)
@@ -185,6 +201,8 @@ func TestNumber(t *testing.T) {
 }
 
 func TestFloat(t *testing.T) {
+	t.Parallel()
+
 	f := RandomFuncs{}
 	n, err := f.Float()
 	assert.NoError(t, err)

@@ -10,6 +10,8 @@ import (
 )
 
 func TestCreateUUIDFuncs(t *testing.T) {
+	t.Parallel()
+
 	for i := 0; i < 10; i++ {
 		// Run this a bunch to catch race conditions
 		t.Run(strconv.Itoa(i), func(t *testing.T) {
@@ -30,6 +32,8 @@ const (
 )
 
 func TestV1(t *testing.T) {
+	t.Parallel()
+
 	u := UUIDNS()
 	i, err := u.V1()
 	assert.NoError(t, err)
@@ -37,6 +41,8 @@ func TestV1(t *testing.T) {
 }
 
 func TestV4(t *testing.T) {
+	t.Parallel()
+
 	u := UUIDNS()
 	i, err := u.V4()
 	assert.NoError(t, err)
@@ -44,6 +50,8 @@ func TestV4(t *testing.T) {
 }
 
 func TestNil(t *testing.T) {
+	t.Parallel()
+
 	u := UUIDNS()
 	i, err := u.Nil()
 	assert.NoError(t, err)
@@ -51,6 +59,8 @@ func TestNil(t *testing.T) {
 }
 
 func TestIsValid(t *testing.T) {
+	t.Parallel()
+
 	u := UUIDNS()
 	in := interface{}(false)
 	i, err := u.IsValid(in)
@@ -77,6 +87,8 @@ func TestIsValid(t *testing.T) {
 }
 
 func TestParse(t *testing.T) {
+	t.Parallel()
+
 	u := UUIDNS()
 	in := interface{}(false)
 	_, err := u.Parse(in)

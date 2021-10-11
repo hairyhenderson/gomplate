@@ -30,6 +30,8 @@ func testCryptoNS() *CryptoFuncs {
 }
 
 func TestPBKDF2(t *testing.T) {
+	t.Parallel()
+
 	c := testCryptoNS()
 	dk, err := c.PBKDF2("password", []byte("IEEE"), "4096", 32)
 	assert.Equal(t, "f42c6fc52df0ebef9ebb4b90b38a5f902e83fe1b135a70e23aed762e9710a12e", dk)
@@ -44,6 +46,8 @@ func TestPBKDF2(t *testing.T) {
 }
 
 func TestWPAPSK(t *testing.T) {
+	t.Parallel()
+
 	c := testCryptoNS()
 	dk, err := c.WPAPSK("password", "MySSID")
 	assert.Equal(t, "3a98def84b11644a17ebcc9b17955d2360ce8b8a85b8a78413fc551d722a84e7", dk)
@@ -51,6 +55,8 @@ func TestWPAPSK(t *testing.T) {
 }
 
 func TestSHA(t *testing.T) {
+	t.Parallel()
+
 	in := "abc"
 	sha1 := "a9993e364706816aba3e25717850c26c9cd0d89d"
 	sha224 := "23097d223405d8228642a477bda255b32aadbce4bda0b3f7e36c9da7"
@@ -70,29 +76,50 @@ func TestSHA(t *testing.T) {
 }
 
 func TestBcrypt(t *testing.T) {
+	t.Parallel()
+
 	if testing.Short() {
 		t.Skip("skipping slow test")
 	}
 
 	in := "foo"
 	c := testCryptoNS()
-	actual, err := c.Bcrypt(in)
-	assert.NoError(t, err)
-	assert.True(t, strings.HasPrefix(actual, "$2a$10$"))
 
-	actual, err = c.Bcrypt(0, in)
-	assert.NoError(t, err)
-	assert.True(t, strings.HasPrefix(actual, "$2a$10$"))
+	t.Run("no arg default", func(t *testing.T) {
+		t.Parallel()
 
-	actual, err = c.Bcrypt(4, in)
-	assert.NoError(t, err)
-	assert.True(t, strings.HasPrefix(actual, "$2a$04$"))
+		actual, err := c.Bcrypt(in)
+		assert.NoError(t, err)
+		assert.True(t, strings.HasPrefix(actual, "$2a$10$"))
+	})
 
-	_, err = c.Bcrypt()
-	assert.Error(t, err)
+	t.Run("cost less than min", func(t *testing.T) {
+		t.Parallel()
+
+		actual, err := c.Bcrypt(0, in)
+		assert.NoError(t, err)
+		assert.True(t, strings.HasPrefix(actual, "$2a$10$"))
+	})
+
+	t.Run("cost equal to min", func(t *testing.T) {
+		t.Parallel()
+
+		actual, err := c.Bcrypt(4, in)
+		assert.NoError(t, err)
+		assert.True(t, strings.HasPrefix(actual, "$2a$04$"))
+	})
+
+	t.Run("no args errors", func(t *testing.T) {
+		t.Parallel()
+
+		_, err := c.Bcrypt()
+		assert.Error(t, err)
+	})
 }
 
 func TestRSAGenerateKey(t *testing.T) {
+	t.Parallel()
+
 	c := testCryptoNS()
 	_, err := c.RSAGenerateKey(0)
 	assert.Error(t, err)
@@ -140,6 +167,8 @@ func TestECDSADerivePublicKey(t *testing.T) {
 }
 
 func TestRSACrypt(t *testing.T) {
+	t.Parallel()
+
 	if testing.Short() {
 		t.Skip("skipping slow test")
 	}

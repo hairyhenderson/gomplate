@@ -10,6 +10,8 @@ import (
 )
 
 func TestCreateEnvFuncs(t *testing.T) {
+	t.Parallel()
+
 	for i := 0; i < 10; i++ {
 		// Run this a bunch to catch race conditions
 		t.Run(strconv.Itoa(i), func(t *testing.T) {
@@ -25,6 +27,8 @@ func TestCreateEnvFuncs(t *testing.T) {
 }
 
 func TestEnvGetenv(t *testing.T) {
+	t.Parallel()
+
 	ef := &EnvFuncs{}
 	expected := os.Getenv("USER")
 	assert.Equal(t, expected, ef.Getenv("USER"))

@@ -13,6 +13,8 @@ import (
 )
 
 func TestCreateNetFuncs(t *testing.T) {
+	t.Parallel()
+
 	for i := 0; i < 10; i++ {
 		// Run this a bunch to catch race conditions
 		t.Run(strconv.Itoa(i), func(t *testing.T) {
@@ -28,11 +30,15 @@ func TestCreateNetFuncs(t *testing.T) {
 }
 
 func TestNetLookupIP(t *testing.T) {
+	t.Parallel()
+
 	n := NetFuncs{}
 	assert.Equal(t, "127.0.0.1", must(n.LookupIP("localhost")))
 }
 
 func TestParseIP(t *testing.T) {
+	t.Parallel()
+
 	n := NetFuncs{}
 	_, err := n.ParseIP("not an IP")
 	assert.Error(t, err)
@@ -48,6 +54,8 @@ func TestParseIP(t *testing.T) {
 }
 
 func TestParseIPPrefix(t *testing.T) {
+	t.Parallel()
+
 	n := NetFuncs{}
 	_, err := n.ParseIPPrefix("not an IP")
 	assert.Error(t, err)
@@ -61,6 +69,8 @@ func TestParseIPPrefix(t *testing.T) {
 }
 
 func TestParseIPRange(t *testing.T) {
+	t.Parallel()
+
 	n := NetFuncs{}
 	_, err := n.ParseIPRange("not an IP")
 	assert.Error(t, err)

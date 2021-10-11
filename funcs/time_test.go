@@ -11,6 +11,8 @@ import (
 )
 
 func TestCreateTimeFuncs(t *testing.T) {
+	t.Parallel()
+
 	for i := 0; i < 10; i++ {
 		// Run this a bunch to catch race conditions
 		t.Run(strconv.Itoa(i), func(t *testing.T) {
@@ -26,6 +28,8 @@ func TestCreateTimeFuncs(t *testing.T) {
 }
 
 func TestParseNum(t *testing.T) {
+	t.Parallel()
+
 	i, f, _ := parseNum("42")
 	assert.Equal(t, int64(42), i)
 	assert.Equal(t, int64(0), f)

@@ -70,14 +70,19 @@ func TestPlugins_Timeout(t *testing.T) {
 	}
 
 	tmpDir := setupPluginsTest(t)
-	_, _, err := cmd(t, "--plugin", "sleep="+tmpDir.Join("sleep.sh"),
-		"-i", `{{ sleep 10 }}`).run()
-	assert.ErrorContains(t, err, "plugin timed out")
 
-	_, _, err = cmd(t, "--plugin", "sleep="+tmpDir.Join("sleep.sh"),
-		"-i", `{{ sleep 2 }}`).
-		withEnv("GOMPLATE_PLUGIN_TIMEOUT", "500ms").run()
-	assert.ErrorContains(t, err, "plugin timed out")
+	t.Run("default timeout", func(t *testing.T) {
+		_, _, err := cmd(t, "--plugin", "sleep="+tmpDir.Join("sleep.sh"),
+			"-i", `{{ sleep 10 }}`).run()
+		assert.ErrorContains(t, err, "plugin timed out")
+	})
+
+	t.Run("envvar timeout", func(t *testing.T) {
+		_, _, err := cmd(t, "--plugin", "sleep="+tmpDir.Join("sleep.sh"),
+			"-i", `{{ sleep 2 }}`).
+			withEnv("GOMPLATE_PLUGIN_TIMEOUT", "500ms").run()
+		assert.ErrorContains(t, err, "plugin timed out")
+	})
 }
 
 func TestPlugins_PipeMode(t *testing.T) {

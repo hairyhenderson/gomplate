@@ -8,6 +8,8 @@ import (
 )
 
 func TestPBKDF2(t *testing.T) {
+	t.Parallel()
+
 	dk, err := PBKDF2([]byte{}, []byte{}, 0, 0, 0)
 	assert.Nil(t, dk)
 	assert.Error(t, err)
@@ -56,6 +58,8 @@ func TestPBKDF2(t *testing.T) {
 }
 
 func TestStrToHash(t *testing.T) {
+	t.Parallel()
+
 	h, err := StrToHash("foo")
 	assert.Zero(t, h)
 	assert.Error(t, err)
