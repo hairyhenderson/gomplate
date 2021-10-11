@@ -31,6 +31,8 @@ jobs:
       run: echo {{ `${{ steps.buildx.outputs.platforms }}` }}
     - run: docker info && docker version
     - uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
     - name: determine if this is a tag
       run: |
         if (git describe --abbrev=0 --exact-match &>/dev/null); then
@@ -40,6 +42,7 @@ jobs:
           # splits the major version from $tag - assumes it's a 3-part semver
           echo "major_version=${tag%%\.*}" >> $GITHUB_ENV
         fi
+        echo $GITHUB_ENV
       if: github.repository == 'hairyhenderson/gomplate'
     - name: Build & Push (non-master)
       run: |
@@ -49,7 +52,7 @@ jobs:
         docker buildx imagetools create --dry-run -t localhost:5000/gomplate:dev localhost:5000/gomplate:latest
         docker buildx imagetools create --dry-run -t localhost:5000/gomplate:dev-slim localhost:5000/gomplate:slim
         docker buildx imagetools create --dry-run -t localhost:5000/gomplate:dev-alpine localhost:5000/gomplate:alpine
-      if: github.repository != 'hairyhenderson/gomplate' || github.ref != 'refs/heads/master'
+      if: github.repository != 'hairyhenderson/gomplate' || (github.ref != 'refs/heads/master' && env.is_tag != 'true')
     - name: Login to GHCR
       uses: docker/login-action@v1.10.0
       with:
