@@ -9,6 +9,8 @@ import (
 )
 
 func TestCreateCollFuncs(t *testing.T) {
+	t.Parallel()
+
 	for i := 0; i < 10; i++ {
 		// Run this a bunch to catch race conditions
 		t.Run(strconv.Itoa(i), func(t *testing.T) {
@@ -24,6 +26,8 @@ func TestCreateCollFuncs(t *testing.T) {
 }
 
 func TestFlatten(t *testing.T) {
+	t.Parallel()
+
 	c := CollFuncs{}
 
 	_, err := c.Flatten()
@@ -42,6 +46,8 @@ func TestFlatten(t *testing.T) {
 }
 
 func TestPick(t *testing.T) {
+	t.Parallel()
+
 	c := &CollFuncs{}
 
 	_, err := c.Pick()
@@ -89,6 +95,8 @@ func TestPick(t *testing.T) {
 }
 
 func TestOmit(t *testing.T) {
+	t.Parallel()
+
 	c := &CollFuncs{}
 
 	_, err := c.Omit()

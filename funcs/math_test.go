@@ -11,6 +11,8 @@ import (
 )
 
 func TestCreateMathFuncs(t *testing.T) {
+	t.Parallel()
+
 	for i := 0; i < 10; i++ {
 		// Run this a bunch to catch race conditions
 		t.Run(strconv.Itoa(i), func(t *testing.T) {
@@ -26,6 +28,8 @@ func TestCreateMathFuncs(t *testing.T) {
 }
 
 func TestAdd(t *testing.T) {
+	t.Parallel()
+
 	m := MathFuncs{}
 	assert.Equal(t, int64(12), m.Add(1, 1, 2, 3, 5))
 	assert.Equal(t, int64(2), m.Add(1, 1))
@@ -35,6 +39,8 @@ func TestAdd(t *testing.T) {
 }
 
 func TestMul(t *testing.T) {
+	t.Parallel()
+
 	m := MathFuncs{}
 	assert.Equal(t, int64(30), m.Mul(1, 1, 2, 3, 5))
 	assert.Equal(t, int64(1), m.Mul(1, 1))
@@ -45,6 +51,8 @@ func TestMul(t *testing.T) {
 }
 
 func TestSub(t *testing.T) {
+	t.Parallel()
+
 	m := MathFuncs{}
 	assert.Equal(t, int64(0), m.Sub(1, 1))
 	assert.Equal(t, int64(-10), m.Sub(-5, 5))
@@ -62,6 +70,8 @@ func mustDiv(a, b interface{}) interface{} {
 }
 
 func TestDiv(t *testing.T) {
+	t.Parallel()
+
 	m := MathFuncs{}
 	_, err := m.Div(1, 0)
 	assert.Error(t, err)
@@ -72,12 +82,16 @@ func TestDiv(t *testing.T) {
 }
 
 func TestRem(t *testing.T) {
+	t.Parallel()
+
 	m := MathFuncs{}
 	assert.Equal(t, int64(0), m.Rem(1, 1))
 	assert.Equal(t, int64(2), m.Rem(5, 3.0))
 }
 
 func TestPow(t *testing.T) {
+	t.Parallel()
+
 	m := MathFuncs{}
 	assert.Equal(t, int64(4), m.Pow(2, "2"))
 	assert.Equal(t, 2.25, m.Pow(1.5, 2))
@@ -92,6 +106,8 @@ func mustSeq(t *testing.T, n ...interface{}) []int64 {
 	return s
 }
 func TestSeq(t *testing.T) {
+	t.Parallel()
+
 	m := MathFuncs{}
 	assert.EqualValues(t, []int64{0, 1, 2, 3}, mustSeq(t, 0, 3))
 	assert.EqualValues(t, []int64{1, 0}, mustSeq(t, 0))
@@ -103,6 +119,8 @@ func TestSeq(t *testing.T) {
 }
 
 func TestIsIntFloatNum(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		in      interface{}
 		isInt   bool
@@ -145,6 +163,8 @@ func TestIsIntFloatNum(t *testing.T) {
 	for _, tt := range tests {
 		tt := tt
 		t.Run(fmt.Sprintf("%T(%#v)", tt.in, tt.in), func(t *testing.T) {
+			t.Parallel()
+
 			assert.Equal(t, tt.isInt, m.IsInt(tt.in))
 			assert.Equal(t, tt.isFloat, m.IsFloat(tt.in))
 			assert.Equal(t, tt.isInt || tt.isFloat, m.IsNum(tt.in))
@@ -168,6 +188,8 @@ func BenchmarkIsFloat(b *testing.B) {
 }
 
 func TestMax(t *testing.T) {
+	t.Parallel()
+
 	m := MathFuncs{}
 	data := []struct {
 		expected interface{}
@@ -185,6 +207,8 @@ func TestMax(t *testing.T) {
 	for _, d := range data {
 		d := d
 		t.Run(fmt.Sprintf("%v==%v", d.n, d.expected), func(t *testing.T) {
+			t.Parallel()
+
 			var actual interface{}
 			if len(d.n) == 1 {
 				actual, _ = m.Max(d.n[0])
@@ -197,6 +221,8 @@ func TestMax(t *testing.T) {
 }
 
 func TestMin(t *testing.T) {
+	t.Parallel()
+
 	m := MathFuncs{}
 	data := []struct {
 		expected interface{}
@@ -214,6 +240,8 @@ func TestMin(t *testing.T) {
 	for _, d := range data {
 		d := d
 		t.Run(fmt.Sprintf("%v==%v", d.n, d.expected), func(t *testing.T) {
+			t.Parallel()
+
 			var actual interface{}
 			if len(d.n) == 1 {
 				actual, _ = m.Min(d.n[0])
@@ -226,6 +254,8 @@ func TestMin(t *testing.T) {
 }
 
 func TestContainsFloat(t *testing.T) {
+	t.Parallel()
+
 	m := MathFuncs{}
 	data := []struct {
 		n        []interface{}
@@ -246,6 +276,8 @@ func TestContainsFloat(t *testing.T) {
 	for _, d := range data {
 		d := d
 		t.Run(fmt.Sprintf("%v==%v", d.n, d.expected), func(t *testing.T) {
+			t.Parallel()
+
 			if d.expected {
 				assert.True(t, m.containsFloat(d.n...))
 			} else {
@@ -256,6 +288,8 @@ func TestContainsFloat(t *testing.T) {
 }
 
 func TestCeil(t *testing.T) {
+	t.Parallel()
+
 	m := MathFuncs{}
 	data := []struct {
 		n interface{}
@@ -272,12 +306,16 @@ func TestCeil(t *testing.T) {
 	for _, d := range data {
 		d := d
 		t.Run(fmt.Sprintf("%v==%v", d.n, d.a), func(t *testing.T) {
+			t.Parallel()
+
 			assert.InDelta(t, d.a, m.Ceil(d.n), 1e-12)
 		})
 	}
 }
 
 func TestFloor(t *testing.T) {
+	t.Parallel()
+
 	m := MathFuncs{}
 	data := []struct {
 		n interface{}
@@ -294,12 +332,16 @@ func TestFloor(t *testing.T) {
 	for _, d := range data {
 		d := d
 		t.Run(fmt.Sprintf("%v==%v", d.n, d.a), func(t *testing.T) {
+			t.Parallel()
+
 			assert.InDelta(t, d.a, m.Floor(d.n), 1e-12)
 		})
 	}
 }
 
 func TestRound(t *testing.T) {
+	t.Parallel()
+
 	m := MathFuncs{}
 	data := []struct {
 		n interface{}
@@ -320,12 +362,16 @@ func TestRound(t *testing.T) {
 	for _, d := range data {
 		d := d
 		t.Run(fmt.Sprintf("%v==%v", d.n, d.a), func(t *testing.T) {
+			t.Parallel()
+
 			assert.InDelta(t, d.a, m.Round(d.n), 1e-12)
 		})
 	}
 }
 
 func TestAbs(t *testing.T) {
+	t.Parallel()
+
 	m := MathFuncs{}
 	data := []struct {
 		n interface{}
@@ -345,6 +391,8 @@ func TestAbs(t *testing.T) {
 	for _, d := range data {
 		d := d
 		t.Run(fmt.Sprintf("%#v==%v", d.n, d.a), func(t *testing.T) {
+			t.Parallel()
+
 			assert.Equal(t, d.a, m.Abs(d.n))
 		})
 	}

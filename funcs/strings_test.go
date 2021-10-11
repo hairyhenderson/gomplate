@@ -9,6 +9,8 @@ import (
 )
 
 func TestCreateStringFuncs(t *testing.T) {
+	t.Parallel()
+
 	for i := 0; i < 10; i++ {
 		// Run this a bunch to catch race conditions
 		t.Run(strconv.Itoa(i), func(t *testing.T) {
@@ -24,6 +26,8 @@ func TestCreateStringFuncs(t *testing.T) {
 }
 
 func TestReplaceAll(t *testing.T) {
+	t.Parallel()
+
 	sf := &StringFuncs{}
 
 	assert.Equal(t, "Replaced",
@@ -33,6 +37,8 @@ func TestReplaceAll(t *testing.T) {
 }
 
 func TestIndent(t *testing.T) {
+	t.Parallel()
+
 	sf := &StringFuncs{}
 
 	testdata := []struct {
@@ -53,6 +59,8 @@ func TestIndent(t *testing.T) {
 }
 
 func TestTrimPrefix(t *testing.T) {
+	t.Parallel()
+
 	sf := &StringFuncs{}
 
 	assert.Equal(t, "Bar",
@@ -80,6 +88,8 @@ func TestTitle(t *testing.T) {
 }
 
 func TestTrunc(t *testing.T) {
+	t.Parallel()
+
 	sf := &StringFuncs{}
 	assert.Equal(t, "", sf.Trunc(5, ""))
 	assert.Equal(t, "", sf.Trunc(0, nil))
@@ -88,6 +98,8 @@ func TestTrunc(t *testing.T) {
 }
 
 func TestAbbrev(t *testing.T) {
+	t.Parallel()
+
 	sf := &StringFuncs{}
 	_, err := sf.Abbrev()
 	assert.Error(t, err)
@@ -136,7 +148,9 @@ func TestSlug(t *testing.T) {
 }
 
 func TestSort(t *testing.T) {
+	t.Parallel()
 	sf := &StringFuncs{ctx: context.Background()}
+
 	in := []string{"foo", "bar", "baz"}
 	out := []string{"bar", "baz", "foo"}
 	assert.Equal(t, out, must(sf.Sort(in)))
@@ -145,6 +159,8 @@ func TestSort(t *testing.T) {
 }
 
 func TestQuote(t *testing.T) {
+	t.Parallel()
+
 	sf := &StringFuncs{}
 	testdata := []struct {
 		in  interface{}
@@ -164,6 +180,8 @@ func TestQuote(t *testing.T) {
 }
 
 func TestShellQuote(t *testing.T) {
+	t.Parallel()
+
 	sf := &StringFuncs{}
 	testdata := []struct {
 		in  interface{}
@@ -186,6 +204,8 @@ func TestShellQuote(t *testing.T) {
 }
 
 func TestSquote(t *testing.T) {
+	t.Parallel()
+
 	sf := &StringFuncs{}
 	testdata := []struct {
 		in  interface{}
@@ -205,6 +225,8 @@ func TestSquote(t *testing.T) {
 }
 
 func TestRuneCount(t *testing.T) {
+	t.Parallel()
+
 	sf := &StringFuncs{}
 
 	n, err := sf.RuneCount("")

@@ -11,6 +11,8 @@ import (
 )
 
 func TestCreateFileFuncs(t *testing.T) {
+	t.Parallel()
+
 	for i := 0; i < 10; i++ {
 		// Run this a bunch to catch race conditions
 		t.Run(strconv.Itoa(i), func(t *testing.T) {
@@ -26,6 +28,8 @@ func TestCreateFileFuncs(t *testing.T) {
 }
 
 func TestFileExists(t *testing.T) {
+	t.Parallel()
+
 	fs := afero.NewMemMapFs()
 	ff := &FileFuncs{fs: fs}
 
@@ -38,6 +42,8 @@ func TestFileExists(t *testing.T) {
 }
 
 func TestFileIsDir(t *testing.T) {
+	t.Parallel()
+
 	fs := afero.NewMemMapFs()
 	ff := &FileFuncs{fs: fs}
 
@@ -50,6 +56,8 @@ func TestFileIsDir(t *testing.T) {
 }
 
 func TestFileWalk(t *testing.T) {
+	t.Parallel()
+
 	fs := afero.NewMemMapFs()
 	ff := &FileFuncs{fs: fs}
 

@@ -10,6 +10,8 @@ import (
 )
 
 func TestFilePathFuncs(t *testing.T) {
+	t.Parallel()
+
 	f := &FilePathFuncs{}
 	assert.Equal(t, "bar", f.Base(`foo\bar`))
 	assert.Equal(t, "bar", f.Base("C:/foo/bar"))

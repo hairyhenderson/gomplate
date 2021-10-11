@@ -10,6 +10,8 @@ import (
 )
 
 func TestCreateConvFuncs(t *testing.T) {
+	t.Parallel()
+
 	for i := 0; i < 10; i++ {
 		// Run this a bunch to catch race conditions
 		t.Run(strconv.Itoa(i), func(t *testing.T) {
@@ -25,6 +27,8 @@ func TestCreateConvFuncs(t *testing.T) {
 }
 
 func TestDefault(t *testing.T) {
+	t.Parallel()
+
 	s := struct{}{}
 	c := &ConvFuncs{}
 	def := "DEFAULT"
@@ -47,6 +51,8 @@ func TestDefault(t *testing.T) {
 	for _, d := range data {
 		d := d
 		t.Run(fmt.Sprintf("%T/%#v empty==%v", d.val, d.val, d.empty), func(t *testing.T) {
+			t.Parallel()
+
 			if d.empty {
 				assert.Equal(t, def, c.Default(def, d.val))
 			} else {

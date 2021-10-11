@@ -9,6 +9,8 @@ import (
 )
 
 func TestCreateReFuncs(t *testing.T) {
+	t.Parallel()
+
 	for i := 0; i < 10; i++ {
 		// Run this a bunch to catch race conditions
 		t.Run(strconv.Itoa(i), func(t *testing.T) {
@@ -24,16 +26,22 @@ func TestCreateReFuncs(t *testing.T) {
 }
 
 func TestReplace(t *testing.T) {
+	t.Parallel()
+
 	re := &ReFuncs{}
 	assert.Equal(t, "hello world", re.Replace("i", "ello", "hi world"))
 }
 
 func TestMatch(t *testing.T) {
+	t.Parallel()
+
 	re := &ReFuncs{}
 	assert.True(t, re.Match(`i\ `, "hi world"))
 }
 
 func TestFind(t *testing.T) {
+	t.Parallel()
+
 	re := &ReFuncs{}
 	f, err := re.Find(`[a-z]+`, `foo bar baz`)
 	assert.NoError(t, err)
@@ -52,6 +60,8 @@ func TestFind(t *testing.T) {
 }
 
 func TestFindAll(t *testing.T) {
+	t.Parallel()
+
 	re := &ReFuncs{}
 	f, err := re.FindAll(`[a-z]+`, `foo bar baz`)
 	assert.NoError(t, err)
@@ -88,6 +98,8 @@ func TestFindAll(t *testing.T) {
 }
 
 func TestSplit(t *testing.T) {
+	t.Parallel()
+
 	re := &ReFuncs{}
 	f, err := re.Split(` `, `foo bar baz`)
 	assert.NoError(t, err)
@@ -124,6 +136,8 @@ func TestSplit(t *testing.T) {
 }
 
 func TestReplaceLiteral(t *testing.T) {
+	t.Parallel()
+
 	re := &ReFuncs{}
 	r, err := re.ReplaceLiteral("i", "ello$1", "hi world")
 	assert.NoError(t, err)
