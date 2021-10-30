@@ -33,7 +33,7 @@ require (
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b
 	gotest.tools/v3 v3.0.3
 	inet.af/netaddr v0.0.0-20210903134321-85fa6c94624e
-	k8s.io/client-go v0.22.2
+	k8s.io/client-go v0.22.3
 )
 
 require (
