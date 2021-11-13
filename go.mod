@@ -11,7 +11,7 @@ require (
 	github.com/go-git/go-billy/v5 v5.3.1
 	github.com/go-git/go-git/v5 v5.4.2
 	github.com/google/uuid v1.3.0
-	github.com/gosimple/slug v1.11.0
+	github.com/gosimple/slug v1.11.2
 	github.com/hairyhenderson/toml v0.4.2-0.20210923231440-40456b8e66cf
 	github.com/hashicorp/consul/api v1.11.0
 	github.com/hashicorp/go-sockaddr v1.0.2
@@ -65,7 +65,7 @@ require (
 	github.com/google/go-cmp v0.5.6 // indirect
 	github.com/google/wire v0.5.0 // indirect
 	github.com/googleapis/gax-go/v2 v2.1.1 // indirect
-	github.com/gosimple/unidecode v1.0.0 // indirect
+	github.com/gosimple/unidecode v1.0.1 // indirect
 	github.com/hashicorp/errwrap v1.1.0 // indirect
 	github.com/hashicorp/go-cleanhttp v0.5.2 // indirect
 	github.com/hashicorp/go-hclog v0.16.2 // indirect
