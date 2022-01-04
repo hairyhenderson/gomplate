@@ -33,7 +33,7 @@ linters:
     # - funlen
     # - gci
     # - gochecknoglobals
-    # - gochecknoinits
+    - gochecknoinits
     - gocognit
     - goconst
     - gocritic

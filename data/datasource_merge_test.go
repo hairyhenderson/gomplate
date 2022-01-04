@@ -11,14 +11,11 @@ import (
 	"testing/fstest"
 
 	"github.com/hairyhenderson/gomplate/v4/internal/datafs"
-
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
 func TestReadMerge(t *testing.T) {
-	ctx := context.Background()
-
 	jsonContent := `{"hello": "world"}`
 	yamlContent := "hello: earth\ngoodnight: moon\n"
 	arrayContent := `["hello", "world"]`
@@ -49,8 +46,8 @@ func TestReadMerge(t *testing.T) {
 		path.Join(wd, "textfile.txt"):  {Data: []byte(`plain text...`)},
 	})
 
+	ctx := datafs.ContextWithFSProvider(context.Background(), datafs.WrappedFSProvider(fsys, "file", ""))
 	source := &Source{Alias: "foo", URL: mustParseURL("merge:file:///tmp/jsonfile.json|file:///tmp/yamlfile.yaml")}
-	source.fs = fsys
 	d := &Data{
 		Sources: map[string]*Source{
 			"foo":       source,
@@ -61,6 +58,7 @@ func TestReadMerge(t *testing.T) {
 			"badtype":   {Alias: "badtype", URL: mustParseURL("file:///tmp/textfile.txt?type=foo/bar")},
 			"array":     {Alias: "array", URL: mustParseURL("file:///tmp/array.json?type=" + url.QueryEscape(jsonArrayMimetype))},
 		},
+		Ctx: ctx,
 	}
 
 	actual, err := d.readMerge(ctx, source)

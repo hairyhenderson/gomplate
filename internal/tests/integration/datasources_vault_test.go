@@ -20,6 +20,8 @@ import (
 const vaultRootToken = "00000000-1111-2222-3333-444455556666"
 
 func setupDatasourcesVaultTest(t *testing.T) *vaultClient {
+	t.Helper()
+
 	_, vaultClient := startVault(t)
 
 	err := vaultClient.vc.Sys().PutPolicy("writepol", `path "*" {
@@ -30,7 +32,7 @@ func setupDatasourcesVaultTest(t *testing.T) *vaultClient {
   capabilities = ["read","delete"]
 }`)
 	require.NoError(t, err)
-	err = vaultClient.vc.Sys().PutPolicy("listPol", `path "*" {
+	err = vaultClient.vc.Sys().PutPolicy("listpol", `path "*" {
   capabilities = ["read","list","delete"]
 }`)
 	require.NoError(t, err)
@@ -39,6 +41,8 @@ func setupDatasourcesVaultTest(t *testing.T) *vaultClient {
 }
 
 func startVault(t *testing.T) (*fs.Dir, *vaultClient) {
+	t.Helper()
+
 	pidDir := fs.NewDir(t, "gomplate-inttests-vaultpid")
 	t.Cleanup(pidDir.Remove)
 
@@ -85,6 +89,8 @@ func startVault(t *testing.T) (*fs.Dir, *vaultClient) {
 
 		result.Assert(t, icmd.Expected{ExitCode: 0})
 
+		t.Log(result.Combined())
+
 		// restore old token if it was backed up
 		u, _ := user.Current()
 		homeDir := u.HomeDir
@@ -106,30 +112,32 @@ func TestDatasources_Vault_TokenAuth(t *testing.T) {
 	tok, err := v.tokenCreate("readpol", 5)
 	require.NoError(t, err)
 
-	o, e, err := cmd(t, "-d", "vault=vault:///secret",
+	o, e, err := cmd(t, "-d", "vault=vault:///secret/",
 		"-i", `{{(ds "vault" "foo").value}}`).
 		withEnv("VAULT_ADDR", "http://"+v.addr).
 		withEnv("VAULT_TOKEN", tok).
 		run()
 	assertSuccess(t, o, e, err, "bar")
 
-	o, e, err = cmd(t, "-d", "vault=vault+http://"+v.addr+"/secret",
+	o, e, err = cmd(t, "-d", "vault=vault+http://"+v.addr+"/secret/",
 		"-i", `{{(ds "vault" "foo").value}}`).
 		withEnv("VAULT_TOKEN", tok).
 		run()
 	assertSuccess(t, o, e, err, "bar")
 
-	_, _, err = cmd(t, "-d", "vault=vault:///secret",
+	_, _, err = cmd(t, "-d", "vault=vault:///secret/",
 		"-i", `{{(ds "vault" "bar").value}}`).
 		withEnv("VAULT_ADDR", "http://"+v.addr).
 		withEnv("VAULT_TOKEN", tok).
 		run()
-	assert.ErrorContains(t, err, "error calling ds: couldn't read datasource 'vault': no value found for path /secret/bar")
+	assert.ErrorContains(t, err, "error calling ds: couldn't read datasource 'vault': stat")
+	assert.ErrorContains(t, err, "stat secret/bar")
+	assert.ErrorContains(t, err, "file does not exist")
 
 	tokFile := fs.NewFile(t, "test-vault-token", fs.WithContent(tok))
 	defer tokFile.Remove()
 
-	o, e, err = cmd(t, "-d", "vault=vault:///secret",
+	o, e, err = cmd(t, "-d", "vault=vault:///secret/",
 		"-i", `{{(ds "vault" "foo").value}}`).
 		withEnv("VAULT_ADDR", "http://"+v.addr).
 		withEnv("VAULT_TOKEN_FILE", tokFile.Path()).
@@ -157,7 +165,7 @@ func TestDatasources_Vault_UserPassAuth(t *testing.T) {
 	})
 	require.NoError(t, err)
 
-	o, e, err := cmd(t, "-d", "vault=vault:///secret",
+	o, e, err := cmd(t, "-d", "vault=vault:///secret/",
 		"-i", `{{(ds "vault" "foo").value}}`).
 		withEnv("VAULT_ADDR", "http://"+v.addr).
 		withEnv("VAULT_AUTH_USERNAME", "dave").
@@ -170,7 +178,7 @@ func TestDatasources_Vault_UserPassAuth(t *testing.T) {
 	defer userFile.Remove()
 	defer passFile.Remove()
 	o, e, err = cmd(t,
-		"-d", "vault=vault:///secret",
+		"-d", "vault=vault:///secret/",
 		"-i", `{{(ds "vault" "foo").value}}`).
 		withEnv("VAULT_ADDR", "http://"+v.addr).
 		withEnv("VAULT_AUTH_USERNAME_FILE", userFile.Path()).
@@ -179,7 +187,7 @@ func TestDatasources_Vault_UserPassAuth(t *testing.T) {
 	assertSuccess(t, o, e, err, "bar")
 
 	o, e, err = cmd(t,
-		"-d", "vault=vault:///secret",
+		"-d", "vault=vault:///secret/",
 		"-i", `{{(ds "vault" "foo").value}}`).
 		withEnv("VAULT_ADDR", "http://"+v.addr).
 		withEnv("VAULT_AUTH_USERNAME", "dave").
@@ -216,7 +224,7 @@ func TestDatasources_Vault_AppRoleAuth(t *testing.T) {
 	sid, _ := v.vc.Logical().Write("auth/approle/role/testrole/secret-id", nil)
 	secretID := sid.Data["secret_id"].(string)
 	o, e, err := cmd(t,
-		"-d", "vault=vault:///secret",
+		"-d", "vault=vault:///secret/",
 		"-i", `{{(ds "vault" "foo").value}}`).
 		withEnv("VAULT_ADDR", "http://"+v.addr).
 		withEnv("VAULT_ROLE_ID", roleID).
@@ -229,7 +237,7 @@ func TestDatasources_Vault_AppRoleAuth(t *testing.T) {
 	sid, _ = v.vc.Logical().Write("auth/approle2/role/testrole/secret-id", nil)
 	secretID = sid.Data["secret_id"].(string)
 	o, e, err = cmd(t,
-		"-d", "vault=vault:///secret",
+		"-d", "vault=vault:///secret/",
 		"-i", `{{(ds "vault" "foo").value}}`).
 		withEnv("VAULT_ADDR", "http://"+v.addr).
 		withEnv("VAULT_ROLE_ID", roleID).
@@ -258,7 +266,8 @@ func TestDatasources_Vault_DynamicAuth(t *testing.T) {
 		{"vault=vault:///ssh/creds/test?ip=10.1.2.3&username=user", `{{(ds "vault").ip}}`},
 		{"vault=vault:///?ip=10.1.2.3&username=user", `{{(ds "vault" "ssh/creds/test").ip}}`},
 	}
-	tok, err := v.tokenCreate("writepol", len(testCommands)*2)
+
+	tok, err := v.tokenCreate("writepol", len(testCommands)*4)
 	require.NoError(t, err)
 
 	for _, tc := range testCommands {
@@ -277,7 +286,7 @@ func TestDatasources_Vault_List(t *testing.T) {
 	v.vc.Logical().Write("secret/dir/bar", map[string]interface{}{"value": "two"})
 	defer v.vc.Logical().Delete("secret/dir/foo")
 	defer v.vc.Logical().Delete("secret/dir/bar")
-	tok, err := v.tokenCreate("listpol", 5)
+	tok, err := v.tokenCreate("listpol", 15)
 	require.NoError(t, err)
 
 	o, e, err := cmd(t,
@@ -289,7 +298,7 @@ func TestDatasources_Vault_List(t *testing.T) {
 	assertSuccess(t, o, e, err, "bar: two foo: one ")
 
 	o, e, err = cmd(t,
-		"-d", "vault=vault+http://"+v.addr+"/secret",
+		"-d", "vault=vault+http://"+v.addr+"/secret/",
 		"-i", `{{ range (ds "vault" "dir/" ) }}{{ . }} {{end}}`).
 		withEnv("VAULT_TOKEN", tok).
 		run()

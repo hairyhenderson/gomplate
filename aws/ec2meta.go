@@ -1,6 +1,7 @@
 package aws
 
 import (
+	"context"
 	"net/http"
 	"strings"
 
@@ -8,6 +9,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/ec2metadata"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/hairyhenderson/gomplate/v4/env"
+	"github.com/hairyhenderson/gomplate/v4/internal/deprecated"
 )
 
 const (
@@ -38,6 +40,7 @@ func NewEc2Meta(options ClientOptions) *Ec2Meta {
 			config := aws.NewConfig()
 			config = config.WithHTTPClient(&http.Client{Timeout: options.Timeout})
 			if endpoint := env.Getenv("AWS_META_ENDPOINT"); endpoint != "" {
+				deprecated.WarnDeprecated(context.Background(), "Use AWS_EC2_METADATA_SERVICE_ENDPOINT instead of AWS_META_ENDPOINT")
 				config = config.WithEndpoint(endpoint)
 			}
 

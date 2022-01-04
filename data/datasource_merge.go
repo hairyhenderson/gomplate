@@ -3,10 +3,15 @@ package data
 import (
 	"context"
 	"fmt"
+	"io/fs"
+	"path"
 	"strings"
 
+	"github.com/hairyhenderson/go-fsimpl"
 	"github.com/hairyhenderson/gomplate/v4/coll"
 	"github.com/hairyhenderson/gomplate/v4/internal/datafs"
+	"github.com/hairyhenderson/gomplate/v4/internal/parsers"
+	"github.com/hairyhenderson/gomplate/v4/internal/urlhelpers"
 )
 
 // readMerge demultiplexes a `merge:` datasource. The 'args' parameter currently
@@ -31,7 +36,7 @@ func (d *Data) readMerge(ctx context.Context, source *Source, _ ...string) ([]by
 		subSource, err := d.lookupSource(part)
 		if err != nil {
 			// maybe it's a relative filename?
-			u, uerr := datafs.ParseSourceURL(part)
+			u, uerr := urlhelpers.ParseSourceURL(part)
 			if uerr != nil {
 				return nil, uerr
 			}
@@ -42,15 +47,33 @@ func (d *Data) readMerge(ctx context.Context, source *Source, _ ...string) ([]by
 		}
 		subSource.inherit(source)
 
-		b, err := d.readSource(ctx, subSource)
-		if err != nil {
-			return nil, fmt.Errorf("couldn't read datasource '%s': %w", part, err)
+		u := *subSource.URL
+
+		base := path.Base(u.Path)
+		if base == "/" {
+			base = "."
 		}
 
-		mimeType, err := subSource.mimeType("")
+		u.Path = path.Dir(u.Path)
+
+		fsp := datafs.FSProviderFromContext(ctx)
+
+		fsys, err := fsp.New(&u)
 		if err != nil {
 			return nil, fmt.Errorf("failed to read datasource %s: %w", subSource.URL, err)
 		}
+
+		b, err := fs.ReadFile(fsys, base)
+		if err != nil {
+			return nil, fmt.Errorf("readFile (fs: %q, name: %q): %w", &u, base, err)
+		}
+
+		fi, err := fs.Stat(fsys, base)
+		if err != nil {
+			return nil, fmt.Errorf("stat (fs: %q, name: %q): %w", &u, base, err)
+		}
+
+		mimeType := fsimpl.ContentType(fi)
 
 		data[i], err = parseMap(mimeType, string(b))
 		if err != nil {
@@ -77,7 +100,7 @@ func mergeData(data []map[string]interface{}) (out []byte, err error) {
 		return nil, err
 	}
 
-	s, err := ToYAML(dst)
+	s, err := parsers.ToYAML(dst)
 	if err != nil {
 		return nil, err
 	}
@@ -85,7 +108,7 @@ func mergeData(data []map[string]interface{}) (out []byte, err error) {
 }
 
 func parseMap(mimeType, data string) (map[string]interface{}, error) {
-	datum, err := parseData(mimeType, data)
+	datum, err := parsers.ParseData(mimeType, data)
 	if err != nil {
 		return nil, err
 	}

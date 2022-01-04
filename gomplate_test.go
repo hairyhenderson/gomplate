@@ -12,6 +12,7 @@ import (
 	"github.com/hairyhenderson/gomplate/v4/conv"
 	"github.com/hairyhenderson/gomplate/v4/data"
 	"github.com/hairyhenderson/gomplate/v4/env"
+	"github.com/hairyhenderson/gomplate/v4/internal/parsers"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -73,7 +74,7 @@ func TestEc2MetaTemplates_WithJSON(t *testing.T) {
 		Funcs: template.FuncMap{
 			"ec2meta":    ec2meta.Meta,
 			"ec2dynamic": ec2meta.Dynamic,
-			"json":       data.JSON,
+			"json":       parsers.JSON,
 		},
 	})
 
@@ -84,7 +85,7 @@ func TestEc2MetaTemplates_WithJSON(t *testing.T) {
 func TestJSONArrayTemplates(t *testing.T) {
 	g := NewRenderer(Options{
 		Funcs: template.FuncMap{
-			"jsonArray": data.JSONArray,
+			"jsonArray": parsers.JSONArray,
 		},
 	})
 
@@ -95,8 +96,8 @@ func TestJSONArrayTemplates(t *testing.T) {
 func TestYAMLTemplates(t *testing.T) {
 	g := NewRenderer(Options{
 		Funcs: template.FuncMap{
-			"yaml":      data.YAML,
-			"yamlArray": data.YAMLArray,
+			"yaml":      parsers.YAML,
+			"yamlArray": parsers.YAMLArray,
 		},
 	})
 
@@ -108,7 +109,7 @@ func TestYAMLTemplates(t *testing.T) {
 func TestHasTemplate(t *testing.T) {
 	g := NewRenderer(Options{
 		Funcs: template.FuncMap{
-			"yaml": data.YAML,
+			"yaml": parsers.YAML,
 			"has":  conv.Has,
 		},
 	})

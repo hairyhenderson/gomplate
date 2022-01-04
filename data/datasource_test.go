@@ -2,13 +2,16 @@ package data
 
 import (
 	"context"
-	"fmt"
 	"net/http"
+	"net/http/httptest"
 	"net/url"
+	"os"
 	"runtime"
 	"testing"
 	"testing/fstest"
 
+	"github.com/hairyhenderson/go-fsimpl"
+	"github.com/hairyhenderson/go-fsimpl/httpfs"
 	"github.com/hairyhenderson/gomplate/v4/internal/config"
 	"github.com/hairyhenderson/gomplate/v4/internal/datafs"
 
@@ -17,6 +20,11 @@ import (
 )
 
 const osWindows = "windows"
+
+func mustParseURL(in string) *url.URL {
+	u, _ := url.Parse(in)
+	return u
+}
 
 func TestNewData(t *testing.T) {
 	d, err := NewData(nil, nil)
@@ -56,21 +64,22 @@ func TestDatasource(t *testing.T) {
 		fsys := datafs.WrapWdFS(fstest.MapFS{
 			"tmp/" + fname: &fstest.MapFile{Data: contents},
 		})
+		ctx := datafs.ContextWithFSProvider(context.Background(), datafs.WrappedFSProvider(fsys, "file", ""))
 
 		sources := map[string]*Source{
 			"foo": {
 				Alias:     "foo",
 				URL:       &url.URL{Scheme: "file", Path: uPath},
 				mediaType: mime,
-				fs:        fsys,
 			},
 		}
-		return &Data{Sources: sources}
+		return &Data{Sources: sources, Ctx: ctx}
 	}
+
 	test := func(ext, mime string, contents []byte, expected interface{}) {
 		data := setup(ext, mime, contents)
 
-		actual, err := data.Datasource("foo")
+		actual, err := data.Datasource("foo", "?type="+mime)
 		require.NoError(t, err)
 		assert.Equal(t, expected, actual)
 	}
@@ -110,21 +119,20 @@ func TestDatasourceReachable(t *testing.T) {
 	fsys := datafs.WrapWdFS(fstest.MapFS{
 		"tmp/" + fname: &fstest.MapFile{Data: []byte("{}")},
 	})
+	ctx := datafs.ContextWithFSProvider(context.Background(), datafs.WrappedFSProvider(fsys, "file", ""))
 
 	sources := map[string]*Source{
 		"foo": {
 			Alias:     "foo",
 			URL:       &url.URL{Scheme: "file", Path: uPath},
 			mediaType: jsonMimetype,
-			fs:        fsys,
 		},
 		"bar": {
 			Alias: "bar",
 			URL:   &url.URL{Scheme: "file", Path: "/bogus"},
-			fs:    fsys,
 		},
 	}
-	data := &Data{Sources: sources}
+	data := &Data{Sources: sources, Ctx: ctx}
 
 	assert.True(t, data.DatasourceReachable("foo"))
 	assert.False(t, data.DatasourceReachable("bar"))
@@ -154,27 +162,19 @@ func TestInclude(t *testing.T) {
 	fsys := datafs.WrapWdFS(fstest.MapFS{
 		"tmp/" + fname: &fstest.MapFile{Data: []byte(contents)},
 	})
+	ctx := datafs.ContextWithFSProvider(context.Background(), datafs.WrappedFSProvider(fsys, "file", ""))
 
 	sources := map[string]*Source{
 		"foo": {
 			Alias:     "foo",
 			URL:       &url.URL{Scheme: "file", Path: uPath},
 			mediaType: textMimetype,
-			fs:        fsys,
 		},
 	}
-	data := &Data{
-		Sources: sources,
-	}
+	data := &Data{Sources: sources, Ctx: ctx}
 	actual, err := data.Include("foo")
 	require.NoError(t, err)
 	assert.Equal(t, contents, actual)
-}
-
-type errorReader struct{}
-
-func (e errorReader) Read(_ []byte) (n int, err error) {
-	return 0, fmt.Errorf("error")
 }
 
 func TestDefineDatasource(t *testing.T) {
@@ -231,134 +231,6 @@ func TestDefineDatasource(t *testing.T) {
 	s = d.Sources["data"]
 	require.NoError(t, err)
 	assert.Equal(t, "data", s.Alias)
-	m, err := s.mimeType("")
-	require.NoError(t, err)
-	assert.Equal(t, "application/x-env", m)
-}
-
-func TestMimeType(t *testing.T) {
-	s := &Source{URL: mustParseURL("http://example.com/list?type=a/b/c")}
-	_, err := s.mimeType("")
-	assert.Error(t, err)
-
-	data := []struct {
-		url       string
-		mediaType string
-		expected  string
-	}{
-		{
-			"http://example.com/foo.json",
-			"",
-			jsonMimetype,
-		},
-		{
-			"http://example.com/foo.json",
-			"text/foo",
-			"text/foo",
-		},
-		{
-			"http://example.com/foo.json?type=application/yaml",
-			"text/foo",
-			"application/yaml",
-		},
-		{
-			"http://example.com/list?type=application/array%2Bjson",
-			"text/foo",
-			"application/array+json",
-		},
-		{
-			"http://example.com/list?type=application/array+json",
-			"",
-			"application/array+json",
-		},
-		{
-			"http://example.com/unknown",
-			"",
-			"text/plain",
-		},
-	}
-
-	for i, d := range data {
-		d := d
-		t.Run(fmt.Sprintf("%d:%q,%q==%q", i, d.url, d.mediaType, d.expected), func(t *testing.T) {
-			s := &Source{URL: mustParseURL(d.url), mediaType: d.mediaType}
-			mt, err := s.mimeType("")
-			require.NoError(t, err)
-			assert.Equal(t, d.expected, mt)
-		})
-	}
-}
-
-func TestMimeTypeWithArg(t *testing.T) {
-	s := &Source{URL: mustParseURL("http://example.com")}
-	_, err := s.mimeType("h\nttp://foo")
-	assert.Error(t, err)
-
-	data := []struct {
-		url       string
-		mediaType string
-		arg       string
-		expected  string
-	}{
-		{
-			"http://example.com/unknown",
-			"",
-			"/foo.json",
-			"application/json",
-		},
-		{
-			"http://example.com/unknown",
-			"",
-			"foo.json",
-			"application/json",
-		},
-		{
-			"http://example.com/",
-			"text/foo",
-			"/foo.json",
-			"text/foo",
-		},
-		{
-			"git+https://example.com/myrepo",
-			"",
-			"//foo.yaml",
-			"application/yaml",
-		},
-		{
-			"http://example.com/foo.json",
-			"",
-			"/foo.yaml",
-			"application/yaml",
-		},
-		{
-			"http://example.com/foo.json?type=application/array+yaml",
-			"",
-			"/foo.yaml",
-			"application/array+yaml",
-		},
-		{
-			"http://example.com/foo.json?type=application/array+yaml",
-			"",
-			"/foo.yaml?type=application/yaml",
-			"application/yaml",
-		},
-		{
-			"http://example.com/foo.json?type=application/array+yaml",
-			"text/plain",
-			"/foo.yaml?type=application/yaml",
-			"application/yaml",
-		},
-	}
-
-	for i, d := range data {
-		d := d
-		t.Run(fmt.Sprintf("%d:%q,%q,%q==%q", i, d.url, d.mediaType, d.arg, d.expected), func(t *testing.T) {
-			s := &Source{URL: mustParseURL(d.url), mediaType: d.mediaType}
-			mt, err := s.mimeType(d.arg)
-			require.NoError(t, err)
-			assert.Equal(t, d.expected, mt)
-		})
-	}
 }
 
 func TestFromConfig(t *testing.T) {
@@ -444,4 +316,95 @@ func TestListDatasources(t *testing.T) {
 	data := &Data{Sources: sources}
 
 	assert.Equal(t, []string{"bar", "foo"}, data.ListDatasources())
+}
+
+func TestResolveURL(t *testing.T) {
+	out, err := resolveURL(mustParseURL("http://example.com/foo.json"), "bar.json")
+	assert.NoError(t, err)
+	assert.Equal(t, "http://example.com/bar.json", out.String())
+
+	out, err = resolveURL(mustParseURL("http://example.com/a/b/?n=2"), "bar.json?q=1")
+	assert.NoError(t, err)
+	assert.Equal(t, "http://example.com/a/b/bar.json?n=2&q=1", out.String())
+
+	out, err = resolveURL(mustParseURL("git+file:///tmp/myrepo"), "//myfile?type=application/json")
+	assert.NoError(t, err)
+	assert.Equal(t, "git+file:///tmp/myrepo//myfile?type=application/json", out.String())
+
+	out, err = resolveURL(mustParseURL("git+file:///tmp/foo/bar/"), "//myfile?type=application/json")
+	assert.NoError(t, err)
+	assert.Equal(t, "git+file:///tmp/foo/bar//myfile?type=application/json", out.String())
+
+	out, err = resolveURL(mustParseURL("git+file:///tmp/myrepo/"), ".//myfile?type=application/json")
+	assert.NoError(t, err)
+	assert.Equal(t, "git+file:///tmp/myrepo//myfile?type=application/json", out.String())
+
+	out, err = resolveURL(mustParseURL("git+file:///tmp/repo//foo.txt"), "")
+	assert.NoError(t, err)
+	assert.Equal(t, "git+file:///tmp/repo//foo.txt", out.String())
+
+	out, err = resolveURL(mustParseURL("git+file:///tmp/myrepo"), ".//myfile?type=application/json")
+	assert.NoError(t, err)
+	assert.Equal(t, "git+file:///tmp/myrepo//myfile?type=application/json", out.String())
+
+	out, err = resolveURL(mustParseURL("git+file:///tmp/myrepo//foo/?type=application/json"), "bar/myfile")
+	assert.NoError(t, err)
+	// note that the '/' in the query string is encoded to %2F - that's OK
+	assert.Equal(t, "git+file:///tmp/myrepo//foo/bar/myfile?type=application%2Fjson", out.String())
+
+	// both base and relative may not contain "//"
+	_, err = resolveURL(mustParseURL("git+ssh://git@example.com/foo//bar"), ".//myfile")
+	assert.Error(t, err)
+
+	_, err = resolveURL(mustParseURL("git+ssh://git@example.com/foo//bar"), "baz//myfile")
+	assert.Error(t, err)
+
+	// relative urls must remain relative
+	out, err = resolveURL(mustParseURL("tmp/foo.json"), "")
+	require.NoError(t, err)
+	assert.Equal(t, "tmp/foo.json", out.String())
+}
+
+func TestReadFileContent(t *testing.T) {
+	wd, _ := os.Getwd()
+	t.Cleanup(func() {
+		_ = os.Chdir(wd)
+	})
+	_ = os.Chdir("/")
+
+	mux := http.NewServeMux()
+	mux.HandleFunc("/foo.json", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", jsonMimetype)
+		w.Write([]byte(`{"foo": "bar"}`))
+	})
+
+	srv := httptest.NewServer(mux)
+	t.Cleanup(srv.Close)
+
+	fsys := datafs.WrapWdFS(fstest.MapFS{
+		"foo.json":          &fstest.MapFile{Data: []byte(`{"foo": "bar"}`)},
+		"dir/1.yaml":        &fstest.MapFile{Data: []byte(`foo: bar`)},
+		"dir/2.yaml":        &fstest.MapFile{Data: []byte(`baz: qux`)},
+		"dir/sub/sub1.yaml": &fstest.MapFile{Data: []byte(`quux: corge`)},
+	})
+
+	fsp := fsimpl.NewMux()
+	fsp.Add(httpfs.FS)
+	fsp.Add(datafs.WrappedFSProvider(fsys, "file", ""))
+
+	ctx := datafs.ContextWithFSProvider(context.Background(), fsp)
+
+	d := Data{}
+
+	fc, err := d.readFileContent(ctx, mustParseURL("file:///foo.json"), nil)
+	require.NoError(t, err)
+	assert.Equal(t, []byte(`{"foo": "bar"}`), fc.b)
+
+	fc, err = d.readFileContent(ctx, mustParseURL("dir/"), nil)
+	require.NoError(t, err)
+	assert.JSONEq(t, `["1.yaml", "2.yaml", "sub"]`, string(fc.b))
+
+	fc, err = d.readFileContent(ctx, mustParseURL(srv.URL+"/foo.json"), nil)
+	require.NoError(t, err)
+	assert.Equal(t, []byte(`{"foo": "bar"}`), fc.b)
 }

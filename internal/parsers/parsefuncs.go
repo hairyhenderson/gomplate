@@ -1,8 +1,5 @@
-// Package data contains functions that parse and produce data structures in
-// different formats.
-//
-// Supported formats are: JSON, YAML, TOML, and CSV.
-package data
+// Package parsers has internal parsers for various formats.
+package parsers
 
 import (
 	"bytes"
@@ -10,6 +7,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"os"
 	"strings"
 
 	"cuelang.org/go/cue"
@@ -18,7 +16,6 @@ import (
 	"github.com/Shopify/ejson"
 	ejsonJson "github.com/Shopify/ejson/json"
 	"github.com/hairyhenderson/gomplate/v4/conv"
-	"github.com/hairyhenderson/gomplate/v4/env"
 	"github.com/joho/godotenv"
 
 	// XXX: replace once https://github.com/BurntSushi/toml/pull/179 is merged
@@ -61,8 +58,8 @@ func JSON(in string) (map[string]interface{}, error) {
 
 // decryptEJSON - decrypts an ejson input, and unmarshals it, stripping the _public_key field.
 func decryptEJSON(in string) (map[string]interface{}, error) {
-	keyDir := env.Getenv("EJSON_KEYDIR", "/opt/ejson/keys")
-	key := env.Getenv("EJSON_KEY")
+	keyDir := getenv("EJSON_KEYDIR", "/opt/ejson/keys")
+	key := getenv("EJSON_KEY")
 
 	rIn := bytes.NewBufferString(in)
 	rOut := &bytes.Buffer{}
@@ -77,6 +74,30 @@ func decryptEJSON(in string) (map[string]interface{}, error) {
 	}
 	delete(out, ejsonJson.PublicKeyField)
 	return out, nil
+}
+
+// a reimplementation of env.Getenv to avoid import cycles
+func getenv(key string, def ...string) string {
+	val := os.Getenv(key)
+	if val != "" {
+		return val
+	}
+
+	p := os.Getenv(key + "_FILE")
+	if p != "" {
+		b, err := os.ReadFile(p)
+		if err != nil {
+			return ""
+		}
+
+		val = strings.TrimSpace(string(b))
+	}
+
+	if val == "" && len(def) > 0 {
+		return def[0]
+	}
+
+	return val
 }
 
 // JSONArray - Unmarshal a JSON Array
@@ -190,8 +211,8 @@ func TOML(in string) (interface{}, error) {
 	return unmarshalObj(obj, in, toml.Unmarshal)
 }
 
-// dotEnv - Unmarshal a dotenv file
-func dotEnv(in string) (interface{}, error) {
+// DotEnv - Unmarshal a dotenv file
+func DotEnv(in string) (interface{}, error) {
 	env, err := godotenv.Unmarshal(in)
 	if err != nil {
 		return nil, err

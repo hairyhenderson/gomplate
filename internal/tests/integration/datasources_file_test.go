@@ -1,6 +1,7 @@
 package integration
 
 import (
+	"path/filepath"
 	"testing"
 
 	"gotest.tools/v3/fs"
@@ -83,7 +84,7 @@ func TestDatasources_File(t *testing.T) {
 		"-i", `{{(datasource "config").foo.bar}}`).run()
 	assertSuccess(t, o, e, err, "baz")
 
-	o, e, err = cmd(t, "-d", "dir="+tmpDir.Path(),
+	o, e, err = cmd(t, "-d", "dir="+tmpDir.Path()+string(filepath.Separator),
 		"-i", `{{ (datasource "dir" "config.json").foo.bar }}`).run()
 	assertSuccess(t, o, e, err, "baz")
 

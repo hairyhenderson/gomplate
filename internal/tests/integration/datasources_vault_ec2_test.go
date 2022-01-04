@@ -35,6 +35,10 @@ func setupDatasourcesVaultEc2Test(t *testing.T) (*fs.Dir, *vaultClient, *httptes
 
 		w.Write([]byte("testtoken"))
 	}))
+	mux.HandleFunc("/latest/meta-data/instance-id", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		t.Logf("IMDS request: %s %s", r.Method, r.URL)
+		w.Write([]byte("i-00000000"))
+	}))
 	mux.HandleFunc("/sts/", stsHandler)
 	mux.HandleFunc("/ec2/", ec2Handler)
 	mux.HandleFunc("/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -74,6 +78,7 @@ func TestDatasources_VaultEc2(t *testing.T) {
 		"endpoint":     srv.URL + "/ec2",
 		"iam_endpoint": srv.URL + "/iam",
 		"sts_endpoint": srv.URL + "/sts",
+		"sts_region":   "us-east-1",
 	})
 	require.NoError(t, err)
 
@@ -88,11 +93,11 @@ func TestDatasources_VaultEc2(t *testing.T) {
 	})
 	require.NoError(t, err)
 
-	o, e, err := cmd(t, "-d", "vault=vault:///secret",
+	o, e, err := cmd(t, "-d", "vault=vault:///secret/",
 		"-i", `{{(ds "vault" "foo").value}}`).
 		withEnv("HOME", tmpDir.Join("home")).
 		withEnv("VAULT_ADDR", "http://"+v.addr).
-		withEnv("AWS_META_ENDPOINT", srv.URL).
+		withEnv("AWS_EC2_METADATA_SERVICE_ENDPOINT", srv.URL).
 		run()
 	assertSuccess(t, o, e, err, "bar")
 }

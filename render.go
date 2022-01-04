@@ -7,17 +7,25 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"sync"
 	"text/template"
 	"time"
 
+	"github.com/hairyhenderson/go-fsimpl"
+	"github.com/hairyhenderson/go-fsimpl/autofs"
 	"github.com/hairyhenderson/gomplate/v4/data"
 	"github.com/hairyhenderson/gomplate/v4/internal/config"
+	"github.com/hairyhenderson/gomplate/v4/internal/datafs"
 )
 
 // Options for template rendering.
 //
 // Experimental: subject to breaking changes before the next major release
 type Options struct {
+	// FSProvider - allows lookups of data source filesystems. Defaults to
+	// [DefaultFSProvider].
+	FSProvider fsimpl.FSProvider
+
 	// Datasources - map of datasources to be read on demand when the
 	// 'datasource'/'ds'/'include' functions are used.
 	Datasources map[string]Datasource
@@ -103,6 +111,7 @@ type Datasource struct {
 type Renderer struct {
 	//nolint:staticcheck
 	data        *data.Data
+	fsp         fsimpl.FSProvider
 	nested      config.Templates
 	funcs       template.FuncMap
 	lDelim      string
@@ -171,6 +180,10 @@ func NewRenderer(opts Options) *Renderer {
 		missingKey = "error"
 	}
 
+	if opts.FSProvider == nil {
+		opts.FSProvider = DefaultFSProvider
+	}
+
 	return &Renderer{
 		nested:      nested,
 		data:        d,
@@ -179,6 +192,7 @@ func NewRenderer(opts Options) *Renderer {
 		lDelim:      opts.LDelim,
 		rDelim:      opts.RDelim,
 		missingKey:  missingKey,
+		fsp:         opts.FSProvider,
 	}
 }
 
@@ -202,10 +216,9 @@ type Template struct {
 //
 // Experimental: subject to breaking changes before the next major release
 func (t *Renderer) RenderTemplates(ctx context.Context, templates []Template) error {
-	// we need to inject the current context into the Data value, because
-	// the Datasource method may need it
-	// TODO: remove this in v4
-	t.data.Ctx = ctx
+	if datafs.FSProviderFromContext(ctx) == nil {
+		ctx = datafs.ContextWithFSProvider(ctx, t.fsp)
+	}
 
 	// configure the template context with the refreshed Data value
 	// only done here because the data context may have changed
@@ -273,3 +286,22 @@ func (t *Renderer) Render(ctx context.Context, name, text string, wr io.Writer) 
 		{Name: name, Text: text, Writer: wr},
 	})
 }
+
+// DefaultFSProvider is the default filesystem provider used by gomplate
+var DefaultFSProvider = sync.OnceValue[fsimpl.FSProvider](
+	func() fsimpl.FSProvider {
+		fsp := fsimpl.NewMux()
+
+		// start with all go-fsimpl filesystems
+		fsp.Add(autofs.FS)
+
+		// override go-fsimpl's filefs with wdfs to handle working directories
+		fsp.Add(datafs.WdFS)
+
+		// gomplate-only filesystem
+		fsp.Add(datafs.EnvFS)
+		fsp.Add(datafs.StdinFS)
+		fsp.Add(datafs.MergeFS)
+
+		return fsp
+	})()

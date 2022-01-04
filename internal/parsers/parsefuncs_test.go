@@ -1,4 +1,4 @@
-package data
+package parsers
 
 import (
 	"fmt"
@@ -562,7 +562,7 @@ QUX='single quotes ignore $variables'
 		"BAZ":     "variable expansion: a regular unquoted value",
 		"QUX":     "single quotes ignore $variables",
 	}
-	out, err := dotEnv(in)
+	out, err := DotEnv(in)
 	require.NoError(t, err)
 	assert.EqualValues(t, expected, out)
 }

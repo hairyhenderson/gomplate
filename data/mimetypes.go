@@ -1,5 +1,9 @@
 package data
 
+import (
+	"mime"
+)
+
 const (
 	textMimetype      = "text/plain"
 	csvMimetype       = "text/csv"
@@ -19,6 +23,9 @@ var mimeTypeAliases = map[string]string{
 }
 
 func mimeAlias(m string) string {
+	// normalize the type by removing any extra parameters
+	m, _, _ = mime.ParseMediaType(m)
+
 	if a, ok := mimeTypeAliases[m]; ok {
 		return a
 	}
