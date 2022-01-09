@@ -22,7 +22,7 @@ func TestOpenOutFile(t *testing.T) {
 	_ = fs.Mkdir("/tmp", 0777)
 
 	cfg := &config.Config{}
-	f, err := openOutFile(cfg, "/tmp/foo", 0644, false)
+	f, err := openOutFile(cfg, "/tmp/foo", 0755, 0644, false)
 	assert.NoError(t, err)
 
 	wc, ok := f.(io.WriteCloser)
@@ -36,7 +36,7 @@ func TestOpenOutFile(t *testing.T) {
 
 	cfg.Stdout = &bytes.Buffer{}
 
-	f, err = openOutFile(cfg, "-", 0644, false)
+	f, err = openOutFile(cfg, "-", 0755, 0644, false)
 	assert.NoError(t, err)
 	assert.Equal(t, cfg.Stdout, f)
 }
@@ -261,7 +261,7 @@ func TestCreateOutFile(t *testing.T) {
 	fs = afero.NewMemMapFs()
 	_ = fs.Mkdir("in", 0755)
 
-	_, err := createOutFile("in", 0644, false)
+	_, err := createOutFile("in", 0755, 0644, false)
 	assert.Error(t, err)
 	assert.IsType(t, &os.PathError{}, err)
 }

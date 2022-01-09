@@ -145,7 +145,7 @@ func processTemplates(cfg *config.Config, templates []*tplate) ([]*tplate, error
 		}
 
 		if t.target == nil {
-			out, err := openOutFile(cfg, t.targetPath, t.mode, t.modeOverride)
+			out, err := openOutFile(cfg, t.targetPath, 0755, t.mode, t.modeOverride)
 			if err != nil {
 				return nil, err
 			}
@@ -241,13 +241,13 @@ func fileToTemplates(inFile, outFile string, mode os.FileMode, modeOverride bool
 	return tmpl, nil
 }
 
-func openOutFile(cfg *config.Config, filename string, mode os.FileMode, modeOverride bool) (out io.Writer, err error) {
+func openOutFile(cfg *config.Config, filename string, dirMode, mode os.FileMode, modeOverride bool) (out io.Writer, err error) {
 	if cfg.SuppressEmpty {
 		out = iohelpers.NewEmptySkipper(func() (io.Writer, error) {
 			if filename == "-" {
 				return cfg.Stdout, nil
 			}
-			return createOutFile(filename, mode, modeOverride)
+			return createOutFile(filename, dirMode, mode, modeOverride)
 		})
 		return out, nil
 	}
@@ -255,10 +255,10 @@ func openOutFile(cfg *config.Config, filename string, mode os.FileMode, modeOver
 	if filename == "-" {
 		return cfg.Stdout, nil
 	}
-	return createOutFile(filename, mode, modeOverride)
+	return createOutFile(filename, dirMode, mode, modeOverride)
 }
 
-func createOutFile(filename string, mode os.FileMode, modeOverride bool) (out io.WriteCloser, err error) {
+func createOutFile(filename string, dirMode, mode os.FileMode, modeOverride bool) (out io.WriteCloser, err error) {
 	mode = iohelpers.NormalizeFileMode(mode.Perm())
 	if modeOverride {
 		err = fs.Chmod(filename, mode)
@@ -268,6 +268,11 @@ func createOutFile(filename string, mode os.FileMode, modeOverride bool) (out io
 	}
 
 	open := func() (out io.WriteCloser, err error) {
+		// Ensure file parent dirs
+		if err = fs.MkdirAll(filepath.Dir(filename), dirMode); err != nil {
+			return nil, err
+		}
+
 		out, err = fs.OpenFile(filename, os.O_RDWR|os.O_CREATE|os.O_TRUNC, mode)
 		if err != nil {
 			return out, fmt.Errorf("failed to open output file '%s' for writing: %w", filename, err)

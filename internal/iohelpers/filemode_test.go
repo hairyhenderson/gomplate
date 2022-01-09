@@ -2,6 +2,7 @@ package iohelpers
 
 import (
 	"fmt"
+	"io/fs"
 	"os"
 	"testing"
 
@@ -34,4 +35,7 @@ func TestWindowsFileMode(t *testing.T) {
 		assert.Equal(t, fmt.Sprintf("%o", d.expected), fmt.Sprintf("%o", actual))
 		assert.Equal(t, d.expected, actual)
 	}
+
+	// directories are always 0777
+	assert.Equal(t, 0o777|fs.ModeDir, windowsFileMode(0o755|fs.ModeDir))
 }

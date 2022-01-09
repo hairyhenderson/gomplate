@@ -243,6 +243,9 @@ See [`--output-dir`](../usage/#--input-dir-and---output-dir).
 The directory to write rendered output files. Must be used with 
 [`inputDir`](#inputdir).
 
+If the directory is missing, it will be created with the same permissions as the
+`inputDir`.
+
 ```yaml
 inputDir: templates/
 outputDir: out/
@@ -257,6 +260,9 @@ See [`--out`/`-o`](../usage/#--file-f---in-i-and---out-o).
 An array of output file paths. The special value `-` means `Stdout`. Multiple
 values can be set, but there must be a corresponding number of `inputFiles`
 entries present.
+
+If any of the parent directories are missing, they will be created with the same
+permissions as the input directories.
 
 ```yaml
 inputFiles:
