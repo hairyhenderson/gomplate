@@ -1,6 +1,7 @@
 package data
 
 import (
+	"context"
 	"io"
 	"io/ioutil"
 
@@ -10,7 +11,7 @@ import (
 // stdin - for overriding in tests
 var stdin io.Reader
 
-func readStdin(source *Source, args ...string) ([]byte, error) {
+func readStdin(ctx context.Context, source *Source, args ...string) ([]byte, error) {
 	b, err := ioutil.ReadAll(stdin)
 	if err != nil {
 		return nil, errors.Wrapf(err, "Can't read %s", stdin)

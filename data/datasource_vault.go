@@ -1,6 +1,7 @@
 package data
 
 import (
+	"context"
 	"strings"
 
 	"github.com/pkg/errors"
@@ -8,7 +9,7 @@ import (
 	"github.com/hairyhenderson/gomplate/v3/vault"
 )
 
-func readVault(source *Source, args ...string) (data []byte, err error) {
+func readVault(ctx context.Context, source *Source, args ...string) (data []byte, err error) {
 	if source.vc == nil {
 		source.vc, err = vault.New(source.URL)
 		if err != nil {

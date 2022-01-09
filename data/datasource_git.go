@@ -27,8 +27,7 @@ import (
 	"github.com/go-git/go-git/v5/storage/memory"
 )
 
-func readGit(source *Source, args ...string) ([]byte, error) {
-	ctx := context.TODO()
+func readGit(ctx context.Context, source *Source, args ...string) ([]byte, error) {
 	g := gitsource{}
 
 	u := source.URL

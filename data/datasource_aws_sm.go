@@ -1,12 +1,14 @@
 package data
 
 import (
+	"context"
 	"fmt"
 	"net/url"
 	"path"
 	"strings"
 
 	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/request"
 	"github.com/aws/aws-sdk-go/service/secretsmanager"
 	"github.com/pkg/errors"
 
@@ -15,7 +17,7 @@ import (
 
 // awsSecretsManagerGetter - A subset of Secrets Manager API for use in unit testing
 type awsSecretsManagerGetter interface {
-	GetSecretValue(input *secretsmanager.GetSecretValueInput) (*secretsmanager.GetSecretValueOutput, error)
+	GetSecretValueWithContext(ctx context.Context, input *secretsmanager.GetSecretValueInput, opts ...request.Option) (*secretsmanager.GetSecretValueOutput, error)
 }
 
 func parseDatasourceURLArgs(sourceURL *url.URL, args ...string) (params map[string]interface{}, p string, err error) {
@@ -55,7 +57,7 @@ func parseDatasourceURLArgs(sourceURL *url.URL, args ...string) (params map[stri
 	return params, p, nil
 }
 
-func readAWSSecretsManager(source *Source, args ...string) (output []byte, err error) {
+func readAWSSecretsManager(ctx context.Context, source *Source, args ...string) (output []byte, err error) {
 	if source.awsSecretsManager == nil {
 		source.awsSecretsManager = secretsmanager.New(gaws.SDKSession())
 	}
@@ -65,15 +67,15 @@ func readAWSSecretsManager(source *Source, args ...string) (output []byte, err e
 		return nil, err
 	}
 
-	return readAWSSecretsManagerParam(source, paramPath)
+	return readAWSSecretsManagerParam(ctx, source, paramPath)
 }
 
-func readAWSSecretsManagerParam(source *Source, paramPath string) ([]byte, error) {
+func readAWSSecretsManagerParam(ctx context.Context, source *Source, paramPath string) ([]byte, error) {
 	input := &secretsmanager.GetSecretValueInput{
 		SecretId: aws.String(paramPath),
 	}
 
-	response, err := source.awsSecretsManager.GetSecretValue(input)
+	response, err := source.awsSecretsManager.GetSecretValueWithContext(ctx, input)
 	if err != nil {
 		return nil, errors.Wrapf(err, "Error reading aws+sm from AWS using GetSecretValue with input %v", input)
 	}
