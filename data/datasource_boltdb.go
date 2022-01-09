@@ -1,11 +1,13 @@
 package data
 
 import (
+	"context"
+
 	"github.com/hairyhenderson/gomplate/v3/libkv"
 	"github.com/pkg/errors"
 )
 
-func readBoltDB(source *Source, args ...string) (data []byte, err error) {
+func readBoltDB(ctx context.Context, source *Source, args ...string) (data []byte, err error) {
 	if source.kv == nil {
 		source.kv, err = libkv.NewBoltDB(source.URL)
 		if err != nil {

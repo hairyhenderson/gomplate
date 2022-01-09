@@ -71,7 +71,7 @@ func TestAWSSMP_GetParameterSetup(t *testing.T) {
 		},
 	})
 
-	_, err := readAWSSMP(s, "/bar")
+	_, err := readAWSSMP(context.Background(), s, "/bar")
 	assert.True(t, calledOk)
 	assert.Nil(t, err)
 }
@@ -88,7 +88,7 @@ func TestAWSSMP_GetParameterValidOutput(t *testing.T) {
 		param: expected,
 	})
 
-	output, err := readAWSSMP(s, "")
+	output, err := readAWSSMP(context.Background(), s, "")
 	assert.Nil(t, err)
 	actual := &ssm.Parameter{}
 	err = json.Unmarshal(output, &actual)
@@ -104,7 +104,7 @@ func TestAWSSMP_GetParameterMissing(t *testing.T) {
 		err: expectedErr,
 	})
 
-	_, err := readAWSSMP(s, "")
+	_, err := readAWSSMP(context.Background(), s, "")
 	assert.Error(t, err, "Test of error message")
 }
 

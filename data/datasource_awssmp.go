@@ -18,8 +18,7 @@ type awssmpGetter interface {
 	GetParametersByPathWithContext(ctx context.Context, input *ssm.GetParametersByPathInput, opts ...request.Option) (*ssm.GetParametersByPathOutput, error)
 }
 
-func readAWSSMP(source *Source, args ...string) (data []byte, err error) {
-	ctx := context.TODO()
+func readAWSSMP(ctx context.Context, source *Source, args ...string) (data []byte, err error) {
 	if source.asmpg == nil {
 		source.asmpg = ssm.New(gaws.SDKSession())
 	}

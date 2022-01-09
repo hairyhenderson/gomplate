@@ -380,6 +380,7 @@ func TestOpenBareFileRepo(t *testing.T) {
 }
 
 func TestReadGit(t *testing.T) {
+	ctx := context.Background()
 	repoFS := setupGitRepo(t)
 
 	overrideFSLoader(repoFS)
@@ -389,7 +390,7 @@ func TestReadGit(t *testing.T) {
 		Alias: "hi",
 		URL:   mustParseURL("git+file:///bare.git//hello.txt"),
 	}
-	b, err := readGit(s)
+	b, err := readGit(ctx, s)
 	assert.NilError(t, err)
 	assert.Equal(t, "hello world", string(b))
 
@@ -397,7 +398,7 @@ func TestReadGit(t *testing.T) {
 		Alias: "hi",
 		URL:   mustParseURL("git+file:///bare.git"),
 	}
-	b, err = readGit(s)
+	b, err = readGit(ctx, s)
 	assert.NilError(t, err)
 	assert.Equal(t, "application/array+json", s.mediaType)
 	assert.Equal(t, `["hello.txt"]`, string(b))

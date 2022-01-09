@@ -1,11 +1,13 @@
 package data
 
 import (
+	"context"
 	"net/url"
 	"testing"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
+	"github.com/aws/aws-sdk-go/aws/request"
 	"github.com/aws/aws-sdk-go/service/secretsmanager"
 	"github.com/stretchr/testify/assert"
 )
@@ -18,7 +20,7 @@ type DummyAWSSecretsManagerSecretGetter struct {
 	mockGetSecretValue func(input *secretsmanager.GetSecretValueInput) (*secretsmanager.GetSecretValueOutput, error)
 }
 
-func (d DummyAWSSecretsManagerSecretGetter) GetSecretValue(input *secretsmanager.GetSecretValueInput) (*secretsmanager.GetSecretValueOutput, error) {
+func (d DummyAWSSecretsManagerSecretGetter) GetSecretValueWithContext(ctx context.Context, input *secretsmanager.GetSecretValueInput, opts ...request.Option) (*secretsmanager.GetSecretValueOutput, error) {
 	if d.mockGetSecretValue != nil {
 		output, err := d.mockGetSecretValue(input)
 		return output, err
@@ -107,7 +109,7 @@ func TestAWSSecretsManager_GetParameterSetup(t *testing.T) {
 		},
 	})
 
-	_, err := readAWSSecretsManager(s, "/bar")
+	_, err := readAWSSecretsManager(context.Background(), s, "/bar")
 	assert.True(t, calledOk)
 	assert.Nil(t, err)
 }
@@ -123,7 +125,7 @@ func TestAWSSecretsManager_GetParameterSetupWrongArgs(t *testing.T) {
 		},
 	})
 
-	_, err := readAWSSecretsManager(s, "/bar", "/foo", "/bla")
+	_, err := readAWSSecretsManager(context.Background(), s, "/bar", "/foo", "/bla")
 	assert.False(t, calledOk)
 	assert.Error(t, err)
 }
@@ -135,7 +137,7 @@ func TestAWSSecretsManager_GetParameterMissing(t *testing.T) {
 		err: expectedErr,
 	})
 
-	_, err := readAWSSecretsManager(s, "")
+	_, err := readAWSSecretsManager(context.Background(), s, "")
 	assert.Error(t, err, "Test of error message")
 }
 
@@ -150,7 +152,7 @@ func TestAWSSecretsManager_ReadSecret(t *testing.T) {
 		},
 	})
 
-	output, err := readAWSSecretsManagerParam(s, "/foo/bar")
+	output, err := readAWSSecretsManagerParam(context.Background(), s, "/foo/bar")
 	assert.True(t, calledOk)
 	assert.NoError(t, err)
 	assert.Equal(t, []byte("blub"), output)

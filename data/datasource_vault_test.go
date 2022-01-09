@@ -1,6 +1,7 @@
 package data
 
 import (
+	"context"
 	"net/url"
 	"testing"
 
@@ -9,6 +10,8 @@ import (
 )
 
 func TestReadVault(t *testing.T) {
+	ctx := context.Background()
+
 	expected := "{\"value\":\"foo\"}\n"
 	server, v := vault.MockServer(200, `{"data":`+expected+`}`)
 	defer server.Close()
@@ -20,20 +23,20 @@ func TestReadVault(t *testing.T) {
 		vc:        v,
 	}
 
-	r, err := readVault(source)
+	r, err := readVault(ctx, source)
 	assert.NoError(t, err)
 	assert.Equal(t, []byte(expected), r)
 
-	r, err = readVault(source, "bar")
+	r, err = readVault(ctx, source, "bar")
 	assert.NoError(t, err)
 	assert.Equal(t, []byte(expected), r)
 
-	r, err = readVault(source, "?param=value")
+	r, err = readVault(ctx, source, "?param=value")
 	assert.NoError(t, err)
 	assert.Equal(t, []byte(expected), r)
 
 	source.URL, _ = url.Parse("vault:///secret/foo?param1=value1&param2=value2")
-	r, err = readVault(source)
+	r, err = readVault(ctx, source)
 	assert.NoError(t, err)
 	assert.Equal(t, []byte(expected), r)
 
@@ -41,7 +44,7 @@ func TestReadVault(t *testing.T) {
 	server, source.vc = vault.MockServer(200, `{"data":{"keys":`+expected+`}}`)
 	defer server.Close()
 	source.URL, _ = url.Parse("vault:///secret/foo/")
-	r, err = readVault(source)
+	r, err = readVault(ctx, source)
 	assert.NoError(t, err)
 	assert.Equal(t, []byte(expected), r)
 }
