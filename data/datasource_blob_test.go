@@ -2,6 +2,7 @@ package data
 
 import (
 	"bytes"
+	"context"
 	"net/http/httptest"
 	"net/url"
 	"os"
@@ -56,7 +57,7 @@ func putFile(backend gofakes3.Backend, bucket, file, mime, content string) error
 }
 
 func TestReadBlob(t *testing.T) {
-	_, err := readBlob(nil, "foo", "bar")
+	_, err := readBlob(context.Background(), nil, "foo", "bar")
 	assert.Error(t, err)
 
 	ts, u := setupTestBucket(t)

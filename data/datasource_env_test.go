@@ -1,6 +1,7 @@
 package data
 
 import (
+	"context"
 	"net/url"
 	"os"
 	"testing"
@@ -14,6 +15,8 @@ func mustParseURL(in string) *url.URL {
 }
 
 func TestReadEnv(t *testing.T) {
+	ctx := context.Background()
+
 	content := []byte(`hello world`)
 	os.Setenv("HELLO_WORLD", "hello world")
 	defer os.Unsetenv("HELLO_WORLD")
@@ -22,31 +25,31 @@ func TestReadEnv(t *testing.T) {
 
 	source := &Source{Alias: "foo", URL: mustParseURL("env:HELLO_WORLD")}
 
-	actual, err := readEnv(source)
+	actual, err := readEnv(ctx, source)
 	assert.NoError(t, err)
 	assert.Equal(t, content, actual)
 
 	source = &Source{Alias: "foo", URL: mustParseURL("env:/HELLO_WORLD")}
 
-	actual, err = readEnv(source)
+	actual, err = readEnv(ctx, source)
 	assert.NoError(t, err)
 	assert.Equal(t, content, actual)
 
 	source = &Source{Alias: "foo", URL: mustParseURL("env:///HELLO_WORLD")}
 
-	actual, err = readEnv(source)
+	actual, err = readEnv(ctx, source)
 	assert.NoError(t, err)
 	assert.Equal(t, content, actual)
 
 	source = &Source{Alias: "foo", URL: mustParseURL("env:HELLO_WORLD?foo=bar")}
 
-	actual, err = readEnv(source)
+	actual, err = readEnv(ctx, source)
 	assert.NoError(t, err)
 	assert.Equal(t, content, actual)
 
 	source = &Source{Alias: "foo", URL: mustParseURL("env:///HELLO_WORLD?foo=bar")}
 
-	actual, err = readEnv(source)
+	actual, err = readEnv(ctx, source)
 	assert.NoError(t, err)
 	assert.Equal(t, content, actual)
 }

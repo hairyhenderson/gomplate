@@ -37,7 +37,7 @@ func init() {
 
 // registerReaders registers the source-reader functions
 func (d *Data) registerReaders() {
-	d.sourceReaders = make(map[string]func(*Source, ...string) ([]byte, error))
+	d.sourceReaders = make(map[string]func(context.Context, *Source, ...string) ([]byte, error))
 
 	d.sourceReaders["aws+smp"] = readAWSSMP
 	d.sourceReaders["aws+sm"] = readAWSSecretsManager
@@ -64,7 +64,7 @@ func (d *Data) registerReaders() {
 }
 
 // lookupReader - return the reader function for the given scheme
-func (d *Data) lookupReader(scheme string) (func(*Source, ...string) ([]byte, error), error) {
+func (d *Data) lookupReader(scheme string) (func(context.Context, *Source, ...string) ([]byte, error), error) {
 	if d.sourceReaders == nil {
 		d.registerReaders()
 	}
@@ -81,7 +81,7 @@ type Data struct {
 
 	Sources map[string]*Source
 
-	sourceReaders map[string]func(*Source, ...string) ([]byte, error)
+	sourceReaders map[string]func(context.Context, *Source, ...string) ([]byte, error)
 	cache         map[string][]byte
 
 	// headers from the --datasource-header/-H option that don't reference datasources from the commandline
@@ -279,12 +279,12 @@ func (d *Data) lookupSource(alias string) (*Source, error) {
 	return source, nil
 }
 
-func (d *Data) readDataSource(alias string, args ...string) (data, mimeType string, err error) {
+func (d *Data) readDataSource(ctx context.Context, alias string, args ...string) (data, mimeType string, err error) {
 	source, err := d.lookupSource(alias)
 	if err != nil {
 		return "", "", err
 	}
-	b, err := d.readSource(source, args...)
+	b, err := d.readSource(ctx, source, args...)
 	if err != nil {
 		return "", "", errors.Wrapf(err, "Couldn't read datasource '%s'", alias)
 	}
@@ -302,13 +302,13 @@ func (d *Data) readDataSource(alias string, args ...string) (data, mimeType stri
 
 // Include -
 func (d *Data) Include(alias string, args ...string) (string, error) {
-	data, _, err := d.readDataSource(alias, args...)
+	data, _, err := d.readDataSource(d.ctx, alias, args...)
 	return data, err
 }
 
 // Datasource -
 func (d *Data) Datasource(alias string, args ...string) (interface{}, error) {
-	data, mimeType, err := d.readDataSource(alias, args...)
+	data, mimeType, err := d.readDataSource(d.ctx, alias, args...)
 	if err != nil {
 		return nil, err
 	}
@@ -353,13 +353,13 @@ func (d *Data) DatasourceReachable(alias string, args ...string) bool {
 	if !ok {
 		return false
 	}
-	_, err := d.readSource(source, args...)
+	_, err := d.readSource(d.ctx, source, args...)
 	return err == nil
 }
 
 // readSource returns the (possibly cached) data from the given source,
 // as referenced by the given args
-func (d *Data) readSource(source *Source, args ...string) ([]byte, error) {
+func (d *Data) readSource(ctx context.Context, source *Source, args ...string) ([]byte, error) {
 	if d.cache == nil {
 		d.cache = make(map[string][]byte)
 	}
@@ -375,7 +375,7 @@ func (d *Data) readSource(source *Source, args ...string) ([]byte, error) {
 	if err != nil {
 		return nil, errors.Wrap(err, "Datasource not yet supported")
 	}
-	data, err := r(source, args...)
+	data, err := r(ctx, source, args...)
 	if err != nil {
 		return nil, err
 	}

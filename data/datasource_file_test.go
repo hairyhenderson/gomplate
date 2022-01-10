@@ -1,6 +1,7 @@
 package data
 
 import (
+	"context"
 	"testing"
 
 	"github.com/spf13/afero"
@@ -9,6 +10,8 @@ import (
 )
 
 func TestReadFile(t *testing.T) {
+	ctx := context.Background()
+
 	content := []byte(`hello world`)
 	fs := afero.NewMemMapFs()
 
@@ -26,30 +29,30 @@ func TestReadFile(t *testing.T) {
 	source := &Source{Alias: "foo", URL: mustParseURL("file:///tmp/foo")}
 	source.fs = fs
 
-	actual, err := readFile(source)
+	actual, err := readFile(ctx, source)
 	assert.NoError(t, err)
 	assert.Equal(t, content, actual)
 
 	source = &Source{Alias: "bogus", URL: mustParseURL("file:///bogus")}
 	source.fs = fs
-	_, err = readFile(source)
+	_, err = readFile(ctx, source)
 	assert.Error(t, err)
 
 	source = &Source{Alias: "partial", URL: mustParseURL("file:///tmp/partial")}
 	source.fs = fs
-	actual, err = readFile(source, "foo.txt")
+	actual, err = readFile(ctx, source, "foo.txt")
 	assert.NoError(t, err)
 	assert.Equal(t, content, actual)
 
 	source = &Source{Alias: "dir", URL: mustParseURL("file:///tmp/partial/")}
 	source.fs = fs
-	actual, err = readFile(source)
+	actual, err = readFile(ctx, source)
 	assert.NoError(t, err)
 	assert.Equal(t, []byte(`["bar.txt","baz.txt","foo.txt"]`), actual)
 
 	source = &Source{Alias: "dir", URL: mustParseURL("file:///tmp/partial/?type=application/json")}
 	source.fs = fs
-	actual, err = readFile(source)
+	actual, err = readFile(ctx, source)
 	assert.NoError(t, err)
 	assert.Equal(t, []byte(`["bar.txt","baz.txt","foo.txt"]`), actual)
 	mime, err := source.mimeType("")
@@ -58,7 +61,7 @@ func TestReadFile(t *testing.T) {
 
 	source = &Source{Alias: "dir", URL: mustParseURL("file:///tmp/partial/?type=application/json")}
 	source.fs = fs
-	actual, err = readFile(source, "foo.txt")
+	actual, err = readFile(ctx, source, "foo.txt")
 	assert.NoError(t, err)
 	assert.Equal(t, content, actual)
 	mime, err = source.mimeType("")

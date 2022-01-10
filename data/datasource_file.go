@@ -2,6 +2,7 @@ package data
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"io/ioutil"
 	"net/url"
@@ -14,7 +15,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-func readFile(source *Source, args ...string) ([]byte, error) {
+func readFile(ctx context.Context, source *Source, args ...string) ([]byte, error) {
 	if source.fs == nil {
 		source.fs = afero.NewOsFs()
 	}

@@ -1,6 +1,7 @@
 package data
 
 import (
+	"context"
 	"io/ioutil"
 	"mime"
 	"net/http"
@@ -21,7 +22,7 @@ func buildURL(base *url.URL, args ...string) (*url.URL, error) {
 	return base.ResolveReference(p), nil
 }
 
-func readHTTP(source *Source, args ...string) ([]byte, error) {
+func readHTTP(ctx context.Context, source *Source, args ...string) ([]byte, error) {
 	if source.hc == nil {
 		source.hc = &http.Client{Timeout: time.Second * 5}
 	}
@@ -29,7 +30,7 @@ func readHTTP(source *Source, args ...string) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	req, err := http.NewRequest("GET", u.String(), nil)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, u.String(), nil)
 	if err != nil {
 		return nil, err
 	}

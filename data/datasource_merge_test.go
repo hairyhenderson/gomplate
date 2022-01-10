@@ -1,6 +1,7 @@
 package data
 
 import (
+	"context"
 	"net/url"
 	"os"
 	"path/filepath"
@@ -12,6 +13,8 @@ import (
 )
 
 func TestReadMerge(t *testing.T) {
+	ctx := context.Background()
+
 	jsonContent := `{"hello": "world"}`
 	yamlContent := "hello: earth\ngoodnight: moon\n"
 	arrayContent := `["hello", "world"]`
@@ -55,38 +58,38 @@ func TestReadMerge(t *testing.T) {
 		},
 	}
 
-	actual, err := d.readMerge(source)
+	actual, err := d.readMerge(ctx, source)
 	assert.NoError(t, err)
 	assert.Equal(t, mergedContent, string(actual))
 
 	source.URL = mustParseURL("merge:bar|baz")
-	actual, err = d.readMerge(source)
+	actual, err = d.readMerge(ctx, source)
 	assert.NoError(t, err)
 	assert.Equal(t, mergedContent, string(actual))
 
 	source.URL = mustParseURL("merge:./jsonfile.json|baz")
-	actual, err = d.readMerge(source)
+	actual, err = d.readMerge(ctx, source)
 	assert.NoError(t, err)
 	assert.Equal(t, mergedContent, string(actual))
 
 	source.URL = mustParseURL("merge:file:///tmp/jsonfile.json")
-	_, err = d.readMerge(source)
+	_, err = d.readMerge(ctx, source)
 	assert.Error(t, err)
 
 	source.URL = mustParseURL("merge:bogusalias|file:///tmp/jsonfile.json")
-	_, err = d.readMerge(source)
+	_, err = d.readMerge(ctx, source)
 	assert.Error(t, err)
 
 	source.URL = mustParseURL("merge:file:///tmp/jsonfile.json|badscheme")
-	_, err = d.readMerge(source)
+	_, err = d.readMerge(ctx, source)
 	assert.Error(t, err)
 
 	source.URL = mustParseURL("merge:file:///tmp/jsonfile.json|badtype")
-	_, err = d.readMerge(source)
+	_, err = d.readMerge(ctx, source)
 	assert.Error(t, err)
 
 	source.URL = mustParseURL("merge:file:///tmp/jsonfile.json|array")
-	_, err = d.readMerge(source)
+	_, err = d.readMerge(ctx, source)
 	assert.Error(t, err)
 }
 

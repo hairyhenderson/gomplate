@@ -1,6 +1,7 @@
 package data
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -57,6 +58,7 @@ func TestHTTPFile(t *testing.T) {
 		hc: client,
 	}
 	data := &Data{
+		ctx:     context.Background(),
 		Sources: sources,
 	}
 
@@ -94,6 +96,7 @@ func TestHTTPFileWithHeaders(t *testing.T) {
 		},
 	}
 	data := &Data{
+		ctx:     context.Background(),
 		Sources: sources,
 	}
 	expected := http.Header{
@@ -110,6 +113,7 @@ func TestHTTPFileWithHeaders(t *testing.T) {
 		"User-Agent":      {"Go-http-client/1.1"},
 	}
 	data = &Data{
+		ctx:          context.Background(),
 		Sources:      sources,
 		extraHeaders: map[string]http.Header{server.URL: expected},
 	}
