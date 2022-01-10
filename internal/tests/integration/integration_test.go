@@ -106,7 +106,7 @@ func waitForURL(t *testing.T, url string) error {
 			return nil
 		}
 	}
-	return nil
+	return fmt.Errorf("URL %s never responded with 200", url)
 }
 
 type vaultClient struct {
