@@ -229,6 +229,13 @@ input | strings.Split separator
 
 ### Examples
 
+Use on its own to produce an array:
+```console
+$ gomplate -i '{{ "Bart,Lisa,Maggie" | strings.Split "," }}'
+[Bart Lisa Maggie]
+```
+
+Use in combination with `range` to iterate over all items:
 ```console
 $ gomplate -i '{{range ("Bart,Lisa,Maggie" | strings.Split ",") }}Hello, {{.}}
 {{end}}'
@@ -236,6 +243,13 @@ Hello, Bart
 Hello, Lisa
 Hello, Maggie
 ```
+
+Use in combination with `index` function to pick a specific value from the resulting array
+```console
+$ gomplate -i '{{index ("Bart,Lisa,Maggie" | strings.Split ",") 0 }}'
+Bart
+```
+
 
 ## `strings.SplitN`
 
