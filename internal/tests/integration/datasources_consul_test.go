@@ -4,11 +4,11 @@
 package integration
 
 import (
-	"encoding/base64"
 	"strconv"
 	"testing"
 
 	vaultapi "github.com/hashicorp/vault/api"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"gotest.tools/v3/fs"
 	"gotest.tools/v3/icmd"
@@ -20,10 +20,33 @@ func setupDatasourcesConsulTest(t *testing.T) (string, *vaultClient) {
 	pidDir := fs.NewDir(t, "gomplate-inttests-pid")
 	t.Cleanup(pidDir.Remove)
 
+	httpPort, consulAddr := freeport()
+	serverPort, _ := freeport()
+	serfLanPort, _ := freeport()
+
 	tmpDir := fs.NewDir(t, "gomplate-inttests",
 		fs.WithFile(
 			"consul.json",
-			`{"acl_datacenter": "dc1", "acl_master_token": "`+consulRootToken+`"}`,
+			`{
+				"log_level": "err",
+				"primary_datacenter": "dc1",
+				"acl": {
+					"enabled": true,
+					"tokens": {
+						"initial_management": "`+consulRootToken+`",
+						"default": "`+consulRootToken+`"
+					}
+				},
+				"ports": {
+					"http": `+strconv.Itoa(httpPort)+`,
+					"server": `+strconv.Itoa(serverPort)+`,
+					"serf_lan": `+strconv.Itoa(serfLanPort)+`,
+					"serf_wan": -1,
+					"dns": -1,
+					"grpc": -1
+				},
+				"connect": { "enabled": false }
+			}`,
 		),
 		fs.WithFile("vault.json", `{
 		"pid_file": "`+pidDir.Join("vault.pid")+`"
@@ -31,22 +54,21 @@ func setupDatasourcesConsulTest(t *testing.T) (string, *vaultClient) {
 	)
 	t.Cleanup(tmpDir.Remove)
 
-	port, consulAddr := freeport()
 	consul := icmd.Command("consul", "agent",
 		"-dev",
 		"-config-file="+tmpDir.Join("consul.json"),
-		"-log-level=err",
-		"-http-port="+strconv.Itoa(port),
 		"-pid-file="+pidDir.Join("consul.pid"),
 	)
-	result := icmd.StartCmd(consul)
+	consulResult := icmd.StartCmd(consul)
 	t.Cleanup(func() {
-		err := result.Cmd.Process.Kill()
-		require.NoError(t, err)
+		err := consulResult.Cmd.Process.Kill()
+		assert.NoError(t, err)
 
-		result.Cmd.Wait()
+		consulResult.Cmd.Wait()
 
-		result.Assert(t, icmd.Expected{ExitCode: 0})
+		t.Logf("consul logs:\n%s\n", consulResult.Combined())
+
+		consulResult.Assert(t, icmd.Expected{ExitCode: 0})
 	})
 
 	t.Logf("Fired up Consul: %v", consul)
@@ -55,6 +77,15 @@ func setupDatasourcesConsulTest(t *testing.T) (string, *vaultClient) {
 	require.NoError(t, err)
 
 	_, vaultClient := startVault(t)
+
+	// create a readonly policy, for use in some tests
+	aclResult := icmd.RunCmd(icmd.Command("consul", "acl", "policy", "create",
+		"-name", "readonly",
+		"-rules", `acl = "read"`,
+		"-token", consulRootToken,
+		"-http-addr", "http://"+consulAddr,
+	))
+	aclResult.Assert(t, icmd.Success)
 
 	return consulAddr, vaultClient
 }
@@ -139,8 +170,9 @@ func TestDatasources_Consul_WithVaultAuth(t *testing.T) {
 		"address": consulAddr, "token": consulRootToken,
 	})
 	require.NoError(t, err)
-	policy := base64.StdEncoding.EncodeToString([]byte(`key "" { policy = "read" }`))
-	_, err = v.vc.Logical().Write("consul/roles/readonly", map[string]interface{}{"policy": policy})
+	_, err = v.vc.Logical().Write("consul/roles/readonly", map[string]interface{}{
+		"policies": "readonly",
+	})
 	require.NoError(t, err)
 
 	consulPut(t, consulAddr, "foo", "bar")
