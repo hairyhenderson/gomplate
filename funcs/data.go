@@ -30,6 +30,7 @@ func CreateDataFuncs(ctx context.Context, d *data.Data) map[string]interface{} {
 	f["datasourceReachable"] = d.DatasourceReachable
 	f["defineDatasource"] = d.DefineDatasource
 	f["include"] = d.Include
+	f["listDatasources"] = d.ListDatasources
 
 	ns := &DataFuncs{ctx}
 

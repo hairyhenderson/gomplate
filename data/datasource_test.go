@@ -412,3 +412,13 @@ func TestFromConfig(t *testing.T) {
 	}
 	assert.EqualValues(t, expected, FromConfig(ctx, cfg))
 }
+
+func TestListDatasources(t *testing.T) {
+	sources := map[string]*Source{
+		"foo": {Alias: "foo"},
+		"bar": {Alias: "bar"},
+	}
+	data := &Data{Sources: sources}
+
+	assert.Equal(t, []string{"foo", "bar"}, data.ListDatasources())
+}
