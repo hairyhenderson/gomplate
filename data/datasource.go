@@ -8,6 +8,7 @@ import (
 	"net/url"
 	"path/filepath"
 	"strings"
+	"sort"
 
 	"github.com/spf13/afero"
 
@@ -389,5 +390,6 @@ func (d *Data) ListDatasources() []string {
 	for source := range d.Sources {
 		datasources = append(datasources, source)
 	}
+	sort.Strings(datasources)
 	return datasources
 }

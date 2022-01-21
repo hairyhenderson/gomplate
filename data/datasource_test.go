@@ -420,5 +420,5 @@ func TestListDatasources(t *testing.T) {
 	}
 	data := &Data{Sources: sources}
 
-	assert.Equal(t, []string{"foo", "bar"}, data.ListDatasources())
+	assert.Equal(t, []string{"bar", "foo"}, data.ListDatasources())
 }

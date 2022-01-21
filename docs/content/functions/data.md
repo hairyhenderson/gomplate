@@ -97,6 +97,24 @@ $ gomplate -i '{{if (datasourceReachable "test")}}{{datasource "test"}}{{else}}n
 no worries
 ```
 
+## `listDatasources`
+
+Lists all the datasources defined, list returned will be sorted in ascending order.
+
+### Usage
+
+```go
+listDatasources
+```
+
+### Examples
+
+```console
+$ gomplate -d person=env:///FOO -d bar=env:///BAR -i '{{range (listDatasources)}} Datasource-{{.}} {{end}}'
+Datasource-bar
+Datasource-person
+```
+
 ## `defineDatasource`
 
 Define a datasource alias with target URL inside the template. Overridden by the [`--datasource/-d`](../../usage/#datasource-d) flag.
