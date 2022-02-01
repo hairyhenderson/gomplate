@@ -10,7 +10,6 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/request"
 	"github.com/aws/aws-sdk-go/service/secretsmanager"
-	"github.com/pkg/errors"
 
 	gaws "github.com/hairyhenderson/gomplate/v3/aws"
 )
@@ -77,8 +76,12 @@ func readAWSSecretsManagerParam(ctx context.Context, source *Source, paramPath s
 
 	response, err := source.awsSecretsManager.GetSecretValueWithContext(ctx, input)
 	if err != nil {
-		return nil, errors.Wrapf(err, "Error reading aws+sm from AWS using GetSecretValue with input %v", input)
+		return nil, fmt.Errorf("reading aws+sm source %q: %w", source.Alias, err)
 	}
 
-	return []byte(*response.SecretString), nil
+	if response.SecretString != nil {
+		return []byte(*response.SecretString), nil
+	}
+
+	return response.SecretBinary, nil
 }

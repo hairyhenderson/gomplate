@@ -157,3 +157,20 @@ func TestAWSSecretsManager_ReadSecret(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, []byte("blub"), output)
 }
+
+func TestAWSSecretsManager_ReadSecretBinary(t *testing.T) {
+	calledOk := false
+	s := simpleAWSSecretsManagerSourceHelper(DummyAWSSecretsManagerSecretGetter{
+		t: t,
+		mockGetSecretValue: func(input *secretsmanager.GetSecretValueInput) (*secretsmanager.GetSecretValueOutput, error) {
+			assert.Equal(t, "/foo/bar", *input.SecretId)
+			calledOk = true
+			return &secretsmanager.GetSecretValueOutput{SecretBinary: []byte("supersecret")}, nil
+		},
+	})
+
+	output, err := readAWSSecretsManagerParam(context.Background(), s, "/foo/bar")
+	assert.True(t, calledOk)
+	assert.NoError(t, err)
+	assert.Equal(t, []byte("supersecret"), output)
+}
