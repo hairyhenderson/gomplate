@@ -2,13 +2,12 @@
 package random
 
 import (
+	"fmt"
 	"math"
 	"math/rand"
 	"regexp"
 	"time"
 	"unicode"
-
-	"github.com/pkg/errors"
 )
 
 func init() {
@@ -39,7 +38,7 @@ func StringRE(count int, match string) (r string, err error) {
 func StringBounds(count int, lower, upper rune) (r string, err error) {
 	chars := filterRange(lower, upper)
 	if len(chars) == 0 {
-		return "", errors.Errorf("No printable codepoints found between U%#q and U%#q.", lower, upper)
+		return "", fmt.Errorf("no printable codepoints found between U%#q and U%#q", lower, upper)
 	}
 	return rndString(count, chars)
 }
@@ -82,7 +81,7 @@ func matchChars(match string) ([]rune, error) {
 // Item -
 func Item(items []interface{}) (interface{}, error) {
 	if len(items) == 0 {
-		return nil, errors.Errorf("expected a non-empty array or slice")
+		return nil, fmt.Errorf("expected a non-empty array or slice")
 	}
 	if len(items) == 1 {
 		return items[0], nil
@@ -96,13 +95,13 @@ func Item(items []interface{}) (interface{}, error) {
 // Number -
 func Number(min, max int64) (int64, error) {
 	if min > max {
-		return 0, errors.Errorf("min must not be greater than max (was %d, %d)", min, max)
+		return 0, fmt.Errorf("min must not be greater than max (was %d, %d)", min, max)
 	}
 	if min == math.MinInt64 {
 		min++
 	}
 	if max-min >= (math.MaxInt64 >> 1) {
-		return 0, errors.Errorf("spread between min and max too high - must not be greater than 63-bit maximum (%d - %d = %d)", max, min, max-min)
+		return 0, fmt.Errorf("spread between min and max too high - must not be greater than 63-bit maximum (%d - %d = %d)", max, min, max-min)
 	}
 
 	//nolint:gosec
