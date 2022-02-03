@@ -222,7 +222,7 @@ For `aws+sm`, only the _scheme_ and _path_ components are necessary to be define
 
 ### Output
 
-The output will be the SecretString from the `GetSecretValueOutput` object from the [AWS SDK for Go](https://docs.aws.amazon.com/sdk-for-go/api/service/secretsmanager/#GetSecretValueOutput)
+The output will be the content of either the `SecretString` or `SecretBinary` field of the AWS SDK's `GetSecretValueOutput` object from the [AWS SDK for Go](https://docs.aws.amazon.com/sdk-for-go/api/service/secretsmanager/#GetSecretValueOutput)
 
 ### Examples
 

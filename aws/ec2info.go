@@ -1,6 +1,7 @@
 package aws
 
 import (
+	"fmt"
 	"net/http"
 	"os"
 	"strconv"
@@ -12,7 +13,6 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/hairyhenderson/gomplate/v3/env"
-	"github.com/pkg/errors"
 )
 
 var describerClient InstanceDescriber
@@ -52,7 +52,7 @@ func GetClientOptions() ClientOptions {
 
 		t, err := strconv.Atoi(timeout)
 		if err != nil {
-			panic(errors.Wrapf(err, "Invalid AWS_TIMEOUT value '%s' - must be an integer\n", timeout))
+			panic(fmt.Errorf("invalid AWS_TIMEOUT value '%s' - must be an integer: %w", timeout, err))
 		}
 
 		co.Timeout = time.Duration(t) * time.Millisecond
@@ -83,7 +83,7 @@ func SDKSession(region ...string) *session.Session {
 			var err error
 			metaRegion, err = getRegion()
 			if err != nil {
-				panic(errors.Wrap(err, "failed to determine EC2 region"))
+				panic(fmt.Errorf("failed to determine EC2 region: %w", err))
 			}
 		}
 		if metaRegion != "" && metaRegion != unknown {
@@ -119,7 +119,7 @@ func getRegion(m ...*Ec2Meta) (string, error) {
 		var err error
 		region, err = metaClient.Region()
 		if err != nil {
-			return "", errors.Wrap(err, "failed to determine EC2 region")
+			return "", fmt.Errorf("failed to determine EC2 region: %w", err)
 		}
 	}
 	return region, nil

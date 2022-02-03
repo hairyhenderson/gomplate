@@ -1,14 +1,13 @@
 package gcp
 
 import (
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"strconv"
 	"strings"
 	"sync"
 	"time"
-
-	"github.com/pkg/errors"
 
 	"github.com/hairyhenderson/gomplate/v3/env"
 )
@@ -39,7 +38,7 @@ func GetClientOptions() ClientOptions {
 
 		t, err := strconv.Atoi(timeout)
 		if err != nil {
-			panic(errors.Wrapf(err, "Invalid GCP_TIMEOUT value '%s' - must be an integer\n", timeout))
+			panic(fmt.Errorf("invalid GCP_TIMEOUT value '%s' - must be an integer: %w", timeout, err))
 		}
 
 		co.Timeout = time.Duration(t) * time.Millisecond
@@ -113,7 +112,7 @@ func (c *MetaClient) retrieveMetadata(url string, def ...string) (string, error)
 
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return "", errors.Wrapf(err, "Failed to read response body from %s", url)
+		return "", fmt.Errorf("failed to read response body from %s: %w", url, err)
 	}
 	value := strings.TrimSpace(string(body))
 	c.cache[url] = value
