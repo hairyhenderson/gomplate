@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"net/url"
 	"path/filepath"
+	"sort"
 	"strings"
 
 	"github.com/spf13/afero"
@@ -381,4 +382,14 @@ func (d *Data) readSource(ctx context.Context, source *Source, args ...string) (
 	}
 	d.cache[cacheKey] = data
 	return data, nil
+}
+
+// Show all datasources  -
+func (d *Data) ListDatasources() []string {
+	datasources := make([]string, 0, len(d.Sources))
+	for source := range d.Sources {
+		datasources = append(datasources, source)
+	}
+	sort.Strings(datasources)
+	return datasources
 }

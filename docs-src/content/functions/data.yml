@@ -62,6 +62,15 @@ funcs:
       - |
         $ gomplate -i '{{if (datasourceReachable "test")}}{{datasource "test"}}{{else}}no worries{{end}}' -d test=https://bogus.example.com/wontwork.json
         no worries
+  - name: listDatasources
+    description: |
+      Lists all the datasources defined, list returned will be sorted in ascending order.
+    pipeline: false
+    examples:
+      - |
+        $ gomplate -d person=env:///FOO -d bar=env:///BAR -i '{{range (listDatasources)}} Datasource-{{.}} {{end}}'
+        Datasource-bar
+        Datasource-person
   - name: defineDatasource
     description: |
       Define a datasource alias with target URL inside the template. Overridden by the [`--datasource/-d`](../../usage/#datasource-d) flag.
