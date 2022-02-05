@@ -7,8 +7,8 @@ import (
 	"net/http"
 	"net/url"
 	"path/filepath"
-	"strings"
 	"sort"
+	"strings"
 
 	"github.com/spf13/afero"
 
