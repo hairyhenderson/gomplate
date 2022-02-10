@@ -228,6 +228,8 @@ $ gomplate -i '{{ $a := slice 1 2 3 }}{{ join $a "-" }}'
 
 Parses a string as a URL for later use. Equivalent to [url.Parse](https://golang.org/pkg/net/url/#Parse)
 
+Any of `url.URL`'s methods can be called on the result.
+
 ### Usage
 
 ```go
@@ -255,6 +257,11 @@ $ gomplate < input.tmpl
 The scheme is https
 The host is example.com:443
 The path is /foo/bar
+```
+_Call `Redacted` to hide the password in the output:_
+```
+$ gomplate -i '{{ (conv.URL "https://user:supersecret@example.com").Redacted }}'
+https://user:xxxxx@example.com
 ```
 
 ## `conv.ParseInt`
