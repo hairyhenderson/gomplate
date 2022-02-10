@@ -103,6 +103,15 @@ Tue Nov 14 09:57:02 EST 2017
 ```
 
 _(notice how the TZ adjusted for daylight savings!)_
+Usage with [`IsDST`](https://golang.org/pkg/time/#Time.IsDST):
+```console
+$ gomplate -i '{{ $t := time.Now }}At the tone, the time will be {{ ($t.Round (time.Minute 1)).Add (time.Minute 1) }}.
+  It is{{ if not $t.IsDST }} not{{ end }} daylight savings time.
+  ... ... BEEP'
+At the tone, the time will be 2022-02-10 09:01:00 -0500 EST.
+It is not daylight savings time.
+... ... BEEP
+```
 
 ## `time.Parse`
 
