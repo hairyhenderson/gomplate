@@ -138,3 +138,37 @@ func TestRSACrypt(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, dec, string(b))
 }
+
+func TestAESCrypt(t *testing.T) {
+	c := testCryptoNS()
+	key := "0123456789012345"
+	in := "hello world"
+
+	_, err := c.EncryptAES(key, 1, 2, 3, 4)
+	assert.Error(t, err)
+
+	_, err = c.DecryptAES(key, 1, 2, 3, 4)
+	assert.Error(t, err)
+
+	enc, err := c.EncryptAES(key, in)
+	assert.NoError(t, err)
+
+	dec, err := c.DecryptAES(key, enc)
+	assert.NoError(t, err)
+	assert.Equal(t, in, dec)
+
+	b, err := c.DecryptAESBytes(key, enc)
+	assert.NoError(t, err)
+	assert.Equal(t, dec, string(b))
+
+	enc, err = c.EncryptAES(key, 128, in)
+	assert.NoError(t, err)
+
+	dec, err = c.DecryptAES(key, 128, enc)
+	assert.NoError(t, err)
+	assert.Equal(t, in, dec)
+
+	b, err = c.DecryptAESBytes(key, 128, enc)
+	assert.NoError(t, err)
+	assert.Equal(t, dec, string(b))
+}
