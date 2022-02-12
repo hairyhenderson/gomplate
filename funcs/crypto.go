@@ -73,55 +73,107 @@ func (f CryptoFuncs) WPAPSK(ssid, password interface{}) (string, error) {
 }
 
 // SHA1 - Note: SHA-1 is cryptographically broken and should not be used for secure applications.
-func (CryptoFuncs) SHA1(input interface{}) string {
-	in := toBytes(input)
+func (f CryptoFuncs) SHA1(input interface{}) string {
 	// nolint: gosec
-	out := sha1.Sum(in)
+	out, _ := f.SHA1Bytes(input)
 	return fmt.Sprintf("%02x", out)
 }
 
 // SHA224 -
-func (CryptoFuncs) SHA224(input interface{}) string {
-	in := toBytes(input)
-	out := sha256.Sum224(in)
+func (f CryptoFuncs) SHA224(input interface{}) string {
+	out, _ := f.SHA224Bytes(input)
 	return fmt.Sprintf("%02x", out)
 }
 
 // SHA256 -
-func (CryptoFuncs) SHA256(input interface{}) string {
-	in := toBytes(input)
-	out := sha256.Sum256(in)
+func (f CryptoFuncs) SHA256(input interface{}) string {
+	out, _ := f.SHA256Bytes(input)
 	return fmt.Sprintf("%02x", out)
 }
 
 // SHA384 -
-func (CryptoFuncs) SHA384(input interface{}) string {
-	in := toBytes(input)
-	out := sha512.Sum384(in)
+func (f CryptoFuncs) SHA384(input interface{}) string {
+	out, _ := f.SHA384Bytes(input)
 	return fmt.Sprintf("%02x", out)
 }
 
 // SHA512 -
-func (CryptoFuncs) SHA512(input interface{}) string {
-	in := toBytes(input)
-	out := sha512.Sum512(in)
+func (f CryptoFuncs) SHA512(input interface{}) string {
+	out, _ := f.SHA512Bytes(input)
 	return fmt.Sprintf("%02x", out)
 }
 
 // SHA512_224 -
 //nolint: revive,stylecheck
-func (CryptoFuncs) SHA512_224(input interface{}) string {
-	in := toBytes(input)
-	out := sha512.Sum512_224(in)
+func (f CryptoFuncs) SHA512_224(input interface{}) string {
+	out, _ := f.SHA512_224Bytes(input)
 	return fmt.Sprintf("%02x", out)
 }
 
 // SHA512_256 -
 //nolint: revive,stylecheck
-func (CryptoFuncs) SHA512_256(input interface{}) string {
-	in := toBytes(input)
-	out := sha512.Sum512_256(in)
+func (f CryptoFuncs) SHA512_256(input interface{}) string {
+	out, _ := f.SHA512_256Bytes(input)
 	return fmt.Sprintf("%02x", out)
+}
+
+// SHA1 - Note: SHA-1 is cryptographically broken and should not be used for secure applications.
+func (CryptoFuncs) SHA1Bytes(input interface{}) ([]byte, error) {
+	//nolint:gosec
+	b := sha1.Sum(toBytes(input))
+	out := make([]byte, len(b))
+	copy(out, b[:])
+	return out, nil
+}
+
+// SHA224 -
+func (CryptoFuncs) SHA224Bytes(input interface{}) ([]byte, error) {
+	b := sha256.Sum224(toBytes(input))
+	out := make([]byte, len(b))
+	copy(out, b[:])
+	return out, nil
+}
+
+// SHA256 -
+func (CryptoFuncs) SHA256Bytes(input interface{}) ([]byte, error) {
+	b := sha256.Sum256(toBytes(input))
+	out := make([]byte, len(b))
+	copy(out, b[:])
+	return out, nil
+}
+
+// SHA384 -
+func (CryptoFuncs) SHA384Bytes(input interface{}) ([]byte, error) {
+	b := sha512.Sum384(toBytes(input))
+	out := make([]byte, len(b))
+	copy(out, b[:])
+	return out, nil
+}
+
+// SHA512 -
+func (CryptoFuncs) SHA512Bytes(input interface{}) ([]byte, error) {
+	b := sha512.Sum512(toBytes(input))
+	out := make([]byte, len(b))
+	copy(out, b[:])
+	return out, nil
+}
+
+// SHA512_224 -
+//nolint: revive,stylecheck
+func (CryptoFuncs) SHA512_224Bytes(input interface{}) ([]byte, error) {
+	b := sha512.Sum512_224(toBytes(input))
+	out := make([]byte, len(b))
+	copy(out, b[:])
+	return out, nil
+}
+
+// SHA512_256 -
+//nolint: revive,stylecheck
+func (CryptoFuncs) SHA512_256Bytes(input interface{}) ([]byte, error) {
+	b := sha512.Sum512_256(toBytes(input))
+	out := make([]byte, len(b))
+	copy(out, b[:])
+	return out, nil
 }
 
 // Bcrypt -

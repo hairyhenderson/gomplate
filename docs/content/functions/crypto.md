@@ -488,6 +488,38 @@ $ gomplate -i '{{ crypto.SHA512 "bar" }}'
 cc06808cbbee0510331aa97974132e8dc296aeb795be229d064bae784b0a87a5cf4281d82e8c99271b75db2148f08a026c1a60ed9cabdb8cac6d24242dac4063
 ```
 
+## `crypto.SHA1Bytes`, `crypto.SHA224Bytes`, `crypto.SHA256Bytes`, `crypto.SHA384Bytes`, `crypto.SHA512Bytes`, `crypto.SHA512_224Bytes`, `crypto.SHA512_256Bytes`
+
+Compute a checksum with a SHA-1 or SHA-2 algorithm as defined in [RFC 3174](https://tools.ietf.org/html/rfc3174) (SHA-1) and [FIPS 180-4](http://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.180-4.pdf) (SHA-2).
+
+These functions output the raw binary result, suitable for piping to other functions.
+
+_Warning: SHA-1 is cryptographically broken and should not be used for secure applications._
+
+### Usage
+```
+crypto.SHA1Bytes input
+crypto.SHA224Bytes input
+crypto.SHA256Bytes input
+crypto.SHA384Bytes input
+crypto.SHA512Bytes input
+crypto.SHA512_224Bytes input
+crypto.SHA512_256Bytes input
+```
+
+### Arguments
+
+| name | description |
+|------|-------------|
+| `input` | _(required)_ the data to hash - can be binary data or text |
+
+### Examples
+
+```console
+$ gomplate -i '{{ crypto.SHA256Bytes "foo" | base64.Encode }}'
+LCa0a2j/xo/5m0U8HTBBNBNCLXBkg7+g+YpeiGJm564=
+```
+
 ## `crypto.WPAPSK`
 
 This is really an alias to [`crypto.PBKDF2`](#crypto.PBKDF2) with the
