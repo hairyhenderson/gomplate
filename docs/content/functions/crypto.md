@@ -45,6 +45,144 @@ $ gomplate -i '{{ crypto.Bcrypt 4 "foo" }}
 $2a$04$zjba3N38sjyYsw0Y7IRCme1H4gD0MJxH8Ixai0/sgsrf7s1MFUK1C
 ```
 
+## `crypto.DecryptAES`
+
+Decrypts the given input using the given key. By default,
+uses AES-256-CBC, but supports 128- and 192-bit keys as well.
+
+_Note: This function is compatible with Helm's encryptAES function, when
+the input is base64-decoded, and when using 256-bit keys._
+
+### Usage
+
+```go
+crypto.DecryptAES key [keyBits] input
+```
+```go
+input | crypto.DecryptAES key [keyBits]
+```
+
+### Arguments
+
+| name | description |
+|------|-------------|
+| `key` | _(required)_ the key to use for decryption |
+| `keyBits` | _(optional)_ the key length to use - defaults to `256` |
+| `input` | _(required)_ the input to decrypt |
+
+### Examples
+
+```console
+$ gomplate -i '{{ base64.Decode "Gp2WG/fKOUsVlhcpr3oqgR+fRUNBcO1eZJ9CW+gDI18=" | crypto.DecryptAES "swordfish" 128 | conv.ToString }}'
+hello world
+```
+
+## `crypto.DecryptAES`
+
+Decrypts the given input using the given key. By default,
+uses AES-256-CBC, but supports 128- and 192-bit keys as well.
+
+This function prints the output as a string. Note that this may result in
+unreadable text if the decrypted payload is binary. See
+[`crypto.DecryptAESBytes`](#crypto.DecryptAESBytes) for another method.
+
+This function is suitable for decrypting data that was encrypted by
+Helm's `encryptAES` function, when the input is base64-decoded, and when
+using 256-bit keys.
+
+### Usage
+
+```go
+crypto.DecryptAES key [keyBits] input
+```
+```go
+input | crypto.DecryptAES key [keyBits]
+```
+
+### Arguments
+
+| name | description |
+|------|-------------|
+| `key` | _(required)_ the key to use for decryption |
+| `keyBits` | _(optional)_ the key length to use - defaults to `256` |
+| `input` | _(required)_ the input to decrypt |
+
+### Examples
+
+```console
+$ gomplate -i '{{ base64.Decode "Gp2WG/fKOUsVlhcpr3oqgR+fRUNBcO1eZJ9CW+gDI18=" | crypto.DecryptAES "swordfish" 128 }}'
+hello world
+```
+
+## `crypto.DecryptAESBytes`
+
+Decrypts the given input using the given key. By default,
+uses AES-256-CBC, but supports 128- and 192-bit keys as well.
+
+This function outputs the raw byte array, which may be sent as input to
+other functions.
+
+This function is suitable for decrypting data that was encrypted by
+Helm's `encryptAES` function, when the input is base64-decoded, and when
+using 256-bit keys.
+
+### Usage
+
+```go
+crypto.DecryptAESBytes key [keyBits] input
+```
+```go
+input | crypto.DecryptAESBytes key [keyBits]
+```
+
+### Arguments
+
+| name | description |
+|------|-------------|
+| `key` | _(required)_ the key to use for decryption |
+| `keyBits` | _(optional)_ the key length to use - defaults to `256` |
+| `input` | _(required)_ the input to decrypt |
+
+### Examples
+
+```console
+$ gomplate -i '{{ base64.Decode "Gp2WG/fKOUsVlhcpr3oqgR+fRUNBcO1eZJ9CW+gDI18=" | crypto.DecryptAES "swordfish" 128 }}'
+hello world
+```
+
+## `crypto.EncryptAES`
+
+Encrypts the given input using the given key. By default,
+uses AES-256-CBC, but supports 128- and 192-bit keys as well.
+
+This function is suitable for encrypting data that will be decrypted by
+Helm's `decryptAES` function, when the output is base64-encoded, and when
+using 256-bit keys.
+
+### Usage
+
+```go
+crypto.EncryptAES key [keyBits] input
+```
+```go
+input | crypto.EncryptAES key [keyBits]
+```
+
+### Arguments
+
+| name | description |
+|------|-------------|
+| `key` | _(required)_ the key to use for encryption |
+| `keyBits` | _(optional)_ the key length to use - defaults to `256` |
+| `input` | _(required)_ the input to encrypt |
+
+### Examples
+
+```console
+$ gomplate -i '{{ "hello world" | crypto.EncryptAES "swordfish" 128 | base64.Encode }}'
+MnRutHovsh/9JN3YrJtBVjZtI6xXZh33bCQS2iZ4SDI=
+```
+
 ## `crypto.PBKDF2`
 
 Run the Password-Based Key Derivation Function &num;2 as defined in

@@ -197,3 +197,50 @@ func (f *CryptoFuncs) RSADerivePublicKey(privateKey string) (string, error) {
 	out, err := crypto.RSADerivePublicKey([]byte(privateKey))
 	return string(out), err
 }
+
+// EncryptAES -
+func (f *CryptoFuncs) EncryptAES(key string, args ...interface{}) ([]byte, error) {
+	k, msg, err := parseAESArgs(key, args...)
+	if err != nil {
+		return nil, err
+	}
+
+	return crypto.EncryptAESCBC(k, msg)
+}
+
+// DecryptAES -
+func (f *CryptoFuncs) DecryptAES(key string, args ...interface{}) (string, error) {
+	out, err := f.DecryptAESBytes(key, args...)
+	return conv.ToString(out), err
+}
+
+// DecryptAESBytes -
+func (f *CryptoFuncs) DecryptAESBytes(key string, args ...interface{}) ([]byte, error) {
+	k, msg, err := parseAESArgs(key, args...)
+	if err != nil {
+		return nil, err
+	}
+
+	return crypto.DecryptAESCBC(k, msg)
+}
+
+func parseAESArgs(key string, args ...interface{}) ([]byte, []byte, error) {
+	keyBits := 256 // default to AES-256-CBC
+
+	var msg []byte
+
+	switch len(args) {
+	case 1:
+		msg = toBytes(args[0])
+	case 2:
+		keyBits = conv.ToInt(args[0])
+		msg = toBytes(args[1])
+	default:
+		return nil, nil, fmt.Errorf("wrong number of args: want 2 or 3, got %d", len(args))
+	}
+
+	k := make([]byte, keyBits/8)
+	copy(k, []byte(key))
+
+	return k, msg, nil
+}
