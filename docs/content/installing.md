@@ -105,12 +105,12 @@ $ gomplate --help
 ...
 ```
 
-## install with `go get`
+## install with `go install`
 
-If you're a Go developer, sometimes it's faster to just use `go get` to install `gomplate`:
+If you're a Go developer, sometimes it's faster to just use `go install` to install `gomplate`:
 
 ```console
-$ go get github.com/hairyhenderson/gomplate/v3/cmd/gomplate
+$ go install github.com/hairyhenderson/gomplate/v3/cmd/gomplate@latest
 $ gomplate --help
 ...
 ```
@@ -128,18 +128,6 @@ $ npm install -g gomplate
 ...
 ```
 
-## Slim binaries
-
-As a convenience, self-extracting compressed `gomplate` binaries are available from the [releases][] page. These are named with `-slim` as a suffix (or `-slim.exe`). They are compressed with [UPX][].
-
-Generally, these binaries are ~5x smaller than the regular ones, but are otherwise exactly the same.
-
-There are a few reasons that a regular binary is also distributed:
-- UPX lacks support for some platforms
-- there's a very slight chance that the slim binary could exhibit some form of bug related to being compressed
-- there could be environments where self-extracting compressed executables are disallowed
-
 [releases]: https://github.com/hairyhenderson/gomplate/releases
-[UPX]: https://upx.github.io/
 [multi-stage builds]: https://docs.docker.com/develop/develop-images/multistage-build/
 [hairyhenderson/gomplate]: https://hub.docker.com/r/hairyhenderson/gomplate/tags/
