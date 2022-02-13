@@ -1,6 +1,7 @@
 package integration
 
 import (
+	"io/fs"
 	"io/ioutil"
 	"os"
 	"testing"
@@ -8,14 +9,19 @@ import (
 	"github.com/hairyhenderson/gomplate/v3/internal/iohelpers"
 	"gotest.tools/v3/assert"
 	"gotest.tools/v3/assert/cmp"
-	"gotest.tools/v3/fs"
+	testfs "gotest.tools/v3/fs"
 )
 
-func setupBasicTest(t *testing.T) *fs.Dir {
-	tmpDir := fs.NewDir(t, "gomplate-inttests",
-		fs.WithFile("one", "hi\n", fs.WithMode(0640)),
-		fs.WithFile("two", "hello\n"),
-		fs.WithFile("broken", "", fs.WithMode(0000)))
+func setupBasicTest(t *testing.T) *testfs.Dir {
+	tmpDir := testfs.NewDir(t, "gomplate-inttests",
+		testfs.WithFile("one", "hi\n", testfs.WithMode(0640)),
+		testfs.WithFile("two", "hello\n"),
+		testfs.WithFile("broken", "", testfs.WithMode(0000)),
+		testfs.WithDir("subdir",
+			testfs.WithFile("f1", "first\n", testfs.WithMode(0640)),
+			testfs.WithFile("f2", "second\n"),
+		),
+	)
 	t.Cleanup(tmpDir.Remove)
 	return tmpDir
 }
@@ -255,4 +261,31 @@ func TestBasic_AppliesChmodBeforeWrite(t *testing.T) {
 	content, err := ioutil.ReadFile(out)
 	assert.NilError(t, err)
 	assert.Equal(t, "hi\n", string(content))
+}
+
+func TestBasic_CreatesMissingDirectory(t *testing.T) {
+	tmpDir := setupBasicTest(t)
+	out := tmpDir.Join("foo/bar/baz")
+	o, e, err := cmd(t, "-f", tmpDir.Join("one"), "-o", out).run()
+	assertSuccess(t, o, e, err, "")
+
+	info, err := os.Stat(out)
+	assert.NilError(t, err)
+	assert.Equal(t, iohelpers.NormalizeFileMode(0640), info.Mode())
+	content, err := ioutil.ReadFile(out)
+	assert.NilError(t, err)
+	assert.Equal(t, "hi\n", string(content))
+
+	out = tmpDir.Join("outdir")
+	o, e, err = cmd(t,
+		"--input-dir", tmpDir.Join("subdir"),
+		"--output-dir", out,
+	).run()
+	assertSuccess(t, o, e, err, "")
+
+	info, err = os.Stat(out)
+	assert.NilError(t, err)
+
+	assert.Equal(t, iohelpers.NormalizeFileMode(0o755|fs.ModeDir), info.Mode())
+	assert.Equal(t, true, info.IsDir())
 }
