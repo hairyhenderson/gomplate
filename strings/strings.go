@@ -9,14 +9,19 @@ import (
 	"github.com/Masterminds/goutils"
 )
 
-// Indent - indent each line of the string with the given indent string
+// Indent - indent each line of the string with the given indent string.
+// Any indent characters are permitted, except for '\n'.
+//
+// TODO: return an error if the indent string contains '\n' instead of
+// succeeding
 func Indent(width int, indent, s string) string {
-	if width == 0 {
+	if width <= 0 || strings.Contains(indent, "\n") {
 		return s
 	}
 	if width > 1 {
 		indent = strings.Repeat(indent, width)
 	}
+
 	var res []byte
 	bol := true
 	for i := 0; i < len(s); i++ {
