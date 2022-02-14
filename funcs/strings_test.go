@@ -59,6 +59,26 @@ func TestTrimPrefix(t *testing.T) {
 		sf.TrimPrefix("Foo", "FooBar"))
 }
 
+func TestTitle(t *testing.T) {
+	sf := &StringFuncs{}
+	testdata := []struct {
+		in  interface{}
+		out string
+	}{
+		{``, ``},
+		{`foo`, `Foo`},
+		{`foo bar`, `Foo Bar`},
+		{`ǉoo ǆar`, `ǈoo ǅar`},
+		{`foo bar᳇baz`, `Foo Bar᳇Baz`}, // ᳇ should be treated as punctuation
+		{`foo,bar&baz`, `Foo,Bar&Baz`},
+	}
+
+	for _, d := range testdata {
+		up := sf.Title(d.in)
+		assert.Equal(t, d.out, up)
+	}
+}
+
 func TestTrunc(t *testing.T) {
 	sf := &StringFuncs{}
 	assert.Equal(t, "", sf.Trunc(5, ""))
