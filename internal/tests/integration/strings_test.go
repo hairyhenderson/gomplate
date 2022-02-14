@@ -38,6 +38,16 @@ func TestStrings_Slug(t *testing.T) {
 }
 
 func TestStrings_CaseFuncs(t *testing.T) {
+	inOutTest(t, `{{ strings.ToLower "HELLO" }}
+{{ strings.ToUpper "hello" }}
+{{ strings.Title "is there anybody out there?" }}
+{{ strings.Title "foo,bar᳇ǆaz"}}
+`,
+		`hello
+HELLO
+Is There Anybody Out There?
+Foo,Bar᳇ǅaz
+`)
 	inOutTest(t, `{{ strings.CamelCase "Hellö, Wôrld! Free @ last..." }}
 {{ strings.SnakeCase "Hellö, Wôrld! Free @ last..." }}
 {{ strings.KebabCase "Hellö, Wôrld! Free @ last..." }}`, `HellöWôrldFreeLast

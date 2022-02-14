@@ -14,6 +14,8 @@ import (
 	"github.com/Masterminds/goutils"
 	"github.com/hairyhenderson/gomplate/v3/conv"
 	"github.com/pkg/errors"
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 
 	"strings"
 
@@ -39,7 +41,7 @@ func AddStringFuncs(f map[string]interface{}) {
 func CreateStringFuncs(ctx context.Context) map[string]interface{} {
 	f := map[string]interface{}{}
 
-	ns := &StringFuncs{ctx}
+	ns := &StringFuncs{ctx, language.Und}
 	f["strings"] = func() interface{} { return ns }
 
 	f["replaceAll"] = ns.ReplaceAll
@@ -66,6 +68,10 @@ func CreateStringFuncs(ctx context.Context) map[string]interface{} {
 // StringFuncs -
 type StringFuncs struct {
 	ctx context.Context
+
+	// tag - the selected BCP 47 language tag. Currently gomplate only supports
+	// Und (undetermined)
+	tag language.Tag
 }
 
 // Abbrev -
@@ -168,18 +174,18 @@ func (StringFuncs) TrimSuffix(cutset string, s interface{}) string {
 }
 
 // Title -
-func (StringFuncs) Title(s interface{}) string {
-	return strings.Title(conv.ToString(s))
+func (f *StringFuncs) Title(s interface{}) string {
+	return cases.Title(f.tag).String(conv.ToString(s))
 }
 
 // ToUpper -
-func (StringFuncs) ToUpper(s interface{}) string {
-	return strings.ToUpper(conv.ToString(s))
+func (f *StringFuncs) ToUpper(s interface{}) string {
+	return cases.Upper(f.tag).String(conv.ToString(s))
 }
 
 // ToLower -
-func (StringFuncs) ToLower(s interface{}) string {
-	return strings.ToLower(conv.ToString(s))
+func (f *StringFuncs) ToLower(s interface{}) string {
+	return cases.Lower(f.tag).String(conv.ToString(s))
 }
 
 // TrimSpace -
