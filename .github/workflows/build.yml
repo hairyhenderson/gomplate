@@ -17,7 +17,6 @@ jobs:
       - run: make build
         env:
           GOPATH: ${{ runner.workspace }}
-          ASSUME_NO_MOVING_GC_UNSAFE_RISK_IT_WITH: go1.18rc1
       - name: Save binary
         uses: actions/upload-artifact@v3
         with:
@@ -37,21 +36,17 @@ jobs:
         env:
           CC_TEST_REPORTER_ID: ${{ secrets.CC_TEST_REPORTER_ID }}
           GOPATH: ${{ runner.workspace }}
-          ASSUME_NO_MOVING_GC_UNSAFE_RISK_IT_WITH: go1.18rc1
       - run: make integration
         env:
           GOPATH: ${{ runner.workspace }}
-          ASSUME_NO_MOVING_GC_UNSAFE_RISK_IT_WITH: go1.18rc1
   windows-build:
     runs-on: windows-latest
     env:
       TMP: D:\tmp
-      ASSUME_NO_MOVING_GC_UNSAFE_RISK_IT_WITH: go1.18rc1
     steps:
       - uses: actions/setup-go@v2
         with:
-          stable: 'false'
-          go-version: '1.18.0-rc1'
+          go-version: '1.18'
       - run: |
           git config --global user.email "bogus@example.com"
           git config --global user.name "Someone"
@@ -81,5 +76,3 @@ jobs:
         with:
           path: ./src/github.com/${{ github.repository }}
       - run: make ci-lint
-        env:
-          ASSUME_NO_MOVING_GC_UNSAFE_RISK_IT_WITH: go1.18rc1

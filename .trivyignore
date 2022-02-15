@@ -1,3 +1,4 @@
-# ignoring these - the k8s client libs are versioned strangely and so this gets picked up even though we're fine
-CVE-2019-11250
-CVE-2020-8565
+# Ignoring CVE-2022-0778 as it's mostly covered by Alpine 3.15.1, except for
+# libretls, which isn't used at all. Should be able to remove this when 3.15.2
+# is out.
+CVE-2022-0778
