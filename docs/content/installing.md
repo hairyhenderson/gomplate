@@ -19,6 +19,14 @@ $ brew install gomplate
 🍺  /home/linuxbrew/.linuxbrew/Cellar/gomplate/3.8.0: 6 files, 7.8MB
 ```
 
+## macOS/Linux with MacPorts
+
+[MacPorts](https://macports.org/) is another package manager for macOS and Linux:
+
+```console
+$ sudo port install gomplate
+```
+
 ## [![Chocolatey](https://img.shields.io/chocolatey/v/gomplate.svg)](https://chocolatey.org/packages/gomplate) Windows with Chocolatey
 
 The simplest method for installing gomplate on Windows is to use [`choco`](https://community.chocolatey.org/packages/gomplate):
