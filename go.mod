@@ -30,10 +30,11 @@ require (
 	golang.org/x/crypto v0.0.0-20211215165025-cf75a172585e
 	golang.org/x/sys v0.0.0-20210923061019-b8560ed6a9b7
 	golang.org/x/term v0.0.0-20210916214954-140adaaadfaf
+	golang.org/x/text v0.3.7
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b
 	gotest.tools/v3 v3.1.0
 	inet.af/netaddr v0.0.0-20210903134321-85fa6c94624e
-	k8s.io/client-go v0.23.3
+	k8s.io/client-go v0.23.4
 )
 
 require (
@@ -111,7 +112,6 @@ require (
 	go4.org/unsafe/assume-no-moving-gc v0.0.0-20201222180813-1025295fd063 // indirect
 	golang.org/x/net v0.0.0-20211216030914-fe4d6282115f // indirect
 	golang.org/x/oauth2 v0.0.0-20210819190943-2bc19b11175f // indirect
-	golang.org/x/text v0.3.7 // indirect
 	golang.org/x/time v0.0.0-20210723032227-1f47c861a9ac // indirect
 	golang.org/x/tools v0.1.7 // indirect
 	golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1 // indirect
