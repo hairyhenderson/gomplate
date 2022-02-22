@@ -19,11 +19,17 @@ import (
 
 func bindPlugins(ctx context.Context, cfg *config.Config, funcMap template.FuncMap) error {
 	for k, v := range cfg.Plugins {
+		timeout := cfg.PluginTimeout
+		if v.Timeout != 0 {
+			timeout = v.Timeout
+		}
+
 		plugin := &plugin{
 			ctx:     ctx,
 			name:    k,
-			path:    v,
-			timeout: cfg.PluginTimeout,
+			path:    v.Cmd,
+			timeout: timeout,
+			pipe:    v.Pipe,
 			stderr:  cfg.Stderr,
 		}
 		if _, ok := funcMap[plugin.name]; ok {
@@ -40,6 +46,7 @@ type plugin struct {
 	stderr     io.Writer
 	name, path string
 	timeout    time.Duration
+	pipe       bool
 }
 
 // builds a command that's appropriate for running scripts
@@ -79,8 +86,18 @@ func (p *plugin) run(args ...interface{}) (interface{}, error) {
 
 	ctx, cancel := context.WithTimeout(p.ctx, p.timeout)
 	defer cancel()
+
+	var stdin *bytes.Buffer
+	if p.pipe && len(a) > 0 {
+		stdin = bytes.NewBufferString(a[len(a)-1])
+		a = a[:len(a)-1]
+	}
+
 	c := exec.CommandContext(ctx, name, a...)
-	c.Stdin = nil
+	if stdin != nil {
+		c.Stdin = stdin
+	}
+
 	c.Stderr = p.stderr
 	outBuf := &bytes.Buffer{}
 	c.Stdout = outBuf

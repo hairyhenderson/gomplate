@@ -18,13 +18,13 @@ func TestBindPlugins(t *testing.T) {
 	ctx := context.Background()
 	fm := template.FuncMap{}
 	cfg := &config.Config{
-		Plugins: map[string]string{},
+		Plugins: map[string]config.PluginConfig{},
 	}
 	err := bindPlugins(ctx, cfg, fm)
 	assert.NilError(t, err)
 	assert.DeepEqual(t, template.FuncMap{}, fm)
 
-	cfg.Plugins = map[string]string{"foo": "bar"}
+	cfg.Plugins = map[string]config.PluginConfig{"foo": {Cmd: "bar"}}
 	err = bindPlugins(ctx, cfg, fm)
 	assert.NilError(t, err)
 	assert.Check(t, cmp.Contains(fm, "foo"))

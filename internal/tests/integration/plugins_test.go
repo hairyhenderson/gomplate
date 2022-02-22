@@ -27,6 +27,13 @@ write-error $msg
 exit $code
 `, fs.WithMode(0755)),
 		fs.WithFile("sleep.sh", "#!/bin/sh\n\nexec sleep $1\n", fs.WithMode(0755)),
+		fs.WithFile("replace.sh", `#!/bin/sh
+if [ "$#" -eq 2 ]; then
+	exec tr $1 $2
+elif [ "$#" -eq 3 ]; then
+	printf "=%s" $3 | tr $1 $2
+fi
+`, fs.WithMode(0755)),
 	)
 	t.Cleanup(tmpDir.Remove)
 
@@ -58,6 +65,10 @@ func TestPlugins_Errors(t *testing.T) {
 }
 
 func TestPlugins_Timeout(t *testing.T) {
+	if testing.Short() {
+		t.Skip()
+	}
+
 	tmpDir := setupPluginsTest(t)
 	_, _, err := cmd(t, "--plugin", "sleep="+tmpDir.Join("sleep.sh"),
 		"-i", `{{ sleep 10 }}`).run()
@@ -67,4 +78,31 @@ func TestPlugins_Timeout(t *testing.T) {
 		"-i", `{{ sleep 2 }}`).
 		withEnv("GOMPLATE_PLUGIN_TIMEOUT", "500ms").run()
 	assert.ErrorContains(t, err, "plugin timed out")
+}
+
+func TestPlugins_PipeMode(t *testing.T) {
+	tmpDir := setupPluginsTest(t)
+
+	writeConfig(t, tmpDir, `in: '{{ "hi there" | replace "h" "H" }}'
+plugins:
+  replace:
+    cmd: `+tmpDir.Join("replace.sh")+`
+    pipe: true
+`)
+
+	o, e, err := cmd(t).withDir(tmpDir.Path()).run()
+	assert.NilError(t, err)
+	assert.Equal(t, "", e)
+	assert.Equal(t, "Hi tHere", o)
+
+	writeConfig(t, tmpDir, `in: '{{ "hi there" | replace "e" "Z" }}'
+plugins:
+  replace:
+    cmd: `+tmpDir.Join("replace.sh")+`
+`)
+
+	o, e, err = cmd(t).withDir(tmpDir.Path()).run()
+	assert.NilError(t, err)
+	assert.Equal(t, "", e)
+	assert.Equal(t, "=hi=thZrZ", o)
 }

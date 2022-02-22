@@ -54,9 +54,9 @@ type Config struct {
 
 	PostExec []string `yaml:"postExec,omitempty,flow"`
 
-	DataSources map[string]DataSource `yaml:"datasources,omitempty"`
-	Context     map[string]DataSource `yaml:"context,omitempty"`
-	Plugins     map[string]string     `yaml:"plugins,omitempty"`
+	DataSources map[string]DataSource   `yaml:"datasources,omitempty"`
+	Context     map[string]DataSource   `yaml:"context,omitempty"`
+	Plugins     map[string]PluginConfig `yaml:"plugins,omitempty"`
 
 	// Extra HTTP headers not attached to pre-defined datsources. Potentially
 	// used by datasources defined in the template.
@@ -161,6 +161,47 @@ func (d DataSource) mergeFrom(o DataSource) DataSource {
 		}
 	}
 	return d
+}
+
+type PluginConfig struct {
+	Cmd     string
+	Timeout time.Duration
+	Pipe    bool
+}
+
+// UnmarshalYAML - satisfy the yaml.Umarshaler interface - plugin configs can
+// either be a plain string (to specify only the name), or a map with a name,
+// timeout, and pipe flag.
+func (p *PluginConfig) UnmarshalYAML(value *yaml.Node) error {
+	if value.Kind == yaml.ScalarNode {
+		s := ""
+		err := value.Decode(&s)
+		if err != nil {
+			return err
+		}
+
+		*p = PluginConfig{Cmd: s}
+		return nil
+	}
+
+	if value.Kind != yaml.MappingNode {
+		return fmt.Errorf("plugin config must be a string or map")
+	}
+
+	type raw struct {
+		Cmd     string
+		Timeout time.Duration
+		Pipe    bool
+	}
+	r := raw{}
+	err := value.Decode(&r)
+	if err != nil {
+		return err
+	}
+
+	*p = PluginConfig(r)
+
+	return nil
 }
 
 // MergeFrom - use this Config as the defaults, and override it with any
@@ -290,9 +331,9 @@ func (c *Config) ParsePluginFlags(plugins []string) error {
 			return fmt.Errorf("plugin requires both name and path")
 		}
 		if c.Plugins == nil {
-			c.Plugins = map[string]string{}
+			c.Plugins = map[string]PluginConfig{}
 		}
-		c.Plugins[parts[0]] = parts[1]
+		c.Plugins[parts[0]] = PluginConfig{Cmd: parts[1]}
 	}
 	return nil
 }

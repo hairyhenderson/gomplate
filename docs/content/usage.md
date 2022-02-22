@@ -236,6 +236,8 @@ A few different forms are valid:
 
 ### `--plugin`
 
+_See the [config file](../config/#plugins) for more plugin configuration options._
+
 Some specialized use cases may need functionality that gomplate isn't capable
 of on its own. If you have a command or script to perform this functionality,
 you can plug in your own custom functions with the `--plugin` flag:
@@ -357,7 +359,7 @@ post-exec command.
 
 ## Suppressing empty output
 
-Sometimes it can be desirable to suppress empty output (i.e. output consisting of only whitespace). To do so, set `suppressEmpty: true` in your [config][] file, or `GOMPLATE_SUPPRESS_EMPTY=true` in your environment:
+Sometimes it can be desirable to suppress empty output (i.e. output consisting of only whitespace). To do so, set `suppressEmpty: true` in your [config](../config/#suppressempty) file, or `GOMPLATE_SUPPRESS_EMPTY=true` in your environment:
 
 ```console
 $ export GOMPLATE_SUPPRESS_EMPTY=true
@@ -368,6 +370,5 @@ cat: out: No such file or directory
 
 [default context]: ../syntax/#the-context
 [context]: ../syntax/#the-context
-[config]: ../config/#suppressempty
 [external templates]: ../syntax/#external-templates
 [`.gitignore`]: https://git-scm.com/docs/gitignore
