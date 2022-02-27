@@ -14,12 +14,10 @@ jobs:
       - run: |
           git config --global user.email "bogus@example.com"
           git config --global user.name "Someone"
-      - uses: actions/checkout@v2.4.0
+      - uses: actions/checkout@v3
         with:
-          path: ./src/github.com/${{ github.repository }}
+          fetch-depth: 0
       - run: make build
-        env:
-          GOPATH: ${{ runner.workspace }}
       - name: Save binary
         uses: actions/upload-artifact@v3
         with:
@@ -33,15 +31,12 @@ jobs:
 
           if [ -n "$CC_TEST_REPORTER_ID" ]; then
             # workaround from https://github.com/codeclimate/test-reporter/issues/378
-            export PREFIX=$(basename $(go list -m))
+            export PREFIX=$(go list -m)
             cc-test-reporter after-build -t gocov -p $PREFIX --exit-code $EXIT_CODE
           fi
         env:
           CC_TEST_REPORTER_ID: ${{ secrets.CC_TEST_REPORTER_ID }}
-          GOPATH: ${{ runner.workspace }}
       - run: make integration
-        env:
-          GOPATH: ${{ runner.workspace }}
   windows-build:
     runs-on: windows-latest
     env:
@@ -54,29 +49,21 @@ jobs:
       - run: |
           git config --global user.email "bogus@example.com"
           git config --global user.name "Someone"
-      - uses: actions/checkout@v2.4.0
+      - uses: actions/checkout@v3
         with:
-          path: ./src/github.com/${{ github.repository }}
+          fetch-depth: 0
       - run: make build
-        env:
-          GOPATH: ${{ runner.workspace }}
       - name: Save binary
         uses: actions/upload-artifact@v3
         with:
           name: gomplate.exe
           path: bin/gomplate.exe
       - run: make test
-        env:
-          GOPATH: ${{ runner.workspace }}
       - run: make integration
-        env:
-          GOPATH: ${{ runner.workspace }}
   lint:
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/hairyhenderson/gomplate-ci-build:latest
     steps:
-      - uses: actions/checkout@v2.4.0
-        with:
-          path: ./src/github.com/${{ github.repository }}
+      - uses: actions/checkout@v3
       - run: make ci-lint
