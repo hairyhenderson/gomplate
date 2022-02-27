@@ -18,7 +18,7 @@ jobs:
         env:
           GOPATH: ${{ runner.workspace }}
       - name: Save binary
-        uses: actions/upload-artifact@v1
+        uses: actions/upload-artifact@v2.3.1
         with:
           name: gomplate
           path: bin/gomplate
@@ -57,7 +57,7 @@ jobs:
         env:
           GOPATH: ${{ runner.workspace }}
       - name: Save binary
-        uses: actions/upload-artifact@v1
+        uses: actions/upload-artifact@v2.3.1
         with:
           name: gomplate.exe
           path: bin/gomplate.exe
