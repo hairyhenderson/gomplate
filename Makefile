@@ -1,4 +1,5 @@
 .DEFAULT_GOAL = build
+GO ?= go
 extension = $(patsubst windows,.exe,$(filter windows,$(1)))
 PKG_NAME := gomplate
 DOCKER_REPO ?= hairyhenderson/$(PKG_NAME)
@@ -20,11 +21,11 @@ endif
 COMMIT ?= `git rev-parse --short HEAD 2>/dev/null`
 VERSION ?= `git describe --abbrev=0 --tags $(git rev-list --tags --max-count=1) 2>/dev/null | sed 's/v\(.*\)/\1/'`
 
-COMMIT_FLAG := -X `go list ./version`.GitCommit=$(COMMIT)
-VERSION_FLAG := -X `go list ./version`.Version=$(VERSION)
+COMMIT_FLAG := -X `$(GO) list ./version`.GitCommit=$(COMMIT)
+VERSION_FLAG := -X `$(GO) list ./version`.Version=$(VERSION)
 
-GOOS ?= $(shell go version | sed 's/^.*\ \([a-z0-9]*\)\/\([a-z0-9]*\)/\1/')
-GOARCH ?= $(shell go version | sed 's/^.*\ \([a-z0-9]*\)\/\([a-z0-9]*\)/\2/')
+GOOS ?= $(shell $(GO) version | sed 's/^.*\ \([a-z0-9]*\)\/\([a-z0-9]*\)/\1/')
+GOARCH ?= $(shell $(GO) version | sed 's/^.*\ \([a-z0-9]*\)\/\([a-z0-9]*\)/\2/')
 
 ifeq ("$(TARGETVARIANT)","")
 ifneq ("$(GOARM)","")
@@ -134,35 +135,35 @@ docker-images: gomplate.iid gomplate-slim.iid
 
 $(PREFIX)/bin/$(PKG_NAME)_%v5$(call extension,$(GOOS)): $(shell find $(PREFIX) -type f -name "*.go")
 	GOOS=$(shell echo $* | cut -f1 -d-) GOARCH=$(shell echo $* | cut -f2 -d- ) GOARM=5 CGO_ENABLED=0 \
-		go build \
+		$(GO) build \
 			-ldflags "-w -s $(COMMIT_FLAG) $(VERSION_FLAG)" \
 			-o $@ \
 			./cmd/$(PKG_NAME)
 
 $(PREFIX)/bin/$(PKG_NAME)_%v6$(call extension,$(GOOS)): $(shell find $(PREFIX) -type f -name "*.go")
 	GOOS=$(shell echo $* | cut -f1 -d-) GOARCH=$(shell echo $* | cut -f2 -d- ) GOARM=6 CGO_ENABLED=0 \
-		go build \
+		$(GO) build \
 			-ldflags "-w -s $(COMMIT_FLAG) $(VERSION_FLAG)" \
 			-o $@ \
 			./cmd/$(PKG_NAME)
 
 $(PREFIX)/bin/$(PKG_NAME)_%v7$(call extension,$(GOOS)): $(shell find $(PREFIX) -type f -name "*.go")
 	GOOS=$(shell echo $* | cut -f1 -d-) GOARCH=$(shell echo $* | cut -f2 -d- ) GOARM=7 CGO_ENABLED=0 \
-		go build \
+		$(GO) build \
 			-ldflags "-w -s $(COMMIT_FLAG) $(VERSION_FLAG)" \
 			-o $@ \
 			./cmd/$(PKG_NAME)
 
 $(PREFIX)/bin/$(PKG_NAME)_windows-%.exe: $(shell find $(PREFIX) -type f -name "*.go")
 	GOOS=windows GOARCH=$* GOARM= CGO_ENABLED=0 \
-		go build \
+		$(GO) build \
 			-ldflags "-w -s $(COMMIT_FLAG) $(VERSION_FLAG)" \
 			-o $@ \
 			./cmd/$(PKG_NAME)
 
 $(PREFIX)/bin/$(PKG_NAME)_%$(TARGETVARIANT)$(call extension,$(GOOS)): $(shell find $(PREFIX) -type f -name "*.go")
 	GOOS=$(shell echo $* | cut -f1 -d-) GOARCH=$(shell echo $* | cut -f2 -d- ) GOARM=$(GOARM) CGO_ENABLED=0 \
-		go build \
+		$(GO) build \
 			-ldflags "-w -s $(COMMIT_FLAG) $(VERSION_FLAG)" \
 			-o $@ \
 			./cmd/$(PKG_NAME)
@@ -174,21 +175,21 @@ build: $(PREFIX)/bin/$(PKG_NAME)_$(GOOS)-$(GOARCH)$(TARGETVARIANT)$(call extensi
 
 ifeq ($(OS),Windows_NT)
 test:
-	go test -coverprofile=c.out ./...
+	$(GO) test -coverprofile=c.out ./...
 else
 test:
-	go test -race -coverprofile=c.out ./...
+	$(GO) test -race -coverprofile=c.out ./...
 endif
 
 ifeq ($(OS),Windows_NT)
 integration: $(PREFIX)/bin/$(PKG_NAME)$(call extension,$(GOOS))
-	go test -v \
-		-ldflags "-X `go list ./internal/tests/integration`.GomplateBinPath=$(shell cygpath -ma .)/$<" \
+	$(GO) test -v \
+		-ldflags "-X `$(GO) list ./internal/tests/integration`.GomplateBinPath=$(shell cygpath -ma .)/$<" \
 		./internal/tests/integration
 else
 integration: $(PREFIX)/bin/$(PKG_NAME)
-	go test -v \
-		-ldflags "-X `go list ./internal/tests/integration`.GomplateBinPath=$(shell pwd)/$<" \
+	$(GO) test -v \
+		-ldflags "-X `$(GO) list ./internal/tests/integration`.GomplateBinPath=$(shell pwd)/$<" \
 		./internal/tests/integration
 endif
 
