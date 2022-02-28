@@ -14,6 +14,7 @@ import (
 
 	"github.com/hairyhenderson/gomplate/v3/internal/iohelpers"
 	"github.com/stretchr/testify/assert"
+	"gopkg.in/yaml.v3"
 )
 
 func TestParseConfigFile(t *testing.T) {
@@ -42,6 +43,11 @@ context:
   .:
     url: file:///data.json
 
+plugins:
+  foo:
+    cmd: echo
+    pipe: true
+
 pluginTimeout: 2s
 `
 	expected = &Config{
@@ -63,7 +69,10 @@ pluginTimeout: 2s
 				URL: mustURL("file:///data.json"),
 			},
 		},
-		OutMode:       "644",
+		OutMode: "644",
+		Plugins: map[string]PluginConfig{
+			"foo": {Cmd: "echo", Pipe: true},
+		},
 		PluginTimeout: 2 * time.Second,
 	}
 
@@ -298,23 +307,23 @@ func TestMergeFrom(t *testing.T) {
 	cfg = &Config{
 		Input:       "hello world",
 		OutputFiles: []string{"-"},
-		Plugins: map[string]string{
-			"sleep": "echo",
+		Plugins: map[string]PluginConfig{
+			"sleep": {Cmd: "echo"},
 		},
 		PluginTimeout: 500 * time.Microsecond,
 	}
 	other = &Config{
 		InputFiles:  []string{"-"},
 		OutputFiles: []string{"-"},
-		Plugins: map[string]string{
-			"sleep": "sleep.sh",
+		Plugins: map[string]PluginConfig{
+			"sleep": {Cmd: "sleep.sh"},
 		},
 	}
 	expected = &Config{
 		Input:       "hello world",
 		OutputFiles: []string{"-"},
-		Plugins: map[string]string{
-			"sleep": "sleep.sh",
+		Plugins: map[string]PluginConfig{
+			"sleep": {Cmd: "sleep.sh"},
 		},
 		PluginTimeout: 500 * time.Microsecond,
 	}
@@ -394,7 +403,7 @@ func TestParsePluginFlags(t *testing.T) {
 	cfg = &Config{}
 	err = cfg.ParsePluginFlags([]string{"foo=bar"})
 	assert.NoError(t, err)
-	assert.EqualValues(t, &Config{Plugins: map[string]string{"foo": "bar"}}, cfg)
+	assert.EqualValues(t, &Config{Plugins: map[string]PluginConfig{"foo": {Cmd: "bar"}}}, cfg)
 }
 
 func TestConfigString(t *testing.T) {
@@ -473,6 +482,24 @@ outputMap: '{{ .in }}'
 	}
 	expected = `---
 pluginTimeout: 500ms
+`
+
+	assert.Equal(t, expected, c.String())
+
+	c = &Config{
+		Plugins: map[string]PluginConfig{
+			"foo": {
+				Cmd:  "bar",
+				Pipe: true,
+			},
+		},
+	}
+	expected = `---
+plugins:
+  foo:
+    cmd: bar
+    timeout: 0s
+    pipe: true
 `
 
 	assert.Equal(t, expected, c.String())
@@ -755,4 +782,36 @@ func TestFromContext(t *testing.T) {
 	cfg = FromContext(ctx)
 	// assert that the returned config looks like a default one
 	assert.Equal(t, "{{", cfg.LDelim)
+}
+
+func TestPluginConfig_UnmarshalYAML(t *testing.T) {
+	in := `foo`
+	out := PluginConfig{}
+	err := yaml.Unmarshal([]byte(in), &out)
+	assert.NoError(t, err)
+	assert.EqualValues(t, PluginConfig{Cmd: "foo"}, out)
+
+	in = `[foo, bar]`
+	out = PluginConfig{}
+	err = yaml.Unmarshal([]byte(in), &out)
+	assert.Error(t, err)
+
+	in = `cmd: foo`
+	out = PluginConfig{}
+	err = yaml.Unmarshal([]byte(in), &out)
+	assert.NoError(t, err)
+	assert.EqualValues(t, PluginConfig{Cmd: "foo"}, out)
+
+	in = `cmd: foo
+timeout: 10ms
+pipe: true
+`
+	out = PluginConfig{}
+	err = yaml.Unmarshal([]byte(in), &out)
+	assert.NoError(t, err)
+	assert.EqualValues(t, PluginConfig{
+		Cmd:     "foo",
+		Timeout: time.Duration(10) * time.Millisecond,
+		Pipe:    true,
+	}, out)
 }

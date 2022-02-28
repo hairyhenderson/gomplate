@@ -28,8 +28,11 @@ func writeFile(dir *fs.Dir, f, content string) {
 	}
 }
 
-func writeConfig(dir *fs.Dir, content string) {
+func writeConfig(t *testing.T, dir *fs.Dir, content string) {
+	t.Helper()
+
 	writeFile(dir, ".gomplate.yaml", content)
+	t.Logf("writing config: %s", content)
 }
 
 func TestConfig_ReadsFromSimpleConfigFile(t *testing.T) {
@@ -41,7 +44,7 @@ func TestConfig_ReadsFromSimpleConfigFile(t *testing.T) {
 
 func TestConfig_ReadsStdin(t *testing.T) {
 	tmpDir := setupConfigTest(t)
-	writeConfig(tmpDir, "inputFiles: [-]")
+	writeConfig(t, tmpDir, "inputFiles: [-]")
 
 	o, e, err := cmd(t).withDir(tmpDir.Path()).withStdin("foo bar").run()
 	assertSuccess(t, o, e, err, "foo bar")
@@ -49,7 +52,7 @@ func TestConfig_ReadsStdin(t *testing.T) {
 
 func TestConfig_FlagOverridesConfig(t *testing.T) {
 	tmpDir := setupConfigTest(t)
-	writeConfig(tmpDir, "inputFiles: [in]")
+	writeConfig(t, tmpDir, "inputFiles: [in]")
 
 	o, e, err := cmd(t, "-i", "hello from the cli").
 		withDir(tmpDir.Path()).run()
@@ -58,7 +61,7 @@ func TestConfig_FlagOverridesConfig(t *testing.T) {
 
 func TestConfig_ReadsFromInputFile(t *testing.T) {
 	tmpDir := setupConfigTest(t)
-	writeConfig(tmpDir, "inputFiles: [in]")
+	writeConfig(t, tmpDir, "inputFiles: [in]")
 	writeFile(tmpDir, "in", "blah blah")
 
 	o, e, err := cmd(t).withDir(tmpDir.Path()).run()
@@ -67,7 +70,7 @@ func TestConfig_ReadsFromInputFile(t *testing.T) {
 
 func TestConfig_Datasource(t *testing.T) {
 	tmpDir := setupConfigTest(t)
-	writeConfig(tmpDir, `inputFiles: [in]
+	writeConfig(t, tmpDir, `inputFiles: [in]
 datasources:
   data:
     url: in.yaml
@@ -82,7 +85,7 @@ datasources:
 func TestConfig_OutputDir(t *testing.T) {
 	tmpDir := setupConfigTest(t)
 
-	writeConfig(tmpDir, `inputDir: indir/
+	writeConfig(t, tmpDir, `inputDir: indir/
 outputDir: outdir/
 datasources:
   data:
@@ -103,7 +106,7 @@ func TestConfig_ExecPipeOverridesConfigFile(t *testing.T) {
 	tmpDir := setupConfigTest(t)
 
 	// make sure exec-pipe works, and outFiles is replaced
-	writeConfig(tmpDir, `in: hello world
+	writeConfig(t, tmpDir, `in: hello world
 outputFiles: ['-']
 `)
 	o, e, err := cmd(t, "-i", "hi", "--exec-pipe", "--", "tr", "[a-z]", "[A-Z]").
@@ -114,7 +117,7 @@ outputFiles: ['-']
 func TestConfig_OutFile(t *testing.T) {
 	tmpDir := setupConfigTest(t)
 
-	writeConfig(tmpDir, `in: hello world
+	writeConfig(t, tmpDir, `in: hello world
 outputFiles: [out]
 `)
 	o, e, err := cmd(t).withDir(tmpDir.Path()).run()
@@ -152,7 +155,7 @@ func TestConfig_ConfigOverridesEnvDelim(t *testing.T) {
 
 	tmpDir := setupConfigTest(t)
 
-	writeConfig(tmpDir, `inputFiles: [in]
+	writeConfig(t, tmpDir, `inputFiles: [in]
 leftDelim: (╯°□°）╯︵ ┻━┻
 datasources:
   data:
@@ -175,7 +178,7 @@ func TestConfig_FlagOverridesAllDelim(t *testing.T) {
 
 	tmpDir := setupConfigTest(t)
 
-	writeConfig(tmpDir, `inputFiles: [in]
+	writeConfig(t, tmpDir, `inputFiles: [in]
 leftDelim: (╯°□°）╯︵ ┻━┻
 datasources:
   data:
@@ -199,7 +202,7 @@ func TestConfig_ConfigOverridesEnvPluginTimeout(t *testing.T) {
 
 	tmpDir := setupConfigTest(t)
 
-	writeConfig(tmpDir, `in: hi there {{ sleep 2 }}
+	writeConfig(t, tmpDir, `in: hi there {{ sleep 2 }}
 plugins:
   sleep: echo
 
@@ -215,7 +218,7 @@ pluginTimeout: 500ms
 func TestConfig_ConfigOverridesEnvSuppressEmpty(t *testing.T) {
 	tmpDir := setupConfigTest(t)
 
-	writeConfig(tmpDir, `in: |
+	writeConfig(t, tmpDir, `in: |
   {{- print "\t  \n\n\r\n\t\t     \v\n" -}}
 
   {{ print "   " -}}

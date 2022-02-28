@@ -300,22 +300,72 @@ outputMap: |
 
 See [`--plugin`](../usage/#--plugin).
 
-An mapping of key/value pairs to plug in custom functions for use in the templates.
+A map that configures custom functions for use in the templates. The key is the
+name of the function, and the value configures the plugin. The value is a map
+containing the command (`cmd`) and the options `pipe` (boolean) and `timeout`
+(duration).
+
+Alternatively, the value can be a string, which sets `cmd`.
 
 ```yaml
 in: '{{ "hello world" | figlet | lolcat }}'
 plugins:
-  figlet: /usr/local/bin/figlet
+  figlet:
+    cmd: /usr/local/bin/figlet
+    pipe: true
+    timeout: 1s
   lolcat: /home/hairyhenderson/go/bin/lolcat
 ```
+
+### `cmd`
+
+The path to the plugin executable (or script) to run.
+
+### `pipe`
+
+Whether to pipe the final argument of the template function to the plugin's
+Stdin, or provide as a separate argument.
+
+For example, given a `myfunc` plugin with a `cmd` of `/bin/myfunc`:
+
+With this template:
+```
+{{ print "bar" | myfunc "foo" }}
+```
+
+If `pipe` is `true`, the plugin executable will receive the input `"bar"` as its
+Stdin, like this shell command:
+
+```console
+$ echo -n "bar" | /bin/myfunc "foo"
+```
+
+If `pipe` is `false` (the default), the plugin executable will receive the
+input `"bar"` as its last argument, like this shell command:
+
+```console
+$ /bin/myfunc "foo" "bar"
+```
+
+_Note:_ in a chained pipeline (e.g. `{{ foo | bar }}`), the result of each
+command is passed as the final argument of the next, and so the template above
+could be written as `{{ myfunc "foo" "bar" }}`.
+
+### `timeout`
+
+The plugin's timeout. After this time, the command will be terminated and the
+template function will return an error. The value must be a valid
+[duration][] such as `1s`, `1m`, `1h`,
+
+The default is `5s`.
 
 ## `pluginTimeout`
 
 See [`--plugin`](../usage/#--plugin).
 
-Sets the timeout for running plugins. By default, plugins will time out after 5
-seconds. This value can be set to override this default. The value must be
-a valid [duration](../functions/time/#time-parseduration) such as `10s` or `3m`.
+Sets the timeout for all configured plugins. Overrides the default of `5s`.
+After this time, plugin commands will be killed. The value must be a valid
+[duration][] such as `10s` or `3m`.
 
 ```yaml
 plugins:
@@ -368,3 +418,4 @@ templates:
 [command-line arguments]: ../usage
 [file an issue]: https://github.com/hairyhenderson/gomplate/issues/new
 [YAML]: http://yaml.org
+[duration]: (../functions/time/#time-parseduration)
