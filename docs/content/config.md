@@ -13,7 +13,7 @@ where teams share templates, it can be helpful to commit config files into the
 team's source control system.
 
 By default, gomplate will look for a file `.gomplate.yaml` in the current working
-diretory, but this path can be altered with the [`--config`](../usage/#--config)
+diretory, but this path can be altered with the [`--config`](../usage/#config)
 command-line argument, or the `GOMPLATE_CONFIG` environment variable.
 
 ### Configuration precedence
@@ -66,13 +66,13 @@ plugins:
 
 ## `chmod`
 
-See [`--chmod`](../usage/#--chmod).
+See [`--chmod`](../usage/#chmod).
 
 Sets the output file mode.
 
 ## `context`
 
-See [`--context`](../usage/#--context-c).
+See [`--context`](../usage/#context-c).
 
 Add data sources to the default context. This is a nested structure that
 includes the URL for the data source and the optional HTTP header to send.
@@ -102,7 +102,7 @@ context:
 
 ## `datasources`
 
-See [`--datasource`](../usage/#--datasource-d).
+See [`--datasource`](../usage/#datasource-d).
 
 Define data sources. This is a nested structure that includes the URL for the data
 source and the optional HTTP header to send.
@@ -124,7 +124,7 @@ source is used, an `Authorization` header will be sent with the given value.
 
 ## `excludes`
 
-See [`--exclude` and `--include`](../usage/#--exclude-and---include).
+See [`--exclude` and `--include`](../usage/#exclude-and-include).
 
 This is an array of exclude patterns, used in conjunction with [`inputDir`](#inputdir).
 Note that there is no `includes`, instead you can specify negative
@@ -141,7 +141,7 @@ This will skip all files with the extension `.txt`, except for files named
 
 ## `execPipe`
 
-See [`--exec-pipe`](../usage/#--exec-pipe).
+See [`--exec-pipe`](../usage/#exec-pipe).
 
 Use the rendered output as the [`postExec`](#postexec) command's standard input.
 
@@ -150,7 +150,7 @@ any [`outputFiles`](#outputfiles) settings.
 
 ## `experimental`
 
-See [`--experimental`](../usage/#--experimental). Can also be set with the `GOMPLATE_EXPERIMENTAL=true` environment variable.
+See [`--experimental`](../usage/#experimental). Can also be set with the `GOMPLATE_EXPERIMENTAL=true` environment variable.
 
 Some functions and features are provided for early feedback behind the `experimental` configuration option. These features may change before being permanently enabled, and [feedback](https://github.com/hairyhenderson/gomplate/issues/new) is requested from early adopters!
 
@@ -162,7 +162,7 @@ experimental: true
 
 ## `in`
 
-See [`--in`/`-i`](../usage/#--file-f---in-i-and---out-o).
+See [`--in`/`-i`](../usage/#file-f-in-i-and-out-o).
 
 Provide the input template inline. Note that unlike the `--in`/`-i` commandline
 argument, there are no shell-imposed length limits.
@@ -188,7 +188,7 @@ May not be used with `inputDir` or `inputFiles`.
 
 ## `inputDir`
 
-See [`--input-dir`](../usage/#--input-dir-and---output-dir).
+See [`--input-dir`](../usage/#input-dir-and-output-dir).
 
 The directory containing input template files. Must be used with 
 [`outputDir`](#outputdir) or [`outputMap`](#outputmap). Can also be used with [`excludes`](#excludes).
@@ -202,7 +202,7 @@ May not be used with `in` or `inputFiles`.
 
 ## `inputFiles`
 
-See [`--file`/`-f`](../usage/#--file-f---in-i-and---out-o).
+See [`--file`/`-f`](../usage/#file-f-in-i-and-out-o).
 
 An array of input template paths. The special value `-` means `Stdin`. Multiple
 values can be set, but there must be a corresponding number of `outputFiles`
@@ -238,7 +238,7 @@ leftDelim: '%{'
 
 ## `outputDir`
 
-See [`--output-dir`](../usage/#--input-dir-and---output-dir).
+See [`--output-dir`](../usage/#input-dir-and-output-dir).
 
 The directory to write rendered output files. Must be used with 
 [`inputDir`](#inputdir).
@@ -255,7 +255,7 @@ May not be used with `outputFiles`.
 
 ## `outputFiles`
 
-See [`--out`/`-o`](../usage/#--file-f---in-i-and---out-o).
+See [`--out`/`-o`](../usage/#file-f-in-i-and-out-o).
 
 An array of output file paths. The special value `-` means `Stdout`. Multiple
 values can be set, but there must be a corresponding number of `inputFiles`
@@ -286,7 +286,7 @@ May not be used with `inputDir`.
 
 ## `outputMap`
 
-See [`--output-map`](../usage/#--output-map).
+See [`--output-map`](../usage/#output-map).
 
 Must be used with [`inputDir`](#inputdir).
 
@@ -298,7 +298,7 @@ outputMap: |
 
 ## `plugins`
 
-See [`--plugin`](../usage/#--plugin).
+See [`--plugin`](../usage/#plugin).
 
 A map that configures custom functions for use in the templates. The key is the
 name of the function, and the value configures the plugin. The value is a map
@@ -361,7 +361,7 @@ The default is `5s`.
 
 ## `pluginTimeout`
 
-See [`--plugin`](../usage/#--plugin).
+See [`--plugin`](../usage/#plugin).
 
 Sets the timeout for all configured plugins. Overrides the default of `5s`.
 After this time, plugin commands will be killed. The value must be a valid
@@ -403,7 +403,7 @@ suppressEmpty: true
 
 ## `templates`
 
-See [`--template`/`-t`](../usage/#--template-t).
+See [`--template`/`-t`](../usage/#template-t).
 
 An array of template references. Can be just a path or an alias and a path:
 
