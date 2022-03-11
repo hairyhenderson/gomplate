@@ -31,6 +31,9 @@ func readFile(ctx context.Context, source *Source, args ...string) ([]byte, erro
 		if parsed.Path != "" {
 			p = filepath.Join(p, parsed.Path)
 		}
+
+		// reset the media type - it may have been set by a parent dir read
+		source.mediaType = ""
 	}
 
 	// make sure we can access the file

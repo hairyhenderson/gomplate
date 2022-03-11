@@ -57,7 +57,7 @@ QUX='single quotes ignore $variables'
 	return tmpDir
 }
 
-func TestDatasourcess_File(t *testing.T) {
+func TestDatasources_File(t *testing.T) {
 	tmpDir := setupDatasourcesFileTest(t)
 
 	o, e, err := cmd(t,
@@ -149,4 +149,16 @@ func TestDatasourcess_File(t *testing.T) {
   "FOO.BAR": "values can be double-quoted, and shell\nescapes are supported",
   "QUX": "single quotes ignore $variables"
 }`)
+}
+
+func TestDatasources_File_Directory(t *testing.T) {
+	tmpDir := setupDatasourcesFileTest(t)
+
+	o, e, err := cmd(t,
+		"-d", "data=sortorder/",
+		"-i", `{{ range (ds "data") }}{{ if strings.HasSuffix ".yaml" . -}}
+			{{ . }} root key: {{ range $k, $v := ds "data" . }}{{ $k }}{{ end }}
+		{{- end }}{{ end }}`).
+		withDir(tmpDir.Path()).run()
+	assertSuccess(t, o, e, err, "core.yaml root key: cloud")
 }
