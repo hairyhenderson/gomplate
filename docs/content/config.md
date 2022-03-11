@@ -190,8 +190,9 @@ May not be used with `inputDir` or `inputFiles`.
 
 See [`--input-dir`](../usage/#input-dir-and-output-dir).
 
-The directory containing input template files. Must be used with 
-[`outputDir`](#outputdir) or [`outputMap`](#outputmap). Can also be used with [`excludes`](#excludes).
+The directory containing input template files. All files contained within will
+be processed recursively. Must be used with [`outputDir`](#outputdir) or
+[`outputMap`](#outputmap). Can also be used with [`excludes`](#excludes).
 
 ```yaml
 inputDir: templates/
