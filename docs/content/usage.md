@@ -50,7 +50,7 @@ You can specify multiple `--file` and `--out` arguments. The same number of each
 
 ### `--input-dir` and `--output-dir`
 
-For processing multiple templates in a directory you can use `--input-dir` and `--output-dir` together. In this case all files in input directory will be processed as templates and the resulting files stored in `--output-dir`. The output directory will be created if it does not exist and the directory structure of the input directory will be preserved.
+For processing multiple templates in a directory you can use `--input-dir` and `--output-dir` together. In this case all files in input directory will be processed recursively as templates and the resulting files stored in `--output-dir`. The output directory will be created if it does not exist and the directory structure of the input directory will be preserved.
 
 You can use the [`--exclude`](#exclude) argument and/or a [`.gomplateignore`](#ignorefile) file to exclude some of the files in the input directory.
 
