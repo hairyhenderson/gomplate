@@ -85,12 +85,12 @@ func (f NetFuncs) ParseIPRange(iprange interface{}) (netaddr.IPRange, error) {
 }
 
 // StdParseIP -
-func (f NetFuncs) StdParseIP(prefix interface{}) (stdnet.IP, error) {
-	ip := stdnet.ParseIP(conv.ToString(prefix))
-	if ip == nil {
+func (f NetFuncs) StdParseIP(ip interface{}) (stdnet.IP, error) {
+	i := stdnet.ParseIP(conv.ToString(ip))
+	if i == nil {
 		return nil, errors.Errorf("invalid IP address")
 	}
-	return ip, nil
+	return i, nil
 }
 
 func (f NetFuncs) stdParseCIDR(prefix interface{}) (*stdnet.IPNet, error) {

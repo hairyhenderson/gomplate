@@ -8,6 +8,7 @@ preamble: |
   [RFC 4632]: http://tools.ietf.org/html/rfc4632
   [RFC 4291]: http://tools.ietf.org/html/rfc4291
   [`inet.af/netaddr`]: https://pkg.go.dev/inet.af/netaddr
+  [`net`]: https://pkg.go.dev/net
 funcs:
   - name: net.LookupIP
     description: |
@@ -192,3 +193,116 @@ funcs:
         $ gomplate -i '{{ $range := net.ParseIPRange "1.2.3.0-1.2.3.233" -}}
           {{ $range.Prefixes }}'
         [1.2.3.0/25 1.2.3.128/26 1.2.3.192/27]
+  - name: net.StdParseIP
+    description: |
+      Parse the given string as an IP address (a `net.IP` from the
+      [`net`][] package).
+
+      Any of `net.IP`'s methods may be called on the resulting value. See
+      [the docs](https://pkg.go.dev/net) for details.
+    pipeline: true
+    arguments:
+      - name: ip
+        required: true
+        description: The IP string to parse. It must be either an IPv4 or IPv6 address.
+    examples:
+      - |
+        $ gomplate -i '{{ net.StdParseIP "192.168.0.1" }}'
+        192.168.0.1
+        $ gomplate -i '{{ $ip := net.StdParseIP (net.LookupIP "example.com") -}}
+          {{ $ip }}'
+        93.184.216.34
+  - name: net.StdParseCIDR
+    description: |
+      Parse the given string as an IP address prefix (CIDR) representing an IP
+      network (a `net.ParseCIDR` from the
+      [`net`][] package).
+
+      The string can be in the form `"192.168.1.0/24"` or `"2001::db8::/32"`,
+      the CIDR notations defined in [RFC 4632][] and [RFC 4291][].
+
+      Any of `net.IP`'s methods may be called on the resulting value. See
+      [the docs](https://pkg.go.dev/net) for details.
+    pipeline: true
+    arguments:
+      - name: prefix
+        required: true
+        description: The IP address prefix to parse. It must represent either an IPv4 or IPv6 prefix, containing a `/`.
+    examples:
+      - |
+        $ gomplate -i '{{ net.StdParseCIDR "192.168.0.123/24" }}'
+        192.168.0.0/24
+  - name: net.CidrHost
+    description: |
+      Calculates a full host IP address for a given host number within a given IP network address prefix.
+
+      The IP network can be in the form `"192.168.1.0/24"` or `"2001::db8::/32"`,
+      the CIDR notations defined in [RFC 4632][] and [RFC 4291][].
+
+      Any of `net.IP`'s methods may be called on the resulting value. See
+      [the docs](https://pkg.go.dev/net) for details.
+    pipeline: true
+    arguments:
+      - name: hostnum
+        required: true
+        description: Is a whole number that can be represented as a binary integer with no more than the number of digits remaining in the address after the given prefix.
+      - name: prefix
+        required: true
+        description: Must be given in CIDR notation. It must represent either an IPv4 or IPv6 prefix, containing a `/`. String or [`net.IPNet`](https://pkg.go.dev/net#IPNet) object returned from `net.StdParseCIDR` can by used.
+    examples:
+      - |
+        $ gomplate -i '{{ "10.12.127.0/20" | net.CidrHost 268 }}'
+        10.12.113.12
+  - name: net.CidrNetmask
+    description: |
+      The result is a subnet address formatted in the conventional dotted-decimal IPv4 address syntax, as expected by some software.
+
+      Any of `net.IP`'s methods may be called on the resulting value. See
+      [the docs](https://pkg.go.dev/net) for details.
+    pipeline: true
+    arguments:
+      - name: prefix
+        required: true
+        description: Must be given in CIDR notation. It must represent either an IPv4 or IPv6 prefix, containing a `/`. String or [`net.IPNet`](https://pkg.go.dev/net#IPNet) object returned from `net.StdParseCIDR` can by used.
+    examples:
+      - |
+        $ gomplate -i '{{ net.CidrNetmask "10.12.127.0/20" }}'
+        255.255.240.0
+  - name: net.CidrSubnets
+    description: |
+      Calculates a subnet address within given IP network address prefix.
+
+      Any of `net.IPNet`'s methods may be called on the resulting value. See
+      [the docs](https://pkg.go.dev/net) for details.
+    pipeline: true
+    arguments:
+      - name: newbits
+        required: true
+        description: Is the number of additional bits with which to extend the prefix. For example, if given a prefix ending in `/16` and a `newbits` value of `4`, the resulting subnet address will have length `/20`.
+      - name: prefix
+        required: true
+        description: Must be given in CIDR notation. It must represent either an IPv4 or IPv6 prefix, containing a `/`. String or [`net.IPNet`](https://pkg.go.dev/net#IPNet) object returned from `net.StdParseCIDR` can by used.
+    examples:
+      - |
+        $ gomplate -i '{{ index ("10.0.0.0/16" | net.CidrSubnets 2) 1 }}'
+        10.0.64.0/18
+        $ gomplate -i '{{ net.CidrSubnets 2 "10.0.0.0/16" -}}'
+        [10.0.0.0/18 10.0.64.0/18 10.0.128.0/18 10.0.192.0/18]
+  - name: net.CidrSubnetSizes
+    description: |
+      Calculates a sequence of consecutive IP address ranges within a particular CIDR prefix.
+
+      Any of `net.IPNet`'s methods may be called on the resulting value. See
+      [the docs](https://pkg.go.dev/net) for details.
+    pipeline: true
+    arguments:
+      - name: newbits...
+        required: true
+        description: Numbers of additional network prefix bits for returned address range.
+      - name: prefix
+        required: true
+        description: Must be given in CIDR notation. It must represent either an IPv4 or IPv6 prefix, containing a `/`. String or [`net.IPNet`](https://pkg.go.dev/net#IPNet) object returned from `net.StdParseCIDR` can by used.
+    examples:
+      - |
+        $ gomplate -i '{{ net.CidrSubnetSizes 4 4 8 4 "10.1.0.0/16" -}}'
+        [10.1.0.0/20 10.1.16.0/20 10.1.32.0/24 10.1.48.0/20]
