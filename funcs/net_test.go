@@ -3,6 +3,7 @@ package funcs
 import (
 	"context"
 	stdnet "net"
+	"net/netip"
 	"strconv"
 	"testing"
 
@@ -71,52 +72,54 @@ func TestParseIPRange(t *testing.T) {
 	assert.Equal(t, "192.168.0.2-192.168.23.255", iprange.String())
 }
 
-func TestStdParseIP(t *testing.T) {
-	n := NetFuncs{}
-	ip, err := n.StdParseIP("not an IP")
-	assert.Nil(t, ip)
-	assert.Error(t, err)
-
-	ip, err = n.StdParseIP("10.12.113.12")
-	assert.NoError(t, err)
-	assert.Equal(t, stdnet.IPv4(0x0A, 0x0C, 0x71, 0x0C), ip)
-
-	ip, err = n.StdParseIP("2001:470:20::2")
-	assert.NoError(t, err)
-	assert.Equal(t, stdnet.IP{
-		0x20, 0x01, 0x04, 0x70,
-		0, 0x20, 0, 0,
-		0, 0, 0, 0,
-		0, 0, 0, 0x02,
-	}, ip)
-}
-func TestStdParseCIDR(t *testing.T) {
-	n := NetFuncs{}
-	_, err := n.StdParseCIDR("not an IP")
-	assert.Error(t, err)
-
-	_, err = n.StdParseCIDR("1.1.1.1")
-	assert.Error(t, err)
-
-	cidr, err := n.StdParseCIDR("192.168.0.2/28")
-	assert.NoError(t, err)
-	assert.Equal(t, "192.168.0.0/28", cidr.String())
-}
-
 func TestCidrHost(t *testing.T) {
 	n := NetFuncs{}
-	_, network, _ := stdnet.ParseCIDR("10.12.127.0/20")
 
-	ip, err := n.CidrHost(16, network)
+	// net.IPNet
+	_, netIP, _ := stdnet.ParseCIDR("10.12.127.0/20")
+
+	ip, err := n.CidrHost(16, netIP)
 	assert.NoError(t, err)
 	assert.Equal(t, "10.12.112.16", ip.String())
 
-	ip, err = n.CidrHost(268, network)
+	ip, err = n.CidrHost(268, netIP)
 	assert.NoError(t, err)
 	assert.Equal(t, "10.12.113.12", ip.String())
 
-	_, network, _ = stdnet.ParseCIDR("fd00:fd12:3456:7890:00a2::/72")
-	ip, err = n.CidrHost(34, network)
+	_, netIP, _ = stdnet.ParseCIDR("fd00:fd12:3456:7890:00a2::/72")
+	ip, err = n.CidrHost(34, netIP)
+	assert.NoError(t, err)
+	assert.Equal(t, "fd00:fd12:3456:7890::22", ip.String())
+
+	// inet.af/netaddr.IPPrefix
+	ipPrefix, _ := n.ParseIPPrefix("10.12.127.0/20")
+
+	ip, err = n.CidrHost(16, ipPrefix)
+	assert.NoError(t, err)
+	assert.Equal(t, "10.12.112.16", ip.String())
+
+	ip, err = n.CidrHost(268, ipPrefix)
+	assert.NoError(t, err)
+	assert.Equal(t, "10.12.113.12", ip.String())
+
+	ipPrefix, _ = n.ParseIPPrefix("fd00:fd12:3456:7890:00a2::/72")
+	ip, err = n.CidrHost(34, ipPrefix)
+	assert.NoError(t, err)
+	assert.Equal(t, "fd00:fd12:3456:7890::22", ip.String())
+
+	// net/netip.Prefix
+	prefix, _ := netip.ParsePrefix("10.12.127.0/20")
+
+	ip, err = n.CidrHost(16, prefix)
+	assert.NoError(t, err)
+	assert.Equal(t, "10.12.112.16", ip.String())
+
+	ip, err = n.CidrHost(268, prefix)
+	assert.NoError(t, err)
+	assert.Equal(t, "10.12.113.12", ip.String())
+
+	prefix, _ = netip.ParsePrefix("fd00:fd12:3456:7890:00a2::/72")
+	ip, err = n.CidrHost(34, prefix)
 	assert.NoError(t, err)
 	assert.Equal(t, "fd00:fd12:3456:7890::22", ip.String())
 }

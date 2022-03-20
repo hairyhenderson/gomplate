@@ -4,6 +4,7 @@ import (
 	"context"
 	"math/big"
 	stdnet "net"
+	"net/netip"
 
 	"github.com/apparentlymart/go-cidr/cidr"
 	"github.com/hairyhenderson/gomplate/v3/conv"
@@ -84,58 +85,64 @@ func (f NetFuncs) ParseIPRange(iprange interface{}) (netaddr.IPRange, error) {
 	return netaddr.ParseIPRange(conv.ToString(iprange))
 }
 
-// StdParseIP -
-func (f NetFuncs) StdParseIP(ip interface{}) (stdnet.IP, error) {
-	i := stdnet.ParseIP(conv.ToString(ip))
-	if i == nil {
-		return nil, errors.Errorf("invalid IP address")
-	}
-	return i, nil
-}
-
-func (f NetFuncs) stdParseCIDR(prefix interface{}) (*stdnet.IPNet, error) {
+func (f NetFuncs) parseStdnetIPNet(prefix interface{}) (*stdnet.IPNet, error) {
 	if n, ok := prefix.(*stdnet.IPNet); ok {
 		return n, nil
+	}
+	if n, ok := prefix.(netaddr.IPPrefix); ok {
+		return n.Masked().IPNet(), nil
+	}
+	if n, ok := prefix.(netip.Prefix); ok {
+		net := &stdnet.IPNet{
+			IP:   n.Masked().Addr().AsSlice(),
+			Mask: stdnet.CIDRMask(n.Bits(), n.Addr().BitLen()),
+		}
+		return net, nil
 	}
 
 	_, network, err := stdnet.ParseCIDR(conv.ToString(prefix))
 	return network, err
 }
 
-// StdParseCIDR -
-func (f NetFuncs) StdParseCIDR(prefix interface{}) (*stdnet.IPNet, error) {
-	return f.stdParseCIDR(prefix)
+func (f NetFuncs) ipFromNetIp(n stdnet.IP) netaddr.IP {
+	ip, _ := netaddr.FromStdIP(n)
+	return ip
+}
+
+func (f NetFuncs) ipPrefixFromIpNet(n *stdnet.IPNet) netaddr.IPPrefix {
+	prefix, _ := netaddr.FromStdIPNet(n)
+	return prefix
 }
 
 // CidrHost -
-func (f NetFuncs) CidrHost(hostnum interface{}, prefix interface{}) (*stdnet.IP, error) {
-	network, err := f.stdParseCIDR(prefix)
+func (f NetFuncs) CidrHost(hostnum interface{}, prefix interface{}) (netaddr.IP, error) {
+	network, err := f.parseStdnetIPNet(prefix)
 	if err != nil {
-		return nil, err
+		return netaddr.IP{}, err
 	}
 
 	ip, err := cidr.HostBig(network, big.NewInt(conv.ToInt64(hostnum)))
-	return &ip, err
+	return f.ipFromNetIp(ip), err
 }
 
 // CidrNetmask -
-func (f NetFuncs) CidrNetmask(prefix interface{}) (*stdnet.IP, error) {
-	network, err := f.stdParseCIDR(prefix)
+func (f NetFuncs) CidrNetmask(prefix interface{}) (netaddr.IP, error) {
+	network, err := f.parseStdnetIPNet(prefix)
 	if err != nil {
-		return nil, err
+		return netaddr.IP{}, err
 	}
 
 	if len(network.IP) != stdnet.IPv4len {
-		return nil, errors.Errorf("only IPv4 networks are supported")
+		return netaddr.IP{}, errors.Errorf("only IPv4 networks are supported")
 	}
 
 	netmask := stdnet.IP(network.Mask)
-	return &netmask, nil
+	return f.ipFromNetIp(netmask), nil
 }
 
 // CidrSubnets -
-func (f NetFuncs) CidrSubnets(newbits interface{}, prefix interface{}) ([]*stdnet.IPNet, error) {
-	network, err := f.stdParseCIDR(prefix)
+func (f NetFuncs) CidrSubnets(newbits interface{}, prefix interface{}) ([]netaddr.IPPrefix, error) {
+	network, err := f.parseStdnetIPNet(prefix)
 	if err != nil {
 		return nil, err
 	}
@@ -146,25 +153,25 @@ func (f NetFuncs) CidrSubnets(newbits interface{}, prefix interface{}) ([]*stdne
 	}
 
 	maxNetNum := int64(1 << uint64(nBits))
-	retValues := make([]*stdnet.IPNet, maxNetNum)
+	retValues := make([]netaddr.IPPrefix, maxNetNum)
 	for i := int64(0); i < maxNetNum; i++ {
 		subnet, err := cidr.SubnetBig(network, nBits, big.NewInt(i))
 		if err != nil {
 			return nil, err
 		}
-		retValues[i] = subnet
+		retValues[i] = f.ipPrefixFromIpNet(subnet)
 	}
 
 	return retValues, nil
 }
 
 // CidrSubnetSizes -
-func (f NetFuncs) CidrSubnetSizes(args ...interface{}) ([]*stdnet.IPNet, error) {
+func (f NetFuncs) CidrSubnetSizes(args ...interface{}) ([]netaddr.IPPrefix, error) {
 	if len(args) < 2 {
 		return nil, errors.Errorf("wrong number of args: want 2 or more, got %d", len(args))
 	}
 
-	network, err := f.stdParseCIDR(args[len(args)-1])
+	network, err := f.parseStdnetIPNet(args[len(args)-1])
 	if err != nil {
 		return nil, err
 	}
@@ -174,7 +181,7 @@ func (f NetFuncs) CidrSubnetSizes(args ...interface{}) ([]*stdnet.IPNet, error) 
 	firstLength := newbits[0]
 
 	firstLength += startPrefixLen
-	retValues := make([]*stdnet.IPNet, len(newbits))
+	retValues := make([]netaddr.IPPrefix, len(newbits))
 
 	current, _ := cidr.PreviousSubnet(network, firstLength)
 
@@ -211,7 +218,7 @@ func (f NetFuncs) CidrSubnetSizes(args ...interface{}) ([]*stdnet.IPNet, error) 
 			return nil, errors.Errorf("not enough remaining address space for a subnet with a prefix of %d bits after %s", length, current.String())
 		}
 		current = next
-		retValues[i] = current
+		retValues[i] = f.ipPrefixFromIpNet(current)
 	}
 
 	return retValues, nil
