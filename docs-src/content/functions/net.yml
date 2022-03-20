@@ -216,7 +216,7 @@ funcs:
         10.12.113.12
   - name: net.CidrNetmask
     description: |
-      The result is a subnet address formatted in the conventional dotted-decimal IPv4 address syntax, as expected by some software.
+      The result is a subnet address formatted in the conventional dotted-decimal IPv4 address syntax or hexadecimal IPv6 address syntax, as expected by some software.
 
       Any of `net.IP`'s methods may be called on the resulting value. See
       [the docs](https://pkg.go.dev/net) for details.
@@ -229,6 +229,8 @@ funcs:
       - |
         $ gomplate -i '{{ net.CidrNetmask "10.12.127.0/20" }}'
         255.255.240.0
+        $ gomplate -i '{{ net.CidrNetmask "fd00:fd12:3456:7890:00a2::/72" }}'
+        ffff:ffff:ffff:ffff:ff00::
   - name: net.CidrSubnets
     description: |
       Calculates a subnet address within given IP network address prefix.

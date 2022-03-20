@@ -114,6 +114,18 @@ func (f NetFuncs) ipPrefixFromIpNet(n *stdnet.IPNet) netaddr.IPPrefix {
 	return prefix
 }
 
+// func (f NetFuncs) addrFromNetIp(n stdnet.IP) netip.Addr {
+// 	ip, _ := netip.AddrFromSlice(n)
+// 	return ip
+// }
+
+// func (f NetFuncs) prefixFromIpNet(n *stdnet.IPNet) netip.Prefix {
+// 	ip, _ := netip.AddrFromSlice(n.IP)
+// 	bits, _ := n.Mask.Size()
+// 	prefix := netip.PrefixFrom(ip, bits)
+// 	return prefix
+// }
+
 // CidrHost -
 func (f NetFuncs) CidrHost(hostnum interface{}, prefix interface{}) (netaddr.IP, error) {
 	network, err := f.parseStdnetIPNet(prefix)
@@ -130,10 +142,6 @@ func (f NetFuncs) CidrNetmask(prefix interface{}) (netaddr.IP, error) {
 	network, err := f.parseStdnetIPNet(prefix)
 	if err != nil {
 		return netaddr.IP{}, err
-	}
-
-	if len(network.IP) != stdnet.IPv4len {
-		return netaddr.IP{}, errors.Errorf("only IPv4 networks are supported")
 	}
 
 	netmask := stdnet.IP(network.Mask)

@@ -18,6 +18,7 @@ func TestNet_CidrHost(t *testing.T) {
 func TestNet_CidrNetmask(t *testing.T) {
 	inOutTest(t, `{{ "10.12.127.0/20" | net.CidrNetmask }}`, "255.255.240.0")
 	inOutTest(t, `{{ net.CidrNetmask "10.0.0.0/12" }}`, "255.240.0.0")
+	inOutTest(t, `{{ net.CidrNetmask "fd00:fd12:3456:7890:00a2::/72" }}`, "ffff:ffff:ffff:ffff:ff00::")
 }
 
 func TestNet_CidrSubnets(t *testing.T) {
