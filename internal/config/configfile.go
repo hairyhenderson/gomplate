@@ -264,8 +264,16 @@ func (c *Config) MergeFrom(o *Config) *Config {
 	if !isZero(o.Templates) {
 		c.Templates = o.Templates
 	}
-	mergeDataSources(c.DataSources, o.DataSources)
-	mergeDataSources(c.Context, o.Context)
+	if c.DataSources == nil {
+		c.DataSources = o.DataSources
+	} else {
+		mergeDataSources(c.DataSources, o.DataSources)
+	}
+	if c.Context == nil {
+		c.Context = o.Context
+	} else {
+		mergeDataSources(c.Context, o.Context)
+	}
 	if len(o.Plugins) > 0 {
 		for k, v := range o.Plugins {
 			c.Plugins[k] = v
