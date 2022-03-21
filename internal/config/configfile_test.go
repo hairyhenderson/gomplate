@@ -329,6 +329,61 @@ func TestMergeFrom(t *testing.T) {
 	}
 
 	assert.EqualValues(t, expected, cfg.MergeFrom(other))
+
+	cfg = &Config{
+		Input:   "hello world",
+		OutMode: "644",
+	}
+	other = &Config{
+		OutputFiles: []string{"out.txt"},
+		Context: map[string]DataSource{
+			"foo": {
+				URL: mustURL("https://example.com/foo.yaml"),
+				Header: http.Header{
+					"Accept": {"application/json"},
+				},
+			},
+			"bar": {URL: mustURL("stdin:///")},
+		},
+		DataSources: map[string]DataSource{
+			"data": {
+				URL: mustURL("file:///data.json"),
+			},
+			"moredata": {
+				URL: mustURL("https://example.com/more.json"),
+				Header: http.Header{
+					"Authorization": {"Bearer abcd1234"},
+				},
+			},
+		},
+	}
+	expected = &Config{
+		Input:       "hello world",
+		OutputFiles: []string{"out.txt"},
+		Context: map[string]DataSource{
+			"foo": {
+				URL: mustURL("https://example.com/foo.yaml"),
+				Header: http.Header{
+					"Accept": {"application/json"},
+				},
+			},
+			"bar": {URL: mustURL("stdin:///")},
+		},
+		DataSources: map[string]DataSource{
+			"data": {
+				URL: mustURL("file:///data.json"),
+			},
+			"moredata": {
+				URL: mustURL("https://example.com/more.json"),
+				Header: http.Header{
+					"Authorization": {"Bearer abcd1234"},
+				},
+			},
+		},
+		OutMode: "644",
+	}
+
+	assert.EqualValues(t, expected, cfg.MergeFrom(other))
 }
 
 func TestParseDataSourceFlags(t *testing.T) {
