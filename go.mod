@@ -22,7 +22,7 @@ require (
 	github.com/rs/zerolog v1.26.1
 	github.com/spf13/afero v1.8.2
 	github.com/spf13/cobra v1.4.0
-	github.com/stretchr/testify v1.7.0
+	github.com/stretchr/testify v1.7.1
 	github.com/ugorji/go/codec v1.2.7
 	github.com/zealic/xignore v0.3.3
 	go.etcd.io/bbolt v1.3.6
