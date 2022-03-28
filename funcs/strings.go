@@ -13,6 +13,7 @@ import (
 
 	"github.com/Masterminds/goutils"
 	"github.com/hairyhenderson/gomplate/v3/conv"
+	"github.com/hairyhenderson/gomplate/v3/internal/deprecated"
 	"github.com/pkg/errors"
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
@@ -132,7 +133,9 @@ func (StringFuncs) Repeat(count int, s interface{}) (string, error) {
 // Sort -
 //
 // Deprecated: use coll.Sort instead
-func (StringFuncs) Sort(list interface{}) ([]string, error) {
+func (f *StringFuncs) Sort(list interface{}) ([]string, error) {
+	deprecated.WarnDeprecated(f.ctx, "strings.Sort is deprecated - use coll.Sort instead")
+
 	switch v := list.(type) {
 	case []string:
 		return gompstrings.Sort(v), nil
