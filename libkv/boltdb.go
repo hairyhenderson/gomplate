@@ -13,6 +13,7 @@ import (
 )
 
 // NewBoltDB - initialize a new BoltDB datasource handler
+// Deprecated: don't use
 func NewBoltDB(u *url.URL) (*LibKV, error) {
 	boltdb.Register()
 

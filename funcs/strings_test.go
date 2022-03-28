@@ -136,7 +136,7 @@ func TestSlug(t *testing.T) {
 }
 
 func TestSort(t *testing.T) {
-	sf := &StringFuncs{}
+	sf := &StringFuncs{ctx: context.Background()}
 	in := []string{"foo", "bar", "baz"}
 	out := []string{"bar", "baz", "foo"}
 	assert.Equal(t, out, must(sf.Sort(in)))

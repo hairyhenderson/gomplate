@@ -17,6 +17,7 @@ import (
 // All other values are considered false.
 //
 // See ToBool also for a more flexible version.
+// Deprecated: use ToBool instead
 func Bool(in string) bool {
 	if b, err := strconv.ParseBool(in); err == nil {
 		return b

@@ -42,6 +42,7 @@ func (d *Data) registerReaders() {
 
 	d.sourceReaders["aws+smp"] = readAWSSMP
 	d.sourceReaders["aws+sm"] = readAWSSecretsManager
+	// Deprecated: don't use
 	d.sourceReaders["boltdb"] = readBoltDB
 	d.sourceReaders["consul"] = readConsul
 	d.sourceReaders["consul+http"] = readConsul
