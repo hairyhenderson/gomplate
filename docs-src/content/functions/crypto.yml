@@ -32,28 +32,6 @@ funcs:
       Decrypts the given input using the given key. By default,
       uses AES-256-CBC, but supports 128- and 192-bit keys as well.
 
-      _Note: This function is compatible with Helm's encryptAES function, when
-      the input is base64-decoded, and when using 256-bit keys._
-    pipeline: true
-    arguments:
-      - name: key
-        required: true
-        description: the key to use for decryption
-      - name: keyBits
-        required: false
-        description: the key length to use - defaults to `256`
-      - name: input
-        required: true
-        description: the input to decrypt
-    examples:
-      - |
-        $ gomplate -i '{{ base64.Decode "Gp2WG/fKOUsVlhcpr3oqgR+fRUNBcO1eZJ9CW+gDI18=" | crypto.DecryptAES "swordfish" 128 | conv.ToString }}'
-        hello world
-  - name: crypto.DecryptAES
-    description: |
-      Decrypts the given input using the given key. By default,
-      uses AES-256-CBC, but supports 128- and 192-bit keys as well.
-
       This function prints the output as a string. Note that this may result in
       unreadable text if the decrypted payload is binary. See
       [`crypto.DecryptAESBytes`](#crypto.DecryptAESBytes) for another method.
