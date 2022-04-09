@@ -8,7 +8,7 @@ import (
 	"gotest.tools/v3/fs"
 )
 
-func setupTestTmplTest(t *testing.T) *fs.Dir {
+func setupTmplTest(t *testing.T) *fs.Dir {
 	tmpDir := fs.NewDir(t, "gomplate-tmpltests",
 		fs.WithFiles(map[string]string{
 			"toyaml.tmpl": `{{ . | data.ToYAML }}{{"\n"}}`,
@@ -21,13 +21,20 @@ func setupTestTmplTest(t *testing.T) *fs.Dir {
       replicas: 18
 `,
 		}),
+		fs.WithDir("a",
+			fs.WithFiles(map[string]string{
+				"pathtest.tpl": "{{ tmpl.Path }}\n{{ template `nested` }}",
+				"a.tpl":        "{{ tmpl.PathDir }}",
+				"b.tpl":        "{{ tmpl.Path }}",
+			}),
+		),
 	)
 	t.Cleanup(tmpDir.Remove)
 
 	return tmpDir
 }
 
-func TestTmpl_TestInline(t *testing.T) {
+func TestTmpl_Inline(t *testing.T) {
 	inOutTest(t, `
 		{{- $nums := dict "first" 5 "second" 10 }}
 		{{- tpl "{{ add .first .second }}" $nums }}`,
@@ -41,8 +48,8 @@ func TestTmpl_TestInline(t *testing.T) {
 		"1510")
 }
 
-func TestTmpl_TestExec(t *testing.T) {
-	tmpDir := setupTestTmplTest(t)
+func TestTmpl_Exec(t *testing.T) {
+	tmpDir := setupTmplTest(t)
 
 	_, _, err := cmd(t, "-i", `{{ tmpl.Exec "Nope" }}`).run()
 	assert.ErrorContains(t, err, "Nope")
@@ -88,4 +95,22 @@ func TestTmpl_TestExec(t *testing.T) {
 	assert.Equal(t, `{
  "replicas": 18
 }`, string(out))
+}
+
+func TestTmpl_Path(t *testing.T) {
+	tmpDir := setupTmplTest(t)
+
+	o, e, err := cmd(t,
+		"-f", "a/pathtest.tpl",
+		"-t", "nested=a/a.tpl",
+	).withDir(tmpDir.Path()).run()
+	assertSuccess(t, o, e, err, "a/pathtest.tpl\na")
+
+	o, e, err = cmd(t,
+		"-f", "a/a.tpl",
+		"-f", "a/b.tpl",
+		"-o", "-",
+		"-o", "-",
+	).withDir(tmpDir.Path()).run()
+	assertSuccess(t, o, e, err, "aa/b.tpl")
 }

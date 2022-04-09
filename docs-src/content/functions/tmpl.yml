@@ -55,3 +55,42 @@ funcs:
         '
         hello world
         goodbye world
+  - name: tmpl.Path
+    description: |
+      Output the path of the current template, if it came from a file. For
+      inline templates, this will be an empty string.
+
+      Note that if this function is called from a nested template, the path
+      of the main template will be returned instead.
+    pipeline: false
+    rawExamples:
+      - |
+        _`subdir/input.tpl`:_
+        ```
+        this template is in {{ tmpl.Path }}
+        ```
+
+        ```console
+        $ gomplate -f subdir/input.tpl
+        this template is in subdir/input.tpl
+        ```
+        ```
+  - name: tmpl.PathDir
+    description: |
+      Output the current template's directory. For inline templates, this will
+      be an empty string.
+
+      Note that if this function is called from a nested template, the path
+      of the main template will be used instead.
+    pipeline: false
+    rawExamples:
+      - |
+        _`subdir/input.tpl`:_
+        ```
+        this template is in {{ tmpl.Dir }}
+        ```
+
+        ```console
+        $ gomplate -f subdir/input.tpl
+        this template is in subdir
+        ```

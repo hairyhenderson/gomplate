@@ -32,11 +32,25 @@ type tplate struct {
 	modeOverride bool
 }
 
-func addTmplFuncs(f template.FuncMap, root *template.Template, ctx interface{}) {
-	t := tmpl.New(root, ctx)
+func addTmplFuncs(f template.FuncMap, root *template.Template, tctx interface{}, path string) {
+	t := tmpl.New(root, tctx, path)
 	tns := func() *tmpl.Template { return t }
 	f["tmpl"] = tns
 	f["tpl"] = t.Inline
+}
+
+// copyFuncMap - copies the template.FuncMap into a new map so we can modify it
+// without affecting the original
+func copyFuncMap(funcMap template.FuncMap) template.FuncMap {
+	if funcMap == nil {
+		return nil
+	}
+
+	newFuncMap := make(template.FuncMap, len(funcMap))
+	for k, v := range funcMap {
+		newFuncMap[k] = v
+	}
+	return newFuncMap
 }
 
 func (t *tplate) toGoTemplate(g *gomplate) (tmpl *template.Template, err error) {
@@ -47,9 +61,12 @@ func (t *tplate) toGoTemplate(g *gomplate) (tmpl *template.Template, err error) 
 		g.rootTemplate = tmpl
 	}
 	tmpl.Option("missingkey=error")
+
+	funcMap := copyFuncMap(g.funcMap)
+
 	// the "tmpl" funcs get added here because they need access to the root template and context
-	addTmplFuncs(g.funcMap, g.rootTemplate, g.tmplctx)
-	tmpl.Funcs(g.funcMap)
+	addTmplFuncs(funcMap, g.rootTemplate, g.tmplctx, t.name)
+	tmpl.Funcs(funcMap)
 	tmpl.Delims(g.leftDelim, g.rightDelim)
 	_, err = tmpl.Parse(t.contents)
 	if err != nil {

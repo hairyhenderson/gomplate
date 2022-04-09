@@ -3,6 +3,7 @@ package tmpl
 
 import (
 	"bytes"
+	"path/filepath"
 	"text/template"
 
 	"github.com/pkg/errors"
@@ -12,11 +13,28 @@ import (
 type Template struct {
 	root       *template.Template
 	defaultCtx interface{}
+	path       string
 }
 
 // New -
-func New(root *template.Template, ctx interface{}) *Template {
-	return &Template{root, ctx}
+func New(root *template.Template, tctx interface{}, path string) *Template {
+	return &Template{root, tctx, path}
+}
+
+// Path - returns the path to the current template if it came from a file.
+// An empty string is returned for inline templates.
+func (t *Template) Path() (string, error) {
+	return t.path, nil
+}
+
+// PathDir - returns the directory of the template, if it came from a file. An empty
+// string is returned for inline templates. If the template was loaded from the
+// current working directory, "." is returned.
+func (t *Template) PathDir() (string, error) {
+	if t.path == "" {
+		return "", nil
+	}
+	return filepath.Dir(t.path), nil
 }
 
 // Inline - a template function to do inline template processing
