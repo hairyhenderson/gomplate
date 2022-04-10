@@ -73,10 +73,10 @@ func typeHandler(t, body string) func(http.ResponseWriter, *http.Request) {
 }
 
 // freeport - find a free TCP port for immediate use. No guarantees!
-func freeport() (port int, addr string) {
+func freeport(t *testing.T) (port int, addr string) {
 	l, err := net.ListenTCP("tcp", &net.TCPAddr{IP: net.ParseIP("127.0.0.1")})
 	if err != nil {
-		panic(err)
+		t.Fatal(err)
 	}
 	defer l.Close()
 	a := l.Addr().(*net.TCPAddr)
@@ -207,13 +207,13 @@ func (c *command) runInProcess() (o, e string, err error) {
 		//nolint:govet
 		origWd, err := os.Getwd()
 		if err != nil {
-			panic(err)
+			c.t.Fatal(err)
 		}
 		defer os.Chdir(origWd)
 
 		err = os.Chdir(c.dir)
 		if err != nil {
-			panic(err)
+			c.t.Fatal(err)
 		}
 	}
 

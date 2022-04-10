@@ -20,9 +20,9 @@ func setupDatasourcesConsulTest(t *testing.T) (string, *vaultClient) {
 	pidDir := fs.NewDir(t, "gomplate-inttests-pid")
 	t.Cleanup(pidDir.Remove)
 
-	httpPort, consulAddr := freeport()
-	serverPort, _ := freeport()
-	serfLanPort, _ := freeport()
+	httpPort, consulAddr := freeport(t)
+	serverPort, _ := freeport(t)
+	serfLanPort, _ := freeport(t)
 
 	tmpDir := fs.NewDir(t, "gomplate-inttests",
 		fs.WithFile(

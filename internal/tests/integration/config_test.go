@@ -20,18 +20,18 @@ func setupConfigTest(t *testing.T) *fs.Dir {
 	return tmpDir
 }
 
-func writeFile(dir *fs.Dir, f, content string) {
+func writeFile(t *testing.T, dir *fs.Dir, f, content string) {
 	f = dir.Join(f)
 	err := ioutil.WriteFile(f, []byte(content), 0600)
 	if err != nil {
-		panic(err)
+		t.Fatal(err)
 	}
 }
 
 func writeConfig(t *testing.T, dir *fs.Dir, content string) {
 	t.Helper()
 
-	writeFile(dir, ".gomplate.yaml", content)
+	writeFile(t, dir, ".gomplate.yaml", content)
 	t.Logf("writing config: %s", content)
 }
 
@@ -62,7 +62,7 @@ func TestConfig_FlagOverridesConfig(t *testing.T) {
 func TestConfig_ReadsFromInputFile(t *testing.T) {
 	tmpDir := setupConfigTest(t)
 	writeConfig(t, tmpDir, "inputFiles: [in]")
-	writeFile(tmpDir, "in", "blah blah")
+	writeFile(t, tmpDir, "in", "blah blah")
 
 	o, e, err := cmd(t).withDir(tmpDir.Path()).run()
 	assertSuccess(t, o, e, err, "blah blah")
@@ -75,8 +75,8 @@ datasources:
   data:
     url: in.yaml
 `)
-	writeFile(tmpDir, "in", `{{ (ds "data").value }}`)
-	writeFile(tmpDir, "in.yaml", `value: hello world`)
+	writeFile(t, tmpDir, "in", `{{ (ds "data").value }}`)
+	writeFile(t, tmpDir, "in.yaml", `value: hello world`)
 
 	o, e, err := cmd(t).withDir(tmpDir.Path()).run()
 	assertSuccess(t, o, e, err, "hello world")
@@ -91,8 +91,8 @@ datasources:
   data:
     url: in.yaml
 `)
-	writeFile(tmpDir, "indir/file", `{{ (ds "data").value }}`)
-	writeFile(tmpDir, "in.yaml", `value: hello world`)
+	writeFile(t, tmpDir, "indir/file", `{{ (ds "data").value }}`)
+	writeFile(t, tmpDir, "in.yaml", `value: hello world`)
 
 	o, e, err := cmd(t).withDir(tmpDir.Path()).run()
 	assertSuccess(t, o, e, err, "")
@@ -130,7 +130,7 @@ outputFiles: [out]
 
 func TestConfig_AlternateConfigFile(t *testing.T) {
 	tmpDir := setupConfigTest(t)
-	writeFile(tmpDir, "config.yaml", `in: this is from an alternate config
+	writeFile(t, tmpDir, "config.yaml", `in: this is from an alternate config
 `)
 
 	o, e, err := cmd(t, "--config=config.yaml").withDir(tmpDir.Path()).run()
@@ -140,7 +140,7 @@ func TestConfig_AlternateConfigFile(t *testing.T) {
 func TestConfig_EnvConfigFile(t *testing.T) {
 	tmpDir := setupConfigTest(t)
 
-	writeFile(tmpDir, "envconfig.yaml", `in: yet another alternate config
+	writeFile(t, tmpDir, "envconfig.yaml", `in: yet another alternate config
 `)
 
 	o, e, err := cmd(t).withDir(tmpDir.Path()).
@@ -161,8 +161,8 @@ datasources:
   data:
     url: in.yaml
 `)
-	writeFile(tmpDir, "in", `(╯°□°）╯︵ ┻━┻ (ds "data").value }}`)
-	writeFile(tmpDir, "in.yaml", `value: hello world`)
+	writeFile(t, tmpDir, "in", `(╯°□°）╯︵ ┻━┻ (ds "data").value }}`)
+	writeFile(t, tmpDir, "in.yaml", `value: hello world`)
 
 	o, e, err := cmd(t).withDir(tmpDir.Path()).
 		withEnv("GOMPLATE_LEFT_DELIM", "<<").run()
@@ -184,8 +184,8 @@ datasources:
   data:
     url: in.yaml
 `)
-	writeFile(tmpDir, "in", `{{ (ds "data").value }}`)
-	writeFile(tmpDir, "in.yaml", `value: hello world`)
+	writeFile(t, tmpDir, "in", `{{ (ds "data").value }}`)
+	writeFile(t, tmpDir, "in.yaml", `value: hello world`)
 
 	o, e, err := cmd(t, "--left-delim={{").
 		withDir(tmpDir.Path()).

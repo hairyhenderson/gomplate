@@ -83,21 +83,21 @@ func TestPow(t *testing.T) {
 	assert.Equal(t, 2.25, m.Pow(1.5, 2))
 }
 
-func mustSeq(n ...interface{}) []int64 {
+func mustSeq(t *testing.T, n ...interface{}) []int64 {
 	m := MathFuncs{}
 	s, err := m.Seq(n...)
 	if err != nil {
-		panic(err)
+		t.Fatal(err)
 	}
 	return s
 }
 func TestSeq(t *testing.T) {
 	m := MathFuncs{}
-	assert.EqualValues(t, []int64{0, 1, 2, 3}, mustSeq(0, 3))
-	assert.EqualValues(t, []int64{1, 0}, mustSeq(0))
-	assert.EqualValues(t, []int64{0, 2, 4}, mustSeq(0, 4, 2))
-	assert.EqualValues(t, []int64{0, 2, 4}, mustSeq(0, 5, 2))
-	assert.EqualValues(t, []int64{0}, mustSeq(0, 5, 8))
+	assert.EqualValues(t, []int64{0, 1, 2, 3}, mustSeq(t, 0, 3))
+	assert.EqualValues(t, []int64{1, 0}, mustSeq(t, 0))
+	assert.EqualValues(t, []int64{0, 2, 4}, mustSeq(t, 0, 4, 2))
+	assert.EqualValues(t, []int64{0, 2, 4}, mustSeq(t, 0, 5, 2))
+	assert.EqualValues(t, []int64{0}, mustSeq(t, 0, 5, 8))
 	_, err := m.Seq()
 	assert.Error(t, err)
 }
