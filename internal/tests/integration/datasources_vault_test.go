@@ -58,7 +58,7 @@ func startVault(t *testing.T) (*fs.Dir, *vaultClient) {
 		os.Rename(tokenFile, path.Join(homeDir, ".vault-token.bak"))
 	}
 
-	_, vaultAddr := freeport()
+	_, vaultAddr := freeport(t)
 	vault := icmd.Command("vault", "server",
 		"-dev",
 		"-dev-root-token-id="+vaultRootToken,
