@@ -43,12 +43,13 @@ func setupDatasourcesBoltDBTest(t *testing.T) *fs.Dir {
 func TestDatasources_BoltDB_Datasource(t *testing.T) {
 	tmpDir := setupDatasourcesBoltDBTest(t)
 
-	o, e, err := cmd(t, "-d", "config=boltdb://"+tmpDir.Join("config.db#Bucket1"),
+	// ignore the stderr output, it'll contain boltdb deprecation warning
+	o, _, err := cmd(t, "-d", "config=boltdb://"+tmpDir.Join("config.db#Bucket1"),
 		"-i", `{{(ds "config" "foo")}}`).run()
-	assertSuccess(t, o, e, err, "bar")
+	assertSuccess(t, o, "", err, "bar")
 
-	o, e, err = cmd(t, "-d", "config=boltdb://"+tmpDir.Join("config.db#Bucket1"),
+	o, _, err = cmd(t, "-d", "config=boltdb://"+tmpDir.Join("config.db#Bucket1"),
 		"-d", "config2=boltdb://"+tmpDir.Join("config.db#Bucket2"),
 		"-i", `{{(ds "config" "foo")}}-{{(ds "config2" "foobar")}}`).run()
-	assertSuccess(t, o, e, err, "bar-baz")
+	assertSuccess(t, o, "", err, "bar-baz")
 }

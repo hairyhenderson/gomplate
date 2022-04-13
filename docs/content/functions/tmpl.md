@@ -80,3 +80,58 @@ $ gomplate -i '
 hello world
 goodbye world
 ```
+
+## `tmpl.Path`
+
+Output the path of the current template, if it came from a file. For
+inline templates, this will be an empty string.
+
+Note that if this function is called from a nested template, the path
+of the main template will be returned instead.
+
+### Usage
+
+```go
+tmpl.Path
+```
+
+
+### Examples
+
+_`subdir/input.tpl`:_
+```
+this template is in {{ tmpl.Path }}
+```
+
+```console
+$ gomplate -f subdir/input.tpl
+this template is in subdir/input.tpl
+```
+```
+
+## `tmpl.PathDir`
+
+Output the current template's directory. For inline templates, this will
+be an empty string.
+
+Note that if this function is called from a nested template, the path
+of the main template will be used instead.
+
+### Usage
+
+```go
+tmpl.PathDir
+```
+
+
+### Examples
+
+_`subdir/input.tpl`:_
+```
+this template is in {{ tmpl.Dir }}
+```
+
+```console
+$ gomplate -f subdir/input.tpl
+this template is in subdir
+```

@@ -42,9 +42,10 @@ jobs:
   windows-build:
     runs-on: windows-latest
     env:
-      TMP: D:\tmp
+      TMP: D:\a\tmp
     steps:
-      - uses: actions/setup-go@v2
+      - run: pwd
+      - uses: actions/setup-go@v3
         with:
           go-version: '1.18'
       - run: |

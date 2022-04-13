@@ -20,12 +20,13 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func testTemplate(g *gomplate, tmpl string) string {
+func testTemplate(t *testing.T, g *gomplate, tmpl string) string {
+	t.Helper()
+
 	var out bytes.Buffer
 	err := g.runTemplate(context.Background(), &tplate{name: "testtemplate", contents: tmpl, target: &out})
-	if err != nil {
-		panic(err)
-	}
+	assert.NoError(t, err)
+
 	return out.String()
 }
 
@@ -36,9 +37,9 @@ func TestGetenvTemplates(t *testing.T) {
 			"bool":   conv.Bool,
 		},
 	}
-	assert.Empty(t, testTemplate(g, `{{getenv "BLAHBLAHBLAH"}}`))
-	assert.Equal(t, os.Getenv("USER"), testTemplate(g, `{{getenv "USER"}}`))
-	assert.Equal(t, "default value", testTemplate(g, `{{getenv "BLAHBLAHBLAH" "default value"}}`))
+	assert.Empty(t, testTemplate(t, g, `{{getenv "BLAHBLAHBLAH"}}`))
+	assert.Equal(t, os.Getenv("USER"), testTemplate(t, g, `{{getenv "USER"}}`))
+	assert.Equal(t, "default value", testTemplate(t, g, `{{getenv "BLAHBLAHBLAH" "default value"}}`))
 }
 
 func TestBoolTemplates(t *testing.T) {
@@ -47,10 +48,10 @@ func TestBoolTemplates(t *testing.T) {
 			"bool": conv.Bool,
 		},
 	}
-	assert.Equal(t, "true", testTemplate(g, `{{bool "true"}}`))
-	assert.Equal(t, "false", testTemplate(g, `{{bool "false"}}`))
-	assert.Equal(t, "false", testTemplate(g, `{{bool "foo"}}`))
-	assert.Equal(t, "false", testTemplate(g, `{{bool ""}}`))
+	assert.Equal(t, "true", testTemplate(t, g, `{{bool "true"}}`))
+	assert.Equal(t, "false", testTemplate(t, g, `{{bool "false"}}`))
+	assert.Equal(t, "false", testTemplate(t, g, `{{bool "foo"}}`))
+	assert.Equal(t, "false", testTemplate(t, g, `{{bool ""}}`))
 }
 
 func TestEc2MetaTemplates(t *testing.T) {
@@ -61,14 +62,14 @@ func TestEc2MetaTemplates(t *testing.T) {
 
 	g, s := createGomplate(404, "")
 	defer s.Close()
-	assert.Equal(t, "", testTemplate(g, `{{ec2meta "foo"}}`))
-	assert.Equal(t, "default", testTemplate(g, `{{ec2meta "foo" "default"}}`))
-
+	assert.Equal(t, "", testTemplate(t, g, `{{ec2meta "foo"}}`))
+	assert.Equal(t, "default", testTemplate(t, g, `{{ec2meta "foo" "default"}}`))
 	s.Close()
+
 	g, s = createGomplate(200, "i-1234")
 	defer s.Close()
-	assert.Equal(t, "i-1234", testTemplate(g, `{{ec2meta "instance-id"}}`))
-	assert.Equal(t, "i-1234", testTemplate(g, `{{ec2meta "instance-id" "default"}}`))
+	assert.Equal(t, "i-1234", testTemplate(t, g, `{{ec2meta "instance-id"}}`))
+	assert.Equal(t, "i-1234", testTemplate(t, g, `{{ec2meta "instance-id" "default"}}`))
 }
 
 func TestEc2MetaTemplates_WithJSON(t *testing.T) {
@@ -82,8 +83,8 @@ func TestEc2MetaTemplates_WithJSON(t *testing.T) {
 		},
 	}
 
-	assert.Equal(t, "bar", testTemplate(g, `{{ (ec2meta "obj" | json).foo }}`))
-	assert.Equal(t, "bar", testTemplate(g, `{{ (ec2dynamic "obj" | json).foo }}`))
+	assert.Equal(t, "bar", testTemplate(t, g, `{{ (ec2meta "obj" | json).foo }}`))
+	assert.Equal(t, "bar", testTemplate(t, g, `{{ (ec2dynamic "obj" | json).foo }}`))
 }
 
 func TestJSONArrayTemplates(t *testing.T) {
@@ -93,8 +94,8 @@ func TestJSONArrayTemplates(t *testing.T) {
 		},
 	}
 
-	assert.Equal(t, "[foo bar]", testTemplate(g, `{{jsonArray "[\"foo\",\"bar\"]"}}`))
-	assert.Equal(t, "bar", testTemplate(g, `{{ index (jsonArray "[\"foo\",\"bar\"]") 1 }}`))
+	assert.Equal(t, "[foo bar]", testTemplate(t, g, `{{jsonArray "[\"foo\",\"bar\"]"}}`))
+	assert.Equal(t, "bar", testTemplate(t, g, `{{ index (jsonArray "[\"foo\",\"bar\"]") 1 }}`))
 }
 
 func TestYAMLTemplates(t *testing.T) {
@@ -105,9 +106,9 @@ func TestYAMLTemplates(t *testing.T) {
 		},
 	}
 
-	assert.Equal(t, "bar", testTemplate(g, `{{(yaml "foo: bar").foo}}`))
-	assert.Equal(t, "[foo bar]", testTemplate(g, `{{yamlArray "- foo\n- bar\n"}}`))
-	assert.Equal(t, "bar", testTemplate(g, `{{ index (yamlArray "[\"foo\",\"bar\"]") 1 }}`))
+	assert.Equal(t, "bar", testTemplate(t, g, `{{(yaml "foo: bar").foo}}`))
+	assert.Equal(t, "[foo bar]", testTemplate(t, g, `{{yamlArray "- foo\n- bar\n"}}`))
+	assert.Equal(t, "bar", testTemplate(t, g, `{{ index (yamlArray "[\"foo\",\"bar\"]") 1 }}`))
 }
 
 func TestSliceTemplates(t *testing.T) {
@@ -116,9 +117,9 @@ func TestSliceTemplates(t *testing.T) {
 			"slice": conv.Slice,
 		},
 	}
-	assert.Equal(t, "foo", testTemplate(g, `{{index (slice "foo") 0}}`))
-	assert.Equal(t, `[foo bar 42]`, testTemplate(g, `{{slice "foo" "bar" 42}}`))
-	assert.Equal(t, `helloworld`, testTemplate(g, `{{range slice "hello" "world"}}{{.}}{{end}}`))
+	assert.Equal(t, "foo", testTemplate(t, g, `{{index (slice "foo") 0}}`))
+	assert.Equal(t, `[foo bar 42]`, testTemplate(t, g, `{{slice "foo" "bar" 42}}`))
+	assert.Equal(t, `helloworld`, testTemplate(t, g, `{{range slice "hello" "world"}}{{.}}{{end}}`))
 }
 
 func TestHasTemplate(t *testing.T) {
@@ -128,21 +129,21 @@ func TestHasTemplate(t *testing.T) {
 			"has":  conv.Has,
 		},
 	}
-	assert.Equal(t, "true", testTemplate(g, `{{has ("foo:\n  bar: true" | yaml) "foo"}}`))
-	assert.Equal(t, "true", testTemplate(g, `{{has ("foo:\n  bar: true" | yaml).foo "bar"}}`))
-	assert.Equal(t, "false", testTemplate(g, `{{has ("foo: true" | yaml) "bah"}}`))
+	assert.Equal(t, "true", testTemplate(t, g, `{{has ("foo:\n  bar: true" | yaml) "foo"}}`))
+	assert.Equal(t, "true", testTemplate(t, g, `{{has ("foo:\n  bar: true" | yaml).foo "bar"}}`))
+	assert.Equal(t, "false", testTemplate(t, g, `{{has ("foo: true" | yaml) "bah"}}`))
 	tmpl := `{{- $data := yaml "foo: bar\nbaz: qux\n" }}
 {{- if (has $data "baz") }}
 {{- $data.baz }}
 {{- end }}`
-	assert.Equal(t, "qux", testTemplate(g, tmpl))
+	assert.Equal(t, "qux", testTemplate(t, g, tmpl))
 	tmpl = `{{- $data := yaml "foo: bar\nbaz: qux\n" }}
 {{- if (has $data "quux") }}
 {{- $data.quux }}
 {{- else }}
 {{- $data.foo }}
 {{- end }}`
-	assert.Equal(t, "bar", testTemplate(g, tmpl))
+	assert.Equal(t, "bar", testTemplate(t, g, tmpl))
 }
 
 func TestCustomDelim(t *testing.T) {
@@ -151,7 +152,7 @@ func TestCustomDelim(t *testing.T) {
 		rightDelim: "]",
 		funcMap:    template.FuncMap{},
 	}
-	assert.Equal(t, "hi", testTemplate(g, `[print "hi"]`))
+	assert.Equal(t, "hi", testTemplate(t, g, `[print "hi"]`))
 }
 
 func TestRunTemplates(t *testing.T) {

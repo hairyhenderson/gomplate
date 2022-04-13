@@ -29,7 +29,7 @@ func TestInline(t *testing.T) {
 
 func TestParseArgs(t *testing.T) {
 	defaultCtx := map[string]string{"hello": "world"}
-	tmpl := New(nil, defaultCtx)
+	tmpl := New(nil, defaultCtx, "")
 	name, in, ctx, err := tmpl.parseArgs("foo")
 	assert.NoError(t, err)
 	assert.Equal(t, "<inline>", name)
@@ -87,4 +87,35 @@ func TestExec(t *testing.T) {
 
 	_, err = tmpl.Exec("bogus")
 	assert.Error(t, err)
+}
+
+func TestPath(t *testing.T) {
+	tmpl := New(nil, nil, "")
+
+	p, err := tmpl.Path()
+	assert.NoError(t, err)
+	assert.Equal(t, "", p)
+
+	tmpl = New(nil, nil, "foo")
+	p, err = tmpl.Path()
+	assert.NoError(t, err)
+	assert.Equal(t, "foo", p)
+}
+
+func TestPathDir(t *testing.T) {
+	tmpl := New(nil, nil, "")
+
+	p, err := tmpl.PathDir()
+	assert.NoError(t, err)
+	assert.Equal(t, "", p)
+
+	tmpl = New(nil, nil, "foo")
+	p, err = tmpl.PathDir()
+	assert.NoError(t, err)
+	assert.Equal(t, ".", p)
+
+	tmpl = New(nil, nil, "foo/bar")
+	p, err = tmpl.PathDir()
+	assert.NoError(t, err)
+	assert.Equal(t, "foo", p)
 }

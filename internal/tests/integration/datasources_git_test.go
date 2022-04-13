@@ -44,7 +44,7 @@ func startGitDaemon(t *testing.T) string {
 	pidDir := fs.NewDir(t, "gomplate-inttests-pid")
 	t.Cleanup(pidDir.Remove)
 
-	port, addr := freeport()
+	port, addr := freeport(t)
 	gitDaemon := icmd.Command("git", "daemon",
 		"--verbose",
 		"--port="+strconv.Itoa(port),
