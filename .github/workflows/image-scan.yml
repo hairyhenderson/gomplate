@@ -1,12 +1,14 @@
 name: Docker Image Scan
 on:
-  pull_request:
   push:
-    branches:
-      - master
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
 
 jobs:
   docker-build:
+    permissions:
+      security-events: write
     runs-on: ubuntu-latest
     env:
       DOCKER_BUILDKIT: 1
