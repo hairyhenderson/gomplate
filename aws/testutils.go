@@ -2,42 +2,21 @@ package aws
 
 import (
 	"fmt"
-	"net/http"
-	"net/http/httptest"
-	"net/url"
 
 	"github.com/aws/aws-sdk-go/service/ec2"
 )
 
-// MockServer -
-func MockServer(code int, body string) (*httptest.Server, *Ec2Meta) {
-	server, httpClient := MockHTTPServer(code, body)
-
-	client := &Ec2Meta{
-		Client:   httpClient,
-		cache:    make(map[string]string),
-		Endpoint: server.URL + "/",
-		options:  ClientOptions{},
-		nonAWS:   false,
-	}
-	return server, client
-}
-
-// MockHTTPServer -
-func MockHTTPServer(code int, body string) (*httptest.Server, *http.Client) {
-	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(code)
-		// nolint: errcheck
-		fmt.Fprintln(w, body)
-	}))
-
-	tr := &http.Transport{
-		Proxy: func(req *http.Request) (*url.URL, error) {
-			return url.Parse(server.URL)
+// MockEC2Meta -
+func MockEC2Meta(data map[string]string, region string) *Ec2Meta {
+	return &Ec2Meta{
+		cache: map[string]string{},
+		ec2MetadataProvider: func() (EC2Metadata, error) {
+			return &DummEC2MetadataProvider{
+				data:   data,
+				region: region,
+			}, nil
 		},
 	}
-	httpClient := &http.Client{Transport: tr}
-	return server, httpClient
 }
 
 // NewDummyEc2Info -
@@ -45,13 +24,16 @@ func NewDummyEc2Info(metaClient *Ec2Meta) *Ec2Info {
 	i := &Ec2Info{
 		metaClient: metaClient,
 		describer:  func() (InstanceDescriber, error) { return DummyInstanceDescriber{}, nil },
+		cache:      map[string]interface{}{},
 	}
 	return i
 }
 
 // NewDummyEc2Meta -
 func NewDummyEc2Meta() *Ec2Meta {
-	return &Ec2Meta{nonAWS: true}
+	return &Ec2Meta{
+		nonAWS: true,
+	}
 }
 
 // DummyInstanceDescriber - test doubles
@@ -73,4 +55,21 @@ func (d DummyInstanceDescriber) DescribeInstances(*ec2.DescribeInstancesInput) (
 		},
 	}
 	return output, nil
+}
+
+type DummEC2MetadataProvider struct {
+	region string
+	data   map[string]string
+}
+
+func (d DummEC2MetadataProvider) GetMetadata(p string) (string, error) {
+	v, ok := d.data[p]
+	if !ok {
+		return "", fmt.Errorf("cannot find %v", p)
+	}
+	return v, nil
+}
+
+func (d DummEC2MetadataProvider) Region() (string, error) {
+	return d.region, nil
 }

@@ -12,8 +12,8 @@ import (
 )
 
 func TestTag_MissingKey(t *testing.T) {
-	server, ec2meta := MockServer(200, `"i-1234"`)
-	defer server.Close()
+	ec2meta := MockEC2Meta(map[string]string{"instance-id": "i-1234"}, "")
+
 	client := DummyInstanceDescriber{
 		tags: []*ec2.Tag{
 			{
@@ -39,8 +39,8 @@ func TestTag_MissingKey(t *testing.T) {
 }
 
 func TestTag_ValidKey(t *testing.T) {
-	server, ec2meta := MockServer(200, `"i-1234"`)
-	defer server.Close()
+	ec2meta := MockEC2Meta(map[string]string{"instance-id": "i-1234"}, "")
+
 	client := DummyInstanceDescriber{
 		tags: []*ec2.Tag{
 			{
@@ -66,8 +66,7 @@ func TestTag_ValidKey(t *testing.T) {
 }
 
 func TestTags(t *testing.T) {
-	server, ec2meta := MockServer(200, `"i-1234"`)
-	defer server.Close()
+	ec2meta := MockEC2Meta(map[string]string{"instance-id": "i-1234"}, "")
 	client := DummyInstanceDescriber{
 		tags: []*ec2.Tag{
 			{
@@ -92,9 +91,9 @@ func TestTags(t *testing.T) {
 }
 
 func TestTag_NonEC2(t *testing.T) {
-	server, ec2meta := MockServer(404, "")
+	ec2meta := MockEC2Meta(nil, "")
 	ec2meta.nonAWS = true
-	defer server.Close()
+
 	client := DummyInstanceDescriber{}
 	e := &Ec2Info{
 		describer: func() (InstanceDescriber, error) {
@@ -109,8 +108,7 @@ func TestTag_NonEC2(t *testing.T) {
 }
 
 func TestNewEc2Info(t *testing.T) {
-	server, ec2meta := MockServer(200, `"i-1234"`)
-	defer server.Close()
+	ec2meta := MockEC2Meta(map[string]string{"instance-id": "i-1234"}, "")
 	client := DummyInstanceDescriber{
 		tags: []*ec2.Tag{
 			{
@@ -161,8 +159,8 @@ func TestGetRegion(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, "unknown", region)
 
-	server, ec2meta := MockServer(200, `{"region":"us-east-1"}`)
-	defer server.Close()
+	ec2meta := MockEC2Meta(nil, "us-east-1")
+
 	region, err = getRegion(ec2meta)
 	assert.NoError(t, err)
 	assert.Equal(t, "us-east-1", region)
