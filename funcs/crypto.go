@@ -250,6 +250,30 @@ func (f *CryptoFuncs) RSADerivePublicKey(privateKey string) (string, error) {
 	return string(out), err
 }
 
+// ECDSAGenerateKey - -
+// Experimental!
+func (f *CryptoFuncs) ECDSAGenerateKey(args ...interface{}) (string, error) {
+	if err := checkExperimental(f.ctx); err != nil {
+		return "", err
+	}
+	curve := "P-256"
+	if len(args) == 1 {
+		curve = conv.ToString(args[0])
+	} else if len(args) > 1 {
+		return "", fmt.Errorf("wrong number of args: want 0 or 1, got %d", len(args))
+	}
+	out, err := crypto.ECDSAGenerateKey(curve)
+	return string(out), err
+}
+
+func (f *CryptoFuncs) ECDSADerivePublicKey(privateKey string) (string, error) {
+	if err := checkExperimental(f.ctx); err != nil {
+		return "", err
+	}
+	out, err := crypto.ECDSADerivePublicKey([]byte(privateKey))
+	return string(out), err
+}
+
 // EncryptAES -
 func (f *CryptoFuncs) EncryptAES(key string, args ...interface{}) ([]byte, error) {
 	k, msg, err := parseAESArgs(key, args...)
