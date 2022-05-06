@@ -14,15 +14,16 @@ import (
 func ECDSAGenerateKey(curve string) ([]byte, error) {
 	var c elliptic.Curve
 
-	if curve == "P-224" {
+	switch curve {
+	case "P-224":
 		c = elliptic.P224()
-	} else if curve == "P-256" {
+	case "P-256":
 		c = elliptic.P256()
-	} else if curve == "P-384" {
+	case "P-384":
 		c = elliptic.P384()
-	} else if curve == "P-521" {
+	case "P-521":
 		c = elliptic.P521()
-	} else {
+	default:
 		return nil, fmt.Errorf("unknow curve: %s", curve)
 	}
 

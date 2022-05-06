@@ -61,7 +61,7 @@ func TestECDSAGenerateKey(t *testing.T) {
 	assert.True(t, strings.HasSuffix(string(key),
 		"-----END EC PRIVATE KEY-----\n"))
 
-	key, err = ECDSAGenerateKey("P-999")
+	_, err = ECDSAGenerateKey("P-999")
 	assert.Error(t, err)
 }
 
