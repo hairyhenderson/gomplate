@@ -103,6 +103,52 @@ funcs:
       - |
         $ gomplate -i '{{ "hello world" | crypto.EncryptAES "swordfish" 128 | base64.Encode }}'
         MnRutHovsh/9JN3YrJtBVjZtI6xXZh33bCQS2iZ4SDI=
+  - name: crypto.ECDSAGenerateKey
+    experimental: true
+    description: |
+      Generate a new Elliptic Curve Private Key and output in
+      PEM-encoded PKCS#1 ASN.1 DER form.
+
+      Go's standard NIST P-224, P-256, P-384, and P-521 elliptic curves are all
+      supported.
+
+      Default curve is P-256 and can be overridden with the optional `curve`
+      parameter.
+    pipeline: true
+    arguments:
+      - name: curve
+        required: false
+        description: |
+          One of Go's standard NIST curves, P-224, P-256, P-384, or P-521 -
+          defaults to P-256.
+    examples:
+      - |
+        $ gomplate -i '{{ crypto.ECDSAGenerateKey }}'
+        -----BEGIN EC PRIVATE KEY-----
+        ...
+  - name: crypto.ECDSADerivePublicKey
+    experimental: true
+    description: |
+      Derive a public key from an elliptic curve private key and output in PKIX
+      ASN.1 DER form.
+    pipeline: true
+    arguments:
+      - name: key
+        required: true
+        description: the private key to derive a public key from
+    examples:
+      - |
+        $ gomplate -i '{{ crypto.ECDSAGenerateKey | crypto.ECDSADerivePublicKey }}'
+        -----BEGIN PUBLIC KEY-----
+        ...
+      - |
+        $ gomplate -d key=priv.pem -i '{{ crypto.ECDSADerivePublicKey (include "key") }}'
+        -----BEGIN PUBLIC KEY-----
+        MIGbMBAGByqGSM49AgEGBSuBBAAjA4GGAAQBZvTS1wcCJSsGYQUVoSVctynkuhke
+        kikB38iNwx/80jzdm+Z8OmRGlwH6OE9NX1MyxjvYMimhcj6zkaOKh1/HhMABrfuY
+        +hIz6+EUt/Db51awO7iCuRly5L4TZ+CnMAsIbtUOqsqwSQDtv0AclAuogmCst75o
+        aztsmrD79OXXnhUlURI=
+        -----END PUBLIC KEY-----
   - name: crypto.PBKDF2
     description: |
       Run the Password-Based Key Derivation Function &num;2 as defined in
@@ -290,7 +336,7 @@ funcs:
           {{ $enc := "hello" | crypto.RSAEncrypt $pub -}}
           {{ crypto.RSADecrypt .privKey $enc }}'
         hello
-  - rawName: '`crypto.SHA1`, `crypto.SHA224`, `crypto.SHA256`, `crypto.SHA384`, `crypto.SHA512`, `crypto.SHA512_224`, `crypto.SHA512_256`'
+  - rawName: "`crypto.SHA1`, `crypto.SHA224`, `crypto.SHA256`, `crypto.SHA384`, `crypto.SHA512`, `crypto.SHA512_224`, `crypto.SHA512_256`"
     description: |
       Compute a checksum with a SHA-1 or SHA-2 algorithm as defined in [RFC 3174](https://tools.ietf.org/html/rfc3174) (SHA-1) and [FIPS 180-4](http://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.180-4.pdf) (SHA-2).
 
@@ -319,7 +365,7 @@ funcs:
       - |
         $ gomplate -i '{{ crypto.SHA512 "bar" }}'
         cc06808cbbee0510331aa97974132e8dc296aeb795be229d064bae784b0a87a5cf4281d82e8c99271b75db2148f08a026c1a60ed9cabdb8cac6d24242dac4063
-  - rawName: '`crypto.SHA1Bytes`, `crypto.SHA224Bytes`, `crypto.SHA256Bytes`, `crypto.SHA384Bytes`, `crypto.SHA512Bytes`, `crypto.SHA512_224Bytes`, `crypto.SHA512_256Bytes`'
+  - rawName: "`crypto.SHA1Bytes`, `crypto.SHA224Bytes`, `crypto.SHA256Bytes`, `crypto.SHA384Bytes`, `crypto.SHA512Bytes`, `crypto.SHA512_224Bytes`, `crypto.SHA512_256Bytes`"
     description: |
       Compute a checksum with a SHA-1 or SHA-2 algorithm as defined in [RFC 3174](https://tools.ietf.org/html/rfc3174) (SHA-1) and [FIPS 180-4](http://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.180-4.pdf) (SHA-2).
 

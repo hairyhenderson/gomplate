@@ -115,6 +115,37 @@ func TestRSAGenerateKey(t *testing.T) {
 		"-----END RSA PRIVATE KEY-----\n"))
 }
 
+func TestECDSAGenerateKey(t *testing.T) {
+	c := testCryptoNS()
+	_, err := c.ECDSAGenerateKey("")
+	assert.Error(t, err)
+
+	_, err = c.ECDSAGenerateKey(0, "P-999", true)
+	assert.Error(t, err)
+
+	key, err := c.ECDSAGenerateKey("P-256")
+	assert.NoError(t, err)
+	assert.True(t, strings.HasPrefix(key,
+		"-----BEGIN EC PRIVATE KEY-----"))
+	assert.True(t, strings.HasSuffix(key,
+		"-----END EC PRIVATE KEY-----\n"))
+}
+
+func TestECDSADerivePublicKey(t *testing.T) {
+	c := testCryptoNS()
+
+	_, err := c.ECDSADerivePublicKey("")
+	assert.Error(t, err)
+
+	key, _ := c.ECDSAGenerateKey("P-256")
+	pub, err := c.ECDSADerivePublicKey(key)
+	assert.NoError(t, err)
+	assert.True(t, strings.HasPrefix(pub,
+		"-----BEGIN PUBLIC KEY-----"))
+	assert.True(t, strings.HasSuffix(pub,
+		"-----END PUBLIC KEY-----\n"))
+}
+
 func TestRSACrypt(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping slow test")

@@ -3,10 +3,12 @@ package funcs
 import (
 	"context"
 	gcrypto "crypto"
+	"crypto/elliptic"
 	"crypto/sha1" //nolint: gosec
 	"crypto/sha256"
 	"crypto/sha512"
 	"fmt"
+	"strings"
 
 	"golang.org/x/crypto/bcrypt"
 
@@ -247,6 +249,42 @@ func (f *CryptoFuncs) RSADerivePublicKey(privateKey string) (string, error) {
 		return "", err
 	}
 	out, err := crypto.RSADerivePublicKey([]byte(privateKey))
+	return string(out), err
+}
+
+// ECDSAGenerateKey -
+// Experimental!
+func (f *CryptoFuncs) ECDSAGenerateKey(args ...interface{}) (string, error) {
+	if err := checkExperimental(f.ctx); err != nil {
+		return "", err
+	}
+
+	curve := elliptic.P256()
+	if len(args) == 1 {
+		c := conv.ToString(args[0])
+		c = strings.ToUpper(c)
+		c = strings.ReplaceAll(c, "-", "")
+		var ok bool
+		curve, ok = crypto.Curves[c]
+		if !ok {
+			return "", fmt.Errorf("unknown curve: %s", c)
+		}
+	} else if len(args) > 1 {
+		return "", fmt.Errorf("wrong number of args: want 0 or 1, got %d", len(args))
+	}
+
+	out, err := crypto.ECDSAGenerateKey(curve)
+	return string(out), err
+}
+
+// ECDSADerivePublicKey -
+// Experimental!
+func (f *CryptoFuncs) ECDSADerivePublicKey(privateKey string) (string, error) {
+	if err := checkExperimental(f.ctx); err != nil {
+		return "", err
+	}
+
+	out, err := crypto.ECDSADerivePublicKey([]byte(privateKey))
 	return string(out), err
 }
 
