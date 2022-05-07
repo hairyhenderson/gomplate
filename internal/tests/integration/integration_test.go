@@ -33,6 +33,15 @@ func inOutTest(t *testing.T, i, o string) {
 	assert.Equal(t, o, stdout)
 }
 
+func inOutTestExperimental(t *testing.T, i, o string) {
+	t.Helper()
+
+	stdout, stderr, err := cmd(t, "--experimental", "-i", i).run()
+	assert.NoError(t, err)
+	assert.Equal(t, "", stderr)
+	assert.Equal(t, o, stdout)
+}
+
 func inOutContains(t *testing.T, i, o string) {
 	t.Helper()
 
