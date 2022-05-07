@@ -151,6 +151,85 @@ $ gomplate -i '{{ "hello world" | crypto.EncryptAES "swordfish" 128 | base64.Enc
 MnRutHovsh/9JN3YrJtBVjZtI6xXZh33bCQS2iZ4SDI=
 ```
 
+## `crypto.ECDSAGenerateKey` _(experimental)_
+**Experimental:** This function is [_experimental_][experimental] and may be enabled with the [`--experimental`][experimental] flag.
+
+[experimental]: ../config/#experimental
+
+Generate a new Elliptic Curve Private Key and output in
+PEM-encoded PKCS#1 ASN.1 DER form.
+
+Go's standard NIST P-224, P-256, P-384, and P-521 elliptic curves are all
+supported.
+
+Default curve is P-256 and can be overridden with the optional `curve`
+parameter.
+
+### Usage
+
+```go
+crypto.ECDSAGenerateKey [curve]
+```
+```go
+curve | crypto.ECDSAGenerateKey
+```
+
+### Arguments
+
+| name | description |
+|------|-------------|
+| `curve` | _(optional)_ One of Go's standard NIST curves, P-224, P-256, P-384, or P-521 -
+defaults to P-256.
+ |
+
+### Examples
+
+```console
+$ gomplate -i '{{ crypto.ECDSAGenerateKey }}'
+-----BEGIN EC PRIVATE KEY-----
+...
+```
+
+## `crypto.ECDSADerivePublicKey` _(experimental)_
+**Experimental:** This function is [_experimental_][experimental] and may be enabled with the [`--experimental`][experimental] flag.
+
+[experimental]: ../config/#experimental
+
+Derive a public key from an elliptic curve private key and output in PKIX
+ASN.1 DER form.
+
+### Usage
+
+```go
+crypto.ECDSADerivePublicKey key
+```
+```go
+key | crypto.ECDSADerivePublicKey
+```
+
+### Arguments
+
+| name | description |
+|------|-------------|
+| `key` | _(required)_ the private key to derive a public key from |
+
+### Examples
+
+```console
+$ gomplate -i '{{ crypto.ECDSAGenerateKey | crypto.ECDSADerivePublicKey }}'
+-----BEGIN PUBLIC KEY-----
+...
+```
+```console
+$ gomplate -d key=priv.pem -i '{{ crypto.ECDSADerivePublicKey (include "key") }}'
+-----BEGIN PUBLIC KEY-----
+MIGbMBAGByqGSM49AgEGBSuBBAAjA4GGAAQBZvTS1wcCJSsGYQUVoSVctynkuhke
+kikB38iNwx/80jzdm+Z8OmRGlwH6OE9NX1MyxjvYMimhcj6zkaOKh1/HhMABrfuY
++hIz6+EUt/Db51awO7iCuRly5L4TZ+CnMAsIbtUOqsqwSQDtv0AclAuogmCst75o
+aztsmrD79OXXnhUlURI=
+-----END PUBLIC KEY-----
+```
+
 ## `crypto.PBKDF2`
 
 Run the Password-Based Key Derivation Function &num;2 as defined in

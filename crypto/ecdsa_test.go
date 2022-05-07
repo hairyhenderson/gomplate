@@ -33,36 +33,33 @@ func deriveECPubkey(priv *ecdsa.PrivateKey) string {
 }
 
 func TestECDSAGenerateKey(t *testing.T) {
-	key, err := ECDSAGenerateKey("P-224")
+	key, err := ECDSAGenerateKey(elliptic.P224())
 	assert.NoError(t, err)
 	assert.True(t, strings.HasPrefix(string(key),
 		"-----BEGIN EC PRIVATE KEY-----"))
 	assert.True(t, strings.HasSuffix(string(key),
 		"-----END EC PRIVATE KEY-----\n"))
 
-	key, err = ECDSAGenerateKey("P-256")
+	key, err = ECDSAGenerateKey(elliptic.P256())
 	assert.NoError(t, err)
 	assert.True(t, strings.HasPrefix(string(key),
 		"-----BEGIN EC PRIVATE KEY-----"))
 	assert.True(t, strings.HasSuffix(string(key),
 		"-----END EC PRIVATE KEY-----\n"))
 
-	key, err = ECDSAGenerateKey("P-384")
+	key, err = ECDSAGenerateKey(elliptic.P384())
 	assert.NoError(t, err)
 	assert.True(t, strings.HasPrefix(string(key),
 		"-----BEGIN EC PRIVATE KEY-----"))
 	assert.True(t, strings.HasSuffix(string(key),
 		"-----END EC PRIVATE KEY-----\n"))
 
-	key, err = ECDSAGenerateKey("P-521")
+	key, err = ECDSAGenerateKey(elliptic.P521())
 	assert.NoError(t, err)
 	assert.True(t, strings.HasPrefix(string(key),
 		"-----BEGIN EC PRIVATE KEY-----"))
 	assert.True(t, strings.HasSuffix(string(key),
 		"-----END EC PRIVATE KEY-----\n"))
-
-	_, err = ECDSAGenerateKey("P-999")
-	assert.Error(t, err)
 }
 
 func TestECDSADerivePublicKey(t *testing.T) {

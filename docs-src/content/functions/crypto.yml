@@ -126,10 +126,6 @@ funcs:
         $ gomplate -i '{{ crypto.ECDSAGenerateKey }}'
         -----BEGIN EC PRIVATE KEY-----
         ...
-      - |
-        $ gomplate -i '{{ $key := crypto.ECDSAGenerateKey "P-521" -}}
-          {{ $pub := crypto.ECDSADerivePublicKey $key -}}'
-        hello
   - name: crypto.ECDSADerivePublicKey
     experimental: true
     description: |
@@ -146,9 +142,13 @@ funcs:
         -----BEGIN PUBLIC KEY-----
         ...
       - |
-        $ gomplate -c privKey=./privKey.pem \
-          -i '{{ $pub := crypto.ECDSADerivePublicKey .privKey -}}'
-        hello
+        $ gomplate -d key=priv.pem -i '{{ crypto.ECDSADerivePublicKey (include "key") }}'
+        -----BEGIN PUBLIC KEY-----
+        MIGbMBAGByqGSM49AgEGBSuBBAAjA4GGAAQBZvTS1wcCJSsGYQUVoSVctynkuhke
+        kikB38iNwx/80jzdm+Z8OmRGlwH6OE9NX1MyxjvYMimhcj6zkaOKh1/HhMABrfuY
+        +hIz6+EUt/Db51awO7iCuRly5L4TZ+CnMAsIbtUOqsqwSQDtv0AclAuogmCst75o
+        aztsmrD79OXXnhUlURI=
+        -----END PUBLIC KEY-----
   - name: crypto.PBKDF2
     description: |
       Run the Password-Based Key Derivation Function &num;2 as defined in

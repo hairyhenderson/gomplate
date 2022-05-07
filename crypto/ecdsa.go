@@ -10,40 +10,39 @@ import (
 	"fmt"
 )
 
-// ECDSAGenerateKey -
-func ECDSAGenerateKey(curve string) ([]byte, error) {
-	var c elliptic.Curve
-
-	switch curve {
-	case "P-224":
-		c = elliptic.P224()
-	case "P-256":
-		c = elliptic.P256()
-	case "P-384":
-		c = elliptic.P384()
-	case "P-521":
-		c = elliptic.P521()
-	default:
-		return nil, fmt.Errorf("unknow curve: %s", curve)
+var (
+	// Curves is a map of curve names to curves
+	Curves = map[string]elliptic.Curve{
+		"P224": elliptic.P224(),
+		"P256": elliptic.P256(),
+		"P384": elliptic.P384(),
+		"P521": elliptic.P521(),
 	}
+)
 
-	priv, err := ecdsa.GenerateKey(c, rand.Reader)
+// ECDSAGenerateKey -
+func ECDSAGenerateKey(curve elliptic.Curve) ([]byte, error) {
+	priv, err := ecdsa.GenerateKey(curve, rand.Reader)
 	if err != nil {
 		return nil, fmt.Errorf("failed to generate ECDSA private key: %w", err)
 	}
+
 	der, err := x509.MarshalECPrivateKey(priv)
 	if err != nil {
 		return nil, fmt.Errorf("failed to marshal ECDSA private key: %w", err)
 	}
+
 	block := &pem.Block{
 		Type:  "EC PRIVATE KEY",
 		Bytes: der,
 	}
 	buf := &bytes.Buffer{}
+
 	err = pem.Encode(buf, block)
 	if err != nil {
 		return nil, fmt.Errorf("failed to encode generated ECDSA private key: pem encoding failed: %w", err)
 	}
+
 	return buf.Bytes(), nil
 }
 
