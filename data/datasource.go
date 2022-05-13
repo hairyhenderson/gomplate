@@ -42,8 +42,6 @@ func (d *Data) registerReaders() {
 
 	d.sourceReaders["aws+smp"] = readAWSSMP
 	d.sourceReaders["aws+sm"] = readAWSSecretsManager
-	// Deprecated: don't use
-	d.sourceReaders["boltdb"] = readBoltDB
 	d.sourceReaders["consul"] = readConsul
 	d.sourceReaders["consul+http"] = readConsul
 	d.sourceReaders["consul+https"] = readConsul
@@ -148,7 +146,7 @@ type Source struct {
 	fs                afero.Fs                // used for file: URLs, nil otherwise
 	hc                *http.Client            // used for http[s]: URLs, nil otherwise
 	vc                *vault.Vault            // used for vault: URLs, nil otherwise
-	kv                *libkv.LibKV            // used for consul:, etcd:, zookeeper: & boltdb: URLs, nil otherwise
+	kv                *libkv.LibKV            // used for consul:, etcd:, zookeeper: URLs, nil otherwise
 	asmpg             awssmpGetter            // used for aws+smp:, nil otherwise
 	awsSecretsManager awsSecretsManagerGetter // used for aws+sm, nil otherwise
 	mediaType         string

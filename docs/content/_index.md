@@ -8,7 +8,7 @@ menu:
 ---
 
 `gomplate` is a template renderer which supports a growing list of datasources,
-such as: JSON (_including EJSON - encrypted JSON_), YAML, AWS EC2 metadata, [BoltDB](https://pkg.go.dev/go.etcd.io/bbolt),
+such as: JSON (_including EJSON - encrypted JSON_), YAML, AWS EC2 metadata,
 [Hashicorp Consul](https://www.consul.io/) and [Hashicorp Vault](https://www.vaultproject.io/) secrets.
 
 Come chat with developers and community in the [#gomplate channel][] on [Gophers Slack][] and on [GitHub Discussions][discussions-url]!
