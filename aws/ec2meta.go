@@ -20,9 +20,8 @@ var ec2metadataClient EC2Metadata
 // Ec2Meta -
 type Ec2Meta struct {
 	cache               map[string]string
-	nonAWS              bool
-	ec2meta             *ec2metadata.EC2Metadata
 	ec2MetadataProvider func() (EC2Metadata, error)
+	nonAWS              bool
 }
 
 type EC2Metadata interface {
@@ -41,7 +40,12 @@ func NewEc2Meta(options ClientOptions) *Ec2Meta {
 				if endpoint := env.Getenv("AWS_META_ENDPOINT"); endpoint != "" {
 					config = config.WithEndpoint(endpoint)
 				}
-				ec2metadataClient = ec2metadata.New(session.New(config))
+
+				s, err := session.NewSession(config)
+				if err != nil {
+					return nil, err
+				}
+				ec2metadataClient = ec2metadata.New(s)
 			}
 			return ec2metadataClient, nil
 		},

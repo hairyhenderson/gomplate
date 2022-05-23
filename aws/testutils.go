@@ -58,8 +58,8 @@ func (d DummyInstanceDescriber) DescribeInstances(*ec2.DescribeInstancesInput) (
 }
 
 type DummEC2MetadataProvider struct {
-	region string
 	data   map[string]string
+	region string
 }
 
 func (d DummEC2MetadataProvider) GetMetadata(p string) (string, error) {
