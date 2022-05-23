@@ -1,6 +1,7 @@
 package aws
 
 import (
+	"fmt"
 	"net/http"
 	"strings"
 
@@ -15,6 +16,13 @@ const (
 	unknown = "unknown"
 )
 
+type dataType int
+
+const (
+	metaData dataType = iota
+	dynamicData
+)
+
 var ec2metadataClient EC2Metadata
 
 // Ec2Meta -
@@ -26,6 +34,7 @@ type Ec2Meta struct {
 
 type EC2Metadata interface {
 	GetMetadata(p string) (string, error)
+	GetDynamicData(p string) (string, error)
 	Region() (string, error)
 }
 
@@ -70,9 +79,7 @@ func unreachable(err error) bool {
 	return false
 }
 
-// retrieve EC2 metadata, defaulting if we're not in EC2 or if there's a non-OK
-// response. If there is an OK response, but we can't parse it, this errors
-func (e *Ec2Meta) retrieveMetadata(key string, def ...string) (string, error) {
+func (e *Ec2Meta) retrieveData(dtype dataType, key string, def ...string) (string, error) {
 	if value, ok := e.cache[key]; ok {
 		return value, nil
 	}
@@ -86,7 +93,16 @@ func (e *Ec2Meta) retrieveMetadata(key string, def ...string) (string, error) {
 		return "", err
 	}
 
-	value, err := emd.GetMetadata(key)
+	var value string
+	switch dtype {
+	case metaData:
+		value, err = emd.GetMetadata(key)
+	case dynamicData:
+		value, err = emd.GetDynamicData(key)
+	default:
+		return "", fmt.Errorf("unknown type: %v", dtype)
+	}
+
 	if err != nil {
 		if unreachable(err) {
 			e.nonAWS = true
@@ -101,12 +117,12 @@ func (e *Ec2Meta) retrieveMetadata(key string, def ...string) (string, error) {
 
 // Meta -
 func (e *Ec2Meta) Meta(key string, def ...string) (string, error) {
-	return e.retrieveMetadata(key, def...)
+	return e.retrieveData(metaData, key, def...)
 }
 
 // Dynamic -
 func (e *Ec2Meta) Dynamic(key string, def ...string) (string, error) {
-	return e.retrieveMetadata(key, def...)
+	return e.retrieveData(dynamicData, key, def...)
 }
 
 // Region -

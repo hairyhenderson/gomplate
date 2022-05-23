@@ -53,7 +53,7 @@ func TestBoolTemplates(t *testing.T) {
 
 func TestEc2MetaTemplates(t *testing.T) {
 	createGomplate := func(data map[string]string, region string) *gomplate {
-		ec2meta := aws.MockEC2Meta(data, region)
+		ec2meta := aws.MockEC2Meta(data, nil, region)
 		return &gomplate{funcMap: template.FuncMap{"ec2meta": ec2meta.Meta}}
 	}
 
@@ -67,7 +67,7 @@ func TestEc2MetaTemplates(t *testing.T) {
 }
 
 func TestEc2MetaTemplates_WithJSON(t *testing.T) {
-	ec2meta := aws.MockEC2Meta(map[string]string{"obj": `"foo": "bar"`}, "")
+	ec2meta := aws.MockEC2Meta(map[string]string{"obj": `"foo": "bar"`}, nil, "")
 
 	g := &gomplate{
 		funcMap: template.FuncMap{

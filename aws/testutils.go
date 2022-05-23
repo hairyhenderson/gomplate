@@ -7,13 +7,14 @@ import (
 )
 
 // MockEC2Meta -
-func MockEC2Meta(data map[string]string, region string) *Ec2Meta {
+func MockEC2Meta(data map[string]string, dynamicData map[string]string, region string) *Ec2Meta {
 	return &Ec2Meta{
 		cache: map[string]string{},
 		ec2MetadataProvider: func() (EC2Metadata, error) {
 			return &DummEC2MetadataProvider{
-				data:   data,
-				region: region,
+				data:        data,
+				dynamicData: dynamicData,
+				region:      region,
 			}, nil
 		},
 	}
@@ -58,12 +59,21 @@ func (d DummyInstanceDescriber) DescribeInstances(*ec2.DescribeInstancesInput) (
 }
 
 type DummEC2MetadataProvider struct {
-	data   map[string]string
-	region string
+	data        map[string]string
+	dynamicData map[string]string
+	region      string
 }
 
 func (d DummEC2MetadataProvider) GetMetadata(p string) (string, error) {
 	v, ok := d.data[p]
+	if !ok {
+		return "", fmt.Errorf("cannot find %v", p)
+	}
+	return v, nil
+}
+
+func (d DummEC2MetadataProvider) GetDynamicData(p string) (string, error) {
+	v, ok := d.dynamicData[p]
 	if !ok {
 		return "", fmt.Errorf("cannot find %v", p)
 	}
