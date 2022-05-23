@@ -67,7 +67,7 @@ func TestEc2MetaTemplates(t *testing.T) {
 }
 
 func TestEc2MetaTemplates_WithJSON(t *testing.T) {
-	ec2meta := aws.MockEC2Meta(map[string]string{"obj": `"foo": "bar"`}, nil, "")
+	ec2meta := aws.MockEC2Meta(map[string]string{"obj": `"foo": "bar"`}, map[string]string{"obj": `"foo": "baz"`}, "")
 
 	g := &gomplate{
 		funcMap: template.FuncMap{
@@ -78,7 +78,7 @@ func TestEc2MetaTemplates_WithJSON(t *testing.T) {
 	}
 
 	assert.Equal(t, "bar", testTemplate(t, g, `{{ (ec2meta "obj" | json).foo }}`))
-	assert.Equal(t, "bar", testTemplate(t, g, `{{ (ec2dynamic "obj" | json).foo }}`))
+	assert.Equal(t, "baz", testTemplate(t, g, `{{ (ec2dynamic "obj" | json).foo }}`))
 }
 
 func TestJSONArrayTemplates(t *testing.T) {

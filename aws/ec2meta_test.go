@@ -71,5 +71,5 @@ func TestRetrieveMetadata_NonEC2(t *testing.T) {
 	ec2meta := NewEc2Meta(ClientOptions{})
 	ec2meta.nonAWS = true
 
-	assert.Equal(t, "foo", must(ec2meta.retrieveData(metaData, "", "foo")))
+	assert.Equal(t, "foo", must(ec2meta.retrieveMetadata("", "foo")))
 }

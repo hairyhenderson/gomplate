@@ -9,7 +9,8 @@ import (
 // MockEC2Meta -
 func MockEC2Meta(data map[string]string, dynamicData map[string]string, region string) *Ec2Meta {
 	return &Ec2Meta{
-		cache: map[string]string{},
+		metadataCache:    map[string]string{},
+		dynamicdataCache: map[string]string{},
 		ec2MetadataProvider: func() (EC2Metadata, error) {
 			return &DummEC2MetadataProvider{
 				data:        data,

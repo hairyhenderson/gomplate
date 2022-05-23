@@ -1,7 +1,6 @@
 package aws
 
 import (
-	"fmt"
 	"net/http"
 	"strings"
 
@@ -16,18 +15,10 @@ const (
 	unknown = "unknown"
 )
 
-type dataType int
-
-const (
-	metaData dataType = iota
-	dynamicData
-)
-
-var ec2metadataClient EC2Metadata
-
 // Ec2Meta -
 type Ec2Meta struct {
-	cache               map[string]string
+	metadataCache       map[string]string
+	dynamicdataCache    map[string]string
 	ec2MetadataProvider func() (EC2Metadata, error)
 	nonAWS              bool
 }
@@ -41,22 +32,21 @@ type EC2Metadata interface {
 // NewEc2Meta -
 func NewEc2Meta(options ClientOptions) *Ec2Meta {
 	return &Ec2Meta{
-		cache: make(map[string]string),
+		metadataCache:    make(map[string]string),
+		dynamicdataCache: make(map[string]string),
 		ec2MetadataProvider: func() (EC2Metadata, error) {
-			if ec2metadataClient == nil {
-				config := aws.NewConfig()
-				config = config.WithHTTPClient(&http.Client{Timeout: options.Timeout})
-				if endpoint := env.Getenv("AWS_META_ENDPOINT"); endpoint != "" {
-					config = config.WithEndpoint(endpoint)
-				}
-
-				s, err := session.NewSession(config)
-				if err != nil {
-					return nil, err
-				}
-				ec2metadataClient = ec2metadata.New(s)
+			config := aws.NewConfig()
+			config = config.WithHTTPClient(&http.Client{Timeout: options.Timeout})
+			if endpoint := env.Getenv("AWS_META_ENDPOINT"); endpoint != "" {
+				config = config.WithEndpoint(endpoint)
 			}
-			return ec2metadataClient, nil
+
+			s, err := session.NewSession(config)
+			if err != nil {
+				return nil, err
+			}
+
+			return ec2metadata.New(s), nil
 		},
 	}
 }
@@ -79,8 +69,8 @@ func unreachable(err error) bool {
 	return false
 }
 
-func (e *Ec2Meta) retrieveData(dtype dataType, key string, def ...string) (string, error) {
-	if value, ok := e.cache[key]; ok {
+func (e *Ec2Meta) retrieveMetadata(key string, def ...string) (string, error) {
+	if value, ok := e.metadataCache[key]; ok {
 		return value, nil
 	}
 
@@ -93,36 +83,52 @@ func (e *Ec2Meta) retrieveData(dtype dataType, key string, def ...string) (strin
 		return "", err
 	}
 
-	var value string
-	switch dtype {
-	case metaData:
-		value, err = emd.GetMetadata(key)
-	case dynamicData:
-		value, err = emd.GetDynamicData(key)
-	default:
-		return "", fmt.Errorf("unknown type: %v", dtype)
-	}
-
+	value, err := emd.GetMetadata(key)
 	if err != nil {
 		if unreachable(err) {
 			e.nonAWS = true
 		}
-
 		return returnDefault(def), nil
 	}
-	e.cache[key] = value
+	e.metadataCache[key] = value
+
+	return value, nil
+}
+
+func (e *Ec2Meta) retrieveDynamicdata(key string, def ...string) (string, error) {
+	if value, ok := e.dynamicdataCache[key]; ok {
+		return value, nil
+	}
+
+	if e.nonAWS {
+		return returnDefault(def), nil
+	}
+
+	emd, err := e.ec2MetadataProvider()
+	if err != nil {
+		return "", err
+	}
+
+	value, err := emd.GetDynamicData(key)
+	if err != nil {
+		if unreachable(err) {
+			e.nonAWS = true
+		}
+		return returnDefault(def), nil
+	}
+	e.dynamicdataCache[key] = value
 
 	return value, nil
 }
 
 // Meta -
 func (e *Ec2Meta) Meta(key string, def ...string) (string, error) {
-	return e.retrieveData(metaData, key, def...)
+	return e.retrieveMetadata(key, def...)
 }
 
 // Dynamic -
 func (e *Ec2Meta) Dynamic(key string, def ...string) (string, error) {
-	return e.retrieveData(dynamicData, key, def...)
+	return e.retrieveDynamicdata(key, def...)
 }
 
 // Region -
