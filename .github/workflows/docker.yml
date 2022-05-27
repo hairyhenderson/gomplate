@@ -34,7 +34,7 @@ jobs:
     - name: Available platforms
       run: echo {{ `${{ steps.buildx.outputs.platforms }}` }}
     - run: docker info && docker version
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
       with:
         fetch-depth: 0
     - name: determine if this is a tag
