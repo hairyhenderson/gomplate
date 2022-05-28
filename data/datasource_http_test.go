@@ -58,7 +58,7 @@ func TestHTTPFile(t *testing.T) {
 		hc: client,
 	}
 	data := &Data{
-		ctx:     context.Background(),
+		Ctx:     context.Background(),
 		Sources: sources,
 	}
 
@@ -88,7 +88,7 @@ func TestHTTPFileWithHeaders(t *testing.T) {
 			Path:   "/foo",
 		},
 		hc: client,
-		header: http.Header{
+		Header: http.Header{
 			"Foo":             {"bar"},
 			"foo":             {"baz"},
 			"User-Agent":      {},
@@ -96,7 +96,7 @@ func TestHTTPFileWithHeaders(t *testing.T) {
 		},
 	}
 	data := &Data{
-		ctx:     context.Background(),
+		Ctx:     context.Background(),
 		Sources: sources,
 	}
 	expected := http.Header{
@@ -113,9 +113,9 @@ func TestHTTPFileWithHeaders(t *testing.T) {
 		"User-Agent":      {"Go-http-client/1.1"},
 	}
 	data = &Data{
-		ctx:          context.Background(),
+		Ctx:          context.Background(),
 		Sources:      sources,
-		extraHeaders: map[string]http.Header{server.URL: expected},
+		ExtraHeaders: map[string]http.Header{server.URL: expected},
 	}
 	actual, err = data.Datasource(server.URL)
 	assert.NoError(t, err)

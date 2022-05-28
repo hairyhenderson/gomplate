@@ -26,7 +26,6 @@ type gomplate struct {
 	tmplctx         interface{}
 	funcMap         template.FuncMap
 	nestedTemplates templateAliases
-	rootTemplate    *template.Template
 
 	leftDelim, rightDelim string
 }
@@ -128,6 +127,14 @@ func Run(ctx context.Context, cfg *config.Config) error {
 	Metrics = newMetrics()
 	defer runCleanupHooks()
 
+	// reset defaults before validation
+	cfg.ApplyDefaults()
+
+	err := cfg.Validate()
+	if err != nil {
+		return fmt.Errorf("failed to validate config: %w\n%+v", err, cfg)
+	}
+
 	d := data.FromConfig(ctx, cfg)
 	log.Debug().Str("data", fmt.Sprintf("%+v", d)).Msg("created data from config")
 
@@ -136,10 +143,16 @@ func Run(ctx context.Context, cfg *config.Config) error {
 	if err != nil {
 		return err
 	}
-	c, err := createTmplContext(ctx, cfg.Context, d)
+
+	aliases := []string{}
+	for k := range cfg.Context {
+		aliases = append(aliases, k)
+	}
+	c, err := createTmplContext(ctx, aliases, d)
 	if err != nil {
 		return err
 	}
+
 	funcMap := CreateFuncs(ctx, d)
 	err = bindPlugins(ctx, cfg, funcMap)
 	if err != nil {

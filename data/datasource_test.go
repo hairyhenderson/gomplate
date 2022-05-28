@@ -28,17 +28,17 @@ func TestNewData(t *testing.T) {
 	d, err = NewData([]string{"foo=http:///foo.json"}, []string{})
 	assert.NoError(t, err)
 	assert.Equal(t, "/foo.json", d.Sources["foo"].URL.Path)
-	assert.Empty(t, d.Sources["foo"].header)
+	assert.Empty(t, d.Sources["foo"].Header)
 
 	d, err = NewData([]string{"foo=http:///foo.json"}, []string{"bar=Accept: blah"})
 	assert.NoError(t, err)
 	assert.Equal(t, "/foo.json", d.Sources["foo"].URL.Path)
-	assert.Empty(t, d.Sources["foo"].header)
+	assert.Empty(t, d.Sources["foo"].Header)
 
 	d, err = NewData([]string{"foo=http:///foo.json"}, []string{"foo=Accept: blah"})
 	assert.NoError(t, err)
 	assert.Equal(t, "/foo.json", d.Sources["foo"].URL.Path)
-	assert.Equal(t, "blah", d.Sources["foo"].header["Accept"][0])
+	assert.Equal(t, "blah", d.Sources["foo"].Header["Accept"][0])
 }
 
 func TestDatasource(t *testing.T) {
@@ -344,12 +344,14 @@ func TestMimeTypeWithArg(t *testing.T) {
 
 func TestFromConfig(t *testing.T) {
 	ctx := context.Background()
+
 	cfg := &config.Config{}
+	actual := FromConfig(ctx, cfg)
 	expected := &Data{
-		ctx:     ctx,
+		Ctx:     actual.Ctx,
 		Sources: map[string]*Source{},
 	}
-	assert.EqualValues(t, expected, FromConfig(ctx, cfg))
+	assert.EqualValues(t, expected, actual)
 
 	cfg = &config.Config{
 		DataSources: map[string]config.DataSource{
@@ -358,8 +360,9 @@ func TestFromConfig(t *testing.T) {
 			},
 		},
 	}
+	actual = FromConfig(ctx, cfg)
 	expected = &Data{
-		ctx: ctx,
+		Ctx: actual.Ctx,
 		Sources: map[string]*Source{
 			"foo": {
 				Alias: "foo",
@@ -367,7 +370,7 @@ func TestFromConfig(t *testing.T) {
 			},
 		},
 	}
-	assert.EqualValues(t, expected, FromConfig(ctx, cfg))
+	assert.EqualValues(t, expected, actual)
 
 	cfg = &config.Config{
 		DataSources: map[string]config.DataSource{
@@ -389,8 +392,9 @@ func TestFromConfig(t *testing.T) {
 			},
 		},
 	}
+	actual = FromConfig(ctx, cfg)
 	expected = &Data{
-		ctx: ctx,
+		Ctx: actual.Ctx,
 		Sources: map[string]*Source{
 			"foo": {
 				Alias: "foo",
@@ -399,18 +403,18 @@ func TestFromConfig(t *testing.T) {
 			"bar": {
 				Alias: "bar",
 				URL:   mustParseURL("http://bar.com"),
-				header: http.Header{
+				Header: http.Header{
 					"Foo": []string{"bar"},
 				},
 			},
 		},
-		extraHeaders: map[string]http.Header{
+		ExtraHeaders: map[string]http.Header{
 			"baz": {
 				"Foo": []string{"bar"},
 			},
 		},
 	}
-	assert.EqualValues(t, expected, FromConfig(ctx, cfg))
+	assert.EqualValues(t, expected, actual)
 }
 
 func TestListDatasources(t *testing.T) {

@@ -82,15 +82,9 @@ func TestLoadConfig(t *testing.T) {
 
 	out, err := loadConfig(cmd, cmd.Flags().Args())
 	expected := &config.Config{
-		InputFiles:    []string{"-"},
-		OutputFiles:   []string{"-"},
-		LDelim:        "{{",
-		RDelim:        "}}",
-		PostExecInput: stdin,
-		PluginTimeout: 5 * time.Second,
-		Stdin:         stdin,
-		Stdout:        stdout,
-		Stderr:        stderr,
+		Stdin:  stdin,
+		Stdout: stdout,
+		Stderr: stderr,
 	}
 	assert.NoError(t, err)
 	assert.EqualValues(t, expected, out)
@@ -98,15 +92,10 @@ func TestLoadConfig(t *testing.T) {
 	cmd.ParseFlags([]string{"--in", "foo"})
 	out, err = loadConfig(cmd, cmd.Flags().Args())
 	expected = &config.Config{
-		Input:         "foo",
-		OutputFiles:   []string{"-"},
-		LDelim:        "{{",
-		RDelim:        "}}",
-		PostExecInput: stdin,
-		PluginTimeout: 5 * time.Second,
-		Stdin:         stdin,
-		Stdout:        out.Stdout,
-		Stderr:        stderr,
+		Input:  "foo",
+		Stdin:  stdin,
+		Stdout: out.Stdout,
+		Stderr: stderr,
 	}
 	assert.NoError(t, err)
 	assert.EqualValues(t, expected, out)
@@ -115,13 +104,9 @@ func TestLoadConfig(t *testing.T) {
 	out, err = loadConfig(cmd, cmd.Flags().Args())
 	expected = &config.Config{
 		Input:         "foo",
-		LDelim:        "{{",
-		RDelim:        "}}",
 		ExecPipe:      true,
 		PostExec:      []string{"tr", "[a-z]", "[A-Z]"},
 		PostExecInput: out.PostExecInput,
-		OutputFiles:   []string{"-"},
-		PluginTimeout: 5 * time.Second,
 		Stdin:         stdin,
 		Stdout:        out.Stdout,
 		Stderr:        stderr,

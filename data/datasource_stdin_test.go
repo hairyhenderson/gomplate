@@ -11,15 +11,12 @@ import (
 func TestReadStdin(t *testing.T) {
 	ctx := context.Background()
 
-	defer func() {
-		stdin = nil
-	}()
-	stdin = strings.NewReader("foo")
+	ctx = ContextWithStdin(ctx, strings.NewReader("foo"))
 	out, err := readStdin(ctx, nil)
 	assert.NoError(t, err)
 	assert.Equal(t, []byte("foo"), out)
 
-	stdin = errorReader{}
+	ctx = ContextWithStdin(ctx, errorReader{})
 	_, err = readStdin(ctx, nil)
 	assert.Error(t, err)
 }

@@ -34,7 +34,7 @@ func readHTTP(ctx context.Context, source *Source, args ...string) ([]byte, erro
 	if err != nil {
 		return nil, err
 	}
-	req.Header = source.header
+	req.Header = source.Header
 	res, err := source.hc.Do(req)
 	if err != nil {
 		return nil, err
