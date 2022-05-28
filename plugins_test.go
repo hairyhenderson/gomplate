@@ -3,15 +3,15 @@ package gomplate
 import (
 	"bytes"
 	"context"
+	"fmt"
+	"os"
 	"strings"
 	"testing"
 	"text/template"
 	"time"
 
-	"gotest.tools/v3/assert"
-	"gotest.tools/v3/assert/cmp"
-
 	"github.com/hairyhenderson/gomplate/v3/internal/config"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestBindPlugins(t *testing.T) {
@@ -21,13 +21,13 @@ func TestBindPlugins(t *testing.T) {
 		Plugins: map[string]config.PluginConfig{},
 	}
 	err := bindPlugins(ctx, cfg, fm)
-	assert.NilError(t, err)
-	assert.DeepEqual(t, template.FuncMap{}, fm)
+	assert.NoError(t, err)
+	assert.EqualValues(t, template.FuncMap{}, fm)
 
 	cfg.Plugins = map[string]config.PluginConfig{"foo": {Cmd: "bar"}}
 	err = bindPlugins(ctx, cfg, fm)
-	assert.NilError(t, err)
-	assert.Check(t, cmp.Contains(fm, "foo"))
+	assert.NoError(t, err)
+	assert.Contains(t, fm, "foo")
 
 	err = bindPlugins(ctx, cfg, fm)
 	assert.ErrorContains(t, err, "already bound")
@@ -49,12 +49,11 @@ func TestBuildCommand(t *testing.T) {
 	for _, d := range data {
 		p := &plugin{
 			ctx:  ctx,
-			name: d.name,
 			path: d.path,
 		}
 		name, args := p.buildCommand(d.args)
 		actual := append([]string{name}, args...)
-		assert.DeepEqual(t, d.expected, actual)
+		assert.EqualValues(t, d.expected, actual)
 	}
 }
 
@@ -70,7 +69,48 @@ func TestRun(t *testing.T) {
 		path:    "echo",
 	}
 	out, err := p.run("foo")
-	assert.NilError(t, err)
+	assert.NoError(t, err)
 	assert.Equal(t, "", stderr.String())
 	assert.Equal(t, "foo", strings.TrimSpace(out.(string)))
+}
+
+func ExamplePluginFunc() {
+	ctx := context.Background()
+
+	// PluginFunc creates a template function that runs an arbitrary command.
+	f := PluginFunc(ctx, "echo", PluginOpts{})
+
+	// The function can be used in a template, but here we'll just run it
+	// directly. This is equivalent to running 'echo foo bar'
+	out, err := f("foo", "bar")
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println(out)
+
+	// Output:
+	// foo bar
+}
+
+func ExamplePluginFunc_with_template() {
+	ctx := context.Background()
+
+	f := PluginFunc(ctx, "echo", PluginOpts{})
+
+	// PluginFunc is intended for use with gomplate, but can be used in any
+	// text/template by adding it to the FuncMap.
+	tmpl := template.New("new").Funcs(template.FuncMap{"echo": f})
+
+	tmpl, err := tmpl.Parse(`{{ echo "baz" "qux" }}`)
+	if err != nil {
+		panic(err)
+	}
+
+	err = tmpl.Execute(os.Stdout, nil)
+	if err != nil {
+		panic(err)
+	}
+
+	// Output:
+	// baz qux
 }

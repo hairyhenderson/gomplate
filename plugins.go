@@ -17,40 +17,81 @@ import (
 	"github.com/hairyhenderson/gomplate/v3/internal/config"
 )
 
+// bindPlugins creates custom plugin functions for each plugin specified by
+// the config, and adds them to the given funcMap. Uses the configuration's
+// PluginTimeout as the default plugin Timeout. Errors if a function name is
+// duplicated.
 func bindPlugins(ctx context.Context, cfg *config.Config, funcMap template.FuncMap) error {
 	for k, v := range cfg.Plugins {
+		if _, ok := funcMap[k]; ok {
+			return fmt.Errorf("function %q is already bound, and can not be overridden", k)
+		}
+
+		// default the timeout to the one in the config
 		timeout := cfg.PluginTimeout
 		if v.Timeout != 0 {
 			timeout = v.Timeout
 		}
 
-		plugin := &plugin{
-			ctx:     ctx,
-			name:    k,
-			path:    v.Cmd,
-			timeout: timeout,
-			pipe:    v.Pipe,
-			stderr:  cfg.Stderr,
-		}
-		if _, ok := funcMap[plugin.name]; ok {
-			return fmt.Errorf("function %q is already bound, and can not be overridden", plugin.name)
-		}
-		funcMap[plugin.name] = plugin.run
+		funcMap[k] = PluginFunc(ctx, v.Cmd, PluginOpts{
+			Timeout: timeout,
+			Pipe:    v.Pipe,
+			Stderr:  cfg.Stderr,
+		})
 	}
+
 	return nil
+}
+
+// PluginOpts are options for controlling plugin function execution
+type PluginOpts struct {
+	// Stderr can be set to redirect the plugin's stderr to a custom writer.
+	// Defaults to os.Stderr.
+	Stderr io.Writer
+
+	// Timeout is the maximum amount of time to wait for the plugin to complete.
+	// Defaults to 5 seconds.
+	Timeout time.Duration
+
+	// Pipe indicates whether the last argument should be piped to the plugin's
+	// stdin (true) or processed as a commandline argument (false)
+	Pipe bool
+}
+
+// PluginFunc creates a template function that runs an external process - either
+// a shell script or commandline executable.
+func PluginFunc(ctx context.Context, cmd string, opts PluginOpts) func(...interface{}) (interface{}, error) {
+	timeout := opts.Timeout
+	if timeout == 0 {
+		timeout = 5 * time.Second
+	}
+
+	stderr := opts.Stderr
+	if stderr == nil {
+		stderr = os.Stderr
+	}
+
+	plugin := &plugin{
+		ctx:     ctx,
+		path:    cmd,
+		timeout: timeout,
+		pipe:    opts.Pipe,
+		stderr:  stderr,
+	}
+
+	return plugin.run
 }
 
 // plugin represents a custom function that binds to an external process to be executed
 type plugin struct {
-	ctx        context.Context
-	stderr     io.Writer
-	name, path string
-	timeout    time.Duration
-	pipe       bool
+	ctx     context.Context
+	stderr  io.Writer
+	path    string
+	timeout time.Duration
+	pipe    bool
 }
 
 // builds a command that's appropriate for running scripts
-// nolint: gosec
 func (p *plugin) buildCommand(a []string) (name string, args []string) {
 	switch filepath.Ext(p.path) {
 	case ".ps1":
