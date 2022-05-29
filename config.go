@@ -128,7 +128,6 @@ func (o *Config) toNewConfig() (*config.Config, error) {
 		OutMode:     o.OutMode,
 		LDelim:      o.LDelim,
 		RDelim:      o.RDelim,
-		Templates:   o.Templates,
 		Stdin:       os.Stdin,
 		Stdout:      &iohelpers.NopCloser{Writer: o.Out},
 		Stderr:      os.Stderr,
@@ -137,7 +136,7 @@ func (o *Config) toNewConfig() (*config.Config, error) {
 	if err != nil {
 		return nil, err
 	}
-	err = cfg.ParseDataSourceFlags(o.DataSources, o.Contexts, o.DataSourceHeaders)
+	err = cfg.ParseDataSourceFlags(o.DataSources, o.Contexts, o.Templates, o.DataSourceHeaders)
 	if err != nil {
 		return nil, err
 	}

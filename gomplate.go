@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"path"
 	"path/filepath"
 	"strings"
 	"text/template"
@@ -18,14 +17,13 @@ import (
 	"github.com/hairyhenderson/gomplate/v3/internal/config"
 	"github.com/pkg/errors"
 	"github.com/rs/zerolog"
-	"github.com/spf13/afero"
 )
 
 // gomplate -
 type gomplate struct {
 	tmplctx         interface{}
 	funcMap         template.FuncMap
-	nestedTemplates templateAliases
+	nestedTemplates config.Templates
 
 	leftDelim, rightDelim string
 }
@@ -45,10 +43,8 @@ func (g *gomplate) runTemplate(ctx context.Context, t *tplate) error {
 	return tmpl.Execute(t.target, g.tmplctx)
 }
 
-type templateAliases map[string]string
-
 // newGomplate -
-func newGomplate(funcMap template.FuncMap, leftDelim, rightDelim string, nested templateAliases, tctx interface{}) *gomplate {
+func newGomplate(funcMap template.FuncMap, leftDelim, rightDelim string, nested config.Templates, tctx interface{}) *gomplate {
 	return &gomplate{
 		leftDelim:       leftDelim,
 		rightDelim:      rightDelim,
@@ -56,53 +52,6 @@ func newGomplate(funcMap template.FuncMap, leftDelim, rightDelim string, nested 
 		nestedTemplates: nested,
 		tmplctx:         tctx,
 	}
-}
-
-func parseTemplateArgs(templateArgs []string) (templateAliases, error) {
-	nested := templateAliases{}
-	for _, templateArg := range templateArgs {
-		err := parseTemplateArg(templateArg, nested)
-		if err != nil {
-			return nil, err
-		}
-	}
-	return nested, nil
-}
-
-func parseTemplateArg(templateArg string, ta templateAliases) error {
-	parts := strings.SplitN(templateArg, "=", 2)
-	pth := parts[0]
-	alias := ""
-	if len(parts) > 1 {
-		alias = parts[0]
-		pth = parts[1]
-	}
-
-	switch fi, err := fs.Stat(pth); {
-	case err != nil:
-		return err
-	case fi.IsDir():
-		files, err := afero.ReadDir(fs, pth)
-		if err != nil {
-			return err
-		}
-		prefix := pth
-		if alias != "" {
-			prefix = alias
-		}
-		for _, f := range files {
-			if !f.IsDir() { // one-level only
-				ta[path.Join(prefix, f.Name())] = path.Join(pth, f.Name())
-			}
-		}
-	default:
-		if alias != "" {
-			ta[alias] = pth
-		} else {
-			ta[pth] = pth
-		}
-	}
-	return nil
 }
 
 // RunTemplates - run all gomplate templates specified by the given configuration
@@ -123,7 +72,7 @@ func Run(ctx context.Context, cfg *config.Config) error {
 	Metrics = newMetrics()
 	defer runCleanupHooks()
 
-	// reset defaults before validation
+	// apply defaults before validation
 	cfg.ApplyDefaults()
 
 	err := cfg.Validate()
@@ -135,10 +84,6 @@ func Run(ctx context.Context, cfg *config.Config) error {
 	log.Debug().Str("data", fmt.Sprintf("%+v", d)).Msg("created data from config")
 
 	addCleanupHook(d.Cleanup)
-	nested, err := parseTemplateArgs(cfg.Templates)
-	if err != nil {
-		return err
-	}
 
 	aliases := []string{}
 	for k := range cfg.Context {
@@ -154,7 +99,7 @@ func Run(ctx context.Context, cfg *config.Config) error {
 	if err != nil {
 		return err
 	}
-	g := newGomplate(funcMap, cfg.LDelim, cfg.RDelim, nested, c)
+	g := newGomplate(funcMap, cfg.LDelim, cfg.RDelim, cfg.Templates, c)
 
 	return g.runTemplates(ctx, cfg)
 }

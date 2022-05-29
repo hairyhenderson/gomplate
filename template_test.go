@@ -4,9 +4,13 @@ import (
 	"bytes"
 	"context"
 	"io"
+	"net/url"
 	"os"
 	"testing"
+	"testing/fstest"
+	"text/template"
 
+	"github.com/hairyhenderson/go-fsimpl"
 	"github.com/hairyhenderson/gomplate/v3/internal/config"
 	"github.com/hairyhenderson/gomplate/v3/internal/iohelpers"
 	"github.com/spf13/afero"
@@ -16,10 +20,10 @@ import (
 )
 
 func TestOpenOutFile(t *testing.T) {
-	origfs := fs
-	defer func() { fs = origfs }()
-	fs = afero.NewMemMapFs()
-	_ = fs.Mkdir("/tmp", 0777)
+	origfs := aferoFS
+	defer func() { aferoFS = origfs }()
+	aferoFS = afero.NewMemMapFs()
+	_ = aferoFS.Mkdir("/tmp", 0777)
 
 	cfg := &config.Config{Stdout: &bytes.Buffer{}}
 	f, err := openOutFile("/tmp/foo", 0755, 0644, false, nil, false)
@@ -30,7 +34,7 @@ func TestOpenOutFile(t *testing.T) {
 	err = wc.Close()
 	assert.NoError(t, err)
 
-	i, err := fs.Stat("/tmp/foo")
+	i, err := aferoFS.Stat("/tmp/foo")
 	assert.NoError(t, err)
 	assert.Equal(t, iohelpers.NormalizeFileMode(0644), i.Mode())
 
@@ -42,11 +46,11 @@ func TestOpenOutFile(t *testing.T) {
 }
 
 func TestLoadContents(t *testing.T) {
-	origfs := fs
-	defer func() { fs = origfs }()
-	fs = afero.NewMemMapFs()
+	origfs := aferoFS
+	defer func() { aferoFS = origfs }()
+	aferoFS = afero.NewMemMapFs()
 
-	afero.WriteFile(fs, "foo", []byte("contents"), 0644)
+	afero.WriteFile(aferoFS, "foo", []byte("contents"), 0644)
 
 	tmpl := &tplate{name: "foo"}
 	b, err := tmpl.loadContents(nil)
@@ -57,14 +61,14 @@ func TestLoadContents(t *testing.T) {
 func TestGatherTemplates(t *testing.T) {
 	ctx := context.Background()
 
-	origfs := fs
-	defer func() { fs = origfs }()
-	fs = afero.NewMemMapFs()
-	afero.WriteFile(fs, "foo", []byte("bar"), 0600)
+	origfs := aferoFS
+	defer func() { aferoFS = origfs }()
+	aferoFS = afero.NewMemMapFs()
+	afero.WriteFile(aferoFS, "foo", []byte("bar"), 0600)
 
-	afero.WriteFile(fs, "in/1", []byte("foo"), 0644)
-	afero.WriteFile(fs, "in/2", []byte("bar"), 0644)
-	afero.WriteFile(fs, "in/3", []byte("baz"), 0644)
+	afero.WriteFile(aferoFS, "in/1", []byte("foo"), 0644)
+	afero.WriteFile(aferoFS, "in/2", []byte("bar"), 0644)
+	afero.WriteFile(aferoFS, "in/3", []byte("baz"), 0644)
 
 	cfg := &config.Config{
 		Stdin:  &bytes.Buffer{},
@@ -95,17 +99,17 @@ func TestGatherTemplates(t *testing.T) {
 	assert.Equal(t, iohelpers.NormalizeFileMode(0644), templates[0].mode)
 
 	// out file is created only on demand
-	_, err = fs.Stat("out")
+	_, err = aferoFS.Stat("out")
 	assert.Error(t, err)
 	assert.True(t, os.IsNotExist(err))
 
 	_, err = templates[0].target.Write([]byte("hello world"))
 	assert.NoError(t, err)
 
-	info, err := fs.Stat("out")
+	info, err := aferoFS.Stat("out")
 	require.NoError(t, err)
 	assert.Equal(t, iohelpers.NormalizeFileMode(0644), info.Mode())
-	fs.Remove("out")
+	aferoFS.Remove("out")
 
 	cfg = &config.Config{
 		InputFiles:  []string{"foo"},
@@ -122,10 +126,10 @@ func TestGatherTemplates(t *testing.T) {
 	_, err = templates[0].target.Write([]byte("hello world"))
 	assert.NoError(t, err)
 
-	info, err = fs.Stat("out")
+	info, err = aferoFS.Stat("out")
 	assert.NoError(t, err)
 	assert.Equal(t, iohelpers.NormalizeFileMode(0600), info.Mode())
-	fs.Remove("out")
+	aferoFS.Remove("out")
 
 	cfg = &config.Config{
 		InputFiles:  []string{"foo"},
@@ -143,10 +147,10 @@ func TestGatherTemplates(t *testing.T) {
 	_, err = templates[0].target.Write([]byte("hello world"))
 	assert.NoError(t, err)
 
-	info, err = fs.Stat("out")
+	info, err = aferoFS.Stat("out")
 	assert.NoError(t, err)
 	assert.Equal(t, iohelpers.NormalizeFileMode(0755), info.Mode())
-	fs.Remove("out")
+	aferoFS.Remove("out")
 
 	templates, err = gatherTemplates(ctx, &config.Config{
 		InputDir:  "in",
@@ -155,16 +159,58 @@ func TestGatherTemplates(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Len(t, templates, 3)
 	assert.Equal(t, "foo", templates[0].contents)
-	fs.Remove("out")
+	aferoFS.Remove("out")
 }
 
 func TestCreateOutFile(t *testing.T) {
-	origfs := fs
-	defer func() { fs = origfs }()
-	fs = afero.NewMemMapFs()
-	_ = fs.Mkdir("in", 0755)
+	origfs := aferoFS
+	defer func() { aferoFS = origfs }()
+	aferoFS = afero.NewMemMapFs()
+	_ = aferoFS.Mkdir("in", 0755)
 
 	_, err := createOutFile("in", 0755, 0644, false)
 	assert.Error(t, err)
 	assert.IsType(t, &os.PathError{}, err)
+}
+
+func TestParseNestedTemplates(t *testing.T) {
+	ctx := context.Background()
+
+	// in-memory test filesystem
+	fsys := fstest.MapFS{
+		"foo.t": {Data: []byte("hello world"), Mode: 0o600},
+	}
+	fsp := fsimpl.WrappedFSProvider(fsys, "file")
+	ctx = ContextWithFSProvider(ctx, fsp)
+
+	// simple test with single template
+	u, _ := url.Parse("file:///foo.t")
+	nested := config.Templates{"foo": {URL: u}}
+
+	tmpl, _ := template.New("root").Parse(`{{ template "foo" }}`)
+
+	err := parseNestedTemplates(ctx, nested, tmpl)
+	assert.NoError(t, err)
+
+	out := bytes.Buffer{}
+	err = tmpl.Execute(&out, nil)
+	assert.NoError(t, err)
+	assert.Equal(t, "hello world", out.String())
+
+	// test with directory of templates
+	fsys["dir/foo.t"] = &fstest.MapFile{Data: []byte("foo"), Mode: 0o600}
+	fsys["dir/bar.t"] = &fstest.MapFile{Data: []byte("bar"), Mode: 0o600}
+
+	u, _ = url.Parse("file:///dir/")
+	nested["dir"] = config.DataSource{URL: u}
+
+	tmpl, _ = template.New("root").Parse(`{{ template "dir/foo.t" }} {{ template "dir/bar.t" }}`)
+
+	err = parseNestedTemplates(ctx, nested, tmpl)
+	assert.NoError(t, err)
+
+	out = bytes.Buffer{}
+	err = tmpl.Execute(&out, nil)
+	assert.NoError(t, err)
+	assert.Equal(t, "foo bar", out.String())
 }

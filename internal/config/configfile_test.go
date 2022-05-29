@@ -383,21 +383,65 @@ func TestMergeFrom(t *testing.T) {
 	}
 
 	assert.EqualValues(t, expected, cfg.MergeFrom(other))
+
+	// test template merging & a few other things
+	cfg = &Config{
+		InputDir:    "indir/",
+		ExcludeGlob: []string{"*.txt"},
+		Templates: Templates{
+			"foo": {
+				URL: mustURL("file:///foo.yaml"),
+			},
+			"bar": {
+				URL:    mustURL("stdin:///"),
+				Header: http.Header{"Accept": {"application/json"}},
+			},
+		},
+	}
+	other = &Config{
+		ExcludeGlob: []string{"*.yaml"},
+		OutputMap:   "${ .in }.out",
+		OutMode:     "600",
+		LDelim:      "${",
+		RDelim:      "}",
+		Templates: Templates{
+			"foo": {URL: mustURL("https://example.com/foo.yaml")},
+			"baz": {URL: mustURL("vault:///baz")},
+		},
+	}
+	expected = &Config{
+		InputDir:    "indir/",
+		ExcludeGlob: []string{"*.yaml"},
+		OutputMap:   "${ .in }.out",
+		OutMode:     "600",
+		LDelim:      "${",
+		RDelim:      "}",
+		Templates: Templates{
+			"foo": {URL: mustURL("https://example.com/foo.yaml")},
+			"bar": {
+				URL:    mustURL("stdin:///"),
+				Header: http.Header{"Accept": {"application/json"}},
+			},
+			"baz": {URL: mustURL("vault:///baz")},
+		},
+	}
+
+	assert.EqualValues(t, expected, cfg.MergeFrom(other))
 }
 
 func TestParseDataSourceFlags(t *testing.T) {
 	t.Parallel()
 	cfg := &Config{}
-	err := cfg.ParseDataSourceFlags(nil, nil, nil)
+	err := cfg.ParseDataSourceFlags(nil, nil, nil, nil)
 	assert.NoError(t, err)
 	assert.EqualValues(t, &Config{}, cfg)
 
 	cfg = &Config{}
-	err = cfg.ParseDataSourceFlags([]string{"foo/bar/baz.json"}, nil, nil)
+	err = cfg.ParseDataSourceFlags([]string{"foo/bar/baz.json"}, nil, nil, nil)
 	assert.Error(t, err)
 
 	cfg = &Config{}
-	err = cfg.ParseDataSourceFlags([]string{"baz=foo/bar/baz.json"}, nil, nil)
+	err = cfg.ParseDataSourceFlags([]string{"baz=foo/bar/baz.json"}, nil, nil, nil)
 	assert.NoError(t, err)
 	expected := &Config{
 		DataSources: map[string]DataSource{
@@ -409,6 +453,7 @@ func TestParseDataSourceFlags(t *testing.T) {
 	cfg = &Config{}
 	err = cfg.ParseDataSourceFlags(
 		[]string{"baz=foo/bar/baz.json"},
+		nil,
 		nil,
 		[]string{"baz=Accept: application/json"})
 	assert.NoError(t, err)
@@ -427,6 +472,7 @@ func TestParseDataSourceFlags(t *testing.T) {
 	err = cfg.ParseDataSourceFlags(
 		[]string{"baz=foo/bar/baz.json"},
 		[]string{"foo=http://example.com"},
+		nil,
 		[]string{"foo=Accept: application/json",
 			"bar=Authorization: Basic xxxxx"})
 	assert.NoError(t, err)
@@ -441,6 +487,28 @@ func TestParseDataSourceFlags(t *testing.T) {
 					"Accept": {"application/json"},
 				},
 			},
+		},
+		ExtraHeaders: map[string]http.Header{
+			"bar": {"Authorization": {"Basic xxxxx"}},
+		},
+	}, cfg)
+
+	cfg = &Config{}
+	err = cfg.ParseDataSourceFlags(
+		nil,
+		nil,
+		[]string{"foo=http://example.com", "file.tmpl", "tmpldir/"},
+		[]string{"foo=Accept: application/json",
+			"bar=Authorization: Basic xxxxx"})
+	assert.NoError(t, err)
+	assert.EqualValues(t, &Config{
+		Templates: Templates{
+			"foo": {
+				URL:    mustURL("http://example.com"),
+				Header: http.Header{"Accept": {"application/json"}},
+			},
+			"file.tmpl": {URL: mustURL("file.tmpl")},
+			"tmpldir/":  {URL: mustURL("tmpldir/")},
 		},
 		ExtraHeaders: map[string]http.Header{
 			"bar": {"Authorization": {"Basic xxxxx"}},
@@ -478,7 +546,10 @@ pluginTimeout: 5s
 		RDelim:      "R",
 		Input:       "foo",
 		OutputFiles: []string{"-"},
-		Templates:   []string{"foo=foo.t", "bar=bar.t"},
+		Templates: Templates{
+			"foo": {URL: mustURL("https://www.example.com/foo.tmpl")},
+			"bar": {URL: mustURL("/tmp/bar.t")},
+		},
 	}
 	expected = `---
 in: foo
@@ -486,17 +557,22 @@ outputFiles: ['-']
 leftDelim: L
 rightDelim: R
 templates:
-  - foo=foo.t
-  - bar=bar.t
+  foo:
+    url: https://www.example.com/foo.tmpl
+  bar:
+    url: file:///tmp/bar.t
 `
-	assert.Equal(t, expected, c.String())
+	assert.YAMLEq(t, expected, c.String())
 
 	c = &Config{
 		LDelim:      "L",
 		RDelim:      "R",
 		Input:       "long input that should be truncated",
 		OutputFiles: []string{"-"},
-		Templates:   []string{"foo=foo.t", "bar=bar.t"},
+		Templates: Templates{
+			"foo": {URL: mustURL("https://www.example.com/foo.tmpl")},
+			"bar": {URL: mustURL("/tmp/bar.t")},
+		},
 	}
 	expected = `---
 in: long inp...
@@ -504,10 +580,12 @@ outputFiles: ['-']
 leftDelim: L
 rightDelim: R
 templates:
-  - foo=foo.t
-  - bar=bar.t
+  foo:
+    url: https://www.example.com/foo.tmpl
+  bar:
+    url: file:///tmp/bar.t
 `
-	assert.Equal(t, expected, c.String())
+	assert.YAMLEq(t, expected, c.String())
 
 	c = &Config{
 		InputDir:  "in/",
@@ -748,9 +826,9 @@ func TestAbsFileURL(t *testing.T) {
 }
 
 func TestParseDatasourceArgNoAlias(t *testing.T) {
-	key, ds, err := parseDatasourceArg("foo.json")
+	alias, ds, err := parseDatasourceArg("foo.json")
 	assert.NoError(t, err)
-	assert.Equal(t, "foo", key)
+	assert.Equal(t, "foo", alias)
 	assert.Equal(t, "file", ds.URL.Scheme)
 
 	_, _, err = parseDatasourceArg("../foo.json")
@@ -761,60 +839,60 @@ func TestParseDatasourceArgNoAlias(t *testing.T) {
 }
 
 func TestParseDatasourceArgWithAlias(t *testing.T) {
-	key, ds, err := parseDatasourceArg("data=foo.json")
+	alias, ds, err := parseDatasourceArg("data=foo.json")
 	assert.NoError(t, err)
-	assert.Equal(t, "data", key)
+	assert.Equal(t, "data", alias)
 	assert.Equal(t, "file", ds.URL.Scheme)
 	assert.True(t, ds.URL.IsAbs())
 
-	key, ds, err = parseDatasourceArg("data=/otherdir/foo.json")
+	alias, ds, err = parseDatasourceArg("data=/otherdir/foo.json")
 	assert.NoError(t, err)
-	assert.Equal(t, "data", key)
+	assert.Equal(t, "data", alias)
 	assert.Equal(t, "file", ds.URL.Scheme)
 	assert.True(t, ds.URL.IsAbs())
 	assert.Equal(t, "/otherdir/foo.json", ds.URL.Path)
 
 	if runtime.GOOS == "windows" {
-		key, ds, err = parseDatasourceArg("data=foo.json")
+		alias, ds, err = parseDatasourceArg("data=foo.json")
 		assert.NoError(t, err)
-		assert.Equal(t, "data", key)
+		assert.Equal(t, "data", alias)
 		assert.Equal(t, "file", ds.URL.Scheme)
 		assert.True(t, ds.URL.IsAbs())
 		assert.Equalf(t, byte(':'), ds.URL.Path[1], "Path was %s", ds.URL.Path)
 
-		key, ds, err = parseDatasourceArg(`data=\otherdir\foo.json`)
+		alias, ds, err = parseDatasourceArg(`data=\otherdir\foo.json`)
 		assert.NoError(t, err)
-		assert.Equal(t, "data", key)
+		assert.Equal(t, "data", alias)
 		assert.Equal(t, "file", ds.URL.Scheme)
 		assert.True(t, ds.URL.IsAbs())
 		assert.Equal(t, `/otherdir/foo.json`, ds.URL.Path)
 
-		key, ds, err = parseDatasourceArg("data=C:\\windowsdir\\foo.json")
+		alias, ds, err = parseDatasourceArg("data=C:\\windowsdir\\foo.json")
 		assert.NoError(t, err)
-		assert.Equal(t, "data", key)
+		assert.Equal(t, "data", alias)
 		assert.Equal(t, "file", ds.URL.Scheme)
 		assert.True(t, ds.URL.IsAbs())
 		assert.Equal(t, "C:/windowsdir/foo.json", ds.URL.Path)
 
-		key, ds, err = parseDatasourceArg("data=\\\\somehost\\share\\foo.json")
+		alias, ds, err = parseDatasourceArg("data=\\\\somehost\\share\\foo.json")
 		assert.NoError(t, err)
-		assert.Equal(t, "data", key)
+		assert.Equal(t, "data", alias)
 		assert.Equal(t, "file", ds.URL.Scheme)
 		assert.Equal(t, "somehost", ds.URL.Host)
 		assert.True(t, ds.URL.IsAbs())
 		assert.Equal(t, "/share/foo.json", ds.URL.Path)
 	}
 
-	key, ds, err = parseDatasourceArg("data=sftp://example.com/blahblah/foo.json")
+	alias, ds, err = parseDatasourceArg("data=sftp://example.com/blahblah/foo.json")
 	assert.NoError(t, err)
-	assert.Equal(t, "data", key)
+	assert.Equal(t, "data", alias)
 	assert.Equal(t, "sftp", ds.URL.Scheme)
 	assert.True(t, ds.URL.IsAbs())
 	assert.Equal(t, "/blahblah/foo.json", ds.URL.Path)
 
-	key, ds, err = parseDatasourceArg("merged=merge:./foo.yaml|http://example.com/bar.json%3Ffoo=bar")
+	alias, ds, err = parseDatasourceArg("merged=merge:./foo.yaml|http://example.com/bar.json%3Ffoo=bar")
 	assert.NoError(t, err)
-	assert.Equal(t, "merged", key)
+	assert.Equal(t, "merged", alias)
 	assert.Equal(t, "merge", ds.URL.Scheme)
 	assert.Equal(t, "./foo.yaml|http://example.com/bar.json%3Ffoo=bar", ds.URL.Opaque)
 }
