@@ -1,7 +1,6 @@
 package config
 
 import (
-	"context"
 	"net/http"
 	"net/url"
 	"os"
@@ -818,25 +817,6 @@ func TestParseDatasourceArgWithAlias(t *testing.T) {
 	assert.Equal(t, "merged", key)
 	assert.Equal(t, "merge", ds.URL.Scheme)
 	assert.Equal(t, "./foo.yaml|http://example.com/bar.json%3Ffoo=bar", ds.URL.Opaque)
-}
-
-func TestContextWithConfig(t *testing.T) {
-	ctx := context.Background()
-	cfg := &Config{}
-	ctx = ContextWithConfig(ctx, cfg)
-	assert.Equal(t, cfg, ctx.Value(cfgContextKey))
-}
-
-func TestFromContext(t *testing.T) {
-	cfg := &Config{}
-	ctx := context.WithValue(context.Background(),
-		cfgContextKey, cfg)
-	assert.Equal(t, cfg, FromContext(ctx))
-
-	ctx = context.Background()
-	cfg = FromContext(ctx)
-	// assert that the returned config looks like a default one
-	assert.Equal(t, "{{", cfg.LDelim)
 }
 
 func TestPluginConfig_UnmarshalYAML(t *testing.T) {

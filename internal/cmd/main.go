@@ -9,7 +9,6 @@ import (
 
 	"github.com/hairyhenderson/gomplate/v3"
 	"github.com/hairyhenderson/gomplate/v3/env"
-	"github.com/hairyhenderson/gomplate/v3/internal/config"
 	"github.com/hairyhenderson/gomplate/v3/version"
 
 	"github.com/rs/zerolog"
@@ -17,8 +16,7 @@ import (
 )
 
 // postRunExec - if templating succeeds, the command following a '--' will be executed
-func postRunExec(ctx context.Context, cfg *config.Config, stdout, stderr io.Writer) error {
-	args := cfg.PostExec
+func postRunExec(ctx context.Context, args []string, stdin io.Reader, stdout, stderr io.Writer) error {
 	if len(args) > 0 {
 		log := zerolog.Ctx(ctx)
 		log.Debug().Strs("args", args).Msg("running post-exec command")
@@ -31,7 +29,7 @@ func postRunExec(ctx context.Context, cfg *config.Config, stdout, stderr io.Writ
 		args = args[1:]
 		// nolint: gosec
 		c := exec.CommandContext(ctx, name, args...)
-		c.Stdin = cfg.PostExecInput
+		c.Stdin = stdin
 		c.Stderr = stderr
 		c.Stdout = stdout
 
@@ -87,12 +85,14 @@ func NewGomplateCmd() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			ctx = config.ContextWithConfig(ctx, cfg)
+
 			if cfg.Experimental {
 				log.UpdateContext(func(c zerolog.Context) zerolog.Context {
 					return c.Bool("experimental", true)
 				})
 				log.Info().Msg("experimental functions and features enabled!")
+
+				ctx = gomplate.SetExperimental(ctx)
 			}
 
 			log.Debug().Msgf("starting %s", cmd.Name())
@@ -113,7 +113,7 @@ func NewGomplateCmd() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			return postRunExec(ctx, cfg, cmd.OutOrStdout(), cmd.ErrOrStderr())
+			return postRunExec(ctx, cfg.PostExec, cfg.PostExecInput, cmd.OutOrStdout(), cmd.ErrOrStderr())
 		},
 		Args: optionalExecArgs,
 	}

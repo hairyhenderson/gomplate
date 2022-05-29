@@ -53,6 +53,8 @@ func copyFuncMap(funcMap template.FuncMap) template.FuncMap {
 	return newFuncMap
 }
 
+// toGoTemplate - parses t.contents as a Go template named t.name with the
+// configured funcMap, delimiters, and nested templates.
 func (t *tplate) toGoTemplate(ctx context.Context, g *gomplate) (tmpl *template.Template, err error) {
 	tmpl = template.New(t.name)
 	tmpl.Option("missingkey=error")
