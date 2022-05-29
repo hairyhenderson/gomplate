@@ -52,13 +52,6 @@ func loadConfig(cmd *cobra.Command, args []string) (*config.Config, error) {
 	cfg.Stdout = cmd.OutOrStdout()
 	cfg.Stderr = cmd.ErrOrStderr()
 
-	// reset defaults before validation
-	cfg.ApplyDefaults()
-
-	err = cfg.Validate()
-	if err != nil {
-		return nil, fmt.Errorf("failed to validate merged config: %w\n%+v", err, cfg)
-	}
 	return cfg, nil
 }
 

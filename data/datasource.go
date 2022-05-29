@@ -78,8 +78,9 @@ func (d *Data) lookupReader(scheme string) (func(context.Context, *Source, ...st
 }
 
 // Data -
+// Deprecated: will be replaced in future
 type Data struct {
-	ctx context.Context
+	Ctx context.Context
 
 	Sources map[string]*Source
 
@@ -87,7 +88,7 @@ type Data struct {
 	cache         map[string][]byte
 
 	// headers from the --datasource-header/-H option that don't reference datasources from the commandline
-	extraHeaders map[string]http.Header
+	ExtraHeaders map[string]http.Header
 }
 
 // Cleanup - clean up datasources before shutting the process down - things
@@ -114,41 +115,41 @@ func NewData(datasourceArgs, headerArgs []string) (*Data, error) {
 func FromConfig(ctx context.Context, cfg *config.Config) *Data {
 	// XXX: This is temporary, and will be replaced with something a bit cleaner
 	// when datasources are refactored
-	stdin = cfg.Stdin
+	ctx = ContextWithStdin(ctx, cfg.Stdin)
 
 	sources := map[string]*Source{}
 	for alias, d := range cfg.DataSources {
 		sources[alias] = &Source{
 			Alias:  alias,
 			URL:    d.URL,
-			header: d.Header,
+			Header: d.Header,
 		}
 	}
 	for alias, d := range cfg.Context {
 		sources[alias] = &Source{
 			Alias:  alias,
 			URL:    d.URL,
-			header: d.Header,
+			Header: d.Header,
 		}
 	}
 	return &Data{
-		ctx:          ctx,
+		Ctx:          ctx,
 		Sources:      sources,
-		extraHeaders: cfg.ExtraHeaders,
+		ExtraHeaders: cfg.ExtraHeaders,
 	}
 }
 
 // Source - a data source
 type Source struct {
+	Alias             string
 	URL               *url.URL
+	Header            http.Header             // used for http[s]: URLs, nil otherwise
 	fs                afero.Fs                // used for file: URLs, nil otherwise
 	hc                *http.Client            // used for http[s]: URLs, nil otherwise
 	vc                *vault.Vault            // used for vault: URLs, nil otherwise
 	kv                *libkv.LibKV            // used for consul:, etcd:, zookeeper: & boltdb: URLs, nil otherwise
 	asmpg             awssmpGetter            // used for aws+smp:, nil otherwise
 	awsSecretsManager awsSecretsManagerGetter // used for aws+sm, nil otherwise
-	header            http.Header             // used for http[s]: URLs, nil otherwise
-	Alias             string
 	mediaType         string
 }
 
@@ -246,7 +247,7 @@ func (d *Data) DefineDatasource(alias, value string) (string, error) {
 	s := &Source{
 		Alias:  alias,
 		URL:    srcURL,
-		header: d.extraHeaders[alias],
+		Header: d.ExtraHeaders[alias],
 	}
 	if d.Sources == nil {
 		d.Sources = make(map[string]*Source)
@@ -271,7 +272,7 @@ func (d *Data) lookupSource(alias string) (*Source, error) {
 		source = &Source{
 			Alias:  alias,
 			URL:    srcURL,
-			header: d.extraHeaders[alias],
+			Header: d.ExtraHeaders[alias],
 		}
 		d.Sources[alias] = source
 	}
@@ -304,13 +305,13 @@ func (d *Data) readDataSource(ctx context.Context, alias string, args ...string)
 
 // Include -
 func (d *Data) Include(alias string, args ...string) (string, error) {
-	data, _, err := d.readDataSource(d.ctx, alias, args...)
+	data, _, err := d.readDataSource(d.Ctx, alias, args...)
 	return data, err
 }
 
 // Datasource -
 func (d *Data) Datasource(alias string, args ...string) (interface{}, error) {
-	data, mimeType, err := d.readDataSource(d.ctx, alias, args...)
+	data, mimeType, err := d.readDataSource(d.Ctx, alias, args...)
 	if err != nil {
 		return nil, err
 	}
@@ -355,7 +356,7 @@ func (d *Data) DatasourceReachable(alias string, args ...string) bool {
 	if !ok {
 		return false
 	}
-	_, err := d.readSource(d.ctx, source, args...)
+	_, err := d.readSource(d.Ctx, source, args...)
 	return err == nil
 }
 

@@ -54,18 +54,13 @@ func copyFuncMap(funcMap template.FuncMap) template.FuncMap {
 }
 
 func (t *tplate) toGoTemplate(g *gomplate) (tmpl *template.Template, err error) {
-	if g.rootTemplate != nil {
-		tmpl = g.rootTemplate.New(t.name)
-	} else {
-		tmpl = template.New(t.name)
-		g.rootTemplate = tmpl
-	}
+	tmpl = template.New(t.name)
 	tmpl.Option("missingkey=error")
 
 	funcMap := copyFuncMap(g.funcMap)
 
 	// the "tmpl" funcs get added here because they need access to the root template and context
-	addTmplFuncs(funcMap, g.rootTemplate, g.tmplctx, t.name)
+	addTmplFuncs(funcMap, tmpl, g.tmplctx, t.name)
 	tmpl.Funcs(funcMap)
 	tmpl.Delims(g.leftDelim, g.rightDelim)
 	_, err = tmpl.Parse(t.contents)
@@ -206,33 +201,23 @@ func walkDir(dir string, outFileNamer func(string) (string, error), excludeGlob 
 	// Unmatched ignorefile rules's files
 	files := matches.UnmatchedFiles
 	for _, file := range files {
-		nextInPath := filepath.Join(dir, file)
-		nextOutPath, err := outFileNamer(file)
+		inFile := filepath.Join(dir, file)
+		outFile, err := outFileNamer(file)
 		if err != nil {
 			return nil, err
 		}
 
-		fMode := mode
-		if mode == 0 {
-			stat, perr := fs.Stat(nextInPath)
-			if perr == nil {
-				fMode = stat.Mode()
-			} else {
-				fMode = dirMode
-			}
-		}
-
-		// Ensure file parent dirs
-		if err = fs.MkdirAll(filepath.Dir(nextOutPath), dirMode); err != nil {
+		tpl, err := fileToTemplates(inFile, outFile, mode, modeOverride)
+		if err != nil {
 			return nil, err
 		}
 
-		templates = append(templates, &tplate{
-			name:         nextInPath,
-			targetPath:   nextOutPath,
-			mode:         fMode,
-			modeOverride: modeOverride,
-		})
+		// Ensure file parent dirs
+		if err = fs.MkdirAll(filepath.Dir(outFile), dirMode); err != nil {
+			return nil, err
+		}
+
+		templates = append(templates, tpl)
 	}
 
 	return templates, nil

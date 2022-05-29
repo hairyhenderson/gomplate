@@ -6,7 +6,6 @@ import (
 	"strings"
 
 	"github.com/hairyhenderson/gomplate/v3/data"
-	"github.com/hairyhenderson/gomplate/v3/internal/config"
 )
 
 // context for templates
@@ -22,10 +21,11 @@ func (c *tmplctx) Env() map[string]string {
 	return env
 }
 
-func createTmplContext(ctx context.Context, contexts map[string]config.DataSource, d *data.Data) (interface{}, error) {
+// createTmplContext reads the datasources for the given aliases
+func createTmplContext(ctx context.Context, aliases []string, d *data.Data) (interface{}, error) {
 	var err error
 	tctx := &tmplctx{}
-	for a := range contexts {
+	for _, a := range aliases {
 		if a == "." {
 			return d.Datasource(a)
 		}

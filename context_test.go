@@ -7,7 +7,6 @@ import (
 	"testing"
 
 	"github.com/hairyhenderson/gomplate/v3/data"
-	"github.com/hairyhenderson/gomplate/v3/internal/config"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -43,7 +42,7 @@ func TestCreateContext(t *testing.T) {
 	}
 	os.Setenv("foo", "foo: bar")
 	defer os.Unsetenv("foo")
-	c, err = createTmplContext(ctx, map[string]config.DataSource{"foo": {URL: uf}}, d)
+	c, err = createTmplContext(ctx, []string{"foo"}, d)
 	assert.NoError(t, err)
 	assert.IsType(t, &tmplctx{}, c)
 	tctx := c.(*tmplctx)
@@ -52,7 +51,7 @@ func TestCreateContext(t *testing.T) {
 
 	os.Setenv("bar", "bar: baz")
 	defer os.Unsetenv("bar")
-	c, err = createTmplContext(ctx, map[string]config.DataSource{".": {URL: ub}}, d)
+	c, err = createTmplContext(ctx, []string{"."}, d)
 	assert.NoError(t, err)
 	assert.IsType(t, map[string]interface{}{}, c)
 	ds = c.(map[string]interface{})
