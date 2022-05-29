@@ -492,6 +492,16 @@ func isZero(value interface{}) bool {
 // ApplyDefaults - any defaults changed here should be added to cmd.InitFlags as
 // well for proper help/usage display.
 func (c *Config) ApplyDefaults() {
+	if c.Stdout == nil {
+		c.Stdout = os.Stdout
+	}
+	if c.Stderr == nil {
+		c.Stderr = os.Stderr
+	}
+	if c.Stdin == nil {
+		c.Stdin = os.Stdin
+	}
+
 	if c.InputDir != "" && c.OutputDir == "" && c.OutputMap == "" {
 		c.OutputDir = "."
 	}
