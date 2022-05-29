@@ -1,6 +1,7 @@
 package gomplate
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -25,7 +26,6 @@ var fs = afero.NewOsFs()
 // tplate - models a gomplate template file...
 type tplate struct {
 	name         string
-	targetPath   string
 	target       io.Writer
 	contents     string
 	mode         os.FileMode
@@ -53,7 +53,7 @@ func copyFuncMap(funcMap template.FuncMap) template.FuncMap {
 	return newFuncMap
 }
 
-func (t *tplate) toGoTemplate(g *gomplate) (tmpl *template.Template, err error) {
+func (t *tplate) toGoTemplate(ctx context.Context, g *gomplate) (tmpl *template.Template, err error) {
 	tmpl = template.New(t.name)
 	tmpl.Option("missingkey=error")
 
@@ -103,7 +103,7 @@ func (t *tplate) loadContents(in io.Reader) ([]byte, error) {
 
 // gatherTemplates - gather and prepare input template(s) and output file(s) for rendering
 // nolint: gocyclo
-func gatherTemplates(cfg *config.Config, outFileNamer func(string) (string, error)) (templates []*tplate, err error) {
+func gatherTemplates(ctx context.Context, cfg *config.Config, outFileNamer func(context.Context, string) (string, error)) (templates []*tplate, err error) {
 	mode, modeOverride, err := cfg.GetMode()
 	if err != nil {
 		return nil, err
@@ -112,57 +112,33 @@ func gatherTemplates(cfg *config.Config, outFileNamer func(string) (string, erro
 	switch {
 	// the arg-provided input string gets a special name
 	case cfg.Input != "":
+		// open the output file - no need to close it, as it will be closed by the
+		// caller later
+		target, oerr := openOutFile(cfg.OutputFiles[0], 0755, mode, modeOverride, cfg.Stdout, cfg.SuppressEmpty)
+		if oerr != nil {
+			return nil, oerr
+		}
+
 		templates = []*tplate{{
 			name:         "<arg>",
 			contents:     cfg.Input,
+			target:       target,
 			mode:         mode,
 			modeOverride: modeOverride,
-			targetPath:   cfg.OutputFiles[0],
 		}}
 	case cfg.InputDir != "":
 		// input dirs presume output dirs are set too
-		templates, err = walkDir(cfg.InputDir, outFileNamer, cfg.ExcludeGlob, mode, modeOverride)
+		templates, err = walkDir(ctx, cfg, cfg.InputDir, outFileNamer, cfg.ExcludeGlob, mode, modeOverride)
 		if err != nil {
 			return nil, err
 		}
 	case cfg.Input == "":
 		templates = make([]*tplate, len(cfg.InputFiles))
 		for i := range cfg.InputFiles {
-			templates[i], err = fileToTemplates(cfg.InputFiles[i], cfg.OutputFiles[i], mode, modeOverride)
+			templates[i], err = fileToTemplates(cfg, cfg.InputFiles[i], cfg.OutputFiles[i], mode, modeOverride)
 			if err != nil {
 				return nil, err
 			}
-		}
-	}
-
-	return processTemplates(cfg, templates)
-}
-
-// processTemplates - reads data into the given templates as necessary and opens
-// outputs for writing as necessary
-func processTemplates(cfg *config.Config, templates []*tplate) ([]*tplate, error) {
-	for _, t := range templates {
-		if t.contents == "" {
-			var in io.Reader
-			if t.name == "-" {
-				in = cfg.Stdin
-			}
-
-			b, err := t.loadContents(in)
-			if err != nil {
-				return nil, err
-			}
-
-			t.contents = string(b)
-		}
-
-		if t.target == nil {
-			out, err := openOutFile(cfg, t.targetPath, 0755, t.mode, t.modeOverride)
-			if err != nil {
-				return nil, err
-			}
-
-			t.target = out
 		}
 	}
 
@@ -172,7 +148,7 @@ func processTemplates(cfg *config.Config, templates []*tplate) ([]*tplate, error
 // walkDir - given an input dir `dir` and an output dir `outDir`, and a list
 // of .gomplateignore and exclude globs (if any), walk the input directory and create a list of
 // tplate objects, and an error, if any.
-func walkDir(dir string, outFileNamer func(string) (string, error), excludeGlob []string, mode os.FileMode, modeOverride bool) ([]*tplate, error) {
+func walkDir(ctx context.Context, cfg *config.Config, dir string, outFileNamer func(context.Context, string) (string, error), excludeGlob []string, mode os.FileMode, modeOverride bool) ([]*tplate, error) {
 	dir = filepath.Clean(dir)
 
 	dirStat, err := fs.Stat(dir)
@@ -202,12 +178,12 @@ func walkDir(dir string, outFileNamer func(string) (string, error), excludeGlob 
 	files := matches.UnmatchedFiles
 	for _, file := range files {
 		inFile := filepath.Join(dir, file)
-		outFile, err := outFileNamer(file)
+		outFile, err := outFileNamer(ctx, file)
 		if err != nil {
 			return nil, err
 		}
 
-		tpl, err := fileToTemplates(inFile, outFile, mode, modeOverride)
+		tpl, err := fileToTemplates(cfg, inFile, outFile, mode, modeOverride)
 		if err != nil {
 			return nil, err
 		}
@@ -223,8 +199,18 @@ func walkDir(dir string, outFileNamer func(string) (string, error), excludeGlob 
 	return templates, nil
 }
 
-func fileToTemplates(inFile, outFile string, mode os.FileMode, modeOverride bool) (*tplate, error) {
-	if inFile != "-" {
+func fileToTemplates(cfg *config.Config, inFile, outFile string, mode os.FileMode, modeOverride bool) (*tplate, error) {
+	source := ""
+
+	//nolint:nestif
+	if inFile == "-" {
+		b, err := io.ReadAll(cfg.Stdin)
+		if err != nil {
+			return nil, fmt.Errorf("failed to read from stdin: %w", err)
+		}
+
+		source = string(b)
+	} else {
 		si, err := fs.Stat(inFile)
 		if err != nil {
 			return nil, err
@@ -232,10 +218,36 @@ func fileToTemplates(inFile, outFile string, mode os.FileMode, modeOverride bool
 		if mode == 0 {
 			mode = si.Mode()
 		}
+
+		// we read the file and store in memory immediately, to prevent leaking
+		// file descriptors.
+		f, err := fs.OpenFile(inFile, os.O_RDONLY, 0)
+		if err != nil {
+			return nil, fmt.Errorf("failed to open %s: %w", inFile, err)
+		}
+
+		//nolint: errcheck
+		defer f.Close()
+
+		b, err := io.ReadAll(f)
+		if err != nil {
+			return nil, fmt.Errorf("failed to read %s: %w", inFile, err)
+		}
+
+		source = string(b)
 	}
+
+	// open the output file - no need to close it, as it will be closed by the
+	// caller later
+	target, err := openOutFile(outFile, 0755, mode, modeOverride, cfg.Stdout, cfg.SuppressEmpty)
+	if err != nil {
+		return nil, err
+	}
+
 	tmpl := &tplate{
 		name:         inFile,
-		targetPath:   outFile,
+		contents:     source,
+		target:       target,
 		mode:         mode,
 		modeOverride: modeOverride,
 	}
@@ -243,11 +255,19 @@ func fileToTemplates(inFile, outFile string, mode os.FileMode, modeOverride bool
 	return tmpl, nil
 }
 
-func openOutFile(cfg *config.Config, filename string, dirMode, mode os.FileMode, modeOverride bool) (out io.Writer, err error) {
-	if cfg.SuppressEmpty {
+// openOutFile returns a writer for the given file, creating the file if it
+// doesn't exist yet, and creating the parent directories if necessary. Will
+// defer actual opening until the first write (or the first non-empty write if
+// 'suppressEmpty' is true). If the file already exists, it will not be
+// overwritten until the first difference is encountered.
+//
+// TODO: the 'suppressEmpty' behaviour should be always enabled, in the next
+// major release (v4.x).
+func openOutFile(filename string, dirMode, mode os.FileMode, modeOverride bool, stdout io.Writer, suppressEmpty bool) (out io.Writer, err error) {
+	if suppressEmpty {
 		out = iohelpers.NewEmptySkipper(func() (io.Writer, error) {
 			if filename == "-" {
-				return cfg.Stdout, nil
+				return stdout, nil
 			}
 			return createOutFile(filename, dirMode, mode, modeOverride)
 		})
@@ -255,7 +275,7 @@ func openOutFile(cfg *config.Config, filename string, dirMode, mode os.FileMode,
 	}
 
 	if filename == "-" {
-		return cfg.Stdout, nil
+		return stdout, nil
 	}
 	return createOutFile(filename, dirMode, mode, modeOverride)
 }

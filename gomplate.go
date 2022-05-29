@@ -31,22 +31,18 @@ type gomplate struct {
 }
 
 // runTemplate -
-func (g *gomplate) runTemplate(_ context.Context, t *tplate) error {
-	tmpl, err := t.toGoTemplate(g)
+func (g *gomplate) runTemplate(ctx context.Context, t *tplate) error {
+	tmpl, err := t.toGoTemplate(ctx, g)
 	if err != nil {
 		return err
 	}
 
-	// nolint: gocritic
-	switch t.target.(type) {
-	case io.Closer:
-		if t.target != os.Stdout {
-			// nolint: errcheck
-			defer t.target.(io.Closer).Close()
-		}
+	wr, ok := t.target.(io.Closer)
+	if ok && wr != os.Stdout {
+		defer wr.Close()
 	}
-	err = tmpl.Execute(t.target, g.tmplctx)
-	return err
+
+	return tmpl.Execute(t.target, g.tmplctx)
 }
 
 type templateAliases map[string]string
@@ -165,7 +161,7 @@ func Run(ctx context.Context, cfg *config.Config) error {
 
 func (g *gomplate) runTemplates(ctx context.Context, cfg *config.Config) error {
 	start := time.Now()
-	tmpl, err := gatherTemplates(cfg, chooseNamer(cfg, g))
+	tmpl, err := gatherTemplates(ctx, cfg, chooseNamer(cfg, g))
 	Metrics.GatherDuration = time.Since(start)
 	if err != nil {
 		Metrics.Errors++
@@ -187,29 +183,29 @@ func (g *gomplate) runTemplates(ctx context.Context, cfg *config.Config) error {
 	return nil
 }
 
-func chooseNamer(cfg *config.Config, g *gomplate) func(string) (string, error) {
+func chooseNamer(cfg *config.Config, g *gomplate) func(context.Context, string) (string, error) {
 	if cfg.OutputMap == "" {
 		return simpleNamer(cfg.OutputDir)
 	}
 	return mappingNamer(cfg.OutputMap, g)
 }
 
-func simpleNamer(outDir string) func(inPath string) (string, error) {
-	return func(inPath string) (string, error) {
+func simpleNamer(outDir string) func(ctx context.Context, inPath string) (string, error) {
+	return func(_ context.Context, inPath string) (string, error) {
 		outPath := filepath.Join(outDir, inPath)
 		return filepath.Clean(outPath), nil
 	}
 }
 
-func mappingNamer(outMap string, g *gomplate) func(string) (string, error) {
-	return func(inPath string) (string, error) {
+func mappingNamer(outMap string, g *gomplate) func(context.Context, string) (string, error) {
+	return func(ctx context.Context, inPath string) (string, error) {
 		out := &bytes.Buffer{}
 		t := &tplate{
 			name:     "<OutputMap>",
 			contents: outMap,
 			target:   out,
 		}
-		tpl, err := t.toGoTemplate(g)
+		tpl, err := t.toGoTemplate(ctx, g)
 		if err != nil {
 			return "", err
 		}

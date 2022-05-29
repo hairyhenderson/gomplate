@@ -25,7 +25,6 @@ var fs = afero.NewOsFs()
 // - creates a config.Config from the cobra flags
 // - creates a config.Config from the config file (if present)
 // - merges the two (flags take precedence)
-// - validates the final config
 func loadConfig(cmd *cobra.Command, args []string) (*config.Config, error) {
 	ctx := cmd.Context()
 	flagConfig, err := cobraConfig(cmd, args)

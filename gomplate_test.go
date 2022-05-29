@@ -230,24 +230,25 @@ func TestParseTemplateArgs(t *testing.T) {
 
 func TestSimpleNamer(t *testing.T) {
 	n := simpleNamer("out/")
-	out, err := n("file")
+	out, err := n(context.Background(), "file")
 	assert.NoError(t, err)
 	expected := filepath.FromSlash("out/file")
 	assert.Equal(t, expected, out)
 }
 
 func TestMappingNamer(t *testing.T) {
+	ctx := context.Background()
 	g := &gomplate{funcMap: map[string]interface{}{
 		"foo": func() string { return "foo" },
 	}}
 	n := mappingNamer("out/{{ .in }}", g)
-	out, err := n("file")
+	out, err := n(ctx, "file")
 	assert.NoError(t, err)
 	expected := filepath.FromSlash("out/file")
 	assert.Equal(t, expected, out)
 
 	n = mappingNamer("out/{{ foo }}{{ .in }}", g)
-	out, err = n("file")
+	out, err = n(ctx, "file")
 	assert.NoError(t, err)
 	expected = filepath.FromSlash("out/foofile")
 	assert.Equal(t, expected, out)
