@@ -74,14 +74,7 @@ func TestParseIPRange(t *testing.T) {
 }
 
 func testNetNS() *NetFuncs {
-	ctx := context.Background()
-	cfg := config.FromContext(ctx)
-	cfg.Experimental = true
-	ctx = config.ContextWithConfig(ctx, cfg)
-
-	return &NetFuncs{
-		ctx: ctx,
-	}
+	return &NetFuncs{ctx: config.SetExperimental(context.Background())}
 }
 
 func TestCIDRHost(t *testing.T) {

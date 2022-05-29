@@ -6,7 +6,6 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/hairyhenderson/gomplate/v3/internal/config"
 	"github.com/spf13/cobra"
 	"github.com/stretchr/testify/assert"
 )
@@ -63,12 +62,8 @@ func TestPostRunExec(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	cfg := &config.Config{
-		PostExecInput: strings.NewReader("hello world"),
-		PostExec:      []string{"cat"},
-	}
 	out := &bytes.Buffer{}
-	err := postRunExec(ctx, cfg, out, out)
+	err := postRunExec(ctx, []string{"cat"}, strings.NewReader("hello world"), out, out)
 	assert.NoError(t, err)
 	assert.Equal(t, "hello world", out.String())
 }

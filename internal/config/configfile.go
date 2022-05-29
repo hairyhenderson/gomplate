@@ -71,25 +71,15 @@ type Config struct {
 	Experimental  bool `yaml:"experimental,omitempty"`
 }
 
-var cfgContextKey = struct{}{}
+var experimentalCtxKey = struct{}{}
 
-// ContextWithConfig returns a new context with a reference to the config.
-func ContextWithConfig(ctx context.Context, cfg *Config) context.Context {
-	return context.WithValue(ctx, cfgContextKey, cfg)
+func SetExperimental(ctx context.Context) context.Context {
+	return context.WithValue(ctx, experimentalCtxKey, true)
 }
 
-// FromContext returns a config from the given context, if any. If no
-// config is present a new default configuration will be returned.
-func FromContext(ctx context.Context) (cfg *Config) {
-	ok := ctx != nil
-	if ok {
-		cfg, ok = ctx.Value(cfgContextKey).(*Config)
-	}
-	if !ok {
-		cfg = &Config{}
-		cfg.ApplyDefaults()
-	}
-	return cfg
+func ExperimentalEnabled(ctx context.Context) bool {
+	v, ok := ctx.Value(experimentalCtxKey).(bool)
+	return ok && v
 }
 
 // mergeDataSources - use d as defaults, and override with values from o

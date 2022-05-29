@@ -26,14 +26,7 @@ func TestCreateCryptoFuncs(t *testing.T) {
 }
 
 func testCryptoNS() *CryptoFuncs {
-	ctx := context.Background()
-	cfg := config.FromContext(ctx)
-	cfg.Experimental = true
-	ctx = config.ContextWithConfig(ctx, cfg)
-
-	return &CryptoFuncs{
-		ctx: ctx,
-	}
+	return &CryptoFuncs{ctx: config.SetExperimental(context.Background())}
 }
 
 func TestPBKDF2(t *testing.T) {

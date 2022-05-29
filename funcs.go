@@ -12,9 +12,7 @@ import (
 // Funcs -
 // Deprecated: use CreateFuncs instead
 func Funcs(d *data.Data) template.FuncMap {
-	ctx := context.Background()
-	cfg := config.FromContext(ctx)
-	return CreateFuncs(config.ContextWithConfig(ctx, cfg), d)
+	return CreateFuncs(context.Background(), d)
 }
 
 // CreateFuncs - function mappings are created here
@@ -48,4 +46,13 @@ func addToMap(dst, src map[string]interface{}) {
 	for k, v := range src {
 		dst[k] = v
 	}
+}
+
+// SetExperimental enables experimental functions and features in the given
+// context. This must be done before creating functions. The set of experimental
+// features enabled by this is not fixed and will change over time.
+func SetExperimental(ctx context.Context) context.Context {
+	// This just calls the internal function. This is here to make experimental
+	// functions available to external packages.
+	return config.SetExperimental(ctx)
 }
