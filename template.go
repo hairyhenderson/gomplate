@@ -4,11 +4,15 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"io/fs"
 	"io/ioutil"
 	"os"
+	"path"
 	"path/filepath"
+	"strings"
 	"text/template"
 
+	"github.com/hairyhenderson/go-fsimpl"
 	"github.com/hairyhenderson/gomplate/v3/internal/config"
 	"github.com/hairyhenderson/gomplate/v3/internal/iohelpers"
 	"github.com/hairyhenderson/gomplate/v3/tmpl"
@@ -21,7 +25,7 @@ import (
 const gomplateignore = ".gomplateignore"
 
 // for overriding in tests
-var fs = afero.NewOsFs()
+var aferoFS = afero.NewOsFs()
 
 // tplate - models a gomplate template file...
 type tplate struct {
@@ -53,6 +57,23 @@ func copyFuncMap(funcMap template.FuncMap) template.FuncMap {
 	return newFuncMap
 }
 
+var fsProviderCtxKey = struct{}{}
+
+// ContextWithFSProvider returns a context with the given FSProvider. Should
+// only be used in tests.
+func ContextWithFSProvider(ctx context.Context, fsp fsimpl.FSProvider) context.Context {
+	return context.WithValue(ctx, fsProviderCtxKey, fsp)
+}
+
+// FSProviderFromContext returns the FSProvider from the context, if any
+func FSProviderFromContext(ctx context.Context) fsimpl.FSProvider {
+	if fsp, ok := ctx.Value(fsProviderCtxKey).(fsimpl.FSProvider); ok {
+		return fsp
+	}
+
+	return nil
+}
+
 // toGoTemplate - parses t.contents as a Go template named t.name with the
 // configured funcMap, delimiters, and nested templates.
 func (t *tplate) toGoTemplate(ctx context.Context, g *gomplate) (tmpl *template.Template, err error) {
@@ -69,24 +90,101 @@ func (t *tplate) toGoTemplate(ctx context.Context, g *gomplate) (tmpl *template.
 	if err != nil {
 		return nil, err
 	}
-	for alias, path := range g.nestedTemplates {
-		// nolint: gosec
-		b, err := ioutil.ReadFile(path)
-		if err != nil {
-			return nil, err
+
+	err = parseNestedTemplates(ctx, g.nestedTemplates, tmpl)
+	if err != nil {
+		return nil, fmt.Errorf("parse nested templates: %w", err)
+	}
+
+	return tmpl, nil
+}
+
+func parseNestedTemplates(ctx context.Context, nested config.Templates, tmpl *template.Template) error {
+	fsp := FSProviderFromContext(ctx)
+
+	for alias, n := range nested {
+		u := *n.URL
+
+		fname := path.Base(u.Path)
+		if strings.HasSuffix(u.Path, "/") {
+			fname = "."
 		}
-		_, err = tmpl.New(alias).Parse(string(b))
+
+		u.Path = path.Dir(u.Path)
+
+		fsys, err := fsp.New(&u)
 		if err != nil {
-			return nil, err
+			return fmt.Errorf("filesystem provider for %q unavailable: %w", &u, err)
+		}
+
+		// inject context & header in case they're useful...
+		fsys = fsimpl.WithContextFS(ctx, fsys)
+		fsys = fsimpl.WithHeaderFS(n.Header, fsys)
+
+		// valid fs.FS paths have no trailing slash
+		fname = strings.TrimRight(fname, "/")
+
+		// first determine if the template path is a directory, in which case we
+		// need to load all the files in the directory (but not recursively)
+		fi, err := fs.Stat(fsys, fname)
+		if err != nil {
+			return fmt.Errorf("stat %q: %w", fname, err)
+		}
+
+		if fi.IsDir() {
+			err = parseNestedTemplateDir(ctx, fsys, alias, fname, tmpl)
+		} else {
+			err = parseNestedTemplate(ctx, fsys, alias, fname, tmpl)
+		}
+
+		if err != nil {
+			return err
 		}
 	}
-	return tmpl, nil
+
+	return nil
+}
+
+func parseNestedTemplateDir(ctx context.Context, fsys fs.FS, alias, fname string, tmpl *template.Template) error {
+	files, err := fs.ReadDir(fsys, fname)
+	if err != nil {
+		return fmt.Errorf("readDir %q: %w", fname, err)
+	}
+
+	for _, f := range files {
+		if !f.IsDir() {
+			err = parseNestedTemplate(ctx, fsys,
+				path.Join(alias, f.Name()),
+				path.Join(fname, f.Name()),
+				tmpl,
+			)
+			if err != nil {
+				return err
+			}
+		}
+	}
+
+	return nil
+}
+
+func parseNestedTemplate(ctx context.Context, fsys fs.FS, alias, fname string, tmpl *template.Template) error {
+	b, err := fs.ReadFile(fsys, fname)
+	if err != nil {
+		return fmt.Errorf("readFile %q: %w", fname, err)
+	}
+
+	_, err = tmpl.New(alias).Parse(string(b))
+	if err != nil {
+		return fmt.Errorf("parse nested template %q: %w", fname, err)
+	}
+
+	return nil
 }
 
 // loadContents - reads the template
 func (t *tplate) loadContents(in io.Reader) ([]byte, error) {
 	if in == nil {
-		f, err := fs.OpenFile(t.name, os.O_RDONLY, 0)
+		f, err := aferoFS.OpenFile(t.name, os.O_RDONLY, 0)
 		if err != nil {
 			return nil, fmt.Errorf("failed to open %s: %w", t.name, err)
 		}
@@ -153,14 +251,14 @@ func gatherTemplates(ctx context.Context, cfg *config.Config, outFileNamer func(
 func walkDir(ctx context.Context, cfg *config.Config, dir string, outFileNamer func(context.Context, string) (string, error), excludeGlob []string, mode os.FileMode, modeOverride bool) ([]*tplate, error) {
 	dir = filepath.Clean(dir)
 
-	dirStat, err := fs.Stat(dir)
+	dirStat, err := aferoFS.Stat(dir)
 	if err != nil {
 		return nil, fmt.Errorf("couldn't stat %s: %w", dir, err)
 	}
 	dirMode := dirStat.Mode()
 
 	templates := make([]*tplate, 0)
-	matcher := xignore.NewMatcher(fs)
+	matcher := xignore.NewMatcher(aferoFS)
 
 	// work around bug in xignore - a basedir of '.' doesn't work
 	basedir := dir
@@ -191,7 +289,7 @@ func walkDir(ctx context.Context, cfg *config.Config, dir string, outFileNamer f
 		}
 
 		// Ensure file parent dirs
-		if err = fs.MkdirAll(filepath.Dir(outFile), dirMode); err != nil {
+		if err = aferoFS.MkdirAll(filepath.Dir(outFile), dirMode); err != nil {
 			return nil, err
 		}
 
@@ -213,7 +311,7 @@ func fileToTemplates(cfg *config.Config, inFile, outFile string, mode os.FileMod
 
 		source = string(b)
 	} else {
-		si, err := fs.Stat(inFile)
+		si, err := aferoFS.Stat(inFile)
 		if err != nil {
 			return nil, err
 		}
@@ -223,7 +321,7 @@ func fileToTemplates(cfg *config.Config, inFile, outFile string, mode os.FileMod
 
 		// we read the file and store in memory immediately, to prevent leaking
 		// file descriptors.
-		f, err := fs.OpenFile(inFile, os.O_RDONLY, 0)
+		f, err := aferoFS.OpenFile(inFile, os.O_RDONLY, 0)
 		if err != nil {
 			return nil, fmt.Errorf("failed to open %s: %w", inFile, err)
 		}
@@ -285,7 +383,7 @@ func openOutFile(filename string, dirMode, mode os.FileMode, modeOverride bool, 
 func createOutFile(filename string, dirMode, mode os.FileMode, modeOverride bool) (out io.WriteCloser, err error) {
 	mode = iohelpers.NormalizeFileMode(mode.Perm())
 	if modeOverride {
-		err = fs.Chmod(filename, mode)
+		err = aferoFS.Chmod(filename, mode)
 		if err != nil && !os.IsNotExist(err) {
 			return nil, fmt.Errorf("failed to chmod output file '%s' with mode %q: %w", filename, mode, err)
 		}
@@ -293,11 +391,11 @@ func createOutFile(filename string, dirMode, mode os.FileMode, modeOverride bool
 
 	open := func() (out io.WriteCloser, err error) {
 		// Ensure file parent dirs
-		if err = fs.MkdirAll(filepath.Dir(filename), dirMode); err != nil {
+		if err = aferoFS.MkdirAll(filepath.Dir(filename), dirMode); err != nil {
 			return nil, err
 		}
 
-		out, err = fs.OpenFile(filename, os.O_RDWR|os.O_CREATE|os.O_TRUNC, mode)
+		out, err = aferoFS.OpenFile(filename, os.O_RDWR|os.O_CREATE|os.O_TRUNC, mode)
 		if err != nil {
 			return out, fmt.Errorf("failed to open output file '%s' for writing: %w", filename, err)
 		}
@@ -306,7 +404,7 @@ func createOutFile(filename string, dirMode, mode os.FileMode, modeOverride bool
 	}
 
 	// if the output file already exists, we'll use a SameSkipper
-	fi, err := fs.Stat(filename)
+	fi, err := aferoFS.Stat(filename)
 	if err != nil {
 		// likely means the file just doesn't exist - further errors will be more useful
 		return iohelpers.LazyWriteCloser(open), nil
@@ -317,7 +415,7 @@ func createOutFile(filename string, dirMode, mode os.FileMode, modeOverride bool
 	}
 
 	out = iohelpers.SameSkipper(iohelpers.LazyReadCloser(func() (io.ReadCloser, error) {
-		return fs.OpenFile(filename, os.O_RDONLY, mode)
+		return aferoFS.OpenFile(filename, os.O_RDONLY, mode)
 	}), open)
 
 	return out, err

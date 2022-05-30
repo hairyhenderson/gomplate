@@ -36,6 +36,15 @@ type Config struct {
 	Stdout io.Writer `yaml:"-"`
 	Stderr io.Writer `yaml:"-"`
 
+	DataSources map[string]DataSource   `yaml:"datasources,omitempty"`
+	Context     map[string]DataSource   `yaml:"context,omitempty"`
+	Plugins     map[string]PluginConfig `yaml:"plugins,omitempty"`
+	Templates   Templates               `yaml:"templates,omitempty"`
+
+	// Extra HTTP headers not attached to pre-defined datsources. Potentially
+	// used by datasources defined in the template.
+	ExtraHeaders map[string]http.Header `yaml:"-"`
+
 	// internal use only, can't be injected in YAML
 	PostExecInput io.Reader `yaml:"-"`
 
@@ -53,16 +62,6 @@ type Config struct {
 	RDelim string `yaml:"rightDelim,omitempty"`
 
 	PostExec []string `yaml:"postExec,omitempty,flow"`
-
-	DataSources map[string]DataSource   `yaml:"datasources,omitempty"`
-	Context     map[string]DataSource   `yaml:"context,omitempty"`
-	Plugins     map[string]PluginConfig `yaml:"plugins,omitempty"`
-
-	// Extra HTTP headers not attached to pre-defined datsources. Potentially
-	// used by datasources defined in the template.
-	ExtraHeaders map[string]http.Header `yaml:"-"`
-
-	Templates []string `yaml:"templates,omitempty"`
 
 	PluginTimeout time.Duration `yaml:"pluginTimeout,omitempty"`
 
@@ -251,8 +250,10 @@ func (c *Config) MergeFrom(o *Config) *Config {
 	if !isZero(o.RDelim) {
 		c.RDelim = o.RDelim
 	}
-	if !isZero(o.Templates) {
+	if c.Templates == nil {
 		c.Templates = o.Templates
+	} else {
+		mergeDataSources(c.Templates, o.Templates)
 	}
 	if c.DataSources == nil {
 		c.DataSources = o.DataSources
@@ -273,9 +274,44 @@ func (c *Config) MergeFrom(o *Config) *Config {
 	return c
 }
 
-// ParseDataSourceFlags - sets the DataSources and Context fields from the
-// key=value format flags as provided at the command-line
-func (c *Config) ParseDataSourceFlags(datasources, contexts, headers []string) error {
+// ParseDataSourceFlags - sets DataSources, Context, and Templates fields from
+// the key=value format flags as provided at the command-line
+// Unreferenced headers will be set in c.ExtraHeaders
+func (c *Config) ParseDataSourceFlags(datasources, contexts, templates, headers []string) error {
+	err := c.parseResources(datasources, contexts, templates)
+	if err != nil {
+		return err
+	}
+
+	hdrs, err := parseHeaderArgs(headers)
+	if err != nil {
+		return err
+	}
+
+	for k, v := range hdrs {
+		if d, ok := c.Context[k]; ok {
+			d.Header = v
+			c.Context[k] = d
+			delete(hdrs, k)
+		}
+		if d, ok := c.DataSources[k]; ok {
+			d.Header = v
+			c.DataSources[k] = d
+			delete(hdrs, k)
+		}
+		if t, ok := c.Templates[k]; ok {
+			t.Header = v
+			c.Templates[k] = t
+			delete(hdrs, k)
+		}
+	}
+	if len(hdrs) > 0 {
+		c.ExtraHeaders = hdrs
+	}
+	return nil
+}
+
+func (c *Config) parseResources(datasources, contexts, templates []string) error {
 	for _, d := range datasources {
 		k, ds, err := parseDatasourceArg(d)
 		if err != nil {
@@ -296,27 +332,17 @@ func (c *Config) ParseDataSourceFlags(datasources, contexts, headers []string) e
 		}
 		c.Context[k] = ds
 	}
-
-	hdrs, err := parseHeaderArgs(headers)
-	if err != nil {
-		return err
-	}
-
-	for k, v := range hdrs {
-		if d, ok := c.Context[k]; ok {
-			d.Header = v
-			c.Context[k] = d
-			delete(hdrs, k)
+	for _, t := range templates {
+		k, ds, err := parseTemplateArg(t)
+		if err != nil {
+			return err
 		}
-		if d, ok := c.DataSources[k]; ok {
-			d.Header = v
-			c.DataSources[k] = d
-			delete(hdrs, k)
+		if c.Templates == nil {
+			c.Templates = map[string]DataSource{}
 		}
+		c.Templates[k] = ds
 	}
-	if len(hdrs) > 0 {
-		c.ExtraHeaders = hdrs
-	}
+
 	return nil
 }
 
@@ -336,21 +362,20 @@ func (c *Config) ParsePluginFlags(plugins []string) error {
 	return nil
 }
 
-func parseDatasourceArg(value string) (key string, ds DataSource, err error) {
-	parts := strings.SplitN(value, "=", 2)
-	if len(parts) == 1 {
-		f := parts[0]
-		key = strings.SplitN(value, ".", 2)[0]
-		if path.Base(f) != f {
-			err = fmt.Errorf("invalid datasource (%s): must provide an alias with files not in working directory", value)
-			return key, ds, err
+func parseDatasourceArg(value string) (alias string, ds DataSource, err error) {
+	alias, u, _ := strings.Cut(value, "=")
+	if u == "" {
+		u = alias
+		alias, _, _ = strings.Cut(value, ".")
+		if path.Base(u) != u {
+			err = fmt.Errorf("invalid argument (%s): must provide an alias with files not in working directory", value)
+			return alias, ds, err
 		}
-		ds.URL, err = ParseSourceURL(f)
-	} else if len(parts) == 2 {
-		key = parts[0]
-		ds.URL, err = ParseSourceURL(parts[1])
 	}
-	return key, ds, err
+
+	ds.URL, err = ParseSourceURL(u)
+
+	return alias, ds, err
 }
 
 func parseHeaderArgs(headerArgs []string) (map[string]http.Header, error) {

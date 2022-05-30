@@ -38,4 +38,12 @@ func TestNestedTemplates(t *testing.T) {
 {{ template "templates/two.t" "two"}}`).
 		withDir(tmpDir.Path()).run()
 	assertSuccess(t, o, e, err, "one\n1: two 2: two ")
+
+	// referencing a dir without a trailing / is undocumented, but works
+	// currently - I don't want to break it...
+	o, e, err = cmd(t, "-t", "templates",
+		"-i", `{{ template "templates/one.t" "one"}}
+{{ template "templates/two.t" "two"}}`).
+		withDir(tmpDir.Path()).run()
+	assertSuccess(t, o, e, err, "one\n1: two 2: two ")
 }

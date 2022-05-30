@@ -14,20 +14,20 @@ import (
 
 func TestWalkDir(t *testing.T) {
 	ctx := context.Background()
-	origfs := fs
-	defer func() { fs = origfs }()
-	fs = afero.NewMemMapFs()
+	origfs := aferoFS
+	defer func() { aferoFS = origfs }()
+	aferoFS = afero.NewMemMapFs()
 
 	cfg := &config.Config{}
 
 	_, err := walkDir(ctx, cfg, "/indir", simpleNamer("/outdir"), nil, 0, false)
 	assert.Error(t, err)
 
-	_ = fs.MkdirAll("/indir/one", 0777)
-	_ = fs.MkdirAll("/indir/two", 0777)
-	afero.WriteFile(fs, "/indir/one/foo", []byte("foo"), 0644)
-	afero.WriteFile(fs, "/indir/one/bar", []byte("bar"), 0664)
-	afero.WriteFile(fs, "/indir/two/baz", []byte("baz"), 0644)
+	_ = aferoFS.MkdirAll("/indir/one", 0777)
+	_ = aferoFS.MkdirAll("/indir/two", 0777)
+	afero.WriteFile(aferoFS, "/indir/one/foo", []byte("foo"), 0644)
+	afero.WriteFile(aferoFS, "/indir/one/bar", []byte("bar"), 0664)
+	afero.WriteFile(aferoFS, "/indir/two/baz", []byte("baz"), 0644)
 
 	templates, err := walkDir(ctx, cfg, "/indir", simpleNamer("/outdir"), []string{"*/two"}, 0, false)
 

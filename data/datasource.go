@@ -103,7 +103,7 @@ func (d *Data) Cleanup() {
 // Deprecated: will be replaced in future
 func NewData(datasourceArgs, headerArgs []string) (*Data, error) {
 	cfg := &config.Config{}
-	err := cfg.ParseDataSourceFlags(datasourceArgs, nil, headerArgs)
+	err := cfg.ParseDataSourceFlags(datasourceArgs, nil, nil, headerArgs)
 	if err != nil {
 		return nil, err
 	}

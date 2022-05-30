@@ -189,10 +189,30 @@ Use `--left-delim`/`--right-delim` or set `$GOMPLATE_LEFT_DELIM`/`$GOMPLATE_RIGH
 
 ### `--template`/`-t`
 
-Add a nested template that can be referenced by the main input template(s) with the [`template`](https://golang.org/pkg/text/template/#hdr-Actions) built-in or the functions in the [`tmpl`](../functions/tmpl/) namespace. Specify multiple times to add multiple template references.
+Add a nested template or directory of templates that can be referenced by the
+main input template(s) with the [`template`](https://golang.org/pkg/text/template/#hdr-Actions)
+built-in or the functions in the [`tmpl`](../functions/tmpl/) namespace. Specify
+multiple times to add multiple template references.
 
-A few different forms are valid:
+Similar to data sources, the value is a `alias=url` pair, where `alias` is the
+template name and `url` is an optionally-relative URL to the template file or
+directory. Note that currently only `file:` URLs are supported.
 
+In addition to the `alias=url` form, in certain cases the alias may be omitted,
+in which case the `url` will be used as the `alias`. When referencing a
+directory, all files in the directory will be included, available to be
+referenced as `alias/<filename>`.
+
+Some examples:
+
+- `--template foo=file:///tmp/foo.tmpl`
+  - References a file `/tmp/foo.tmpl`
+  - It will be available as a template named `foo`:
+
+    ```console
+    $ gomplate --template foo=file:///tmp/foo.tmpl -i 'here are the contents of the template: [ {{ template "foo" }} ]'
+    here are the contents of the template: [ hello, world! ]
+    ```
 - `--template mytemplate.t`
   - References a file `mytemplate.t` in the current working directory.
   - It will be available as a template named `mytemplate.t`:
