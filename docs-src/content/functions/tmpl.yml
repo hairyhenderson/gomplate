@@ -74,7 +74,6 @@ funcs:
         $ gomplate -f subdir/input.tpl
         this template is in subdir/input.tpl
         ```
-        ```
   - name: tmpl.PathDir
     description: |
       Output the current template's directory. For inline templates, this will

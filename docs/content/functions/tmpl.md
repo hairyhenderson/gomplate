@@ -107,7 +107,6 @@ this template is in {{ tmpl.Path }}
 $ gomplate -f subdir/input.tpl
 this template is in subdir/input.tpl
 ```
-```
 
 ## `tmpl.PathDir`
 
