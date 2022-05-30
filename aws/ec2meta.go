@@ -1,19 +1,14 @@
 package aws
 
 import (
-	"encoding/json"
-	"io/ioutil"
 	"net/http"
 	"strings"
-	"time"
 
-	"github.com/pkg/errors"
-
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/ec2metadata"
+	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/hairyhenderson/gomplate/v3/env"
 )
-
-// DefaultEndpoint -
-var DefaultEndpoint = "http://169.254.169.254"
 
 const (
 	// the default region
@@ -22,20 +17,38 @@ const (
 
 // Ec2Meta -
 type Ec2Meta struct {
-	Client   *http.Client
-	cache    map[string]string
-	Endpoint string
-	options  ClientOptions
-	nonAWS   bool
+	metadataCache       map[string]string
+	dynamicdataCache    map[string]string
+	ec2MetadataProvider func() (EC2Metadata, error)
+	nonAWS              bool
+}
+
+type EC2Metadata interface {
+	GetMetadata(p string) (string, error)
+	GetDynamicData(p string) (string, error)
+	Region() (string, error)
 }
 
 // NewEc2Meta -
 func NewEc2Meta(options ClientOptions) *Ec2Meta {
-	if endpoint := env.Getenv("AWS_META_ENDPOINT"); endpoint != "" {
-		DefaultEndpoint = endpoint
-	}
+	return &Ec2Meta{
+		metadataCache:    make(map[string]string),
+		dynamicdataCache: make(map[string]string),
+		ec2MetadataProvider: func() (EC2Metadata, error) {
+			config := aws.NewConfig()
+			config = config.WithHTTPClient(&http.Client{Timeout: options.Timeout})
+			if endpoint := env.Getenv("AWS_META_ENDPOINT"); endpoint != "" {
+				config = config.WithEndpoint(endpoint)
+			}
 
-	return &Ec2Meta{cache: make(map[string]string), options: options}
+			s, err := session.NewSession(config)
+			if err != nil {
+				return nil, err
+			}
+
+			return ec2metadata.New(s), nil
+		},
+	}
 }
 
 // returnDefault -
@@ -56,10 +69,8 @@ func unreachable(err error) bool {
 	return false
 }
 
-// retrieve EC2 metadata, defaulting if we're not in EC2 or if there's a non-OK
-// response. If there is an OK response, but we can't parse it, this errors
-func (e *Ec2Meta) retrieveMetadata(url string, def ...string) (string, error) {
-	if value, ok := e.cache[url]; ok {
+func (e *Ec2Meta) retrieveMetadata(key string, def ...string) (string, error) {
+	if value, ok := e.metadataCache[key]; ok {
 		return value, nil
 	}
 
@@ -67,55 +78,57 @@ func (e *Ec2Meta) retrieveMetadata(url string, def ...string) (string, error) {
 		return returnDefault(def), nil
 	}
 
-	if e.Client == nil {
-		timeout := e.options.Timeout
-		if timeout == 0 {
-			timeout = 500 * time.Millisecond
-		}
-		e.Client = &http.Client{Timeout: timeout}
+	emd, err := e.ec2MetadataProvider()
+	if err != nil {
+		return "", err
 	}
-	resp, err := e.Client.Get(url)
+
+	value, err := emd.GetMetadata(key)
 	if err != nil {
 		if unreachable(err) {
 			e.nonAWS = true
 		}
 		return returnDefault(def), nil
 	}
+	e.metadataCache[key] = value
 
-	// nolint: errcheck
-	defer resp.Body.Close()
-	if resp.StatusCode > 399 {
+	return value, nil
+}
+
+func (e *Ec2Meta) retrieveDynamicdata(key string, def ...string) (string, error) {
+	if value, ok := e.dynamicdataCache[key]; ok {
+		return value, nil
+	}
+
+	if e.nonAWS {
 		return returnDefault(def), nil
 	}
 
-	body, err := ioutil.ReadAll(resp.Body)
+	emd, err := e.ec2MetadataProvider()
 	if err != nil {
-		return "", errors.Wrapf(err, "Failed to read response body from %s", url)
+		return "", err
 	}
-	value := strings.TrimSpace(string(body))
-	e.cache[url] = value
+
+	value, err := emd.GetDynamicData(key)
+	if err != nil {
+		if unreachable(err) {
+			e.nonAWS = true
+		}
+		return returnDefault(def), nil
+	}
+	e.dynamicdataCache[key] = value
 
 	return value, nil
 }
 
 // Meta -
 func (e *Ec2Meta) Meta(key string, def ...string) (string, error) {
-	if e.Endpoint == "" {
-		e.Endpoint = DefaultEndpoint
-	}
-
-	url := e.Endpoint + "/latest/meta-data/" + key
-	return e.retrieveMetadata(url, def...)
+	return e.retrieveMetadata(key, def...)
 }
 
 // Dynamic -
 func (e *Ec2Meta) Dynamic(key string, def ...string) (string, error) {
-	if e.Endpoint == "" {
-		e.Endpoint = DefaultEndpoint
-	}
-
-	url := e.Endpoint + "/latest/dynamic/" + key
-	return e.retrieveMetadata(url, def...)
+	return e.retrieveDynamicdata(key, def...)
 }
 
 // Region -
@@ -125,28 +138,19 @@ func (e *Ec2Meta) Region(def ...string) (string, error) {
 		defaultRegion = unknown
 	}
 
-	doc, err := e.Dynamic("instance-identity/document", `{"region":"`+defaultRegion+`"}`)
+	if e.nonAWS {
+		return defaultRegion, nil
+	}
+
+	emd, err := e.ec2MetadataProvider()
 	if err != nil {
 		return "", err
 	}
-	obj := &InstanceDocument{
-		Region: defaultRegion,
-	}
-	err = json.Unmarshal([]byte(doc), &obj)
-	if err != nil {
-		return "", errors.Wrapf(err, "Unable to unmarshal JSON object %s", doc)
-	}
-	return obj.Region, nil
-}
 
-// InstanceDocument -
-type InstanceDocument struct {
-	PrivateIP        string `json:"privateIp"`
-	AvailabilityZone string `json:"availabilityZone"`
-	InstanceID       string `json:"InstanceId"`
-	InstanceType     string `json:"InstanceType"`
-	AccountID        string `json:"AccountId"`
-	ImageID          string `json:"imageId"`
-	Architecture     string `json:"architecture"`
-	Region           string `json:"region"`
+	region, err := emd.Region()
+	if err != nil || region == "" {
+		return defaultRegion, nil
+	}
+
+	return region, nil
 }

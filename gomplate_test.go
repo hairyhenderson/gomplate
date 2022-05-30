@@ -3,7 +3,6 @@ package gomplate
 import (
 	"bytes"
 	"context"
-	"net/http/httptest"
 	"os"
 	"path/filepath"
 	"testing"
@@ -53,26 +52,23 @@ func TestBoolTemplates(t *testing.T) {
 }
 
 func TestEc2MetaTemplates(t *testing.T) {
-	createGomplate := func(status int, body string) (*gomplate, *httptest.Server) {
-		server, ec2meta := aws.MockServer(status, body)
-		return &gomplate{funcMap: template.FuncMap{"ec2meta": ec2meta.Meta}}, server
+	createGomplate := func(data map[string]string, region string) *gomplate {
+		ec2meta := aws.MockEC2Meta(data, nil, region)
+		return &gomplate{funcMap: template.FuncMap{"ec2meta": ec2meta.Meta}}
 	}
 
-	g, s := createGomplate(404, "")
-	defer s.Close()
+	g := createGomplate(nil, "")
 	assert.Equal(t, "", testTemplate(t, g, `{{ec2meta "foo"}}`))
 	assert.Equal(t, "default", testTemplate(t, g, `{{ec2meta "foo" "default"}}`))
-	s.Close()
 
-	g, s = createGomplate(200, "i-1234")
-	defer s.Close()
+	g = createGomplate(map[string]string{"instance-id": "i-1234"}, "")
 	assert.Equal(t, "i-1234", testTemplate(t, g, `{{ec2meta "instance-id"}}`))
 	assert.Equal(t, "i-1234", testTemplate(t, g, `{{ec2meta "instance-id" "default"}}`))
 }
 
 func TestEc2MetaTemplates_WithJSON(t *testing.T) {
-	server, ec2meta := aws.MockServer(200, `{"foo":"bar"}`)
-	defer server.Close()
+	ec2meta := aws.MockEC2Meta(map[string]string{"obj": `"foo": "bar"`}, map[string]string{"obj": `"foo": "baz"`}, "")
+
 	g := &gomplate{
 		funcMap: template.FuncMap{
 			"ec2meta":    ec2meta.Meta,
@@ -82,7 +78,7 @@ func TestEc2MetaTemplates_WithJSON(t *testing.T) {
 	}
 
 	assert.Equal(t, "bar", testTemplate(t, g, `{{ (ec2meta "obj" | json).foo }}`))
-	assert.Equal(t, "bar", testTemplate(t, g, `{{ (ec2dynamic "obj" | json).foo }}`))
+	assert.Equal(t, "baz", testTemplate(t, g, `{{ (ec2dynamic "obj" | json).foo }}`))
 }
 
 func TestJSONArrayTemplates(t *testing.T) {
