@@ -28,6 +28,7 @@ funcs:
         $ gomplate -i '{{ crypto.Bcrypt 4 "foo" }}
         $2a$04$zjba3N38sjyYsw0Y7IRCme1H4gD0MJxH8Ixai0/sgsrf7s1MFUK1C
   - name: crypto.DecryptAES
+    experimental: true
     description: |
       Decrypts the given input using the given key. By default,
       uses AES-256-CBC, but supports 128- and 192-bit keys as well.
@@ -55,6 +56,7 @@ funcs:
         $ gomplate -i '{{ base64.Decode "Gp2WG/fKOUsVlhcpr3oqgR+fRUNBcO1eZJ9CW+gDI18=" | crypto.DecryptAES "swordfish" 128 }}'
         hello world
   - name: crypto.DecryptAESBytes
+    experimental: true
     description: |
       Decrypts the given input using the given key. By default,
       uses AES-256-CBC, but supports 128- and 192-bit keys as well.
@@ -81,6 +83,7 @@ funcs:
         $ gomplate -i '{{ base64.Decode "Gp2WG/fKOUsVlhcpr3oqgR+fRUNBcO1eZJ9CW+gDI18=" | crypto.DecryptAES "swordfish" 128 }}'
         hello world
   - name: crypto.EncryptAES
+    experimental: true
     description: |
       Encrypts the given input using the given key. By default,
       uses AES-256-CBC, but supports 128- and 192-bit keys as well.

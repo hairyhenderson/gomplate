@@ -45,7 +45,10 @@ $ gomplate -i '{{ crypto.Bcrypt 4 "foo" }}
 $2a$04$zjba3N38sjyYsw0Y7IRCme1H4gD0MJxH8Ixai0/sgsrf7s1MFUK1C
 ```
 
-## `crypto.DecryptAES`
+## `crypto.DecryptAES` _(experimental)_
+**Experimental:** This function is [_experimental_][experimental] and may be enabled with the [`--experimental`][experimental] flag.
+
+[experimental]: ../config/#experimental
 
 Decrypts the given input using the given key. By default,
 uses AES-256-CBC, but supports 128- and 192-bit keys as well.
@@ -82,7 +85,10 @@ $ gomplate -i '{{ base64.Decode "Gp2WG/fKOUsVlhcpr3oqgR+fRUNBcO1eZJ9CW+gDI18=" |
 hello world
 ```
 
-## `crypto.DecryptAESBytes`
+## `crypto.DecryptAESBytes` _(experimental)_
+**Experimental:** This function is [_experimental_][experimental] and may be enabled with the [`--experimental`][experimental] flag.
+
+[experimental]: ../config/#experimental
 
 Decrypts the given input using the given key. By default,
 uses AES-256-CBC, but supports 128- and 192-bit keys as well.
@@ -118,7 +124,10 @@ $ gomplate -i '{{ base64.Decode "Gp2WG/fKOUsVlhcpr3oqgR+fRUNBcO1eZJ9CW+gDI18=" |
 hello world
 ```
 
-## `crypto.EncryptAES`
+## `crypto.EncryptAES` _(experimental)_
+**Experimental:** This function is [_experimental_][experimental] and may be enabled with the [`--experimental`][experimental] flag.
+
+[experimental]: ../config/#experimental
 
 Encrypts the given input using the given key. By default,
 uses AES-256-CBC, but supports 128- and 192-bit keys as well.
