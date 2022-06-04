@@ -39,6 +39,10 @@ require (
 	k8s.io/client-go v0.24.1
 )
 
+// TODO: remove after https://github.com/go-yaml/yaml/pull/862 is merged and in
+// a release of gopkg.in/yaml.v3
+replace gopkg.in/yaml.v3 => github.com/hairyhenderson/yaml v0.0.0-20220604201823-ac7593028a00
+
 require (
 	cloud.google.com/go v0.102.0 // indirect
 	cloud.google.com/go/compute v1.6.1 // indirect
