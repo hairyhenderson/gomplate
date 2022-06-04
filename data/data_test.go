@@ -17,22 +17,26 @@ import (
 
 func TestUnmarshalObj(t *testing.T) {
 	expected := map[string]interface{}{
-		"foo":  map[string]interface{}{"bar": "baz"},
-		"one":  1.0,
-		"true": true,
+		"foo":     map[string]interface{}{"bar": "baz"},
+		"one":     1.0,
+		"true":    true,
+		"escaped": "\"/\\\b\f\n\r\t∞",
 	}
 
 	test := func(actual map[string]interface{}, err error) {
+		t.Helper()
 		assert.NoError(t, err)
 		assert.Equal(t, expected["foo"], actual["foo"], "foo")
 		assert.Equal(t, expected["one"], actual["one"], "one")
 		assert.Equal(t, expected["true"], actual["true"], "true")
+		assert.Equal(t, expected["escaped"], actual["escaped"], "escaped")
 	}
-	test(JSON(`{"foo":{"bar":"baz"},"one":1.0,"true":true}`))
+	test(JSON(`{"foo":{"bar":"baz"},"one":1.0,"true":true,"escaped":"\"\/\\\b\f\n\r\t\u221e"}`))
 	test(YAML(`foo:
   bar: baz
 one: 1.0
 'true': true
+escaped: "\"\/\\\b\f\n\r\t\u221e"
 `))
 	test(YAML(`anchor: &anchor
   bar: baz
@@ -40,6 +44,7 @@ foo:
   <<: *anchor
 one: 1.0
 'true': true
+escaped: "\"\/\\\b\f\n\r\t\u221e"
 `))
 	test(YAML(`# this comment marks an empty (nil!) document
 ---
@@ -49,6 +54,7 @@ foo:
   bar: baz
 one: 1.0
 'true': true
+escaped: "\"\/\\\b\f\n\r\t\u221e"
 `))
 
 	obj := make(map[string]interface{})
