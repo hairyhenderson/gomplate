@@ -289,7 +289,12 @@ func (f *CryptoFuncs) ECDSADerivePublicKey(privateKey string) (string, error) {
 }
 
 // EncryptAES -
+// Experimental!
 func (f *CryptoFuncs) EncryptAES(key string, args ...interface{}) ([]byte, error) {
+	if err := checkExperimental(f.ctx); err != nil {
+		return nil, err
+	}
+
 	k, msg, err := parseAESArgs(key, args...)
 	if err != nil {
 		return nil, err
@@ -299,13 +304,23 @@ func (f *CryptoFuncs) EncryptAES(key string, args ...interface{}) ([]byte, error
 }
 
 // DecryptAES -
+// Experimental!
 func (f *CryptoFuncs) DecryptAES(key string, args ...interface{}) (string, error) {
+	if err := checkExperimental(f.ctx); err != nil {
+		return "", err
+	}
+
 	out, err := f.DecryptAESBytes(key, args...)
 	return conv.ToString(out), err
 }
 
 // DecryptAESBytes -
+// Experimental!
 func (f *CryptoFuncs) DecryptAESBytes(key string, args ...interface{}) ([]byte, error) {
+	if err := checkExperimental(f.ctx); err != nil {
+		return nil, err
+	}
+
 	k, msg, err := parseAESArgs(key, args...)
 	if err != nil {
 		return nil, err
