@@ -2,6 +2,7 @@ name: Docker Build
 on:
   push:
     branches: [ master ]
+    tags: [ 'v*' ]
   pull_request:
     branches: [ master ]
 
@@ -82,7 +83,7 @@ jobs:
         make docker-multi COMMIT=${{ github.sha }} DOCKER_REPO=ghcr.io/hairyhenderson/gomplate BUILDX_ACTION=--push
 
         set -x
-        repo=hairyhenderson/gomplate
+        export repo=hairyhenderson/gomplate
         docker buildx imagetools create -t ${repo}:stable ${repo}:latest
         docker buildx imagetools create -t ${repo}:${git_tag} ${repo}:latest
         docker buildx imagetools create -t ${repo}:${major_version} ${repo}:latest
@@ -96,7 +97,7 @@ jobs:
         docker buildx imagetools create -t ${repo}:${major_version}-alpine ${repo}:alpine
 
         # and now GHCR
-        repo=ghcr.io/hairyhenderson/gomplate
+        export repo=ghcr.io/hairyhenderson/gomplate
         docker buildx imagetools create -t ${repo}:stable ${repo}:latest
         docker buildx imagetools create -t ${repo}:${git_tag} ${repo}:latest
         docker buildx imagetools create -t ${repo}:${major_version} ${repo}:latest

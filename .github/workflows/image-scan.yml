@@ -2,6 +2,7 @@ name: Docker Image Scan
 on:
   push:
     branches: [ master ]
+    tags: [ 'v*' ]
   pull_request:
     branches: [ master ]
 
