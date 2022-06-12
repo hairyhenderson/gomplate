@@ -140,6 +140,7 @@ func FromConfig(ctx context.Context, cfg *config.Config) *Data {
 }
 
 // Source - a data source
+// Deprecated: will be replaced in future
 type Source struct {
 	Alias             string
 	URL               *url.URL

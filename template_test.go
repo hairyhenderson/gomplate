@@ -45,19 +45,6 @@ func TestOpenOutFile(t *testing.T) {
 	assert.Equal(t, cfg.Stdout, f)
 }
 
-func TestLoadContents(t *testing.T) {
-	origfs := aferoFS
-	defer func() { aferoFS = origfs }()
-	aferoFS = afero.NewMemMapFs()
-
-	afero.WriteFile(aferoFS, "foo", []byte("contents"), 0644)
-
-	tmpl := &tplate{name: "foo"}
-	b, err := tmpl.loadContents(nil)
-	assert.NoError(t, err)
-	assert.Equal(t, "contents", string(b))
-}
-
 func TestGatherTemplates(t *testing.T) {
 	ctx := context.Background()
 
@@ -87,8 +74,8 @@ func TestGatherTemplates(t *testing.T) {
 	templates, err = gatherTemplates(ctx, cfg, nil)
 	assert.NoError(t, err)
 	assert.Len(t, templates, 1)
-	assert.Equal(t, "foo", templates[0].contents)
-	assert.Equal(t, cfg.Stdout, templates[0].target)
+	assert.Equal(t, "foo", templates[0].Text)
+	assert.Equal(t, cfg.Stdout, templates[0].Writer)
 
 	templates, err = gatherTemplates(ctx, &config.Config{
 		Input:       "foo",
@@ -96,14 +83,14 @@ func TestGatherTemplates(t *testing.T) {
 	}, nil)
 	assert.NoError(t, err)
 	assert.Len(t, templates, 1)
-	assert.Equal(t, iohelpers.NormalizeFileMode(0644), templates[0].mode)
+	// assert.Equal(t, iohelpers.NormalizeFileMode(0644), templates[0].mode)
 
 	// out file is created only on demand
 	_, err = aferoFS.Stat("out")
 	assert.Error(t, err)
 	assert.True(t, os.IsNotExist(err))
 
-	_, err = templates[0].target.Write([]byte("hello world"))
+	_, err = templates[0].Writer.Write([]byte("hello world"))
 	assert.NoError(t, err)
 
 	info, err := aferoFS.Stat("out")
@@ -119,11 +106,11 @@ func TestGatherTemplates(t *testing.T) {
 	templates, err = gatherTemplates(ctx, cfg, nil)
 	assert.NoError(t, err)
 	assert.Len(t, templates, 1)
-	assert.Equal(t, "bar", templates[0].contents)
-	assert.NotEqual(t, cfg.Stdout, templates[0].target)
-	assert.Equal(t, os.FileMode(0600), templates[0].mode)
+	assert.Equal(t, "bar", templates[0].Text)
+	assert.NotEqual(t, cfg.Stdout, templates[0].Writer)
+	// assert.Equal(t, os.FileMode(0600), templates[0].mode)
 
-	_, err = templates[0].target.Write([]byte("hello world"))
+	_, err = templates[0].Writer.Write([]byte("hello world"))
 	assert.NoError(t, err)
 
 	info, err = aferoFS.Stat("out")
@@ -140,11 +127,11 @@ func TestGatherTemplates(t *testing.T) {
 	templates, err = gatherTemplates(ctx, cfg, nil)
 	assert.NoError(t, err)
 	assert.Len(t, templates, 1)
-	assert.Equal(t, "bar", templates[0].contents)
-	assert.NotEqual(t, cfg.Stdout, templates[0].target)
-	assert.Equal(t, iohelpers.NormalizeFileMode(0755), templates[0].mode)
+	assert.Equal(t, "bar", templates[0].Text)
+	assert.NotEqual(t, cfg.Stdout, templates[0].Writer)
+	// assert.Equal(t, iohelpers.NormalizeFileMode(0755), templates[0].mode)
 
-	_, err = templates[0].target.Write([]byte("hello world"))
+	_, err = templates[0].Writer.Write([]byte("hello world"))
 	assert.NoError(t, err)
 
 	info, err = aferoFS.Stat("out")
@@ -158,7 +145,7 @@ func TestGatherTemplates(t *testing.T) {
 	}, simpleNamer("out"))
 	assert.NoError(t, err)
 	assert.Len(t, templates, 3)
-	assert.Equal(t, "foo", templates[0].contents)
+	assert.Equal(t, "foo", templates[0].Text)
 	aferoFS.Remove("out")
 }
 

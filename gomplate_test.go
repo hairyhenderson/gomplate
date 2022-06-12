@@ -17,34 +17,34 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func testTemplate(t *testing.T, g *gomplate, tmpl string) string {
+func testTemplate(t *testing.T, tr *Renderer, tmpl string) string {
 	t.Helper()
 
 	var out bytes.Buffer
-	err := g.runTemplate(context.Background(), &tplate{name: "testtemplate", contents: tmpl, target: &out})
+	err := tr.Render(context.Background(), "testtemplate", tmpl, &out)
 	assert.NoError(t, err)
 
 	return out.String()
 }
 
 func TestGetenvTemplates(t *testing.T) {
-	g := &gomplate{
-		funcMap: template.FuncMap{
+	tr := NewRenderer(Options{
+		Funcs: template.FuncMap{
 			"getenv": env.Getenv,
 			"bool":   conv.Bool,
 		},
-	}
-	assert.Empty(t, testTemplate(t, g, `{{getenv "BLAHBLAHBLAH"}}`))
-	assert.Equal(t, os.Getenv("USER"), testTemplate(t, g, `{{getenv "USER"}}`))
-	assert.Equal(t, "default value", testTemplate(t, g, `{{getenv "BLAHBLAHBLAH" "default value"}}`))
+	})
+	assert.Empty(t, testTemplate(t, tr, `{{getenv "BLAHBLAHBLAH"}}`))
+	assert.Equal(t, os.Getenv("USER"), testTemplate(t, tr, `{{getenv "USER"}}`))
+	assert.Equal(t, "default value", testTemplate(t, tr, `{{getenv "BLAHBLAHBLAH" "default value"}}`))
 }
 
 func TestBoolTemplates(t *testing.T) {
-	g := &gomplate{
-		funcMap: template.FuncMap{
+	g := NewRenderer(Options{
+		Funcs: template.FuncMap{
 			"bool": conv.Bool,
 		},
-	}
+	})
 	assert.Equal(t, "true", testTemplate(t, g, `{{bool "true"}}`))
 	assert.Equal(t, "false", testTemplate(t, g, `{{bool "false"}}`))
 	assert.Equal(t, "false", testTemplate(t, g, `{{bool "foo"}}`))
@@ -52,9 +52,9 @@ func TestBoolTemplates(t *testing.T) {
 }
 
 func TestEc2MetaTemplates(t *testing.T) {
-	createGomplate := func(data map[string]string, region string) *gomplate {
+	createGomplate := func(data map[string]string, region string) *Renderer {
 		ec2meta := aws.MockEC2Meta(data, nil, region)
-		return &gomplate{funcMap: template.FuncMap{"ec2meta": ec2meta.Meta}}
+		return NewRenderer(Options{Funcs: template.FuncMap{"ec2meta": ec2meta.Meta}})
 	}
 
 	g := createGomplate(nil, "")
@@ -69,36 +69,36 @@ func TestEc2MetaTemplates(t *testing.T) {
 func TestEc2MetaTemplates_WithJSON(t *testing.T) {
 	ec2meta := aws.MockEC2Meta(map[string]string{"obj": `"foo": "bar"`}, map[string]string{"obj": `"foo": "baz"`}, "")
 
-	g := &gomplate{
-		funcMap: template.FuncMap{
+	g := NewRenderer(Options{
+		Funcs: template.FuncMap{
 			"ec2meta":    ec2meta.Meta,
 			"ec2dynamic": ec2meta.Dynamic,
 			"json":       data.JSON,
 		},
-	}
+	})
 
 	assert.Equal(t, "bar", testTemplate(t, g, `{{ (ec2meta "obj" | json).foo }}`))
 	assert.Equal(t, "baz", testTemplate(t, g, `{{ (ec2dynamic "obj" | json).foo }}`))
 }
 
 func TestJSONArrayTemplates(t *testing.T) {
-	g := &gomplate{
-		funcMap: template.FuncMap{
+	g := NewRenderer(Options{
+		Funcs: template.FuncMap{
 			"jsonArray": data.JSONArray,
 		},
-	}
+	})
 
 	assert.Equal(t, "[foo bar]", testTemplate(t, g, `{{jsonArray "[\"foo\",\"bar\"]"}}`))
 	assert.Equal(t, "bar", testTemplate(t, g, `{{ index (jsonArray "[\"foo\",\"bar\"]") 1 }}`))
 }
 
 func TestYAMLTemplates(t *testing.T) {
-	g := &gomplate{
-		funcMap: template.FuncMap{
+	g := NewRenderer(Options{
+		Funcs: template.FuncMap{
 			"yaml":      data.YAML,
 			"yamlArray": data.YAMLArray,
 		},
-	}
+	})
 
 	assert.Equal(t, "bar", testTemplate(t, g, `{{(yaml "foo: bar").foo}}`))
 	assert.Equal(t, "[foo bar]", testTemplate(t, g, `{{yamlArray "- foo\n- bar\n"}}`))
@@ -106,23 +106,23 @@ func TestYAMLTemplates(t *testing.T) {
 }
 
 func TestSliceTemplates(t *testing.T) {
-	g := &gomplate{
-		funcMap: template.FuncMap{
+	g := NewRenderer(Options{
+		Funcs: template.FuncMap{
 			"slice": conv.Slice,
 		},
-	}
+	})
 	assert.Equal(t, "foo", testTemplate(t, g, `{{index (slice "foo") 0}}`))
 	assert.Equal(t, `[foo bar 42]`, testTemplate(t, g, `{{slice "foo" "bar" 42}}`))
 	assert.Equal(t, `helloworld`, testTemplate(t, g, `{{range slice "hello" "world"}}{{.}}{{end}}`))
 }
 
 func TestHasTemplate(t *testing.T) {
-	g := &gomplate{
-		funcMap: template.FuncMap{
+	g := NewRenderer(Options{
+		Funcs: template.FuncMap{
 			"yaml": data.YAML,
 			"has":  conv.Has,
 		},
-	}
+	})
 	assert.Equal(t, "true", testTemplate(t, g, `{{has ("foo:\n  bar: true" | yaml) "foo"}}`))
 	assert.Equal(t, "true", testTemplate(t, g, `{{has ("foo:\n  bar: true" | yaml).foo "bar"}}`))
 	assert.Equal(t, "false", testTemplate(t, g, `{{has ("foo: true" | yaml) "bah"}}`))
@@ -141,11 +141,10 @@ func TestHasTemplate(t *testing.T) {
 }
 
 func TestCustomDelim(t *testing.T) {
-	g := &gomplate{
-		leftDelim:  "[",
-		rightDelim: "]",
-		funcMap:    template.FuncMap{},
-	}
+	g := NewRenderer(Options{
+		LDelim: "[",
+		RDelim: "]",
+	})
 	assert.Equal(t, "hi", testTemplate(t, g, `[print "hi"]`))
 }
 
@@ -170,16 +169,19 @@ func TestSimpleNamer(t *testing.T) {
 
 func TestMappingNamer(t *testing.T) {
 	ctx := context.Background()
-	g := &gomplate{funcMap: map[string]interface{}{
-		"foo": func() string { return "foo" },
-	}}
-	n := mappingNamer("out/{{ .in }}", g)
+	tr := &Renderer{
+		data: &data.Data{},
+		funcs: map[string]interface{}{
+			"foo": func() string { return "foo" },
+		},
+	}
+	n := mappingNamer("out/{{ .in }}", tr)
 	out, err := n(ctx, "file")
 	assert.NoError(t, err)
 	expected := filepath.FromSlash("out/file")
 	assert.Equal(t, expected, out)
 
-	n = mappingNamer("out/{{ foo }}{{ .in }}", g)
+	n = mappingNamer("out/{{ foo }}{{ .in }}", tr)
 	out, err = n(ctx, "file")
 	assert.NoError(t, err)
 	expected = filepath.FromSlash("out/foofile")

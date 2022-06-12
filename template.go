@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io"
 	"io/fs"
-	"io/ioutil"
 	"os"
 	"path"
 	"path/filepath"
@@ -26,15 +25,6 @@ const gomplateignore = ".gomplateignore"
 
 // for overriding in tests
 var aferoFS = afero.NewOsFs()
-
-// tplate - models a gomplate template file...
-type tplate struct {
-	name         string
-	target       io.Writer
-	contents     string
-	mode         os.FileMode
-	modeOverride bool
-}
 
 func addTmplFuncs(f template.FuncMap, root *template.Template, tctx interface{}, path string) {
 	t := tmpl.New(root, tctx, path)
@@ -74,24 +64,23 @@ func FSProviderFromContext(ctx context.Context) fsimpl.FSProvider {
 	return nil
 }
 
-// toGoTemplate - parses t.contents as a Go template named t.name with the
-// configured funcMap, delimiters, and nested templates.
-func (t *tplate) toGoTemplate(ctx context.Context, g *gomplate) (tmpl *template.Template, err error) {
-	tmpl = template.New(t.name)
+// parseTemplate - parses text as a Go template with the given name and options
+func parseTemplate(ctx context.Context, name, text string, funcs template.FuncMap, tmplctx interface{}, nested config.Templates, leftDelim, rightDelim string) (tmpl *template.Template, err error) {
+	tmpl = template.New(name)
 	tmpl.Option("missingkey=error")
 
-	funcMap := copyFuncMap(g.funcMap)
+	funcMap := copyFuncMap(funcs)
 
 	// the "tmpl" funcs get added here because they need access to the root template and context
-	addTmplFuncs(funcMap, tmpl, g.tmplctx, t.name)
+	addTmplFuncs(funcMap, tmpl, tmplctx, name)
 	tmpl.Funcs(funcMap)
-	tmpl.Delims(g.leftDelim, g.rightDelim)
-	_, err = tmpl.Parse(t.contents)
+	tmpl.Delims(leftDelim, rightDelim)
+	_, err = tmpl.Parse(text)
 	if err != nil {
 		return nil, err
 	}
 
-	err = parseNestedTemplates(ctx, g.nestedTemplates, tmpl)
+	err = parseNestedTemplates(ctx, nested, tmpl)
 	if err != nil {
 		return nil, fmt.Errorf("parse nested templates: %w", err)
 	}
@@ -181,29 +170,9 @@ func parseNestedTemplate(ctx context.Context, fsys fs.FS, alias, fname string, t
 	return nil
 }
 
-// loadContents - reads the template
-func (t *tplate) loadContents(in io.Reader) ([]byte, error) {
-	if in == nil {
-		f, err := aferoFS.OpenFile(t.name, os.O_RDONLY, 0)
-		if err != nil {
-			return nil, fmt.Errorf("failed to open %s: %w", t.name, err)
-		}
-		// nolint: errcheck
-		defer f.Close()
-		in = f
-	}
-
-	b, err := ioutil.ReadAll(in)
-	if err != nil {
-		return nil, fmt.Errorf("failed to load contents of %s: %w", t.name, err)
-	}
-
-	return b, nil
-}
-
-// gatherTemplates - gather and prepare input template(s) and output file(s) for rendering
+// gatherTemplates - gather and prepare templates for rendering
 // nolint: gocyclo
-func gatherTemplates(ctx context.Context, cfg *config.Config, outFileNamer func(context.Context, string) (string, error)) (templates []*tplate, err error) {
+func gatherTemplates(ctx context.Context, cfg *config.Config, outFileNamer func(context.Context, string) (string, error)) (templates []Template, err error) {
 	mode, modeOverride, err := cfg.GetMode()
 	if err != nil {
 		return nil, err
@@ -219,12 +188,10 @@ func gatherTemplates(ctx context.Context, cfg *config.Config, outFileNamer func(
 			return nil, oerr
 		}
 
-		templates = []*tplate{{
-			name:         "<arg>",
-			contents:     cfg.Input,
-			target:       target,
-			mode:         mode,
-			modeOverride: modeOverride,
+		templates = []Template{{
+			Name:   "<arg>",
+			Text:   cfg.Input,
+			Writer: target,
 		}}
 	case cfg.InputDir != "":
 		// input dirs presume output dirs are set too
@@ -233,9 +200,9 @@ func gatherTemplates(ctx context.Context, cfg *config.Config, outFileNamer func(
 			return nil, err
 		}
 	case cfg.Input == "":
-		templates = make([]*tplate, len(cfg.InputFiles))
+		templates = make([]Template, len(cfg.InputFiles))
 		for i := range cfg.InputFiles {
-			templates[i], err = fileToTemplates(cfg, cfg.InputFiles[i], cfg.OutputFiles[i], mode, modeOverride)
+			templates[i], err = fileToTemplate(cfg, cfg.InputFiles[i], cfg.OutputFiles[i], mode, modeOverride)
 			if err != nil {
 				return nil, err
 			}
@@ -248,7 +215,7 @@ func gatherTemplates(ctx context.Context, cfg *config.Config, outFileNamer func(
 // walkDir - given an input dir `dir` and an output dir `outDir`, and a list
 // of .gomplateignore and exclude globs (if any), walk the input directory and create a list of
 // tplate objects, and an error, if any.
-func walkDir(ctx context.Context, cfg *config.Config, dir string, outFileNamer func(context.Context, string) (string, error), excludeGlob []string, mode os.FileMode, modeOverride bool) ([]*tplate, error) {
+func walkDir(ctx context.Context, cfg *config.Config, dir string, outFileNamer func(context.Context, string) (string, error), excludeGlob []string, mode os.FileMode, modeOverride bool) ([]Template, error) {
 	dir = filepath.Clean(dir)
 
 	dirStat, err := aferoFS.Stat(dir)
@@ -257,7 +224,7 @@ func walkDir(ctx context.Context, cfg *config.Config, dir string, outFileNamer f
 	}
 	dirMode := dirStat.Mode()
 
-	templates := make([]*tplate, 0)
+	templates := make([]Template, 0)
 	matcher := xignore.NewMatcher(aferoFS)
 
 	// work around bug in xignore - a basedir of '.' doesn't work
@@ -283,7 +250,7 @@ func walkDir(ctx context.Context, cfg *config.Config, dir string, outFileNamer f
 			return nil, err
 		}
 
-		tpl, err := fileToTemplates(cfg, inFile, outFile, mode, modeOverride)
+		tpl, err := fileToTemplate(cfg, inFile, outFile, mode, modeOverride)
 		if err != nil {
 			return nil, err
 		}
@@ -299,21 +266,21 @@ func walkDir(ctx context.Context, cfg *config.Config, dir string, outFileNamer f
 	return templates, nil
 }
 
-func fileToTemplates(cfg *config.Config, inFile, outFile string, mode os.FileMode, modeOverride bool) (*tplate, error) {
+func fileToTemplate(cfg *config.Config, inFile, outFile string, mode os.FileMode, modeOverride bool) (Template, error) {
 	source := ""
 
 	//nolint:nestif
 	if inFile == "-" {
 		b, err := io.ReadAll(cfg.Stdin)
 		if err != nil {
-			return nil, fmt.Errorf("failed to read from stdin: %w", err)
+			return Template{}, fmt.Errorf("failed to read from stdin: %w", err)
 		}
 
 		source = string(b)
 	} else {
 		si, err := aferoFS.Stat(inFile)
 		if err != nil {
-			return nil, err
+			return Template{}, err
 		}
 		if mode == 0 {
 			mode = si.Mode()
@@ -323,7 +290,7 @@ func fileToTemplates(cfg *config.Config, inFile, outFile string, mode os.FileMod
 		// file descriptors.
 		f, err := aferoFS.OpenFile(inFile, os.O_RDONLY, 0)
 		if err != nil {
-			return nil, fmt.Errorf("failed to open %s: %w", inFile, err)
+			return Template{}, fmt.Errorf("failed to open %s: %w", inFile, err)
 		}
 
 		//nolint: errcheck
@@ -331,7 +298,7 @@ func fileToTemplates(cfg *config.Config, inFile, outFile string, mode os.FileMod
 
 		b, err := io.ReadAll(f)
 		if err != nil {
-			return nil, fmt.Errorf("failed to read %s: %w", inFile, err)
+			return Template{}, fmt.Errorf("failed to read %s: %w", inFile, err)
 		}
 
 		source = string(b)
@@ -341,15 +308,13 @@ func fileToTemplates(cfg *config.Config, inFile, outFile string, mode os.FileMod
 	// caller later
 	target, err := openOutFile(outFile, 0755, mode, modeOverride, cfg.Stdout, cfg.SuppressEmpty)
 	if err != nil {
-		return nil, err
+		return Template{}, err
 	}
 
-	tmpl := &tplate{
-		name:         inFile,
-		contents:     source,
-		target:       target,
-		mode:         mode,
-		modeOverride: modeOverride,
+	tmpl := Template{
+		Name:   inFile,
+		Text:   source,
+		Writer: target,
 	}
 
 	return tmpl, nil

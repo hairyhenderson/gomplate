@@ -269,8 +269,9 @@ Hello World
 
 All arguments provided to the function will be passed as positional arguments to
 the plugin, and the plugin's standard output stream (`Stdout`) will be printed
-to the rendered output. Currently there is no way to set the plugin's standard
-input stream (`Stdin`).
+to the rendered output. To instead pipe the final argument of the function to
+the plugin's standard input stream, use the [config file](../config/#plugins)
+and set the `pipe` field.
 
 If the plugin exits with a non-zero exit code, gomplate will also fail. All signals
 caught by gomplate will be propagated to the plugin. Any output on the standard
