@@ -12,8 +12,8 @@ import (
 	"time"
 
 	"github.com/hairyhenderson/gomplate/v3/internal/iohelpers"
+	"github.com/hairyhenderson/yaml"
 	"github.com/stretchr/testify/assert"
-	"gopkg.in/yaml.v3"
 )
 
 func TestParseConfigFile(t *testing.T) {
