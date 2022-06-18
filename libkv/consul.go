@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	yaml "gopkg.in/yaml.v3"
+	"github.com/hairyhenderson/yaml"
 
 	"github.com/docker/libkv"
 	"github.com/docker/libkv/store"

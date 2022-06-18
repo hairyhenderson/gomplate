@@ -33,15 +33,14 @@ require (
 	golang.org/x/sys v0.0.0-20220520151302-bc2c85ada10a
 	golang.org/x/term v0.0.0-20210927222741-03fcf44c2211
 	golang.org/x/text v0.3.7
-	gopkg.in/yaml.v3 v3.0.1
 	gotest.tools/v3 v3.2.0
 	inet.af/netaddr v0.0.0-20211027220019-c74959edd3b6
 	k8s.io/client-go v0.24.1
 )
 
-// TODO: remove after https://github.com/go-yaml/yaml/pull/862 is merged and in
-// a release of gopkg.in/yaml.v3
-replace gopkg.in/yaml.v3 => github.com/hairyhenderson/yaml v0.0.0-20220604201823-ac7593028a00
+// TODO: replace with gopkg.in/yaml.v3 after https://github.com/go-yaml/yaml/pull/862
+// is merged
+require github.com/hairyhenderson/yaml v0.0.0-20220618171115-2d35fca545ce
 
 require (
 	cloud.google.com/go v0.102.0 // indirect
@@ -140,4 +139,5 @@ require (
 	google.golang.org/protobuf v1.28.0 // indirect
 	gopkg.in/square/go-jose.v2 v2.6.0 // indirect
 	gopkg.in/warnings.v0 v0.1.2 // indirect
+	gopkg.in/yaml.v3 v3.0.1 // indirect
 )

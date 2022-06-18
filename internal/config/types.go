@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"strings"
 
-	"gopkg.in/yaml.v3"
+	"github.com/hairyhenderson/yaml"
 )
 
 // Templates - a map of templates. We can't just use map[string]DataSource,
