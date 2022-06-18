@@ -55,7 +55,6 @@ jobs:
         make docker-multi COMMIT=${{ github.sha }} DOCKER_REPO=localhost:5000/gomplate BUILDX_ACTION=--push
 
         docker buildx imagetools create --dry-run -t localhost:5000/gomplate:dev localhost:5000/gomplate:latest
-        docker buildx imagetools create --dry-run -t localhost:5000/gomplate:dev-slim localhost:5000/gomplate:slim
         docker buildx imagetools create --dry-run -t localhost:5000/gomplate:dev-alpine localhost:5000/gomplate:alpine
       if: github.repository != 'hairyhenderson/gomplate' || (github.ref != 'refs/heads/main' && env.is_tag != 'true')
     - name: Login to GHCR
@@ -88,10 +87,6 @@ jobs:
         docker buildx imagetools create -t ${repo}:${git_tag} ${repo}:latest
         docker buildx imagetools create -t ${repo}:${major_version} ${repo}:latest
 
-        docker buildx imagetools create -t ${repo}:stable-slim ${repo}:slim
-        docker buildx imagetools create -t ${repo}:${git_tag}-slim ${repo}:slim
-        docker buildx imagetools create -t ${repo}:${major_version}-slim ${repo}:slim
-
         docker buildx imagetools create -t ${repo}:stable-alpine ${repo}:alpine
         docker buildx imagetools create -t ${repo}:${git_tag}-alpine ${repo}:alpine
         docker buildx imagetools create -t ${repo}:${major_version}-alpine ${repo}:alpine
@@ -101,10 +96,6 @@ jobs:
         docker buildx imagetools create -t ${repo}:stable ${repo}:latest
         docker buildx imagetools create -t ${repo}:${git_tag} ${repo}:latest
         docker buildx imagetools create -t ${repo}:${major_version} ${repo}:latest
-
-        docker buildx imagetools create -t ${repo}:stable-slim ${repo}:slim
-        docker buildx imagetools create -t ${repo}:${git_tag}-slim ${repo}:slim
-        docker buildx imagetools create -t ${repo}:${major_version}-slim ${repo}:slim
 
         docker buildx imagetools create -t ${repo}:stable-alpine ${repo}:alpine
         docker buildx imagetools create -t ${repo}:${git_tag}-alpine ${repo}:alpine

@@ -48,7 +48,7 @@ _Note: the Alpine version of gomplate may lag behind the latest release of gompl
 
 ## use with Docker
 
-A simple way to get started is with one of the [hairyhenderson/gomplate][] Docker images. Images containing [`slim` binaries](#slim-binaries) are tagged as `:slim` or `:vX.Y.Z-slim`.
+A simple way to get started is with one of the [hairyhenderson/gomplate][] Docker images.
 
 ```console
 $ docker run hairyhenderson/gomplate:stable --version
@@ -98,7 +98,6 @@ RUN apk add --no-cache ca-certificates
 ## manual install
 
 1. Get the latest `gomplate` for your platform from the [releases][] page
-    - if available, you may want to download the [`-slim` variant](#slim-binaries)
 2. Store the downloaded binary somewhere in your path as `gomplate` (or `gomplate.exe`
   on Windows)
 3. Make sure it's executable (on Linux/macOS)

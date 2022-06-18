@@ -9,7 +9,6 @@ DOCKER_PLATFORMS ?= $(DOCKER_LINUX_PLATFORMS),windows/amd64
 # we just load by default, as a "dry run"
 BUILDX_ACTION ?= --load
 TAG_LATEST ?= latest
-TAG_SLIM ?= slim
 TAG_ALPINE ?= alpine
 
 ifeq ("$(CI)","true")
@@ -39,7 +38,6 @@ endif
 
 # platforms := freebsd-amd64 linux-amd64 linux-386 linux-armv5 linux-armv6 linux-armv7 linux-arm64 darwin-amd64 solaris-amd64 windows-amd64.exe windows-386.exe
 platforms := freebsd-amd64 linux-amd64 linux-386 linux-armv6 linux-armv7 linux-arm64 darwin-amd64 darwin-arm64 solaris-amd64 windows-amd64.exe windows-386.exe
-compressed-platforms := linux-amd64-slim linux-armv6-slim linux-armv7-slim linux-arm64-slim darwin-amd64-slim windows-amd64-slim.exe
 
 clean:
 	rm -Rf $(PREFIX)/bin/*
@@ -53,26 +51,6 @@ $(PREFIX)/bin/%.zip: $(PREFIX)/bin/%
 $(PREFIX)/bin/$(PKG_NAME)_windows-%.zip: $(PREFIX)/bin/$(PKG_NAME)_windows-%.exe
 	@zip -j $@ $^
 
-compress-all: $(patsubst %,$(PREFIX)/bin/$(PKG_NAME)_%,$(compressed-platforms))
-
-UPX_VERSION := $(shell upx --version | head -n1 | cut -f2 -d\ )
-UPX_REQUIRED_VERSION := 3.94
-
-
-ifeq ($(UPX_REQUIRED_VERSION),$(UPX_VERSION))
-$(PREFIX)/bin/$(PKG_NAME)_%-slim: $(PREFIX)/bin/$(PKG_NAME)_%
-	upx --lzma $< -o $@
-$(PREFIX)/bin/$(PKG_NAME)_windows-%-slim.exe: $(PREFIX)/bin/$(PKG_NAME)_windows-%.exe
-	upx --lzma $< -o $@
-else
-$(PREFIX)/bin/$(PKG_NAME)_%-slim:
-	$(error Wrong upx version - need $(UPX_REQUIRED_VERSION))
-
-$(PREFIX)/bin/$(PKG_NAME)_windows-%-slim.exe:
-	$(error Wrong upx version - need $(UPX_REQUIRED_VERSION))
-endif
-
-
 $(PREFIX)/bin/$(PKG_NAME)_%_checksum_sha256.txt: $(PREFIX)/bin/$(PKG_NAME)_%
 	@sha256sum $< > $@
 
@@ -83,20 +61,15 @@ $(PREFIX)/bin/checksums.txt: $(PREFIX)/bin/checksums_sha256.txt
 	@cp $< $@
 
 $(PREFIX)/bin/checksums_sha256.txt: \
-		$(patsubst %,$(PREFIX)/bin/$(PKG_NAME)_%_checksum_sha256.txt,$(platforms)) \
-		$(patsubst %,$(PREFIX)/bin/$(PKG_NAME)_%_checksum_sha256.txt,$(compressed-platforms))
+		$(patsubst %,$(PREFIX)/bin/$(PKG_NAME)_%_checksum_sha256.txt,$(platforms))
 	@cat $^ > $@
 
 $(PREFIX)/bin/checksums_sha512.txt: \
-		$(patsubst %,$(PREFIX)/bin/$(PKG_NAME)_%_checksum_sha512.txt,$(platforms)) \
-		$(patsubst %,$(PREFIX)/bin/$(PKG_NAME)_%_checksum_sha512.txt,$(compressed-platforms))
+		$(patsubst %,$(PREFIX)/bin/$(PKG_NAME)_%_checksum_sha512.txt,$(platforms))
 	@cat $^ > $@
 
 $(PREFIX)/%.signed: $(PREFIX)/%
 	@keybase sign < $< > $@
-
-compress: $(PREFIX)/bin/$(PKG_NAME)_$(GOOS)-$(GOARCH)$(TARGETVARIANT)-slim$(call extension,$(GOOS))
-	cp $< $(PREFIX)/bin/$(PKG_NAME)-slim$(call extension,$(GOOS))
 
 %.iid: Dockerfile
 	@docker build \
@@ -114,12 +87,6 @@ docker-multi: Dockerfile
 		$(BUILDX_ACTION) .
 	docker buildx build \
 		--build-arg VCS_REF=$(COMMIT) \
-		--platform $(DOCKER_PLATFORMS) \
-		--tag $(DOCKER_REPO):$(TAG_SLIM) \
-		--target gomplate-slim \
-		$(BUILDX_ACTION) .
-	docker buildx build \
-		--build-arg VCS_REF=$(COMMIT) \
 		--platform $(DOCKER_LINUX_PLATFORMS) \
 		--tag $(DOCKER_REPO):$(TAG_ALPINE) \
 		--target gomplate-alpine \
@@ -131,7 +98,7 @@ docker-multi: Dockerfile
 build-release: artifacts.cid
 	@docker cp $(shell cat $<):/bin/. bin/
 
-docker-images: gomplate.iid gomplate-slim.iid
+docker-images: gomplate.iid
 
 $(PREFIX)/bin/$(PKG_NAME)_%v5$(call extension,$(GOOS)): $(shell find $(PREFIX) -type f -name "*.go")
 	GOOS=$(shell echo $* | cut -f1 -d-) GOARCH=$(shell echo $* | cut -f2 -d- ) GOARM=5 CGO_ENABLED=0 \
@@ -223,6 +190,6 @@ lint:
 ci-lint:
 	@golangci-lint run --verbose --max-same-issues=0 --max-issues-per-linter=0 --out-format=github-actions
 
-.PHONY: gen-changelog clean test build-x compress-all build-release build test-integration-docker gen-docs lint clean-images clean-containers docker-images
+.PHONY: gen-changelog clean test build-x build-release build test-integration-docker gen-docs lint clean-images clean-containers docker-images
 .DELETE_ON_ERROR:
 .SECONDARY:
