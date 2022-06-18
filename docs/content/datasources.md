@@ -31,7 +31,7 @@ For our purposes, the _scheme_ and the _path_ components are especially importan
 | _authority_ | Used only by remote datasources, and can be omitted in some of those cases. Consists of _userinfo_ (`user:pass`), _host_, and _port_. |
 | _path_ | Can be omitted, but usually used as the basis of the locator for the datasource. If the path ends with a `/` character, [directory](#directory-datasources) semantics are used. |
 | _query_ | Used rarely for datasources where information must be provided in order to get a reasonable reply (such as generating dynamic secrets with Vault), or for [overriding MIME types](#overriding-mime-types) |
-| _fragment_ | Used rarely for accessing a subset of the given path (such as a bucket name in a BoltDB database) |
+| _fragment_ | Used rarely for accessing a subset of the given path |
 
 ### Opaque URIs
 
@@ -58,7 +58,6 @@ Gomplate supports a number of datasources, each specified with a particular URL 
 | [AWS Systems Manager Parameter Store](#using-aws-smp-datasources) | `aws+smp` | [AWS Systems Manager Parameter Store][AWS SMP] is a hierarchically-organized key/value store which allows storage of text, lists, or encrypted secrets for retrieval by AWS resources |
 | [AWS Secrets Manager](#using-aws-sm-datasource) | `aws+sm` | [AWS Secrets Manager][] helps you protect secrets needed to access your applications, services, and IT resources. |
 | [Amazon S3](#using-s3-datasources) | `s3` | [Amazon S3][] is a popular object storage service. |
-| [BoltDB](#using-boltdb-datasources) | `boltdb` | [BoltDB][] is a simple local key/value store used by many Go tools |
 | [Consul](#using-consul-datasources) | `consul`, `consul+http`, `consul+https` | [HashiCorp Consul][] provides (among many other features) a key/value store |
 | [Environment](#using-env-datasources) | `env` | Environment variables can be used as datasources - useful for testing |
 | [File](#using-file-datasources) | `file` | Files can be read in any of the [supported formats](#mime-types), including by piping through standard input (`Stdin`). [Directories](#directory-datasources) are also supported. |
@@ -307,32 +306,6 @@ Hello world
 
 $ gomplate -d bucket=s3://my-bucket/?region=eu-west-1&endpoint=my-test-site& -i 'Hello {{ (ds "bucket" "/foo/bar.json").hello }}'
 Hello world
-```
-
-## Using `boltdb` datasources
-
-[BoltDB][] is a simple local key/value store used by many Go tools. The `boltdb://` scheme can be used to access values stored in a BoltDB database file. The full path is provided in the URL, and the bucket name can be specified using a URL fragment (e.g. `boltdb:///tmp/database.db#bucket`).
-
-**Note:** Access is implemented through [`libkv`](https://github.com/docker/libkv), and as such, the first 8 bytes of all values are used as an incrementing last modified index value. All values must therefore be at least 9 bytes long, with the first 8 being ignored.
-
-The following environment variables can be set:
-
-| name | usage |
-|------|-------|
-| `BOLTDB_TIMEOUT` | Timeout (in seconds) to wait for a lock on the database file when opening. |
-| `BOLTDB_PERSIST` | If set keep the database open instead of closing after each read. Any value acceptable to [`strconv.ParseBool`](https://golang.org/pkg/strconv/#ParseBool) can be provided. |
-
-### URL Considerations
-
-For `boltdb`, the _scheme_, _path_, and _fragment_ are used.
-
-The _path_ must point to a BoltDB database on the local file system, while the _fragment_ must provide the name of the bucket to use.
-
-### Example
-
-```console
-$ gomplate -d config=boltdb:///tmp/config.db#Bucket1 -i '{{(datasource "config" "foo")}}'
-bar
 ```
 
 ## Using `consul` datasources
@@ -778,7 +751,6 @@ The file `/tmp/vault-aws-nonce` will be created if it didn't already exist, and 
 
 [AWS SMP]: https://aws.amazon.com/systems-manager/features#Parameter_Store
 [AWS Secrets Manager]: https://aws.amazon.com/secrets-manager
-[BoltDB]: https://pkg.go.dev/go.etcd.io/bbolt
 [HashiCorp Consul]: https://consul.io
 [HashiCorp Vault]: https://vaultproject.io
 [JSON]: https://json.org
