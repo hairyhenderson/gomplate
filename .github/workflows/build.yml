@@ -1,9 +1,9 @@
 name: Build
 on:
   push:
-    branches: [ master ]
+    branches: [ main, 3.11.x]
   pull_request:
-    branches: [ master ]
+    branches: [ main, 3.11.x ]
 
 jobs:
   linux-build:

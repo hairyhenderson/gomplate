@@ -1,9 +1,9 @@
 name: Docker Image Scan
 on:
   push:
-    branches: [ master ]
+    branches: [ main, 3.11.x ]
   pull_request:
-    branches: [ master ]
+    branches: [ main, 3.11.x ]
 
 jobs:
   docker-build:
