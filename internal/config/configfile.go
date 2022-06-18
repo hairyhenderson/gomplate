@@ -15,8 +15,8 @@ import (
 	"time"
 
 	"github.com/hairyhenderson/gomplate/v3/internal/iohelpers"
+	"github.com/hairyhenderson/yaml"
 	"github.com/pkg/errors"
-	"gopkg.in/yaml.v3"
 )
 
 // Parse a config file
