@@ -4,8 +4,8 @@ import (
 	"net/http"
 	"testing"
 
+	"github.com/hairyhenderson/yaml"
 	"github.com/stretchr/testify/assert"
-	"gopkg.in/yaml.v3"
 )
 
 func TestTemplates_UnmarshalYAML(t *testing.T) {

@@ -24,7 +24,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/ugorji/go/codec"
 
-	yaml "gopkg.in/yaml.v3"
+	"github.com/hairyhenderson/yaml"
 )
 
 func unmarshalObj(obj map[string]interface{}, in string, f func([]byte, interface{}) error) (map[string]interface{}, error) {
