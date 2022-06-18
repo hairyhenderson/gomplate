@@ -2,7 +2,6 @@
 
 _Read the docs at [docs.gomplate.ca][docs-url], chat with developers and community in the [#gomplate channel][] on [Gophers Slack][]_
 
-[![Build Status][circleci-image]][circleci-url]
 [![Build][gh-actions-image]][gh-actions-url]
 [![Go Report Card][reportcard-image]][reportcard-url]
 [![Codebeat Status][codebeat-image]][codebeat-url]
@@ -102,13 +101,10 @@ _Please report any bugs found in the [issue tracker](https://github.com/hairyhen
 
 [The MIT License](http://opensource.org/licenses/MIT)
 
-Copyright (c) 2016-2021 Dave Henderson
+Copyright (c) 2016-2022 Dave Henderson
 
-[circleci-image]: https://img.shields.io/circleci/project/github/hairyhenderson/gomplate/master.svg?logo=circleci
-[circleci-url]: https://circleci.com/gh/hairyhenderson/gomplate/tree/master
-
-[gh-actions-image]: https://github.com/hairyhenderson/gomplate/workflows/Build/badge.svg?branch=master
-[gh-actions-url]: https://github.com/hairyhenderson/gomplate/actions?workflow=Build&branch=master
+[gh-actions-image]: https://github.com/hairyhenderson/gomplate/workflows/Build/badge.svg?branch=main
+[gh-actions-url]: https://github.com/hairyhenderson/gomplate/actions?workflow=Build&branch=main
 
 [reportcard-image]: https://goreportcard.com/badge/github.com/hairyhenderson/gomplate
 [reportcard-url]: https://goreportcard.com/report/github.com/hairyhenderson/gomplate
