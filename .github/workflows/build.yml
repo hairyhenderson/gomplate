@@ -10,8 +10,9 @@ jobs:
   linux-build:
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/hairyhenderson/gomplate-ci-build:1.18
+      image: ghcr.io/hairyhenderson/ci-builder
     steps:
+      - run: git --version
       - run: |
           git config --global user.email "bogus@example.com"
           git config --global user.name "Someone"
@@ -64,7 +65,7 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/hairyhenderson/gomplate-ci-build:latest
+      image: ghcr.io/hairyhenderson/ci-builder
     steps:
       - uses: actions/checkout@v3
       - run: make ci-lint

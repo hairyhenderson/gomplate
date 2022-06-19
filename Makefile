@@ -95,9 +95,6 @@ docker-multi: Dockerfile
 %.cid: %.iid
 	@docker create $(shell cat $<) > $@
 
-build-release: artifacts.cid
-	@docker cp $(shell cat $<):/bin/. bin/
-
 docker-images: gomplate.iid
 
 $(PREFIX)/bin/$(PKG_NAME)_%v5$(call extension,$(GOOS)): $(shell find $(PREFIX) -type f -name "*.go")
@@ -131,6 +128,7 @@ $(PREFIX)/bin/$(PKG_NAME)_windows-%.exe: $(shell find $(PREFIX) -type f -name "*
 $(PREFIX)/bin/$(PKG_NAME)_%$(TARGETVARIANT)$(call extension,$(GOOS)): $(shell find $(PREFIX) -type f -name "*.go")
 	GOOS=$(shell echo $* | cut -f1 -d-) GOARCH=$(shell echo $* | cut -f2 -d- ) GOARM=$(GOARM) CGO_ENABLED=0 \
 		$(GO) build \
+			-buildvcs=false \
 			-ldflags "-w -s $(COMMIT_FLAG) $(VERSION_FLAG)" \
 			-o $@ \
 			./cmd/$(PKG_NAME)
