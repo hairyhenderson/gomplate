@@ -34,7 +34,7 @@ require (
 	golang.org/x/text v0.3.7
 	gotest.tools/v3 v3.2.0
 	inet.af/netaddr v0.0.0-20211027220019-c74959edd3b6
-	k8s.io/client-go v0.24.1
+	k8s.io/client-go v0.24.2
 )
 
 // TODO: replace with gopkg.in/yaml.v3 after https://github.com/go-yaml/yaml/pull/862
