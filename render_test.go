@@ -143,13 +143,12 @@ func ExampleRenderer_datasources() {
 	})
 
 	err := tr.Render(ctx, "jsontest",
-		`{{"\U0001F6A2"}} The {{ .vessel.data.Name }}'s call sign is {{ .vessel.data.Callsign }}, `+
-			`and it has a draught of {{ .vessel.data.Draught }}.`,
+		`{{"\U0001F6A2"}} The {{ .vessel.data.Name }}'s call sign is {{ .vessel.data.Callsign }}.`,
 		os.Stdout)
 	if err != nil {
 		panic(err)
 	}
 
 	// Output:
-	// 🚢 The MONTREAL EXPRESS's call sign is ZCET4, and it has a draught of 10.5.
+	// 🚢 The MONTREAL EXPRESS's call sign is ZCET4.
 }
