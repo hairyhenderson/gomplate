@@ -61,7 +61,7 @@ func (ConvFuncs) ToBools(in ...interface{}) []bool {
 }
 
 // Slice -
-// Deprecated: use coll.Slice instead
+// Deprecated: use [coll.Slice] instead
 func (f *ConvFuncs) Slice(args ...interface{}) []interface{} {
 	deprecated.WarnDeprecated(f.ctx, "conv.Slice is deprecated - use coll.Slice instead")
 	return coll.Slice(args...)

@@ -203,7 +203,7 @@ list | strings.Sort
 ### Examples
 
 ```console
-$ gomplate -i '{{ (slice "foo" "bar" "baz") | strings.Sort }}'
+$ gomplate -i '{{ (coll.Slice "foo" "bar" "baz") | strings.Sort }}'
 [bar baz foo]
 ```
 
@@ -229,13 +229,6 @@ input | strings.Split separator
 
 ### Examples
 
-Use on its own to produce an array:
-```console
-$ gomplate -i '{{ "Bart,Lisa,Maggie" | strings.Split "," }}'
-[Bart Lisa Maggie]
-```
-
-Use in combination with `range` to iterate over all items:
 ```console
 $ gomplate -i '{{range ("Bart,Lisa,Maggie" | strings.Split ",") }}Hello, {{.}}
 {{end}}'
@@ -243,13 +236,6 @@ Hello, Bart
 Hello, Lisa
 Hello, Maggie
 ```
-
-Use in combination with `index` function to pick a specific value from the resulting array
-```console
-$ gomplate -i '{{index ("Bart,Lisa,Maggie" | strings.Split ",") 0 }}'
-Bart
-```
-
 
 ## `strings.SplitN`
 
@@ -439,7 +425,7 @@ in | strings.ShellQuote
 ### Examples
 
 ```console
-$ gomplate -i "{{ slice \"one word\" \"foo='bar baz'\" | shellQuote }}"
+$ gomplate -i "{{ coll.Slice \"one word\" \"foo='bar baz'\" | shellQuote }}"
 'one word' 'foo='"'"'bar baz'"'"''
 ```
 ```console
@@ -885,7 +871,7 @@ input | strings.RuneCount
 ### Examples
 
 ```console
-$ gomplate -i '{{ range (slice "\u03a9" "\u0030" "\u1430") }}{{ printf "%s is %d bytes and %d runes\n" . (len .) (strings.RuneCount .) }}{{ end }}'
+$ gomplate -i '{{ range (coll.Slice "\u03a9" "\u0030" "\u1430") }}{{ printf "%s is %d bytes and %d runes\n" . (len .) (strings.RuneCount .) }}{{ end }}'
 Ω is 2 bytes and 1 runes
 0 is 1 bytes and 1 runes
 ᐰ is 3 bytes and 1 runes

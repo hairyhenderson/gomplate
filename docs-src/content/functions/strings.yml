@@ -135,7 +135,7 @@ funcs:
         description: The list to sort
     examples:
       - |
-        $ gomplate -i '{{ (slice "foo" "bar" "baz") | strings.Sort }}'
+        $ gomplate -i '{{ (coll.Slice "foo" "bar" "baz") | strings.Sort }}'
         [bar baz foo]
   - name: strings.Split
     description: |
@@ -267,7 +267,7 @@ funcs:
         description: The input to quote
     examples:
       - |
-        $ gomplate -i "{{ slice \"one word\" \"foo='bar baz'\" | shellQuote }}"
+        $ gomplate -i "{{ coll.Slice \"one word\" \"foo='bar baz'\" | shellQuote }}"
         'one word' 'foo='"'"'bar baz'"'"''
       - |
         $ gomplate -i "{{ strings.ShellQuote \"it's a banana\" }}"
@@ -518,7 +518,7 @@ funcs:
         description: the input(s) to measure
     examples:
       - |
-        $ gomplate -i '{{ range (slice "\u03a9" "\u0030" "\u1430") }}{{ printf "%s is %d bytes and %d runes\n" . (len .) (strings.RuneCount .) }}{{ end }}'
+        $ gomplate -i '{{ range (coll.Slice "\u03a9" "\u0030" "\u1430") }}{{ printf "%s is %d bytes and %d runes\n" . (len .) (strings.RuneCount .) }}{{ end }}'
         Ω is 2 bytes and 1 runes
         0 is 1 bytes and 1 runes
         ᐰ is 3 bytes and 1 runes

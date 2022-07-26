@@ -96,7 +96,7 @@ function, as used in [Helm templates](https://docs.helm.sh/chart_template_guide#
 
 For creating more complex maps, see [`data.JSON`](../data/#data-json) or [`data.YAML`](../data/#data-yaml).
 
-For creating arrays, see [`conv.Slice`](#conv-slice).
+For creating arrays, see [`coll.Slice`](#coll-slice).
 
 ### Usage
 
@@ -151,7 +151,7 @@ conv.Slice in...
 ### Examples
 
 ```console
-$ gomplate -i '{{ range slice "Bart" "Lisa" "Maggie" }}Hello, {{ . }}{{ end }}'
+$ gomplate -i '{{ range coll.Slice "Bart" "Lisa" "Maggie" }}Hello, {{ . }}{{ end }}'
 Hello, Bart
 Hello, Lisa
 Hello, Maggie
@@ -180,7 +180,7 @@ conv.Has in item
 ### Examples
 
 ```console
-$ gomplate -i '{{ $l := slice "foo" "bar" "baz" }}there is {{ if has $l "bar" }}a{{else}}no{{end}} bar'
+$ gomplate -i '{{ $l := coll.Slice "foo" "bar" "baz" }}there is {{ if has $l "bar" }}a{{else}}no{{end}} bar'
 there is a bar
 ```
 ```console
@@ -218,7 +218,7 @@ conv.Join in sep
 ### Examples
 
 ```console
-$ gomplate -i '{{ $a := slice 1 2 3 }}{{ join $a "-" }}'
+$ gomplate -i '{{ $a := coll.Slice 1 2 3 }}{{ join $a "-" }}'
 1-2-3
 ```
 
@@ -668,6 +668,6 @@ conv.ToStrings in...
 ### Examples
 
 ```console
-$ gomplate -i '{{ conv.ToStrings nil 42 true 0xF (slice 1 2 3) }}'
+$ gomplate -i '{{ conv.ToStrings nil 42 true 0xF (coll.Slice 1 2 3) }}'
 [nil 42 true 15 [1 2 3]]
 ```

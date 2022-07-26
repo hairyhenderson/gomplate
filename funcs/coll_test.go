@@ -2,6 +2,7 @@ package funcs
 
 import (
 	"context"
+	"reflect"
 	"strconv"
 	"testing"
 
@@ -141,4 +142,37 @@ func TestOmit(t *testing.T) {
 	out, err = c.Omit("foo", "bar", "", in)
 	assert.NoError(t, err)
 	assert.EqualValues(t, map[string]interface{}{}, out)
+}
+
+func TestGoSlice(t *testing.T) {
+	t.Parallel()
+
+	c := &CollFuncs{}
+
+	in := reflect.ValueOf(nil)
+	_, err := c.GoSlice(in)
+	assert.Error(t, err)
+
+	in = reflect.ValueOf(42)
+	_, err = c.GoSlice(in)
+	assert.Error(t, err)
+
+	// invalid index type
+	in = reflect.ValueOf([]interface{}{1})
+	_, err = c.GoSlice(in, reflect.ValueOf([]interface{}{[]int{2}}))
+	assert.Error(t, err)
+
+	// valid slice, no slicing
+	in = reflect.ValueOf([]int{1})
+	out, err := c.GoSlice(in)
+	assert.NoError(t, err)
+	assert.Equal(t, reflect.TypeOf([]int{}), out.Type())
+	assert.EqualValues(t, []int{1}, out.Interface())
+
+	// valid slice, slicing
+	in = reflect.ValueOf([]string{"foo", "bar", "baz"})
+	out, err = c.GoSlice(in, reflect.ValueOf(1), reflect.ValueOf(3))
+	assert.NoError(t, err)
+	assert.Equal(t, reflect.TypeOf([]string{}), out.Type())
+	assert.EqualValues(t, []string{"bar", "baz"}, out.Interface())
 }

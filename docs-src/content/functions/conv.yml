@@ -65,7 +65,7 @@ funcs:
 
       For creating more complex maps, see [`data.JSON`](../data/#data-json) or [`data.YAML`](../data/#data-yaml).
 
-      For creating arrays, see [`conv.Slice`](#conv-slice).
+      For creating arrays, see [`coll.Slice`](#coll-slice).
     arguments:
       - name: in...
         required: true
@@ -97,7 +97,7 @@ funcs:
         description: the elements of the slice
     examples:
       - |
-        $ gomplate -i '{{ range slice "Bart" "Lisa" "Maggie" }}Hello, {{ . }}{{ end }}'
+        $ gomplate -i '{{ range coll.Slice "Bart" "Lisa" "Maggie" }}Hello, {{ . }}{{ end }}'
         Hello, Bart
         Hello, Lisa
         Hello, Maggie
@@ -116,7 +116,7 @@ funcs:
         description: The item to search for
     examples:
       - |
-        $ gomplate -i '{{ $l := slice "foo" "bar" "baz" }}there is {{ if has $l "bar" }}a{{else}}no{{end}} bar'
+        $ gomplate -i '{{ $l := coll.Slice "foo" "bar" "baz" }}there is {{ if has $l "bar" }}a{{else}}no{{end}} bar'
         there is a bar
       - |
         $ export DATA='{"foo": "bar"}'
@@ -141,7 +141,7 @@ funcs:
         description: the separator
     examples:
       - |
-        $ gomplate -i '{{ $a := slice 1 2 3 }}{{ join $a "-" }}'
+        $ gomplate -i '{{ $a := coll.Slice 1 2 3 }}{{ join $a "-" }}'
         1-2-3
   - name: conv.URL
     alias: urlParse
@@ -417,5 +417,5 @@ funcs:
         description: the inputs to be converted
     examples:
       - |
-        $ gomplate -i '{{ conv.ToStrings nil 42 true 0xF (slice 1 2 3) }}'
+        $ gomplate -i '{{ conv.ToStrings nil 42 true 0xF (coll.Slice 1 2 3) }}'
         [nil 42 true 15 [1 2 3]]

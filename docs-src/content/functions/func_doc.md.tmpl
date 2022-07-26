@@ -1,7 +1,7 @@
 {{ define "argName" }}{{ if not .required }}[{{ .name }}]{{else}}{{ .name }}{{end}}{{ end }}
 
 {{- define "usage" }}### Usage
-{{- $arguments := index . "arguments" | default slice }}
+{{- $arguments := index . "arguments" | default coll.Slice }}
 {{ if has . "rawUsage" }}{{ .rawUsage | strings.TrimSpace }}{{ else }}
 ```go
 {{ .name }}{{ range $a := $arguments }} {{template "argName" $a }}{{end}}

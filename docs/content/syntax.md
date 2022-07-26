@@ -32,7 +32,7 @@ is rendered.
 By default, every line containing an action will render a newline. For example, the action block below:
 
 ```
-{{ range slice "Foo" "bar" "baz" }}
+{{ range coll.Slice "Foo" "bar" "baz" }}
 Hello, {{ . }}!
 {{ end }}
 ```
@@ -60,7 +60,7 @@ Here are a few examples.
 ### Suppressing leading newlines
 
 ```
-{{- range slice "Foo" "bar" "baz" }}
+{{- range coll.Slice "Foo" "bar" "baz" }}
 Hello, {{ . }}!
 {{- end }}
 ```
@@ -79,7 +79,7 @@ Hello,  baz!
 This code:
 
 ```
-{{ range slice "Foo" "bar" "baz" -}}
+{{ range coll.Slice "Foo" "bar" "baz" -}}
 Hello, {{ . }}!
 {{ end -}}
 ```
@@ -97,7 +97,7 @@ Hello,  baz!
 This code:
 
 ```
-{{- range slice "Foo" "bar" "baz" -}}
+{{- range coll.Slice "Foo" "bar" "baz" -}}
 Hello, {{ . }}!
 {{- end -}}
 ```
