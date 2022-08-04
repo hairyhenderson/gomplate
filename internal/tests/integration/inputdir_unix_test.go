@@ -5,7 +5,6 @@ package integration
 
 import (
 	"fmt"
-	"io/ioutil"
 	"math"
 	"os"
 	"testing"
@@ -49,7 +48,7 @@ func TestInputDir_RespectsUlimit(t *testing.T) {
 	setFileUlimit(8192)
 	assertSuccess(t, o, e, err, "")
 
-	files, err := ioutil.ReadDir(testdir.Join("out"))
+	files, err := os.ReadDir(testdir.Join("out"))
 	assert.NilError(t, err)
 	assert.Equal(t, numfiles, len(files))
 
@@ -58,7 +57,7 @@ func TestInputDir_RespectsUlimit(t *testing.T) {
 		_, err := os.Stat(f)
 		assert.NilError(t, err)
 
-		content, err := ioutil.ReadFile(f)
+		content, err := os.ReadFile(f)
 		assert.NilError(t, err)
 		expected := fmt.Sprintf("hello world %d\n", i)
 		assert.Equal(t, expected, string(content))

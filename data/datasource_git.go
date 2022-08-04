@@ -5,7 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/url"
 	"os"
 	"path"
@@ -136,7 +136,7 @@ func (g gitsource) parseGitPath(u *url.URL, args ...string) (out *url.URL, p str
 	return out, p, err
 }
 
-//nolint: interfacer
+// nolint: interfacer
 func cloneURL(u *url.URL) *url.URL {
 	out, _ := url.Parse(u.String())
 	return out
@@ -263,7 +263,7 @@ func (g gitsource) read(fs billy.Filesystem, path string) (string, []byte, error
 		return "", nil, fmt.Errorf("can't open %s: %w", path, err)
 	}
 
-	b, err := ioutil.ReadAll(f)
+	b, err := io.ReadAll(f)
 	if err != nil {
 		return "", nil, fmt.Errorf("can't read %s: %w", path, err)
 	}
@@ -294,7 +294,8 @@ func (g gitsource) readDir(fs billy.Filesystem, path string) ([]byte, error) {
 /*
 auth methods:
 - ssh named key (no password support)
-	- GIT_SSH_KEY (base64-encoded) or GIT_SSH_KEY_FILE (base64-encoded, or not)
+  - GIT_SSH_KEY (base64-encoded) or GIT_SSH_KEY_FILE (base64-encoded, or not)
+
 - ssh agent auth (preferred)
 - http basic auth (for github, gitlab, bitbucket tokens)
 - http token auth (bearer token, somewhat unusual)
