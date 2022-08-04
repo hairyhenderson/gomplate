@@ -2,7 +2,7 @@
 package env
 
 import (
-	"io/ioutil"
+	"io"
 	"os"
 	"strings"
 
@@ -62,7 +62,7 @@ func readFile(fs afero.Fs, p string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	b, err := ioutil.ReadAll(f)
+	b, err := io.ReadAll(f)
 	if err != nil {
 		return "", err
 	}

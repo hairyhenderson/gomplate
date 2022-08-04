@@ -10,6 +10,7 @@ import (
 
 // AWSNS - the aws namespace
 // Deprecated: don't use
+//
 //nolint:golint
 func AWSNS() *Funcs {
 	return &Funcs{}

@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"io/ioutil"
+	"io"
 	"net/url"
 	"os"
 	"path/filepath"
@@ -57,7 +57,7 @@ func readFile(ctx context.Context, source *Source, args ...string) ([]byte, erro
 
 	defer f.Close()
 
-	b, err := ioutil.ReadAll(f)
+	b, err := io.ReadAll(f)
 	if err != nil {
 		return nil, errors.Wrapf(err, "Can't read %s", p)
 	}

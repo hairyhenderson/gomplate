@@ -2,7 +2,7 @@ package gcp
 
 import (
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"strconv"
 	"strings"
@@ -110,7 +110,7 @@ func (c *MetaClient) retrieveMetadata(url string, def ...string) (string, error)
 		return returnDefault(def), nil
 	}
 
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return "", fmt.Errorf("failed to read response body from %s: %w", url, err)
 	}

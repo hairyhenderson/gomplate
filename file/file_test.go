@@ -1,7 +1,6 @@
 package file
 
 import (
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"testing"
@@ -75,14 +74,14 @@ func TestWrite(t *testing.T) {
 	err = Write(foopath, []byte("Hello world"))
 	assert.NoError(t, err)
 
-	out, err := ioutil.ReadFile(foopath)
+	out, err := os.ReadFile(foopath)
 	assert.NoError(t, err)
 	assert.Equal(t, "Hello world", string(out))
 
 	err = Write(foopath, []byte("truncate"))
 	assert.NoError(t, err)
 
-	out, err = ioutil.ReadFile(foopath)
+	out, err = os.ReadFile(foopath)
 	assert.NoError(t, err)
 	assert.Equal(t, "truncate", string(out))
 
@@ -90,7 +89,7 @@ func TestWrite(t *testing.T) {
 	err = Write(foopath, []byte("Hello subdirranean world!"))
 	assert.NoError(t, err)
 
-	out, err = ioutil.ReadFile(foopath)
+	out, err = os.ReadFile(foopath)
 	assert.NoError(t, err)
 	assert.Equal(t, "Hello subdirranean world!", string(out))
 }
