@@ -61,10 +61,3 @@ jobs:
           path: bin/gomplate.exe
       - run: make test
       - run: make integration
-  lint:
-    runs-on: ubuntu-latest
-    container:
-      image: ghcr.io/hairyhenderson/gomplate-ci-build:latest
-    steps:
-      - uses: actions/checkout@v3
-      - run: make ci-lint
