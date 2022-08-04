@@ -1,7 +1,6 @@
 package integration
 
 import (
-	"io/ioutil"
 	"os"
 	"testing"
 
@@ -22,7 +21,7 @@ func setupConfigTest(t *testing.T) *fs.Dir {
 
 func writeFile(t *testing.T, dir *fs.Dir, f, content string) {
 	f = dir.Join(f)
-	err := ioutil.WriteFile(f, []byte(content), 0600)
+	err := os.WriteFile(f, []byte(content), 0600)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -97,7 +96,7 @@ datasources:
 	o, e, err := cmd(t).withDir(tmpDir.Path()).run()
 	assertSuccess(t, o, e, err, "")
 
-	b, err := ioutil.ReadFile(tmpDir.Join("outdir", "file"))
+	b, err := os.ReadFile(tmpDir.Join("outdir", "file"))
 	assert.NilError(t, err)
 	assert.Equal(t, "hello world", string(b))
 }
@@ -123,7 +122,7 @@ outputFiles: [out]
 	o, e, err := cmd(t).withDir(tmpDir.Path()).run()
 	assertSuccess(t, o, e, err, "")
 
-	b, err := ioutil.ReadFile(tmpDir.Join("out"))
+	b, err := os.ReadFile(tmpDir.Join("out"))
 	assert.NilError(t, err)
 	assert.Equal(t, "hello world", string(b))
 }

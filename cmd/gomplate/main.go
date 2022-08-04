@@ -1,6 +1,5 @@
 /*
 The gomplate command
-
 */
 package main
 

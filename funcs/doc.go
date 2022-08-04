@@ -17,6 +17,5 @@ programmatically by external consumers, but instead only to be used as template
 functions.
 
 Deprecated: This package will be made internal in a future major version.
-
 */
 package funcs

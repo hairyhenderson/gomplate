@@ -258,10 +258,13 @@ func autoIndex(i int) string {
 
 // CSV - Unmarshal CSV
 // parameters:
-//  delim - (optional) the (single-character!) field delimiter, defaults to ","
-//     in - the CSV-format string to parse
+//
+//	delim - (optional) the (single-character!) field delimiter, defaults to ","
+//	   in - the CSV-format string to parse
+//
 // returns:
-//  an array of rows, which are arrays of cells (strings)
+//
+//	an array of rows, which are arrays of cells (strings)
 func CSV(args ...string) ([][]string, error) {
 	records, hdr, err := parseCSV(args...)
 	if err != nil {
@@ -275,13 +278,16 @@ func CSV(args ...string) ([][]string, error) {
 
 // CSVByRow - Unmarshal CSV in a row-oriented form
 // parameters:
-//  delim - (optional) the (single-character!) field delimiter, defaults to ","
-//    hdr - (optional) comma-separated list of column names,
-//          set to "" to get auto-named columns (A-Z), omit
-//          to use the first line
-//     in - the CSV-format string to parse
+//
+//	delim - (optional) the (single-character!) field delimiter, defaults to ","
+//	  hdr - (optional) comma-separated list of column names,
+//	        set to "" to get auto-named columns (A-Z), omit
+//	        to use the first line
+//	   in - the CSV-format string to parse
+//
 // returns:
-//  an array of rows, indexed by the header name
+//
+//	an array of rows, indexed by the header name
 func CSVByRow(args ...string) (rows []map[string]string, err error) {
 	records, hdr, err := parseCSV(args...)
 	if err != nil {
@@ -299,13 +305,16 @@ func CSVByRow(args ...string) (rows []map[string]string, err error) {
 
 // CSVByColumn - Unmarshal CSV in a Columnar form
 // parameters:
-//  delim - (optional) the (single-character!) field delimiter, defaults to ","
-//    hdr - (optional) comma-separated list of column names,
-//          set to "" to get auto-named columns (A-Z), omit
-//          to use the first line
-//     in - the CSV-format string to parse
+//
+//	delim - (optional) the (single-character!) field delimiter, defaults to ","
+//	  hdr - (optional) comma-separated list of column names,
+//	        set to "" to get auto-named columns (A-Z), omit
+//	        to use the first line
+//	   in - the CSV-format string to parse
+//
 // returns:
-//  a map of columns, indexed by the header name. values are arrays of strings
+//
+//	a map of columns, indexed by the header name. values are arrays of strings
 func CSVByColumn(args ...string) (cols map[string][]string, err error) {
 	records, hdr, err := parseCSV(args...)
 	if err != nil {

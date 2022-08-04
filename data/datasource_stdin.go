@@ -3,7 +3,6 @@ package data
 import (
 	"context"
 	"io"
-	"io/ioutil"
 	"os"
 
 	"github.com/pkg/errors"
@@ -12,7 +11,7 @@ import (
 func readStdin(ctx context.Context, source *Source, args ...string) ([]byte, error) {
 	stdin := stdinFromContext(ctx)
 
-	b, err := ioutil.ReadAll(stdin)
+	b, err := io.ReadAll(stdin)
 	if err != nil {
 		return nil, errors.Wrapf(err, "Can't read %s", stdin)
 	}

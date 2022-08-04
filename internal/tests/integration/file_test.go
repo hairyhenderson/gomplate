@@ -1,7 +1,6 @@
 package integration
 
 import (
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"testing"
@@ -34,7 +33,7 @@ func TestFile_Write(t *testing.T) {
 		withDir(outDir).run()
 	assertSuccess(t, o, e, err, "")
 
-	out, err := ioutil.ReadFile(filepath.Join(outDir, "out"))
+	out, err := os.ReadFile(filepath.Join(outDir, "out"))
 	assert.NilError(t, err)
 	assert.Equal(t, "hello world", string(out))
 }

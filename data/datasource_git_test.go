@@ -4,7 +4,7 @@ import (
 	"context"
 	"encoding/base64"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/url"
 	"os"
 	"strings"
@@ -336,7 +336,7 @@ func TestOpenFileRepo(t *testing.T) {
 
 	f, err := fs.Open("/foo/bar/hi.txt")
 	assert.NilError(t, err)
-	b, _ := ioutil.ReadAll(f)
+	b, _ := io.ReadAll(f)
 	assert.Equal(t, "hello world", string(b))
 
 	_, repo, err := g.clone(ctx, mustParseURL("git+file:///repo#main"), 0)
@@ -375,7 +375,7 @@ func TestOpenBareFileRepo(t *testing.T) {
 
 	f, err := fs.Open("/hello.txt")
 	assert.NilError(t, err)
-	b, _ := ioutil.ReadAll(f)
+	b, _ := io.ReadAll(f)
 	assert.Equal(t, "hello world", string(b))
 }
 

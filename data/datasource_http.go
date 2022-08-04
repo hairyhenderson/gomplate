@@ -2,7 +2,7 @@ package data
 
 import (
 	"context"
-	"io/ioutil"
+	"io"
 	"mime"
 	"net/http"
 	"net/url"
@@ -39,7 +39,7 @@ func readHTTP(ctx context.Context, source *Source, args ...string) ([]byte, erro
 	if err != nil {
 		return nil, err
 	}
-	body, err := ioutil.ReadAll(res.Body)
+	body, err := io.ReadAll(res.Body)
 	if err != nil {
 		return nil, err
 	}
