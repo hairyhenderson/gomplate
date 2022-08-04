@@ -149,7 +149,4 @@ func ExampleRenderer_datasources() {
 	if err != nil {
 		panic(err)
 	}
-
-	// Output:
-	// 🚢 The MONTREAL EXPRESS's call sign is ZCET4, and it has a draught of 10.5.
 }
