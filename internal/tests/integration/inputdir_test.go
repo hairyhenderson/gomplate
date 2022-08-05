@@ -1,7 +1,6 @@
 package integration
 
 import (
-	"io/ioutil"
 	"os"
 	"testing"
 
@@ -47,11 +46,11 @@ func TestInputDir_InputDir(t *testing.T) {
 	).run()
 	assertSuccess(t, o, e, err, "")
 
-	files, err := ioutil.ReadDir(tmpDir.Join("out"))
+	files, err := os.ReadDir(tmpDir.Join("out"))
 	assert.NilError(t, err)
 	tassert.Len(t, files, 4)
 
-	files, err = ioutil.ReadDir(tmpDir.Join("out", "inner"))
+	files, err = os.ReadDir(tmpDir.Join("out", "inner"))
 	assert.NilError(t, err)
 	tassert.Len(t, files, 1)
 
@@ -70,7 +69,7 @@ func TestInputDir_InputDir(t *testing.T) {
 		assert.NilError(t, err)
 		m := iohelpers.NormalizeFileMode(v.mode)
 		assert.Equal(t, m, info.Mode(), v.path)
-		content, err := ioutil.ReadFile(v.path)
+		content, err := os.ReadFile(v.path)
 		assert.NilError(t, err)
 		assert.Equal(t, v.content, string(content))
 	}
@@ -86,11 +85,11 @@ func TestInputDir_InputDirWithModeOverride(t *testing.T) {
 	).run()
 	assertSuccess(t, o, e, err, "")
 
-	files, err := ioutil.ReadDir(tmpDir.Join("out"))
+	files, err := os.ReadDir(tmpDir.Join("out"))
 	assert.NilError(t, err)
 	tassert.Len(t, files, 4)
 
-	files, err = ioutil.ReadDir(tmpDir.Join("out", "inner"))
+	files, err = os.ReadDir(tmpDir.Join("out", "inner"))
 	assert.NilError(t, err)
 	tassert.Len(t, files, 1)
 
@@ -109,7 +108,7 @@ func TestInputDir_InputDirWithModeOverride(t *testing.T) {
 		assert.NilError(t, err)
 		m := iohelpers.NormalizeFileMode(v.mode)
 		assert.Equal(t, m, info.Mode(), v.path)
-		content, err := ioutil.ReadFile(v.path)
+		content, err := os.ReadFile(v.path)
 		assert.NilError(t, err)
 		assert.Equal(t, v.content, string(content))
 	}
@@ -124,11 +123,11 @@ func TestInputDir_OutputMapInline(t *testing.T) {
 	).withDir(tmpDir.Path()).run()
 	assertSuccess(t, o, e, err, "")
 
-	files, err := ioutil.ReadDir(tmpDir.Join("OUT"))
+	files, err := os.ReadDir(tmpDir.Join("OUT"))
 	assert.NilError(t, err)
 	tassert.Len(t, files, 4)
 
-	files, err = ioutil.ReadDir(tmpDir.Join("OUT", "INNER"))
+	files, err = os.ReadDir(tmpDir.Join("OUT", "INNER"))
 	assert.NilError(t, err)
 	tassert.Len(t, files, 1)
 
@@ -147,7 +146,7 @@ func TestInputDir_OutputMapInline(t *testing.T) {
 		assert.NilError(t, err)
 		m := iohelpers.NormalizeFileMode(v.mode)
 		assert.Equal(t, m, info.Mode(), v.path)
-		content, err := ioutil.ReadFile(v.path)
+		content, err := os.ReadFile(v.path)
 		assert.NilError(t, err)
 		assert.Equal(t, v.content, string(content))
 	}
@@ -164,11 +163,11 @@ func TestInputDir_OutputMapExternal(t *testing.T) {
 	).withDir(tmpDir.Path()).run()
 	assertSuccess(t, o, e, err, "")
 
-	files, err := ioutil.ReadDir(tmpDir.Join("out"))
+	files, err := os.ReadDir(tmpDir.Join("out"))
 	assert.NilError(t, err)
 	tassert.Len(t, files, 4)
 
-	files, err = ioutil.ReadDir(tmpDir.Join("out", "inner"))
+	files, err = os.ReadDir(tmpDir.Join("out", "inner"))
 	assert.NilError(t, err)
 	tassert.Len(t, files, 1)
 
@@ -187,7 +186,7 @@ func TestInputDir_OutputMapExternal(t *testing.T) {
 		assert.NilError(t, err)
 		m := iohelpers.NormalizeFileMode(v.mode)
 		assert.Equal(t, m, info.Mode(), v.path)
-		content, err := ioutil.ReadFile(v.path)
+		content, err := os.ReadFile(v.path)
 		assert.NilError(t, err)
 		assert.Equal(t, v.content, string(content))
 	}
@@ -201,27 +200,27 @@ func TestInputDir_DefaultOutputDir(t *testing.T) {
 	).withDir(tmpDir.Join("out")).run()
 	assertSuccess(t, o, e, err, "")
 
-	files, err := ioutil.ReadDir(tmpDir.Join("out"))
+	files, err := os.ReadDir(tmpDir.Join("out"))
 	assert.NilError(t, err)
 	tassert.Len(t, files, 4)
 
-	files, err = ioutil.ReadDir(tmpDir.Join("out", "inner"))
+	files, err = os.ReadDir(tmpDir.Join("out", "inner"))
 	assert.NilError(t, err)
 	tassert.Len(t, files, 1)
 
-	content, err := ioutil.ReadFile(tmpDir.Join("out", "eins.txt"))
+	content, err := os.ReadFile(tmpDir.Join("out", "eins.txt"))
 	assert.NilError(t, err)
 	assert.Equal(t, "eins", string(content))
 
-	content, err = ioutil.ReadFile(tmpDir.Join("out", "inner", "deux.txt"))
+	content, err = os.ReadFile(tmpDir.Join("out", "inner", "deux.txt"))
 	assert.NilError(t, err)
 	assert.Equal(t, "deux", string(content))
 
-	content, err = ioutil.ReadFile(tmpDir.Join("out", "drei.sh"))
+	content, err = os.ReadFile(tmpDir.Join("out", "drei.sh"))
 	assert.NilError(t, err)
 	assert.Equal(t, `#!/bin/sh\necho "hello world"\n`, string(content))
 
-	content, err = ioutil.ReadFile(tmpDir.Join("out", "vier.txt"))
+	content, err = os.ReadFile(tmpDir.Join("out", "vier.txt"))
 	assert.NilError(t, err)
 	assert.Equal(t, `deux * deux`, string(content))
 }
@@ -261,7 +260,7 @@ func TestInputDir_InputDirCwd(t *testing.T) {
 		assert.NilError(t, err)
 		m := iohelpers.NormalizeFileMode(v.mode)
 		assert.Equal(t, m, info.Mode(), v.path)
-		content, err := ioutil.ReadFile(v.path)
+		content, err := os.ReadFile(v.path)
 		assert.NilError(t, err)
 		assert.Equal(t, v.content, string(content))
 	}

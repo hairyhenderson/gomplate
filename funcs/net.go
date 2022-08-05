@@ -104,6 +104,7 @@ func (f NetFuncs) parseStdnetIPNet(prefix interface{}) (*stdnet.IPNet, error) {
 }
 
 // TODO: look at using this instead of parseStdnetIPNet
+//
 //nolint:unused
 func (f NetFuncs) parseNetipPrefix(prefix interface{}) (netip.Prefix, error) {
 	switch p := prefix.(type) {
