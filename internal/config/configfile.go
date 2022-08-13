@@ -21,7 +21,9 @@ import (
 
 // Parse a config file
 func Parse(in io.Reader) (*Config, error) {
-	out := &Config{}
+	out := &Config{
+		Templates: Templates{},
+	}
 	dec := yaml.NewDecoder(in)
 	err := dec.Decode(out)
 	if err != nil && err != io.EOF {

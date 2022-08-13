@@ -42,7 +42,7 @@ func TestReadConfigFile(t *testing.T) {
 
 	cfg, err := readConfigFile(cmd)
 	assert.NoError(t, err)
-	assert.EqualValues(t, &config.Config{}, cfg)
+	assert.EqualValues(t, &config.Config{Templates: config.Templates{}}, cfg)
 
 	cmd.ParseFlags([]string{"--config", "config.yaml"})
 
@@ -52,7 +52,7 @@ func TestReadConfigFile(t *testing.T) {
 
 	cfg, err = readConfigFile(cmd)
 	assert.NoError(t, err)
-	assert.EqualValues(t, &config.Config{Input: "hello world"}, cfg)
+	assert.EqualValues(t, &config.Config{Input: "hello world", Templates: config.Templates{}}, cfg)
 
 	f.WriteString("in: ")
 
