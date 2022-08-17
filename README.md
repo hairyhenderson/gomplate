@@ -9,12 +9,7 @@ _Read the docs at [docs.gomplate.ca][docs-url], chat with developers and communi
 [![Total Downloads][gh-downloads-image]][gh-downloads-url]
 [![CII Best Practices][cii-bp-image]][cii-bp-url]
 
-[![hairyhenderson/gomplate on DockerHub][dockerhub-image]][dockerhub-url]
-[![DockerHub Stars][dockerhub-stars-image]][dockerhub-url]
 [![DockerHub Pulls][dockerhub-pulls-image]][dockerhub-url]
-[![DockerHub Image Layers][microbadger-layers-image]][microbadger-url]
-[![DockerHub Latest Version ][microbadger-version-image]][microbadger-url]
-[![DockerHub Latest Commit][microbadger-commit-image]][microbadger-url]
 
 [![Chocolatey](https://img.shields.io/chocolatey/v/gomplate.svg)](https://chocolatey.org/packages/gomplate)
 [![Chocolatey](https://img.shields.io/chocolatey/dt/gomplate.svg)](https://chocolatey.org/packages/gomplate)
@@ -118,15 +113,8 @@ Copyright (c) 2016-2022 Dave Henderson
 [cii-bp-image]: https://bestpractices.coreinfrastructure.org/projects/337/badge
 [cii-bp-url]: https://bestpractices.coreinfrastructure.org/projects/337
 
-[dockerhub-image]: https://img.shields.io/badge/docker-ready-blue.svg
 [dockerhub-url]: https://hub.docker.com/r/hairyhenderson/gomplate
-[dockerhub-stars-image]: https://img.shields.io/docker/stars/hairyhenderson/gomplate.svg
 [dockerhub-pulls-image]: https://img.shields.io/docker/pulls/hairyhenderson/gomplate.svg
-
-[microbadger-version-image]: https://images.microbadger.com/badges/version/hairyhenderson/gomplate.svg
-[microbadger-layers-image]: https://images.microbadger.com/badges/image/hairyhenderson/gomplate.svg
-[microbadger-commit-image]: https://images.microbadger.com/badges/commit/hairyhenderson/gomplate.svg
-[microbadger-url]: https://microbadger.com/image/hairyhenderson/gomplate
 
 [docs-url]: https://docs.gomplate.ca
 [install-docs-image]: https://img.shields.io/badge/install-docs-blue.svg
