@@ -47,6 +47,10 @@ plugins:
     cmd: echo
     pipe: true
 
+templates:
+  foo:
+    url: file:///tmp/foo.t
+
 pluginTimeout: 2s
 `
 	expected = &Config{
@@ -72,6 +76,7 @@ pluginTimeout: 2s
 		Plugins: map[string]PluginConfig{
 			"foo": {Cmd: "echo", Pipe: true},
 		},
+		Templates:     Templates{"foo": DataSource{URL: mustURL("file:///tmp/foo.t")}},
 		PluginTimeout: 2 * time.Second,
 	}
 
