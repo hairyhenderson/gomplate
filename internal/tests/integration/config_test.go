@@ -232,3 +232,31 @@ suppressEmpty: true
 	_, err = os.Stat(tmpDir.Join("missing"))
 	assert.Equal(t, true, os.IsNotExist(err))
 }
+
+func TestConfig_ConfigTemplatesSupportsMap(t *testing.T) {
+	tmpDir := setupConfigTest(t)
+
+	writeConfig(t, tmpDir, `in: '{{ template "t1" (dict "testValue" "12345") }}'
+templates:
+  t1:
+    url: t1.tmpl
+`)
+	writeFile(t, tmpDir, "t1.tmpl", `{{ .testValue }}`)
+
+	o, e, err := cmd(t).withDir(tmpDir.Path()).run()
+	assertSuccess(t, o, e, err, "12345")
+}
+
+func TestConfig_ConfigTemplatesSupportsArray(t *testing.T) {
+	tmpDir := setupConfigTest(t)
+
+	// TODO: remove this test once the array format is no longer supported
+	writeConfig(t, tmpDir, `in: '{{ template "t1" (dict "testValue" "12345") }}'
+templates:
+  - t1=t1.tmpl
+`)
+	writeFile(t, tmpDir, "t1.tmpl", `{{ .testValue }}`)
+
+	o, e, err := cmd(t).withDir(tmpDir.Path()).run()
+	assertSuccess(t, o, e, err, "12345")
+}

@@ -40,7 +40,6 @@ output: out/`
 	c = &Config{
 		InputDir:  "in/",
 		OutputMap: "{{ .in }}",
-		Templates: []string{},
 	}
 	expected = `input: in/
 output: {{ .in }}`

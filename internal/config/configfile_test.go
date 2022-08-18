@@ -20,8 +20,7 @@ func TestParseConfigFile(t *testing.T) {
 	t.Parallel()
 	in := "in: hello world\n"
 	expected := &Config{
-		Input:     "hello world",
-		Templates: Templates{},
+		Input: "hello world",
 	}
 	cf, err := Parse(strings.NewReader(in))
 	assert.NoError(t, err)

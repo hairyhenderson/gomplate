@@ -21,8 +21,10 @@ type Templates map[string]DataSource
 // UnmarshalYAML - satisfy the yaml.Umarshaler interface
 func (t *Templates) UnmarshalYAML(value *yaml.Node) error {
 	// first attempt to unmarshal as a map[string]DataSource
-	err := value.Decode(map[string]DataSource(*t))
+	m := map[string]DataSource{}
+	err := value.Decode(m)
 	if err == nil {
+		*t = m
 		return nil
 	}
 
