@@ -12,16 +12,16 @@ import (
 	"unicode/utf8"
 
 	"github.com/Masterminds/goutils"
-	"github.com/hairyhenderson/gomplate/v3/conv"
-	"github.com/hairyhenderson/gomplate/v3/internal/deprecated"
+	"github.com/flanksource/gomplate/v3/conv"
+	"github.com/flanksource/gomplate/v3/internal/deprecated"
 	"github.com/pkg/errors"
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
 
 	"strings"
 
+	gompstrings "github.com/flanksource/gomplate/v3/strings"
 	"github.com/gosimple/slug"
-	gompstrings "github.com/hairyhenderson/gomplate/v3/strings"
 )
 
 // StrNS -

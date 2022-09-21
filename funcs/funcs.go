@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/hairyhenderson/gomplate/v3/internal/config"
+	"github.com/flanksource/gomplate/v3/internal/config"
 )
 
 func checkExperimental(ctx context.Context) error {

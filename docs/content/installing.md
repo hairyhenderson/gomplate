@@ -24,7 +24,7 @@ $ brew install gomplate
 On macOS, you can also install gomplate using [MacPorts](https://www.macports.org):
 
 ```console
-$ sudo port install gomplate
+sudo port install gomplate
 ```
 
 ## [![Chocolatey](https://img.shields.io/chocolatey/v/gomplate.svg)](https://chocolatey.org/packages/gomplate) Windows with Chocolatey
@@ -117,7 +117,7 @@ $ gomplate --help
 If you're a Go developer, sometimes it's faster to just use `go install` to install `gomplate`:
 
 ```console
-$ go install github.com/hairyhenderson/gomplate/v3/cmd/gomplate@latest
+$ go install github.com/flanksource/gomplate/v3/cmd/gomplate@latest
 $ gomplate --help
 ...
 ```

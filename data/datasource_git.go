@@ -12,8 +12,8 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/hairyhenderson/gomplate/v3/base64"
-	"github.com/hairyhenderson/gomplate/v3/env"
+	"github.com/flanksource/gomplate/v3/base64"
+	"github.com/flanksource/gomplate/v3/env"
 	"github.com/rs/zerolog"
 
 	"github.com/go-git/go-billy/v5"

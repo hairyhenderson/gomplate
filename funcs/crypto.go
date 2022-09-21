@@ -12,10 +12,10 @@ import (
 
 	"golang.org/x/crypto/bcrypt"
 
-	"github.com/hairyhenderson/gomplate/v3/conv"
+	"github.com/flanksource/gomplate/v3/conv"
 	"github.com/pkg/errors"
 
-	"github.com/hairyhenderson/gomplate/v3/crypto"
+	"github.com/flanksource/gomplate/v3/crypto"
 )
 
 // CryptoNS - the crypto namespace

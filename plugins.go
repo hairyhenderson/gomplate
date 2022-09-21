@@ -13,8 +13,8 @@ import (
 	"text/template"
 	"time"
 
-	"github.com/hairyhenderson/gomplate/v3/conv"
-	"github.com/hairyhenderson/gomplate/v3/internal/config"
+	"github.com/flanksource/gomplate/v3/conv"
+	"github.com/flanksource/gomplate/v3/internal/config"
 )
 
 // bindPlugins creates custom plugin functions for each plugin specified by

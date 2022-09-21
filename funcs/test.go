@@ -4,10 +4,10 @@ import (
 	"context"
 	"reflect"
 
-	"github.com/hairyhenderson/gomplate/v3/conv"
+	"github.com/flanksource/gomplate/v3/conv"
 	"github.com/pkg/errors"
 
-	"github.com/hairyhenderson/gomplate/v3/test"
+	"github.com/flanksource/gomplate/v3/test"
 )
 
 // TestNS -

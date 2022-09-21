@@ -11,7 +11,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/hairyhenderson/gomplate/v3/internal/iohelpers"
+	"github.com/flanksource/gomplate/v3/internal/iohelpers"
 	"github.com/hairyhenderson/yaml"
 	"github.com/stretchr/testify/assert"
 )

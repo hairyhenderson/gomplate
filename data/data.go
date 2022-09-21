@@ -16,8 +16,8 @@ import (
 
 	"github.com/Shopify/ejson"
 	ejsonJson "github.com/Shopify/ejson/json"
-	"github.com/hairyhenderson/gomplate/v3/conv"
-	"github.com/hairyhenderson/gomplate/v3/env"
+	"github.com/flanksource/gomplate/v3/conv"
+	"github.com/flanksource/gomplate/v3/env"
 
 	// XXX: replace once https://github.com/BurntSushi/toml/pull/179 is merged
 	"github.com/hairyhenderson/toml"

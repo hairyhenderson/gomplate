@@ -7,9 +7,9 @@ import (
 	"strings"
 	gotime "time"
 
-	"github.com/hairyhenderson/gomplate/v3/conv"
-	"github.com/hairyhenderson/gomplate/v3/env"
-	"github.com/hairyhenderson/gomplate/v3/time"
+	"github.com/flanksource/gomplate/v3/conv"
+	"github.com/flanksource/gomplate/v3/env"
+	"github.com/flanksource/gomplate/v3/time"
 )
 
 // TimeNS -

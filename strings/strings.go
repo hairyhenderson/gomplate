@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	"github.com/Masterminds/goutils"
-	"github.com/hairyhenderson/gomplate/v3/conv"
+	"github.com/flanksource/gomplate/v3/conv"
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
 )

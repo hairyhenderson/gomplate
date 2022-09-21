@@ -4,8 +4,8 @@ import (
 	"context"
 	"strings"
 
-	"github.com/hairyhenderson/gomplate/v3/coll"
-	"github.com/hairyhenderson/gomplate/v3/internal/config"
+	"github.com/flanksource/gomplate/v3/coll"
+	"github.com/flanksource/gomplate/v3/internal/config"
 
 	"github.com/pkg/errors"
 )

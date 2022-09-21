@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/hairyhenderson/gomplate/v3/internal/config"
+	"github.com/flanksource/gomplate/v3/internal/config"
 	"github.com/stretchr/testify/assert"
 	"inet.af/netaddr"
 )

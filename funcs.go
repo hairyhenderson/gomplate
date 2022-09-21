@@ -4,9 +4,9 @@ import (
 	"context"
 	"text/template"
 
-	"github.com/hairyhenderson/gomplate/v3/data"
-	"github.com/hairyhenderson/gomplate/v3/funcs" //nolint:staticcheck
-	"github.com/hairyhenderson/gomplate/v3/internal/config"
+	"github.com/flanksource/gomplate/v3/data"
+	"github.com/flanksource/gomplate/v3/funcs" //nolint:staticcheck
+	"github.com/flanksource/gomplate/v3/internal/config"
 )
 
 // Funcs -

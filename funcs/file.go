@@ -4,8 +4,8 @@ import (
 	"context"
 	"os"
 
-	"github.com/hairyhenderson/gomplate/v3/conv"
-	"github.com/hairyhenderson/gomplate/v3/file"
+	"github.com/flanksource/gomplate/v3/conv"
+	"github.com/flanksource/gomplate/v3/file"
 	"github.com/spf13/afero"
 )
 

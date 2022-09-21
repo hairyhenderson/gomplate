@@ -5,9 +5,9 @@ import (
 	"net/url"
 	"text/template"
 
-	"github.com/hairyhenderson/gomplate/v3/coll"
-	"github.com/hairyhenderson/gomplate/v3/conv"
-	"github.com/hairyhenderson/gomplate/v3/internal/deprecated"
+	"github.com/flanksource/gomplate/v3/coll"
+	"github.com/flanksource/gomplate/v3/conv"
+	"github.com/flanksource/gomplate/v3/internal/deprecated"
 )
 
 // ConvNS -

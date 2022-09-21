@@ -5,9 +5,9 @@ import (
 	"strconv"
 	"unicode/utf8"
 
-	"github.com/hairyhenderson/gomplate/v3/conv"
-	iconv "github.com/hairyhenderson/gomplate/v3/internal/conv"
-	"github.com/hairyhenderson/gomplate/v3/random"
+	"github.com/flanksource/gomplate/v3/conv"
+	iconv "github.com/flanksource/gomplate/v3/internal/conv"
+	"github.com/flanksource/gomplate/v3/random"
 	"github.com/pkg/errors"
 )
 

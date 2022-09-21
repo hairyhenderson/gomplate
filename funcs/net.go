@@ -7,8 +7,8 @@ import (
 	"net/netip"
 
 	"github.com/apparentlymart/go-cidr/cidr"
-	"github.com/hairyhenderson/gomplate/v3/conv"
-	"github.com/hairyhenderson/gomplate/v3/net"
+	"github.com/flanksource/gomplate/v3/conv"
+	"github.com/flanksource/gomplate/v3/net"
 	"github.com/pkg/errors"
 	"inet.af/netaddr"
 )
