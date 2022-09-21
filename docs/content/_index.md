@@ -8,9 +8,7 @@ menu:
 ---
 
 `gomplate` is a template renderer which supports a growing list of datasources,
-such as: JSON (_including EJSON - encrypted JSON_), YAML, AWS EC2 metadata,
-[Hashicorp Consul](https://www.consul.io/) and [Hashicorp Vault](https://www.vaultproject.io/) secrets.
-
+such as: JSON (_including EJSON - encrypted JSON_), YAML, and AWS EC2 metadata.
 Come chat with developers and community in the [#gomplate channel][] on [Gophers Slack][] and on [GitHub Discussions][discussions-url]!
 
 _Please report any bugs found in the [issue tracker](https://github.com/hairyhenderson/gomplate/issues/)._
@@ -46,7 +44,7 @@ country code: CA
 
 $ # standard input can be used as a datasource too:
 $ echo '{"cities":["London", "Johannesburg", "Windhoek"]}' | gomplate -d city=stdin:///in.json -i '{{ range (ds "city").cities }}{{.}}, {{end}}'
-London, Johannesburg, Windhoek, 
+London, Johannesburg, Windhoek,
 
 $ # and here's something a little more complicated:
 $ export CITIES='city: [London, Johannesburg, Windhoek]'
@@ -86,7 +84,6 @@ $ gomplate -d 'cities=env:///CITIES?type=application/yaml' -d 'weather=https://w
 
 Copyright (c) 2016-{{< year >}} Dave Henderson
 
-[datasources]: ../datasources
 
 [Gophers Slack]: https://invite.slack.golangbridge.org
 [#gomplate channel]: https://gophers.slack.com/messages/CGTR16RM2/

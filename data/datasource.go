@@ -15,8 +15,6 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/hairyhenderson/gomplate/v3/internal/config"
-	"github.com/hairyhenderson/gomplate/v3/libkv"
-	"github.com/hairyhenderson/gomplate/v3/vault"
 )
 
 func regExtension(ext, typ string) {
@@ -42,18 +40,12 @@ func (d *Data) registerReaders() {
 
 	d.sourceReaders["aws+smp"] = readAWSSMP
 	d.sourceReaders["aws+sm"] = readAWSSecretsManager
-	d.sourceReaders["consul"] = readConsul
-	d.sourceReaders["consul+http"] = readConsul
-	d.sourceReaders["consul+https"] = readConsul
 	d.sourceReaders["env"] = readEnv
 	d.sourceReaders["file"] = readFile
 	d.sourceReaders["http"] = readHTTP
 	d.sourceReaders["https"] = readHTTP
 	d.sourceReaders["merge"] = d.readMerge
 	d.sourceReaders["stdin"] = readStdin
-	d.sourceReaders["vault"] = readVault
-	d.sourceReaders["vault+http"] = readVault
-	d.sourceReaders["vault+https"] = readVault
 	d.sourceReaders["s3"] = readBlob
 	d.sourceReaders["gs"] = readBlob
 	d.sourceReaders["git"] = readGit
@@ -145,8 +137,6 @@ type Source struct {
 	Header            http.Header             // used for http[s]: URLs, nil otherwise
 	fs                afero.Fs                // used for file: URLs, nil otherwise
 	hc                *http.Client            // used for http[s]: URLs, nil otherwise
-	vc                *vault.Vault            // used for vault: URLs, nil otherwise
-	kv                *libkv.LibKV            // used for consul:, etcd:, zookeeper: URLs, nil otherwise
 	asmpg             awssmpGetter            // used for aws+smp:, nil otherwise
 	awsSecretsManager awsSecretsManagerGetter // used for aws+sm, nil otherwise
 	mediaType         string
@@ -155,18 +145,10 @@ type Source struct {
 func (s *Source) inherit(parent *Source) {
 	s.fs = parent.fs
 	s.hc = parent.hc
-	s.vc = parent.vc
-	s.kv = parent.kv
 	s.asmpg = parent.asmpg
 }
 
 func (s *Source) cleanup() {
-	if s.vc != nil {
-		s.vc.Logout()
-	}
-	if s.kv != nil {
-		s.kv.Logout()
-	}
 }
 
 // mimeType returns the MIME type to use as a hint for parsing the datasource.

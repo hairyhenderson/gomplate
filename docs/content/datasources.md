@@ -58,7 +58,6 @@ Gomplate supports a number of datasources, each specified with a particular URL 
 | [AWS Systems Manager Parameter Store](#using-aws-smp-datasources) | `aws+smp` | [AWS Systems Manager Parameter Store][AWS SMP] is a hierarchically-organized key/value store which allows storage of text, lists, or encrypted secrets for retrieval by AWS resources |
 | [AWS Secrets Manager](#using-aws-sm-datasource) | `aws+sm` | [AWS Secrets Manager][] helps you protect secrets needed to access your applications, services, and IT resources. |
 | [Amazon S3](#using-s3-datasources) | `s3` | [Amazon S3][] is a popular object storage service. |
-| [Consul](#using-consul-datasources) | `consul`, `consul+http`, `consul+https` | [HashiCorp Consul][] provides (among many other features) a key/value store |
 | [Environment](#using-env-datasources) | `env` | Environment variables can be used as datasources - useful for testing |
 | [File](#using-file-datasources) | `file` | Files can be read in any of the [supported formats](#mime-types), including by piping through standard input (`Stdin`). [Directories](#directory-datasources) are also supported. |
 | [Git](#using-git-datasources) | `git`, `git+file`, `git+http`, `git+https`, `git+ssh` | Files can be read from a local or remote git repository, at specific branches or tags. [Directory semantics](#directory-datasources) are also supported. |
@@ -66,37 +65,28 @@ Gomplate supports a number of datasources, each specified with a particular URL 
 | [HTTP](#using-http-datasources) | `http`, `https` | Data can be sourced from HTTP/HTTPS sites in many different formats. Arbitrary HTTP headers can be set with the [`--datasource-header`/`-H`][] flag |
 | [Merged Datasources](#using-merge-datasources) | `merge` | Merge two or more datasources together to produce the final value - useful for resolving defaults. Uses [`coll.Merge`][] for merging. |
 | [Stdin](#using-stdin-datasources) | `stdin` | A special case of the `file` datasource; allows piping through standard input (`Stdin`) |
-| [Vault](#using-vault-datasources) | `vault`, `vault+http`, `vault+https` | [HashiCorp Vault][] is an industry-leading open-source secret management tool. [List support](#directory-datasources) is also available. |
 
 ## Directory Datasources
 
 When the _path_ component of the URL ends with a `/` character, the datasource is read with _directory_ semantics. Not all datasource types support this, and for those that don't support the notion of a directory, the behaviour is currently undefined. See each documentation section for details.
- 
+
 Currently the following datasources support directory semantics:
 
 - [File](#using-file-datasources)
-- [Vault](#using-vault-datasources) - translates to Vault's [LIST](https://www.vaultproject.io/api/index.html#reading-writing-and-listing-secrets) method
-- [Consul](#using-consul-datasources)
 When accessing a directory datasource, an array of key names is returned, and can be iterated through to access each individual value contained within.
 - [AWS S3](#using-s3-datasources)
 - [Google Cloud Storage](#using-google-cloud-storage-gs-datasources)
-- [Git](#using-git-datasources) 
+- [Git](#using-git-datasources)
 - [AWS Systems Manager Parameter Store](#using-aws-smp-datasources)
 
-For example, a group of configuration key/value pairs (named `one`, `two`, and `three`, with values `v1`, `v2`, and `v3` respectively) could be rendered like this: 
+For example, a group of configuration key/value pairs (named `one`, `two`, and `three`, with values `v1`, `v2`, and `v3` respectively) could be rendered like this:
 
 _template.tmpl:_
+
 ```
 {{ range (datasource "config") -}}
 {{ . }} = {{ (datasource "config" .).value }}
 {{- end }}
-```
-
-```console
-$ gomplate -d config=vault:///secret/configs/ -f template.tmpl
-one = v1
-two = v2
-three = v3
 ```
 
 ## MIME Types
@@ -147,7 +137,6 @@ QUX='single quotes ignore $variables and newlines'
 ```
 
 The [`github.com/joho/godotenv`](https://github.com/joho/godotenv) package is used for parsing - see the full details there.
-
 
 ## Using `aws+smp` datasources
 
@@ -308,59 +297,6 @@ $ gomplate -d bucket=s3://my-bucket/?region=eu-west-1&endpoint=my-test-site& -i 
 Hello world
 ```
 
-## Using `consul` datasources
-
-Gomplate supports retrieving data from [HashiCorp Consul][]'s [KV Store](https://www.consul.io/api/kv.html).
-
-### URL Considerations
-
-For `consul`, the _scheme_, _authority_, and _path_ components are used.
-
-- the _scheme_ URL component can be one of three values: `consul`, `consul+http`, and `consul+https`. The first two are equivalent, while the third instructs the client to connect to Consul over an encrypted HTTPS connection. Encryption can alternately be enabled by use of the `$CONSUL_HTTP_SSL` environment variable.
-- the _authority_ is used to specify the server to connect to (e.g. `consul://localhost:8500`), but if not specified, the `$CONSUL_HTTP_ADDR` environment variable will be used.
-- the _path_ can be provided to select a specific key, or a key prefix
-
-### Consul Environment Variables
-
-The following optional environment variables are understood by the Consul datasource:
-
-| name | usage |
-|------|-------|
-| `CONSUL_HTTP_ADDR` | Hostname and optional port for connecting to Consul. Defaults to `http://localhost:8500` |
-| `CONSUL_TIMEOUT` | Timeout (in seconds) when communicating to Consul. Defaults to 10 seconds. |
-| `CONSUL_HTTP_TOKEN` | The Consul token to use when connecting to the server. |
-| `CONSUL_HTTP_AUTH` | Should be specified as `<username>:<password>`. Used to authenticate to the server. |
-| `CONSUL_HTTP_SSL` | Force HTTPS if set to `true` value. Disables if set to `false`. Any value acceptable to [`strconv.ParseBool`](https://golang.org/pkg/strconv/#ParseBool) can be provided. |
-| `CONSUL_TLS_SERVER_NAME` | The server name to use as the SNI host when connecting to Consul via TLS. |
-| `CONSUL_CACERT` | Path to CA file for verifying Consul server using TLS. |
-| `CONSUL_CAPATH` | Path to directory of CA files for verifying Consul server using TLS. |
-| `CONSUL_CLIENT_CERT` | Client certificate file for certificate authentication. If this is set, `$CONSUL_CLIENT_KEY` must also be set. |
-| `CONSUL_CLIENT_KEY` | Client key file for certificate authentication. If this is set, `$CONSUL_CLIENT_CERT` must also be set. |
-| `CONSUL_HTTP_SSL_VERIFY` | Set to `false` to disable Consul TLS certificate checking. Any value acceptable to [`strconv.ParseBool`](https://golang.org/pkg/strconv/#ParseBool) can be provided. <br/> _Recommended only for testing and development scenarios!_ |
-| `CONSUL_VAULT_ROLE` | Set to the name of the role to use for authenticating to Consul with [Vault's Consul secret backend](https://www.vaultproject.io/docs/secrets/consul/index.html). |
-| `CONSUL_VAULT_MOUNT` | Used to override the mount-point when using Vault's Consul secret back-end for authentication. Defaults to `consul`. |
-
-### Authentication
-
-Instead of using a non-authenticated Consul connection, you can authenticate with these methods:
-
-- provide an [ACL Token](https://www.consul.io/docs/guides/acl.html#acl-tokens) in the `CONSUL_HTTP_TOKEN` environment variable
-- use HTTP Basic Auth by setting the `CONSUL_HTTP_AUTH` environment variable
-- dynamically generate an ACL token with Vault. This requires Vault to be configured to use the [Consul secret backend](https://www.vaultproject.io/docs/secrets/consul/index.html) and is enabled by passing the name of the role to use in the `CONSUL_VAULT_ROLE` environment variable.
-
-### Examples
-
-```console
-$ gomplate -d consul=consul:// -i '{{(datasource "consul" "foo")}}'
-value for foo key
-
-$ gomplate -d consul=consul+https://my-consul-server.com:8533/foo -i '{{(datasource "consul" "bar")}}'
-value for foo/bar key
-
-$ gomplate -d consul=consul:///foo -i '{{(datasource "consul" "bar/baz")}}'
-value for foo/bar/baz key
-```
-
 ## Using `env` datasources
 
 The `env` datasource type provides access to environment variables. This can be useful for rendering templates that would normally use a different sort of datasource, in test and development scenarios.
@@ -404,6 +340,7 @@ The _scheme_ and _path_ are used, and the _query_ component can be used to [over
 ### Examples
 
 _`person.json`:_
+
 ```json
 {
   "name": "Dave"
@@ -411,12 +348,14 @@ _`person.json`:_
 ```
 
 _implicit alias:_
+
 ```console
 $ gomplate -d person.json -i 'Hello {{ (datasource "person").name }}'
 Hello Dave
 ```
 
 _explicit alias:_
+
 ```console
 $ gomplate -d person=./person.json -i 'Hello {{ (datasource "person").name }}'
 Hello Dave
@@ -484,30 +423,35 @@ If neither `GIT_SSH_KEY` nor `GIT_SSH_KEY_FILE` are set, gomplate will attempt t
 ### Examples
 
 Accessing a file in a publicly-readable GitHub repository:
+
 ```console
 $ gomplate -c doc=git+https://github.com/hairyhenderson/gomplate//docs-src/content/functions/env.yml -i 'namespace is: {{ .doc.ns }}'
 namespace is: env
 ```
 
 Accessing a file from a local repo (using arguments):
+
 ```console
 $ gomplate -d which=git+file:///repos/go-which -i 'GOPATH on Windows is {{ (datasource "which" "//appveyor.yml").environment.GOPATH }}'
 GOPATH on Windows is c:\gopath
 ```
 
 Accessing a directory at a specific tag:
+
 ```console
 $ gomplate -d 'cmd=git+https://github.com/hairyhenderson/go-which//cmd/which#refs/tags/v0.1.0' -i '{{ ds "cmd" }}'
 [main.go]
 ```
 
 Authenticating with the SSH Agent
+
 ```console
 $ gomplate -d 'which=git+ssh://git@github.com/hairyhenderson/go-which' -i '{{ len (ds "which") }}'
 18
 ```
 
 Using arguments to specify different repos
+
 ```console
 $ gomplate -d 'hairyhenderson=git+https://github.com/hairyhenderson' -i '{{ (ds "hairyhenderson" "/gomplate//docs-src/content/functions/env.yml").ns }}'
 env
@@ -523,8 +467,8 @@ The _scheme_, _authority_, _path_, and _query_ URL components are used by this d
 - the _authority_ component is used to specify the bucket name
 - the _path_ component is used to specify the path to the object. [Directory](#directory-datasources) semantics are available when the path ends with a `/` character.
 - the _query_ component can be used to provide parameters to configure the connection:
-  - `access_id`: (optional) Usually unnecessary. Sets the GoogleAccessID (see https://godoc.org/cloud.google.com/go/storage#SignedURLOptions)
-  - `private_key_path`: (optional) Usually unnecessary. Sets the path to the Google service account private key (see https://godoc.org/cloud.google.com/go/storage#SignedURLOptions)
+  - `access_id`: (optional) Usually unnecessary. Sets the GoogleAccessID (see <https://godoc.org/cloud.google.com/go/storage#SignedURLOptions>)
+  - `private_key_path`: (optional) Usually unnecessary. Sets the path to the Google service account private key (see <https://godoc.org/cloud.google.com/go/storage#SignedURLOptions>)
   - `type`: can be used to [override the MIME type](#overriding-mime-types)
 
 ### Authentication
@@ -595,7 +539,7 @@ The [`coll.Merge`][] function is used to perform the merge operation.
 Consider this example:
 
 ```console
-$ gomplate -d "foo=merge:foo|bar|baz" -d foo=... -d bar=... -d baz=... ...
+gomplate -d "foo=merge:foo|bar|baz" -d foo=... -d bar=... -d baz=... ...
 ```
 
 This will read the `foo`, `bar`, and `baz` datasources (which must be otherwise
@@ -610,7 +554,7 @@ individual datasources can still be referenced.
 Here's an example using URLs instead of aliases:
 
 ```console
-$ gomplate -d "foo=merge:./config/main.yaml|http://example.com/defaults.json" ...
+gomplate -d "foo=merge:./config/main.yaml|http://example.com/defaults.json" ...
 ```
 
 This has the advantage of being slightly less verbose. Note that relative URLs
@@ -639,99 +583,6 @@ $ echo '["one", "two"]' | gomplate -i '{{index (ds "data") 1 }}' -d data=stdin:?
 two
 ```
 
-## Using `vault` datasources
-
-Gomplate can retrieve secrets and other data from [HashiCorp Vault][].
-
-### URL Considerations
-
-The _scheme_, _authority_, _path_, and _query_ URL components are used by this datasource.
-
-- the _scheme_ must be one of `vault`, `vault+https` (same as `vault`), or `vault+http`. The latter can be used to access [dev mode](https://www.vaultproject.io/docs/concepts/dev-server.html) Vault servers, for test purposes. Otherwise, all connections to Vault are encrypted with TLS.
-- the _authority_ component can optionally be used to specify the Vault server's hostname and port. This overrides the value of `$VAULT_ADDR`.
-- the _path_ component can optionally be used to specify a full or partial path to a secret. The second argument to the [`datasource`][] function is appended to provide the full secret path. [Directory](#directory-datasources) semantics are available when the path ends with a `/` character.
-- the _query_ component is used to provide parameters to dynamic secret back-ends that require these. The values are included in the JSON body of the `PUT` request.
-
-These are all valid `vault` URLs:
-
-- `vault:`, `vault://`, `vault:///` - these all require the [`datasource`][] function to provide the secret path
-- `vault://vault.example.com:8200` - connect to `vault.example.com` over HTTPS at port `8200`. The path will be provided by [`datasource`][]
-- `vault:///ssh/creds/foo?ip=10.1.2.3&username=user` - create a dynamic secret with the parameters `ip` and `username` provided in the body
-- `vault:///secret/configs/` - returns a list of key names with the prefix of `secret/configs/`
-
-### Vault Authentication
-
-This table describes the currently-supported authentication mechanisms and how to use them, in order of precedence:
-
-| auth back-end | configuration |
-|-------------:|---------------|
-| [`approle`](https://www.vaultproject.io/docs/auth/approle.html) | Environment variables `$VAULT_ROLE_ID` and `$VAULT_SECRET_ID` must be set to the appropriate values.<br/> If the back-end is mounted to a different location, set `$VAULT_AUTH_APPROLE_MOUNT`. |
-| [`app-id`](https://www.vaultproject.io/docs/auth/app-id.html) | Environment variables `$VAULT_APP_ID` and `$VAULT_USER_ID` must be set to the appropriate values.<br/> If the back-end is mounted to a different location, set `$VAULT_AUTH_APP_ID_MOUNT`. |
-| [`github`](https://www.vaultproject.io/docs/auth/github.html) | Environment variable `$VAULT_AUTH_GITHUB_TOKEN` must be set to an appropriate value.<br/> If the back-end is mounted to a different location, set `$VAULT_AUTH_GITHUB_MOUNT`. |
-| [`userpass`](https://www.vaultproject.io/docs/auth/userpass.html) | Environment variables `$VAULT_AUTH_USERNAME` and `$VAULT_AUTH_PASSWORD` must be set to the appropriate values.<br/> If the back-end is mounted to a different location, set `$VAULT_AUTH_USERPASS_MOUNT`. |
-| [`token`](https://www.vaultproject.io/docs/auth/token.html) | Determined from either the `$VAULT_TOKEN` environment variable, or read from the file `~/.vault-token` |
-| [`aws`](https://www.vaultproject.io/docs/auth/aws.html) | The env var  `$VAULT_AUTH_AWS_ROLE` defines the [role](https://www.vaultproject.io/api/auth/aws/index.html#role-4) to log in with - defaults to the AMI ID of the EC2 instance. Usually a [Client Nonce](https://www.vaultproject.io/docs/auth/aws.html#client-nonce) should be used as well. Set `$VAULT_AUTH_AWS_NONCE` to the nonce value. The nonce can be generated and stored by setting `$VAULT_AUTH_AWS_NONCE_OUTPUT` to a path on the local filesystem.<br/>If the back-end is mounted to a different location, set `$VAULT_AUTH_AWS_MOUNT`.|
-
-_**Note:**_ The secret values listed in the above table can either be set in environment variables or provided in files. This can increase security when using [Docker Swarm Secrets](https://docs.docker.com/engine/swarm/secrets/), for example. To use files, specify the filename by appending `_FILE` to the environment variable, (i.e. `VAULT_USER_ID_FILE`). If the non-file variable is set, this will override any `_FILE` variable and the secret file will be ignored.
-
-### Vault Permissions
-
-The correct capabilities must be allowed for the [authenticated](#vault-authentication) credentials. See the [Vault documentation](https://www.vaultproject.io/docs/concepts/policies.html#capabilities) for full details.
-
-- regular secret read operations require the `read` capability
-- dynamic secret generation requires the `create` and `update` capabilities
-- list support requires the `list` capability
-
-### Vault Environment variables
-
-In addition to the variables documented [above](#vault-authentication), a number of environment variables are interpreted by the Vault client, and are documented in the [official Vault documentation](https://www.vaultproject.io/docs/commands/index.html#environment-variables).
-
-### Examples
-
-```console
-$ gomplate -d vault=vault:///secret/sneakers -i 'My voice is my passport. {{(datasource "vault").value}}' 
-My voice is my passport. Verify me.
-```
-
-You can also specify the secret path in the template by omitting the path portion of the URL:
-
-```console
-$ gomplate -d vault=vault:/// -i 'My voice is my passport. {{(datasource "vault" "secret/sneakers").value}}'
-My voice is my passport. Verify me.
-```
-
-And the two can be mixed to scope secrets to a specific namespace:
-
-```console
-$ gomplate -d vault=vault:///secret/production -i 'db_password={{(datasource "vault" "db/pass").value}}' 
-db_password=prodsecret
-```
-
-If you are unable to set the `VAULT_ADDR` environment variable, or need to
-specify multiple Vault datasources connecting to different servers, you can set
-the address as part of the URL:
-
-```console
-$ gomplate -d v=vault://vaultserver.com/secret/foo -i '{{ (ds "v").value }}'
-bar
-```
-
-To use dynamic secrets:
-
-```console
-$ gomplate -d vault=vault:/// -i 'otp={{(ds "vault" "ssh/creds/test?ip=10.1.2.3&username=user").key}}'
-otp=604a4bd5-7afd-30a2-d2d8-80c4aebc6183
-```
-
-With the AWS auth back-end:
-
-```console
-$ export VAULT_AUTH_AWS_NONCE_FILE=/tmp/vault-aws-nonce
-$ export VAULT_AUTH_AWS_NONCE_OUTPUT=$VAULT_AUTH_AWS_NONCE_FILE
-$ gomplate -d vault=vault:///secret/foo -i '{{ (ds "vault").value }}'
-...
-```
-
 The file `/tmp/vault-aws-nonce` will be created if it didn't already exist, and further executions of `gomplate` can re-authenticate securely.
 
 [`--datasource`/`-d`]: ../usage/#datasource-d
@@ -751,14 +602,11 @@ The file `/tmp/vault-aws-nonce` will be created if it didn't already exist, and 
 
 [AWS SMP]: https://aws.amazon.com/systems-manager/features#Parameter_Store
 [AWS Secrets Manager]: https://aws.amazon.com/secrets-manager
-[HashiCorp Consul]: https://consul.io
-[HashiCorp Vault]: https://vaultproject.io
 [JSON]: https://json.org
 [TOML]: https://github.com/toml-lang/toml
 [YAML]: http://yaml.org
 [HTTP Content-Type]: https://tools.ietf.org/html/rfc7231#section-3.1.1.1
 [URL]: https://tools.ietf.org/html/rfc3986
-[AWS SDK for Go]: https://docs.aws.amazon.com/sdk-for-go/api/
 [Amazon S3]: https://aws.amazon.com/s3/
 [Google Cloud Storage]: https://cloud.google.com/storage/
 
