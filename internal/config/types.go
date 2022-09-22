@@ -3,7 +3,6 @@ package config
 import (
 	"fmt"
 	"net/http"
-	"strings"
 
 	"github.com/hairyhenderson/yaml"
 )
@@ -46,7 +45,7 @@ func (t *Templates) unmarshalYAMLArray(value *yaml.Node) error {
 
 	ts := Templates{}
 	for _, s := range a {
-		alias, pth, _ := strings.Cut(s, "=")
+		alias, pth, _ := Cut(s, "=")
 		if pth == "" {
 			// when alias is omitted, the path and alias are identical
 			pth = alias
@@ -84,7 +83,7 @@ func (t Templates) MarshalYAML() (interface{}, error) {
 }
 
 func parseTemplateArg(value string) (alias string, ds DataSource, err error) {
-	alias, u, _ := strings.Cut(value, "=")
+	alias, u, _ := Cut(value, "=")
 	if u == "" {
 		u = alias
 	}

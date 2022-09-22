@@ -362,11 +362,18 @@ func (c *Config) ParsePluginFlags(plugins []string) error {
 	return nil
 }
 
+func Cut(s, sep string) (before, after string, found bool) {
+	if i := strings.Index(s, sep); i >= 0 {
+		return s[:i], s[i+len(sep):], true
+	}
+	return s, "", false
+}
+
 func parseDatasourceArg(value string) (alias string, ds DataSource, err error) {
-	alias, u, _ := strings.Cut(value, "=")
+	alias, u, _ := Cut(value, "=")
 	if u == "" {
 		u = alias
-		alias, _, _ = strings.Cut(value, ".")
+		alias, _, _ = Cut(value, ".")
 		if path.Base(u) != u {
 			err = fmt.Errorf("invalid argument (%s): must provide an alias with files not in working directory", value)
 			return alias, ds, err
