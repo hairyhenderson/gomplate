@@ -61,9 +61,9 @@ func TestColl_Sort(t *testing.T) {
 `, "foo\nbaz\nbar\n")
 
 	inOutTest(t, `
-{{- coll.Sort (slice "b" "a" "c" "aa") }}
-{{ coll.Sort (slice "b" 14 "c" "aa") }}
-{{ coll.Sort (slice 3.14 3.0 4.0) }}
+{{- coll.Sort (coll.Slice "b" "a" "c" "aa") }}
+{{ coll.Sort (coll.Slice "b" 14 "c" "aa") }}
+{{ coll.Sort (coll.Slice 3.14 3.0 4.0) }}
 {{ coll.Sort "Scheme" (coll.Slice (conv.URL "zzz:///") (conv.URL "https:///") (conv.URL "http:///")) }}
 `, `[a aa b c]
 [b 14 c aa]

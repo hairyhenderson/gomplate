@@ -105,17 +105,6 @@ func TestYAMLTemplates(t *testing.T) {
 	assert.Equal(t, "bar", testTemplate(t, g, `{{ index (yamlArray "[\"foo\",\"bar\"]") 1 }}`))
 }
 
-func TestSliceTemplates(t *testing.T) {
-	g := NewRenderer(Options{
-		Funcs: template.FuncMap{
-			"slice": conv.Slice,
-		},
-	})
-	assert.Equal(t, "foo", testTemplate(t, g, `{{index (slice "foo") 0}}`))
-	assert.Equal(t, `[foo bar 42]`, testTemplate(t, g, `{{slice "foo" "bar" 42}}`))
-	assert.Equal(t, `helloworld`, testTemplate(t, g, `{{range slice "hello" "world"}}{{.}}{{end}}`))
-}
-
 func TestHasTemplate(t *testing.T) {
 	g := NewRenderer(Options{
 		Funcs: template.FuncMap{

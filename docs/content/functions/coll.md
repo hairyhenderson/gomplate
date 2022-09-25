@@ -60,7 +60,8 @@ Hello world!
 Hello everybody!
 ```
 
-## `coll.Slice`
+## `coll.Slice` _(deprecated)_
+**Deprecation Notice:** The `slice` alias is deprecated, use the full name `coll.Slice` instead.
 
 **Alias:** `slice`
 
@@ -81,10 +82,48 @@ coll.Slice in...
 ### Examples
 
 ```console
-$ gomplate -i '{{ range slice "Bart" "Lisa" "Maggie" }}Hello, {{ . }}{{ end }}'
+$ gomplate -i '{{ range coll.Slice "Bart" "Lisa" "Maggie" }}Hello, {{ . }}{{ end }}'
 Hello, Bart
 Hello, Lisa
 Hello, Maggie
+```
+
+## `coll.GoSlice`
+
+This exposes the `slice` function from Go's [`text/template`](https://golang.org/pkg/text/template/#hdr-Functions)
+package. Note that using `slice` will use the `coll.Slice` function instead,
+which may not be desired.
+For some background on this, see [this issue](https://github.com/hairyhenderson/gomplate/issues/1461).
+
+Here is the upstream documentation:
+
+```
+slice returns the result of slicing its first argument by the
+remaining arguments. Thus "slice x 1 2" is, in Go syntax, x[1:2],
+while "slice x" is x[:], "slice x 1" is x[1:], and "slice x 1 2 3"
+is x[1:2:3]. The first argument must be a string, slice, or array.
+```
+
+See the [Go language spec](https://go.dev/ref/spec#Slice_expressions) for
+more details.
+
+### Usage
+
+```go
+coll.GoSlice item [indexes...]
+```
+
+### Arguments
+
+| name | description |
+|------|-------------|
+| `item` | _(required)_ the string, slice, or array to slice |
+| `indexes...` | _(optional)_ the indexes to slice the item by (0 to 3 arguments) |
+
+### Examples
+
+```console
+$ gomplate -i '{{ $l := coll.Slice "foo" "bar" "baz" }}{{ if has $l "bar" }}a{{else}}no{{end}} bar'
 ```
 
 ## `coll.Has`
@@ -109,7 +148,7 @@ coll.Has in item
 ### Examples
 
 ```console
-$ gomplate -i '{{ $l := slice "foo" "bar" "baz" }}there is {{ if has $l "bar" }}a{{else}}no{{end}} bar'
+$ gomplate -i '{{ $l := coll.Slice "foo" "bar" "baz" }}there is {{ if has $l "bar" }}a{{else}}no{{end}} bar'
 there is a bar
 ```
 ```console
@@ -259,7 +298,7 @@ list... | coll.Append value
 ### Examples
 
 ```console
-$ gomplate -i '{{ slice 1 1 2 3 | append 5 }}'
+$ gomplate -i '{{ coll.Slice 1 1 2 3 | append 5 }}'
 [1 1 2 3 5]
 ```
 
@@ -292,7 +331,7 @@ list... | coll.Prepend value
 ### Examples
 
 ```console
-$ gomplate -i '{{ slice 4 3 2 1 | prepend 5 }}'
+$ gomplate -i '{{ coll.Slice 4 3 2 1 | prepend 5 }}'
 [5 4 3 2 1]
 ```
 
@@ -322,7 +361,7 @@ list | coll.Uniq
 ### Examples
 
 ```console
-$ gomplate -i '{{ slice 1 2 3 2 3 4 1 5 | uniq }}'
+$ gomplate -i '{{ coll.Slice 1 2 3 2 3 4 1 5 | uniq }}'
 [1 2 3 4 5]
 ```
 
@@ -388,7 +427,7 @@ list | coll.Reverse
 ### Examples
 
 ```console
-$ gomplate -i '{{ slice 4 3 2 1 | reverse }}'
+$ gomplate -i '{{ coll.Slice 4 3 2 1 | reverse }}'
 [1 2 3 4]
 ```
 
@@ -423,11 +462,11 @@ list | coll.Sort [key]
 ### Examples
 
 ```console
-$ gomplate -i '{{ slice "foo" "bar" "baz" | coll.Sort }}'
+$ gomplate -i '{{ coll.Slice "foo" "bar" "baz" | coll.Sort }}'
 [bar baz foo]
 ```
 ```console
-$ gomplate -i '{{ sort (slice 3 4 1 2 5) }}'
+$ gomplate -i '{{ sort (coll.Slice 3 4 1 2 5) }}'
 [1 2 3 4 5]
 ```
 ```console

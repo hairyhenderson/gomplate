@@ -98,7 +98,7 @@ math.Ceil num
 ### Examples
 
 ```console
-$ gomplate -i '{{ range (slice 5.1 42 "3.14" "0xFF" "NaN" "Inf" "-0") }}ceil {{ printf "%#v" . }} = {{ math.Ceil . }}{{"\n"}}{{ end }}'
+$ gomplate -i '{{ range (coll.Slice 5.1 42 "3.14" "0xFF" "NaN" "Inf" "-0") }}ceil {{ printf "%#v" . }} = {{ math.Ceil . }}{{"\n"}}{{ end }}'
 ceil 5.1 = 6
 ceil 42 = 42
 ceil "3.14" = 4
@@ -158,7 +158,7 @@ math.Floor num
 ### Examples
 
 ```console
-$ gomplate -i '{{ range (slice 5.1 42 "3.14" "0xFF" "NaN" "Inf" "-0") }}floor {{ printf "%#v" . }} = {{ math.Floor . }}{{"\n"}}{{ end }}'
+$ gomplate -i '{{ range (coll.Slice 5.1 42 "3.14" "0xFF" "NaN" "Inf" "-0") }}floor {{ printf "%#v" . }} = {{ math.Floor . }}{{"\n"}}{{ end }}'
 floor 5.1 = 4
 floor 42 = 42
 floor "3.14" = 3
@@ -189,7 +189,7 @@ math.IsFloat num
 ### Examples
 
 ```console
-$ gomplate -i '{{ range (slice 1.0 "-1.0" 5.1 42 "3.14" "foo" "0xFF" "NaN" "Inf" "-0") }}{{ if (math.IsFloat .) }}{{.}} is a float{{"\n"}}{{ end }}{{end}}'
+$ gomplate -i '{{ range (coll.Slice 1.0 "-1.0" 5.1 42 "3.14" "foo" "0xFF" "NaN" "Inf" "-0") }}{{ if (math.IsFloat .) }}{{.}} is a float{{"\n"}}{{ end }}{{end}}'
 1 is a float
 -1.0 is a float
 5.1 is a float
@@ -217,7 +217,7 @@ math.IsInt num
 ### Examples
 
 ```console
-$ gomplate -i '{{ range (slice 1.0 "-1.0" 5.1 42 "3.14" "foo" "0xFF" "NaN" "Inf" "-0") }}{{ if (math.IsInt .) }}{{.}} is an integer{{"\n"}}{{ end }}{{end}}'
+$ gomplate -i '{{ range (coll.Slice 1.0 "-1.0" 5.1 42 "3.14" "foo" "0xFF" "NaN" "Inf" "-0") }}{{ if (math.IsInt .) }}{{.}} is an integer{{"\n"}}{{ end }}{{end}}'
 42 is an integer
 0xFF is an integer
 -0 is an integer
@@ -399,7 +399,7 @@ math.Round num
 ### Examples
 
 ```console
-$ gomplate -i '{{ range (slice -6.5 5.1 42.9 "3.5" 6.5) }}round {{ printf "%#v" . }} = {{ math.Round . }}{{"\n"}}{{ end }}'
+$ gomplate -i '{{ range (coll.Slice -6.5 5.1 42.9 "3.5" 6.5) }}round {{ printf "%#v" . }} = {{ math.Round . }}{{"\n"}}{{ end }}'
 round -6.5 = -7
 round 5.1 = 5
 round 42.9 = 43
