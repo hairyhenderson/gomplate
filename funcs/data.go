@@ -8,13 +8,15 @@ import (
 )
 
 // DataNS -
+//
 // Deprecated: don't use
 func DataNS() *DataFuncs {
 	return &DataFuncs{}
 }
 
 // AddDataFuncs -
-// Deprecated: use CreateDataFuncs instead
+//
+// Deprecated: use [CreateDataFuncs] instead
 func AddDataFuncs(f map[string]interface{}, d *data.Data) {
 	for k, v := range CreateDataFuncs(context.Background(), d) {
 		f[k] = v
@@ -22,7 +24,9 @@ func AddDataFuncs(f map[string]interface{}, d *data.Data) {
 }
 
 // CreateDataFuncs -
-func CreateDataFuncs(ctx context.Context, d *data.Data) map[string]interface{} {
+func CreateDataFuncs(ctx context.Context,
+	//nolint:staticcheck
+	d *data.Data) map[string]interface{} {
 	f := map[string]interface{}{}
 	f["datasource"] = d.Datasource
 	f["ds"] = d.Datasource

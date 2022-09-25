@@ -10,13 +10,15 @@ import (
 )
 
 // ReNS -
+//
 // Deprecated: don't use
 func ReNS() *ReFuncs {
 	return &ReFuncs{}
 }
 
 // AddReFuncs -
-// Deprecated: use CreateReFuncs instead
+//
+// Deprecated: use [CreateReFuncs] instead
 func AddReFuncs(f map[string]interface{}) {
 	for k, v := range CreateReFuncs(context.Background()) {
 		f[k] = v

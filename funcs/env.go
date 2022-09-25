@@ -8,13 +8,15 @@ import (
 )
 
 // EnvNS - the Env namespace
+//
 // Deprecated: don't use
 func EnvNS() *EnvFuncs {
 	return &EnvFuncs{}
 }
 
 // AddEnvFuncs -
-// Deprecated: use CreateEnvFuncs instead
+//
+// Deprecated: use [CreateEnvFuncs] instead
 func AddEnvFuncs(f map[string]interface{}) {
 	for k, v := range CreateEnvFuncs(context.Background()) {
 		f[k] = v

@@ -144,7 +144,7 @@ func consulURL(u *url.URL) (c *url.URL, err error) {
 	case "consul+https", https:
 		c.Scheme = https
 	case "consul":
-		if conv.Bool(env.Getenv(consulapi.HTTPSSLEnvName)) {
+		if conv.ToBool(env.Getenv(consulapi.HTTPSSLEnvName)) {
 			c.Scheme = https
 		} else {
 			c.Scheme = http
@@ -187,7 +187,7 @@ func setupTLS() *consulapi.TLSConfig {
 	}
 
 	if v := env.Getenv(consulapi.HTTPSSLVerifyEnvName); v != "" {
-		verify := conv.Bool(v)
+		verify := conv.ToBool(v)
 		tlsConfig.InsecureSkipVerify = !verify
 	}
 	return &tlsConfig

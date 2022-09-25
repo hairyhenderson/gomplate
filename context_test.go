@@ -34,6 +34,7 @@ func TestCreateContext(t *testing.T) {
 	barURL := "env:///bar?type=application/yaml"
 	uf, _ := url.Parse(fooURL)
 	ub, _ := url.Parse(barURL)
+	//nolint:staticcheck
 	d := &data.Data{
 		Sources: map[string]*data.Source{
 			"foo": {URL: uf},

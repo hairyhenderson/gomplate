@@ -14,13 +14,15 @@ import (
 )
 
 // NetNS - the net namespace
+//
 // Deprecated: don't use
 func NetNS() *NetFuncs {
 	return &NetFuncs{}
 }
 
 // AddNetFuncs -
-// Deprecated: use CreateNetFuncs instead
+//
+// Deprecated: use [CreateNetFuncs] instead
 func AddNetFuncs(f map[string]interface{}) {
 	for k, v := range CreateNetFuncs(context.Background()) {
 		f[k] = v

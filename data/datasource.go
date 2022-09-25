@@ -76,6 +76,7 @@ func (d *Data) lookupReader(scheme string) (func(context.Context, *Source, ...st
 }
 
 // Data -
+//
 // Deprecated: will be replaced in future
 type Data struct {
 	Ctx context.Context
@@ -98,6 +99,7 @@ func (d *Data) Cleanup() {
 }
 
 // NewData - constructor for Data
+//
 // Deprecated: will be replaced in future
 func NewData(datasourceArgs, headerArgs []string) (*Data, error) {
 	cfg := &config.Config{}
@@ -138,6 +140,7 @@ func FromConfig(ctx context.Context, cfg *config.Config) *Data {
 }
 
 // Source - a data source
+//
 // Deprecated: will be replaced in future
 type Source struct {
 	Alias             string

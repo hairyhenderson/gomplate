@@ -98,6 +98,7 @@ type Datasource struct {
 //
 // Experimental: subject to breaking changes before the next major release
 type Renderer struct {
+	//nolint:staticcheck
 	data        *data.Data
 	nested      config.Templates
 	funcs       template.FuncMap
@@ -117,10 +118,12 @@ func NewRenderer(opts Options) *Renderer {
 	}
 
 	tctxAliases := []string{}
+	//nolint:staticcheck
 	sources := map[string]*data.Source{}
 
 	for alias, ds := range opts.Context {
 		tctxAliases = append(tctxAliases, alias)
+		//nolint:staticcheck
 		sources[alias] = &data.Source{
 			Alias:  alias,
 			URL:    ds.URL,
@@ -128,6 +131,7 @@ func NewRenderer(opts Options) *Renderer {
 		}
 	}
 	for alias, ds := range opts.Datasources {
+		//nolint:staticcheck
 		sources[alias] = &data.Source{
 			Alias:  alias,
 			URL:    ds.URL,
@@ -145,6 +149,7 @@ func NewRenderer(opts Options) *Renderer {
 		}
 	}
 
+	//nolint:staticcheck
 	d := &data.Data{
 		ExtraHeaders: opts.ExtraHeaders,
 		Sources:      sources,

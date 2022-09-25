@@ -9,6 +9,7 @@ import (
 )
 
 // AWSNS - the aws namespace
+//
 // Deprecated: don't use
 //
 //nolint:golint
@@ -17,7 +18,8 @@ func AWSNS() *Funcs {
 }
 
 // AWSFuncs -
-// Deprecated: use CreateAWSFuncs instead
+//
+// Deprecated: use [CreateAWSFuncs] instead
 func AWSFuncs(f map[string]interface{}) {
 	f2 := CreateAWSFuncs(context.Background())
 	for k, v := range f2 {

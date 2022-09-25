@@ -11,13 +11,15 @@ import (
 )
 
 // ConvNS -
+//
 // Deprecated: don't use
 func ConvNS() *ConvFuncs {
 	return &ConvFuncs{}
 }
 
 // AddConvFuncs -
-// Deprecated: use CreateConvFuncs instead
+//
+// Deprecated: use [CreateConvFuncs] instead
 func AddConvFuncs(f map[string]interface{}) {
 	for k, v := range CreateConvFuncs(context.Background()) {
 		f[k] = v
@@ -44,7 +46,8 @@ type ConvFuncs struct {
 }
 
 // Bool -
-// Deprecated: use ToBool instead
+//
+// Deprecated: use [ToBool] instead
 func (f *ConvFuncs) Bool(s interface{}) bool {
 	deprecated.WarnDeprecated(f.ctx, "conv.Bool is deprecated - use conv.ToBool instead")
 	return conv.Bool(conv.ToString(s))
@@ -61,7 +64,8 @@ func (ConvFuncs) ToBools(in ...interface{}) []bool {
 }
 
 // Slice -
-// Deprecated: use [coll.Slice] instead
+//
+// Deprecated: use [CollFuncs.Slice] instead
 func (f *ConvFuncs) Slice(args ...interface{}) []interface{} {
 	deprecated.WarnDeprecated(f.ctx, "conv.Slice is deprecated - use coll.Slice instead")
 	return coll.Slice(args...)
@@ -73,7 +77,8 @@ func (ConvFuncs) Join(in interface{}, sep string) (string, error) {
 }
 
 // Has -
-// Deprecated: use coll.Has instead
+//
+// Deprecated: use [CollFuncs.Has] instead
 func (f *ConvFuncs) Has(in interface{}, key string) bool {
 	deprecated.WarnDeprecated(f.ctx, "conv.Has is deprecated - use coll.Has instead")
 	return coll.Has(in, key)
@@ -153,7 +158,8 @@ func (ConvFuncs) Default(def, in interface{}) interface{} {
 }
 
 // Dict -
-// Deprecated: use coll.Dict instead
+//
+// Deprecated: use [CollFuncs.Dict] instead
 func (f *ConvFuncs) Dict(in ...interface{}) (map[string]interface{}, error) {
 	deprecated.WarnDeprecated(f.ctx, "conv.Dict is deprecated - use coll.Dict instead")
 	return coll.Dict(in...)

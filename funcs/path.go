@@ -8,13 +8,15 @@ import (
 )
 
 // PathNS - the Path namespace
+//
 // Deprecated: don't use
 func PathNS() *PathFuncs {
 	return &PathFuncs{}
 }
 
 // AddPathFuncs -
-// Deprecated: use CreatePathFuncs instead
+//
+// Deprecated: use [CreatePathFuncs] instead
 func AddPathFuncs(f map[string]interface{}) {
 	for k, v := range CreatePathFuncs(context.Background()) {
 		f[k] = v
