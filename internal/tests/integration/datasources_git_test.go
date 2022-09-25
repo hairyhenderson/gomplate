@@ -15,25 +15,29 @@ import (
 
 func setupDatasourcesGitTest(t *testing.T) *fs.Dir {
 	tmpDir := fs.NewDir(t, "gomplate-inttests",
-		fs.WithFiles(map[string]string{
-			"config.json": `{"foo": {"bar": "baz"}}`,
-		}),
+		fs.WithDir("repo",
+			fs.WithFiles(map[string]string{
+				"config.json": `{"foo": {"bar": "baz"}}`,
+				"jsonfile":    `{"foo": {"bar": "baz"}}`,
+			}),
+			fs.WithDir("subdir",
+				fs.WithFiles(map[string]string{
+					"foo.txt":  "hello world",
+					"bar.json": `{"qux": "quux"}`,
+				}),
+			),
+		),
 	)
 	t.Cleanup(tmpDir.Remove)
 
 	repoPath := tmpDir.Join("repo")
 
-	result := icmd.RunCommand("git", "init", repoPath)
-	result.Assert(t, icmd.Expected{ExitCode: 0, Out: "Initialized empty Git repository"})
-
-	result = icmd.RunCommand("mv", tmpDir.Join("config.json"), repoPath)
-	result.Assert(t, icmd.Expected{ExitCode: 0})
-
-	result = icmd.RunCmd(icmd.Command("git", "add", "config.json"), icmd.Dir(repoPath))
-	result.Assert(t, icmd.Expected{ExitCode: 0})
-
-	result = icmd.RunCmd(icmd.Command("git", "commit", "-m", "Initial commit"), icmd.Dir(repoPath))
-	result.Assert(t, icmd.Expected{ExitCode: 0})
+	icmd.RunCommand("git", "init", repoPath).
+		Assert(t, icmd.Expected{Out: "Initialized empty Git repository"})
+	icmd.RunCmd(icmd.Command("git", "add", "config.json"), icmd.Dir(repoPath)).Assert(t, icmd.Expected{})
+	icmd.RunCmd(icmd.Command("git", "add", "jsonfile"), icmd.Dir(repoPath)).Assert(t, icmd.Expected{})
+	icmd.RunCmd(icmd.Command("git", "add", "subdir"), icmd.Dir(repoPath)).Assert(t, icmd.Expected{})
+	icmd.RunCmd(icmd.Command("git", "commit", "-m", "Initial commit"), icmd.Dir(repoPath)).Assert(t, icmd.Expected{})
 
 	return tmpDir
 }
@@ -84,17 +88,35 @@ func TestDatasources_GitFileDatasource(t *testing.T) {
 	).run()
 	assertSuccess(t, o, e, err, "baz")
 
+	// subpath beginning with // is an antipattern, but should work for
+	// backwards compatibility, params from subpath are used
 	o, e, err = cmd(t,
 		"-d", "repo=git+file://"+u,
-		"-i", `{{ (datasource "repo" "//config.json?type=application/json" ).foo.bar }}`,
+		"-i", `{{ (datasource "repo" "//jsonfile?type=application/json" ).foo.bar }}`,
 	).run()
 	assertSuccess(t, o, e, err, "baz")
 
+	// subpath beginning with // is an antipattern, but should work for
+	// backwards compatibility
 	o, e, err = cmd(t,
 		"-d", "repo=git+file://"+u,
 		"-i", `{{ (datasource "repo" "//config.json" ).foo.bar }}`,
 	).run()
 	assertSuccess(t, o, e, err, "baz")
+
+	// subdir in datasource URL, relative subpath
+	o, e, err = cmd(t,
+		"-d", "repo=git+file://"+u+"//subdir/",
+		"-i", `{{ include "repo" "foo.txt" }}`,
+	).run()
+	assertSuccess(t, o, e, err, "hello world")
+
+	// ds URL ends with /, relative subpath beginning with .// is preferred
+	o, e, err = cmd(t,
+		"-d", "repo=git+file://"+u+"/",
+		"-i", `{{ include "repo" ".//subdir/foo.txt" }}`,
+	).run()
+	assertSuccess(t, o, e, err, "hello world")
 }
 
 func TestDatasources_GitDatasource(t *testing.T) {
