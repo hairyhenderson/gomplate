@@ -491,7 +491,7 @@ namespace is: env
 
 Accessing a file from a local repo (using arguments):
 ```console
-$ gomplate -d which=git+file:///repos/go-which -i 'GOPATH on Windows is {{ (datasource "which" "//appveyor.yml").environment.GOPATH }}'
+$ gomplate -d which=git+file:///repos/go-which/ -i 'GOPATH on Windows is {{ (datasource "which" ".//appveyor.yml").environment.GOPATH }}'
 GOPATH on Windows is c:\gopath
 ```
 
@@ -503,13 +503,13 @@ $ gomplate -d 'cmd=git+https://github.com/hairyhenderson/go-which//cmd/which#ref
 
 Authenticating with the SSH Agent
 ```console
-$ gomplate -d 'which=git+ssh://git@github.com/hairyhenderson/go-which' -i '{{ len (ds "which") }}'
+$ gomplate -d 'which=git+ssh://git@github.com/hairyhenderson/go-which/' -i '{{ len (ds "which") }}'
 18
 ```
 
 Using arguments to specify different repos
 ```console
-$ gomplate -d 'hairyhenderson=git+https://github.com/hairyhenderson' -i '{{ (ds "hairyhenderson" "/gomplate//docs-src/content/functions/env.yml").ns }}'
+$ gomplate -d 'hairyhenderson=git+https://github.com/hairyhenderson/' -i '{{ (ds "hairyhenderson" "gomplate//docs-src/content/functions/env.yml").ns }}'
 env
 ```
 
