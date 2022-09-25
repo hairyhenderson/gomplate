@@ -31,7 +31,7 @@ func TestGetenvTemplates(t *testing.T) {
 	tr := NewRenderer(Options{
 		Funcs: template.FuncMap{
 			"getenv": env.Getenv,
-			"bool":   conv.Bool,
+			"bool":   conv.ToBool,
 		},
 	})
 	assert.Empty(t, testTemplate(t, tr, `{{getenv "BLAHBLAHBLAH"}}`))
@@ -42,7 +42,7 @@ func TestGetenvTemplates(t *testing.T) {
 func TestBoolTemplates(t *testing.T) {
 	g := NewRenderer(Options{
 		Funcs: template.FuncMap{
-			"bool": conv.Bool,
+			"bool": conv.ToBool,
 		},
 	})
 	assert.Equal(t, "true", testTemplate(t, g, `{{bool "true"}}`))
@@ -159,6 +159,7 @@ func TestSimpleNamer(t *testing.T) {
 func TestMappingNamer(t *testing.T) {
 	ctx := context.Background()
 	tr := &Renderer{
+		//nolint:staticcheck
 		data: &data.Data{},
 		funcs: map[string]interface{}{
 			"foo": func() string { return "foo" },

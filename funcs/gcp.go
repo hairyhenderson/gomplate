@@ -8,13 +8,15 @@ import (
 )
 
 // GCPNS - the gcp namespace
+//
 // Deprecated: don't use
 func GCPNS() *GcpFuncs {
 	return &GcpFuncs{gcpopts: gcp.GetClientOptions()}
 }
 
 // AddGCPFuncs -
-// Deprecated: use CreateGCPFuncs instead
+//
+// Deprecated: use [CreateGCPFuncs] instead
 func AddGCPFuncs(f map[string]interface{}) {
 	for k, v := range CreateGCPFuncs(context.Background()) {
 		f[k] = v

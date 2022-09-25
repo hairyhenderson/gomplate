@@ -8,13 +8,15 @@ import (
 )
 
 // SockaddrNS - the sockaddr namespace
+//
 // Deprecated: don't use
 func SockaddrNS() *SockaddrFuncs {
 	return &SockaddrFuncs{}
 }
 
 // AddSockaddrFuncs -
-// Deprecated: use CreateSockaddrFuncs instead
+//
+// Deprecated: use [CreateSockaddrFuncs] instead
 func AddSockaddrFuncs(f map[string]interface{}) {
 	f["sockaddr"] = SockaddrNS
 }

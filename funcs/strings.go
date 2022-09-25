@@ -25,13 +25,15 @@ import (
 )
 
 // StrNS -
+//
 // Deprecated: don't use
 func StrNS() *StringFuncs {
 	return &StringFuncs{}
 }
 
 // AddStringFuncs -
-// Deprecated: use CreateStringFuncs instead
+//
+// Deprecated: use [CreateStringFuncs] instead
 func AddStringFuncs(f map[string]interface{}) {
 	for k, v := range CreateStringFuncs(context.Background()) {
 		f[k] = v
@@ -132,7 +134,7 @@ func (StringFuncs) Repeat(count int, s interface{}) (string, error) {
 
 // Sort -
 //
-// Deprecated: use coll.Sort instead
+// Deprecated: use [CollFuncs.Sort] instead
 func (f *StringFuncs) Sort(list interface{}) ([]string, error) {
 	deprecated.WarnDeprecated(f.ctx, "strings.Sort is deprecated - use coll.Sort instead")
 

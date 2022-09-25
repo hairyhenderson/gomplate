@@ -8,13 +8,15 @@ import (
 )
 
 // Base64NS - the base64 namespace
+//
 // Deprecated: don't use
 func Base64NS() *Base64Funcs {
 	return &Base64Funcs{}
 }
 
 // AddBase64Funcs -
-// Deprecated: use CreateBase64Funcs instead
+//
+// Deprecated: use [CreateBase64Funcs] instead
 func AddBase64Funcs(f map[string]interface{}) {
 	for k, v := range CreateBase64Funcs(context.Background()) {
 		f[k] = v

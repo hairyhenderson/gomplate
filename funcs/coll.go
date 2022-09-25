@@ -13,12 +13,14 @@ import (
 )
 
 // CollNS -
+//
 // Deprecated: don't use
 func CollNS() *CollFuncs {
 	return &CollFuncs{}
 }
 
 // AddCollFuncs -
+//
 // Deprecated: use CreateCollFuncs instead
 func AddCollFuncs(f map[string]interface{}) {
 	for k, v := range CreateCollFuncs(context.Background()) {

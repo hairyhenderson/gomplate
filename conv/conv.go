@@ -17,6 +17,7 @@ import (
 // All other values are considered false.
 //
 // See ToBool also for a more flexible version.
+//
 // Deprecated: use ToBool instead
 func Bool(in string) bool {
 	if b, err := strconv.ParseBool(in); err == nil {
@@ -67,6 +68,8 @@ func ToBools(in ...interface{}) []bool {
 }
 
 // Slice creates a slice from a bunch of arguments
+//
+// Deprecated: use [github.com/hairyhenderson/gomplate/v3/coll.Slice] instead
 func Slice(args ...interface{}) []interface{} {
 	return args
 }

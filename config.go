@@ -12,7 +12,8 @@ import (
 // Config - values necessary for rendering templates with gomplate.
 // Mainly for use by the CLI
 //
-// Deprecated: this type will be phased out, internal/config.Config is used
+// Deprecated: this type will be phased out,
+// [github.com/hairyhenderson/gomplate/v3/internal/config.Config] is used
 // everywhere else, and will be exposed as API in a future version
 type Config struct {
 	Input       string

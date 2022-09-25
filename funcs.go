@@ -10,13 +10,16 @@ import (
 )
 
 // Funcs -
-// Deprecated: use CreateFuncs instead
+//
+// Deprecated: use [CreateFuncs] instead
 func Funcs(d *data.Data) template.FuncMap {
 	return CreateFuncs(context.Background(), d)
 }
 
 // CreateFuncs - function mappings are created here
-func CreateFuncs(ctx context.Context, d *data.Data) template.FuncMap {
+func CreateFuncs(ctx context.Context,
+	//nolint:staticcheck
+	d *data.Data) template.FuncMap {
 	f := template.FuncMap{}
 	addToMap(f, funcs.CreateDataFuncs(ctx, d))
 	addToMap(f, funcs.CreateAWSFuncs(ctx))
