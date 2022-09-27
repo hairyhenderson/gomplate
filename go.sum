@@ -458,10 +458,10 @@ github.com/hairyhenderson/yaml v0.0.0-20220618171115-2d35fca545ce h1:cVkYhlWAxwu
 github.com/hairyhenderson/yaml v0.0.0-20220618171115-2d35fca545ce/go.mod h1:7TyiGlHI+IO+iJbqRZ82QbFtvgj/AIcFm5qc9DLn7Kc=
 github.com/hanwen/go-fuse v1.0.0/go.mod h1:unqXarDXqzAk0rt98O2tVndEPIpUgLD9+rwFisZH3Ok=
 github.com/hanwen/go-fuse/v2 v2.1.0/go.mod h1:oRyA5eK+pvJyv5otpO/DgccS8y/RvYMaO00GgRLGryc=
-github.com/hashicorp/consul/api v1.14.0 h1:Y64GIJ8hYTu+tuGekwO4G4ardXoiCivX9wv1iP/kihk=
-github.com/hashicorp/consul/api v1.14.0/go.mod h1:bcaw5CSZ7NE9qfOfKCI1xb7ZKjzu/MyvQkCLTfqLqxQ=
-github.com/hashicorp/consul/sdk v0.10.0 h1:rGLEh2AWK4K0KCMvqWAz2EYxQqgciIfMagWZ0nVe5MI=
-github.com/hashicorp/consul/sdk v0.10.0/go.mod h1:yPkX5Q6CsxTFMjQQDJwzeNmUUF5NUGGbrDsv9wTb8cw=
+github.com/hashicorp/consul/api v1.15.2 h1:3Q/pDqvJ7udgt/60QOOW/p/PeKioQN+ncYzzCdN2av0=
+github.com/hashicorp/consul/api v1.15.2/go.mod h1:v6nvB10borjOuIwNRZYPZiHKrTM/AyrGtd0WVVodKM8=
+github.com/hashicorp/consul/sdk v0.11.0 h1:HRzj8YSCln2yGgCumN5CL8lYlD3gBurnervJRJAZyC4=
+github.com/hashicorp/consul/sdk v0.11.0/go.mod h1:yPkX5Q6CsxTFMjQQDJwzeNmUUF5NUGGbrDsv9wTb8cw=
 github.com/hashicorp/errwrap v1.0.0/go.mod h1:YH+1FKiLXxHSkmPseP+kNlulaMuP3n2brvKWEqk/Jc4=
 github.com/hashicorp/errwrap v1.1.0 h1:OxrOeh75EUXMY8TBjag2fzXGZ40LB6IKw45YeGUDY2I=
 github.com/hashicorp/errwrap v1.1.0/go.mod h1:YH+1FKiLXxHSkmPseP+kNlulaMuP3n2brvKWEqk/Jc4=
