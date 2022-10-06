@@ -123,7 +123,8 @@ coll.GoSlice item [indexes...]
 ### Examples
 
 ```console
-$ gomplate -i '{{ $l := coll.Slice "foo" "bar" "baz" }}{{ if has $l "bar" }}a{{else}}no{{end}} bar'
+$ gomplate -i '{{ coll.GoSlice "hello world" 3 8 }}'
+lo wo
 ```
 
 ## `coll.Has`
