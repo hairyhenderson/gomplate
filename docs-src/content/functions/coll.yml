@@ -86,7 +86,8 @@ funcs:
         description: the indexes to slice the item by (0 to 3 arguments)
     examples:
       - |
-        $ gomplate -i '{{ $l := coll.Slice "foo" "bar" "baz" }}{{ if has $l "bar" }}a{{else}}no{{end}} bar'
+        $ gomplate -i '{{ coll.GoSlice "hello world" 3 8 }}'
+        lo wo
   - name: coll.Has
     alias: has
     description: |
