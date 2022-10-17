@@ -58,14 +58,14 @@ jobs:
         docker buildx imagetools create --dry-run -t localhost:5000/gomplate:dev-alpine localhost:5000/gomplate:alpine
       if: github.repository != 'hairyhenderson/gomplate' || (github.ref != 'refs/heads/main' && env.is_tag != 'true')
     - name: Login to GHCR
-      uses: docker/login-action@v2.0.0
+      uses: docker/login-action@v2.1.0
       with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       if: github.repository == 'hairyhenderson/gomplate' && (github.ref == 'refs/heads/main' || env.is_tag == 'true')
     - name: Login to DockerHub
-      uses: docker/login-action@v2.0.0
+      uses: docker/login-action@v2.1.0
       with:
           # NOTE: DOCKERHUB_TOKEN and DOCKERHUB_USERNAME must be present in https://github.com/hairyhenderson/gomplate/settings
           username: ${{ secrets.DOCKERHUB_USERNAME }}
