@@ -209,7 +209,21 @@ $ gomplate -i '{{ (coll.Slice "foo" "bar" "baz") | strings.Sort }}'
 
 ## `strings.Split`
 
-Creates a slice by splitting a string on a given delimiter.
+_Not to be confused with [`split`](#split), which is deprecated._
+
+Slices `input` into the substrings separated by `separator`, returning a
+slice of the substrings between those separators. If `input` does not
+contain `separator` and `separator` is not empty, returns a single-element
+slice whose only element is `input`.
+
+If `separator` is empty, it will split after each UTF-8 sequence. If
+both inputs are empty (i.e. `strings.Split "" ""`), it will return an
+empty slice.
+
+This is equivalent to [`strings.SplitN`](#strings-splitn) with a `count`
+of `-1`.
+
+Note that the delimiter is not included in the resulting elements.
 
 ### Usage
 
@@ -224,7 +238,7 @@ input | strings.Split separator
 
 | name | description |
 |------|-------------|
-| `separator` | _(required)_ the string sequence to split |
+| `separator` | _(required)_ the delimiter to split on, can be multiple characters |
 | `input` | _(required)_ the input string |
 
 ### Examples
@@ -236,11 +250,30 @@ Hello, Bart
 Hello, Lisa
 Hello, Maggie
 ```
+```console
+$ gomplate -i '{{range strings.Split "," "One,Two,Three" }}{{.}}{{"\n"}}{{end}}'
+One
+Two
+Three
+```
 
 ## `strings.SplitN`
 
-Creates a slice by splitting a string on a given delimiter. The count determines
-the number of substrings to return.
+_Not to be confused with [`splitN`](#splitn), which is deprecated._
+
+Slices `input` into the substrings separated by `separator`, returning a
+slice of the substrings between those separators. If `input` does not
+contain `separator` and `separator` is not empty, returns a single-element
+slice whose only element is `input`.
+
+The `count` determines the number of substrings to return:
+
+* `count > 0`: at most `count` substrings; the last substring will be the
+  unsplit remainder.
+* `count == 0`: the result is nil (zero substrings)
+* `count < 0`: all substrings
+
+See [`strings.Split`](#strings-split) for more details.
 
 ### Usage
 
@@ -255,7 +288,7 @@ input | strings.SplitN separator count
 
 | name | description |
 |------|-------------|
-| `separator` | _(required)_ the string sequence to split |
+| `separator` | _(required)_ the delimiter to split on, can be multiple characters |
 | `count` | _(required)_ the maximum number of substrings to return |
 | `input` | _(required)_ the input string |
 
@@ -877,7 +910,8 @@ $ gomplate -i '{{ range (coll.Slice "\u03a9" "\u0030" "\u1430") }}{{ printf "%s 
 ᐰ is 3 bytes and 1 runes
 ```
 
-## `contains`
+## `contains` _(deprecated)_
+**Deprecation Notice:** Use [`strings.Contains`](#strings-contains) instead
 
 **See [`strings.Contains`](#strings-contains) for a pipeline-compatible version**
 
@@ -911,7 +945,8 @@ $ FOO=bar gomplate < input.tmpl
 no
 ```
 
-## `hasPrefix`
+## `hasPrefix` _(deprecated)_
+**Deprecation Notice:** Use [`strings.HasPrefix`](#strings-hasprefix) instead
 
 **See [`strings.HasPrefix`](#strings-hasprefix) for a pipeline-compatible version**
 
@@ -945,7 +980,8 @@ $ URL=https://example.com gomplate < input.tmpl
 foo
 ```
 
-## `hasSuffix`
+## `hasSuffix` _(deprecated)_
+**Deprecation Notice:** Use [`strings.HasSuffix`](#strings-hassuffix) instead
 
 **See [`strings.HasSuffix`](#strings-hassuffix) for a pipeline-compatible version**
 
@@ -977,7 +1013,8 @@ $ URL=http://example.com gomplate < input.tmpl
 http://example.com:80
 ```
 
-## `split`
+## `split` _(deprecated)_
+**Deprecation Notice:** Use [`strings.Split`](#strings-split) instead
 
 **See [`strings.Split`](#strings-split) for a pipeline-compatible version**
 
@@ -1007,7 +1044,8 @@ Hello, Lisa
 Hello, Maggie
 ```
 
-## `splitN`
+## `splitN` _(deprecated)_
+**Deprecation Notice:** Use [`strings.SplitN`](#strings-splitn) instead
 
 **See [`strings.SplitN`](#strings-splitn) for a pipeline-compatible version**
 
@@ -1037,7 +1075,8 @@ foo
 bar:baz
 ```
 
-## `trim`
+## `trim` _(deprecated)_
+**Deprecation Notice:** Use [`strings.Trim`](#strings-trim) instead
 
 **See [`strings.Trim`](#strings-trim) for a pipeline-compatible version**
 
