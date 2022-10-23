@@ -58,12 +58,12 @@ func CreateStringFuncs(ctx context.Context) map[string]interface{} {
 	f["squote"] = ns.Squote
 
 	// these are legacy aliases with non-pipelinable arg order
-	f["contains"] = strings.Contains
-	f["hasPrefix"] = strings.HasPrefix
-	f["hasSuffix"] = strings.HasSuffix
-	f["split"] = strings.Split
-	f["splitN"] = strings.SplitN
-	f["trim"] = strings.Trim
+	f["contains"] = ns.oldContains
+	f["hasPrefix"] = ns.oldHasPrefix
+	f["hasSuffix"] = ns.oldHasSuffix
+	f["split"] = ns.oldSplit
+	f["splitN"] = ns.oldSplitN
+	f["trim"] = ns.oldTrim
 
 	return f
 }
@@ -76,6 +76,58 @@ type StringFuncs struct {
 	// Und (undetermined)
 	tag language.Tag
 }
+
+// ---- legacy aliases with non-pipelinable arg order
+
+// oldContains -
+//
+// Deprecated: use [strings.Contains] instead
+func (f *StringFuncs) oldContains(s, substr string) bool {
+	deprecated.WarnDeprecated(f.ctx, "contains is deprecated - use strings.Contains instead")
+	return strings.Contains(s, substr)
+}
+
+// oldHasPrefix -
+//
+// Deprecated: use [strings.HasPrefix] instead
+func (f *StringFuncs) oldHasPrefix(s, prefix string) bool {
+	deprecated.WarnDeprecated(f.ctx, "hasPrefix is deprecated - use strings.HasPrefix instead")
+	return strings.HasPrefix(s, prefix)
+}
+
+// oldHasSuffix -
+//
+// Deprecated: use [strings.HasSuffix] instead
+func (f *StringFuncs) oldHasSuffix(s, suffix string) bool {
+	deprecated.WarnDeprecated(f.ctx, "hasSuffix is deprecated - use strings.HasSuffix instead")
+	return strings.HasSuffix(s, suffix)
+}
+
+// oldSplit -
+//
+// Deprecated: use [strings.Split] instead
+func (f *StringFuncs) oldSplit(s, sep string) []string {
+	deprecated.WarnDeprecated(f.ctx, "split is deprecated - use strings.Split instead")
+	return strings.Split(s, sep)
+}
+
+// oldSplitN -
+//
+// Deprecated: use [strings.SplitN] instead
+func (f *StringFuncs) oldSplitN(s, sep string, n int) []string {
+	deprecated.WarnDeprecated(f.ctx, "splitN is deprecated - use strings.SplitN instead")
+	return strings.SplitN(s, sep, n)
+}
+
+// oldTrim -
+//
+// Deprecated: use [strings.Trim] instead
+func (f *StringFuncs) oldTrim(s, cutset string) string {
+	deprecated.WarnDeprecated(f.ctx, "trim is deprecated - use strings.Trim instead")
+	return strings.Trim(s, cutset)
+}
+
+// ----
 
 // Abbrev -
 func (StringFuncs) Abbrev(args ...interface{}) (string, error) {
