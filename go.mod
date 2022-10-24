@@ -24,7 +24,7 @@ require (
 	github.com/rs/zerolog v1.28.0
 	github.com/spf13/afero v1.9.2
 	github.com/spf13/cobra v1.6.0
-	github.com/stretchr/testify v1.8.0
+	github.com/stretchr/testify v1.8.1
 	github.com/ugorji/go/codec v1.2.7
 	github.com/zealic/xignore v0.3.3
 	gocloud.dev v0.27.0
