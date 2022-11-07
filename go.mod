@@ -6,7 +6,7 @@ require (
 	github.com/Masterminds/goutils v1.1.1
 	github.com/Shopify/ejson v1.3.3
 	github.com/apparentlymart/go-cidr v1.1.0
-	github.com/aws/aws-sdk-go v1.44.126
+	github.com/aws/aws-sdk-go v1.44.131
 	github.com/docker/libkv v0.2.2-0.20180912205406-458977154600
 	github.com/fullsailor/pkcs7 v0.0.0-20190404230743-d7302db945fa
 	github.com/go-git/go-billy/v5 v5.3.1
@@ -29,8 +29,8 @@ require (
 	github.com/zealic/xignore v0.3.3
 	gocloud.dev v0.27.0
 	golang.org/x/crypto v0.0.0-20220829220503-c86fa9a7ed90
-	golang.org/x/sys v0.0.0-20220913120320-3275c407cedc
-	golang.org/x/term v0.0.0-20220722155259-a9ba230a4035
+	golang.org/x/sys v0.1.0
+	golang.org/x/term v0.1.0
 	golang.org/x/text v0.4.0
 	gotest.tools/v3 v3.4.0
 	inet.af/netaddr v0.0.0-20220811202034-502d2d690317
@@ -127,7 +127,7 @@ require (
 	go.uber.org/atomic v1.9.0 // indirect
 	go4.org/intern v0.0.0-20220617035311-6925f38cc365 // indirect
 	go4.org/unsafe/assume-no-moving-gc v0.0.0-20220617031537-928513b29760 // indirect
-	golang.org/x/net v0.0.0-20220909164309-bea034e7d591 // indirect
+	golang.org/x/net v0.1.0 // indirect
 	golang.org/x/oauth2 v0.0.0-20220822191816-0ebed06d0094 // indirect
 	golang.org/x/time v0.0.0-20220722155302-e5dcc9cfc0b9 // indirect
 	golang.org/x/tools v0.1.12 // indirect
