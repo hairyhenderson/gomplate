@@ -15,7 +15,7 @@ require (
 	github.com/gosimple/slug v1.13.1
 	github.com/hairyhenderson/go-fsimpl v0.0.0-20220910230923-9fc15c316e74
 	github.com/hairyhenderson/toml v0.4.2-0.20210923231440-40456b8e66cf
-	github.com/hashicorp/consul/api v1.15.3
+	github.com/hashicorp/consul/api v1.17.0
 	github.com/hashicorp/go-sockaddr v1.0.2
 	github.com/hashicorp/vault/api v1.8.2
 	github.com/johannesboyne/gofakes3 v0.0.0-20220627085814-c3ac35da23b2
@@ -99,7 +99,7 @@ require (
 	github.com/hashicorp/go-version v1.5.0 // indirect
 	github.com/hashicorp/golang-lru v0.5.4 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
-	github.com/hashicorp/serf v0.10.0 // indirect
+	github.com/hashicorp/serf v0.10.1 // indirect
 	github.com/hashicorp/vault/sdk v0.6.0 // indirect
 	github.com/hashicorp/yamux v0.0.0-20211028200310-0bc27b27de87 // indirect
 	github.com/imdario/mergo v0.3.13 // indirect
