@@ -29,7 +29,7 @@ require (
 	github.com/zealic/xignore v0.3.3
 	gocloud.dev v0.27.0
 	golang.org/x/crypto v0.0.0-20220829220503-c86fa9a7ed90
-	golang.org/x/sys v0.2.0
+	golang.org/x/sys v0.3.0
 	golang.org/x/term v0.2.0
 	golang.org/x/text v0.5.0
 	gotest.tools/v3 v3.4.0
