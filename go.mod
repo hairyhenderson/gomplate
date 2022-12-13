@@ -28,7 +28,7 @@ require (
 	github.com/ugorji/go/codec v1.2.7
 	github.com/zealic/xignore v0.3.3
 	gocloud.dev v0.27.0
-	golang.org/x/crypto v0.3.0
+	golang.org/x/crypto v0.4.0
 	golang.org/x/sys v0.3.0
 	golang.org/x/term v0.3.0
 	golang.org/x/text v0.5.0
