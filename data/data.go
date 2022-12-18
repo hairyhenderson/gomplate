@@ -8,7 +8,6 @@ import (
 	"bytes"
 	"encoding/csv"
 	"encoding/json"
-	"fmt"
 	"io"
 	"strings"
 
@@ -27,35 +26,25 @@ import (
 	"github.com/hairyhenderson/yaml"
 )
 
-func unmarshalObj(obj map[string]interface{}, in string, f func([]byte, interface{}) error) (map[string]interface{}, error) {
-	err := f([]byte(in), &obj)
+// YAML - Unmarshal a YAML or JSON. Can be ejson-encrypted.
+func YAML(in string) (interface{}, error) {
+	ret, err := unmarshalYAML(in)
 	if err != nil {
-		return nil, errors.Wrapf(err, "Unable to unmarshal object %s", in)
-	}
-	return obj, nil
-}
-
-func unmarshalArray(obj []interface{}, in string, f func([]byte, interface{}) error) ([]interface{}, error) {
-	err := f([]byte(in), &obj)
-	if err != nil {
-		return nil, errors.Wrapf(err, "Unable to unmarshal array %s", in)
-	}
-	return obj, nil
-}
-
-// JSON - Unmarshal a JSON Object. Can be ejson-encrypted.
-func JSON(in string) (map[string]interface{}, error) {
-	obj := make(map[string]interface{})
-	out, err := unmarshalObj(obj, in, yaml.Unmarshal)
-	if err != nil {
-		return out, err
+		return nil, errors.Wrapf(err, "Unable to unmarshal YAML %s", in)
 	}
 
-	_, ok := out[ejsonJson.PublicKeyField]
-	if ok {
-		out, err = decryptEJSON(in)
+	// EJSON support
+	if obj, ok := ret.(map[string]interface{}); ok {
+		_, ok := obj[ejsonJson.PublicKeyField]
+		if ok {
+			ret, err = decryptEJSON(in)
+			if err != nil {
+				return nil, errors.Wrapf(err, "Unable to decrypt EJSON %s", in)
+			}
+		}
 	}
-	return out, err
+
+	return ret, nil
 }
 
 // decryptEJSON - decrypts an ejson input, and unmarshals it, stripping the _public_key field.
@@ -70,23 +59,17 @@ func decryptEJSON(in string) (map[string]interface{}, error) {
 		return nil, errors.WithStack(err)
 	}
 	obj := make(map[string]interface{})
-	out, err := unmarshalObj(obj, rOut.String(), yaml.Unmarshal)
+	err = yaml.Unmarshal(rOut.Bytes(), &obj)
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
-	delete(out, ejsonJson.PublicKeyField)
-	return out, nil
+	delete(obj, ejsonJson.PublicKeyField)
+	return obj, nil
 }
 
-// JSONArray - Unmarshal a JSON Array
-func JSONArray(in string) ([]interface{}, error) {
-	obj := make([]interface{}, 1)
-	return unmarshalArray(obj, in, yaml.Unmarshal)
-}
+func unmarshalYAML(in string) (interface{}, error) {
+	var obj interface{}
 
-// YAML - Unmarshal a YAML Object
-func YAML(in string) (map[string]interface{}, error) {
-	obj := make(map[string]interface{})
 	s := strings.NewReader(in)
 	d := yaml.NewDecoder(s)
 	for {
@@ -102,47 +85,9 @@ func YAML(in string) (map[string]interface{}, error) {
 		}
 	}
 
-	err := stringifyYAMLMapMapKeys(obj)
-	return obj, err
-}
+	obj, _ = stringifyMapKeys(obj)
 
-// YAMLArray - Unmarshal a YAML Array
-func YAMLArray(in string) ([]interface{}, error) {
-	obj := make([]interface{}, 1)
-	s := strings.NewReader(in)
-	d := yaml.NewDecoder(s)
-	for {
-		err := d.Decode(&obj)
-		if err == io.EOF {
-			break
-		}
-		if err != nil {
-			return nil, err
-		}
-		if obj != nil {
-			break
-		}
-	}
-	err := stringifyYAMLArrayMapKeys(obj)
-	return obj, err
-}
-
-// stringifyYAMLArrayMapKeys recurses into the input array and changes all
-// non-string map keys to string map keys. Modifies the input array.
-func stringifyYAMLArrayMapKeys(in []interface{}) error {
-	if _, changed := stringifyMapKeys(in); changed {
-		return fmt.Errorf("stringifyYAMLArrayMapKeys: output type did not match input type, this should be impossible")
-	}
-	return nil
-}
-
-// stringifyYAMLMapMapKeys recurses into the input map and changes all
-// non-string map keys to string map keys. Modifies the input map.
-func stringifyYAMLMapMapKeys(in map[string]interface{}) error {
-	if _, changed := stringifyMapKeys(in); changed {
-		return fmt.Errorf("stringifyYAMLMapMapKeys: output type did not match input type, this should be impossible")
-	}
-	return nil
+	return obj, nil
 }
 
 // stringifyMapKeys recurses into in and changes all instances of
@@ -180,13 +125,15 @@ func stringifyMapKeys(in interface{}) (interface{}, bool) {
 		return res, true
 	}
 
-	return nil, false
+	return in, false
 }
 
 // TOML - Unmarshal a TOML Object
 func TOML(in string) (interface{}, error) {
 	obj := make(map[string]interface{})
-	return unmarshalObj(obj, in, toml.Unmarshal)
+
+	err := toml.Unmarshal([]byte(in), &obj)
+	return obj, err
 }
 
 // dotEnv - Unmarshal a dotenv file

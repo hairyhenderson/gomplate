@@ -201,18 +201,13 @@ $ gomplate -d person.json -f input.tmpl
 
 **Alias:** `json`
 
-Converts a JSON string into an object. Works for JSON Objects, but will
-also parse JSON Arrays. Will not parse other valid JSON types.
+Converts a JSON string into valid structure.
+Supports Objects, Arrays, strings, booleans and numbers.
+Objects are converted as `map[string]interface{}`.
 
-For more explict JSON Array support, see [`data.JSONArray`](#data-jsonarray).
+Uses YAML decoder, because valid JSON is actually valid YAML.
 
-#### Encrypted JSON support (EJSON)
-
-If the input is in the [EJSON](https://github.com/Shopify/ejson) format (i.e. has a `_public_key` field), this function will attempt to decrypt the document first. A private key must be provided by one of these methods:
-
-- set the `EJSON_KEY` environment variable to the private key's value
-- set the `EJSON_KEY_FILE` environment variable to the path to a file containing the private key
-- set the `EJSON_KEYDIR` environment variable to the path to a directory containing private keys (filename must be the public key), just like [`ejson decrypt`'s `--keydir`](https://github.com/Shopify/ejson/blob/master/man/man1/ejson.1.ronn) flag. Defaults to `/opt/ejson/keys`.
+**Notice:** This is only alias for [`data.Yaml`](#data-yaml), so conversional rules are the same.
 
 ### Usage
 
@@ -242,11 +237,11 @@ $ gomplate < input.tmpl
 Hello world
 ```
 
-## `data.JSONArray`
+## `data.JSONArray` _(deprecated)_
 
 **Alias:** `jsonArray`
 
-Converts a JSON string into a slice. Only works for JSON Arrays.
+**Deprecation Notice:** Please use [`data.Json`](#data-json), currently it is only alias for that
 
 ### Usage
 
@@ -276,14 +271,24 @@ $ gomplate < input.tmpl
 Hello world
 ```
 
-## `data.YAML`
+## `data.YAML` 
 
-**Alias:** `yaml`
+**Alias:** `yaml` 
 
-Converts a YAML string into an object. Works for YAML Objects but will
-also parse YAML Arrays. This can be used to access properties of YAML objects.
+Converts a YAML string into valid structure.
+Supports Objects, Arrays, strings, booleans and numbers.
+Objects are converted as `map[string]interface{}`.
 
-For more explict YAML Array support, see [`data.JSONArray`](#data-yamlarray).
+Also sucessfully converts valid JSON, because valid JSON is valid YAML.
+
+#### Encrypted JSON support (EJSON)
+
+If the input is in the [EJSON](https://github.com/Shopify/ejson) format (i.e. has a `_public_key` field), this function will attempt to decrypt the document first. A private key must be provided by one of these methods:
+
+- set the `EJSON_KEY` environment variable to the private key's value
+- set the `EJSON_KEY_FILE` environment variable to the path to a file containing the private key
+- set the `EJSON_KEYDIR` environment variable to the path to a directory containing private keys (filename must be the public key), just like [`ejson decrypt`'s `--keydir`](https://github.com/Shopify/ejson/blob/master/man/man1/ejson.1.ronn) flag. Defaults to `/opt/ejson/keys`.
+
 
 ### Usage
 
@@ -313,11 +318,11 @@ $ gomplate < input.tmpl
 Hello world
 ```
 
-## `data.YAMLArray`
+## `data.YAMLArray` _(deprecated)_
 
 **Alias:** `yamlArray`
 
-Converts a YAML string into a slice. Only works for YAML Arrays.
+**Deprecation Notice:** Please use [`data.Yaml`](#data-yaml), currently it is only alias for that
 
 ### Usage
 

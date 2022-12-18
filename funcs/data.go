@@ -40,10 +40,10 @@ func CreateDataFuncs(ctx context.Context,
 
 	f["data"] = func() interface{} { return ns }
 
-	f["json"] = ns.JSON
-	f["jsonArray"] = ns.JSONArray
+	f["json"] = ns.YAML
+	f["jsonArray"] = ns.YAML
 	f["yaml"] = ns.YAML
-	f["yamlArray"] = ns.YAMLArray
+	f["yamlArray"] = ns.YAML
 	f["toml"] = ns.TOML
 	f["csv"] = ns.CSV
 	f["csvByRow"] = ns.CSVByRow
@@ -61,24 +61,9 @@ type DataFuncs struct {
 	ctx context.Context
 }
 
-// JSON -
-func (f *DataFuncs) JSON(in interface{}) (map[string]interface{}, error) {
-	return data.JSON(conv.ToString(in))
-}
-
-// JSONArray -
-func (f *DataFuncs) JSONArray(in interface{}) ([]interface{}, error) {
-	return data.JSONArray(conv.ToString(in))
-}
-
 // YAML -
-func (f *DataFuncs) YAML(in interface{}) (map[string]interface{}, error) {
+func (f *DataFuncs) YAML(in interface{}) (interface{}, error) {
 	return data.YAML(conv.ToString(in))
-}
-
-// YAMLArray -
-func (f *DataFuncs) YAMLArray(in interface{}) ([]interface{}, error) {
-	return data.YAMLArray(conv.ToString(in))
 }
 
 // TOML -

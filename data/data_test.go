@@ -23,15 +23,19 @@ func TestUnmarshalObj(t *testing.T) {
 		"escaped": "\"/\\\b\f\n\r\t∞",
 	}
 
-	test := func(actual map[string]interface{}, err error) {
+	test := func(actual interface{}, err error) {
 		t.Helper()
 		assert.NoError(t, err)
-		assert.Equal(t, expected["foo"], actual["foo"], "foo")
-		assert.Equal(t, expected["one"], actual["one"], "one")
-		assert.Equal(t, expected["true"], actual["true"], "true")
-		assert.Equal(t, expected["escaped"], actual["escaped"], "escaped")
+		assert.IsType(t, make(map[string]interface{}), actual)
+
+		actualObj := actual.(map[string]interface{})
+
+		assert.Equal(t, expected["foo"], actualObj["foo"], "foo")
+		assert.Equal(t, expected["one"], actualObj["one"], "one")
+		assert.Equal(t, expected["true"], actualObj["true"], "true")
+		assert.Equal(t, expected["escaped"], actualObj["escaped"], "escaped")
 	}
-	test(JSON(`{"foo":{"bar":"baz"},"one":1.0,"true":true,"escaped":"\"\/\\\b\f\n\r\t\u221e"}`))
+	test(YAML(`{"foo":{"bar":"baz"},"one":1.0,"true":true,"escaped":"\"\/\\\b\f\n\r\t\u221e"}`))
 	test(YAML(`foo:
   bar: baz
 one: 1.0
@@ -56,12 +60,6 @@ one: 1.0
 'true': true
 escaped: "\"\/\\\b\f\n\r\t\u221e"
 `))
-
-	obj := make(map[string]interface{})
-	_, err := unmarshalObj(obj, "SOMETHING", func(in []byte, out interface{}) error {
-		return errors.New("fail")
-	})
-	assert.EqualError(t, err, "Unable to unmarshal object SOMETHING: fail")
 }
 
 func TestUnmarshalArray(t *testing.T) {
@@ -72,12 +70,12 @@ func TestUnmarshalArray(t *testing.T) {
 			"corge": map[string]interface{}{"false": "blah"},
 		}}
 
-	test := func(actual []interface{}, err error) {
+	test := func(actual interface{}, err error) {
 		assert.NoError(t, err)
 		assert.EqualValues(t, expected, actual)
 	}
-	test(JSONArray(`["foo","bar",{"baz":{"qux": true},"quux":{"42":18},"corge":{"false":"blah"}}]`))
-	test(YAMLArray(`
+	test(YAML(`["foo","bar",{"baz":{"qux": true},"quux":{"42":18},"corge":{"false":"blah"}}]`))
+	test(YAML(`
 - foo
 - bar
 - baz:
@@ -87,7 +85,7 @@ func TestUnmarshalArray(t *testing.T) {
   corge:
     "false": blah
 `))
-	test(YAMLArray(`---
+	test(YAML(`---
 # blah blah blah ignore this!
 ---
 - foo
@@ -102,7 +100,7 @@ func TestUnmarshalArray(t *testing.T) {
 this shouldn't be reached
 `))
 
-	actual, err := YAMLArray(`---
+	actual, err := YAML(`---
 - foo: &foo
     bar: baz
 - qux:
@@ -136,12 +134,6 @@ this shouldn't be reached
 			},
 		},
 		actual)
-
-	obj := make([]interface{}, 1)
-	_, err = unmarshalArray(obj, "SOMETHING", func(in []byte, out interface{}) error {
-		return errors.New("fail")
-	})
-	assert.EqualError(t, err, "Unable to unmarshal array SOMETHING: fail")
 }
 
 func TestMarshalObj(t *testing.T) {
@@ -524,9 +516,9 @@ func TestDecryptEJSON(t *testing.T) {
 	assert.NoError(t, err)
 	assert.EqualValues(t, expected, actual)
 
-	actual, err = JSON(in)
+	actualJson, err := YAML(in)
 	assert.NoError(t, err)
-	assert.EqualValues(t, expected, actual)
+	assert.EqualValues(t, expected, actualJson)
 
 	tmpDir := fs.NewDir(t, "gomplate-ejsontest",
 		fs.WithFile(publicKey, privateKey),
@@ -615,9 +607,8 @@ func TestStringifyYAMLArrayMapKeys(t *testing.T) {
 	}
 
 	for _, c := range cases {
-		err := stringifyYAMLArrayMapKeys(c.input)
-		assert.NoError(t, err)
-		assert.EqualValues(t, c.want, c.input)
+		actual, _ := stringifyMapKeys(c.input)
+		assert.EqualValues(t, c.want, actual)
 	}
 }
 
@@ -657,8 +648,7 @@ func TestStringifyYAMLMapMapKeys(t *testing.T) {
 	}
 
 	for _, c := range cases {
-		err := stringifyYAMLMapMapKeys(c.input)
-		assert.NoError(t, err)
-		assert.EqualValues(t, c.want, c.input)
+		actual, _ := stringifyMapKeys(c.input)
+		assert.EqualValues(t, c.want, actual)
 	}
 }

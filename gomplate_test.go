@@ -73,7 +73,7 @@ func TestEc2MetaTemplates_WithJSON(t *testing.T) {
 		Funcs: template.FuncMap{
 			"ec2meta":    ec2meta.Meta,
 			"ec2dynamic": ec2meta.Dynamic,
-			"json":       data.JSON,
+			"json":       data.YAML,
 		},
 	})
 
@@ -84,7 +84,7 @@ func TestEc2MetaTemplates_WithJSON(t *testing.T) {
 func TestJSONArrayTemplates(t *testing.T) {
 	g := NewRenderer(Options{
 		Funcs: template.FuncMap{
-			"jsonArray": data.JSONArray,
+			"jsonArray": data.YAML,
 		},
 	})
 
@@ -96,7 +96,7 @@ func TestYAMLTemplates(t *testing.T) {
 	g := NewRenderer(Options{
 		Funcs: template.FuncMap{
 			"yaml":      data.YAML,
-			"yamlArray": data.YAMLArray,
+			"yamlArray": data.YAML,
 		},
 	})
 
