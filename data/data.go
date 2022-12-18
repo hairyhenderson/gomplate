@@ -64,6 +64,10 @@ func decryptEJSON(in string) (map[string]interface{}, error) {
 		return nil, errors.WithStack(err)
 	}
 	delete(obj, ejsonJson.PublicKeyField)
+
+	ret, _ := stringifyMapKeys(obj)
+	obj = ret.(map[string]interface{})
+
 	return obj, nil
 }
 
