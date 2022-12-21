@@ -47,7 +47,7 @@ func CreateCollFuncs(ctx context.Context) map[string]interface{} {
 	f["merge"] = ns.Merge
 	f["sort"] = ns.Sort
 	f["jsonpath"] = ns.JSONPath
-	f["gojq"] = ns.JQ
+	f["jq"] = ns.JQ
 	f["flatten"] = ns.Flatten
 	return f
 }
