@@ -1,8 +1,9 @@
 package coll
 
 import (
+	"fmt"
+
 	"github.com/itchyny/gojq"
-	"github.com/pkg/errors"
 )
 
 // JQ -
@@ -22,9 +23,7 @@ func JQ(jqExpr string, in interface{}) (interface{}, error) {
 		if err, ok := v.(error); ok {
 			return nil, fmt.Errorf("executing JQ failed: %w", err)
 		}
-		if v != nil { // TODO: Check, if nil may be a valid result
-			a = append(a, v)
-		}
+		a = append(a, v)
 	}
 	if len(a) == 1 {
 		out = a[0]

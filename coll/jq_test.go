@@ -137,9 +137,9 @@ func TestJQ(t *testing.T) {
 	// had to be converted to JSON and parsed from it again to be able to process using gojq.
 	v := map[string]interface{}{}
 	b, err := json.Marshal(structIn)
-	assert.NoError(err)
+	assert.NoError(t, err)
 	err = json.Unmarshal(b, &v)
-	assert.NoError(err)
+	assert.NoError(t, err)
 	out, err = JQ(".Bicycle.Color", v)
 	assert.NoError(t, err)
 	assert.Equal(t, "red", out)
