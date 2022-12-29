@@ -20,7 +20,7 @@ func JQ(jqExpr string, in interface{}) (interface{}, error) {
 			break
 		}
 		if err, ok := v.(error); ok {
-			return nil, errors.Wrap(err, "executing JQ failed")
+			return nil, fmt.Errorf("executing JQ failed: %w", err)
 		}
 		if v != nil { // TODO: Check, if nil may be a valid result
 			a = append(a, v)
