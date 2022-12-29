@@ -144,8 +144,8 @@ func (CollFuncs) JSONPath(p string, in interface{}) (interface{}, error) {
 }
 
 // JQ -
-func (CollFuncs) JQ(jqExpr string, in interface{}) (interface{}, error) {
-	return coll.JQ(jqExpr, in)
+func (f *CollFuncs) JQ(jqExpr string, in interface{}) (interface{}, error) {
+	return coll.JQ(f.ctx, jqExpr, in)
 }
 
 // Flatten -

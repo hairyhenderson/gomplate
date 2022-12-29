@@ -1,18 +1,20 @@
 package coll
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/itchyny/gojq"
 )
 
 // JQ -
-func JQ(jqExpr string, in interface{}) (interface{}, error) {
+func JQ(ctx context.Context, jqExpr string, in interface{}) (interface{}, error) {
 	query, err := gojq.Parse(jqExpr)
 	if err != nil {
 		return nil, fmt.Errorf("couldn't parse JQ %s: %w", jqExpr, err)
 	}
-	iter := query.Run(in)
+
+	iter := query.RunWithContext(ctx, in)
 	var out interface{}
 	a := []interface{}{}
 	for {
