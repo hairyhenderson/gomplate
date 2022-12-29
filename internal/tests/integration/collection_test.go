@@ -98,3 +98,8 @@ func TestColl_Pick(t *testing.T) {
 func TestColl_Omit(t *testing.T) {
 	inOutTest(t, `{{ $data := dict "foo" 1 "bar" 2 "baz" 3 }}{{ coll.Omit "foo" "baz" $data }}`, "map[bar:2]")
 }
+
+func TestColl_JQ(t *testing.T) {
+	inOutTest(t, `{{ coll.JQ ".foo" (dict "foo" 1 "bar" 2 "baz" 3) }}`, "1")
+	inOutTest(t, `{{ coll.Slice "one" 2 "three" 4.0 | jq ".[2]" }}`, `three`)
+}
