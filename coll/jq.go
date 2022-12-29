@@ -9,7 +9,7 @@ import (
 func JQ(jqExpr string, in interface{}) (interface{}, error) {
 	query, err := gojq.Parse(jqExpr)
 	if err != nil {
-		return nil, errors.Wrapf(err, "couldn't parse JQ %s", jqExpr)
+		return nil, fmt.Errorf("couldn't parse JQ %s: %w", jqExpr, err)
 	}
 	iter := query.Run(in)
 	var out interface{}
