@@ -139,7 +139,7 @@ funcs:
   - name: coll.JQ
     alias: jq
     description: |
-      Filters an input object or list using the JQ language implemented by gojq (https://github.com/itchyny/gojq).
+      Filters an input object or list using the [jq](https://stedolan.github.io/jq/) language, as implemented by [gojq](https://github.com/itchyny/gojq).
 
       Any object or list may be used as input. The output depends somewhat on the expression; if multiple items are matched, an array is returned.
 
