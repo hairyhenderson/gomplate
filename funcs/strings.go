@@ -184,6 +184,11 @@ func (StringFuncs) Repeat(count int, s interface{}) (string, error) {
 	return strings.Repeat(str, count), nil
 }
 
+// SkipLines -
+func (StringFuncs) SkipLines(skip int, in string) (string, error) {
+	return gompstrings.SkipLines(skip, in)
+}
+
 // Sort -
 //
 // Deprecated: use [CollFuncs.Sort] instead
