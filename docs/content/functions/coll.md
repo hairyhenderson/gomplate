@@ -204,15 +204,17 @@ $ gomplate -i '{{ .books | jsonpath `$..works[?( @.edition_count > 400 )].title`
 
 **Alias:** `jq`
 
-Filters an input object or list using the JQ language implemented by gojq.
+Filters an input object or list using the [jq](https://stedolan.github.io/jq/) language, as implemented by [gojq](https://github.com/itchyny/gojq).
 
-Any object or list may be used as input. The output depends somewhat on the expression; if multiple items are matched, an array is returned.
+Any JSON datatype may be used as input (NOTE: strings are not JSON-parsed but passed in as is).
+If the expression results in multiple items (no matter if streamed or as an array) they are wrapped in an array.
+Otherwise a single item is returned (even if resulting in an array with a single contained element).
 
 JQ filter expressions can be tested at https://jqplay.org/
 
-[jq Manual]: https://stedolan.github.io/jq/manual/
-[gojq library]: https://github.com/itchyny/gojq
-[gojq differences to jq]: https://github.com/itchyny/gojq#difference-to-jq
+See also:
+- [jq manual](https://stedolan.github.io/jq/manual/)
+- [gojq differences to jq](https://github.com/itchyny/gojq#difference-to-jq)
 
 ### Usage
 
@@ -234,14 +236,8 @@ in | coll.JQ expression
 
 ```console
 $ gomplate \
-    -i '{{ .books | coll.JQ `[
-      .works[]
-      | {
-        "title": .title,
-        "authors": [.authors[].name],
-        "published": .first_publish_year
-      }][0]` }}' \
-    -c books=https://openlibrary.org/subjects/fantasy.json
+   -i '{{ .books | jq `[.works[]|{"title":.title,"authors":[.authors[].name],"published":.first_publish_year}][0]` }}' \
+   -c books=https://openlibrary.org/subjects/fantasy.json
 map[authors:[Lewis Carroll] published:1865 title:Alice's Adventures in Wonderland]
 ```
 
