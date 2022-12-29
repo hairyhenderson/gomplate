@@ -119,6 +119,10 @@ func TestJQ(t *testing.T) {
 	assert.Contains(t, out, map[string]interface{}{"aaaa": map[string]interface{}{"bar": 1234}})
 	assert.Contains(t, out, true)
 	assert.Contains(t, out, "baz")
+}
+
+func TestJQ_typeConversions(t *testing.T) {
+	ctx := context.Background()
 
 	type bicycleType struct {
 		Color string
@@ -135,20 +139,98 @@ func TestJQ(t *testing.T) {
 		safe: "hidden",
 	}
 
-	// TODO: Check if this is a valid test case (taken from jsonpath_test.go) since the struct
-	// had to be converted to JSON and parsed from it again to be able to process using gojq.
-	v := map[string]interface{}{}
-	b, err := json.Marshal(structIn)
-	assert.NoError(t, err)
-	err = json.Unmarshal(b, &v)
-	assert.NoError(t, err)
-	out, err = JQ(ctx, ".Bicycle.Color", v)
+	out, err := JQ(ctx, ".Bicycle.Color", structIn)
 	assert.NoError(t, err)
 	assert.Equal(t, "red", out)
 
-	_, err = JQ(ctx, ".safe", structIn)
-	assert.Error(t, err)
+	out, err = JQ(ctx, ".safe", structIn)
+	assert.NoError(t, err)
+	assert.Nil(t, out)
 
 	_, err = JQ(ctx, ".*", structIn)
 	assert.Error(t, err)
+
+	// a type with an underlying type of map[string]interface{}, just like
+	// gomplate.tmplctx
+	type mapType map[string]interface{}
+
+	out, err = JQ(ctx, ".foo", mapType{"foo": "bar"})
+	assert.NoError(t, err)
+	assert.Equal(t, "bar", out)
+
+	// sometimes it'll be a pointer...
+	out, err = JQ(ctx, ".foo", &mapType{"foo": "bar"})
+	assert.NoError(t, err)
+	assert.Equal(t, "bar", out)
+
+	// underlying slice type
+	type sliceType []interface{}
+
+	out, err = JQ(ctx, ".[1]", sliceType{"foo", "bar"})
+	assert.NoError(t, err)
+	assert.Equal(t, "bar", out)
+
+	out, err = JQ(ctx, ".[2]", &sliceType{"foo", "bar", "baz"})
+	assert.NoError(t, err)
+	assert.Equal(t, "baz", out)
+
+	// other basic types
+	out, err = JQ(ctx, ".", []byte("hello"))
+	assert.NoError(t, err)
+	assert.EqualValues(t, "hello", out)
+
+	out, err = JQ(ctx, ".", "hello")
+	assert.NoError(t, err)
+	assert.EqualValues(t, "hello", out)
+
+	out, err = JQ(ctx, ".", 1234)
+	assert.NoError(t, err)
+	assert.EqualValues(t, 1234, out)
+
+	out, err = JQ(ctx, ".", true)
+	assert.NoError(t, err)
+	assert.EqualValues(t, true, out)
+
+	out, err = JQ(ctx, ".", nil)
+	assert.NoError(t, err)
+	assert.Nil(t, out)
+
+	// underlying basic types
+	type intType int
+	out, err = JQ(ctx, ".", intType(1234))
+	assert.NoError(t, err)
+	assert.EqualValues(t, 1234, out)
+
+	type byteArrayType []byte
+	out, err = JQ(ctx, ".", byteArrayType("hello"))
+	assert.NoError(t, err)
+	assert.EqualValues(t, "hello", out)
+}
+
+func TestJQConvertType_passthroughTypes(t *testing.T) {
+	// non-marshalable values, like recursive structs, can't be used
+	type recursive struct{ Self *recursive }
+	v := &recursive{}
+	v.Self = v
+	_, err := jqConvertType(v)
+	assert.Error(t, err)
+
+	testdata := []interface{}{
+		map[string]interface{}{"foo": 1234},
+		[]interface{}{"foo", "bar", "baz", 1, 2, 3},
+		"foo",
+		[]byte("foo"),
+		json.RawMessage(`{"foo": "bar"}`),
+		true,
+		nil,
+		int(1234), int8(123), int16(123), int32(123), int64(123),
+		uint(123), uint8(123), uint16(123), uint32(123), uint64(123),
+		float32(123.45), float64(123.45),
+	}
+
+	for _, d := range testdata {
+		out, err := jqConvertType(d)
+		assert.NoError(t, err)
+		assert.Equal(t, d, out)
+	}
 }
