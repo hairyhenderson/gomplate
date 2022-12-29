@@ -137,7 +137,7 @@ funcs:
         $ gomplate -i '{{ .books | jsonpath `$..works[?( @.edition_count > 400 )].title` }}' -c books=https://openlibrary.org/subjects/fantasy.json
         [Alice's Adventures in Wonderland Gulliver's Travels]
   - name: coll.JQ
-    alias: jsonpath
+    alias: jq
     description: |
       Filters an input object or list using the JQ language implemented by gojq (https://github.com/itchyny/gojq).
 
