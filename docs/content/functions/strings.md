@@ -207,6 +207,42 @@ $ gomplate -i '{{ (coll.Slice "foo" "bar" "baz") | strings.Sort }}'
 [bar baz foo]
 ```
 
+## `strings.SkipLines`
+
+Skips the given number of lines (each ending in a `\n`), returning the
+remainder.
+
+If `skip` is greater than the number of lines in `in`, an empty string is
+returned.
+
+### Usage
+
+```go
+strings.SkipLines skip in
+```
+```go
+in | strings.SkipLines skip
+```
+
+### Arguments
+
+| name | description |
+|------|-------------|
+| `skip` | _(required)_ the number of lines to skip - must be a positive number |
+| `in` | _(required)_ the input string |
+
+### Examples
+
+```console
+$ gomplate -i '{{ "foo\nbar\nbaz" | strings.SkipLines 2 }}'
+baz
+```
+```console
+$ gomplate -i '{{ strings.SkipLines 1 "foo\nbar\nbaz" }}'
+bar
+baz
+```
+
 ## `strings.Split`
 
 _Not to be confused with [`split`](#split), which is deprecated._

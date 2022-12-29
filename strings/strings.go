@@ -2,6 +2,7 @@
 package strings
 
 import (
+	"fmt"
 	"regexp"
 	"sort"
 	"strings"
@@ -124,4 +125,23 @@ func wwDefaults(opts WordWrapOpts) WordWrapOpts {
 func WordWrap(in string, opts WordWrapOpts) string {
 	opts = wwDefaults(opts)
 	return goutils.WrapCustom(in, int(opts.Width), opts.LBSeq, false)
+}
+
+// SkipLines - skip the given number of lines (ending with \n) from the string.
+// If skip is greater than the number of lines in the string, an empty string is
+// returned.
+func SkipLines(skip int, in string) (string, error) {
+	if skip < 0 {
+		return "", fmt.Errorf("skip must be >= 0")
+	}
+	if skip == 0 {
+		return in, nil
+	}
+
+	lines := strings.SplitN(in, "\n", skip+1)
+	if skip >= len(lines) {
+		return "", nil
+	}
+
+	return lines[skip], nil
 }

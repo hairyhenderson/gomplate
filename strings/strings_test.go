@@ -126,3 +126,18 @@ that has been set.`
 	// 	in = strings.ReplaceAll(out, "\n", " ")
 	// 	assert.Equal(t, out, WordWrap(in, WordWrapOpts{Width: 100}))
 }
+
+func TestSkipLines(t *testing.T) {
+	out, _ := SkipLines(2, "\nfoo\nbar\n\nbaz")
+	assert.Equal(t, "bar\n\nbaz", out)
+
+	out, _ = SkipLines(0, "foo\nbar\n\nbaz")
+	assert.Equal(t, "foo\nbar\n\nbaz", out)
+
+	_, err := SkipLines(-1, "foo\nbar\n\nbaz")
+	assert.Error(t, err)
+
+	out, err = SkipLines(4, "foo\nbar\n\nbaz")
+	assert.NoError(t, err)
+	assert.Equal(t, "", out)
+}
