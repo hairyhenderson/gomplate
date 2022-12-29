@@ -213,6 +213,7 @@ Otherwise a single item is returned (even if resulting in an array with a single
 JQ filter expressions can be tested at https://jqplay.org/
 
 See also:
+
 - [jq manual](https://stedolan.github.io/jq/manual/)
 - [gojq differences to jq](https://github.com/itchyny/gojq#difference-to-jq)
 
