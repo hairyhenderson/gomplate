@@ -12,6 +12,8 @@ import (
 	"github.com/hairyhenderson/gomplate/v3/conv"
 	"github.com/hairyhenderson/gomplate/v3/env"
 	"github.com/hairyhenderson/gomplate/v3/internal/iohelpers"
+	"github.com/hashicorp/go-hclog"
+	"github.com/hashicorp/go-secure-stdlib/awsutil"
 	"github.com/pkg/errors"
 )
 
@@ -144,20 +146,28 @@ func (v *Vault) UserPassLogin() (string, error) {
 
 // EC2Login - AWS EC2 auth backend
 func (v *Vault) EC2Login() (string, error) {
-	mount := env.Getenv("VAULT_AUTH_AWS_MOUNT", "aws")
-	output := env.Getenv("VAULT_AUTH_AWS_NONCE_OUTPUT")
-
 	nonce := env.Getenv("VAULT_AUTH_AWS_NONCE")
 
-	vars, err := createEc2LoginVars(nonce)
-	if err != nil {
-		return "", err
-	}
-	if vars["pkcs7"] == "" {
-		return "", nil
+	// generate login parameters
+	var vars map[string]interface{}
+	var err error
+	if env.Getenv("VAULT_AUTH_AWS_TYPE", "ec2") == "iam" {
+		vars, err = createIAMLoginVars()
+		if err != nil {
+			return "", fmt.Errorf("error generating iam login parameters: %v", err)
+		}
+	} else {
+		vars, err = createEc2LoginVars(nonce)
+		if err != nil {
+			return "", fmt.Errorf("error generating ec2 login parameters: %v", err)
+		}
 	}
 
-	path := fmt.Sprintf("auth/%s/login", mount)
+	if role := env.Getenv("VAULT_AUTH_AWS_ROLE"); role != "" {
+		vars["role"] = role
+	}
+
+	path := fmt.Sprintf("auth/%s/login", env.Getenv("VAULT_AUTH_AWS_MOUNT", "aws"))
 	secret, err := v.client.Logical().Write(path, vars)
 	if err != nil {
 		return "", errors.Wrapf(err, "AWS EC2 logon failed")
@@ -166,7 +176,7 @@ func (v *Vault) EC2Login() (string, error) {
 		return "", errors.New("empty response from AWS EC2 logon")
 	}
 
-	if output != "" {
+	if output := env.Getenv("VAULT_AUTH_AWS_NONCE_OUTPUT"); output != "" {
 		if val, ok := secret.Auth.Metadata["nonce"]; ok {
 			nonce = val
 		}
@@ -187,18 +197,6 @@ func (v *Vault) EC2Login() (string, error) {
 }
 
 func createEc2LoginVars(nonce string) (map[string]interface{}, error) {
-	role := env.Getenv("VAULT_AUTH_AWS_ROLE")
-
-	vars := map[string]interface{}{}
-
-	if role != "" {
-		vars["role"] = role
-	}
-
-	if nonce != "" {
-		vars["nonce"] = nonce
-	}
-
 	opts := aws.ClientOptions{
 		Timeout: time.Duration(conv.MustAtoi(env.Getenv("AWS_TIMEOUT"))) * time.Millisecond,
 	}
@@ -209,7 +207,40 @@ func createEc2LoginVars(nonce string) (map[string]interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	vars := map[string]interface{}{}
 	vars["pkcs7"] = strings.ReplaceAll(strings.TrimSpace(doc), "\n", "")
+	if nonce != "" {
+		vars["nonce"] = nonce
+	}
+
+	return vars, nil
+}
+
+func createIAMLoginVars() (map[string]interface{}, error) {
+	logger := hclog.NewNullLogger()
+
+	creds, err := awsutil.RetrieveCreds(env.Getenv("AWS_ACCESS_KEY_ID"), env.Getenv("AWS_SECRET_ACCESS_KEY"), env.Getenv("AWS_SESSION_TOKEN"), logger)
+	if err != nil {
+		return nil, fmt.Errorf("error retrieving credentials: %v", err)
+	}
+
+	headerValue := env.Getenv("VAULT_AUTH_AWS_HEADER_VALUE")
+
+	region := awsutil.DefaultRegion
+	for _, v := range []string{"VAULT_AUTH_AWS_REGION", "AWS_REGION", "AWS_DEFAULT_REGION"} {
+		if r := env.Getenv(v); v != "" {
+			region = r
+		}
+	}
+
+	vars, err := awsutil.GenerateLoginData(creds, headerValue, region, logger)
+	if err != nil {
+		return nil, fmt.Errorf("error generating login parameters: %v", err)
+	}
+	if len(vars) == 0 {
+		return nil, errors.New("invalid login data")
+	}
 	return vars, nil
 }
 
