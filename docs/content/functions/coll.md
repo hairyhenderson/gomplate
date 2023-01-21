@@ -165,6 +165,48 @@ $ gomplate -i '{{ $o := data.JSON (getenv "DATA") -}}
 THERE IS NO FOO
 ```
 
+## `coll.Index`
+
+Returns the result of indexing the given map, slice, or array by the given
+key or index. This is similar to the built-in `index` function, but the
+arguments are ordered differently for pipeline compatibility. Also this
+function is more strict, and will return an error when trying to access a
+non-existent map key.
+
+Multiple indexes may be given, for nested indexing.
+
+### Usage
+
+```go
+coll.Index indexes... in
+```
+```go
+in | coll.Index indexes...
+```
+
+### Arguments
+
+| name | description |
+|------|-------------|
+| `indexes...` | _(required)_ The key or index |
+| `in` | _(required)_ The map, slice, or array to index |
+
+### Examples
+
+```console
+$ gomplate -i '{{ coll.Index "foo" (dict "foo" "bar") }}'
+bar
+```
+```console
+$ gomplate -i '{{ $m := json `{"foo": {"bar": "baz"}}` -}}
+  {{ coll.Index "foo" "bar" $m }}'
+baz
+```
+```console
+$ gomplate -i '{{ coll.Slice "foo" "bar" "baz" | coll.Index 1 }}'
+bar
+```
+
 ## `coll.JSONPath`
 
 **Alias:** `jsonpath`

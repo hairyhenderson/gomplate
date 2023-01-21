@@ -2,6 +2,7 @@ package funcs
 
 import (
 	"context"
+	"fmt"
 	"reflect"
 
 	"github.com/hairyhenderson/gomplate/v3/conv"
@@ -77,6 +78,22 @@ func (CollFuncs) GoSlice(item reflect.Value, indexes ...reflect.Value) (reflect.
 // Has -
 func (CollFuncs) Has(in interface{}, key string) bool {
 	return coll.Has(in, key)
+}
+
+// Index returns the result of indexing the last argument with the preceding
+// index keys. This is similar to the `index` built-in template function, but
+// the arguments are ordered differently for pipeline compatibility. Also, this
+// function is more strict, and will return an error when the value doesn't
+// contain the given key.
+func (CollFuncs) Index(args ...interface{}) (interface{}, error) {
+	if len(args) < 2 {
+		return nil, fmt.Errorf("wrong number of args: wanted at least 2, got %d", len(args))
+	}
+
+	item := args[len(args)-1]
+	indexes := args[:len(args)-1]
+
+	return coll.Index(item, indexes...)
 }
 
 // Dict -
