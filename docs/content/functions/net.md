@@ -213,7 +213,41 @@ $ gomplate -i '{{net.LookupTXT "example.com" | data.ToJSONPretty "  " }}'
 ]
 ```
 
-## `net.ParseIP`
+## `net.ParseAddr`
+
+Parse the given string as an IP address (a
+[`netip.Addr`](https://pkg.go.dev/net/netip#Addr)).
+
+Any of `netip.Addr`'s methods may be called on the resulting value. See
+[the docs](https://pkg.go.dev/net/netip#Addr) for details.
+
+### Usage
+
+```go
+net.ParseAddr addr
+```
+```go
+addr | net.ParseAddr
+```
+
+### Arguments
+
+| name | description |
+|------|-------------|
+| `addr` | _(required)_ The IP string to parse. It must be either an IPv4 or IPv6 address. |
+
+### Examples
+
+```console
+$ gomplate -i '{{ (net.ParseAddr "192.168.0.1").IsPrivate }}'
+true
+$ gomplate -i '{{ $ip := net.ParseAddr (net.LookupIP "example.com") -}}
+  {{ $ip.Prefix 12 }}'
+93.176.0.0/12
+```
+
+## `net.ParseIP` _(deprecated)_
+**Deprecation Notice:** Use [`net.ParseAddr`](#net-parseaddr) instead.
 
 Parse the given string as an IP address (a `netaddr.IP` from the
 [`inet.af/netaddr`](https://pkg.go.dev/inet.af/netaddr) package).
@@ -246,7 +280,45 @@ $ gomplate -i '{{ $ip := net.ParseIP (net.LookupIP "example.com") -}}
 93.176.0.0/12
 ```
 
-## `net.ParseIPPrefix`
+## `net.ParsePrefix`
+
+Parse the given string as an IP address prefix (CIDR) representing an IP
+network (a [`netip.Prefix`](https://pkg.go.dev/net/netip#Prefix)).
+
+The string can be in the form `"192.168.1.0/24"` or `"2001::db8::/32"`,
+the CIDR notations defined in [RFC 4632][] and [RFC 4291][].
+
+Any of `netip.Prefix`'s methods may be called on the resulting value. See
+[the docs](https://pkg.go.dev/net/netip#Prefix) for details.
+
+### Usage
+
+```go
+net.ParsePrefix prefix
+```
+```go
+prefix | net.ParsePrefix
+```
+
+### Arguments
+
+| name | description |
+|------|-------------|
+| `prefix` | _(required)_ The IP address prefix to parse. It must represent either an IPv4 or IPv6 prefix, containing a `/`. |
+
+### Examples
+
+```console
+$ gomplate -i '{{ (net.ParsePrefix "192.168.0.0/24").Range }}'
+192.168.0.0-192.168.0.255
+$ gomplate -i '{{ $ip := net.ParseAddr (net.LookupIP "example.com") -}}
+  {{ $net := net.ParsePrefix "93.184.0.0/16" -}}
+  {{ $net.Contains $ip }}'
+true
+```
+
+## `net.ParseIPPrefix` _(deprecated)_
+**Deprecation Notice:** Use [`net.ParsePrefix`](#net-parseprefix) instead.
 
 Parse the given string as an IP address prefix (CIDR) representing an IP
 network (a `netaddr.IPPrefix` from the
@@ -287,7 +359,52 @@ $ gomplate -i '{{ $net := net.ParseIPPrefix "93.184.0.0/12" -}}
 93.176.0.0-93.191.255.255
 ```
 
-## `net.ParseIPRange`
+## `net.ParseRange` _(experimental)_
+**Experimental:** This function is [_experimental_][experimental] and may be enabled with the [`--experimental`][experimental] flag.
+
+[experimental]: ../config/#experimental
+
+Parse the given string as an inclusive range of IP addresses from the same
+address family (a [`netipx.IPRange`](https://pkg.go.dev/go4.org/netipx#IPRange)
+from the [`go4.org/netipx`](https://pkg.go.dev/go4.org/netipx) module).
+
+The string must contain a hyphen (`-`).
+
+Any of `netipx.IPRange`'s methods may be called on the resulting value.
+See [the docs](https://pkg.go.dev/go4.org/netipx#IPRange) for details.
+
+Note that this function is experimental for now, because it uses a
+[third-party module](https://pkg.go.dev/go4.org/netipx) which may be
+brought into the standard library in the future, which may require
+breaking changes to this function.
+
+### Usage
+
+```go
+net.ParseRange iprange
+```
+```go
+iprange | net.ParseRange
+```
+
+### Arguments
+
+| name | description |
+|------|-------------|
+| `iprange` | _(required)_ The IP address range to parse. It must represent either an IPv4 or IPv6 range, containing a `-`. |
+
+### Examples
+
+```console
+$ gomplate -i '{{ (net.ParseRange "192.168.0.0-192.168.0.255").To }}'
+192.168.0.255
+$ gomplate -i '{{ $range := net.ParseRange "1.2.3.0-1.2.3.233" -}}
+  {{ $range.Prefixes }}'
+[1.2.3.0/25 1.2.3.128/26 1.2.3.192/27 1.2.3.224/29 1.2.3.232/31]
+```
+
+## `net.ParseIPRange` _(deprecated)_
+**Deprecation Notice:** Use [`net.ParseRange`](#net-parserange) instead.
 
 Parse the given string as an inclusive range of IP addresses from the same
 address family (a `netaddr.IPRange` from the [`inet.af/netaddr`][] package).
