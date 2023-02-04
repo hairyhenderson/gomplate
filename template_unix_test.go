@@ -6,33 +6,40 @@ import (
 	"context"
 	"testing"
 
+	"github.com/hack-pad/hackpadfs"
+	"github.com/hack-pad/hackpadfs/mem"
 	"github.com/hairyhenderson/gomplate/v4/internal/config"
-	"github.com/spf13/afero"
+	"github.com/hairyhenderson/gomplate/v4/internal/datafs"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func TestWalkDir(t *testing.T) {
-	ctx := context.Background()
-	origfs := aferoFS
-	defer func() { aferoFS = origfs }()
-	aferoFS = afero.NewMemMapFs()
+func TestWalkDir_UNIX(t *testing.T) {
+	memfs, _ := mem.NewFS()
+	fsys := datafs.WrapWdFS(memfs)
+
+	ctx := datafs.ContextWithFSProvider(context.Background(), datafs.WrappedFSProvider(fsys, "file"))
 
 	cfg := &config.Config{}
 
 	_, err := walkDir(ctx, cfg, "/indir", simpleNamer("/outdir"), nil, 0, false)
 	assert.Error(t, err)
 
-	_ = aferoFS.MkdirAll("/indir/one", 0777)
-	_ = aferoFS.MkdirAll("/indir/two", 0777)
-	afero.WriteFile(aferoFS, "/indir/one/foo", []byte("foo"), 0644)
-	afero.WriteFile(aferoFS, "/indir/one/bar", []byte("bar"), 0664)
-	afero.WriteFile(aferoFS, "/indir/two/baz", []byte("baz"), 0644)
+	err = hackpadfs.MkdirAll(fsys, "/indir/one", 0o777)
+	require.NoError(t, err)
+	err = hackpadfs.MkdirAll(fsys, "/indir/two", 0o777)
+	require.NoError(t, err)
+	err = hackpadfs.WriteFullFile(fsys, "/indir/one/foo", []byte("foo"), 0o644)
+	require.NoError(t, err)
+	err = hackpadfs.WriteFullFile(fsys, "/indir/one/bar", []byte("bar"), 0o644)
+	require.NoError(t, err)
+	err = hackpadfs.WriteFullFile(fsys, "/indir/two/baz", []byte("baz"), 0o644)
+	require.NoError(t, err)
 
 	templates, err := walkDir(ctx, cfg, "/indir", simpleNamer("/outdir"), []string{"*/two"}, 0, false)
-
 	require.NoError(t, err)
+
 	expected := []Template{
 		{
 			Name: "/indir/one/bar",

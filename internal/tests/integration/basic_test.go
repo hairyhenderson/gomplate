@@ -8,17 +8,19 @@ import (
 	"github.com/hairyhenderson/gomplate/v4/internal/iohelpers"
 	"gotest.tools/v3/assert"
 	"gotest.tools/v3/assert/cmp"
-	testfs "gotest.tools/v3/fs"
+	tfs "gotest.tools/v3/fs"
 )
 
-func setupBasicTest(t *testing.T) *testfs.Dir {
-	tmpDir := testfs.NewDir(t, "gomplate-inttests",
-		testfs.WithFile("one", "hi\n", testfs.WithMode(0640)),
-		testfs.WithFile("two", "hello\n"),
-		testfs.WithFile("broken", "", testfs.WithMode(0000)),
-		testfs.WithDir("subdir",
-			testfs.WithFile("f1", "first\n", testfs.WithMode(0640)),
-			testfs.WithFile("f2", "second\n"),
+func setupBasicTest(t *testing.T) *tfs.Dir {
+	t.Helper()
+
+	tmpDir := tfs.NewDir(t, "gomplate-inttests",
+		tfs.WithFile("one", "hi\n", tfs.WithMode(0o640)),
+		tfs.WithFile("two", "hello\n"),
+		tfs.WithFile("broken", "", tfs.WithMode(0o000)),
+		tfs.WithDir("subdir",
+			tfs.WithFile("f1", "first\n", tfs.WithMode(0o640)),
+			tfs.WithFile("f2", "second\n"),
 		),
 	)
 	t.Cleanup(tmpDir.Remove)
@@ -180,7 +182,7 @@ func TestBasic_EmptyOutputSuppression(t *testing.T) {
 	assertSuccess(t, o, e, err, "")
 
 	_, err = os.Stat(out)
-	assert.Equal(t, true, os.IsNotExist(err))
+	assert.ErrorIs(t, err, fs.ErrNotExist)
 }
 
 func TestBasic_RoutesInputsToProperOutputsWithChmod(t *testing.T) {

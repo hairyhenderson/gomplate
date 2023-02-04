@@ -3,6 +3,7 @@ package data
 import (
 	"context"
 	"fmt"
+	"io/fs"
 	"mime"
 	"net/http"
 	"net/url"
@@ -10,9 +11,8 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/spf13/afero"
-
 	"github.com/hairyhenderson/gomplate/v4/internal/config"
+	"github.com/hairyhenderson/gomplate/v4/internal/datafs"
 	"github.com/hairyhenderson/gomplate/v4/libkv"
 	"github.com/hairyhenderson/gomplate/v4/vault"
 )
@@ -61,11 +61,16 @@ func (d *Data) registerReaders() {
 	d.sourceReaders["git+ssh"] = readGit
 }
 
-// lookupReader - return the reader function for the given scheme
+// lookupReader - return the reader function for the given scheme. Empty scheme
+// will return the file reader.
 func (d *Data) lookupReader(scheme string) (func(context.Context, *Source, ...string) ([]byte, error), error) {
 	if d.sourceReaders == nil {
 		d.registerReaders()
 	}
+	if scheme == "" {
+		scheme = "file"
+	}
+
 	r, ok := d.sourceReaders[scheme]
 	if !ok {
 		return nil, fmt.Errorf("scheme %s not registered", scheme)
@@ -144,7 +149,7 @@ type Source struct {
 	Alias             string
 	URL               *url.URL
 	Header            http.Header             // used for http[s]: URLs, nil otherwise
-	fs                afero.Fs                // used for file: URLs, nil otherwise
+	fs                fs.FS                   // used for file: URLs, nil otherwise
 	hc                *http.Client            // used for http[s]: URLs, nil otherwise
 	vc                *vault.Vault            // used for vault: URLs, nil otherwise
 	kv                *libkv.LibKV            // used for consul:, etcd:, zookeeper: URLs, nil otherwise
@@ -240,7 +245,7 @@ func (d *Data) DefineDatasource(alias, value string) (string, error) {
 	if d.DatasourceExists(alias) {
 		return "", nil
 	}
-	srcURL, err := config.ParseSourceURL(value)
+	srcURL, err := datafs.ParseSourceURL(value)
 	if err != nil {
 		return "", err
 	}

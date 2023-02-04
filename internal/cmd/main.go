@@ -7,9 +7,10 @@ import (
 	"os/exec"
 	"os/signal"
 
-	"github.com/hairyhenderson/go-fsimpl/filefs"
+	"github.com/hairyhenderson/go-fsimpl"
 	"github.com/hairyhenderson/gomplate/v4"
 	"github.com/hairyhenderson/gomplate/v4/env"
+	"github.com/hairyhenderson/gomplate/v4/internal/datafs"
 	"github.com/hairyhenderson/gomplate/v4/version"
 
 	"github.com/rs/zerolog"
@@ -82,7 +83,7 @@ func NewGomplateCmd() *cobra.Command {
 			ctx := cmd.Context()
 			log := zerolog.Ctx(ctx)
 
-			cfg, err := loadConfig(cmd, args)
+			cfg, err := loadConfig(ctx, cmd, args)
 			if err != nil {
 				return err
 			}
@@ -168,10 +169,12 @@ func Main(ctx context.Context, args []string, stdin io.Reader, stdout, stderr io
 	ctx = initLogger(ctx, stderr)
 
 	// inject a default filesystem provider for file:// URLs
-	// TODO: expand this to support other schemes!
-	if gomplate.FSProviderFromContext(ctx) == nil {
-		// allow this to be overridden by tests
-		ctx = gomplate.ContextWithFSProvider(ctx, filefs.FS)
+	if datafs.FSProviderFromContext(ctx) == nil {
+		// TODO: expand this to support other schemes!
+		mux := fsimpl.NewMux()
+		mux.Add(datafs.WdFS)
+
+		ctx = datafs.ContextWithFSProvider(ctx, mux)
 	}
 
 	command := NewGomplateCmd()

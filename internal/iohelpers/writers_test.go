@@ -4,11 +4,17 @@ import (
 	"bytes"
 	"fmt"
 	"io"
+	"io/fs"
 	"os"
+	"path/filepath"
 	"testing"
 
+	"github.com/hack-pad/hackpadfs"
+	osfs "github.com/hack-pad/hackpadfs/os"
+	"github.com/hairyhenderson/gomplate/v4/internal/datafs"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	tfs "gotest.tools/v3/fs"
 )
 
 func TestAllWhitespace(t *testing.T) {
@@ -158,4 +164,84 @@ func TestLazyWriteCloser(t *testing.T) {
 
 	err = l.Close()
 	assert.Error(t, err)
+}
+
+func TestWrite(t *testing.T) {
+	oldwd, _ := os.Getwd()
+	defer os.Chdir(oldwd)
+
+	rootDir := tfs.NewDir(t, "gomplate-test")
+	t.Cleanup(rootDir.Remove)
+
+	// we want to use a real filesystem here, so we can test interactions with
+	// the current working directory
+	fsys := datafs.WrapWdFS(osfs.NewFS())
+
+	newwd := rootDir.Join("the", "path", "we", "want")
+	badwd := rootDir.Join("some", "other", "dir")
+	hackpadfs.MkdirAll(fsys, newwd, 0755)
+	hackpadfs.MkdirAll(fsys, badwd, 0755)
+	newwd, _ = filepath.EvalSymlinks(newwd)
+	badwd, _ = filepath.EvalSymlinks(badwd)
+
+	err := os.Chdir(newwd)
+	require.NoError(t, err)
+
+	err = WriteFile(fsys, "/foo", []byte("Hello world"))
+	assert.Error(t, err)
+
+	rel, err := filepath.Rel(newwd, badwd)
+	require.NoError(t, err)
+	err = WriteFile(fsys, rel, []byte("Hello world"))
+	assert.Error(t, err)
+
+	foopath := filepath.Join(newwd, "foo")
+	err = WriteFile(fsys, foopath, []byte("Hello world"))
+	require.NoError(t, err)
+
+	out, err := fs.ReadFile(fsys, foopath)
+	require.NoError(t, err)
+	assert.Equal(t, "Hello world", string(out))
+
+	err = WriteFile(fsys, foopath, []byte("truncate"))
+	require.NoError(t, err)
+
+	out, err = fs.ReadFile(fsys, foopath)
+	require.NoError(t, err)
+	assert.Equal(t, "truncate", string(out))
+
+	foopath = filepath.Join(newwd, "nonexistant", "subdir", "foo")
+	err = WriteFile(fsys, foopath, []byte("Hello subdirranean world!"))
+	require.NoError(t, err)
+
+	out, err = fs.ReadFile(fsys, foopath)
+	require.NoError(t, err)
+	assert.Equal(t, "Hello subdirranean world!", string(out))
+}
+
+func TestAssertPathInWD(t *testing.T) {
+	oldwd, _ := os.Getwd()
+	defer os.Chdir(oldwd)
+
+	err := assertPathInWD("/tmp")
+	assert.Error(t, err)
+
+	err = assertPathInWD(filepath.Join(oldwd, "subpath"))
+	require.NoError(t, err)
+
+	err = assertPathInWD("subpath")
+	require.NoError(t, err)
+
+	err = assertPathInWD("./subpath")
+	require.NoError(t, err)
+
+	err = assertPathInWD(filepath.Join("..", "bogus"))
+	assert.Error(t, err)
+
+	err = assertPathInWD(filepath.Join("..", "..", "bogus"))
+	assert.Error(t, err)
+
+	base := filepath.Base(oldwd)
+	err = assertPathInWD(filepath.Join("..", base))
+	require.NoError(t, err)
 }

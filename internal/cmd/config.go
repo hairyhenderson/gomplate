@@ -8,10 +8,10 @@ import (
 	"github.com/hairyhenderson/gomplate/v4/conv"
 	"github.com/hairyhenderson/gomplate/v4/env"
 	"github.com/hairyhenderson/gomplate/v4/internal/config"
+	"github.com/hairyhenderson/gomplate/v4/internal/datafs"
 
 	"github.com/rs/zerolog"
 
-	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
 )
 
@@ -19,20 +19,17 @@ const (
 	defaultConfigFile = ".gomplate.yaml"
 )
 
-var fs = afero.NewOsFs()
-
 // loadConfig is intended to be called before command execution. It:
 // - creates a config.Config from the cobra flags
 // - creates a config.Config from the config file (if present)
 // - merges the two (flags take precedence)
-func loadConfig(cmd *cobra.Command, args []string) (*config.Config, error) {
-	ctx := cmd.Context()
+func loadConfig(ctx context.Context, cmd *cobra.Command, args []string) (*config.Config, error) {
 	flagConfig, err := cobraConfig(cmd, args)
 	if err != nil {
 		return nil, err
 	}
 
-	cfg, err := readConfigFile(cmd)
+	cfg, err := readConfigFile(ctx, cmd)
 	if err != nil {
 		return nil, err
 	}
@@ -68,16 +65,18 @@ func pickConfigFile(cmd *cobra.Command) (cfgFile string, required bool) {
 	return cfgFile, required
 }
 
-func readConfigFile(cmd *cobra.Command) (cfg *config.Config, err error) {
-	ctx := cmd.Context()
-	if ctx == nil {
-		ctx = context.Background()
-	}
+func readConfigFile(ctx context.Context, cmd *cobra.Command) (cfg *config.Config, err error) {
 	log := zerolog.Ctx(ctx)
 
 	cfgFile, configRequired := pickConfigFile(cmd)
 
-	f, err := fs.Open(cfgFile)
+	// we only support loading configs from the local filesystem for now
+	fsys, err := datafs.FSysForPath(ctx, cfgFile)
+	if err != nil {
+		return nil, err
+	}
+
+	f, err := fsys.Open(cfgFile)
 	if err != nil {
 		if configRequired {
 			return cfg, fmt.Errorf("config file requested, but couldn't be opened: %w", err)

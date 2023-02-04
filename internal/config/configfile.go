@@ -9,11 +9,11 @@ import (
 	"net/url"
 	"os"
 	"path"
-	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
 
+	"github.com/hairyhenderson/gomplate/v4/internal/datafs"
 	"github.com/hairyhenderson/gomplate/v4/internal/iohelpers"
 	"github.com/hairyhenderson/yaml"
 )
@@ -69,14 +69,14 @@ type Config struct {
 	Experimental  bool `yaml:"experimental,omitempty"`
 }
 
-var experimentalCtxKey = struct{}{}
+type experimentalCtxKey struct{}
 
 func SetExperimental(ctx context.Context) context.Context {
-	return context.WithValue(ctx, experimentalCtxKey, true)
+	return context.WithValue(ctx, experimentalCtxKey{}, true)
 }
 
 func ExperimentalEnabled(ctx context.Context) bool {
-	v, ok := ctx.Value(experimentalCtxKey).(bool)
+	v, ok := ctx.Value(experimentalCtxKey{}).(bool)
 	return ok && v
 }
 
@@ -111,7 +111,7 @@ func (d *DataSource) UnmarshalYAML(value *yaml.Node) error {
 	if err != nil {
 		return err
 	}
-	u, err := ParseSourceURL(r.URL)
+	u, err := datafs.ParseSourceURL(r.URL)
 	if err != nil {
 		return fmt.Errorf("could not parse datasource URL %q: %w", r.URL, err)
 	}
@@ -374,7 +374,7 @@ func parseDatasourceArg(value string) (alias string, ds DataSource, err error) {
 		}
 	}
 
-	ds.URL, err = ParseSourceURL(u)
+	ds.URL, err = datafs.ParseSourceURL(u)
 
 	return alias, ds, err
 }
@@ -582,65 +582,4 @@ func (c *Config) String() string {
 		return err.Error()
 	}
 	return out.String()
-}
-
-// ParseSourceURL parses a datasource URL value, which may be '-' (for stdin://),
-// or it may be a Windows path (with driver letter and back-slack separators) or
-// UNC, or it may be relative. It also might just be a regular absolute URL...
-// In all cases it returns a correct URL for the value.
-func ParseSourceURL(value string) (*url.URL, error) {
-	if value == "-" {
-		value = "stdin://"
-	}
-	value = filepath.ToSlash(value)
-	// handle absolute Windows paths
-	volName := ""
-	if volName = filepath.VolumeName(value); volName != "" {
-		// handle UNCs
-		if len(volName) > 2 {
-			value = "file:" + value
-		} else {
-			value = "file:///" + value
-		}
-	}
-	srcURL, err := url.Parse(value)
-	if err != nil {
-		return nil, err
-	}
-
-	if volName != "" && len(srcURL.Path) >= 3 {
-		if srcURL.Path[0] == '/' && srcURL.Path[2] == ':' {
-			srcURL.Path = srcURL.Path[1:]
-		}
-	}
-
-	if !srcURL.IsAbs() {
-		srcURL, err = absFileURL(value)
-		if err != nil {
-			return nil, err
-		}
-	}
-	return srcURL, nil
-}
-
-func absFileURL(value string) (*url.URL, error) {
-	wd, err := os.Getwd()
-	if err != nil {
-		return nil, fmt.Errorf("can't get working directory: %w", err)
-	}
-	wd = filepath.ToSlash(wd)
-	baseURL := &url.URL{
-		Scheme: "file",
-		Path:   wd + "/",
-	}
-	relURL, err := url.Parse(value)
-	if err != nil {
-		return nil, fmt.Errorf("can't parse value %s as URL: %w", value, err)
-	}
-	resolved := baseURL.ResolveReference(relURL)
-	// deal with Windows drive letters
-	if !strings.HasPrefix(wd, "/") && resolved.Path[2] == ':' {
-		resolved.Path = resolved.Path[1:]
-	}
-	return resolved, nil
 }

@@ -166,12 +166,14 @@ $(shell go list -f '{{ if not (eq "" (join .TestGoFiles "")) }}testbin/{{.Import
 # available. Git must also be configured with a username and email address. See
 # the GitHub workflow config in .github/workflows/build.yml for hints.
 # A recent PowerShell is also required, such as version 7.3 or later.
+#
+# An F: drive is expected to be available, with a tmp directory.
 .SECONDEXPANSION:
 $(shell go list -f '{{ if not (eq "" (join .TestGoFiles "")) }}testbin/{{.ImportPath}}.test.exe.remote{{end}}' ./...): $$(shell go list -f '{{.Dir}}' $$(subst testbin/,,$$(subst .test.exe.remote,,$$@)))
 	@echo $<
 	@GOOS=windows GOARCH=amd64 $(GO) test -tags timetzdata -c -o $(PREFIX)/testbin/remote-test.exe $<
 	@scp -q $(PREFIX)/testbin/remote-test.exe $(GO_REMOTE_WINDOWS):/$(shell ssh $(GO_REMOTE_WINDOWS) 'echo %TEMP%' | cut -f2 -d= | sed -e 's#\\#/#g')/
-	@ssh $(GO_REMOTE_WINDOWS) '%TEMP%\remote-test.exe'
+	@ssh -o 'SetEnv TMP=F:\tmp' $(GO_REMOTE_WINDOWS) '%TEMP%\remote-test.exe'
 
 # test-remote-windows runs the above target for all packages that have tests
 test-remote-windows: $(shell go list -f '{{ if not (eq "" (join .TestGoFiles "")) }}testbin/{{.ImportPath}}.test.exe.remote{{end}}' ./...)

@@ -1,25 +1,30 @@
 package integration
 
 import (
+	"io/fs"
 	"os"
 	"testing"
 
 	"gotest.tools/v3/assert"
-	"gotest.tools/v3/fs"
+	tfs "gotest.tools/v3/fs"
 )
 
-func setupConfigTest(t *testing.T) *fs.Dir {
-	tmpDir := fs.NewDir(t, "gomplate-inttests",
-		fs.WithDir("indir"),
-		fs.WithDir("outdir"),
-		fs.WithFile(".gomplate.yaml", "in: hello world\n"),
-		fs.WithFile("sleep.sh", "#!/bin/sh\n\nexec sleep $1\n", fs.WithMode(0755)),
+func setupConfigTest(t *testing.T) *tfs.Dir {
+	t.Helper()
+
+	tmpDir := tfs.NewDir(t, "gomplate-inttests",
+		tfs.WithDir("indir"),
+		tfs.WithDir("outdir"),
+		tfs.WithFile(".gomplate.yaml", "in: hello world\n"),
+		tfs.WithFile("sleep.sh", "#!/bin/sh\n\nexec sleep $1\n", tfs.WithMode(0755)),
 	)
 	t.Cleanup(tmpDir.Remove)
 	return tmpDir
 }
 
-func writeFile(t *testing.T, dir *fs.Dir, f, content string) {
+func writeFile(t *testing.T, dir *tfs.Dir, f, content string) {
+	t.Helper()
+
 	f = dir.Join(f)
 	err := os.WriteFile(f, []byte(content), 0600)
 	if err != nil {
@@ -27,7 +32,7 @@ func writeFile(t *testing.T, dir *fs.Dir, f, content string) {
 	}
 }
 
-func writeConfig(t *testing.T, dir *fs.Dir, content string) {
+func writeConfig(t *testing.T, dir *tfs.Dir, content string) {
 	t.Helper()
 
 	writeFile(t, dir, ".gomplate.yaml", content)
@@ -230,7 +235,7 @@ suppressEmpty: true
 	assert.NilError(t, err)
 
 	_, err = os.Stat(tmpDir.Join("missing"))
-	assert.Equal(t, true, os.IsNotExist(err))
+	assert.ErrorIs(t, err, fs.ErrNotExist)
 }
 
 func TestConfig_ConfigTemplatesSupportsMap(t *testing.T) {

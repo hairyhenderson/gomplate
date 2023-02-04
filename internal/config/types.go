@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/hairyhenderson/gomplate/v4/internal/datafs"
 	"github.com/hairyhenderson/yaml"
 )
 
@@ -52,7 +53,7 @@ func (t *Templates) unmarshalYAMLArray(value *yaml.Node) error {
 			pth = alias
 		}
 
-		u, err := ParseSourceURL(pth)
+		u, err := datafs.ParseSourceURL(pth)
 		if err != nil {
 			return fmt.Errorf("could not parse template URL %q: %w", pth, err)
 		}
@@ -89,7 +90,7 @@ func parseTemplateArg(value string) (alias string, ds DataSource, err error) {
 		u = alias
 	}
 
-	ds.URL, err = ParseSourceURL(u)
+	ds.URL, err = datafs.ParseSourceURL(u)
 
 	return alias, ds, err
 }

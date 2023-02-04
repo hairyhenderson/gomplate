@@ -4,66 +4,72 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"io/fs"
+	"net/url"
 	"os"
 	"testing"
+	"testing/fstest"
 	"time"
 
+	"github.com/hairyhenderson/go-fsimpl"
 	"github.com/hairyhenderson/gomplate/v4/internal/config"
+	"github.com/hairyhenderson/gomplate/v4/internal/datafs"
 
-	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
 func TestReadConfigFile(t *testing.T) {
-	fs = afero.NewMemMapFs()
-	defer func() { fs = afero.NewOsFs() }()
+	ctx := context.Background()
+	fsys := fstest.MapFS{}
+	ctx = datafs.ContextWithFSProvider(ctx, fsimpl.FSProviderFunc(func(_ *url.URL) (fs.FS, error) {
+		return fsys, nil
+	}))
 	cmd := &cobra.Command{}
 
-	_, err := readConfigFile(cmd)
+	_, err := readConfigFile(ctx, cmd)
 	require.NoError(t, err)
 
 	cmd.Flags().String("config", defaultConfigFile, "foo")
 
-	_, err = readConfigFile(cmd)
+	_, err = readConfigFile(ctx, cmd)
 	require.NoError(t, err)
 
 	cmd.ParseFlags([]string{"--config", "config.file"})
 
-	_, err = readConfigFile(cmd)
+	_, err = readConfigFile(ctx, cmd)
 	assert.Error(t, err)
 
 	cmd = &cobra.Command{}
 	cmd.Flags().String("config", defaultConfigFile, "foo")
 
-	f, err := fs.Create(defaultConfigFile)
-	require.NoError(t, err)
-	f.WriteString("")
+	fsys[defaultConfigFile] = &fstest.MapFile{}
 
-	cfg, err := readConfigFile(cmd)
+	cfg, err := readConfigFile(ctx, cmd)
 	require.NoError(t, err)
 	assert.EqualValues(t, &config.Config{}, cfg)
 
 	cmd.ParseFlags([]string{"--config", "config.yaml"})
 
-	f, err = fs.Create("config.yaml")
-	require.NoError(t, err)
-	f.WriteString("in: hello world\n")
+	fsys["config.yaml"] = &fstest.MapFile{Data: []byte("in: hello world\n")}
 
-	cfg, err = readConfigFile(cmd)
+	cfg, err = readConfigFile(ctx, cmd)
 	require.NoError(t, err)
 	assert.EqualValues(t, &config.Config{Input: "hello world"}, cfg)
 
-	f.WriteString("in: ")
+	fsys["config.yaml"] = &fstest.MapFile{Data: []byte("in: hello world\nin: \n")}
 
-	_, err = readConfigFile(cmd)
+	_, err = readConfigFile(ctx, cmd)
 	assert.Error(t, err)
 }
 
 func TestLoadConfig(t *testing.T) {
-	fs = afero.NewMemMapFs()
-	defer func() { fs = afero.NewOsFs() }()
+	ctx := context.Background()
+	fsys := fstest.MapFS{}
+	ctx = datafs.ContextWithFSProvider(ctx, fsimpl.FSProviderFunc(func(_ *url.URL) (fs.FS, error) {
+		return fsys, nil
+	}))
 
 	stdin, stdout, stderr := &bytes.Buffer{}, &bytes.Buffer{}, &bytes.Buffer{}
 	cmd := &cobra.Command{}
@@ -81,7 +87,7 @@ func TestLoadConfig(t *testing.T) {
 	cmd.Flags().Bool("exec-pipe", false, "...")
 	cmd.ParseFlags(nil)
 
-	out, err := loadConfig(cmd, cmd.Flags().Args())
+	out, err := loadConfig(ctx, cmd, cmd.Flags().Args())
 	expected := &config.Config{
 		Stdin:  stdin,
 		Stdout: stdout,
@@ -91,7 +97,7 @@ func TestLoadConfig(t *testing.T) {
 	assert.EqualValues(t, expected, out)
 
 	cmd.ParseFlags([]string{"--in", "foo"})
-	out, err = loadConfig(cmd, cmd.Flags().Args())
+	out, err = loadConfig(ctx, cmd, cmd.Flags().Args())
 	expected = &config.Config{
 		Input:  "foo",
 		Stdin:  stdin,
@@ -102,7 +108,7 @@ func TestLoadConfig(t *testing.T) {
 	assert.EqualValues(t, expected, out)
 
 	cmd.ParseFlags([]string{"--in", "foo", "--exec-pipe", "--", "tr", "[a-z]", "[A-Z]"})
-	out, err = loadConfig(cmd, cmd.Flags().Args())
+	out, err = loadConfig(ctx, cmd, cmd.Flags().Args())
 	expected = &config.Config{
 		Input:         "foo",
 		ExecPipe:      true,

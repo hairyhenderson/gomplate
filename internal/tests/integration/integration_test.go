@@ -190,6 +190,8 @@ func (c *command) withEnv(k, v string) *command {
 var GomplateBinPath = ""
 
 func (c *command) run() (o, e string, err error) {
+	c.t.Helper()
+
 	if GomplateBinPath != "" {
 		return c.runCompiled(GomplateBinPath)
 	}
@@ -197,6 +199,8 @@ func (c *command) run() (o, e string, err error) {
 }
 
 func (c *command) runInProcess() (o, e string, err error) {
+	c.t.Helper()
+
 	// iterate env vars by order of insertion
 	for _, k := range c.envK {
 		k := k
@@ -221,6 +225,8 @@ func (c *command) runInProcess() (o, e string, err error) {
 		if err != nil {
 			c.t.Fatal(err)
 		}
+
+		c.t.Logf("running in dir %q", c.dir)
 	}
 
 	stdin := strings.NewReader(c.stdin)

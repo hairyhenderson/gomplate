@@ -331,10 +331,10 @@ func TestOpenFileRepo(t *testing.T) {
 	overrideFSLoader(repoFS)
 	defer overrideFSLoader(osfs.New(""))
 
-	fs, _, err := g.clone(ctx, mustParseURL("git+file:///repo"), 0)
+	fsys, _, err := g.clone(ctx, mustParseURL("git+file:///repo"), 0)
 	assert.NilError(t, err)
 
-	f, err := fs.Open("/foo/bar/hi.txt")
+	f, err := fsys.Open("/foo/bar/hi.txt")
 	assert.NilError(t, err)
 	b, _ := io.ReadAll(f)
 	assert.Equal(t, "hello world", string(b))
@@ -370,10 +370,10 @@ func TestOpenBareFileRepo(t *testing.T) {
 	overrideFSLoader(repoFS)
 	defer overrideFSLoader(osfs.New(""))
 
-	fs, _, err := g.clone(ctx, mustParseURL("git+file:///bare.git"), 0)
+	fsys, _, err := g.clone(ctx, mustParseURL("git+file:///bare.git"), 0)
 	assert.NilError(t, err)
 
-	f, err := fs.Open("/hello.txt")
+	f, err := fsys.Open("/hello.txt")
 	assert.NilError(t, err)
 	b, _ := io.ReadAll(f)
 	assert.Equal(t, "hello world", string(b))

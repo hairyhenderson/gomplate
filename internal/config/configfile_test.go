@@ -3,9 +3,6 @@ package config
 import (
 	"net/http"
 	"net/url"
-	"os"
-	"path"
-	"path/filepath"
 	"runtime"
 	"strings"
 	"testing"
@@ -91,13 +88,7 @@ func mustURL(s string) *url.URL {
 	if err != nil {
 		panic(err)
 	}
-	// handle the case where it's a relative URL - just like in parseSourceURL.
-	if !u.IsAbs() {
-		u, err = absFileURL(s)
-		if err != nil {
-			panic(err)
-		}
-	}
+
 	return u
 }
 
@@ -232,6 +223,7 @@ func TestMergeFrom(t *testing.T) {
 			"bar": {URL: mustURL("stdin:///")},
 		},
 	}
+
 	expected := &Config{
 		Input:       "hello world",
 		OutputFiles: []string{"out.txt"},
@@ -534,30 +526,33 @@ func TestParsePluginFlags(t *testing.T) {
 	assert.EqualValues(t, &Config{Plugins: map[string]PluginConfig{"foo": {Cmd: "bar"}}}, cfg)
 }
 
-func TestConfigString(t *testing.T) {
-	c := &Config{}
-	c.ApplyDefaults()
+func TestConfig_String(t *testing.T) {
+	t.Run("defaults", func(t *testing.T) {
+		c := &Config{}
+		c.ApplyDefaults()
 
-	expected := `---
+		expected := `---
 inputFiles: ['-']
 outputFiles: ['-']
 leftDelim: '{{'
 rightDelim: '}}'
 pluginTimeout: 5s
 `
-	assert.Equal(t, expected, c.String())
+		assert.Equal(t, expected, c.String())
+	})
 
-	c = &Config{
-		LDelim:      "L",
-		RDelim:      "R",
-		Input:       "foo",
-		OutputFiles: []string{"-"},
-		Templates: Templates{
-			"foo": {URL: mustURL("https://www.example.com/foo.tmpl")},
-			"bar": {URL: mustURL("/tmp/bar.t")},
-		},
-	}
-	expected = `---
+	t.Run("overridden values", func(t *testing.T) {
+		c := &Config{
+			LDelim:      "L",
+			RDelim:      "R",
+			Input:       "foo",
+			OutputFiles: []string{"-"},
+			Templates: Templates{
+				"foo": {URL: mustURL("https://www.example.com/foo.tmpl")},
+				"bar": {URL: mustURL("file:///tmp/bar.t")},
+			},
+		}
+		expected := `---
 in: foo
 outputFiles: ['-']
 leftDelim: L
@@ -568,19 +563,21 @@ templates:
   bar:
     url: file:///tmp/bar.t
 `
-	assert.YAMLEq(t, expected, c.String())
+		assert.YAMLEq(t, expected, c.String())
+	})
 
-	c = &Config{
-		LDelim:      "L",
-		RDelim:      "R",
-		Input:       "long input that should be truncated",
-		OutputFiles: []string{"-"},
-		Templates: Templates{
-			"foo": {URL: mustURL("https://www.example.com/foo.tmpl")},
-			"bar": {URL: mustURL("/tmp/bar.t")},
-		},
-	}
-	expected = `---
+	t.Run("long input", func(t *testing.T) {
+		c := &Config{
+			LDelim:      "L",
+			RDelim:      "R",
+			Input:       "long input that should be truncated",
+			OutputFiles: []string{"-"},
+			Templates: Templates{
+				"foo": {URL: mustURL("https://www.example.com/foo.tmpl")},
+				"bar": {URL: mustURL("file:///tmp/bar.t")},
+			},
+		}
+		expected := `---
 in: long inp...
 outputFiles: ['-']
 leftDelim: L
@@ -591,49 +588,56 @@ templates:
   bar:
     url: file:///tmp/bar.t
 `
-	assert.YAMLEq(t, expected, c.String())
+		assert.YAMLEq(t, expected, c.String())
+	})
 
-	c = &Config{
-		InputDir:  "in/",
-		OutputDir: "out/",
-	}
-	expected = `---
+	t.Run("relative dirs", func(t *testing.T) {
+		c := &Config{
+			InputDir:  "in/",
+			OutputDir: "out/",
+		}
+		expected := `---
 inputDir: in/
 outputDir: out/
 `
+		assert.YAMLEq(t, expected, c.String())
+	})
 
-	assert.Equal(t, expected, c.String())
-
-	c = &Config{
-		InputDir:  "in/",
-		OutputMap: "{{ .in }}",
-	}
-	expected = `---
+	t.Run("outputmap", func(t *testing.T) {
+		c := &Config{
+			InputDir:  "in/",
+			OutputMap: "{{ .in }}",
+		}
+		expected := `---
 inputDir: in/
 outputMap: '{{ .in }}'
 `
 
-	assert.Equal(t, expected, c.String())
+		assert.YAMLEq(t, expected, c.String())
+	})
 
-	c = &Config{
-		PluginTimeout: 500 * time.Millisecond,
-	}
-	expected = `---
+	t.Run("pluginTimeout", func(t *testing.T) {
+		c := &Config{
+			PluginTimeout: 500 * time.Millisecond,
+		}
+		expected := `---
 pluginTimeout: 500ms
 `
 
-	assert.Equal(t, expected, c.String())
+		assert.YAMLEq(t, expected, c.String())
+	})
 
-	c = &Config{
-		Plugins: map[string]PluginConfig{
-			"foo": {
-				Cmd:     "bar",
-				Timeout: 1 * time.Second,
-				Pipe:    true,
+	t.Run("plugins", func(t *testing.T) {
+		c := &Config{
+			Plugins: map[string]PluginConfig{
+				"foo": {
+					Cmd:     "bar",
+					Timeout: 1 * time.Second,
+					Pipe:    true,
+				},
 			},
-		},
-	}
-	expected = `---
+		}
+		expected := `---
 plugins:
   foo:
     cmd: bar
@@ -641,7 +645,8 @@ plugins:
     pipe: true
 `
 
-	assert.Equal(t, expected, c.String())
+		assert.YAMLEq(t, expected, c.String())
+	})
 }
 
 func TestApplyDefaults(t *testing.T) {
@@ -772,71 +777,11 @@ func TestParseHeaderArgs(t *testing.T) {
 	assert.Equal(t, expected, parsed)
 }
 
-func TestParseSourceURL(t *testing.T) {
-	expected := &url.URL{
-		Scheme:   "http",
-		Host:     "example.com",
-		Path:     "/foo.json",
-		RawQuery: "bar",
-	}
-	u, err := ParseSourceURL("http://example.com/foo.json?bar")
-	require.NoError(t, err)
-	assert.EqualValues(t, expected, u)
-
-	expected = &url.URL{Scheme: "stdin"}
-	u, err = ParseSourceURL("-")
-	require.NoError(t, err)
-	assert.EqualValues(t, expected, u)
-
-	wd, err := os.Getwd()
-	require.NoError(t, err)
-	expected = &url.URL{
-		Scheme: "file",
-		Path:   path.Join(filepath.ToSlash(wd), "foo/bar.json"),
-	}
-	u, err = ParseSourceURL("./foo/bar.json")
-	require.NoError(t, err)
-	assert.EqualValues(t, expected, u)
-}
-
-func TestAbsFileURL(t *testing.T) {
-	cwd, _ := os.Getwd()
-	// make this pass on Windows
-	cwd = filepath.ToSlash(cwd)
-	expected := &url.URL{
-		Scheme: "file",
-		Host:   "",
-		Path:   "/tmp/foo",
-	}
-	u, err := absFileURL("/tmp/foo")
-	require.NoError(t, err)
-	assert.EqualValues(t, expected, u)
-
-	expected = &url.URL{
-		Scheme: "file",
-		Host:   "",
-		Path:   cwd + "/tmp/foo",
-	}
-	u, err = absFileURL("tmp/foo")
-	require.NoError(t, err)
-	assert.EqualValues(t, expected, u)
-
-	expected = &url.URL{
-		Scheme:   "file",
-		Host:     "",
-		Path:     cwd + "/tmp/foo",
-		RawQuery: "q=p",
-	}
-	u, err = absFileURL("tmp/foo?q=p")
-	require.NoError(t, err)
-	assert.EqualValues(t, expected, u)
-}
-
 func TestParseDatasourceArgNoAlias(t *testing.T) {
 	alias, ds, err := parseDatasourceArg("foo.json")
 	require.NoError(t, err)
 	assert.Equal(t, "foo", alias)
-	assert.Equal(t, "file", ds.URL.Scheme)
+	assert.Empty(t, ds.URL.Scheme)
 
 	_, _, err = parseDatasourceArg("../foo.json")
 	assert.Error(t, err)
@@ -849,8 +794,7 @@ func TestParseDatasourceArgWithAlias(t *testing.T) {
 	alias, ds, err := parseDatasourceArg("data=foo.json")
 	require.NoError(t, err)
 	assert.Equal(t, "data", alias)
-	assert.Equal(t, "file", ds.URL.Scheme)
-	assert.True(t, ds.URL.IsAbs())
+	assert.EqualValues(t, &url.URL{Path: "foo.json"}, ds.URL)
 
 	alias, ds, err = parseDatasourceArg("data=/otherdir/foo.json")
 	require.NoError(t, err)
@@ -863,45 +807,33 @@ func TestParseDatasourceArgWithAlias(t *testing.T) {
 		alias, ds, err = parseDatasourceArg("data=foo.json")
 		require.NoError(t, err)
 		assert.Equal(t, "data", alias)
-		assert.Equal(t, "file", ds.URL.Scheme)
-		assert.True(t, ds.URL.IsAbs())
-		assert.Equalf(t, byte(':'), ds.URL.Path[1], "Path was %s", ds.URL.Path)
+		assert.EqualValues(t, &url.URL{Path: "foo.json"}, ds.URL)
 
 		alias, ds, err = parseDatasourceArg(`data=\otherdir\foo.json`)
 		require.NoError(t, err)
 		assert.Equal(t, "data", alias)
-		assert.Equal(t, "file", ds.URL.Scheme)
-		assert.True(t, ds.URL.IsAbs())
-		assert.Equal(t, `/otherdir/foo.json`, ds.URL.Path)
+		assert.EqualValues(t, &url.URL{Scheme: "file", Path: "/otherdir/foo.json"}, ds.URL)
 
 		alias, ds, err = parseDatasourceArg("data=C:\\windowsdir\\foo.json")
 		require.NoError(t, err)
 		assert.Equal(t, "data", alias)
-		assert.Equal(t, "file", ds.URL.Scheme)
-		assert.True(t, ds.URL.IsAbs())
-		assert.Equal(t, "C:/windowsdir/foo.json", ds.URL.Path)
+		assert.EqualValues(t, &url.URL{Scheme: "file", Path: "C:/windowsdir/foo.json"}, ds.URL)
 
 		alias, ds, err = parseDatasourceArg("data=\\\\somehost\\share\\foo.json")
 		require.NoError(t, err)
 		assert.Equal(t, "data", alias)
-		assert.Equal(t, "file", ds.URL.Scheme)
-		assert.Equal(t, "somehost", ds.URL.Host)
-		assert.True(t, ds.URL.IsAbs())
-		assert.Equal(t, "/share/foo.json", ds.URL.Path)
+		assert.EqualValues(t, &url.URL{Scheme: "file", Host: "somehost", Path: "/share/foo.json"}, ds.URL)
 	}
 
 	alias, ds, err = parseDatasourceArg("data=sftp://example.com/blahblah/foo.json")
 	require.NoError(t, err)
 	assert.Equal(t, "data", alias)
-	assert.Equal(t, "sftp", ds.URL.Scheme)
-	assert.True(t, ds.URL.IsAbs())
-	assert.Equal(t, "/blahblah/foo.json", ds.URL.Path)
+	assert.EqualValues(t, &url.URL{Scheme: "sftp", Host: "example.com", Path: "/blahblah/foo.json"}, ds.URL)
 
 	alias, ds, err = parseDatasourceArg("merged=merge:./foo.yaml|http://example.com/bar.json%3Ffoo=bar")
 	require.NoError(t, err)
 	assert.Equal(t, "merged", alias)
-	assert.Equal(t, "merge", ds.URL.Scheme)
-	assert.Equal(t, "./foo.yaml|http://example.com/bar.json%3Ffoo=bar", ds.URL.Opaque)
+	assert.EqualValues(t, &url.URL{Scheme: "merge", Opaque: "./foo.yaml|http://example.com/bar.json%3Ffoo=bar"}, ds.URL)
 }
 
 func TestPluginConfig_UnmarshalYAML(t *testing.T) {

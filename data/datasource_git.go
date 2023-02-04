@@ -248,17 +248,17 @@ func (g gitsource) clone(ctx context.Context, repoURL *url.URL, depth int) (bill
 }
 
 // read - reads the provided path out of a git repo
-func (g gitsource) read(fs billy.Filesystem, path string) (string, []byte, error) {
-	fi, err := fs.Stat(path)
+func (g gitsource) read(fsys billy.Filesystem, path string) (string, []byte, error) {
+	fi, err := fsys.Stat(path)
 	if err != nil {
 		return "", nil, fmt.Errorf("can't stat %s: %w", path, err)
 	}
 	if fi.IsDir() || strings.HasSuffix(path, string(filepath.Separator)) {
-		out, rerr := g.readDir(fs, path)
+		out, rerr := g.readDir(fsys, path)
 		return jsonArrayMimetype, out, rerr
 	}
 
-	f, err := fs.OpenFile(path, os.O_RDONLY, 0)
+	f, err := fsys.OpenFile(path, os.O_RDONLY, 0)
 	if err != nil {
 		return "", nil, fmt.Errorf("can't open %s: %w", path, err)
 	}

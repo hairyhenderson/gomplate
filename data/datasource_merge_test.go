@@ -2,12 +2,15 @@ package data
 
 import (
 	"context"
+	"io/fs"
 	"net/url"
 	"os"
+	"path"
 	"path/filepath"
 	"testing"
+	"testing/fstest"
 
-	"github.com/spf13/afero"
+	"github.com/hairyhenderson/gomplate/v4/internal/datafs"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -22,31 +25,32 @@ func TestReadMerge(t *testing.T) {
 
 	mergedContent := "goodnight: moon\nhello: world\n"
 
-	fs := afero.NewMemMapFs()
-
-	_ = fs.Mkdir("/tmp", 0777)
-	f, _ := fs.Create("/tmp/jsonfile.json")
-	_, _ = f.WriteString(jsonContent)
-	f, _ = fs.Create("/tmp/array.json")
-	_, _ = f.WriteString(arrayContent)
-	f, _ = fs.Create("/tmp/yamlfile.yaml")
-	_, _ = f.WriteString(yamlContent)
-	f, _ = fs.Create("/tmp/textfile.txt")
-	_, _ = f.WriteString(`plain text...`)
-
 	wd, _ := os.Getwd()
-	_ = fs.Mkdir(wd, 0777)
-	f, _ = fs.Create(filepath.Join(wd, "jsonfile.json"))
-	_, _ = f.WriteString(jsonContent)
-	f, _ = fs.Create(filepath.Join(wd, "array.json"))
-	_, _ = f.WriteString(arrayContent)
-	f, _ = fs.Create(filepath.Join(wd, "yamlfile.yaml"))
-	_, _ = f.WriteString(yamlContent)
-	f, _ = fs.Create(filepath.Join(wd, "textfile.txt"))
-	_, _ = f.WriteString(`plain text...`)
+
+	// MapFS doesn't support windows path separators, so we use / exclusively
+	// in this test
+	vol := filepath.VolumeName(wd)
+	if vol != "" && wd != vol {
+		wd = wd[len(vol)+1:]
+	} else if wd[0] == '/' {
+		wd = wd[1:]
+	}
+	wd = filepath.ToSlash(wd)
+
+	fsys := datafs.WrapWdFS(fstest.MapFS{
+		"tmp":                          {Mode: fs.ModeDir | 0o777},
+		"tmp/jsonfile.json":            {Data: []byte(jsonContent)},
+		"tmp/array.json":               {Data: []byte(arrayContent)},
+		"tmp/yamlfile.yaml":            {Data: []byte(yamlContent)},
+		"tmp/textfile.txt":             {Data: []byte(`plain text...`)},
+		path.Join(wd, "jsonfile.json"): {Data: []byte(jsonContent)},
+		path.Join(wd, "array.json"):    {Data: []byte(arrayContent)},
+		path.Join(wd, "yamlfile.yaml"): {Data: []byte(yamlContent)},
+		path.Join(wd, "textfile.txt"):  {Data: []byte(`plain text...`)},
+	})
 
 	source := &Source{Alias: "foo", URL: mustParseURL("merge:file:///tmp/jsonfile.json|file:///tmp/yamlfile.yaml")}
-	source.fs = fs
+	source.fs = fsys
 	d := &Data{
 		Sources: map[string]*Source{
 			"foo":       source,
@@ -64,6 +68,11 @@ func TestReadMerge(t *testing.T) {
 	assert.Equal(t, mergedContent, string(actual))
 
 	source.URL = mustParseURL("merge:bar|baz")
+	actual, err = d.readMerge(ctx, source)
+	require.NoError(t, err)
+	assert.Equal(t, mergedContent, string(actual))
+
+	source.URL = mustParseURL("merge:jsonfile.json|baz")
 	actual, err = d.readMerge(ctx, source)
 	require.NoError(t, err)
 	assert.Equal(t, mergedContent, string(actual))

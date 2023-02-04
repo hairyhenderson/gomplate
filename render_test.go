@@ -10,16 +10,21 @@ import (
 	"testing"
 	"testing/fstest"
 
-	"github.com/hairyhenderson/go-fsimpl"
 	"github.com/hairyhenderson/gomplate/v4/data"
+	"github.com/hairyhenderson/gomplate/v4/internal/datafs"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
 func TestRenderTemplate(t *testing.T) {
+	wd, _ := os.Getwd()
+	t.Cleanup(func() {
+		_ = os.Chdir(wd)
+	})
+	_ = os.Chdir("/")
+
 	fsys := fstest.MapFS{}
-	ctx := ContextWithFSProvider(context.Background(),
-		fsimpl.WrappedFSProvider(fsys, "mem"))
+	ctx := datafs.ContextWithFSProvider(context.Background(), datafs.WrappedFSProvider(fsys, "mem"))
 
 	// no options - built-in function
 	tr := NewRenderer(Options{})
