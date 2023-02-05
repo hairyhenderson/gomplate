@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"fmt"
 	"io"
 	"mime"
 	"net/url"
@@ -12,7 +13,6 @@ import (
 
 	gaws "github.com/hairyhenderson/gomplate/v3/aws"
 	"github.com/hairyhenderson/gomplate/v3/env"
-	"github.com/pkg/errors"
 
 	"gocloud.dev/blob"
 	"gocloud.dev/blob/gcsblob"
@@ -22,7 +22,7 @@ import (
 
 func readBlob(ctx context.Context, source *Source, args ...string) (output []byte, err error) {
 	if len(args) >= 2 {
-		return nil, errors.New("maximum two arguments to blob datasource: alias, extraPath")
+		return nil, fmt.Errorf("maximum two arguments to blob datasource: alias, extraPath")
 	}
 
 	key := source.URL.Path
@@ -70,14 +70,14 @@ func newOpener(ctx context.Context, u *url.URL) (opener blob.BucketURLOpener, er
 	case "gs":
 		creds, err := gcp.DefaultCredentials(ctx)
 		if err != nil {
-			return nil, errors.Wrap(err, "failed to retrieve GCP credentials")
+			return nil, fmt.Errorf("failed to retrieve GCP credentials: %w", err)
 		}
 
 		client, err := gcp.NewHTTPClient(
 			gcp.DefaultTransport(),
 			gcp.CredentialsTokenSource(creds))
 		if err != nil {
-			return nil, errors.Wrap(err, "failed to create GCP HTTP client")
+			return nil, fmt.Errorf("failed to create GCP HTTP client: %w", err)
 		}
 		opener = &gcsblob.URLOpener{
 			Client: client,
@@ -90,7 +90,7 @@ func getBlob(ctx context.Context, bucket *blob.Bucket, key string) (mediaType st
 	key = strings.TrimPrefix(key, "/")
 	attr, err := bucket.Attributes(ctx, key)
 	if err != nil {
-		return "", nil, errors.Wrapf(err, "failed to retrieve attributes for %s", key)
+		return "", nil, fmt.Errorf("failed to retrieve attributes for %s: %w", key, err)
 	}
 	if attr.ContentType != "" {
 		mt, _, e := mime.ParseMediaType(attr.ContentType)
@@ -100,7 +100,10 @@ func getBlob(ctx context.Context, bucket *blob.Bucket, key string) (mediaType st
 		mediaType = mt
 	}
 	data, err = bucket.ReadAll(ctx, key)
-	return mediaType, data, errors.Wrapf(err, "failed to read %s", key)
+	if err != nil {
+		return "", nil, fmt.Errorf("failed to read %s: %w", key, err)
+	}
+	return mediaType, data, nil
 }
 
 // calls the bucket listing API, returning a JSON Array

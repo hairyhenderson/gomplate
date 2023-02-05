@@ -3,16 +3,16 @@
 package test
 
 import (
-	"github.com/pkg/errors"
+	"fmt"
 )
 
 // Assert -
 func Assert(value bool, message string) (string, error) {
 	if !value {
 		if message != "" {
-			return "", errors.Errorf("assertion failed: %s", message)
+			return "", fmt.Errorf("assertion failed: %s", message)
 		}
-		return "", errors.New("assertion failed")
+		return "", fmt.Errorf("assertion failed")
 	}
 	return "", nil
 }
@@ -20,9 +20,9 @@ func Assert(value bool, message string) (string, error) {
 // Fail -
 func Fail(message string) error {
 	if message != "" {
-		return errors.Errorf("template generation failed: %s", message)
+		return fmt.Errorf("template generation failed: %s", message)
 	}
-	return errors.New("template generation failed")
+	return fmt.Errorf("template generation failed")
 }
 
 // Required -
@@ -32,7 +32,7 @@ func Required(message string, value interface{}) (interface{}, error) {
 	}
 
 	if s, ok := value.(string); value == nil || (ok && s == "") {
-		return nil, errors.New(message)
+		return nil, fmt.Errorf(message)
 	}
 
 	return value, nil

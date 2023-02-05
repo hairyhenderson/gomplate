@@ -12,8 +12,6 @@ import (
 
 	"github.com/spf13/afero"
 
-	"github.com/pkg/errors"
-
 	"github.com/hairyhenderson/gomplate/v3/internal/config"
 	"github.com/hairyhenderson/gomplate/v3/libkv"
 	"github.com/hairyhenderson/gomplate/v3/vault"
@@ -70,7 +68,7 @@ func (d *Data) lookupReader(scheme string) (func(context.Context, *Source, ...st
 	}
 	r, ok := d.sourceReaders[scheme]
 	if !ok {
-		return nil, errors.Errorf("scheme %s not registered", scheme)
+		return nil, fmt.Errorf("scheme %s not registered", scheme)
 	}
 	return r, nil
 }
@@ -219,7 +217,7 @@ func (s *Source) mimeType(arg string) (mimeType string, err error) {
 	if mediatype != "" {
 		t, _, err := mime.ParseMediaType(mediatype)
 		if err != nil {
-			return "", errors.Wrapf(err, "MIME type was %q", mediatype)
+			return "", fmt.Errorf("MIME type was %q: %w", mediatype, err)
 		}
 		mediatype = t
 		return mediatype, nil
@@ -237,7 +235,7 @@ func (s *Source) String() string {
 // DefineDatasource -
 func (d *Data) DefineDatasource(alias, value string) (string, error) {
 	if alias == "" {
-		return "", errors.New("datasource alias must be provided")
+		return "", fmt.Errorf("datasource alias must be provided")
 	}
 	if d.DatasourceExists(alias) {
 		return "", nil
@@ -269,7 +267,7 @@ func (d *Data) lookupSource(alias string) (*Source, error) {
 	if !ok {
 		srcURL, err := url.Parse(alias)
 		if err != nil || !srcURL.IsAbs() {
-			return nil, errors.Errorf("Undefined datasource '%s'", alias)
+			return nil, fmt.Errorf("undefined datasource '%s': %w", alias, err)
 		}
 		source = &Source{
 			Alias:  alias,
@@ -291,7 +289,7 @@ func (d *Data) readDataSource(ctx context.Context, alias string, args ...string)
 	}
 	b, err := d.readSource(ctx, source, args...)
 	if err != nil {
-		return "", "", errors.Wrapf(err, "Couldn't read datasource '%s'", alias)
+		return "", "", fmt.Errorf("couldn't read datasource '%s': %w", alias, err)
 	}
 
 	subpath := ""
@@ -346,7 +344,7 @@ func parseData(mimeType, s string) (out interface{}, err error) {
 	case textMimetype:
 		out = s
 	default:
-		return nil, errors.Errorf("Datasources of type %s not yet supported", mimeType)
+		return nil, fmt.Errorf("datasources of type %s not yet supported", mimeType)
 	}
 	return out, err
 }
@@ -378,7 +376,7 @@ func (d *Data) readSource(ctx context.Context, source *Source, args ...string) (
 	}
 	r, err := d.lookupReader(source.URL.Scheme)
 	if err != nil {
-		return nil, errors.Wrap(err, "Datasource not yet supported")
+		return nil, fmt.Errorf("Datasource not yet supported")
 	}
 	data, err := r(ctx, source, args...)
 	if err != nil {

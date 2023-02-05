@@ -1,9 +1,8 @@
 package conv
 
 import (
+	"fmt"
 	"reflect"
-
-	"github.com/pkg/errors"
 )
 
 // InterfaceSlice converts an array or slice of any type into an []interface{}
@@ -24,6 +23,6 @@ func InterfaceSlice(slice interface{}) ([]interface{}, error) {
 		}
 		return ret, nil
 	default:
-		return nil, errors.Errorf("expected an array or slice, but got a %T", s)
+		return nil, fmt.Errorf("expected an array or slice, but got a %T", s)
 	}
 }

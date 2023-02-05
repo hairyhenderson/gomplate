@@ -2,13 +2,13 @@ package funcs
 
 import (
 	"context"
+	"fmt"
 	"strconv"
 	"unicode/utf8"
 
 	"github.com/hairyhenderson/gomplate/v3/conv"
 	iconv "github.com/hairyhenderson/gomplate/v3/internal/conv"
 	"github.com/hairyhenderson/gomplate/v3/random"
-	"github.com/pkg/errors"
 )
 
 // RandomNS -
@@ -59,7 +59,7 @@ func (RandomFuncs) AlphaNum(count interface{}) (string, error) {
 func (RandomFuncs) String(count interface{}, args ...interface{}) (s string, err error) {
 	c := conv.ToInt(count)
 	if c == 0 {
-		return "", errors.New("count must be greater than 0")
+		return "", fmt.Errorf("count must be greater than 0")
 	}
 	m := ""
 	switch len(args) {

@@ -9,19 +9,17 @@ import (
 	"context"
 	"fmt"
 	"reflect"
+	"strings"
 	"unicode/utf8"
 
 	"github.com/Masterminds/goutils"
 	"github.com/hairyhenderson/gomplate/v3/conv"
 	"github.com/hairyhenderson/gomplate/v3/internal/deprecated"
-	"github.com/pkg/errors"
-	"golang.org/x/text/cases"
-	"golang.org/x/text/language"
-
-	"strings"
+	gompstrings "github.com/hairyhenderson/gomplate/v3/strings"
 
 	"github.com/gosimple/slug"
-	gompstrings "github.com/hairyhenderson/gomplate/v3/strings"
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 )
 
 // StrNS -
@@ -135,7 +133,7 @@ func (StringFuncs) Abbrev(args ...interface{}) (string, error) {
 	offset := 0
 	maxWidth := 0
 	if len(args) < 2 {
-		return "", errors.Errorf("abbrev requires a 'maxWidth' and 'input' argument")
+		return "", fmt.Errorf("abbrev requires a 'maxWidth' and 'input' argument")
 	}
 	if len(args) == 2 {
 		maxWidth = conv.ToInt(args[0])
@@ -175,11 +173,11 @@ func (StringFuncs) HasSuffix(suffix string, s interface{}) bool {
 // Repeat -
 func (StringFuncs) Repeat(count int, s interface{}) (string, error) {
 	if count < 0 {
-		return "", errors.Errorf("negative count %d", count)
+		return "", fmt.Errorf("negative count %d", count)
 	}
 	str := conv.ToString(s)
 	if count > 0 && len(str)*count/count != len(str) {
-		return "", errors.Errorf("count %d too long: causes overflow", count)
+		return "", fmt.Errorf("count %d too long: causes overflow", count)
 	}
 	return strings.Repeat(str, count), nil
 }
@@ -206,7 +204,7 @@ func (f *StringFuncs) Sort(list interface{}) ([]string, error) {
 		}
 		return gompstrings.Sort(b), nil
 	default:
-		return nil, errors.Errorf("wrong type for value; expected []string; got %T", list)
+		return nil, fmt.Errorf("wrong type for value; expected []string; got %T", list)
 	}
 }
 
@@ -272,18 +270,18 @@ func (StringFuncs) Indent(args ...interface{}) (string, error) {
 		if !ok {
 			width, ok = args[0].(int)
 			if !ok {
-				return "", errors.New("indent: invalid arguments")
+				return "", fmt.Errorf("indent: invalid arguments")
 			}
 			indent = " "
 		}
 	case 3:
 		width, ok = args[0].(int)
 		if !ok {
-			return "", errors.New("indent: invalid arguments")
+			return "", fmt.Errorf("indent: invalid arguments")
 		}
 		indent, ok = args[1].(string)
 		if !ok {
-			return "", errors.New("indent: invalid arguments")
+			return "", fmt.Errorf("indent: invalid arguments")
 		}
 	}
 	return gompstrings.Indent(width, indent, input), nil
@@ -342,7 +340,7 @@ func (StringFuncs) KebabCase(in interface{}) (string, error) {
 // WordWrap -
 func (StringFuncs) WordWrap(args ...interface{}) (string, error) {
 	if len(args) == 0 || len(args) > 3 {
-		return "", errors.Errorf("expected 1, 2, or 3 args, got %d", len(args))
+		return "", fmt.Errorf("expected 1, 2, or 3 args, got %d", len(args))
 	}
 	in := conv.ToString(args[len(args)-1])
 

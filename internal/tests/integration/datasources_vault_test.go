@@ -124,7 +124,7 @@ func TestDatasources_Vault_TokenAuth(t *testing.T) {
 		withEnv("VAULT_ADDR", "http://"+v.addr).
 		withEnv("VAULT_TOKEN", tok).
 		run()
-	assert.ErrorContains(t, err, "error calling ds: Couldn't read datasource 'vault': no value found for path /secret/bar")
+	assert.ErrorContains(t, err, "error calling ds: couldn't read datasource 'vault': no value found for path /secret/bar")
 
 	tokFile := fs.NewFile(t, "test-vault-token", fs.WithContent(tok))
 	defer tokFile.Remove()

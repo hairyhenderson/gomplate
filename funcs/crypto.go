@@ -13,8 +13,6 @@ import (
 	"golang.org/x/crypto/bcrypt"
 
 	"github.com/hairyhenderson/gomplate/v3/conv"
-	"github.com/pkg/errors"
-
 	"github.com/hairyhenderson/gomplate/v3/crypto"
 )
 
@@ -185,7 +183,7 @@ func (CryptoFuncs) Bcrypt(args ...interface{}) (string, error) {
 	input := ""
 	cost := bcrypt.DefaultCost
 	if len(args) == 0 {
-		return "", errors.Errorf("bcrypt requires at least an 'input' value")
+		return "", fmt.Errorf("bcrypt requires at least an 'input' value")
 	}
 	if len(args) == 1 {
 		input = conv.ToString(args[0])

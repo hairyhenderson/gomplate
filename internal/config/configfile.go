@@ -16,7 +16,6 @@ import (
 
 	"github.com/hairyhenderson/gomplate/v3/internal/iohelpers"
 	"github.com/hairyhenderson/yaml"
-	"github.com/pkg/errors"
 )
 
 // Parse a config file
@@ -625,7 +624,7 @@ func ParseSourceURL(value string) (*url.URL, error) {
 func absFileURL(value string) (*url.URL, error) {
 	wd, err := os.Getwd()
 	if err != nil {
-		return nil, errors.Wrapf(err, "can't get working directory")
+		return nil, fmt.Errorf("can't get working directory: %w", err)
 	}
 	wd = filepath.ToSlash(wd)
 	baseURL := &url.URL{

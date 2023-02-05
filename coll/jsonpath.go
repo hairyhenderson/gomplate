@@ -1,9 +1,9 @@
 package coll
 
 import (
+	"fmt"
 	"reflect"
 
-	"github.com/pkg/errors"
 	"k8s.io/client-go/util/jsonpath"
 )
 
@@ -11,11 +11,11 @@ import (
 func JSONPath(p string, in interface{}) (interface{}, error) {
 	jp, err := parsePath(p)
 	if err != nil {
-		return nil, errors.Wrapf(err, "couldn't parse JSONPath %s", p)
+		return nil, fmt.Errorf("couldn't parse JSONPath %s: %w", p, err)
 	}
 	results, err := jp.FindResults(in)
 	if err != nil {
-		return nil, errors.Wrap(err, "executing JSONPath failed")
+		return nil, fmt.Errorf("executing JSONPath failed: %w", err)
 	}
 
 	var out interface{}
@@ -59,5 +59,5 @@ func extractResult(v reflect.Value) (interface{}, error) {
 		return v.Interface(), nil
 	}
 
-	return nil, errors.Errorf("JSONPath couldn't access field")
+	return nil, fmt.Errorf("JSONPath couldn't access field")
 }

@@ -2,10 +2,9 @@ package data
 
 import (
 	"context"
+	"fmt"
 	"io"
 	"os"
-
-	"github.com/pkg/errors"
 )
 
 func readStdin(ctx context.Context, source *Source, args ...string) ([]byte, error) {
@@ -13,7 +12,7 @@ func readStdin(ctx context.Context, source *Source, args ...string) ([]byte, err
 
 	b, err := io.ReadAll(stdin)
 	if err != nil {
-		return nil, errors.Wrapf(err, "Can't read %s", stdin)
+		return nil, fmt.Errorf("can't read %s: %w", stdin, err)
 	}
 	return b, nil
 }

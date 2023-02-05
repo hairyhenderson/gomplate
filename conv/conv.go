@@ -9,7 +9,6 @@ import (
 	"strings"
 
 	iconv "github.com/hairyhenderson/gomplate/v3/internal/conv"
-	"github.com/pkg/errors"
 )
 
 // Bool converts a string to a boolean value, using strconv.ParseBool under the covers.
@@ -90,7 +89,7 @@ func Join(in interface{}, sep string) (out string, err error) {
 	if !ok {
 		a, err = iconv.InterfaceSlice(in)
 		if err != nil {
-			return "", errors.Wrap(err, "input to Join must be an array")
+			return "", fmt.Errorf("input to Join must be an array: %w", err)
 		}
 		ok = true
 	}
@@ -102,7 +101,7 @@ func Join(in interface{}, sep string) (out string, err error) {
 		return strings.Join(b, sep), nil
 	}
 
-	return "", errors.New("input to Join must be an array")
+	return "", fmt.Errorf("input to Join must be an array")
 }
 
 // Has determines whether or not a given object has a property with the given key

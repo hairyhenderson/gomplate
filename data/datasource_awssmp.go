@@ -2,12 +2,12 @@ package data
 
 import (
 	"context"
+	"fmt"
 	"strings"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/request"
 	"github.com/aws/aws-sdk-go/service/ssm"
-	"github.com/pkg/errors"
 
 	gaws "github.com/hairyhenderson/gomplate/v3/aws"
 )
@@ -48,7 +48,7 @@ func readAWSSMPParam(ctx context.Context, source *Source, paramPath string) ([]b
 	response, err := source.asmpg.GetParameterWithContext(ctx, input)
 
 	if err != nil {
-		return nil, errors.Wrapf(err, "Error reading aws+smp from AWS using GetParameter with input %v", input)
+		return nil, fmt.Errorf("error reading aws+smp from AWS using GetParameter with input %v: %w", input, err)
 	}
 
 	result := *response.Parameter
@@ -65,7 +65,7 @@ func listAWSSMPParams(ctx context.Context, source *Source, paramPath string) ([]
 
 	response, err := source.asmpg.GetParametersByPathWithContext(ctx, input)
 	if err != nil {
-		return nil, errors.Wrapf(err, "Error reading aws+smp from AWS using GetParameter with input %v", input)
+		return nil, fmt.Errorf("error reading aws+smp from AWS using GetParameter with input %v: %w", input, err)
 	}
 
 	listing := make([]string, len(response.Parameters))

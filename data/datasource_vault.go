@@ -2,9 +2,8 @@ package data
 
 import (
 	"context"
+	"fmt"
 	"strings"
-
-	"github.com/pkg/errors"
 
 	"github.com/hairyhenderson/gomplate/v3/vault"
 )
@@ -41,7 +40,7 @@ func readVault(ctx context.Context, source *Source, args ...string) (data []byte
 	}
 
 	if len(data) == 0 {
-		return nil, errors.Errorf("no value found for path %s", p)
+		return nil, fmt.Errorf("no value found for path %s", p)
 	}
 
 	return data, nil

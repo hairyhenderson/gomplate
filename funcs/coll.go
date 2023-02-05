@@ -10,7 +10,6 @@ import (
 	"github.com/hairyhenderson/gomplate/v3/internal/texttemplate"
 
 	"github.com/hairyhenderson/gomplate/v3/coll"
-	"github.com/pkg/errors"
 )
 
 // CollNS -
@@ -143,7 +142,7 @@ func (CollFuncs) Sort(args ...interface{}) ([]interface{}, error) {
 		list interface{}
 	)
 	if len(args) == 0 || len(args) > 2 {
-		return nil, errors.Errorf("wrong number of args: wanted 1 or 2, got %d", len(args))
+		return nil, fmt.Errorf("wrong number of args: wanted 1 or 2, got %d", len(args))
 	}
 	if len(args) == 1 {
 		list = args[0]
@@ -168,7 +167,7 @@ func (f *CollFuncs) JQ(jqExpr string, in interface{}) (interface{}, error) {
 // Flatten -
 func (CollFuncs) Flatten(args ...interface{}) ([]interface{}, error) {
 	if len(args) == 0 || len(args) > 2 {
-		return nil, errors.Errorf("wrong number of args: wanted 1 or 2, got %d", len(args))
+		return nil, fmt.Errorf("wrong number of args: wanted 1 or 2, got %d", len(args))
 	}
 	list := args[0]
 	depth := -1
@@ -181,19 +180,19 @@ func (CollFuncs) Flatten(args ...interface{}) ([]interface{}, error) {
 
 func pickOmitArgs(args ...interface{}) (map[string]interface{}, []string, error) {
 	if len(args) <= 1 {
-		return nil, nil, errors.Errorf("wrong number of args: wanted 2 or more, got %d", len(args))
+		return nil, nil, fmt.Errorf("wrong number of args: wanted 2 or more, got %d", len(args))
 	}
 
 	m, ok := args[len(args)-1].(map[string]interface{})
 	if !ok {
-		return nil, nil, errors.Errorf("wrong map type: must be map[string]interface{}, got %T", args[len(args)-1])
+		return nil, nil, fmt.Errorf("wrong map type: must be map[string]interface{}, got %T", args[len(args)-1])
 	}
 
 	keys := make([]string, len(args)-1)
 	for i, v := range args[0 : len(args)-1] {
 		k, ok := v.(string)
 		if !ok {
-			return nil, nil, errors.Errorf("wrong key type: must be string, got %T (%+v)", args[i], args[i])
+			return nil, nil, fmt.Errorf("wrong key type: must be string, got %T (%+v)", args[i], args[i])
 		}
 		keys[i] = k
 	}

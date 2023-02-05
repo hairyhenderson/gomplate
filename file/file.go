@@ -2,13 +2,13 @@
 package file
 
 import (
+	"fmt"
 	"io"
 	"os"
 	"path/filepath"
 	"strings"
 
 	"github.com/hairyhenderson/gomplate/v3/internal/iohelpers"
-	"github.com/pkg/errors"
 
 	"github.com/spf13/afero"
 )
@@ -20,13 +20,13 @@ var fs = afero.NewOsFs()
 func Read(filename string) (string, error) {
 	inFile, err := fs.OpenFile(filename, os.O_RDONLY, 0)
 	if err != nil {
-		return "", errors.Wrapf(err, "failed to open %s", filename)
+		return "", fmt.Errorf("failed to open %s: %w", filename, err)
 	}
 	// nolint: errcheck
 	defer inFile.Close()
 	bytes, err := io.ReadAll(inFile)
 	if err != nil {
-		err = errors.Wrapf(err, "read failed for %s", filename)
+		err = fmt.Errorf("read failed for %s: %w", filename, err)
 		return "", err
 	}
 	return string(bytes), nil
@@ -45,7 +45,7 @@ func ReadDir(path string) ([]string, error) {
 	if i.IsDir() {
 		return f.Readdirnames(0)
 	}
-	return nil, errors.New("file is not a directory")
+	return nil, fmt.Errorf("file is not a directory")
 }
 
 // Write the given content to the file, truncating any existing file, and
@@ -53,12 +53,12 @@ func ReadDir(path string) ([]string, error) {
 func Write(filename string, content []byte) error {
 	err := assertPathInWD(filename)
 	if err != nil {
-		return errors.Wrapf(err, "failed to open %s", filename)
+		return fmt.Errorf("failed to open %s: %w", filename, err)
 	}
 
 	fi, err := os.Stat(filename)
 	if err != nil && !os.IsNotExist(err) {
-		return errors.Wrapf(err, "failed to stat %s", filename)
+		return fmt.Errorf("failed to stat %s: %w", filename, err)
 	}
 	mode := iohelpers.NormalizeFileMode(0o644)
 	if fi != nil {
@@ -66,21 +66,21 @@ func Write(filename string, content []byte) error {
 	}
 	err = fs.MkdirAll(filepath.Dir(filename), 0o755)
 	if err != nil {
-		return errors.Wrapf(err, "failed to make dirs for %s", filename)
+		return fmt.Errorf("failed to make dirs for %s: %w", filename, err)
 	}
 	inFile, err := fs.OpenFile(filename, os.O_RDWR|os.O_CREATE|os.O_TRUNC, mode)
 	if err != nil {
-		return errors.Wrapf(err, "failed to open %s", filename)
+		return fmt.Errorf("failed to open %s: %w", filename, err)
 	}
 
 	defer inFile.Close()
 
 	n, err := inFile.Write(content)
 	if err != nil {
-		return errors.Wrapf(err, "failed to write %s", filename)
+		return fmt.Errorf("failed to write %s: %w", filename, err)
 	}
 	if n != len(content) {
-		return errors.Wrapf(err, "short write on %s (%d bytes)", filename, n)
+		return fmt.Errorf("short write on %s (%d bytes): %w", filename, n, err)
 	}
 	return nil
 }
@@ -99,7 +99,7 @@ func assertPathInWD(filename string) error {
 		return err
 	}
 	if strings.HasPrefix(r, "..") {
-		return errors.Errorf("path %s not contained by working directory %s (rel: %s)", filename, wd, r)
+		return fmt.Errorf("path %s not contained by working directory %s (rel: %s)", filename, wd, r)
 	}
 	return nil
 }

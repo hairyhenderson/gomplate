@@ -2,12 +2,11 @@ package data
 
 import (
 	"context"
+	"fmt"
 	"strings"
 
 	"github.com/hairyhenderson/gomplate/v3/coll"
 	"github.com/hairyhenderson/gomplate/v3/internal/config"
-
-	"github.com/pkg/errors"
 )
 
 // readMerge demultiplexes a `merge:` datasource. The 'args' parameter currently
@@ -24,7 +23,7 @@ func (d *Data) readMerge(ctx context.Context, source *Source, args ...string) ([
 	opaque := source.URL.Opaque
 	parts := strings.Split(opaque, "|")
 	if len(parts) < 2 {
-		return nil, errors.New("need at least 2 datasources to merge")
+		return nil, fmt.Errorf("need at least 2 datasources to merge")
 	}
 	data := make([]map[string]interface{}, len(parts))
 	for i, part := range parts {
@@ -45,12 +44,12 @@ func (d *Data) readMerge(ctx context.Context, source *Source, args ...string) ([
 
 		b, err := d.readSource(ctx, subSource)
 		if err != nil {
-			return nil, errors.Wrapf(err, "Couldn't read datasource '%s'", part)
+			return nil, fmt.Errorf("couldn't read datasource '%s': %w", part, err)
 		}
 
 		mimeType, err := subSource.mimeType("")
 		if err != nil {
-			return nil, errors.Wrapf(err, "failed to read datasource %s", subSource.URL)
+			return nil, fmt.Errorf("failed to read datasource %s: %w", subSource.URL, err)
 		}
 
 		data[i], err = parseMap(mimeType, string(b))
@@ -95,7 +94,7 @@ func parseMap(mimeType, data string) (map[string]interface{}, error) {
 	case map[string]interface{}:
 		m = datum
 	default:
-		return nil, errors.Errorf("unexpected data type '%T' for datasource (type %s); merge: can only merge maps", datum, mimeType)
+		return nil, fmt.Errorf("unexpected data type '%T' for datasource (type %s); merge: can only merge maps", datum, mimeType)
 	}
 	return m, nil
 }

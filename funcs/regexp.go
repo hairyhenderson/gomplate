@@ -2,8 +2,7 @@ package funcs
 
 import (
 	"context"
-
-	"github.com/pkg/errors"
+	"fmt"
 
 	"github.com/hairyhenderson/gomplate/v3/conv"
 	"github.com/hairyhenderson/gomplate/v3/regexp"
@@ -58,7 +57,7 @@ func (ReFuncs) FindAll(args ...interface{}) ([]string, error) {
 		n = conv.ToInt(args[1])
 		input = conv.ToString(args[2])
 	default:
-		return nil, errors.Errorf("wrong number of args: want 2 or 3, got %d", len(args))
+		return nil, fmt.Errorf("wrong number of args: want 2 or 3, got %d", len(args))
 	}
 	return regexp.FindAll(re, n, input)
 }
@@ -101,7 +100,7 @@ func (ReFuncs) Split(args ...interface{}) ([]string, error) {
 		n = conv.ToInt(args[1])
 		input = conv.ToString(args[2])
 	default:
-		return nil, errors.Errorf("wrong number of args: want 2 or 3, got %d", len(args))
+		return nil, fmt.Errorf("wrong number of args: want 2 or 3, got %d", len(args))
 	}
 	return regexp.Split(re, n, input)
 }
