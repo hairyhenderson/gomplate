@@ -12,16 +12,14 @@ import (
 	"io"
 	"strings"
 
-	"github.com/joho/godotenv"
-
 	"github.com/Shopify/ejson"
 	ejsonJson "github.com/Shopify/ejson/json"
 	"github.com/hairyhenderson/gomplate/v3/conv"
 	"github.com/hairyhenderson/gomplate/v3/env"
+	"github.com/joho/godotenv"
 
 	// XXX: replace once https://github.com/BurntSushi/toml/pull/179 is merged
 	"github.com/hairyhenderson/toml"
-	"github.com/pkg/errors"
 	"github.com/ugorji/go/codec"
 
 	"github.com/hairyhenderson/yaml"
@@ -30,7 +28,7 @@ import (
 func unmarshalObj(obj map[string]interface{}, in string, f func([]byte, interface{}) error) (map[string]interface{}, error) {
 	err := f([]byte(in), &obj)
 	if err != nil {
-		return nil, errors.Wrapf(err, "Unable to unmarshal object %s", in)
+		return nil, fmt.Errorf("unable to unmarshal object %s: %w", in, err)
 	}
 	return obj, nil
 }
@@ -38,7 +36,7 @@ func unmarshalObj(obj map[string]interface{}, in string, f func([]byte, interfac
 func unmarshalArray(obj []interface{}, in string, f func([]byte, interface{}) error) ([]interface{}, error) {
 	err := f([]byte(in), &obj)
 	if err != nil {
-		return nil, errors.Wrapf(err, "Unable to unmarshal array %s", in)
+		return nil, fmt.Errorf("unable to unmarshal array %s: %w", in, err)
 	}
 	return obj, nil
 }
@@ -67,12 +65,12 @@ func decryptEJSON(in string) (map[string]interface{}, error) {
 	rOut := &bytes.Buffer{}
 	err := ejson.Decrypt(rIn, rOut, keyDir, key)
 	if err != nil {
-		return nil, errors.WithStack(err)
+		return nil, err
 	}
 	obj := make(map[string]interface{})
 	out, err := unmarshalObj(obj, rOut.String(), yaml.Unmarshal)
 	if err != nil {
-		return nil, errors.WithStack(err)
+		return nil, err
 	}
 	delete(out, ejsonJson.PublicKeyField)
 	return out, nil
@@ -337,7 +335,7 @@ func ToCSV(args ...interface{}) (string, error) {
 		var ok bool
 		delim, ok = args[0].(string)
 		if !ok {
-			return "", errors.Errorf("Can't parse ToCSV delimiter (%v) - must be string (is a %T)", args[0], args[0])
+			return "", fmt.Errorf("can't parse ToCSV delimiter (%v) - must be string (is a %T)", args[0], args[0])
 		}
 		args = args[1:]
 	}
@@ -355,12 +353,12 @@ func ToCSV(args ...interface{}) (string, error) {
 			for i, v := range a {
 				ar, ok := v.([]interface{})
 				if !ok {
-					return "", errors.Errorf("Can't parse ToCSV input - must be a two-dimensional array (like [][]string or [][]interface{}) (was %T)", args[0])
+					return "", fmt.Errorf("can't parse ToCSV input - must be a two-dimensional array (like [][]string or [][]interface{}) (was %T)", args[0])
 				}
 				in[i] = conv.ToStrings(ar...)
 			}
 		default:
-			return "", errors.Errorf("Can't parse ToCSV input - must be a two-dimensional array (like [][]string or [][]interface{}) (was %T)", args[0])
+			return "", fmt.Errorf("can't parse ToCSV input - must be a two-dimensional array (like [][]string or [][]interface{}) (was %T)", args[0])
 		}
 	}
 	b := &bytes.Buffer{}
@@ -378,7 +376,7 @@ func ToCSV(args ...interface{}) (string, error) {
 func marshalObj(obj interface{}, f func(interface{}) ([]byte, error)) (string, error) {
 	b, err := f(obj)
 	if err != nil {
-		return "", errors.Wrapf(err, "Unable to marshal object %s", obj)
+		return "", fmt.Errorf("unable to marshal object %s: %w", obj, err)
 	}
 
 	return string(b), nil
@@ -390,7 +388,7 @@ func toJSONBytes(in interface{}) ([]byte, error) {
 	buf := new(bytes.Buffer)
 	err := codec.NewEncoder(buf, h).Encode(in)
 	if err != nil {
-		return nil, errors.Wrapf(err, "Unable to marshal %s", in)
+		return nil, fmt.Errorf("unable to marshal %s: %w", in, err)
 	}
 	return buf.Bytes(), nil
 }
@@ -413,7 +411,7 @@ func ToJSONPretty(indent string, in interface{}) (string, error) {
 	}
 	err = json.Indent(out, b, "", indent)
 	if err != nil {
-		return "", errors.Wrapf(err, "Unable to indent JSON %s", b)
+		return "", fmt.Errorf("unable to indent JSON %s: %w", b, err)
 	}
 
 	return out.String(), nil
@@ -440,7 +438,7 @@ func ToTOML(in interface{}) (string, error) {
 	buf := new(bytes.Buffer)
 	err := toml.NewEncoder(buf).Encode(in)
 	if err != nil {
-		return "", errors.Wrapf(err, "Unable to marshal %s", in)
+		return "", fmt.Errorf("unable to marshal %s: %w", in, err)
 	}
 	return buf.String(), nil
 }

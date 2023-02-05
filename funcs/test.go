@@ -2,11 +2,10 @@ package funcs
 
 import (
 	"context"
+	"fmt"
 	"reflect"
 
 	"github.com/hairyhenderson/gomplate/v3/conv"
-	"github.com/pkg/errors"
-
 	"github.com/hairyhenderson/gomplate/v3/test"
 )
 
@@ -56,11 +55,11 @@ func (TestFuncs) Assert(args ...interface{}) (string, error) {
 	case 2:
 		message, ok := args[0].(string)
 		if !ok {
-			return "", errors.Errorf("at <1>: expected string; found %T", args[0])
+			return "", fmt.Errorf("at <1>: expected string; found %T", args[0])
 		}
 		return test.Assert(input, message)
 	default:
-		return "", errors.Errorf("wrong number of args: want 1 or 2, got %d", len(args))
+		return "", fmt.Errorf("wrong number of args: want 1 or 2, got %d", len(args))
 	}
 }
 
@@ -72,7 +71,7 @@ func (TestFuncs) Fail(args ...interface{}) (string, error) {
 	case 1:
 		return "", test.Fail(conv.ToString(args[0]))
 	default:
-		return "", errors.Errorf("wrong number of args: want 0 or 1, got %d", len(args))
+		return "", fmt.Errorf("wrong number of args: want 0 or 1, got %d", len(args))
 	}
 }
 
@@ -84,11 +83,11 @@ func (TestFuncs) Required(args ...interface{}) (interface{}, error) {
 	case 2:
 		message, ok := args[0].(string)
 		if !ok {
-			return nil, errors.Errorf("at <1>: expected string; found %T", args[0])
+			return nil, fmt.Errorf("at <1>: expected string; found %T", args[0])
 		}
 		return test.Required(message, args[1])
 	default:
-		return nil, errors.Errorf("wrong number of args: want 1 or 2, got %d", len(args))
+		return nil, fmt.Errorf("wrong number of args: want 1 or 2, got %d", len(args))
 	}
 }
 

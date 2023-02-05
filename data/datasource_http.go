@@ -2,13 +2,12 @@ package data
 
 import (
 	"context"
+	"fmt"
 	"io"
 	"mime"
 	"net/http"
 	"net/url"
 	"time"
-
-	"github.com/pkg/errors"
 )
 
 func buildURL(base *url.URL, args ...string) (*url.URL, error) {
@@ -17,7 +16,7 @@ func buildURL(base *url.URL, args ...string) (*url.URL, error) {
 	}
 	p, err := url.Parse(args[0])
 	if err != nil {
-		return nil, errors.Wrapf(err, "bad sub-path %s", args[0])
+		return nil, fmt.Errorf("bad sub-path %s: %w", args[0], err)
 	}
 	return base.ResolveReference(p), nil
 }
@@ -48,7 +47,7 @@ func readHTTP(ctx context.Context, source *Source, args ...string) ([]byte, erro
 		return nil, err
 	}
 	if res.StatusCode != 200 {
-		err := errors.Errorf("Unexpected HTTP status %d on GET from %s: %s", res.StatusCode, source.URL, string(body))
+		err := fmt.Errorf("unexpected HTTP status %d on GET from %s: %s", res.StatusCode, source.URL, string(body))
 		return nil, err
 	}
 	ctypeHdr := res.Header.Get("Content-Type")

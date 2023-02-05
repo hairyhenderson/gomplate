@@ -3,9 +3,8 @@ package vault
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"net/url"
-
-	"github.com/pkg/errors"
 
 	vaultapi "github.com/hashicorp/vault/api"
 )
@@ -21,14 +20,14 @@ func New(u *url.URL) (*Vault, error) {
 
 	err := vaultConfig.ReadEnvironment()
 	if err != nil {
-		return nil, errors.Wrapf(err, "Vault setup failed")
+		return nil, fmt.Errorf("vault setup failed: %w", err)
 	}
 
 	setVaultURL(vaultConfig, u)
 
 	client, err := vaultapi.NewClient(vaultConfig)
 	if err != nil {
-		return nil, errors.Wrapf(err, "Vault setup failed")
+		return nil, fmt.Errorf("vault setup failed: %w", err)
 	}
 
 	return &Vault{client}, nil
@@ -107,7 +106,7 @@ func (v *Vault) List(path string) ([]byte, error) {
 
 	keys, ok := secret.Data["keys"]
 	if !ok {
-		return nil, errors.Errorf("keys param missing from vault list")
+		return nil, fmt.Errorf("keys param missing from vault list")
 	}
 
 	var buf bytes.Buffer

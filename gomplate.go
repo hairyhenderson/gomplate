@@ -13,7 +13,6 @@ import (
 
 	"github.com/hairyhenderson/gomplate/v3/data"
 	"github.com/hairyhenderson/gomplate/v3/internal/config"
-	"github.com/pkg/errors"
 )
 
 // RunTemplates - run all gomplate templates specified by the given configuration
@@ -113,7 +112,7 @@ func mappingNamer(outMap string, tr *Renderer) func(context.Context, string) (st
 		err = tr.renderTemplatesWithData(ctx,
 			[]Template{{Name: "<OutputMap>", Text: outMap, Writer: out}}, tctx)
 		if err != nil {
-			return "", errors.Wrapf(err, "failed to render outputMap with ctx %+v and inPath %s", tctx, inPath)
+			return "", fmt.Errorf("failed to render outputMap with ctx %+v and inPath %s: %w", tctx, inPath, err)
 		}
 
 		return filepath.Clean(strings.TrimSpace(out.String())), nil

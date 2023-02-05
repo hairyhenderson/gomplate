@@ -3,10 +3,9 @@ package tmpl
 
 import (
 	"bytes"
+	"fmt"
 	"path/filepath"
 	"text/template"
-
-	"github.com/pkg/errors"
 )
 
 // Template -
@@ -68,7 +67,7 @@ func (t *Template) Exec(name string, tmplcontext ...interface{}) (string, error)
 	}
 	tmpl := t.root.Lookup(name)
 	if tmpl == nil {
-		return "", errors.Errorf(`template "%s" not defined`, name)
+		return "", fmt.Errorf(`template "%s" not defined`, name)
 	}
 	return render(tmpl, ctx)
 }
@@ -87,11 +86,11 @@ func (t *Template) parseArgs(args ...interface{}) (name, in string, ctx interfac
 	ctx = t.defaultCtx
 
 	if len(args) == 0 || len(args) > 3 {
-		return "", "", nil, errors.Errorf("wrong number of args for tpl: want 1, 2, or 3 - got %d", len(args))
+		return "", "", nil, fmt.Errorf("wrong number of args for tpl: want 1, 2, or 3 - got %d", len(args))
 	}
 	first, ok := args[0].(string)
 	if !ok {
-		return "", "", nil, errors.Errorf("wrong input: first arg must be string, got %T", args[0])
+		return "", "", nil, fmt.Errorf("wrong input: first arg must be string, got %T", args[0])
 	}
 
 	switch len(args) {
@@ -112,7 +111,7 @@ func (t *Template) parseArgs(args ...interface{}) (name, in string, ctx interfac
 		var ok bool
 		in, ok = args[1].(string)
 		if !ok {
-			return "", "", nil, errors.Errorf("wrong input: second arg (in) must be string, got %T", args[0])
+			return "", "", nil, fmt.Errorf("wrong input: second arg (in) must be string, got %T", args[0])
 		}
 		ctx = args[2]
 	}

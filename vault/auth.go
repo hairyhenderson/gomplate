@@ -12,7 +12,6 @@ import (
 	"github.com/hairyhenderson/gomplate/v3/conv"
 	"github.com/hairyhenderson/gomplate/v3/env"
 	"github.com/hairyhenderson/gomplate/v3/internal/iohelpers"
-	"github.com/pkg/errors"
 )
 
 // GetToken -
@@ -31,7 +30,7 @@ func (v *Vault) GetToken() (string, error) {
 			return token, err
 		}
 	}
-	return "", errors.New("no vault auth methods succeeded")
+	return "", fmt.Errorf("no vault auth methods succeeded")
 }
 
 // AppIDLogin - app-id auth backend
@@ -52,10 +51,10 @@ func (v *Vault) AppIDLogin() (string, error) {
 	path := fmt.Sprintf("auth/%s/login/%s", mount, appID)
 	secret, err := v.client.Logical().Write(path, vars)
 	if err != nil {
-		return "", errors.Wrapf(err, "appID logon failed")
+		return "", fmt.Errorf("appID logon failed: %w", err)
 	}
 	if secret == nil {
-		return "", errors.New("empty response from AppID logon")
+		return "", fmt.Errorf("empty response from AppID logon")
 	}
 
 	return secret.Auth.ClientToken, nil
@@ -80,10 +79,10 @@ func (v *Vault) AppRoleLogin() (string, error) {
 	path := fmt.Sprintf("auth/%s/login", mount)
 	secret, err := v.client.Logical().Write(path, vars)
 	if err != nil {
-		return "", errors.Wrap(err, "appRole logon failed")
+		return "", fmt.Errorf("appRole logon failed: %w", err)
 	}
 	if secret == nil {
-		return "", errors.New("empty response from AppRole logon")
+		return "", fmt.Errorf("empty response from AppRole logon")
 	}
 
 	return secret.Auth.ClientToken, nil
@@ -106,10 +105,10 @@ func (v *Vault) GitHubLogin() (string, error) {
 	path := fmt.Sprintf("auth/%s/login", mount)
 	secret, err := v.client.Logical().Write(path, vars)
 	if err != nil {
-		return "", errors.Wrap(err, "appRole logon failed")
+		return "", fmt.Errorf("appRole logon failed: %w", err)
 	}
 	if secret == nil {
-		return "", errors.New("empty response from AppRole logon")
+		return "", fmt.Errorf("empty response from AppRole logon")
 	}
 
 	return secret.Auth.ClientToken, nil
@@ -133,10 +132,10 @@ func (v *Vault) UserPassLogin() (string, error) {
 	path := fmt.Sprintf("auth/%s/login/%s", mount, username)
 	secret, err := v.client.Logical().Write(path, vars)
 	if err != nil {
-		return "", errors.Wrap(err, "userPass logon failed")
+		return "", fmt.Errorf("userPass logon failed: %w", err)
 	}
 	if secret == nil {
-		return "", errors.New("empty response from UserPass logon")
+		return "", fmt.Errorf("empty response from UserPass logon")
 	}
 
 	return secret.Auth.ClientToken, nil
@@ -160,10 +159,10 @@ func (v *Vault) EC2Login() (string, error) {
 	path := fmt.Sprintf("auth/%s/login", mount)
 	secret, err := v.client.Logical().Write(path, vars)
 	if err != nil {
-		return "", errors.Wrapf(err, "AWS EC2 logon failed")
+		return "", fmt.Errorf("AWS EC2 logon failed: %w", err)
 	}
 	if secret == nil {
-		return "", errors.New("empty response from AWS EC2 logon")
+		return "", fmt.Errorf("empty response from AWS EC2 logon")
 	}
 
 	if output != "" {
@@ -172,14 +171,14 @@ func (v *Vault) EC2Login() (string, error) {
 		}
 		f, err := os.OpenFile(output, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, iohelpers.NormalizeFileMode(0o600))
 		if err != nil {
-			return "", errors.Wrapf(err, "Error opening nonce output file")
+			return "", fmt.Errorf("error opening nonce output file: %w", err)
 		}
 		n, err := f.Write([]byte(nonce + "\n"))
 		if err != nil {
-			return "", errors.Wrapf(err, "Error writing nonce output file")
+			return "", fmt.Errorf("error writing nonce output file: %w", err)
 		}
 		if n == 0 {
-			return "", errors.Wrapf(err, "No bytes written to nonce output file")
+			return "", fmt.Errorf("no bytes written to nonce output file: %w", err)
 		}
 	}
 

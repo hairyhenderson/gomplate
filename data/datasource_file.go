@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/url"
 	"os"
@@ -11,8 +12,6 @@ import (
 	"strings"
 
 	"github.com/spf13/afero"
-
-	"github.com/pkg/errors"
 )
 
 func readFile(ctx context.Context, source *Source, args ...string) ([]byte, error) {
@@ -39,7 +38,7 @@ func readFile(ctx context.Context, source *Source, args ...string) ([]byte, erro
 	// make sure we can access the file
 	i, err := source.fs.Stat(p)
 	if err != nil {
-		return nil, errors.Wrapf(err, "Can't stat %s", p)
+		return nil, fmt.Errorf("stat %s: %w", p, err)
 	}
 
 	if strings.HasSuffix(p, string(filepath.Separator)) {
@@ -47,19 +46,19 @@ func readFile(ctx context.Context, source *Source, args ...string) ([]byte, erro
 		if i.IsDir() {
 			return readFileDir(source, p)
 		}
-		return nil, errors.Errorf("%s is not a directory", p)
+		return nil, fmt.Errorf("%s is not a directory", p)
 	}
 
 	f, err := source.fs.OpenFile(p, os.O_RDONLY, 0)
 	if err != nil {
-		return nil, errors.Wrapf(err, "Can't open %s", p)
+		return nil, fmt.Errorf("openFile %s: %w", p, err)
 	}
 
 	defer f.Close()
 
 	b, err := io.ReadAll(f)
 	if err != nil {
-		return nil, errors.Wrapf(err, "Can't read %s", p)
+		return nil, fmt.Errorf("readAll %s: %w", p, err)
 	}
 	return b, nil
 }

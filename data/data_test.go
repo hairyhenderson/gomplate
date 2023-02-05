@@ -1,12 +1,11 @@
 package data
 
 import (
+	"fmt"
 	"testing"
 	"time"
 
 	"github.com/ugorji/go/codec"
-
-	"github.com/pkg/errors"
 
 	"github.com/stretchr/testify/assert"
 
@@ -59,9 +58,9 @@ escaped: "\"\/\\\b\f\n\r\t\u221e"
 
 	obj := make(map[string]interface{})
 	_, err := unmarshalObj(obj, "SOMETHING", func(in []byte, out interface{}) error {
-		return errors.New("fail")
+		return fmt.Errorf("fail")
 	})
-	assert.EqualError(t, err, "Unable to unmarshal object SOMETHING: fail")
+	assert.EqualError(t, err, "unable to unmarshal object SOMETHING: fail")
 }
 
 func TestUnmarshalArray(t *testing.T) {
@@ -139,9 +138,9 @@ this shouldn't be reached
 
 	obj := make([]interface{}, 1)
 	_, err = unmarshalArray(obj, "SOMETHING", func(in []byte, out interface{}) error {
-		return errors.New("fail")
+		return fmt.Errorf("fail")
 	})
-	assert.EqualError(t, err, "Unable to unmarshal array SOMETHING: fail")
+	assert.EqualError(t, err, "unable to unmarshal array SOMETHING: fail")
 }
 
 func TestMarshalObj(t *testing.T) {
@@ -152,7 +151,7 @@ func TestMarshalObj(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, expected, actual)
 	_, err = marshalObj(nil, func(in interface{}) ([]byte, error) {
-		return nil, errors.New("fail")
+		return nil, fmt.Errorf("fail")
 	})
 	assert.Error(t, err)
 }
