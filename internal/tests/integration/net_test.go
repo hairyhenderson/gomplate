@@ -9,7 +9,7 @@ func TestNet_LookupIP(t *testing.T) {
 }
 
 func TestNet_CIDRHost(t *testing.T) {
-	inOutTestExperimental(t, `{{ net.ParseIPPrefix "10.12.127.0/20" | net.CIDRHost 16 }}`, "10.12.112.16")
+	inOutTestExperimental(t, `{{ net.ParsePrefix "10.12.127.0/20" | net.CIDRHost 16 }}`, "10.12.112.16")
 	inOutTestExperimental(t, `{{ "10.12.127.0/20" | net.CIDRHost 16 }}`, "10.12.112.16")
 	inOutTestExperimental(t, `{{ net.CIDRHost 268 "10.12.127.0/20" }}`, "10.12.113.12")
 	inOutTestExperimental(t, `{{ net.CIDRHost 34 "fd00:fd12:3456:7890:00a2::/72" }}`, "fd00:fd12:3456:7890::22")
