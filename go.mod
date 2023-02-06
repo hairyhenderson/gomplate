@@ -19,7 +19,7 @@ require (
 	github.com/hashicorp/vault/api v1.8.3
 	github.com/itchyny/gojq v0.12.11
 	github.com/johannesboyne/gofakes3 v0.0.0-20220627085814-c3ac35da23b2
-	github.com/joho/godotenv v1.4.0
+	github.com/joho/godotenv v1.5.1
 	github.com/rs/zerolog v1.29.0
 	github.com/spf13/afero v1.9.3
 	github.com/spf13/cobra v1.6.1
