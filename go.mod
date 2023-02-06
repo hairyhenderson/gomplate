@@ -24,7 +24,7 @@ require (
 	github.com/spf13/afero v1.9.3
 	github.com/spf13/cobra v1.6.1
 	github.com/stretchr/testify v1.8.1
-	github.com/ugorji/go/codec v1.2.8
+	github.com/ugorji/go/codec v1.2.9
 	github.com/zealic/xignore v0.3.3
 	go4.org/netipx v0.0.0-20230125063823-8449b0a6169f
 	gocloud.dev v0.28.0
