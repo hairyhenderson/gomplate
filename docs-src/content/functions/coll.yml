@@ -417,7 +417,7 @@ funcs:
 
       All keys are converted to strings.
 
-      This is the inverse of [`coll.Pic`](#coll-pick).
+      This is the inverse of [`coll.Pick`](#coll-pick).
 
       _Note that this function does not modify the input._
     pipeline: true
