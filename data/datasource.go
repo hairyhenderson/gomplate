@@ -59,6 +59,7 @@ func (d *Data) registerReaders() {
 	d.sourceReaders["git+http"] = readGit
 	d.sourceReaders["git+https"] = readGit
 	d.sourceReaders["git+ssh"] = readGit
+	d.sourceReaders["gcp+sm"] = readGCPSecretsManager
 }
 
 // lookupReader - return the reader function for the given scheme
@@ -150,6 +151,7 @@ type Source struct {
 	kv                *libkv.LibKV            // used for consul:, etcd:, zookeeper: URLs, nil otherwise
 	asmpg             awssmpGetter            // used for aws+smp:, nil otherwise
 	awsSecretsManager awsSecretsManagerGetter // used for aws+sm, nil otherwise
+	gcpSecretsManager gcpSecretsManagerGetter // used for gcp+sm, nil otherwise
 	mediaType         string
 }
 

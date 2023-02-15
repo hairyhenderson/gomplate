@@ -554,6 +554,40 @@ bar.json
 baz.txt
 ```
 
+## Using `gcp+sm` datasource
+
+### URL Considerations
+
+For `gcp+sm`, only the _scheme_ and _path_ components are necessary to be defined.
+
+- the _scheme_ must be `gcp+sm`
+- the _path_ component is used to specify the path to the secret (this must be of the form "projects/\*/secrets/\*/versions/\*")
+
+### Output
+
+The ouput will be the content of the specified secret version
+
+### Examples
+
+Given your [GCP account's Secret Manager](https://console.cloud.google.com/security/secret-manager) has the following data:
+
+- `projects/my-project/secrets/password/latest` - `some-password`
+- `projects/my-project/secrets/key/1` - `some-key`
+
+```console
+$ echo '{{ (ds "foo") }}' | gomplate -d foo=gcp+sm:///projects/my-project/secrets/password/latest
+some-password
+
+$ echo '{{ (ds "foo" "/projects/my-project/secrets/password/latest") }}' | gomplate -d foo=gcp+sm:
+some-password
+
+$ echo '{{ (ds "foo" "/secrets/password/latest") }}' | gomplate -d foo=gcp+sm:///projects/my-project
+some-password
+
+$ echo '{{ (ds "foo") }}' | gomplate -d foo=gcp+sm:///projects/my-project/secrets/key/1
+some-key
+```
+
 ## Using `http` datasources
 
 To access datasources from HTTP sites or APIs, simply use a `http` or `https` URL:

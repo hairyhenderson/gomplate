@@ -3,6 +3,7 @@ module github.com/hairyhenderson/gomplate/v3
 go 1.18
 
 require (
+	cloud.google.com/go/secretmanager v1.10.0
 	github.com/Masterminds/goutils v1.1.1
 	github.com/Shopify/ejson v1.3.3
 	github.com/aws/aws-sdk-go v1.44.200
@@ -11,6 +12,7 @@ require (
 	github.com/go-git/go-billy/v5 v5.4.1
 	github.com/go-git/go-git/v5 v5.5.2
 	github.com/google/uuid v1.3.0
+	github.com/googleapis/gax-go/v2 v2.7.0
 	github.com/gosimple/slug v1.13.1
 	github.com/hairyhenderson/go-fsimpl v0.0.0-20230121155226-8aa24800449d
 	github.com/hairyhenderson/toml v0.4.2-0.20210923231440-40456b8e66cf
@@ -82,7 +84,6 @@ require (
 	github.com/google/go-cmp v0.5.9 // indirect
 	github.com/google/wire v0.5.0 // indirect
 	github.com/googleapis/enterprise-certificate-proxy v0.2.1 // indirect
-	github.com/googleapis/gax-go/v2 v2.7.0 // indirect
 	github.com/gosimple/unidecode v1.0.1 // indirect
 	github.com/hashicorp/errwrap v1.1.0 // indirect
 	github.com/hashicorp/go-cleanhttp v0.5.2 // indirect
