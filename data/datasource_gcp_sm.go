@@ -9,19 +9,19 @@ import (
 	"github.com/googleapis/gax-go/v2"
 )
 
-// gcpSecretsManagerGetter - A subset of Secrets Manager API for use in unit testing
-type gcpSecretsManagerGetter interface {
+// gcpSecretManagerGetter - A subset of Secret Manager API for use in unit testing
+type gcpSecretManagerGetter interface {
 	AccessSecretVersion(ctx context.Context, req *secretmanagerpb.AccessSecretVersionRequest, opts ...gax.CallOption) (*secretmanagerpb.AccessSecretVersionResponse, error)
 	GetSecretVersion(ctx context.Context, req *secretmanagerpb.GetSecretVersionRequest, opts ...gax.CallOption) (*secretmanagerpb.SecretVersion, error)
 }
 
-func readGCPSecretsManager(ctx context.Context, source *Source, args ...string) ([]byte, error) {
-	if source.gcpSecretsManager == nil {
+func readGCPSecretManager(ctx context.Context, source *Source, args ...string) ([]byte, error) {
+	if source.gcpSecretManager == nil {
 		client, err := secretmanager.NewClient(ctx)
 		if err != nil {
 			return nil, err
 		}
-		source.gcpSecretsManager = client
+		source.gcpSecretManager = client
 	}
 
 	_, paramPath, err := parseDatasourceURLArgs(source.URL, args...)
@@ -33,7 +33,7 @@ func readGCPSecretsManager(ctx context.Context, source *Source, args ...string) 
 	vreq := secretmanagerpb.GetSecretVersionRequest{
 		Name: paramPath,
 	}
-	version, err := source.gcpSecretsManager.GetSecretVersion(ctx, &vreq)
+	version, err := source.gcpSecretManager.GetSecretVersion(ctx, &vreq)
 	if err != nil {
 		return nil, err
 	}
@@ -42,7 +42,7 @@ func readGCPSecretsManager(ctx context.Context, source *Source, args ...string) 
 		Name: version.Name,
 	}
 
-	versionData, err := source.gcpSecretsManager.AccessSecretVersion(ctx, &req)
+	versionData, err := source.gcpSecretManager.AccessSecretVersion(ctx, &req)
 	if err != nil {
 		return nil, err
 	}

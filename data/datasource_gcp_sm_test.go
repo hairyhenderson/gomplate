@@ -13,8 +13,8 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-// DummyGCPSecretsManagerSecretGetter - test double
-type DummyGCPSecretsManagerSecretGetter struct {
+// DummyGCPSecretManagerSecretGetter - test double
+type DummyGCPSecretManagerSecretGetter struct {
 	t                       *testing.T
 	accessVersionResponse   *secretmanagerpb.AccessSecretVersionResponse
 	secretVersion           *secretmanagerpb.SecretVersion
@@ -23,7 +23,7 @@ type DummyGCPSecretsManagerSecretGetter struct {
 	mockGetSecretVersion    func(req *secretmanagerpb.GetSecretVersionRequest) (*secretmanagerpb.SecretVersion, error)
 }
 
-func (d DummyGCPSecretsManagerSecretGetter) AccessSecretVersion(ctx context.Context, req *secretmanagerpb.AccessSecretVersionRequest, opts ...gax.CallOption) (*secretmanagerpb.AccessSecretVersionResponse, error) {
+func (d DummyGCPSecretManagerSecretGetter) AccessSecretVersion(ctx context.Context, req *secretmanagerpb.AccessSecretVersionRequest, opts ...gax.CallOption) (*secretmanagerpb.AccessSecretVersionResponse, error) {
 	if d.mockAccessSecretVersion != nil {
 		output, err := d.mockAccessSecretVersion(req)
 		return output, err
@@ -34,7 +34,7 @@ func (d DummyGCPSecretsManagerSecretGetter) AccessSecretVersion(ctx context.Cont
 	assert.NotNil(d.t, d.accessVersionResponse, "Must provide a param if no error!")
 	return d.accessVersionResponse, nil
 }
-func (d DummyGCPSecretsManagerSecretGetter) GetSecretVersion(ctx context.Context, req *secretmanagerpb.GetSecretVersionRequest, opts ...gax.CallOption) (*secretmanagerpb.SecretVersion, error) {
+func (d DummyGCPSecretManagerSecretGetter) GetSecretVersion(ctx context.Context, req *secretmanagerpb.GetSecretVersionRequest, opts ...gax.CallOption) (*secretmanagerpb.SecretVersion, error) {
 	if d.mockGetSecretVersion != nil {
 		output, err := d.mockGetSecretVersion(req)
 		return output, err
@@ -46,18 +46,18 @@ func (d DummyGCPSecretsManagerSecretGetter) GetSecretVersion(ctx context.Context
 	return d.secretVersion, nil
 }
 
-func simpleGCPSecretsManagerSourceHelper(dummyGetter gcpSecretsManagerGetter) *Source {
+func simpleGCPSecretManagerSourceHelper(dummyGetter gcpSecretManagerGetter) *Source {
 	return &Source{
 		Alias: "foo",
 		URL: &url.URL{
 			Scheme: "gcp+sm",
 			Path:   "/foo",
 		},
-		gcpSecretsManager: dummyGetter,
+		gcpSecretManager: dummyGetter,
 	}
 }
 
-func TestGCPSecretsManager_ParseGCPSecretsManagerArgs(t *testing.T) {
+func TestGCPSecretManager_ParseGCPSecretManagerArgs(t *testing.T) {
 	_, _, err := parseDatasourceURLArgs(mustParseURL("base"), "extra", "too many!")
 	assert.Error(t, err)
 
@@ -112,9 +112,9 @@ func TestGCPSecretsManager_ParseGCPSecretsManagerArgs(t *testing.T) {
 	}
 }
 
-func TestGCPSecretsManager_GetParameterSetup(t *testing.T) {
+func TestGCPSecretManager_GetParameterSetup(t *testing.T) {
 	calledOk := false
-	s := simpleGCPSecretsManagerSourceHelper(DummyGCPSecretsManagerSecretGetter{
+	s := simpleGCPSecretManagerSourceHelper(DummyGCPSecretManagerSecretGetter{
 		t: t,
 		mockAccessSecretVersion: func(req *secretmanagerpb.AccessSecretVersionRequest) (*secretmanagerpb.AccessSecretVersionResponse, error) {
 			assert.Equal(t, "foo/bar", req.Name)
@@ -136,14 +136,14 @@ func TestGCPSecretsManager_GetParameterSetup(t *testing.T) {
 		},
 	})
 
-	_, err := readGCPSecretsManager(context.Background(), s, "/bar")
+	_, err := readGCPSecretManager(context.Background(), s, "/bar")
 	assert.True(t, calledOk)
 	assert.Nil(t, err)
 }
 
-func TestGCPSecretsManager_GetParameterSetupWrongArgs(t *testing.T) {
+func TestGCPSecretManager_GetParameterSetupWrongArgs(t *testing.T) {
 	calledOk := false
-	s := simpleGCPSecretsManagerSourceHelper(DummyGCPSecretsManagerSecretGetter{
+	s := simpleGCPSecretManagerSourceHelper(DummyGCPSecretManagerSecretGetter{
 		t: t,
 		mockAccessSecretVersion: func(req *secretmanagerpb.AccessSecretVersionRequest) (*secretmanagerpb.AccessSecretVersionResponse, error) {
 			assert.Equal(t, "/foo/bar", req.Name)
@@ -165,19 +165,19 @@ func TestGCPSecretsManager_GetParameterSetupWrongArgs(t *testing.T) {
 		},
 	})
 
-	_, err := readGCPSecretsManager(context.Background(), s, "/bar", "/foo", "/bla")
+	_, err := readGCPSecretManager(context.Background(), s, "/bar", "/foo", "/bla")
 	assert.False(t, calledOk)
 	assert.Error(t, err)
 }
 
-func TestGCPSecretsManager_GetParameterMissing(t *testing.T) {
+func TestGCPSecretManager_GetParameterMissing(t *testing.T) {
 	stat, _ := status.New(codes.InvalidArgument, "Invalid resource field value in the request.").WithDetails()
 	expectedErr, _ := apierror.FromError(stat.Err())
-	s := simpleGCPSecretsManagerSourceHelper(DummyGCPSecretsManagerSecretGetter{
+	s := simpleGCPSecretManagerSourceHelper(DummyGCPSecretManagerSecretGetter{
 		t:   t,
 		err: expectedErr,
 	})
 
-	_, err := readGCPSecretsManager(context.Background(), s, "")
+	_, err := readGCPSecretManager(context.Background(), s, "")
 	assert.Error(t, err, "Test of error message")
 }
