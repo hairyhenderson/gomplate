@@ -22,11 +22,14 @@ func Indent(width int, indent, s string) string {
 	if width <= 0 || strings.Contains(indent, "\n") {
 		return s
 	}
+
 	if width > 1 {
 		indent = strings.Repeat(indent, width)
 	}
 
-	var res []byte
+	lines := strings.Count(s, "\n")
+
+	res := make([]byte, 0, len(s)+len(indent)*lines)
 	bol := true
 	for i := 0; i < len(s); i++ {
 		c := s[i]
