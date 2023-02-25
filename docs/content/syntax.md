@@ -179,7 +179,7 @@ which bear clarifying.
 
 ### Arrays
 
-Arrays are always numerically-indexed, and individual values can be accessed with the `index` function:
+Arrays are always numerically-indexed, and individual values can be accessed with the `index` built-in function:
 
 ```
 {{ index $array 0 }}
@@ -213,11 +213,15 @@ with a key `foo`, you could access it like:
 However, this kind of access is limited to keys which are strings and contain
 only characters in the set (`a`-`z`,`A`-`Z`,`_`,`1`-`9`), and which do not begin
 with a number. If the key doesn't conform to these rules, you can use the `index`
-function (like how arrays are accessed):
+built-in function instead:
 
 ```
 {{ index $map "foo-bar" }}
 ```
+
+**Note:** _while `index` can be used to access awkwardly-named values in maps,
+it behaves differently than the `.` operator. If the key doesn't exist, `index`
+will simply not return a value, while `.` will error._
 
 And, similar to arrays, you can loop through a map with the `range`:
 
@@ -260,7 +264,7 @@ for full details:
 - `and`, `or`, `not`: Returns boolean AND/OR/NOT of the argument(s).
 - `call`: Returns the result of calling a function argument.
 - `html`, `js`, `urlquery`: Safely escapes input for inclusion in HTML, JavaScript, and URL query strings.
-- `index`: Returns the referenced element of an array or map. See also [Arrays](#arrays) and [Maps](#maps).
+- `index`: Returns the referenced element of an array/slice, string, or map. See also [Arrays](#arrays) and [Maps](#maps).
 - `len`: Returns the length of the argument.
 - `print`, `printf`, `println`: Aliases for Go's [`fmt.Print`](https://golang.org/pkg/fmt/#Print),
 [`fmt.Printf`](https://golang.org/pkg/fmt/#Printf), and [`fmt.Println`](https://golang.org/pkg/fmt/#Println)
