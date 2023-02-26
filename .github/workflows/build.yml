@@ -10,11 +10,12 @@ jobs:
   linux-build:
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/hairyhenderson/gomplate-ci-build:1.18
+      image: ghcr.io/hairyhenderson/gomplate-ci-build
     steps:
       - run: |
           git config --global user.email "bogus@example.com"
           git config --global user.name "Someone"
+          git config --global --add safe.directory /__w/gomplate/gomplate
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0
@@ -46,7 +47,7 @@ jobs:
       - run: pwd
       - uses: actions/setup-go@v3
         with:
-          go-version: '1.18'
+          go-version: '1.20'
       - run: |
           git config --global user.email "bogus@example.com"
           git config --global user.name "Someone"
