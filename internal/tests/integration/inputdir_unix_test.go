@@ -5,7 +5,6 @@ package integration
 
 import (
 	"fmt"
-	"math"
 	"os"
 	"testing"
 
@@ -15,12 +14,22 @@ import (
 )
 
 func setFileUlimit(b uint64) error {
-	ulimit := unix.Rlimit{
-		Cur: b,
-		Max: math.MaxInt64,
+	ulimit := unix.Rlimit{}
+	err := unix.Getrlimit(unix.RLIMIT_NOFILE, &ulimit)
+	if err != nil {
+		return err
 	}
-	err := unix.Setrlimit(unix.RLIMIT_NOFILE, &ulimit)
+
+	ulimit.Cur = b
+	err = unix.Setrlimit(unix.RLIMIT_NOFILE, &ulimit)
 	return err
+}
+
+func checkFileUlimit(t *testing.T, b uint64) {
+	ulimit := unix.Rlimit{}
+	err := unix.Getrlimit(unix.RLIMIT_NOFILE, &ulimit)
+	assert.NilError(t, err)
+	assert.Equal(t, b, ulimit.Cur)
 }
 
 func TestInputDir_RespectsUlimit(t *testing.T) {
@@ -41,11 +50,17 @@ func TestInputDir_RespectsUlimit(t *testing.T) {
 	setFileUlimit(uint64(numfiles))
 	defer setFileUlimit(8192)
 
+	// make sure the ulimit is actually set correctly - the capability may not
+	// be available in some environments, and we don't want to pass if we can't
+	// actually test the behavior
+	checkFileUlimit(t, uint64(numfiles))
+
 	o, e, err := cmd(t, "--input-dir", testdir.Join("in"),
 		"--output-dir", testdir.Join("out")).
 		withDir(testdir.Path()).run()
 
 	setFileUlimit(8192)
+	checkFileUlimit(t, 8192)
 	assertSuccess(t, o, e, err, "")
 
 	files, err := os.ReadDir(testdir.Join("out"))

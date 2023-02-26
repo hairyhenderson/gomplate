@@ -239,28 +239,37 @@ func (t *Renderer) renderTemplatesWithData(ctx context.Context, templates []Temp
 	start := time.Now()
 	defer func() { Metrics.TotalRenderDuration = time.Since(start) }()
 	for _, template := range templates {
-		if template.Writer != nil {
-			wr, ok := template.Writer.(io.Closer)
-			if ok && wr != os.Stdout {
-				defer wr.Close()
-			}
-		}
-
-		tstart := time.Now()
-		tmpl, err := parseTemplate(ctx, template.Name, template.Text,
-			f, tmplctx, t.nested, t.lDelim, t.rDelim)
+		err := t.renderTemplate(ctx, template, f, tmplctx)
 		if err != nil {
-			return err
+			return fmt.Errorf("renderTemplate: %w", err)
 		}
-
-		err = tmpl.Execute(template.Writer, tmplctx)
-		Metrics.RenderDuration[template.Name] = time.Since(tstart)
-		if err != nil {
-			Metrics.Errors++
-			return fmt.Errorf("failed to render template %s: %w", template.Name, err)
-		}
-		Metrics.TemplatesProcessed++
 	}
+	return nil
+}
+
+func (t *Renderer) renderTemplate(ctx context.Context, template Template, f template.FuncMap, tmplctx interface{}) error {
+	if template.Writer != nil {
+		wr, ok := template.Writer.(io.Closer)
+		if ok && wr != os.Stdout {
+			defer wr.Close()
+		}
+	}
+
+	tstart := time.Now()
+	tmpl, err := parseTemplate(ctx, template.Name, template.Text,
+		f, tmplctx, t.nested, t.lDelim, t.rDelim)
+	if err != nil {
+		return err
+	}
+
+	err = tmpl.Execute(template.Writer, tmplctx)
+	Metrics.RenderDuration[template.Name] = time.Since(tstart)
+	if err != nil {
+		Metrics.Errors++
+		return fmt.Errorf("failed to render template %s: %w", template.Name, err)
+	}
+	Metrics.TemplatesProcessed++
+
 	return nil
 }
 
