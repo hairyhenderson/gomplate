@@ -238,6 +238,10 @@ func TestDatasources_Vault_AppRoleAuth(t *testing.T) {
 }
 
 func TestDatasources_Vault_AppIDAuth(t *testing.T) {
+	// temporarily allow the deprecated pending-removal appID auth method
+	// when this starts failing completely, we should remove support
+	t.Setenv("VAULT_ALLOW_PENDING_REMOVAL_MOUNTS", "true")
+
 	v := setupDatasourcesVaultTest(t)
 
 	v.vc.Logical().Write("secret/foo", map[string]interface{}{"value": "bar"})
