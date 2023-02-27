@@ -1185,8 +1185,8 @@ github.com/hairyhenderson/go-fsimpl v0.0.0-20230121155226-8aa24800449d h1:RqyRRW
 github.com/hairyhenderson/go-fsimpl v0.0.0-20230121155226-8aa24800449d/go.mod h1:2k9HLXToBp8dOXrbgZUTaZfm03JZlkCGkrgvp4ip/JQ=
 github.com/hairyhenderson/toml v0.4.2-0.20210923231440-40456b8e66cf h1:I1sbT4ZbIt9i+hB1zfKw2mE8C12TuGxPiW7YmtLbPa4=
 github.com/hairyhenderson/toml v0.4.2-0.20210923231440-40456b8e66cf/go.mod h1:jDHmWDKZY6MIIYltYYfW4Rs7hQ50oS4qf/6spSiZAxY=
-github.com/hairyhenderson/yaml v0.0.0-20220618171115-2d35fca545ce h1:cVkYhlWAxwuS2/Yp6qPtcl0fGpcWxuZNonywHZ6/I+s=
-github.com/hairyhenderson/yaml v0.0.0-20220618171115-2d35fca545ce/go.mod h1:7TyiGlHI+IO+iJbqRZ82QbFtvgj/AIcFm5qc9DLn7Kc=
+github.com/hairyhenderson/yaml v2.1.0+incompatible h1:7VxcV0eaG+8Du4HvuOBrhz2f2D3Q2Q8l3Z+Nye/yA64=
+github.com/hairyhenderson/yaml v2.1.0+incompatible/go.mod h1:FGftq+LRPYH6wiBS2yUmcxT1FrloDiyxq3SzjmTQzXM=
 github.com/hanwen/go-fuse v1.0.0/go.mod h1:unqXarDXqzAk0rt98O2tVndEPIpUgLD9+rwFisZH3Ok=
 github.com/hanwen/go-fuse/v2 v2.1.0/go.mod h1:oRyA5eK+pvJyv5otpO/DgccS8y/RvYMaO00GgRLGryc=
 github.com/hashicorp/consul/api v1.1.0/go.mod h1:VmuI/Lkw1nC05EYQWNKwWGbkg+FbDBtguAZLlVdkD9Q=

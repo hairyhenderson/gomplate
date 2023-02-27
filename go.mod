@@ -39,7 +39,7 @@ require (
 
 // TODO: replace with gopkg.in/yaml.v3 after https://github.com/go-yaml/yaml/pull/862
 // is merged
-require github.com/hairyhenderson/yaml v0.0.0-20220618171115-2d35fca545ce
+require github.com/hairyhenderson/yaml v2.1.0+incompatible
 
 require (
 	cloud.google.com/go v0.107.0 // indirect
