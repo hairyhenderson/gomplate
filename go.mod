@@ -31,7 +31,7 @@ require (
 	golang.org/x/crypto v0.6.0
 	golang.org/x/sys v0.5.0
 	golang.org/x/term v0.5.0
-	golang.org/x/text v0.7.0
+	golang.org/x/text v0.8.0
 	gotest.tools/v3 v3.4.0
 	inet.af/netaddr v0.0.0-20220811202034-502d2d690317
 	k8s.io/client-go v0.26.1
@@ -121,7 +121,7 @@ require (
 	golang.org/x/net v0.7.0 // indirect
 	golang.org/x/oauth2 v0.2.0 // indirect
 	golang.org/x/time v0.2.0 // indirect
-	golang.org/x/tools v0.2.0 // indirect
+	golang.org/x/tools v0.6.0 // indirect
 	golang.org/x/xerrors v0.0.0-20220907171357-04be3eba64a2 // indirect
 	google.golang.org/api v0.106.0 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
