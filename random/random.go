@@ -6,13 +6,8 @@ import (
 	"math"
 	"math/rand"
 	"regexp"
-	"time"
 	"unicode"
 )
-
-func init() {
-	rand.Seed(time.Now().UnixNano())
-}
 
 // Default set, matches "[a-zA-Z0-9_.-]"
 const defaultSet = "-.0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz"
