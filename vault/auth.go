@@ -19,7 +19,6 @@ func (v *Vault) GetToken() (string, error) {
 	// sorted in order of precedence
 	authFuncs := []func() (string, error){
 		v.AppRoleLogin,
-		v.AppIDLogin,
 		v.GitHubLogin,
 		v.UserPassLogin,
 		v.TokenLogin,
@@ -31,33 +30,6 @@ func (v *Vault) GetToken() (string, error) {
 		}
 	}
 	return "", fmt.Errorf("no vault auth methods succeeded")
-}
-
-// AppIDLogin - app-id auth backend
-func (v *Vault) AppIDLogin() (string, error) {
-	appID := env.Getenv("VAULT_APP_ID")
-	userID := env.Getenv("VAULT_USER_ID")
-
-	if appID == "" || userID == "" {
-		return "", nil
-	}
-
-	mount := env.Getenv("VAULT_AUTH_APP_ID_MOUNT", "app-id")
-
-	vars := map[string]interface{}{
-		"user_id": userID,
-	}
-
-	path := fmt.Sprintf("auth/%s/login/%s", mount, appID)
-	secret, err := v.client.Logical().Write(path, vars)
-	if err != nil {
-		return "", fmt.Errorf("appID logon failed: %w", err)
-	}
-	if secret == nil {
-		return "", fmt.Errorf("empty response from AppID logon")
-	}
-
-	return secret.Auth.ClientToken, nil
 }
 
 // AppRoleLogin - approle auth backend

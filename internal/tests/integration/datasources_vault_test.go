@@ -237,58 +237,6 @@ func TestDatasources_Vault_AppRoleAuth(t *testing.T) {
 	assertSuccess(t, o, e, err, "bar")
 }
 
-func TestDatasources_Vault_AppIDAuth(t *testing.T) {
-	// temporarily allow the deprecated pending-removal appID auth method
-	// when this starts failing completely, we should remove support
-	t.Setenv("VAULT_ALLOW_PENDING_REMOVAL_MOUNTS", "true")
-
-	v := setupDatasourcesVaultTest(t)
-
-	v.vc.Logical().Write("secret/foo", map[string]interface{}{"value": "bar"})
-	defer v.vc.Logical().Delete("secret/foo")
-	err := v.vc.Sys().EnableAuth("app-id", "app-id", "")
-	require.NoError(t, err)
-	err = v.vc.Sys().EnableAuth("app-id2", "app-id", "")
-	require.NoError(t, err)
-	defer v.vc.Sys().DisableAuth("app-id")
-	defer v.vc.Sys().DisableAuth("app-id2")
-	_, err = v.vc.Logical().Write("auth/app-id/map/app-id/testappid", map[string]interface{}{
-		"display_name": "test_app_id", "value": "readpol",
-	})
-	require.NoError(t, err)
-	_, err = v.vc.Logical().Write("auth/app-id/map/user-id/testuserid", map[string]interface{}{
-		"value": "testappid",
-	})
-	require.NoError(t, err)
-	_, err = v.vc.Logical().Write("auth/app-id2/map/app-id/testappid", map[string]interface{}{
-		"display_name": "test_app_id", "value": "readpol",
-	})
-	require.NoError(t, err)
-	_, err = v.vc.Logical().Write("auth/app-id2/map/user-id/testuserid", map[string]interface{}{
-		"value": "testappid",
-	})
-	require.NoError(t, err)
-
-	o, e, err := cmd(t,
-		"-d", "vault=vault:///secret",
-		"-i", `{{(ds "vault" "foo").value}}`).
-		withEnv("VAULT_ADDR", "http://"+v.addr).
-		withEnv("VAULT_APP_ID", "testappid").
-		withEnv("VAULT_USER_ID", "testuserid").
-		run()
-	assertSuccess(t, o, e, err, "bar")
-
-	o, e, err = cmd(t,
-		"-d", "vault=vault:///secret",
-		"-i", `{{(ds "vault" "foo").value}}`).
-		withEnv("VAULT_ADDR", "http://"+v.addr).
-		withEnv("VAULT_APP_ID", "testappid").
-		withEnv("VAULT_USER_ID", "testuserid").
-		withEnv("VAULT_AUTH_APP_ID_MOUNT", "app-id2").
-		run()
-	assertSuccess(t, o, e, err, "bar")
-}
-
 func TestDatasources_Vault_DynamicAuth(t *testing.T) {
 	v := setupDatasourcesVaultTest(t)
 
