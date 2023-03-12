@@ -4,7 +4,7 @@ package time
 import (
 	"time"
 
-	"github.com/hairyhenderson/gomplate/v3/env"
+	"github.com/hairyhenderson/gomplate/v4/env"
 )
 
 // ZoneName - a convenience function for determining the current timezone's name

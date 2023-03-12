@@ -6,9 +6,9 @@ import (
 	gmath "math"
 	"strconv"
 
-	"github.com/hairyhenderson/gomplate/v3/conv"
+	"github.com/hairyhenderson/gomplate/v4/conv"
 
-	"github.com/hairyhenderson/gomplate/v3/math"
+	"github.com/hairyhenderson/gomplate/v4/math"
 )
 
 // MathNS - the math namespace

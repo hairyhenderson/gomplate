@@ -4,7 +4,7 @@ import (
 	"context"
 	"strings"
 
-	"github.com/hairyhenderson/gomplate/v3/libkv"
+	"github.com/hairyhenderson/gomplate/v4/libkv"
 )
 
 func readConsul(ctx context.Context, source *Source, args ...string) (data []byte, err error) {

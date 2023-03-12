@@ -7,10 +7,10 @@ import (
 	stdnet "net"
 	"net/netip"
 
-	"github.com/hairyhenderson/gomplate/v3/conv"
-	"github.com/hairyhenderson/gomplate/v3/internal/cidr"
-	"github.com/hairyhenderson/gomplate/v3/internal/deprecated"
-	"github.com/hairyhenderson/gomplate/v3/net"
+	"github.com/hairyhenderson/gomplate/v4/conv"
+	"github.com/hairyhenderson/gomplate/v4/internal/cidr"
+	"github.com/hairyhenderson/gomplate/v4/internal/deprecated"
+	"github.com/hairyhenderson/gomplate/v4/net"
 	"go4.org/netipx"
 	"inet.af/netaddr"
 )

@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/hairyhenderson/gomplate/v3/coll"
-	"github.com/hairyhenderson/gomplate/v3/internal/config"
+	"github.com/hairyhenderson/gomplate/v4/coll"
+	"github.com/hairyhenderson/gomplate/v4/internal/config"
 )
 
 // readMerge demultiplexes a `merge:` datasource. The 'args' parameter currently

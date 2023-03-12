@@ -8,9 +8,9 @@ import (
 	"os/signal"
 
 	"github.com/hairyhenderson/go-fsimpl/filefs"
-	"github.com/hairyhenderson/gomplate/v3"
-	"github.com/hairyhenderson/gomplate/v3/env"
-	"github.com/hairyhenderson/gomplate/v3/version"
+	"github.com/hairyhenderson/gomplate/v4"
+	"github.com/hairyhenderson/gomplate/v4/env"
+	"github.com/hairyhenderson/gomplate/v4/version"
 
 	"github.com/rs/zerolog"
 	"github.com/spf13/cobra"

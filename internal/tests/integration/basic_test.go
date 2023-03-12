@@ -5,7 +5,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/hairyhenderson/gomplate/v3/internal/iohelpers"
+	"github.com/hairyhenderson/gomplate/v4/internal/iohelpers"
 	"gotest.tools/v3/assert"
 	"gotest.tools/v3/assert/cmp"
 	testfs "gotest.tools/v3/fs"

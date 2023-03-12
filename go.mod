@@ -1,6 +1,6 @@
-module github.com/hairyhenderson/gomplate/v3
+module github.com/hairyhenderson/gomplate/v4
 
-go 1.18
+go 1.20
 
 require (
 	github.com/Masterminds/goutils v1.1.1

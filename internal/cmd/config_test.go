@@ -8,7 +8,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/hairyhenderson/gomplate/v3/internal/config"
+	"github.com/hairyhenderson/gomplate/v4/internal/config"
 
 	"github.com/spf13/afero"
 	"github.com/spf13/cobra"

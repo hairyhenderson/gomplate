@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/hairyhenderson/gomplate/v3/vault"
+	"github.com/hairyhenderson/gomplate/v4/vault"
 )
 
 func readVault(ctx context.Context, source *Source, args ...string) (data []byte, err error) {

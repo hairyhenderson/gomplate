@@ -15,7 +15,7 @@ import (
 	"testing"
 	"time"
 
-	gcmd "github.com/hairyhenderson/gomplate/v3/internal/cmd"
+	gcmd "github.com/hairyhenderson/gomplate/v4/internal/cmd"
 	vaultapi "github.com/hashicorp/vault/api"
 	"github.com/stretchr/testify/assert"
 	"gotest.tools/v3/icmd"

@@ -5,7 +5,7 @@ import (
 	"net/url"
 	"testing"
 
-	"github.com/hairyhenderson/gomplate/v3/vault"
+	"github.com/hairyhenderson/gomplate/v4/vault"
 	"github.com/stretchr/testify/assert"
 )
 

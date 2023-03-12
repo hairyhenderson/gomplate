@@ -4,7 +4,7 @@ import (
 	"context"
 	"strings"
 
-	"github.com/hairyhenderson/gomplate/v3/env"
+	"github.com/hairyhenderson/gomplate/v4/env"
 )
 
 func readEnv(ctx context.Context, source *Source, args ...string) (b []byte, err error) {

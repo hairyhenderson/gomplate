@@ -5,11 +5,11 @@ import (
 	"fmt"
 	"reflect"
 
-	"github.com/hairyhenderson/gomplate/v3/conv"
-	"github.com/hairyhenderson/gomplate/v3/internal/deprecated"
-	"github.com/hairyhenderson/gomplate/v3/internal/texttemplate"
+	"github.com/hairyhenderson/gomplate/v4/conv"
+	"github.com/hairyhenderson/gomplate/v4/internal/deprecated"
+	"github.com/hairyhenderson/gomplate/v4/internal/texttemplate"
 
-	"github.com/hairyhenderson/gomplate/v3/coll"
+	"github.com/hairyhenderson/gomplate/v4/coll"
 )
 
 // CollNS -

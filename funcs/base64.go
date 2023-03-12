@@ -3,8 +3,8 @@ package funcs
 import (
 	"context"
 
-	"github.com/hairyhenderson/gomplate/v3/base64"
-	"github.com/hairyhenderson/gomplate/v3/conv"
+	"github.com/hairyhenderson/gomplate/v4/base64"
+	"github.com/hairyhenderson/gomplate/v4/conv"
 )
 
 // Base64NS - the base64 namespace

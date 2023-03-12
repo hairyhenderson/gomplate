@@ -6,9 +6,9 @@ import (
 	"strconv"
 	"unicode/utf8"
 
-	"github.com/hairyhenderson/gomplate/v3/conv"
-	iconv "github.com/hairyhenderson/gomplate/v3/internal/conv"
-	"github.com/hairyhenderson/gomplate/v3/random"
+	"github.com/hairyhenderson/gomplate/v4/conv"
+	iconv "github.com/hairyhenderson/gomplate/v4/internal/conv"
+	"github.com/hairyhenderson/gomplate/v4/random"
 )
 
 // RandomNS -

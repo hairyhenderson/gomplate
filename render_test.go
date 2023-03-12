@@ -11,7 +11,7 @@ import (
 	"testing/fstest"
 
 	"github.com/hairyhenderson/go-fsimpl"
-	"github.com/hairyhenderson/gomplate/v3/data"
+	"github.com/hairyhenderson/gomplate/v4/data"
 	"github.com/stretchr/testify/assert"
 )
 
