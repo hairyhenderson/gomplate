@@ -3,8 +3,8 @@ package funcs
 import (
 	"context"
 
-	"github.com/hairyhenderson/gomplate/v3/conv"
-	"github.com/hairyhenderson/gomplate/v3/env"
+	"github.com/hairyhenderson/gomplate/v4/conv"
+	"github.com/hairyhenderson/gomplate/v4/env"
 )
 
 // EnvNS - the Env namespace

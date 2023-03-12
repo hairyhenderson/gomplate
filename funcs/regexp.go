@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/hairyhenderson/gomplate/v3/conv"
-	"github.com/hairyhenderson/gomplate/v3/regexp"
+	"github.com/hairyhenderson/gomplate/v4/conv"
+	"github.com/hairyhenderson/gomplate/v4/regexp"
 )
 
 // ReNS -

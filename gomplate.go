@@ -11,8 +11,8 @@ import (
 	"text/template"
 	"time"
 
-	"github.com/hairyhenderson/gomplate/v3/data"
-	"github.com/hairyhenderson/gomplate/v3/internal/config"
+	"github.com/hairyhenderson/gomplate/v4/data"
+	"github.com/hairyhenderson/gomplate/v4/internal/config"
 )
 
 // RunTemplates - run all gomplate templates specified by the given configuration

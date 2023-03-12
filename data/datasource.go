@@ -12,9 +12,9 @@ import (
 
 	"github.com/spf13/afero"
 
-	"github.com/hairyhenderson/gomplate/v3/internal/config"
-	"github.com/hairyhenderson/gomplate/v3/libkv"
-	"github.com/hairyhenderson/gomplate/v3/vault"
+	"github.com/hairyhenderson/gomplate/v4/internal/config"
+	"github.com/hairyhenderson/gomplate/v4/libkv"
+	"github.com/hairyhenderson/gomplate/v4/vault"
 )
 
 func regExtension(ext, typ string) {

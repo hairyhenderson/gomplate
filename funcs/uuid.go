@@ -3,7 +3,7 @@ package funcs
 import (
 	"context"
 
-	"github.com/hairyhenderson/gomplate/v3/conv"
+	"github.com/hairyhenderson/gomplate/v4/conv"
 
 	"github.com/google/uuid"
 )

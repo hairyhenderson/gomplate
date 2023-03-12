@@ -11,7 +11,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/request"
 	"github.com/aws/aws-sdk-go/service/secretsmanager"
 
-	gaws "github.com/hairyhenderson/gomplate/v3/aws"
+	gaws "github.com/hairyhenderson/gomplate/v4/aws"
 )
 
 // awsSecretsManagerGetter - A subset of Secrets Manager API for use in unit testing

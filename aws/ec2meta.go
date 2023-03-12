@@ -7,7 +7,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/ec2metadata"
 	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/hairyhenderson/gomplate/v3/env"
+	"github.com/hairyhenderson/gomplate/v4/env"
 )
 
 const (

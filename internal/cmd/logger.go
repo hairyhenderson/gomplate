@@ -9,7 +9,7 @@ import (
 	"runtime"
 	"time"
 
-	"github.com/hairyhenderson/gomplate/v3/env"
+	"github.com/hairyhenderson/gomplate/v4/env"
 	"github.com/rs/zerolog"
 	zlog "github.com/rs/zerolog/log"
 	"golang.org/x/term"

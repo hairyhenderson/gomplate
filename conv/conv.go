@@ -8,7 +8,7 @@ import (
 	"strconv"
 	"strings"
 
-	iconv "github.com/hairyhenderson/gomplate/v3/internal/conv"
+	iconv "github.com/hairyhenderson/gomplate/v4/internal/conv"
 )
 
 // Bool converts a string to a boolean value, using strconv.ParseBool under the covers.
@@ -68,7 +68,7 @@ func ToBools(in ...interface{}) []bool {
 
 // Slice creates a slice from a bunch of arguments
 //
-// Deprecated: use [github.com/hairyhenderson/gomplate/v3/coll.Slice] instead
+// Deprecated: use [github.com/hairyhenderson/gomplate/v4/coll.Slice] instead
 func Slice(args ...interface{}) []interface{} {
 	return args
 }

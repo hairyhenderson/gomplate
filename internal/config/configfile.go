@@ -14,7 +14,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/hairyhenderson/gomplate/v3/internal/iohelpers"
+	"github.com/hairyhenderson/gomplate/v4/internal/iohelpers"
 	"github.com/hairyhenderson/yaml"
 )
 

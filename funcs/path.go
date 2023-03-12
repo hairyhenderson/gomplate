@@ -4,7 +4,7 @@ import (
 	"context"
 	"path"
 
-	"github.com/hairyhenderson/gomplate/v3/conv"
+	"github.com/hairyhenderson/gomplate/v4/conv"
 )
 
 // PathNS - the Path namespace

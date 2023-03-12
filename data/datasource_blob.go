@@ -11,8 +11,8 @@ import (
 	"path"
 	"strings"
 
-	gaws "github.com/hairyhenderson/gomplate/v3/aws"
-	"github.com/hairyhenderson/gomplate/v3/env"
+	gaws "github.com/hairyhenderson/gomplate/v4/aws"
+	"github.com/hairyhenderson/gomplate/v4/env"
 
 	"gocloud.dev/blob"
 	"gocloud.dev/blob/gcsblob"

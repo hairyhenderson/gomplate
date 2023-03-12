@@ -6,7 +6,7 @@ import (
 	"context"
 	"testing"
 
-	"github.com/hairyhenderson/gomplate/v3/internal/config"
+	"github.com/hairyhenderson/gomplate/v4/internal/config"
 	"github.com/spf13/afero"
 
 	"github.com/stretchr/testify/assert"

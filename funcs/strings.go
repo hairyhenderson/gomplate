@@ -13,9 +13,9 @@ import (
 	"unicode/utf8"
 
 	"github.com/Masterminds/goutils"
-	"github.com/hairyhenderson/gomplate/v3/conv"
-	"github.com/hairyhenderson/gomplate/v3/internal/deprecated"
-	gompstrings "github.com/hairyhenderson/gomplate/v3/strings"
+	"github.com/hairyhenderson/gomplate/v4/conv"
+	"github.com/hairyhenderson/gomplate/v4/internal/deprecated"
+	gompstrings "github.com/hairyhenderson/gomplate/v4/strings"
 
 	"github.com/gosimple/slug"
 	"golang.org/x/text/cases"

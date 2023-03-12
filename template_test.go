@@ -11,8 +11,8 @@ import (
 	"text/template"
 
 	"github.com/hairyhenderson/go-fsimpl"
-	"github.com/hairyhenderson/gomplate/v3/internal/config"
-	"github.com/hairyhenderson/gomplate/v3/internal/iohelpers"
+	"github.com/hairyhenderson/gomplate/v4/internal/config"
+	"github.com/hairyhenderson/gomplate/v4/internal/iohelpers"
 	"github.com/spf13/afero"
 
 	"github.com/stretchr/testify/assert"

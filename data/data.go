@@ -14,8 +14,8 @@ import (
 
 	"github.com/Shopify/ejson"
 	ejsonJson "github.com/Shopify/ejson/json"
-	"github.com/hairyhenderson/gomplate/v3/conv"
-	"github.com/hairyhenderson/gomplate/v3/env"
+	"github.com/hairyhenderson/gomplate/v4/conv"
+	"github.com/hairyhenderson/gomplate/v4/env"
 	"github.com/joho/godotenv"
 
 	// XXX: replace once https://github.com/BurntSushi/toml/pull/179 is merged

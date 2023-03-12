@@ -2,7 +2,7 @@ name: Docker Build
 on:
   push:
     branches: [ main ]
-    tags: [ 'v*' ]
+    tags: [ 'v*', '!v*-pre*']
   pull_request:
     branches: [ main ]
 
@@ -26,9 +26,9 @@ jobs:
       uses: docker/setup-qemu-action@v2.1.0
     - name: Set up Docker Buildx
       id: buildx
-      uses: docker/setup-buildx-action@v2.4.1
+      uses: docker/setup-buildx-action@v2.5.0
       with:
-        version: v0.5.1
+        version: v0.10.4
         driver-opts: |
           image=moby/buildkit:buildx-stable-1
           network=host

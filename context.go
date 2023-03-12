@@ -5,7 +5,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/hairyhenderson/gomplate/v3/data"
+	"github.com/hairyhenderson/gomplate/v4/data"
 )
 
 // context for templates
