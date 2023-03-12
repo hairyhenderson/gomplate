@@ -4,6 +4,7 @@ go 1.18
 
 require (
 	github.com/Masterminds/goutils v1.1.1
+	github.com/Masterminds/semver v1.5.0
 	github.com/Shopify/ejson v1.3.3
 	github.com/aws/aws-sdk-go v1.44.219
 	github.com/docker/libkv v0.2.2-0.20180912205406-458977154600

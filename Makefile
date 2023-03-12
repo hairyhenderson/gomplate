@@ -18,10 +18,12 @@ LINT_PROCS ?= $(shell nproc)
 endif
 
 COMMIT ?= `git rev-parse --short HEAD 2>/dev/null`
-VERSION ?= `git describe --abbrev=0 --tags $(git rev-list --tags --max-count=1) 2>/dev/null | sed 's/v\(.*\)/\1/'`
+VERSION ?= $(shell $(GO) run ./version/gen/vgen.go)
 
-COMMIT_FLAG := -X `$(GO) list ./version`.GitCommit=$(COMMIT)
-VERSION_FLAG := -X `$(GO) list ./version`.Version=$(VERSION)
+VERSION_PATH := `$(GO) list ./version`
+COMMIT_FLAG := -X $(VERSION_PATH).GitCommit=$(COMMIT)
+VERSION_FLAG := -X $(VERSION_PATH).Version=$(VERSION)
+GO_LDFLAGS ?= $(COMMIT_FLAG) $(VERSION_FLAG)
 
 GOOS ?= $(shell $(GO) version | sed 's/^.*\ \([a-z0-9]*\)\/\([a-z0-9]*\)/\1/')
 GOARCH ?= $(shell $(GO) version | sed 's/^.*\ \([a-z0-9]*\)\/\([a-z0-9]*\)/\2/')
@@ -103,35 +105,35 @@ docker-images: gomplate.iid
 $(PREFIX)/bin/$(PKG_NAME)_%v5$(call extension,$(GOOS)): $(shell find $(PREFIX) -type f -name "*.go")
 	GOOS=$(shell echo $* | cut -f1 -d-) GOARCH=$(shell echo $* | cut -f2 -d- ) GOARM=5 CGO_ENABLED=0 \
 		$(GO) build \
-			-ldflags "-w -s $(COMMIT_FLAG) $(VERSION_FLAG)" \
+			-ldflags "-w -s $(GO_LDFLAGS)" \
 			-o $@ \
 			./cmd/$(PKG_NAME)
 
 $(PREFIX)/bin/$(PKG_NAME)_%v6$(call extension,$(GOOS)): $(shell find $(PREFIX) -type f -name "*.go")
 	GOOS=$(shell echo $* | cut -f1 -d-) GOARCH=$(shell echo $* | cut -f2 -d- ) GOARM=6 CGO_ENABLED=0 \
 		$(GO) build \
-			-ldflags "-w -s $(COMMIT_FLAG) $(VERSION_FLAG)" \
+			-ldflags "-w -s $(GO_LDFLAGS)" \
 			-o $@ \
 			./cmd/$(PKG_NAME)
 
 $(PREFIX)/bin/$(PKG_NAME)_%v7$(call extension,$(GOOS)): $(shell find $(PREFIX) -type f -name "*.go")
 	GOOS=$(shell echo $* | cut -f1 -d-) GOARCH=$(shell echo $* | cut -f2 -d- ) GOARM=7 CGO_ENABLED=0 \
 		$(GO) build \
-			-ldflags "-w -s $(COMMIT_FLAG) $(VERSION_FLAG)" \
+			-ldflags "-w -s $(GO_LDFLAGS)" \
 			-o $@ \
 			./cmd/$(PKG_NAME)
 
 $(PREFIX)/bin/$(PKG_NAME)_windows-%.exe: $(shell find $(PREFIX) -type f -name "*.go")
 	GOOS=windows GOARCH=$* GOARM= CGO_ENABLED=0 \
 		$(GO) build \
-			-ldflags "-w -s $(COMMIT_FLAG) $(VERSION_FLAG)" \
+			-ldflags "-w -s $(GO_LDFLAGS)" \
 			-o $@ \
 			./cmd/$(PKG_NAME)
 
 $(PREFIX)/bin/$(PKG_NAME)_%$(TARGETVARIANT)$(call extension,$(GOOS)): $(shell find $(PREFIX) -type f -name "*.go")
 	GOOS=$(shell echo $* | cut -f1 -d-) GOARCH=$(shell echo $* | cut -f2 -d- ) GOARM=$(GOARM) CGO_ENABLED=0 \
 		$(GO) build \
-			-ldflags "-w -s $(COMMIT_FLAG) $(VERSION_FLAG)" \
+			-ldflags "-w -s $(GO_LDFLAGS)" \
 			-o $@ \
 			./cmd/$(PKG_NAME)
 
