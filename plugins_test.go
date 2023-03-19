@@ -12,6 +12,7 @@ import (
 
 	"github.com/hairyhenderson/gomplate/v4/internal/config"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestBindPlugins(t *testing.T) {
@@ -69,7 +70,7 @@ func TestRun(t *testing.T) {
 		path:    "echo",
 	}
 	out, err := p.run("foo")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, "", stderr.String())
 	assert.Equal(t, "foo", strings.TrimSpace(out.(string)))
 }

@@ -146,7 +146,7 @@ func (p *plugin) run(args ...interface{}) (interface{}, error) {
 	start := time.Now()
 	err := c.Start()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("starting command: %w", err)
 	}
 
 	// make sure all signals are propagated
