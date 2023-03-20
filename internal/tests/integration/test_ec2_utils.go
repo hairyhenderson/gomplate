@@ -32,7 +32,7 @@ const instanceDocument = `{
     "region" : "xx-test-1"
 }`
 
-func instanceDocumentHandler(w http.ResponseWriter, r *http.Request) {
+func instanceDocumentHandler(w http.ResponseWriter, _ *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	_, err := w.Write([]byte(instanceDocument))
 	if err != nil {
@@ -106,7 +106,7 @@ func pkcsHandler(priv *rsa.PrivateKey, derBytes []byte) func(http.ResponseWriter
 	}
 }
 
-func stsHandler(w http.ResponseWriter, r *http.Request) {
+func stsHandler(w http.ResponseWriter, _ *http.Request) {
 	w.Header().Set("Content-Type", "text/xml")
 	_, err := w.Write([]byte(`<GetCallerIdentityResponse xmlns="https://sts.amazonaws.com/doc/2011-06-15/">
   <GetCallerIdentityResult>
@@ -123,7 +123,7 @@ func stsHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func ec2Handler(w http.ResponseWriter, r *http.Request) {
+func ec2Handler(w http.ResponseWriter, _ *http.Request) {
 	w.Header().Set("Content-Type", "text/xml")
 	_, err := w.Write([]byte(`<DescribeInstancesResponse xmlns="http://ec2.amazonaws.com/doc/2016-11-15/">
     <requestId>8f7724cf-496f-496e-8fe3-example</requestId>

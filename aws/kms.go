@@ -18,7 +18,7 @@ type KMS struct {
 }
 
 // NewKMS - Create new AWS KMS client using an SDKSession
-func NewKMS(option ClientOptions) *KMS {
+func NewKMS(_ ClientOptions) *KMS {
 	client := kms.New(SDKSession())
 	return &KMS{
 		Client: client,
