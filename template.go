@@ -156,7 +156,7 @@ func parseNestedTemplateDir(ctx context.Context, fsys fs.FS, alias, fname string
 	return nil
 }
 
-func parseNestedTemplate(ctx context.Context, fsys fs.FS, alias, fname string, tmpl *template.Template) error {
+func parseNestedTemplate(_ context.Context, fsys fs.FS, alias, fname string, tmpl *template.Template) error {
 	b, err := fs.ReadFile(fsys, fname)
 	if err != nil {
 		return fmt.Errorf("readFile %q: %w", fname, err)

@@ -43,22 +43,22 @@ func GoSlice(item reflect.Value, indexes ...reflect.Value) (reflect.Value, error
 	if len(indexes) > 3 {
 		return reflect.Value{}, fmt.Errorf("too many slice indexes: %d", len(indexes))
 	}
-	var cap int
+	var capacity int
 	switch item.Kind() {
 	case reflect.String:
 		if len(indexes) == 3 {
 			return reflect.Value{}, fmt.Errorf("cannot 3-index slice a string")
 		}
-		cap = item.Len()
+		capacity = item.Len()
 	case reflect.Array, reflect.Slice:
-		cap = item.Cap()
+		capacity = item.Cap()
 	default:
 		return reflect.Value{}, fmt.Errorf("can't slice item of type %s", item.Type())
 	}
 	// set default values for cases item[:], item[i:].
 	idx := [3]int{0, item.Len()}
 	for i, index := range indexes {
-		x, err := indexArg(index, cap)
+		x, err := indexArg(index, capacity)
 		if err != nil {
 			return reflect.Value{}, err
 		}

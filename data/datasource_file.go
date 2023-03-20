@@ -14,7 +14,7 @@ import (
 	"github.com/spf13/afero"
 )
 
-func readFile(ctx context.Context, source *Source, args ...string) ([]byte, error) {
+func readFile(_ context.Context, source *Source, args ...string) ([]byte, error) {
 	if source.fs == nil {
 		source.fs = afero.NewOsFs()
 	}

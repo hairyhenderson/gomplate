@@ -92,11 +92,11 @@ func (fs woFS) OpenFile(name string, flag int, perm os.FileMode) (afero.File, er
 	return writeOnlyFile(f), nil
 }
 
-func (fs woFS) ReadDir(path string) ([]os.FileInfo, error) {
+func (fs woFS) ReadDir(_ string) ([]os.FileInfo, error) {
 	return nil, ErrWriteOnly
 }
 
-func (fs woFS) Stat(name string) (os.FileInfo, error) {
+func (fs woFS) Stat(_ string) (os.FileInfo, error) {
 	return nil, ErrWriteOnly
 }
 

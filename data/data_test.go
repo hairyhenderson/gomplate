@@ -169,11 +169,11 @@ func TestToJSONBytes(t *testing.T) {
 type badObject struct {
 }
 
-func (b *badObject) CodecEncodeSelf(e *codec.Encoder) {
+func (b *badObject) CodecEncodeSelf(_ *codec.Encoder) {
 	panic("boom")
 }
 
-func (b *badObject) CodecDecodeSelf(e *codec.Decoder) {
+func (b *badObject) CodecDecodeSelf(_ *codec.Decoder) {
 
 }
 

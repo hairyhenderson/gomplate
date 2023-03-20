@@ -22,7 +22,7 @@ type DummyParamGetter struct {
 	params           []*ssm.Parameter
 }
 
-func (d DummyParamGetter) GetParameterWithContext(ctx context.Context, input *ssm.GetParameterInput, opts ...request.Option) (*ssm.GetParameterOutput, error) {
+func (d DummyParamGetter) GetParameterWithContext(_ context.Context, input *ssm.GetParameterInput, _ ...request.Option) (*ssm.GetParameterOutput, error) {
 	if d.mockGetParameter != nil {
 		output, err := d.mockGetParameter(input)
 		return output, err
@@ -36,7 +36,7 @@ func (d DummyParamGetter) GetParameterWithContext(ctx context.Context, input *ss
 	}, nil
 }
 
-func (d DummyParamGetter) GetParametersByPathWithContext(ctx context.Context, input *ssm.GetParametersByPathInput, opts ...request.Option) (*ssm.GetParametersByPathOutput, error) {
+func (d DummyParamGetter) GetParametersByPathWithContext(_ context.Context, _ *ssm.GetParametersByPathInput, _ ...request.Option) (*ssm.GetParametersByPathOutput, error) {
 	if d.err != nil {
 		return nil, d.err
 	}

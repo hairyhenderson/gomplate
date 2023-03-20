@@ -19,7 +19,7 @@ type CallerIdentitifier interface {
 }
 
 // NewSTS -
-func NewSTS(options ClientOptions) *STS {
+func NewSTS(_ ClientOptions) *STS {
 	return &STS{
 		identifier: func() CallerIdentitifier {
 			if identifierClient == nil {

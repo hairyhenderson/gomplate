@@ -7,7 +7,7 @@ import (
 	"github.com/hairyhenderson/gomplate/v4/env"
 )
 
-func readEnv(ctx context.Context, source *Source, args ...string) (b []byte, err error) {
+func readEnv(_ context.Context, source *Source, _ ...string) (b []byte, err error) {
 	n := source.URL.Path
 	n = strings.TrimPrefix(n, "/")
 	if n == "" {
