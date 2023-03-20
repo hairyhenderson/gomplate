@@ -517,8 +517,7 @@ func TestDecryptEJSON(t *testing.T) {
 		"_unencrypted": "notsosecret"
 	}`
 
-	os.Setenv("EJSON_KEY", privateKey)
-	defer os.Unsetenv("EJSON_KEY")
+	t.Setenv("EJSON_KEY", privateKey)
 	actual, err := decryptEJSON(in)
 	assert.NoError(t, err)
 	assert.EqualValues(t, expected, actual)
@@ -530,19 +529,17 @@ func TestDecryptEJSON(t *testing.T) {
 	tmpDir := fs.NewDir(t, "gomplate-ejsontest",
 		fs.WithFile(publicKey, privateKey),
 	)
-	defer tmpDir.Remove()
+	t.Cleanup(tmpDir.Remove)
 
 	os.Unsetenv("EJSON_KEY")
-	os.Setenv("EJSON_KEY_FILE", tmpDir.Join(publicKey))
-	defer os.Unsetenv("EJSON_KEY_FILE")
+	t.Setenv("EJSON_KEY_FILE", tmpDir.Join(publicKey))
 	actual, err = decryptEJSON(in)
 	assert.NoError(t, err)
 	assert.EqualValues(t, expected, actual)
 
 	os.Unsetenv("EJSON_KEY")
 	os.Unsetenv("EJSON_KEY_FILE")
-	os.Setenv("EJSON_KEYDIR", tmpDir.Path())
-	defer os.Unsetenv("EJSON_KEYDIR")
+	t.Setenv("EJSON_KEYDIR", tmpDir.Path())
 	actual, err = decryptEJSON(in)
 	assert.NoError(t, err)
 	assert.EqualValues(t, expected, actual)
