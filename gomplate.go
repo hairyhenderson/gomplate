@@ -6,6 +6,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"github.com/hairyhenderson/go-fsimpl/filefs"
 	"path/filepath"
 	"strings"
 	"text/template"
@@ -23,7 +24,16 @@ func RunTemplates(o *Config) error {
 	if err != nil {
 		return err
 	}
-	return Run(context.Background(), cfg)
+
+	ctx := context.Background()
+
+	// inject a default filesystem provider for file:// URLs
+	// required for reading template files
+	if FSProviderFromContext(ctx) == nil {
+		ctx = ContextWithFSProvider(ctx, filefs.FS)
+	}
+
+	return Run(ctx, cfg)
 }
 
 // Run all gomplate templates specified by the given configuration
