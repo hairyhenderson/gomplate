@@ -36,6 +36,8 @@ type Config struct {
 	RDelim string
 
 	Templates []string
+
+	SuppressEmpty bool
 }
 
 // defaults - sets any unset fields to their default value (if applicable)
@@ -119,19 +121,20 @@ func (o *Config) String() string {
 
 func (o *Config) toNewConfig() (*config.Config, error) {
 	cfg := &config.Config{
-		Input:       o.Input,
-		InputFiles:  o.InputFiles,
-		InputDir:    o.InputDir,
-		ExcludeGlob: o.ExcludeGlob,
-		OutputFiles: o.OutputFiles,
-		OutputDir:   o.OutputDir,
-		OutputMap:   o.OutputMap,
-		OutMode:     o.OutMode,
-		LDelim:      o.LDelim,
-		RDelim:      o.RDelim,
-		Stdin:       os.Stdin,
-		Stdout:      &iohelpers.NopCloser{Writer: o.Out},
-		Stderr:      os.Stderr,
+		Input:         o.Input,
+		InputFiles:    o.InputFiles,
+		InputDir:      o.InputDir,
+		ExcludeGlob:   o.ExcludeGlob,
+		OutputFiles:   o.OutputFiles,
+		OutputDir:     o.OutputDir,
+		OutputMap:     o.OutputMap,
+		OutMode:       o.OutMode,
+		LDelim:        o.LDelim,
+		RDelim:        o.RDelim,
+		SuppressEmpty: o.SuppressEmpty,
+		Stdin:         os.Stdin,
+		Stdout:        &iohelpers.NopCloser{Writer: o.Out},
+		Stderr:        os.Stderr,
 	}
 	err := cfg.ParsePluginFlags(o.Plugins)
 	if err != nil {
