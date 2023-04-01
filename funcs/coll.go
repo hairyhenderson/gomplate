@@ -41,7 +41,7 @@ func CreateCollFuncs(ctx context.Context) map[string]interface{} {
 	f["reverse"] = ns.Reverse
 	f["merge"] = ns.Merge
 	f["sort"] = ns.Sort
-	f["jsonpath"] = ns.JSONPath
+	f["jq"] = ns.JQ
 	f["flatten"] = ns.Flatten
 	return f
 }
@@ -120,9 +120,9 @@ func (CollFuncs) Sort(args ...interface{}) ([]interface{}, error) {
 	return coll.Sort(key, list)
 }
 
-// JSONPath -
-func (CollFuncs) JSONPath(p string, in interface{}) (interface{}, error) {
-	return coll.JSONPath(p, in)
+// JQ -
+func (f *CollFuncs) JQ(jqExpr string, in interface{}) (interface{}, error) {
+	return coll.JQ(f.ctx, jqExpr, in)
 }
 
 // Flatten -

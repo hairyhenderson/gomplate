@@ -105,6 +105,35 @@ funcs:
       - |
         $ gomplate -i '{{ .books | jsonpath `$..works[?( @.edition_count > 400 )].title` }}' -c books=https://openlibrary.org/subjects/fantasy.json
         [Alice's Adventures in Wonderland Gulliver's Travels]
+  - name: coll.JQ
+    alias: jq
+    description: |
+      Filters an input object or list using the [jq](https://stedolan.github.io/jq/) language, as implemented by [gojq](https://github.com/itchyny/gojq).
+
+      Any JSON datatype may be used as input (NOTE: strings are not JSON-parsed but passed in as is).
+      If the expression results in multiple items (no matter if streamed or as an array) they are wrapped in an array.
+      Otherwise a single item is returned (even if resulting in an array with a single contained element).
+
+      JQ filter expressions can be tested at https://jqplay.org/
+
+      See also:
+
+      - [jq manual](https://stedolan.github.io/jq/manual/)
+      - [gojq differences to jq](https://github.com/itchyny/gojq#difference-to-jq)
+    pipeline: true
+    arguments:
+      - name: expression
+        required: true
+        description: The JQ expression
+      - name: in
+        required: true
+        description: The object or list to query
+    examples:
+      - |
+        $ gomplate \
+           -i '{{ .books | jq `[.works[]|{"title":.title,"authors":[.authors[].name],"published":.first_publish_year}][0]` }}' \
+           -c books=https://openlibrary.org/subjects/fantasy.json
+        map[authors:[Lewis Carroll] published:1865 title:Alice's Adventures in Wonderland]
   - name: coll.Keys
     alias: keys
     description: |
