@@ -38,6 +38,7 @@ func CreateFuncs(ctx context.Context, d *data.Data) template.FuncMap {
 	addToMap(f, funcs.CreateCollFuncs(ctx))
 	addToMap(f, funcs.CreateUUIDFuncs(ctx))
 	addToMap(f, funcs.CreateRandomFuncs(ctx))
+	funcs.AddSprigFuncs(ctx, f)
 	return f
 }
 
