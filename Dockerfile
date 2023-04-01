@@ -1,4 +1,5 @@
-# syntax=docker/dockerfile:1.3.1-labs
+# syntax=docker/dockerfile:1.5.2-labs
+FROM docker/dockerfile:1.5.2-labs AS syntax
 FROM --platform=linux/amd64 golang:1.20-alpine AS build
 
 ARG TARGETOS
@@ -38,7 +39,7 @@ COPY --from=build /bin/gomplate_${TARGETOS}-${TARGETARCH}${TARGETVARIANT} /gompl
 
 ENTRYPOINT [ "/gomplate" ]
 
-FROM alpine:3.17 AS gomplate-alpine
+FROM alpine:3.17.3 AS gomplate-alpine
 
 ARG VCS_REF
 ARG TARGETOS
