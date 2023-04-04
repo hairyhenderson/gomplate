@@ -626,8 +626,9 @@ pluginTimeout: 500ms
 	c = &Config{
 		Plugins: map[string]PluginConfig{
 			"foo": {
-				Cmd:  "bar",
-				Pipe: true,
+				Cmd:     "bar",
+				Timeout: 1 * time.Second,
+				Pipe:    true,
 			},
 		},
 	}
@@ -635,7 +636,7 @@ pluginTimeout: 500ms
 plugins:
   foo:
     cmd: bar
-    timeout: 0s
+    timeout: 1s
     pipe: true
 `
 

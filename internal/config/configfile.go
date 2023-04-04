@@ -153,8 +153,9 @@ func (d DataSource) mergeFrom(o DataSource) DataSource {
 
 type PluginConfig struct {
 	Cmd     string
-	Timeout time.Duration
-	Pipe    bool
+	Args    []string      `yaml:"args,omitempty"`
+	Timeout time.Duration `yaml:"timeout,omitempty"`
+	Pipe    bool          `yaml:"pipe,omitempty"`
 }
 
 // UnmarshalYAML - satisfy the yaml.Umarshaler interface - plugin configs can
@@ -178,6 +179,7 @@ func (p *PluginConfig) UnmarshalYAML(value *yaml.Node) error {
 
 	type raw struct {
 		Cmd     string
+		Args    []string
 		Timeout time.Duration
 		Pipe    bool
 	}
