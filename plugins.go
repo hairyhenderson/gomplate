@@ -37,6 +37,7 @@ func bindPlugins(ctx context.Context, cfg *config.Config, funcMap template.FuncM
 			Timeout: timeout,
 			Pipe:    v.Pipe,
 			Stderr:  cfg.Stderr,
+			Args:    v.Args,
 		})
 	}
 
@@ -48,6 +49,10 @@ type PluginOpts struct {
 	// Stderr can be set to redirect the plugin's stderr to a custom writer.
 	// Defaults to os.Stderr.
 	Stderr io.Writer
+
+	// Args are additional arguments to pass to the plugin. These precede any
+	// arguments passed to the plugin function at runtime.
+	Args []string
 
 	// Timeout is the maximum amount of time to wait for the plugin to complete.
 	// Defaults to 5 seconds.
@@ -74,6 +79,7 @@ func PluginFunc(ctx context.Context, cmd string, opts PluginOpts) func(...interf
 	plugin := &plugin{
 		ctx:     ctx,
 		path:    cmd,
+		args:    opts.Args,
 		timeout: timeout,
 		pipe:    opts.Pipe,
 		stderr:  stderr,
@@ -87,6 +93,7 @@ type plugin struct {
 	ctx     context.Context
 	stderr  io.Writer
 	path    string
+	args    []string
 	timeout time.Duration
 	pipe    bool
 }
@@ -122,6 +129,7 @@ func findPowershell() string {
 
 func (p *plugin) run(args ...interface{}) (interface{}, error) {
 	a := conv.ToStrings(args...)
+	a = append(p.args, a...)
 
 	name, a := p.buildCommand(a)
 

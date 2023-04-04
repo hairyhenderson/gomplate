@@ -73,6 +73,30 @@ func TestRun(t *testing.T) {
 	require.NoError(t, err)
 	assert.Equal(t, "", stderr.String())
 	assert.Equal(t, "foo", strings.TrimSpace(out.(string)))
+
+	p = &plugin{
+		ctx:     ctx,
+		timeout: 500 * time.Millisecond,
+		stderr:  stderr,
+		path:    "echo",
+		args:    []string{"foo", "bar"},
+	}
+	out, err = p.run()
+	require.NoError(t, err)
+	assert.Equal(t, "", stderr.String())
+	assert.Equal(t, "foo bar", strings.TrimSpace(out.(string)))
+
+	p = &plugin{
+		ctx:     ctx,
+		timeout: 500 * time.Millisecond,
+		stderr:  stderr,
+		path:    "echo",
+		args:    []string{"foo", "bar"},
+	}
+	out, err = p.run("baz", "qux")
+	require.NoError(t, err)
+	assert.Equal(t, "", stderr.String())
+	assert.Equal(t, "foo bar baz qux", strings.TrimSpace(out.(string)))
 }
 
 func ExamplePluginFunc() {

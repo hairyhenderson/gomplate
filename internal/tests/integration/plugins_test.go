@@ -111,3 +111,17 @@ plugins:
 	assert.Equal(t, "", e)
 	assert.Equal(t, "=hi=thZrZ", o)
 }
+
+func TestPlugins_Args(t *testing.T) {
+	tmpDir := setupPluginsTest(t)
+
+	writeConfig(t, tmpDir, `in: '{{ echo "world" }}'
+plugins:
+  echo:
+    cmd: echo
+    args: [ oh, hello ]
+`)
+
+	o, e, err := cmd(t).withDir(tmpDir.Path()).run()
+	assertSuccess(t, o, e, err, "oh hello world\n")
+}

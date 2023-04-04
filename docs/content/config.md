@@ -304,15 +304,19 @@ See [`--plugin`](../usage/#plugin).
 A map that configures custom functions for use in the templates. The key is the
 name of the function, and the value configures the plugin. The value is a map
 containing the command (`cmd`) and the options `pipe` (boolean) and `timeout`
-(duration).
+(duration). A list of optional arguments to always pass to the plugin can be set
+with `args` (array of strings).
 
-Alternatively, the value can be a string, which sets `cmd`.
+Alternatively, the value can be a string, which sets only `cmd`.
 
 ```yaml
-in: '{{ "hello world" | figlet | lolcat }}'
+in: '{{ "world" | figlet | lolcat }}'
 plugins:
   figlet:
     cmd: /usr/local/bin/figlet
+    args:
+      - oh
+      - hello
     pipe: true
     timeout: 1s
   lolcat: /home/hairyhenderson/go/bin/lolcat
@@ -321,6 +325,33 @@ plugins:
 ### `cmd`
 
 The path to the plugin executable (or script) to run.
+
+### `args`
+
+An array of optional arguments to always pass to the plugin. These arguments
+will be passed _before_ any arguments provided in the template.
+
+For example:
+
+```yaml
+plugins:
+  echo:
+    cmd: /bin/echo
+    args:
+      - foo
+      - bar
+```
+
+With this template:
+```
+{{ echo "baz" }}
+```
+
+Will result the command being called like this:
+
+```console
+$ /bin/echo foo bar baz
+```
 
 ### `pipe`
 
