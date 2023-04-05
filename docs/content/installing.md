@@ -135,6 +135,16 @@ $ npm install -g gomplate
 ...
 ```
 
+## install with `tea.xyz`
+
+For some users (including for DEVOPS on [GitHub Actions](https://github.com/marketplace/actions/tea-setup)),
+[`tea.xyz`](https://tea.xyz/) maybe be very comfortable, therefore, to install, just:
+
+```console
+$ sh <(curl https://tea.xyz) +gomplate.ca sh
+$ gomplate --version
+...
+```
 [releases]: https://github.com/hairyhenderson/gomplate/releases
 [multi-stage builds]: https://docs.docker.com/develop/develop-images/multistage-build/
 [hairyhenderson/gomplate]: https://hub.docker.com/r/hairyhenderson/gomplate/tags/
