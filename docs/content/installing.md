@@ -145,9 +145,6 @@ $ sh <(curl https://tea.xyz) +gomplate.ca sh
 $ gomplate --version
 ...
 ```
-
-
-
 [releases]: https://github.com/hairyhenderson/gomplate/releases
 [multi-stage builds]: https://docs.docker.com/develop/develop-images/multistage-build/
 [hairyhenderson/gomplate]: https://hub.docker.com/r/hairyhenderson/gomplate/tags/
