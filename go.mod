@@ -23,16 +23,16 @@ require (
 	github.com/joho/godotenv v1.5.1
 	github.com/rs/zerolog v1.29.0
 	github.com/spf13/afero v1.9.5
-	github.com/spf13/cobra v1.6.1
+	github.com/spf13/cobra v1.7.0
 	github.com/stretchr/testify v1.8.2
 	github.com/ugorji/go/codec v1.2.11
 	github.com/zealic/xignore v0.3.3
 	go4.org/netipx v0.0.0-20230125063823-8449b0a6169f
 	gocloud.dev v0.29.0
-	golang.org/x/crypto v0.7.0
-	golang.org/x/sys v0.6.0
-	golang.org/x/term v0.6.0
-	golang.org/x/text v0.8.0
+	golang.org/x/crypto v0.8.0
+	golang.org/x/sys v0.7.0
+	golang.org/x/term v0.7.0
+	golang.org/x/text v0.9.0
 	gotest.tools/v3 v3.4.0
 	inet.af/netaddr v0.0.0-20220811202034-502d2d690317
 	k8s.io/client-go v0.26.3
@@ -98,7 +98,7 @@ require (
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/hashicorp/serf v0.10.1 // indirect
 	github.com/imdario/mergo v0.3.13 // indirect
-	github.com/inconshreveable/mousetrap v1.0.1 // indirect
+	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/itchyny/timefmt-go v0.1.5 // indirect
 	github.com/jbenet/go-context v0.0.0-20150711004518-d14ea06fba99 // indirect
 	github.com/jmespath/go-jmespath v0.4.0 // indirect
@@ -119,7 +119,7 @@ require (
 	go.opencensus.io v0.24.0 // indirect
 	go4.org/intern v0.0.0-20220617035311-6925f38cc365 // indirect
 	go4.org/unsafe/assume-no-moving-gc v0.0.0-20230204201903-c31fa085b70e // indirect
-	golang.org/x/net v0.8.0 // indirect
+	golang.org/x/net v0.9.0 // indirect
 	golang.org/x/oauth2 v0.5.0 // indirect
 	golang.org/x/time v0.3.0 // indirect
 	golang.org/x/tools v0.6.0 // indirect
