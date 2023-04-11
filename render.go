@@ -213,6 +213,7 @@ func (t *Renderer) renderTemplatesWithData(ctx context.Context, templates []Temp
 	f := template.FuncMap{}
 	addToMap(f, funcs.CreateDataFuncs(ctx, t.data))
 	addToMap(f, funcs.CreateAWSFuncs(ctx))
+	addToMap(f, funcs.CreateAzureFuncs(ctx))
 	addToMap(f, funcs.CreateGCPFuncs(ctx))
 	addToMap(f, funcs.CreateBase64Funcs(ctx))
 	addToMap(f, funcs.CreateNetFuncs(ctx))

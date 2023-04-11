@@ -1,0 +1,42 @@
+ns: azure
+preamble: |
+  The functions in the `azure` namespace interface with various Microsoft Azure
+  APIs to make it possible for a template to render differently based on the Azure 
+  environment and metadata.
+
+  ### Configuring Azure
+
+  A number of environment variables can be used to control how gomplate communicates
+  with Azure APIs.
+
+  | Environment Variable | Description |
+  | -------------------- | ----------- |
+  | `AZURE_META_ENDPOINT` | _(Default `http://169.254.169.254`)_ Sets the base address of the instance metadata service. |
+  | `AZURE_TIMEOUT` | _(Default `500`)_ Adjusts timeout for API requests, in milliseconds. |
+funcs:
+  - name: azure.Meta
+    description: |
+      Queries [Azure Instance Metadata Service](https://learn.microsoft.com/en-us/azure/virtual-machines/instance-metadata-service) for information.
+
+      For times when running outside Azure, or when the metadata API can't be reached, a `default` value can be provided.
+    pipeline: false
+    arguments:
+      - name: key
+        required: true
+        description: the metadata key to query. To receive all available values, use an empty key with format json.
+      - name: format
+        required: false
+        description: "the format of the metadata to query. Allowed values: `text`, `json`. Use `json` to receive the full tree of properties."
+      - name: default
+        required: false
+        description: the default value
+    examples:
+      - |
+        $ echo '{{ azure.Meta "compute/resourceId" }}' | gomplate
+        /subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/name/providers/Microsoft.Compute/virtualMachines/name
+      - |
+        $ echo '{{ azure.Meta "network/interface/0/ipv4/ipAddress/0/privateIpAddress" }}' | gomplate
+        10.0.192.5
+      - |
+        $ echo '{{ azure.Meta "compute/tagsList" "json" | jsonArray | jsonpath `$[?(@.name=="owner")].value` }}' | gomplate
+        me
