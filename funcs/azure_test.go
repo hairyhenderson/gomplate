@@ -20,7 +20,7 @@ func TestCreateAzureFuncs(t *testing.T) {
 			fmap := CreateAzureFuncs(ctx)
 			actual := fmap["azure"].(func() interface{})
 
-			assert.Same(t, ctx, actual().(*GcpFuncs).ctx)
+			assert.Same(t, ctx, actual().(*AzureFuncs).ctx)
 		})
 	}
 }
