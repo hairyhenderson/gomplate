@@ -74,8 +74,8 @@ func NewMetaClient(options ClientOptions) *MetaClient {
 
 // Meta retrieves a value from the Azure Instance Metadata Service, returning the given default
 // if the service is unavailable or the requested URL does not exist.
-func (c *MetaClient) Meta(key, format string, def ...string) (string, error) {
-	url := c.endpoint + "/metadata/instance/" + key + "?api-version=2021-12-13&format=" + format
+func (c *MetaClient) Meta(key, format, apiVersion string, def ...string) (string, error) {
+	url := c.endpoint + "/metadata/instance/" + key + "?api-version=" + apiVersion + "&format=" + format
 	return c.retrieveMetadata(url, def...)
 }
 

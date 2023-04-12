@@ -28,7 +28,7 @@ For times when running outside Azure, or when the metadata API can't be reached,
 ### Usage
 
 ```go
-azure.Meta key [format] [default]
+azure.Meta key [format] [apiVersion] [default]
 ```
 
 ### Arguments
@@ -37,6 +37,7 @@ azure.Meta key [format] [default]
 |------|-------------|
 | `key` | _(required)_ the metadata key to query. To receive all available values, use an empty key with format json. |
 | `format` | _(optional)_ the format of the metadata to query. Allowed values: `text`, `json`. Use `json` to receive the full tree of properties. |
+| `apiVersion` | _(optional)_ Specify the api version to use to query the IMDS. Defaults to 2021-12-13 |
 | `default` | _(optional)_ the default value |
 
 ### Examples
@@ -52,4 +53,8 @@ $ echo '{{ azure.Meta "network/interface/0/ipv4/ipAddress/0/privateIpAddress" }}
 ```console
 $ echo '{{ azure.Meta "compute/tagsList" "json" | jsonArray | jsonpath `$[?(@.name=="owner")].value` }}' | gomplate
 me
+```
+```console
+$ echo '{{ azure.Meta "compute/vmId" "text"  }}' | gomplate
+/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/name/providers/Microsoft.Compute/virtualMachines/name
 ```

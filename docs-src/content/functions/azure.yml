@@ -27,6 +27,9 @@ funcs:
       - name: format
         required: false
         description: "the format of the metadata to query. Allowed values: `text`, `json`. Use `json` to receive the full tree of properties."
+      - name: apiVersion
+        required: false
+        description: "Specify the API version to use to query the IMDS. Defaults to 2021-12-13"
       - name: default
         required: false
         description: the default value
@@ -40,3 +43,6 @@ funcs:
       - |
         $ echo '{{ azure.Meta "compute/tagsList" "json" | jsonArray | jsonpath `$[?(@.name=="owner")].value` }}' | gomplate
         me
+      - |
+        $ echo '{{ azure.Meta "compute/vmId" "text" "2017-03-01" }}' | gomplate
+        e0fc604a-b559-431c-aadd-1b8101bac131

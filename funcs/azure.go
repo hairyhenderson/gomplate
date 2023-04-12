@@ -3,6 +3,7 @@ package funcs
 import (
 	"context"
 	"fmt"
+	"regexp"
 	"sync"
 
 	"github.com/hairyhenderson/gomplate/v4/azure"
@@ -52,15 +53,23 @@ func (a *AzureFuncs) Meta(args ...string) (string, error) {
 	key := args[0]
 	format := "text"
 	def := args[1:]
+	apiVersion := "2021-12-13"
+
 	if len(args) >= 2 {
 		if args[1] == "json" || args[1] == "text" {
 			format = args[1]
 			def = args[2:]
 		}
 	}
+	if len(args) >= 3 {
+		if found, _ := regexp.MatchString(`^\d{4}-\d{2}-\d{2}$`, args[2]); found {
+			apiVersion = args[2]
+			def = args[3:]
+		}
+	}
 
 	a.metaInit.Do(a.initAzureMeta)
-	return a.meta.Meta(key, format, def...)
+	return a.meta.Meta(key, format, apiVersion, def...)
 }
 
 func (a *AzureFuncs) initAzureMeta() {
