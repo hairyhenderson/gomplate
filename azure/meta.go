@@ -47,7 +47,7 @@ func GetClientOptions() ClientOptions {
 }
 
 // MetaClient is used to access metadata accessible via the Azure compute instance
-// metadata service version 1.
+// metadata service.
 type MetaClient struct {
 	client   *http.Client
 	cache    map[string]string
