@@ -1,6 +1,7 @@
 package azure
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"net/http"
@@ -61,7 +62,7 @@ type MetaClient struct {
 func NewMetaClient(options ClientOptions) *MetaClient {
 	endpoint := env.Getenv("AZURE_META_ENDPOINT")
 	if endpoint == "" {
-		endpoint = DefaultEndpoint
+		endpoint = defaultEndpoint
 	}
 
 	return &MetaClient{
@@ -75,12 +76,12 @@ func NewMetaClient(options ClientOptions) *MetaClient {
 // if the service is unavailable or the requested URL does not exist.
 func (c *MetaClient) Meta(ctx context.Context, key, format, apiVersion string, def ...string) (string, error) {
 	url := c.endpoint + "/metadata/instance/" + key + "?api-version=" + apiVersion + "&format=" + format
-	return c.retrieveMetadata(url, def...)
+	return c.retrieveMetadata(ctx, url, def...)
 }
 
 // retrieveMetadata executes an HTTP request to the Azure Instance Metadata Service with the
 // correct headers set, and extracts the returned value.
-func (c *MetaClient) retrieveMetadata(url string, def ...string) (string, error) {
+func (c *MetaClient) retrieveMetadata(ctx context.Context, url string, def ...string) (string, error) {
 	if value, ok := c.cache[url]; ok {
 		return value, nil
 	}
@@ -90,6 +91,9 @@ func (c *MetaClient) retrieveMetadata(url string, def ...string) (string, error)
 		if timeout == 0 {
 			timeout = 500 * time.Millisecond
 		}
+
+		// Call IMDS through proxy is not supported
+		// https://learn.microsoft.com/en-us/azure/virtual-machines/instance-metadata-service#proxies
 		c.client = &http.Client{Timeout: timeout, Transport: &http.Transport{Proxy: nil}}
 	}
 
