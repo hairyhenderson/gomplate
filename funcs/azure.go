@@ -9,21 +9,6 @@ import (
 	"github.com/hairyhenderson/gomplate/v4/azure"
 )
 
-// AzureNS - the azure namespace
-//
-// Deprecated: don't use
-func AzureNS() *AzureFuncs {
-	return &AzureFuncs{azureOpts: azure.GetClientOptions()}
-}
-
-// AddAzureFuncs -
-//
-// Deprecated: use [CreateAzureFuncs] instead
-func AddAzureFuncs(f map[string]interface{}) {
-	for k, v := range CreateAzureFuncs(context.Background()) {
-		f[k] = v
-	}
-}
 
 // CreateAzureFuncs -
 func CreateAzureFuncs(ctx context.Context) map[string]interface{} {

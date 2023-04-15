@@ -12,9 +12,9 @@ import (
 	"github.com/hairyhenderson/gomplate/v4/env"
 )
 
-// DefaultEndpoint is the IMDS endpoint at Azure
+// defaultEndpoint is the IMDS endpoint at Azure
 // https://learn.microsoft.com/en-us/azure/virtual-machines/instance-metadata-service
-var DefaultEndpoint = "http://169.254.169.254"
+const defaultEndpoint = "http://169.254.169.254"
 
 var (
 	// co is a ClientOptions populated from the environment.
@@ -29,7 +29,6 @@ type ClientOptions struct {
 }
 
 // GetClientOptions - Centralised reading of AZURE_TIMEOUT
-// ... but cannot use in vault/auth.go as different strconv.Atoi error handling
 func GetClientOptions() ClientOptions {
 	coInit.Do(func() {
 		timeout := env.Getenv("AZURE_TIMEOUT")
@@ -74,7 +73,7 @@ func NewMetaClient(options ClientOptions) *MetaClient {
 
 // Meta retrieves a value from the Azure Instance Metadata Service, returning the given default
 // if the service is unavailable or the requested URL does not exist.
-func (c *MetaClient) Meta(key, format, apiVersion string, def ...string) (string, error) {
+func (c *MetaClient) Meta(ctx context.Context, key, format, apiVersion string, def ...string) (string, error) {
 	url := c.endpoint + "/metadata/instance/" + key + "?api-version=" + apiVersion + "&format=" + format
 	return c.retrieveMetadata(url, def...)
 }
@@ -94,7 +93,7 @@ func (c *MetaClient) retrieveMetadata(url string, def ...string) (string, error)
 		c.client = &http.Client{Timeout: timeout, Transport: &http.Transport{Proxy: nil}}
 	}
 
-	request, err := http.NewRequest(http.MethodGet, url, nil)
+	request, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
 		return returnDefault(def), nil
 	}
