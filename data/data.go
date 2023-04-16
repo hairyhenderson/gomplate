@@ -278,7 +278,7 @@ func CSV(args ...string) ([][]string, error) {
 // parameters:
 //
 //	delim - (optional) the (single-character!) field delimiter, defaults to ","
-//	  hdr - (optional) comma-separated list of column names,
+//	  hdr - (optional) list of column names separated by `delim`,
 //	        set to "" to get auto-named columns (A-Z), omit
 //	        to use the first line
 //	   in - the CSV-format string to parse
@@ -305,7 +305,7 @@ func CSVByRow(args ...string) (rows []map[string]string, err error) {
 // parameters:
 //
 //	delim - (optional) the (single-character!) field delimiter, defaults to ","
-//	  hdr - (optional) comma-separated list of column names,
+//	  hdr - (optional) list of column names separated by `delim`,
 //	        set to "" to get auto-named columns (A-Z), omit
 //	        to use the first line
 //	   in - the CSV-format string to parse

@@ -456,7 +456,7 @@ input | data.CSVByRow [delim] [header]
 | name | description |
 |------|-------------|
 | `delim` | _(optional)_ the (single-character!) field delimiter, defaults to `","` |
-| `header` | _(optional)_ comma-separated list of column names, set to `""` to get auto-named columns (A-Z), defaults to using the first line of `input` |
+| `header` | _(optional)_ list of column names separated by `delim`, set to `""` to get auto-named columns (A-Z), defaults to using the first line of `input` |
 | `input` | _(required)_ the CSV-format string to parse |
 
 ### Examples
@@ -500,7 +500,7 @@ input | data.CSVByColumn [delim] [header]
 | name | description |
 |------|-------------|
 | `delim` | _(optional)_ the (single-character!) field delimiter, defaults to `","` |
-| `header` | _(optional)_ comma-separated list of column names, set to `""` to get auto-named columns (A-Z), defaults to using the first line of `input` |
+| `header` | _(optional)_ list of column names separated by `delim`, set to `""` to get auto-named columns (A-Z), defaults to using the first line of `input` |
 | `input` | _(required)_ the CSV-format string to parse |
 
 ### Examples
