@@ -312,7 +312,7 @@ funcs:
         description: the (single-character!) field delimiter, defaults to `","`
       - name: header
         required: false
-        description: character-separated list of column names using delim as separator, set to `""` to get auto-named columns (A-Z), defaults to using the first line of `input`
+        description: list of column names separated by `delim`, set to `""` to get auto-named columns (A-Z), defaults to using the first line of `input`
       - name: input
         required: true
         description: the CSV-format string to parse
