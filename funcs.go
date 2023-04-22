@@ -23,6 +23,7 @@ func CreateFuncs(ctx context.Context,
 	f := template.FuncMap{}
 	addToMap(f, funcs.CreateDataFuncs(ctx, d))
 	addToMap(f, funcs.CreateAWSFuncs(ctx))
+	addToMap(f, funcs.CreateAzureFuncs(ctx))
 	addToMap(f, funcs.CreateGCPFuncs(ctx))
 	addToMap(f, funcs.CreateBase64Funcs(ctx))
 	addToMap(f, funcs.CreateNetFuncs(ctx))
