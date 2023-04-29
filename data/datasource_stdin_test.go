@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestReadStdin(t *testing.T) {
@@ -13,7 +14,7 @@ func TestReadStdin(t *testing.T) {
 
 	ctx = ContextWithStdin(ctx, strings.NewReader("foo"))
 	out, err := readStdin(ctx, nil)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, []byte("foo"), out)
 
 	ctx = ContextWithStdin(ctx, errorReader{})

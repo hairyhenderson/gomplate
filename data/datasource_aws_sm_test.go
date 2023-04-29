@@ -10,6 +10,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/request"
 	"github.com/aws/aws-sdk-go/service/secretsmanager"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 // DummyAWSSecretsManagerSecretGetter - test double
@@ -88,7 +89,7 @@ func TestAWSSecretsManager_ParseAWSSecretsManagerArgs(t *testing.T) {
 			args = nil
 		}
 		params, p, err := parseDatasourceURLArgs(mustParseURL(d.u), args...)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		if d.eParams == nil {
 			assert.Empty(t, params)
 		} else {
@@ -154,7 +155,7 @@ func TestAWSSecretsManager_ReadSecret(t *testing.T) {
 
 	output, err := readAWSSecretsManagerParam(context.Background(), s, "/foo/bar")
 	assert.True(t, calledOk)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, []byte("blub"), output)
 }
 
@@ -171,6 +172,6 @@ func TestAWSSecretsManager_ReadSecretBinary(t *testing.T) {
 
 	output, err := readAWSSecretsManagerParam(context.Background(), s, "/foo/bar")
 	assert.True(t, calledOk)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, []byte("supersecret"), output)
 }

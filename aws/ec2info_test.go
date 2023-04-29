@@ -9,6 +9,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestTag_MissingKey(t *testing.T) {
@@ -144,25 +145,25 @@ func TestGetRegion(t *testing.T) {
 	os.Setenv("AWS_REGION", "kalamazoo")
 	os.Unsetenv("AWS_DEFAULT_REGION")
 	region, err := getRegion()
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Empty(t, region)
 
 	os.Setenv("AWS_DEFAULT_REGION", "kalamazoo")
 	os.Unsetenv("AWS_REGION")
 	region, err = getRegion()
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Empty(t, region)
 
 	os.Unsetenv("AWS_DEFAULT_REGION")
 	metaClient := NewDummyEc2Meta()
 	region, err = getRegion(metaClient)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, "unknown", region)
 
 	ec2meta := MockEC2Meta(nil, nil, "us-east-1")
 
 	region, err = getRegion(ec2meta)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, "us-east-1", region)
 }
 

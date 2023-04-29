@@ -10,6 +10,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func must(r interface{}, err error) interface{} {
@@ -67,11 +68,11 @@ func TestHTTPFile(t *testing.T) {
 	}
 
 	actual, err := data.Datasource("foo")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, must(marshalObj(expected, json.Marshal)), must(marshalObj(actual, json.Marshal)))
 
 	actual, err = data.Datasource(server.URL)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, must(marshalObj(expected, json.Marshal)), must(marshalObj(actual, json.Marshal)))
 }
 
@@ -104,7 +105,7 @@ func TestHTTPFileWithHeaders(t *testing.T) {
 		"Foo":             {"bar", "baz"},
 	}
 	actual, err := data.Datasource("foo")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, must(marshalObj(expected, json.Marshal)), must(marshalObj(actual, json.Marshal)))
 
 	expected = http.Header{
@@ -118,7 +119,7 @@ func TestHTTPFileWithHeaders(t *testing.T) {
 		ExtraHeaders: map[string]http.Header{server.URL: expected},
 	}
 	actual, err = data.Datasource(server.URL)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, must(marshalObj(expected, json.Marshal)), must(marshalObj(actual, json.Marshal)))
 }
 
@@ -126,24 +127,24 @@ func TestBuildURL(t *testing.T) {
 	expected := "https://example.com/index.html"
 	base := mustParseURL(expected)
 	u, err := buildURL(base)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, expected, u.String())
 
 	expected = "https://example.com/index.html"
 	base = mustParseURL("https://example.com")
 	u, err = buildURL(base, "index.html")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, expected, u.String())
 
 	expected = "https://example.com/a/b/c/index.html"
 	base = mustParseURL("https://example.com/a/")
 	u, err = buildURL(base, "b/c/index.html")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, expected, u.String())
 
 	expected = "https://example.com/bar/baz/index.html"
 	base = mustParseURL("https://example.com/foo")
 	u, err = buildURL(base, "bar/baz/index.html")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, expected, u.String())
 }

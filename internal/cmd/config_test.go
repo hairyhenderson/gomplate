@@ -13,6 +13,7 @@ import (
 	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestReadConfigFile(t *testing.T) {
@@ -21,12 +22,12 @@ func TestReadConfigFile(t *testing.T) {
 	cmd := &cobra.Command{}
 
 	_, err := readConfigFile(cmd)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	cmd.Flags().String("config", defaultConfigFile, "foo")
 
 	_, err = readConfigFile(cmd)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	cmd.ParseFlags([]string{"--config", "config.file"})
 
@@ -37,21 +38,21 @@ func TestReadConfigFile(t *testing.T) {
 	cmd.Flags().String("config", defaultConfigFile, "foo")
 
 	f, err := fs.Create(defaultConfigFile)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	f.WriteString("")
 
 	cfg, err := readConfigFile(cmd)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.EqualValues(t, &config.Config{}, cfg)
 
 	cmd.ParseFlags([]string{"--config", "config.yaml"})
 
 	f, err = fs.Create("config.yaml")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	f.WriteString("in: hello world\n")
 
 	cfg, err = readConfigFile(cmd)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.EqualValues(t, &config.Config{Input: "hello world"}, cfg)
 
 	f.WriteString("in: ")
@@ -86,7 +87,7 @@ func TestLoadConfig(t *testing.T) {
 		Stdout: stdout,
 		Stderr: stderr,
 	}
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.EqualValues(t, expected, out)
 
 	cmd.ParseFlags([]string{"--in", "foo"})
@@ -97,7 +98,7 @@ func TestLoadConfig(t *testing.T) {
 		Stdout: out.Stdout,
 		Stderr: stderr,
 	}
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.EqualValues(t, expected, out)
 
 	cmd.ParseFlags([]string{"--in", "foo", "--exec-pipe", "--", "tr", "[a-z]", "[A-Z]"})
@@ -111,7 +112,7 @@ func TestLoadConfig(t *testing.T) {
 		Stdout:        out.Stdout,
 		Stderr:        stderr,
 	}
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.EqualValues(t, expected, out)
 }
 
@@ -126,13 +127,13 @@ func TestCobraConfig(t *testing.T) {
 	cmd.ParseFlags(nil)
 
 	cfg, err := cobraConfig(cmd, cmd.Flags().Args())
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.EqualValues(t, &config.Config{}, cfg)
 
 	cmd.ParseFlags([]string{"--file", "in", "--", "echo", "foo"})
 
 	cfg, err = cobraConfig(cmd, cmd.Flags().Args())
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.EqualValues(t, &config.Config{
 		InputFiles: []string{"in"},
 		PostExec:   []string{"echo", "foo"},
@@ -271,7 +272,7 @@ func TestApplyEnvVars(t *testing.T) {
 
 			actual, err := applyEnvVars(context.Background(), d.input)
 			os.Unsetenv(d.env)
-			assert.NoError(t, err)
+			require.NoError(t, err)
 			assert.EqualValues(t, d.expected, actual)
 		})
 	}

@@ -13,6 +13,7 @@ import (
 	"github.com/hairyhenderson/go-fsimpl"
 	"github.com/hairyhenderson/gomplate/v4/data"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestRenderTemplate(t *testing.T) {
@@ -24,7 +25,7 @@ func TestRenderTemplate(t *testing.T) {
 	tr := NewRenderer(Options{})
 	out := &bytes.Buffer{}
 	err := tr.Render(ctx, "test", "{{ `hello world` | toUpper }}", out)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, "HELLO WORLD", out.String())
 
 	// with datasource and context
@@ -45,7 +46,7 @@ func TestRenderTemplate(t *testing.T) {
 	ctx = data.ContextWithStdin(ctx, strings.NewReader("hello"))
 	out = &bytes.Buffer{}
 	err = tr.Render(ctx, "test", `{{ .hi | toUpper }} {{ (ds "world") | toUpper }}`, out)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, "HELLO WORLD", out.String())
 
 	// with a nested template
@@ -62,7 +63,7 @@ func TestRenderTemplate(t *testing.T) {
 	})
 	out = &bytes.Buffer{}
 	err = tr.Render(ctx, "test", `<< template "nested" "hello" >>`, out)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, "HELLO", out.String())
 
 	// errors contain the template name

@@ -10,6 +10,7 @@ import (
 	"github.com/spf13/afero"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestWalkDir(t *testing.T) {
@@ -31,7 +32,7 @@ func TestWalkDir(t *testing.T) {
 
 	templates, err := walkDir(ctx, cfg, "/indir", simpleNamer("/outdir"), []string{"*/two"}, 0, false)
 
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	expected := []Template{
 		{
 			Name: "/indir/one/bar",

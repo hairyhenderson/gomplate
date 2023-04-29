@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func genPKCS1PrivKey() (*rsa.PrivateKey, string) {
@@ -69,10 +70,10 @@ func TestRSACrypt(t *testing.T) {
 			t.Parallel()
 
 			enc, err := RSAEncrypt(d.encKey, d.in)
-			assert.NoError(t, err)
+			require.NoError(t, err)
 
 			dec, err := RSADecrypt(d.decKey, enc)
-			assert.NoError(t, err)
+			require.NoError(t, err)
 			assert.Equal(t, d.in, dec)
 		})
 	}
@@ -112,7 +113,7 @@ func TestRSAGenerateKey(t *testing.T) {
 	assert.Error(t, err)
 
 	key, err := RSAGenerateKey(2048)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.True(t, strings.HasPrefix(string(key),
 		"-----BEGIN RSA PRIVATE KEY-----"))
 	assert.True(t, strings.HasSuffix(string(key),
@@ -133,6 +134,6 @@ func TestRSADerivePublicKey(t *testing.T) {
 	expected := derivePKIXPubKey(priv)
 
 	actual, err := RSADerivePublicKey([]byte(privKey))
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, expected, string(actual))
 }

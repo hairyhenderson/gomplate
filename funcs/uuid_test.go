@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestCreateUUIDFuncs(t *testing.T) {
@@ -36,7 +37,7 @@ func TestV1(t *testing.T) {
 
 	u := UUIDNS()
 	i, err := u.V1()
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Regexp(t, uuidV1Pattern, i)
 }
 
@@ -45,7 +46,7 @@ func TestV4(t *testing.T) {
 
 	u := UUIDNS()
 	i, err := u.V4()
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Regexp(t, uuidV4Pattern, i)
 }
 
@@ -54,7 +55,7 @@ func TestNil(t *testing.T) {
 
 	u := UUIDNS()
 	i, err := u.Nil()
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, "00000000-0000-0000-0000-000000000000", i)
 }
 
@@ -64,12 +65,12 @@ func TestIsValid(t *testing.T) {
 	u := UUIDNS()
 	in := interface{}(false)
 	i, err := u.IsValid(in)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.False(t, i)
 
 	in = 12345
 	i, err = u.IsValid(in)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.False(t, i)
 
 	testdata := []interface{}{
@@ -81,7 +82,7 @@ func TestIsValid(t *testing.T) {
 
 	for _, d := range testdata {
 		i, err = u.IsValid(d)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.True(t, i)
 	}
 }
@@ -109,7 +110,7 @@ func TestParse(t *testing.T) {
 
 	for _, d := range testdata {
 		uid, err := u.Parse(d)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.Equal(t, in, uid.String())
 	}
 }

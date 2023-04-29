@@ -11,6 +11,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/request"
 	"github.com/aws/aws-sdk-go/service/ssm"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 // DummyParamGetter - test double
@@ -126,7 +127,7 @@ func TestAWSSMP_listAWSSMPParams(t *testing.T) {
 		},
 	})
 	data, err := listAWSSMPParams(ctx, s, "/")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, []byte(`["a","b","c"]`), data)
 
 	s = simpleAWSSourceHelper(DummyParamGetter{
@@ -138,6 +139,6 @@ func TestAWSSMP_listAWSSMPParams(t *testing.T) {
 		},
 	})
 	data, err = listAWSSMPParams(ctx, s, "/a/")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, []byte(`["a","b","c"]`), data)
 }

@@ -12,31 +12,32 @@ import (
 	"github.com/spf13/afero"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 const osWindows = "windows"
 
 func TestNewData(t *testing.T) {
 	d, err := NewData(nil, nil)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Len(t, d.Sources, 0)
 
 	d, err = NewData([]string{"foo=http:///foo.json"}, nil)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, "/foo.json", d.Sources["foo"].URL.Path)
 
 	d, err = NewData([]string{"foo=http:///foo.json"}, []string{})
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, "/foo.json", d.Sources["foo"].URL.Path)
 	assert.Empty(t, d.Sources["foo"].Header)
 
 	d, err = NewData([]string{"foo=http:///foo.json"}, []string{"bar=Accept: blah"})
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, "/foo.json", d.Sources["foo"].URL.Path)
 	assert.Empty(t, d.Sources["foo"].Header)
 
 	d, err = NewData([]string{"foo=http:///foo.json"}, []string{"foo=Accept: blah"})
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, "/foo.json", d.Sources["foo"].URL.Path)
 	assert.Equal(t, "blah", d.Sources["foo"].Header["Accept"][0])
 }
@@ -72,7 +73,7 @@ func TestDatasource(t *testing.T) {
 		data := setup(ext, mime, contents)
 
 		actual, err := data.Datasource("foo")
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.Equal(t, expected, actual)
 	}
 
@@ -92,7 +93,7 @@ func TestDatasource(t *testing.T) {
 
 	d := setup("", textMimetype, nil)
 	actual, err := d.Datasource("foo")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, "", actual)
 
 	_, err = d.Datasource("bar")
@@ -174,7 +175,7 @@ func TestInclude(t *testing.T) {
 		Sources: sources,
 	}
 	actual, err := data.Include("foo")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, contents, actual)
 }
 
@@ -201,7 +202,7 @@ func TestDefineDatasource(t *testing.T) {
 	d = &Data{}
 	_, err = d.DefineDatasource("data", "foo.json")
 	s := d.Sources["data"]
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, "data", s.Alias)
 	assert.Equal(t, "file", s.URL.Scheme)
 	assert.True(t, s.URL.IsAbs())
@@ -209,7 +210,7 @@ func TestDefineDatasource(t *testing.T) {
 	d = &Data{}
 	_, err = d.DefineDatasource("data", "/otherdir/foo.json")
 	s = d.Sources["data"]
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, "data", s.Alias)
 	assert.Equal(t, "file", s.URL.Scheme)
 	assert.True(t, s.URL.IsAbs())
@@ -218,7 +219,7 @@ func TestDefineDatasource(t *testing.T) {
 	d = &Data{}
 	_, err = d.DefineDatasource("data", "sftp://example.com/blahblah/foo.json")
 	s = d.Sources["data"]
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, "data", s.Alias)
 	assert.Equal(t, "sftp", s.URL.Scheme)
 	assert.True(t, s.URL.IsAbs())
@@ -231,17 +232,17 @@ func TestDefineDatasource(t *testing.T) {
 	}
 	_, err = d.DefineDatasource("data", "/otherdir/foo.json")
 	s = d.Sources["data"]
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, "data", s.Alias)
 	assert.Nil(t, s.URL)
 
 	d = &Data{}
 	_, err = d.DefineDatasource("data", "/otherdir/foo?type=application/x-env")
 	s = d.Sources["data"]
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, "data", s.Alias)
 	m, err := s.mimeType("")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, "application/x-env", m)
 }
 
@@ -280,7 +281,7 @@ func TestMimeType(t *testing.T) {
 		t.Run(fmt.Sprintf("%d:%q,%q==%q", i, d.url, d.mediaType, d.expected), func(t *testing.T) {
 			s := &Source{URL: mustParseURL(d.url), mediaType: d.mediaType}
 			mt, err := s.mimeType("")
-			assert.NoError(t, err)
+			require.NoError(t, err)
 			assert.Equal(t, d.expected, mt)
 		})
 	}
@@ -336,7 +337,7 @@ func TestMimeTypeWithArg(t *testing.T) {
 		t.Run(fmt.Sprintf("%d:%q,%q,%q==%q", i, d.url, d.mediaType, d.arg, d.expected), func(t *testing.T) {
 			s := &Source{URL: mustParseURL(d.url), mediaType: d.mediaType}
 			mt, err := s.mimeType(d.arg)
-			assert.NoError(t, err)
+			require.NoError(t, err)
 			assert.Equal(t, d.expected, mt)
 		})
 	}

@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestCreateStringFuncs(t *testing.T) {
@@ -53,7 +54,7 @@ func TestIndent(t *testing.T) {
 
 	for _, d := range testdata {
 		out, err := sf.Indent(d.args...)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.Equal(t, d.out, out)
 	}
 }
@@ -108,15 +109,15 @@ func TestAbbrev(t *testing.T) {
 	assert.Error(t, err)
 
 	s, err := sf.Abbrev(3, "foo")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, "foo", s)
 
 	s, err = sf.Abbrev(2, 6, "foobar")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, "foobar", s)
 
 	s, err = sf.Abbrev(6, 9, "foobarbazquxquux")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, "...baz...", s)
 }
 
@@ -230,26 +231,26 @@ func TestRuneCount(t *testing.T) {
 	sf := &StringFuncs{}
 
 	n, err := sf.RuneCount("")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, 0, n)
 
 	n, err = sf.RuneCount("foo")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, 3, n)
 
 	n, err = sf.RuneCount("foo", "bar")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, 6, n)
 
 	n, err = sf.RuneCount(42, true)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, 6, n)
 
 	n, err = sf.RuneCount("😂\U0001F602")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, 2, n)
 
 	n, err = sf.RuneCount("\U0001F600", 3.14)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, 5, n)
 }

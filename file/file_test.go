@@ -7,6 +7,7 @@ import (
 
 	"github.com/spf13/afero"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	tfs "gotest.tools/v3/fs"
 )
 
@@ -19,7 +20,7 @@ func TestRead(t *testing.T) {
 	_, _ = f.Write([]byte("foo"))
 
 	actual, err := Read("/tmp/foo")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, "foo", actual)
 
 	_, err = Read("/tmp/bar")
@@ -38,7 +39,7 @@ func TestReadDir(t *testing.T) {
 	fs.Create("/tmp/qux/quux")
 
 	actual, err := ReadDir("/tmp")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, []string{"bar", "baz", "foo", "qux"}, actual)
 
 	_, err = ReadDir("/tmp/foo")
@@ -60,37 +61,37 @@ func TestWrite(t *testing.T) {
 	badwd, _ = filepath.EvalSymlinks(badwd)
 
 	err := os.Chdir(newwd)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	err = Write("/foo", []byte("Hello world"))
 	assert.Error(t, err)
 
 	rel, err := filepath.Rel(newwd, badwd)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	err = Write(rel, []byte("Hello world"))
 	assert.Error(t, err)
 
 	foopath := filepath.Join(newwd, "foo")
 	err = Write(foopath, []byte("Hello world"))
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	out, err := os.ReadFile(foopath)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, "Hello world", string(out))
 
 	err = Write(foopath, []byte("truncate"))
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	out, err = os.ReadFile(foopath)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, "truncate", string(out))
 
 	foopath = filepath.Join(newwd, "nonexistant", "subdir", "foo")
 	err = Write(foopath, []byte("Hello subdirranean world!"))
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	out, err = os.ReadFile(foopath)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, "Hello subdirranean world!", string(out))
 }
 
@@ -102,13 +103,13 @@ func TestAssertPathInWD(t *testing.T) {
 	assert.Error(t, err)
 
 	err = assertPathInWD(filepath.Join(oldwd, "subpath"))
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	err = assertPathInWD("subpath")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	err = assertPathInWD("./subpath")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	err = assertPathInWD(filepath.Join("..", "bogus"))
 	assert.Error(t, err)
@@ -118,5 +119,5 @@ func TestAssertPathInWD(t *testing.T) {
 
 	base := filepath.Base(oldwd)
 	err = assertPathInWD(filepath.Join("..", base))
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }

@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestIndent(t *testing.T) {
@@ -138,6 +139,6 @@ func TestSkipLines(t *testing.T) {
 	assert.Error(t, err)
 
 	out, err = SkipLines(4, "foo\nbar\n\nbaz")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, "", out)
 }

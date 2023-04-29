@@ -8,6 +8,7 @@ import (
 	"github.com/ugorji/go/codec"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"os"
 
@@ -24,7 +25,7 @@ func TestUnmarshalObj(t *testing.T) {
 
 	test := func(actual map[string]interface{}, err error) {
 		t.Helper()
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.Equal(t, expected["foo"], actual["foo"], "foo")
 		assert.Equal(t, expected["one"], actual["one"], "one")
 		assert.Equal(t, expected["true"], actual["true"], "true")
@@ -72,7 +73,7 @@ func TestUnmarshalArray(t *testing.T) {
 		}}
 
 	test := func(actual []interface{}, err error) {
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.EqualValues(t, expected, actual)
 	}
 	test(JSONArray(`["foo","bar",{"baz":{"qux": true},"quux":{"42":18},"corge":{"false":"blah"}}]`))
@@ -112,7 +113,7 @@ this shouldn't be reached
     42: 18
     false: blah
 `)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.EqualValues(t,
 		[]interface{}{
 			map[string]interface{}{
@@ -148,7 +149,7 @@ func TestMarshalObj(t *testing.T) {
 	actual, err := marshalObj(nil, func(in interface{}) ([]byte, error) {
 		return []byte("foo"), nil
 	})
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, expected, actual)
 	_, err = marshalObj(nil, func(in interface{}) ([]byte, error) {
 		return nil, fmt.Errorf("fail")
@@ -159,7 +160,7 @@ func TestMarshalObj(t *testing.T) {
 func TestToJSONBytes(t *testing.T) {
 	expected := []byte("null")
 	actual, err := toJSONBytes(nil)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, expected, actual)
 
 	_, err = toJSONBytes(&badObject{})
@@ -192,7 +193,7 @@ func TestToJSON(t *testing.T) {
 		},
 	}
 	out, err := ToJSON(in)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, expected, out)
 
 	_, err = ToJSON(&badObject{})
@@ -225,7 +226,7 @@ func TestToJSONPretty(t *testing.T) {
 		},
 	}
 	out, err := ToJSONPretty("  ", in)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, expected, out)
 
 	_, err = ToJSONPretty("  ", &badObject{})
@@ -256,7 +257,7 @@ key`: map[string]interface{}{
 		"d": time.Date(2006, time.January, 2, 15, 4, 5, 999999999, mst),
 	}
 	out, err := ToYAML(in)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, expected, out)
 }
 
@@ -279,7 +280,7 @@ func TestCSV(t *testing.T) {
 	}
 	for _, d := range testdata {
 		out, err := CSV(d.args...)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.Equal(t, d.out, out)
 	}
 }
@@ -316,7 +317,7 @@ func TestCSVByRow(t *testing.T) {
 	}
 	for _, d := range testdata {
 		out, err := CSVByRow(d.args...)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.Equal(t, d.out, out)
 	}
 }
@@ -344,7 +345,7 @@ func TestCSVByColumn(t *testing.T) {
 	}
 	for _, d := range testdata {
 		out, err := CSVByColumn(d.args...)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.Equal(t, d.out, out)
 	}
 }
@@ -368,13 +369,13 @@ func TestToCSV(t *testing.T) {
 	expected := "first,second,third\r\n1,2,3\r\n4,5,6\r\n"
 
 	out, err := ToCSV(in)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, expected, out)
 
 	expected = "first;second;third\r\n1;2;3\r\n4;5;6\r\n"
 
 	out, err = ToCSV(";", in)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, expected, out)
 
 	_, err = ToCSV(42, [][]int{{1, 2}})
@@ -389,7 +390,7 @@ func TestToCSV(t *testing.T) {
 		{"1", "2", "3"},
 		{"4", "5", "6"},
 	})
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, expected, out)
 
 	expected = "first|second|third\r\n1|2|3\r\n4|5|6\r\n"
@@ -398,7 +399,7 @@ func TestToCSV(t *testing.T) {
 		[]interface{}{1, "2", 3},
 		[]interface{}{"4", 5, "6"},
 	})
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, expected, out)
 }
 
@@ -473,7 +474,7 @@ hosts = [
 	}
 
 	out, err := TOML(in)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, expected, out)
 }
 
@@ -500,7 +501,7 @@ true = true
 		},
 	}
 	out, err := ToTOML(in)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, expected, out)
 }
 
@@ -519,11 +520,11 @@ func TestDecryptEJSON(t *testing.T) {
 
 	t.Setenv("EJSON_KEY", privateKey)
 	actual, err := decryptEJSON(in)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.EqualValues(t, expected, actual)
 
 	actual, err = JSON(in)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.EqualValues(t, expected, actual)
 
 	tmpDir := fs.NewDir(t, "gomplate-ejsontest",
@@ -534,14 +535,14 @@ func TestDecryptEJSON(t *testing.T) {
 	os.Unsetenv("EJSON_KEY")
 	t.Setenv("EJSON_KEY_FILE", tmpDir.Join(publicKey))
 	actual, err = decryptEJSON(in)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.EqualValues(t, expected, actual)
 
 	os.Unsetenv("EJSON_KEY")
 	os.Unsetenv("EJSON_KEY_FILE")
 	t.Setenv("EJSON_KEYDIR", tmpDir.Path())
 	actual, err = decryptEJSON(in)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.EqualValues(t, expected, actual)
 }
 
@@ -563,7 +564,7 @@ QUX='single quotes ignore $variables'
 		"QUX":     "single quotes ignore $variables",
 	}
 	out, err := dotEnv(in)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.EqualValues(t, expected, out)
 }
 
@@ -612,7 +613,7 @@ func TestStringifyYAMLArrayMapKeys(t *testing.T) {
 
 	for _, c := range cases {
 		err := stringifyYAMLArrayMapKeys(c.input)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.EqualValues(t, c.want, c.input)
 	}
 }
@@ -654,7 +655,7 @@ func TestStringifyYAMLMapMapKeys(t *testing.T) {
 
 	for _, c := range cases {
 		err := stringifyYAMLMapMapKeys(c.input)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.EqualValues(t, c.want, c.input)
 	}
 }

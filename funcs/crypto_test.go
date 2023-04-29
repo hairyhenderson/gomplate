@@ -8,6 +8,7 @@ import (
 
 	"github.com/hairyhenderson/gomplate/v4/internal/config"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestCreateCryptoFuncs(t *testing.T) {
@@ -35,11 +36,11 @@ func TestPBKDF2(t *testing.T) {
 	c := testCryptoNS()
 	dk, err := c.PBKDF2("password", []byte("IEEE"), "4096", 32)
 	assert.Equal(t, "f42c6fc52df0ebef9ebb4b90b38a5f902e83fe1b135a70e23aed762e9710a12e", dk)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	dk, err = c.PBKDF2([]byte("password"), "IEEE", 4096, "64", "SHA-512")
 	assert.Equal(t, "c16f4cb6d03e23614399dee5e7f676fb1da0eb9471b6a74a6c5bc934c6ec7d2ab7028fbb1000b1beb97f17646045d8144792352f6676d13b20a4c03754903d7e", dk)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	_, err = c.PBKDF2(nil, nil, nil, nil, "bogus")
 	assert.Error(t, err)
@@ -51,7 +52,7 @@ func TestWPAPSK(t *testing.T) {
 	c := testCryptoNS()
 	dk, err := c.WPAPSK("password", "MySSID")
 	assert.Equal(t, "3a98def84b11644a17ebcc9b17955d2360ce8b8a85b8a78413fc551d722a84e7", dk)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 func TestSHA(t *testing.T) {
@@ -89,7 +90,7 @@ func TestBcrypt(t *testing.T) {
 		t.Parallel()
 
 		actual, err := c.Bcrypt(in)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.True(t, strings.HasPrefix(actual, "$2a$10$"))
 	})
 
@@ -97,7 +98,7 @@ func TestBcrypt(t *testing.T) {
 		t.Parallel()
 
 		actual, err := c.Bcrypt(0, in)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.True(t, strings.HasPrefix(actual, "$2a$10$"))
 	})
 
@@ -105,7 +106,7 @@ func TestBcrypt(t *testing.T) {
 		t.Parallel()
 
 		actual, err := c.Bcrypt(4, in)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.True(t, strings.HasPrefix(actual, "$2a$04$"))
 	})
 
@@ -128,7 +129,7 @@ func TestRSAGenerateKey(t *testing.T) {
 	assert.Error(t, err)
 
 	key, err := c.RSAGenerateKey(2048)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.True(t, strings.HasPrefix(key,
 		"-----BEGIN RSA PRIVATE KEY-----"))
 	assert.True(t, strings.HasSuffix(key,
@@ -144,7 +145,7 @@ func TestECDSAGenerateKey(t *testing.T) {
 	assert.Error(t, err)
 
 	key, err := c.ECDSAGenerateKey("P-256")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.True(t, strings.HasPrefix(key,
 		"-----BEGIN EC PRIVATE KEY-----"))
 	assert.True(t, strings.HasSuffix(key,
@@ -159,7 +160,7 @@ func TestECDSADerivePublicKey(t *testing.T) {
 
 	key, _ := c.ECDSAGenerateKey("P-256")
 	pub, err := c.ECDSADerivePublicKey(key)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.True(t, strings.HasPrefix(pub,
 		"-----BEGIN PUBLIC KEY-----"))
 	assert.True(t, strings.HasSuffix(pub,
@@ -175,20 +176,20 @@ func TestRSACrypt(t *testing.T) {
 
 	c := testCryptoNS()
 	key, err := c.RSAGenerateKey()
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	pub, err := c.RSADerivePublicKey(key)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	in := "hello world"
 	enc, err := c.RSAEncrypt(pub, in)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	dec, err := c.RSADecrypt(key, enc)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, in, dec)
 
 	b, err := c.RSADecryptBytes(key, enc)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, dec, string(b))
 }
 
@@ -204,24 +205,24 @@ func TestAESCrypt(t *testing.T) {
 	assert.Error(t, err)
 
 	enc, err := c.EncryptAES(key, in)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	dec, err := c.DecryptAES(key, enc)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, in, dec)
 
 	b, err := c.DecryptAESBytes(key, enc)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, dec, string(b))
 
 	enc, err = c.EncryptAES(key, 128, in)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	dec, err = c.DecryptAES(key, 128, enc)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, in, dec)
 
 	b, err = c.DecryptAESBytes(key, 128, enc)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, dec, string(b))
 }

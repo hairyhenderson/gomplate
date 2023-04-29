@@ -7,6 +7,7 @@ import (
 	"unicode/utf8"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestMatchChars(t *testing.T) {
@@ -31,7 +32,7 @@ func TestMatchChars(t *testing.T) {
 			t.Parallel()
 
 			out, err := matchChars(d.in)
-			assert.NoError(t, err)
+			require.NoError(t, err)
 			assert.EqualValues(t, d.expected, out)
 		})
 	}
@@ -41,7 +42,7 @@ func TestStringRE(t *testing.T) {
 	t.Parallel()
 
 	r, err := StringRE(15, "[\\p{Yi}[:alnum:]]")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, 15, utf8.RuneCountInString(r))
 
 	_, err = StringRE(1, "[bogus")
@@ -59,20 +60,20 @@ func TestStringBounds(t *testing.T) {
 	assert.Error(t, err)
 
 	r, err := StringBounds(1, 'a', 'a')
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, "a", r)
 
 	r, err = StringBounds(99, 'a', 'b')
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Regexp(t, "^[a-b]+$", r)
 
 	r, err = StringBounds(100, 0x0020, 0x007f)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Regexp(t, "^[\u0020-\u007f]*$", r)
 
 	// only 🂱 (\U0001F0B1) in this range is "graphic"
 	r, err = StringBounds(8, 0x0001f0af, 0x0001f0b1)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Regexp(t, "^🂱🂱🂱🂱🂱🂱🂱🂱$", r)
 }
 
@@ -83,14 +84,14 @@ func TestItem(t *testing.T) {
 	assert.Error(t, err)
 
 	i, err := Item([]interface{}{"foo"})
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, "foo", i)
 
 	in := []interface{}{"foo", "bar"}
 	got := ""
 	for j := 0; j < 10; j++ {
 		i, err = Item(in)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		got += i.(string)
 	}
 	assert.NotEqual(t, "foofoofoofoofoofoofoofoofoofoo", got)
@@ -119,7 +120,7 @@ func TestNumber(t *testing.T) {
 	}
 	for _, d := range testdata {
 		n, err := Number(d.min, d.max)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.InDelta(t, d.expected, n, d.delta)
 	}
 }
@@ -140,7 +141,7 @@ func TestFloat(t *testing.T) {
 
 	for _, d := range testdata {
 		n, err := Float(d.min, d.max)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.InDelta(t, d.expected, n, d.delta)
 	}
 }

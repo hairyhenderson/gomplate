@@ -27,21 +27,21 @@ func TestOpenOutFile(t *testing.T) {
 
 	cfg := &config.Config{Stdout: &bytes.Buffer{}}
 	f, err := openOutFile("/tmp/foo", 0755, 0644, false, nil, false)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	wc, ok := f.(io.WriteCloser)
 	assert.True(t, ok)
 	err = wc.Close()
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	i, err := aferoFS.Stat("/tmp/foo")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, iohelpers.NormalizeFileMode(0644), i.Mode())
 
 	out := &bytes.Buffer{}
 
 	f, err = openOutFile("-", 0755, 0644, false, out, false)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, cfg.Stdout, f)
 }
 
@@ -63,7 +63,7 @@ func TestGatherTemplates(t *testing.T) {
 	}
 	cfg.ApplyDefaults()
 	templates, err := gatherTemplates(ctx, cfg, nil)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Len(t, templates, 1)
 
 	cfg = &config.Config{
@@ -72,7 +72,7 @@ func TestGatherTemplates(t *testing.T) {
 	}
 	cfg.ApplyDefaults()
 	templates, err = gatherTemplates(ctx, cfg, nil)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Len(t, templates, 1)
 	assert.Equal(t, "foo", templates[0].Text)
 	assert.Equal(t, cfg.Stdout, templates[0].Writer)
@@ -81,7 +81,7 @@ func TestGatherTemplates(t *testing.T) {
 		Input:       "foo",
 		OutputFiles: []string{"out"},
 	}, nil)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Len(t, templates, 1)
 	// assert.Equal(t, iohelpers.NormalizeFileMode(0644), templates[0].mode)
 
@@ -91,7 +91,7 @@ func TestGatherTemplates(t *testing.T) {
 	assert.True(t, os.IsNotExist(err))
 
 	_, err = templates[0].Writer.Write([]byte("hello world"))
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	info, err := aferoFS.Stat("out")
 	require.NoError(t, err)
@@ -104,17 +104,17 @@ func TestGatherTemplates(t *testing.T) {
 		Stdout:      &bytes.Buffer{},
 	}
 	templates, err = gatherTemplates(ctx, cfg, nil)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Len(t, templates, 1)
 	assert.Equal(t, "bar", templates[0].Text)
 	assert.NotEqual(t, cfg.Stdout, templates[0].Writer)
 	// assert.Equal(t, os.FileMode(0600), templates[0].mode)
 
 	_, err = templates[0].Writer.Write([]byte("hello world"))
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	info, err = aferoFS.Stat("out")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, iohelpers.NormalizeFileMode(0600), info.Mode())
 	aferoFS.Remove("out")
 
@@ -125,17 +125,17 @@ func TestGatherTemplates(t *testing.T) {
 		Stdout:      &bytes.Buffer{},
 	}
 	templates, err = gatherTemplates(ctx, cfg, nil)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Len(t, templates, 1)
 	assert.Equal(t, "bar", templates[0].Text)
 	assert.NotEqual(t, cfg.Stdout, templates[0].Writer)
 	// assert.Equal(t, iohelpers.NormalizeFileMode(0755), templates[0].mode)
 
 	_, err = templates[0].Writer.Write([]byte("hello world"))
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	info, err = aferoFS.Stat("out")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, iohelpers.NormalizeFileMode(0755), info.Mode())
 	aferoFS.Remove("out")
 
@@ -143,7 +143,7 @@ func TestGatherTemplates(t *testing.T) {
 		InputDir:  "in",
 		OutputDir: "out",
 	}, simpleNamer("out"))
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Len(t, templates, 3)
 	assert.Equal(t, "foo", templates[0].Text)
 	aferoFS.Remove("out")
@@ -177,11 +177,11 @@ func TestParseNestedTemplates(t *testing.T) {
 	tmpl, _ := template.New("root").Parse(`{{ template "foo" }}`)
 
 	err := parseNestedTemplates(ctx, nested, tmpl)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	out := bytes.Buffer{}
 	err = tmpl.Execute(&out, nil)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, "hello world", out.String())
 
 	// test with directory of templates
@@ -194,10 +194,10 @@ func TestParseNestedTemplates(t *testing.T) {
 	tmpl, _ = template.New("root").Parse(`{{ template "dir/foo.t" }} {{ template "dir/bar.t" }}`)
 
 	err = parseNestedTemplates(ctx, nested, tmpl)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	out = bytes.Buffer{}
 	err = tmpl.Execute(&out, nil)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, "foo bar", out.String())
 }

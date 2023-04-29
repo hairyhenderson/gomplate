@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestLogin(t *testing.T) {
@@ -23,6 +24,6 @@ func TestTokenLogin(t *testing.T) {
 	defer os.Unsetenv("VAULT_TOKEN")
 
 	token, err := v.TokenLogin()
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, "foo", token)
 }

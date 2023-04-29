@@ -18,6 +18,7 @@ import (
 	gcmd "github.com/hairyhenderson/gomplate/v4/internal/cmd"
 	vaultapi "github.com/hashicorp/vault/api"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"gotest.tools/v3/icmd"
 )
 
@@ -28,35 +29,31 @@ func inOutTest(t *testing.T, i, o string) {
 	t.Helper()
 
 	stdout, stderr, err := cmd(t, "-i", i).run()
-	assert.NoError(t, err)
-	assert.Equal(t, "", stderr)
-	assert.Equal(t, o, stdout)
+	assertSuccess(t, stdout, stderr, err, o)
 }
 
 func inOutTestExperimental(t *testing.T, i, o string) {
 	t.Helper()
 
 	stdout, stderr, err := cmd(t, "--experimental", "-i", i).run()
-	assert.NoError(t, err)
-	assert.Equal(t, "", stderr)
-	assert.Equal(t, o, stdout)
+	assertSuccess(t, stdout, stderr, err, o)
 }
 
 func inOutContains(t *testing.T, i, o string) {
 	t.Helper()
 
 	stdout, stderr, err := cmd(t, "-i", i).run()
-	assert.NoError(t, err)
 	assert.Equal(t, "", stderr)
 	assert.Contains(t, stdout, o)
+	require.NoError(t, err)
 }
 
 func assertSuccess(t *testing.T, o, e string, err error, expected string) {
 	t.Helper()
 
-	assert.NoError(t, err)
 	assert.Equal(t, "", e)
 	assert.Equal(t, expected, o)
+	require.NoError(t, err)
 }
 
 // mirrorHandler - reflects back the HTTP headers from the request

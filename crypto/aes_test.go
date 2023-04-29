@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestEncryptDecryptAESCBC(t *testing.T) {
@@ -24,7 +25,7 @@ func TestEncryptDecryptAESCBC(t *testing.T) {
 
 	// empty content is a pass-through
 	out, err := EncryptAESCBC(key, []byte{})
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, []byte{}, out)
 
 	testdata := [][]byte{
@@ -37,31 +38,31 @@ func TestEncryptDecryptAESCBC(t *testing.T) {
 
 	for _, d := range testdata {
 		out, err = EncryptAESCBC(key, d)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.NotEqual(t, d, out)
 
 		out, err = DecryptAESCBC(key, out)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.Equal(t, d, out)
 	}
 
 	// 128-bit key
 	key = bytes.Repeat([]byte{'a'}, 16)
 	out, err = EncryptAESCBC(key, []byte("foo"))
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.NotEqual(t, []byte("foo"), out)
 
 	out, err = DecryptAESCBC(key, out)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, []byte("foo"), out)
 
 	// 192-bit key
 	key = bytes.Repeat([]byte{'a'}, 24)
 	out, err = EncryptAESCBC(key, []byte("foo"))
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.NotEqual(t, []byte("foo"), out)
 
 	out, err = DecryptAESCBC(key, out)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, []byte("foo"), out)
 }

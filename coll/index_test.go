@@ -4,27 +4,28 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestIndex(t *testing.T) {
 	out, err := Index(map[string]interface{}{
 		"foo": "bar", "baz": "qux",
 	}, "foo")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, "bar", out)
 
 	out, err = Index(map[string]interface{}{
 		"foo": "bar", "baz": "qux", "quux": "corge",
 	}, "foo", 2)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, byte('r'), out)
 
 	out, err = Index([]interface{}{"foo", "bar", "baz"}, 2)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, "baz", out)
 
 	out, err = Index([]interface{}{"foo", "bar", "baz"}, 2, 2)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, byte('z'), out)
 
 	// error cases

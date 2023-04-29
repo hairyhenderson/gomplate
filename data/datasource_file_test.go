@@ -7,6 +7,7 @@ import (
 	"github.com/spf13/afero"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestReadFile(t *testing.T) {
@@ -30,7 +31,7 @@ func TestReadFile(t *testing.T) {
 	source.fs = fs
 
 	actual, err := readFile(ctx, source)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, content, actual)
 
 	source = &Source{Alias: "bogus", URL: mustParseURL("file:///bogus")}
@@ -41,30 +42,30 @@ func TestReadFile(t *testing.T) {
 	source = &Source{Alias: "partial", URL: mustParseURL("file:///tmp/partial")}
 	source.fs = fs
 	actual, err = readFile(ctx, source, "foo.txt")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, content, actual)
 
 	source = &Source{Alias: "dir", URL: mustParseURL("file:///tmp/partial/")}
 	source.fs = fs
 	actual, err = readFile(ctx, source)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, []byte(`["bar.txt","baz.txt","foo.txt"]`), actual)
 
 	source = &Source{Alias: "dir", URL: mustParseURL("file:///tmp/partial/?type=application/json")}
 	source.fs = fs
 	actual, err = readFile(ctx, source)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, []byte(`["bar.txt","baz.txt","foo.txt"]`), actual)
 	mime, err := source.mimeType("")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, "application/json", mime)
 
 	source = &Source{Alias: "dir", URL: mustParseURL("file:///tmp/partial/?type=application/json")}
 	source.fs = fs
 	actual, err = readFile(ctx, source, "foo.txt")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, content, actual)
 	mime, err = source.mimeType("")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, "application/json", mime)
 }

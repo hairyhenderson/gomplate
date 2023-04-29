@@ -22,12 +22,12 @@ func TestBindPlugins(t *testing.T) {
 		Plugins: map[string]config.PluginConfig{},
 	}
 	err := bindPlugins(ctx, cfg, fm)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.EqualValues(t, template.FuncMap{}, fm)
 
 	cfg.Plugins = map[string]config.PluginConfig{"foo": {Cmd: "bar"}}
 	err = bindPlugins(ctx, cfg, fm)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Contains(t, fm, "foo")
 
 	err = bindPlugins(ctx, cfg, fm)

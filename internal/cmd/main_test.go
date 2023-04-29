@@ -8,6 +8,7 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestOptionalExecArgs(t *testing.T) {
@@ -16,7 +17,7 @@ func TestOptionalExecArgs(t *testing.T) {
 	cmd.ParseFlags(nil)
 
 	err := optionalExecArgs(cmd, nil)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	cmd = &cobra.Command{}
 	cmd.SetArgs(nil)
@@ -30,14 +31,14 @@ func TestOptionalExecArgs(t *testing.T) {
 	cmd.ParseFlags([]string{"--", "foo"})
 
 	err = optionalExecArgs(cmd, []string{})
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	cmd = &cobra.Command{}
 	cmd.SetArgs(nil)
 	cmd.ParseFlags([]string{"--"})
 
 	err = optionalExecArgs(cmd, []string{"foo"})
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 func TestRunMain(t *testing.T) {
@@ -45,7 +46,7 @@ func TestRunMain(t *testing.T) {
 	defer cancel()
 
 	err := Main(ctx, []string{"-h"}, nil, nil, nil)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	err = Main(ctx, []string{"--bogus"}, nil, nil, nil)
 	assert.Error(t, err)
@@ -54,7 +55,7 @@ func TestRunMain(t *testing.T) {
 	stdout := &bytes.Buffer{}
 	stderr := &bytes.Buffer{}
 	err = Main(ctx, []string{"-i", "hello"}, stdin, stdout, stderr)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, "hello", stdout.String())
 }
 
@@ -64,6 +65,6 @@ func TestPostRunExec(t *testing.T) {
 
 	out := &bytes.Buffer{}
 	err := postRunExec(ctx, []string{"cat"}, strings.NewReader("hello world"), out, out)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, "hello world", out.String())
 }

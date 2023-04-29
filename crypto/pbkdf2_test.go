@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestPBKDF2(t *testing.T) {
@@ -22,7 +23,7 @@ func TestPBKDF2(t *testing.T) {
 		0x2e, 0x83, 0xfe, 0x1b, 0x13, 0x5a, 0x70, 0xe2,
 		0x3a, 0xed, 0x76, 0x2e, 0x97, 0x10, 0xa1, 0x2e,
 	}, dk)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	dk, err = PBKDF2([]byte("ThisIsAPassword"), []byte("ThisIsASSID"), 4096, 32, crypto.SHA1)
 	assert.EqualValues(t, []byte{
@@ -31,7 +32,7 @@ func TestPBKDF2(t *testing.T) {
 		0x20, 0x9b, 0x63, 0xdf, 0x70, 0x7d, 0xd5, 0x08,
 		0xd1, 0x45, 0x81, 0xf8, 0x98, 0x27, 0x21, 0xaf,
 	}, dk)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	dk, err = PBKDF2([]byte("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"), []byte("ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ"), 4096, 32, crypto.SHA1)
 	assert.EqualValues(t, []byte{
@@ -40,7 +41,7 @@ func TestPBKDF2(t *testing.T) {
 		0x8c, 0x59, 0xaf, 0xcb, 0x6e, 0xae, 0x73, 0x48,
 		0x85, 0x00, 0x13, 0x00, 0xa9, 0x81, 0xcc, 0x62,
 	}, dk)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	// some longer hash functions
 	dk, err = PBKDF2([]byte("password"), []byte("IEEE"), 4096, 64, crypto.SHA512)
@@ -54,7 +55,7 @@ func TestPBKDF2(t *testing.T) {
 		0x47, 0x92, 0x35, 0x2f, 0x66, 0x76, 0xd1, 0x3b,
 		0x20, 0xa4, 0xc0, 0x37, 0x54, 0x90, 0x3d, 0x7e,
 	}, dk)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 func TestStrToHash(t *testing.T) {
@@ -65,23 +66,23 @@ func TestStrToHash(t *testing.T) {
 	assert.Error(t, err)
 	h, err = StrToHash("SHA-1")
 	assert.Equal(t, crypto.SHA1, h)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	h, err = StrToHash("SHA224")
 	assert.Equal(t, crypto.SHA224, h)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	h, err = StrToHash("SHA-256")
 	assert.Equal(t, crypto.SHA256, h)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	h, err = StrToHash("SHA384")
 	assert.Equal(t, crypto.SHA384, h)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	h, err = StrToHash("SHA-512")
 	assert.Equal(t, crypto.SHA512, h)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	h, err = StrToHash("SHA-512/224")
 	assert.Equal(t, crypto.SHA512_224, h)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	h, err = StrToHash("SHA512/256")
 	assert.Equal(t, crypto.SHA512_256, h)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }

@@ -14,6 +14,7 @@ import (
 	"github.com/hairyhenderson/gomplate/v4/internal/iohelpers"
 	"github.com/hairyhenderson/yaml"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestParseConfigFile(t *testing.T) {
@@ -23,7 +24,7 @@ func TestParseConfigFile(t *testing.T) {
 		Input: "hello world",
 	}
 	cf, err := Parse(strings.NewReader(in))
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, expected, cf)
 
 	in = `in: hello world
@@ -81,7 +82,7 @@ pluginTimeout: 2s
 	}
 
 	cf, err = Parse(strings.NewReader(in))
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.EqualValues(t, expected, cf)
 }
 
@@ -102,7 +103,7 @@ func mustURL(s string) *url.URL {
 
 func TestValidate(t *testing.T) {
 	t.Parallel()
-	assert.NoError(t, validateConfig(""))
+	require.NoError(t, validateConfig(""))
 
 	assert.Error(t, validateConfig(`in: foo
 inputFiles: [bar]
@@ -151,7 +152,7 @@ outputMap: bar
 postExec: ""
 `))
 
-	assert.NoError(t, validateConfig(`execPipe: true
+	require.NoError(t, validateConfig(`execPipe: true
 postExec: [echo, foo]
 `))
 
@@ -160,7 +161,7 @@ outputFiles: [foo]
 postExec: [echo]
 `))
 
-	assert.NoError(t, validateConfig(`execPipe: true
+	require.NoError(t, validateConfig(`execPipe: true
 inputFiles: ['-']
 postExec: [echo]
 `))
@@ -438,7 +439,7 @@ func TestParseDataSourceFlags(t *testing.T) {
 	t.Parallel()
 	cfg := &Config{}
 	err := cfg.ParseDataSourceFlags(nil, nil, nil, nil)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.EqualValues(t, &Config{}, cfg)
 
 	cfg = &Config{}
@@ -447,7 +448,7 @@ func TestParseDataSourceFlags(t *testing.T) {
 
 	cfg = &Config{}
 	err = cfg.ParseDataSourceFlags([]string{"baz=foo/bar/baz.json"}, nil, nil, nil)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	expected := &Config{
 		DataSources: map[string]DataSource{
 			"baz": {URL: mustURL("foo/bar/baz.json")},
@@ -461,7 +462,7 @@ func TestParseDataSourceFlags(t *testing.T) {
 		nil,
 		nil,
 		[]string{"baz=Accept: application/json"})
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.EqualValues(t, &Config{
 		DataSources: map[string]DataSource{
 			"baz": {
@@ -480,7 +481,7 @@ func TestParseDataSourceFlags(t *testing.T) {
 		nil,
 		[]string{"foo=Accept: application/json",
 			"bar=Authorization: Basic xxxxx"})
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.EqualValues(t, &Config{
 		DataSources: map[string]DataSource{
 			"baz": {URL: mustURL("foo/bar/baz.json")},
@@ -505,7 +506,7 @@ func TestParseDataSourceFlags(t *testing.T) {
 		[]string{"foo=http://example.com", "file.tmpl", "tmpldir/"},
 		[]string{"foo=Accept: application/json",
 			"bar=Authorization: Basic xxxxx"})
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.EqualValues(t, &Config{
 		Templates: Templates{
 			"foo": {
@@ -525,11 +526,11 @@ func TestParsePluginFlags(t *testing.T) {
 	t.Parallel()
 	cfg := &Config{}
 	err := cfg.ParsePluginFlags(nil)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	cfg = &Config{}
 	err = cfg.ParsePluginFlags([]string{"foo=bar"})
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.EqualValues(t, &Config{Plugins: map[string]PluginConfig{"foo": {Cmd: "bar"}}}, cfg)
 }
 
@@ -706,19 +707,19 @@ func TestApplyDefaults(t *testing.T) {
 func TestGetMode(t *testing.T) {
 	c := &Config{}
 	m, o, err := c.GetMode()
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, iohelpers.NormalizeFileMode(0), m)
 	assert.False(t, o)
 
 	c = &Config{OutMode: "755"}
 	m, o, err = c.GetMode()
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, iohelpers.NormalizeFileMode(0o755), m)
 	assert.True(t, o)
 
 	c = &Config{OutMode: "0755"}
 	m, o, err = c.GetMode()
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, iohelpers.NormalizeFileMode(0o755), m)
 	assert.True(t, o)
 
@@ -741,7 +742,7 @@ func TestParseHeaderArgs(t *testing.T) {
 		},
 	}
 	parsed, err := parseHeaderArgs(args)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, expected, parsed)
 
 	_, err = parseHeaderArgs([]string{"foo"})
@@ -767,7 +768,7 @@ func TestParseHeaderArgs(t *testing.T) {
 		},
 	}
 	parsed, err = parseHeaderArgs(args)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, expected, parsed)
 }
 
@@ -779,22 +780,22 @@ func TestParseSourceURL(t *testing.T) {
 		RawQuery: "bar",
 	}
 	u, err := ParseSourceURL("http://example.com/foo.json?bar")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.EqualValues(t, expected, u)
 
 	expected = &url.URL{Scheme: "stdin"}
 	u, err = ParseSourceURL("-")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.EqualValues(t, expected, u)
 
 	wd, err := os.Getwd()
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	expected = &url.URL{
 		Scheme: "file",
 		Path:   path.Join(filepath.ToSlash(wd), "foo/bar.json"),
 	}
 	u, err = ParseSourceURL("./foo/bar.json")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.EqualValues(t, expected, u)
 }
 
@@ -808,7 +809,7 @@ func TestAbsFileURL(t *testing.T) {
 		Path:   "/tmp/foo",
 	}
 	u, err := absFileURL("/tmp/foo")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.EqualValues(t, expected, u)
 
 	expected = &url.URL{
@@ -817,7 +818,7 @@ func TestAbsFileURL(t *testing.T) {
 		Path:   cwd + "/tmp/foo",
 	}
 	u, err = absFileURL("tmp/foo")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.EqualValues(t, expected, u)
 
 	expected = &url.URL{
@@ -827,13 +828,13 @@ func TestAbsFileURL(t *testing.T) {
 		RawQuery: "q=p",
 	}
 	u, err = absFileURL("tmp/foo?q=p")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.EqualValues(t, expected, u)
 }
 
 func TestParseDatasourceArgNoAlias(t *testing.T) {
 	alias, ds, err := parseDatasourceArg("foo.json")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, "foo", alias)
 	assert.Equal(t, "file", ds.URL.Scheme)
 
@@ -846,13 +847,13 @@ func TestParseDatasourceArgNoAlias(t *testing.T) {
 
 func TestParseDatasourceArgWithAlias(t *testing.T) {
 	alias, ds, err := parseDatasourceArg("data=foo.json")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, "data", alias)
 	assert.Equal(t, "file", ds.URL.Scheme)
 	assert.True(t, ds.URL.IsAbs())
 
 	alias, ds, err = parseDatasourceArg("data=/otherdir/foo.json")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, "data", alias)
 	assert.Equal(t, "file", ds.URL.Scheme)
 	assert.True(t, ds.URL.IsAbs())
@@ -860,28 +861,28 @@ func TestParseDatasourceArgWithAlias(t *testing.T) {
 
 	if runtime.GOOS == "windows" {
 		alias, ds, err = parseDatasourceArg("data=foo.json")
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.Equal(t, "data", alias)
 		assert.Equal(t, "file", ds.URL.Scheme)
 		assert.True(t, ds.URL.IsAbs())
 		assert.Equalf(t, byte(':'), ds.URL.Path[1], "Path was %s", ds.URL.Path)
 
 		alias, ds, err = parseDatasourceArg(`data=\otherdir\foo.json`)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.Equal(t, "data", alias)
 		assert.Equal(t, "file", ds.URL.Scheme)
 		assert.True(t, ds.URL.IsAbs())
 		assert.Equal(t, `/otherdir/foo.json`, ds.URL.Path)
 
 		alias, ds, err = parseDatasourceArg("data=C:\\windowsdir\\foo.json")
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.Equal(t, "data", alias)
 		assert.Equal(t, "file", ds.URL.Scheme)
 		assert.True(t, ds.URL.IsAbs())
 		assert.Equal(t, "C:/windowsdir/foo.json", ds.URL.Path)
 
 		alias, ds, err = parseDatasourceArg("data=\\\\somehost\\share\\foo.json")
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.Equal(t, "data", alias)
 		assert.Equal(t, "file", ds.URL.Scheme)
 		assert.Equal(t, "somehost", ds.URL.Host)
@@ -890,14 +891,14 @@ func TestParseDatasourceArgWithAlias(t *testing.T) {
 	}
 
 	alias, ds, err = parseDatasourceArg("data=sftp://example.com/blahblah/foo.json")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, "data", alias)
 	assert.Equal(t, "sftp", ds.URL.Scheme)
 	assert.True(t, ds.URL.IsAbs())
 	assert.Equal(t, "/blahblah/foo.json", ds.URL.Path)
 
 	alias, ds, err = parseDatasourceArg("merged=merge:./foo.yaml|http://example.com/bar.json%3Ffoo=bar")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, "merged", alias)
 	assert.Equal(t, "merge", ds.URL.Scheme)
 	assert.Equal(t, "./foo.yaml|http://example.com/bar.json%3Ffoo=bar", ds.URL.Opaque)
@@ -907,7 +908,7 @@ func TestPluginConfig_UnmarshalYAML(t *testing.T) {
 	in := `foo`
 	out := PluginConfig{}
 	err := yaml.Unmarshal([]byte(in), &out)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.EqualValues(t, PluginConfig{Cmd: "foo"}, out)
 
 	in = `[foo, bar]`
@@ -918,7 +919,7 @@ func TestPluginConfig_UnmarshalYAML(t *testing.T) {
 	in = `cmd: foo`
 	out = PluginConfig{}
 	err = yaml.Unmarshal([]byte(in), &out)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.EqualValues(t, PluginConfig{Cmd: "foo"}, out)
 
 	in = `cmd: foo
@@ -927,7 +928,7 @@ pipe: true
 `
 	out = PluginConfig{}
 	err = yaml.Unmarshal([]byte(in), &out)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.EqualValues(t, PluginConfig{
 		Cmd:     "foo",
 		Timeout: time.Duration(10) * time.Millisecond,

@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func must(r interface{}, err error) interface{} {
@@ -32,6 +33,6 @@ func TestLookupCNAME(t *testing.T) {
 
 func TestLookupSRV(t *testing.T) {
 	srv, err := LookupSRV("_sip._udp.sip.voice.google.com")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, uint16(5060), srv.Port)
 }
