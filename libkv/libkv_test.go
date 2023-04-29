@@ -6,6 +6,7 @@ import (
 
 	"github.com/docker/libkv/store"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestRead(t *testing.T) {
@@ -15,7 +16,7 @@ func TestRead(t *testing.T) {
 	kv := &LibKV{s}
 	_, err := kv.Read("foo")
 
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	s = &FakeStore{err: errors.New("fail")}
 	kv = &LibKV{s}

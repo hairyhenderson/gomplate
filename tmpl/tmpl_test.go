@@ -5,6 +5,7 @@ import (
 	"text/template"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestInline(t *testing.T) {
@@ -22,7 +23,7 @@ func TestInline(t *testing.T) {
 	})
 	for _, d := range testdata {
 		out, err := tmpl.Inline(d)
-		assert.NoError(t, err, d)
+		require.NoError(t, err, d)
 		assert.Equal(t, "hello world", out)
 	}
 }
@@ -31,7 +32,7 @@ func TestParseArgs(t *testing.T) {
 	defaultCtx := map[string]string{"hello": "world"}
 	tmpl := New(nil, defaultCtx, "")
 	name, in, ctx, err := tmpl.parseArgs("foo")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, "<inline>", name)
 	assert.Equal(t, "foo", in)
 	assert.Equal(t, defaultCtx, ctx)
@@ -49,20 +50,20 @@ func TestParseArgs(t *testing.T) {
 	assert.Error(t, err)
 
 	name, in, ctx, err = tmpl.parseArgs("foo", "bar")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, "foo", name)
 	assert.Equal(t, "bar", in)
 	assert.Equal(t, defaultCtx, ctx)
 
 	c := map[string]string{"one": "two"}
 	name, in, ctx, err = tmpl.parseArgs("foo", c)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, "<inline>", name)
 	assert.Equal(t, "foo", in)
 	assert.Equal(t, c, ctx)
 
 	name, in, ctx, err = tmpl.parseArgs("foo", "bar", c)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, "foo", name)
 	assert.Equal(t, "bar", in)
 	assert.Equal(t, c, ctx)
@@ -78,11 +79,11 @@ func TestExec(t *testing.T) {
 	}
 
 	out, err := tmpl.Exec("T1")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, "hello, map[foo:bar]", out)
 
 	out, err = tmpl.Exec("T1", "world")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, "hello, world", out)
 
 	_, err = tmpl.Exec("bogus")
@@ -93,12 +94,12 @@ func TestPath(t *testing.T) {
 	tmpl := New(nil, nil, "")
 
 	p, err := tmpl.Path()
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, "", p)
 
 	tmpl = New(nil, nil, "foo")
 	p, err = tmpl.Path()
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, "foo", p)
 }
 
@@ -106,16 +107,16 @@ func TestPathDir(t *testing.T) {
 	tmpl := New(nil, nil, "")
 
 	p, err := tmpl.PathDir()
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, "", p)
 
 	tmpl = New(nil, nil, "foo")
 	p, err = tmpl.PathDir()
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, ".", p)
 
 	tmpl = New(nil, nil, "foo/bar")
 	p, err = tmpl.PathDir()
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, "foo", p)
 }

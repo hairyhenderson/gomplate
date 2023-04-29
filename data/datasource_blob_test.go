@@ -12,6 +12,7 @@ import (
 	"github.com/johannesboyne/gofakes3/backend/s3mem"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func setupTestBucket(t *testing.T) (*httptest.Server, *url.URL) {
@@ -20,26 +21,26 @@ func setupTestBucket(t *testing.T) (*httptest.Server, *url.URL) {
 	ts := httptest.NewServer(faker.Server())
 
 	err := backend.CreateBucket("mybucket")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	c := "hello"
 	err = putFile(backend, "mybucket", "file1", "text/plain", c)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	c = `{"value": "goodbye world"}`
 	err = putFile(backend, "mybucket", "file2", "application/json", c)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	c = `value: what a world`
 	err = putFile(backend, "mybucket", "file3", "application/yaml", c)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	c = `value: out of this world`
 	err = putFile(backend, "mybucket", "dir1/file1", "application/yaml", c)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	c = `value: foo`
 	err = putFile(backend, "mybucket", "dir1/file2", "application/yaml", c)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	u, _ := url.Parse(ts.URL)
 	return ts, u
@@ -67,12 +68,12 @@ func TestReadBlob(t *testing.T) {
 	defer os.Unsetenv("AWS_ANON")
 
 	d, err := NewData([]string{"-d", "data=s3://mybucket/file1?region=us-east-1&disableSSL=true&s3ForcePathStyle=true&type=text/plain&endpoint=" + u.Host}, nil)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	var expected interface{}
 	expected = "hello"
 	out, err := d.Datasource("data")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, expected, out)
 
 	os.Unsetenv("AWS_ANON")
@@ -85,27 +86,27 @@ func TestReadBlob(t *testing.T) {
 	defer os.Unsetenv("AWS_S3_ENDPOINT")
 
 	d, err = NewData([]string{"-d", "data=s3://mybucket/file2?region=us-east-1&disableSSL=true&s3ForcePathStyle=true"}, nil)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	expected = map[string]interface{}{"value": "goodbye world"}
 	out, err = d.Datasource("data")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, expected, out)
 
 	d, err = NewData([]string{"-d", "data=s3://mybucket/?region=us-east-1&disableSSL=true&s3ForcePathStyle=true"}, nil)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	expected = []interface{}{"dir1/", "file1", "file2", "file3"}
 	out, err = d.Datasource("data")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.EqualValues(t, expected, out)
 
 	d, err = NewData([]string{"-d", "data=s3://mybucket/dir1/?region=us-east-1&disableSSL=true&s3ForcePathStyle=true"}, nil)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	expected = []interface{}{"file1", "file2"}
 	out, err = d.Datasource("data")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.EqualValues(t, expected, out)
 }
 

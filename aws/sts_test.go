@@ -8,6 +8,7 @@ import (
 
 	"github.com/aws/aws-sdk-go/service/sts"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestNewSTS(t *testing.T) {
@@ -22,7 +23,7 @@ func TestNewSTS(t *testing.T) {
 	}
 
 	out, err := s.getCallerID()
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.EqualValues(t, &sts.GetCallerIdentityOutput{
 		Account: aws.String("acct"),
 		Arn:     aws.String("arn"),
@@ -44,7 +45,7 @@ func TestNewSTS(t *testing.T) {
 	defer func() { identifierClient = oldIDClient }()
 
 	out, err = s.getCallerID()
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.EqualValues(t, &sts.GetCallerIdentityOutput{
 		Account: aws.String("acct"),
 		Arn:     aws.String("arn"),
@@ -68,7 +69,7 @@ func TestGetCallerIDErrors(t *testing.T) {
 	}
 
 	out, err := s.Account()
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, "acct", out)
 
 	s = NewSTS(ClientOptions{})

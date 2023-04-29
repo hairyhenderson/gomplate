@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestBool(t *testing.T) {
@@ -60,7 +61,7 @@ func TestJoin(t *testing.T) {
 	}
 	for _, d := range testdata {
 		out, err := Join(d.in, d.sep)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.Equal(t, d.out, out)
 	}
 }

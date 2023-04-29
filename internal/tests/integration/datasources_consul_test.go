@@ -8,7 +8,6 @@ import (
 	"testing"
 
 	vaultapi "github.com/hashicorp/vault/api"
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"gotest.tools/v3/fs"
 	"gotest.tools/v3/icmd"
@@ -62,7 +61,7 @@ func setupDatasourcesConsulTest(t *testing.T) (string, *vaultClient) {
 	consulResult := icmd.StartCmd(consul)
 	t.Cleanup(func() {
 		err := consulResult.Cmd.Process.Kill()
-		assert.NoError(t, err)
+		require.NoError(t, err)
 
 		consulResult.Cmd.Wait()
 

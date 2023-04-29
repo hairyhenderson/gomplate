@@ -9,6 +9,7 @@ import (
 	"github.com/hairyhenderson/gomplate/v4/data"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestEnvMapifiesEnvironment(t *testing.T) {
@@ -20,14 +21,14 @@ func TestEnvMapifiesEnvironment(t *testing.T) {
 func TestEnvGetsUpdatedEnvironment(t *testing.T) {
 	c := &tmplctx{}
 	assert.Empty(t, c.Env()["FOO"])
-	assert.NoError(t, os.Setenv("FOO", "foo"))
+	require.NoError(t, os.Setenv("FOO", "foo"))
 	assert.Equal(t, c.Env()["FOO"], "foo")
 }
 
 func TestCreateContext(t *testing.T) {
 	ctx := context.Background()
 	c, err := createTmplContext(ctx, nil, nil)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Empty(t, c)
 
 	fooURL := "env:///foo?type=application/yaml"
@@ -44,7 +45,7 @@ func TestCreateContext(t *testing.T) {
 	os.Setenv("foo", "foo: bar")
 	defer os.Unsetenv("foo")
 	c, err = createTmplContext(ctx, []string{"foo"}, d)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.IsType(t, &tmplctx{}, c)
 	tctx := c.(*tmplctx)
 	ds := ((*tctx)["foo"]).(map[string]interface{})
@@ -53,7 +54,7 @@ func TestCreateContext(t *testing.T) {
 	os.Setenv("bar", "bar: baz")
 	defer os.Unsetenv("bar")
 	c, err = createTmplContext(ctx, []string{"."}, d)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.IsType(t, map[string]interface{}{}, c)
 	ds = c.(map[string]interface{})
 	assert.Equal(t, "baz", ds["bar"])

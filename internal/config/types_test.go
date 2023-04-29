@@ -6,6 +6,7 @@ import (
 
 	"github.com/hairyhenderson/yaml"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestTemplates_UnmarshalYAML(t *testing.T) {
@@ -23,7 +24,7 @@ remote:
     Accept: [text/plain, text/template]`
 	out := Templates{}
 	err := yaml.Unmarshal([]byte(in), &out)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.EqualValues(t, Templates{
 		"t":            {URL: mustURL("foo/bar/helloworld.tmpl")},
 		"templatedir":  {URL: mustURL("templatedir/")},
@@ -43,7 +44,7 @@ remote:
 - remote=https://example.com/foo/bar/helloworld.tmpl`
 	out = Templates{}
 	err = yaml.Unmarshal([]byte(in), &out)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.EqualValues(t, Templates{
 		"t":            {URL: mustURL("foo/bar/helloworld.tmpl")},
 		"templatedir/": {URL: mustURL("templatedir/")},
@@ -81,7 +82,7 @@ func TestParseTemplateArg(t *testing.T) {
 
 	for _, d := range data {
 		alias, ds, err := parseTemplateArg(d.in)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.Equal(t, d.alias, alias)
 		assert.EqualValues(t, d.ds, ds)
 	}

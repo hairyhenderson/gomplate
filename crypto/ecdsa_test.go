@@ -10,6 +10,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func genECDSAPrivKey() (*ecdsa.PrivateKey, string) {
@@ -34,28 +35,28 @@ func deriveECPubkey(priv *ecdsa.PrivateKey) string {
 
 func TestECDSAGenerateKey(t *testing.T) {
 	key, err := ECDSAGenerateKey(elliptic.P224())
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.True(t, strings.HasPrefix(string(key),
 		"-----BEGIN EC PRIVATE KEY-----"))
 	assert.True(t, strings.HasSuffix(string(key),
 		"-----END EC PRIVATE KEY-----\n"))
 
 	key, err = ECDSAGenerateKey(elliptic.P256())
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.True(t, strings.HasPrefix(string(key),
 		"-----BEGIN EC PRIVATE KEY-----"))
 	assert.True(t, strings.HasSuffix(string(key),
 		"-----END EC PRIVATE KEY-----\n"))
 
 	key, err = ECDSAGenerateKey(elliptic.P384())
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.True(t, strings.HasPrefix(string(key),
 		"-----BEGIN EC PRIVATE KEY-----"))
 	assert.True(t, strings.HasSuffix(string(key),
 		"-----END EC PRIVATE KEY-----\n"))
 
 	key, err = ECDSAGenerateKey(elliptic.P521())
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.True(t, strings.HasPrefix(string(key),
 		"-----BEGIN EC PRIVATE KEY-----"))
 	assert.True(t, strings.HasSuffix(string(key),
@@ -74,6 +75,6 @@ func TestECDSADerivePublicKey(t *testing.T) {
 	expected := deriveECPubkey(priv)
 
 	actual, err := ECDSADerivePublicKey([]byte(privKey))
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, expected, string(actual))
 }

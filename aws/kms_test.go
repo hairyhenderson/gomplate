@@ -7,6 +7,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/kms"
 	b64 "github.com/hairyhenderson/gomplate/v4/base64"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 // MockKMS is a mock KMSAPI implementation
@@ -34,7 +35,7 @@ func TestEncrypt(t *testing.T) {
 
 	// Success
 	resp, err := kmsClient.Encrypt("dummykey", "plaintextvalue")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	expectedResp, _ := b64.Encode([]byte("PLAINTEXTVALUE"))
 	assert.EqualValues(t, expectedResp, resp)
 }
@@ -47,6 +48,6 @@ func TestDecrypt(t *testing.T) {
 
 	// Success
 	resp, err := kmsClient.Decrypt(encodedCiphertextBlob)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.EqualValues(t, "ciphervalue", resp)
 }

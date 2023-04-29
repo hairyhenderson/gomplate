@@ -4,11 +4,12 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestFind(t *testing.T) {
 	f, err := Find(`[a-z]+`, `foo bar baz`)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, "foo", f)
 
 	_, err = Find(`[a-`, "")
@@ -33,7 +34,7 @@ func TestFindAll(t *testing.T) {
 
 	for _, d := range testdata {
 		f, err := FindAll(d.re, d.n, d.in)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.EqualValues(t, d.expected, f)
 	}
 }
@@ -80,7 +81,7 @@ func TestReplaceLiteral(t *testing.T) {
 	}
 	for _, d := range testdata {
 		r, err := ReplaceLiteral(d.expression, d.replacement, d.input)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.Equal(t, d.expected, r)
 	}
 }
@@ -103,7 +104,7 @@ func TestSplit(t *testing.T) {
 
 	for _, d := range testdata {
 		f, err := Split(d.re, d.n, d.in)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.EqualValues(t, d.expected, f)
 	}
 }

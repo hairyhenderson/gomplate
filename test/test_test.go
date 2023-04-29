@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestAssert(t *testing.T) {
@@ -13,7 +14,7 @@ func TestAssert(t *testing.T) {
 	assert.EqualError(t, err, "assertion failed: a message")
 
 	_, err = Assert(true, "")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 func TestFail(t *testing.T) {
@@ -38,14 +39,14 @@ func TestRequired(t *testing.T) {
 	assert.Nil(t, v)
 
 	v, err = Required("", 0)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, v, 0)
 
 	v, err = Required("", false)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, v, false)
 
 	v, err = Required("", map[string]string{})
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.NotNil(t, v)
 }

@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestJQ(t *testing.T) {
@@ -47,26 +48,26 @@ func TestJQ(t *testing.T) {
 		},
 	}
 	out, err := JQ(ctx, ".store.bicycle.color", in)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, "red", out)
 
 	out, err = JQ(ctx, ".store.bicycle.price", in)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, 19.95, out)
 
 	out, err = JQ(ctx, ".store.bogus", in)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Nil(t, out)
 
 	_, err = JQ(ctx, "{.store.unclosed", in)
 	assert.Error(t, err)
 
 	out, err = JQ(ctx, ".store", in)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.EqualValues(t, in["store"], out)
 
 	out, err = JQ(ctx, ".store.book[].author", in)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Len(t, out, 4)
 	assert.Contains(t, out, "Nigel Rees")
 	assert.Contains(t, out, "Evelyn Waugh")
@@ -74,7 +75,7 @@ func TestJQ(t *testing.T) {
 	assert.Contains(t, out, "J. R. R. Tolkien")
 
 	out, err = JQ(ctx, ".store.book[]|select(.price < 10.0 )", in)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	expected := []interface{}{
 		map[string]interface{}{
 			"category": "reference",
@@ -114,7 +115,7 @@ func TestJQ(t *testing.T) {
 		},
 	}
 	out, err = JQ(ctx, `tostream|select((.[0]|index("foo")) and (.[0][-1]!="foo") and (.[1])) as $s|($s[0]|index("foo")+1) as $ind|($ind|truncate_stream($s)) as $newstream|$newstream|reduce . as [$p,$v] ({};setpath($p;$v))|add`, in)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Len(t, out, 3)
 	assert.Contains(t, out, map[string]interface{}{"aaaa": map[string]interface{}{"bar": 1234}})
 	assert.Contains(t, out, true)
@@ -140,11 +141,11 @@ func TestJQ_typeConversions(t *testing.T) {
 	}
 
 	out, err := JQ(ctx, ".Bicycle.Color", structIn)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, "red", out)
 
 	out, err = JQ(ctx, ".safe", structIn)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Nil(t, out)
 
 	_, err = JQ(ctx, ".*", structIn)
@@ -155,55 +156,55 @@ func TestJQ_typeConversions(t *testing.T) {
 	type mapType map[string]interface{}
 
 	out, err = JQ(ctx, ".foo", mapType{"foo": "bar"})
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, "bar", out)
 
 	// sometimes it'll be a pointer...
 	out, err = JQ(ctx, ".foo", &mapType{"foo": "bar"})
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, "bar", out)
 
 	// underlying slice type
 	type sliceType []interface{}
 
 	out, err = JQ(ctx, ".[1]", sliceType{"foo", "bar"})
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, "bar", out)
 
 	out, err = JQ(ctx, ".[2]", &sliceType{"foo", "bar", "baz"})
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, "baz", out)
 
 	// other basic types
 	out, err = JQ(ctx, ".", []byte("hello"))
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.EqualValues(t, "hello", out)
 
 	out, err = JQ(ctx, ".", "hello")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.EqualValues(t, "hello", out)
 
 	out, err = JQ(ctx, ".", 1234)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.EqualValues(t, 1234, out)
 
 	out, err = JQ(ctx, ".", true)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.EqualValues(t, true, out)
 
 	out, err = JQ(ctx, ".", nil)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Nil(t, out)
 
 	// underlying basic types
 	type intType int
 	out, err = JQ(ctx, ".", intType(1234))
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.EqualValues(t, 1234, out)
 
 	type byteArrayType []byte
 	out, err = JQ(ctx, ".", byteArrayType("hello"))
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.EqualValues(t, "hello", out)
 }
 
@@ -230,7 +231,7 @@ func TestJQConvertType_passthroughTypes(t *testing.T) {
 
 	for _, d := range testdata {
 		out, err := jqConvertType(d)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.Equal(t, d, out)
 	}
 }

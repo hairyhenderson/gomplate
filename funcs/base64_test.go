@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestCreateBase64Funcs(t *testing.T) {
@@ -45,7 +46,7 @@ func TestBase64DecodeBytes(t *testing.T) {
 
 	bf := &Base64Funcs{}
 	out, err := bf.DecodeBytes("Zm9vYmFy")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, "foobar", string(out))
 }
 

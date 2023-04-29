@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestAllWhitespace(t *testing.T) {
@@ -47,10 +48,10 @@ func TestEmptySkipper(t *testing.T) {
 
 		assert.True(t, ok)
 		n, err := f.Write(d.in)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.Equal(t, len(d.in), n)
 		err = f.Close()
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		if d.empty {
 			assert.Nil(t, f.w)
 			assert.False(t, opened)
@@ -104,10 +105,10 @@ func TestSameSkipper(t *testing.T) {
 			assert.True(t, ok)
 
 			n, err := f.Write(d.in)
-			assert.NoError(t, err)
+			require.NoError(t, err)
 			assert.Equal(t, len(d.in), n)
 			err = f.Close()
-			assert.NoError(t, err)
+			require.NoError(t, err)
 			if d.same {
 				assert.Nil(t, f.w)
 				assert.False(t, opened)
@@ -136,12 +137,12 @@ func TestLazyWriteCloser(t *testing.T) {
 
 	p := []byte("hello world")
 	n, err := l.Write(p)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.True(t, opened)
 	assert.Equal(t, 11, n)
 
 	err = l.Close()
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.True(t, w.closed)
 
 	// test error propagation

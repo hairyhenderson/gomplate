@@ -7,6 +7,7 @@ import (
 
 	"github.com/hairyhenderson/gomplate/v4/vault"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestReadVault(t *testing.T) {
@@ -24,20 +25,20 @@ func TestReadVault(t *testing.T) {
 	}
 
 	r, err := readVault(ctx, source)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, []byte(expected), r)
 
 	r, err = readVault(ctx, source, "bar")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, []byte(expected), r)
 
 	r, err = readVault(ctx, source, "?param=value")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, []byte(expected), r)
 
 	source.URL, _ = url.Parse("vault:///secret/foo?param1=value1&param2=value2")
 	r, err = readVault(ctx, source)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, []byte(expected), r)
 
 	expected = "[\"one\",\"two\"]\n"
@@ -45,6 +46,6 @@ func TestReadVault(t *testing.T) {
 	defer server.Close()
 	source.URL, _ = url.Parse("vault:///secret/foo/")
 	r, err = readVault(ctx, source)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, []byte(expected), r)
 }

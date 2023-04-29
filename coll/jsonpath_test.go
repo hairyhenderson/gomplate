@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 type m = map[string]interface{}
@@ -47,11 +48,11 @@ func TestJSONPath(t *testing.T) {
 		},
 	}
 	out, err := JSONPath(".store.bicycle.color", in)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, "red", out)
 
 	out, err = JSONPath(".store.bicycle.price", in)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, 19.95, out)
 
 	_, err = JSONPath(".store.bogus", in)
@@ -61,11 +62,11 @@ func TestJSONPath(t *testing.T) {
 	assert.Error(t, err)
 
 	out, err = JSONPath(".store", in)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.EqualValues(t, in["store"], out)
 
 	out, err = JSONPath("$.store.book[*].author", in)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Len(t, out, 4)
 	assert.Contains(t, out, "Nigel Rees")
 	assert.Contains(t, out, "Evelyn Waugh")
@@ -73,7 +74,7 @@ func TestJSONPath(t *testing.T) {
 	assert.Contains(t, out, "J. R. R. Tolkien")
 
 	out, err = JSONPath("$..book[?( @.price < 10.0 )]", in)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	expected := ar{
 		m{
 			"category": "reference",
@@ -113,7 +114,7 @@ func TestJSONPath(t *testing.T) {
 		},
 	}
 	out, err = JSONPath("..foo.*", in)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Len(t, out, 3)
 	assert.Contains(t, out, m{"aaaa": m{"bar": 1234}})
 	assert.Contains(t, out, true)
@@ -135,7 +136,7 @@ func TestJSONPath(t *testing.T) {
 	}
 
 	out, err = JSONPath(".Bicycle.Color", structIn)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, "red", out)
 
 	_, err = JSONPath(".safe", structIn)

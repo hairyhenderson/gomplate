@@ -8,6 +8,7 @@ import (
 
 	"github.com/spf13/afero"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestCreateFileFuncs(t *testing.T) {
@@ -75,6 +76,6 @@ func TestFileWalk(t *testing.T) {
 
 	actualPaths, err := ff.Walk(string(filepath.Separator) + "tmp")
 
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, expectedPaths, actualPaths)
 }

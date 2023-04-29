@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestCreateTestFuncs(t *testing.T) {
@@ -33,10 +34,10 @@ func TestAssert(t *testing.T) {
 	assert.Error(t, err)
 
 	_, err = f.Assert(true)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	_, err = f.Assert("foo", true)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	_, err = f.Assert("foo", "false")
 	assert.EqualError(t, err, "assertion failed: foo")
@@ -79,11 +80,11 @@ func TestRequired(t *testing.T) {
 	assert.Nil(t, v)
 
 	v, err = f.Required(0)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, v, 0)
 
 	v, err = f.Required("foo")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, v, "foo")
 }
 

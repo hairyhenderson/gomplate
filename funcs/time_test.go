@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestCreateTimeFuncs(t *testing.T) {
@@ -77,5 +78,5 @@ func TestParseNum(t *testing.T) {
 	i, f, err = parseNum(nil)
 	assert.Zero(t, i)
 	assert.Zero(t, f)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }

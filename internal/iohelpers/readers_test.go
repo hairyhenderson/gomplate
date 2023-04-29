@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestLazyReadCloser(t *testing.T) {
@@ -24,13 +25,13 @@ func TestLazyReadCloser(t *testing.T) {
 
 	p := make([]byte, 5)
 	n, err := l.Read(p)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.True(t, opened)
 	assert.Equal(t, r, l.r)
 	assert.Equal(t, 5, n)
 
 	err = l.Close()
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.True(t, r.closed)
 
 	// test error propagation

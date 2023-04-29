@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func mustParseURL(in string) *url.URL {
@@ -26,30 +27,30 @@ func TestReadEnv(t *testing.T) {
 	source := &Source{Alias: "foo", URL: mustParseURL("env:HELLO_WORLD")}
 
 	actual, err := readEnv(ctx, source)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, content, actual)
 
 	source = &Source{Alias: "foo", URL: mustParseURL("env:/HELLO_WORLD")}
 
 	actual, err = readEnv(ctx, source)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, content, actual)
 
 	source = &Source{Alias: "foo", URL: mustParseURL("env:///HELLO_WORLD")}
 
 	actual, err = readEnv(ctx, source)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, content, actual)
 
 	source = &Source{Alias: "foo", URL: mustParseURL("env:HELLO_WORLD?foo=bar")}
 
 	actual, err = readEnv(ctx, source)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, content, actual)
 
 	source = &Source{Alias: "foo", URL: mustParseURL("env:///HELLO_WORLD?foo=bar")}
 
 	actual, err = readEnv(ctx, source)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, content, actual)
 }

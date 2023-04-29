@@ -8,6 +8,7 @@ import (
 
 	"github.com/spf13/afero"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"gotest.tools/v3/fs"
 )
 
@@ -71,7 +72,7 @@ func TestGomplateignore_Simple(t *testing.T) {
 		fs.WithFile("empty.log", ""),
 		fs.WithFile("rain.txt", ""))
 
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, []string{"rain.txt"}, files)
 }
 
@@ -99,7 +100,7 @@ f[o]o/bar
 		),
 	)
 
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, fromSlashes(
 		"foo/bar/tool/lex.txt", "foo/tar/2.txt"), files)
 }
@@ -114,7 +115,7 @@ func TestGomplateignore_Root(t *testing.T) {
 		fs.WithFile("1.txt", ""),
 	)
 
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, fromSlashes(
 		"sub/1.txt", "sub/2.txt"), files)
 }
@@ -136,7 +137,7 @@ en/e3.txt
 		),
 	)
 
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, fromSlashes(
 		"!", "e2.txt", "en/e1.txt", "en/e2.txt"), files)
 }
@@ -155,7 +156,7 @@ func TestGomplateignore_Nested(t *testing.T) {
 		fs.WithFile("1.txt", ""),
 	)
 
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, fromSlashes(".gomplateignore", "1.txt",
 		"inner/.gomplateignore",
 		"inner/inner2/.gomplateignore",
@@ -181,7 +182,7 @@ world.txt`,
 		fs.WithFile("world.txt", ""),
 	)
 
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, fromSlashes(
 		"aa/a1/a2/hello.txt", "aa/a1/hello.txt",
 		"aa/hello.txt", "bb/hello.txt", "hello.txt"), files)
@@ -200,7 +201,7 @@ loss.txt
 			fs.WithFile("bare.txt", "")),
 	)
 
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, fromSlashes(
 		"foo/bare.txt", "loss.txt/2.log"), files)
 }
@@ -220,7 +221,7 @@ func TestGomplateignore_LeadingSpace(t *testing.T) {
 		fs.WithFile("  what.txt", ""),
 	)
 
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, fromSlashes(
 		"inner/  dart.log", "inner/  what.txt"), files)
 }
@@ -249,7 +250,7 @@ func TestGomplateignore_WithExcludes(t *testing.T) {
 		fs.WithFile("crash.bin", ""),
 	)
 
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, fromSlashes(
 		"logs/archive.zip", "manifest.json", "rules/index.csv",
 		"sprites/demon.xml", "sprites/human.csv"), files)
@@ -274,6 +275,6 @@ func TestGomplateignore_WithIncludes(t *testing.T) {
 		fs.WithFile("crash.bin", ""),
 	)
 
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, fromSlashes("rules/index.csv"), files)
 }

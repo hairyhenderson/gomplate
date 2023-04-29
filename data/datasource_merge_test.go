@@ -10,6 +10,7 @@ import (
 	"github.com/spf13/afero"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestReadMerge(t *testing.T) {
@@ -59,17 +60,17 @@ func TestReadMerge(t *testing.T) {
 	}
 
 	actual, err := d.readMerge(ctx, source)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, mergedContent, string(actual))
 
 	source.URL = mustParseURL("merge:bar|baz")
 	actual, err = d.readMerge(ctx, source)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, mergedContent, string(actual))
 
 	source.URL = mustParseURL("merge:./jsonfile.json|baz")
 	actual, err = d.readMerge(ctx, source)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, mergedContent, string(actual))
 
 	source.URL = mustParseURL("merge:file:///tmp/jsonfile.json")
@@ -100,7 +101,7 @@ func TestMergeData(t *testing.T) {
 		"z": "def",
 	}
 	out, err := mergeData([]map[string]interface{}{def})
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, "f: true\nt: false\nz: def\n", string(out))
 
 	over := map[string]interface{}{
@@ -109,7 +110,7 @@ func TestMergeData(t *testing.T) {
 		"z": "over",
 	}
 	out, err = mergeData([]map[string]interface{}{over, def})
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, "f: false\nt: true\nz: over\n", string(out))
 
 	over = map[string]interface{}{
@@ -121,14 +122,14 @@ func TestMergeData(t *testing.T) {
 		},
 	}
 	out, err = mergeData([]map[string]interface{}{over, def})
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, "f: false\nm:\n  a: aaa\nt: true\nz: over\n", string(out))
 
 	uber := map[string]interface{}{
 		"z": "über",
 	}
 	out, err = mergeData([]map[string]interface{}{uber, over, def})
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, "f: false\nm:\n  a: aaa\nt: true\nz: über\n", string(out))
 
 	uber = map[string]interface{}{
@@ -138,7 +139,7 @@ func TestMergeData(t *testing.T) {
 		},
 	}
 	out, err = mergeData([]map[string]interface{}{uber, over, def})
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, "f: false\nm: notamap\nt: true\nz:\n  b: bbb\n", string(out))
 
 	uber = map[string]interface{}{
@@ -147,6 +148,6 @@ func TestMergeData(t *testing.T) {
 		},
 	}
 	out, err = mergeData([]map[string]interface{}{uber, over, def})
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, "f: false\nm:\n  a: aaa\n  b: bbb\nt: true\nz: over\n", string(out))
 }

@@ -15,6 +15,7 @@ import (
 	"github.com/hairyhenderson/gomplate/v4/env"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func testTemplate(t *testing.T, tr *Renderer, tmpl string) string {
@@ -22,7 +23,7 @@ func testTemplate(t *testing.T, tr *Renderer, tmpl string) string {
 
 	var out bytes.Buffer
 	err := tr.Render(context.Background(), "testtemplate", tmpl, &out)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	return out.String()
 }
@@ -141,7 +142,7 @@ func TestRunTemplates(t *testing.T) {
 	buf := &bytes.Buffer{}
 	config := &Config{Input: "foo", OutputFiles: []string{"-"}, Out: buf}
 	err := RunTemplates(config)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, "foo", buf.String())
 	assert.Equal(t, 1, Metrics.TemplatesGathered)
 	assert.Equal(t, 1, Metrics.TemplatesProcessed)
@@ -151,7 +152,7 @@ func TestRunTemplates(t *testing.T) {
 func TestSimpleNamer(t *testing.T) {
 	n := simpleNamer("out/")
 	out, err := n(context.Background(), "file")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	expected := filepath.FromSlash("out/file")
 	assert.Equal(t, expected, out)
 }
@@ -167,13 +168,13 @@ func TestMappingNamer(t *testing.T) {
 	}
 	n := mappingNamer("out/{{ .in }}", tr)
 	out, err := n(ctx, "file")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	expected := filepath.FromSlash("out/file")
 	assert.Equal(t, expected, out)
 
 	n = mappingNamer("out/{{ foo }}{{ .in }}", tr)
 	out, err = n(ctx, "file")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	expected = filepath.FromSlash("out/foofile")
 	assert.Equal(t, expected, out)
 }

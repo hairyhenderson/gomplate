@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestSubnetBig(t *testing.T) {
@@ -87,7 +88,7 @@ func TestSubnetBig(t *testing.T) {
 			if testCase.err {
 				assert.Error(t, err)
 			} else {
-				assert.NoError(t, err)
+				require.NoError(t, err)
 				assert.Equal(t, testCase.out, subnet.String())
 			}
 		})
@@ -156,7 +157,7 @@ func TestHostBig(t *testing.T) {
 			if testCase.err {
 				assert.Error(t, err)
 			} else {
-				assert.NoError(t, err)
+				require.NoError(t, err)
 				assert.Equal(t, testCase.out, gotIP.String())
 			}
 		})

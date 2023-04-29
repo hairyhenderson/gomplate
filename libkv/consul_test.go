@@ -10,6 +10,7 @@ import (
 	"github.com/docker/libkv/store"
 	consulapi "github.com/hashicorp/consul/api"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestConsulURL(t *testing.T) {
@@ -19,34 +20,34 @@ func TestConsulURL(t *testing.T) {
 	u, _ := url.Parse("consul://")
 	expected := &url.URL{Host: "localhost:8500", Scheme: "https"}
 	actual, err := consulURL(u)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, expected, actual)
 
 	u, _ = url.Parse("consul+http://myconsul.server")
 	expected = &url.URL{Host: "myconsul.server", Scheme: "http"}
 	actual, err = consulURL(u)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, expected, actual)
 
 	os.Setenv("CONSUL_HTTP_SSL", "false")
 	u, _ = url.Parse("consul+https://myconsul.server:1234")
 	expected = &url.URL{Host: "myconsul.server:1234", Scheme: "https"}
 	actual, err = consulURL(u)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, expected, actual)
 
 	os.Unsetenv("CONSUL_HTTP_SSL")
 	u, _ = url.Parse("consul://myconsul.server:2345")
 	expected = &url.URL{Host: "myconsul.server:2345", Scheme: "http"}
 	actual, err = consulURL(u)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, expected, actual)
 
 	u, _ = url.Parse("consul://myconsul.server:3456/foo/bar/baz")
 
 	expected = &url.URL{Host: "myconsul.server:3456", Scheme: "http"}
 	actual, err = consulURL(u)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, expected, actual)
 
 	defer os.Unsetenv("CONSUL_HTTP_ADDR")
@@ -55,7 +56,7 @@ func TestConsulURL(t *testing.T) {
 	// given URL takes precedence over env var
 	expected = &url.URL{Host: "myconsul.server:3456", Scheme: "http"}
 	actual, err = consulURL(u)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, expected, actual)
 
 	u, _ = url.Parse("consul://")
@@ -66,14 +67,14 @@ func TestConsulURL(t *testing.T) {
 	// TLS enabled, HTTP_ADDR is set, URL has no host and ambiguous scheme
 	expected = &url.URL{Host: "foo:8500", Scheme: "https"}
 	actual, err = consulURL(u)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, expected, actual)
 
 	defer os.Unsetenv("CONSUL_HTTP_ADDR")
 	os.Setenv("CONSUL_HTTP_ADDR", "localhost:8501")
 	expected = &url.URL{Host: "localhost:8501", Scheme: "https"}
 	actual, err = consulURL(u)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, expected, actual)
 }
 
@@ -84,15 +85,15 @@ func TestConsulAddrFromEnv(t *testing.T) {
 	assert.Error(t, err)
 
 	addr, err := consulAddrFromEnv(in)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Empty(t, addr)
 
 	addr, err = consulAddrFromEnv("https://foo:8500")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, &url.URL{Scheme: "https", Host: "foo:8500"}, addr)
 
 	addr, err = consulAddrFromEnv("foo:8500")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, &url.URL{Host: "foo:8500"}, addr)
 }
 
@@ -132,7 +133,7 @@ func TestConsulConfig(t *testing.T) {
 	expectedConfig := &store.Config{}
 
 	actualConfig, err := consulConfig(false)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	assert.Equal(t, expectedConfig, actualConfig)
 
@@ -143,7 +144,7 @@ func TestConsulConfig(t *testing.T) {
 	}
 
 	actualConfig, err = consulConfig(false)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, expectedConfig, actualConfig)
 
 	os.Unsetenv("CONSUL_TIMEOUT")
@@ -152,7 +153,7 @@ func TestConsulConfig(t *testing.T) {
 	}
 
 	actualConfig, err = consulConfig(true)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.NotNil(t, actualConfig.TLS)
 	actualConfig.TLS = &tls.Config{MinVersion: tls.VersionTLS13}
 	assert.Equal(t, expectedConfig, actualConfig)
