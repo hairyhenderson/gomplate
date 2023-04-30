@@ -58,4 +58,11 @@ func TestDatasources_Merge(t *testing.T) {
 		"-i", `FOO is {{ .merged.FOO }}`,
 	).run()
 	assertSuccess(t, o, e, err, `FOO is 3`)
+
+	o, e, err = cmd(t,
+		"-c", "default="+tmpDir.Join("default.yml"),
+		"-i", `{{ defineDatasource "merged" "merge:`+srv.URL+`/foo.json|default" -}}
+{{ ds "merged" | toJSON }}`,
+	).run()
+	assertSuccess(t, o, e, err, `{"foo":"bar","isDefault":true,"isOverride":false,"other":true}`)
 }
