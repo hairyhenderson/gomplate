@@ -1,23 +1,22 @@
 package file
 
 import (
-	"os"
-	"path/filepath"
+	"io/fs"
 	"testing"
+	"testing/fstest"
 
-	"github.com/spf13/afero"
+	"github.com/hairyhenderson/gomplate/v4/internal/datafs"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	tfs "gotest.tools/v3/fs"
 )
 
 func TestRead(t *testing.T) {
-	origfs := fs
-	defer func() { fs = origfs }()
-	fs = afero.NewMemMapFs()
-	_ = fs.Mkdir("/tmp", 0777)
-	f, _ := fs.Create("/tmp/foo")
-	_, _ = f.Write([]byte("foo"))
+	oldFS := fsys
+	defer func() { fsys = oldFS }()
+	fsys = datafs.WrapWdFS(fstest.MapFS{
+		"tmp":     &fstest.MapFile{Mode: fs.ModeDir | 0o777},
+		"tmp/foo": &fstest.MapFile{Data: []byte("foo")},
+	})
 
 	actual, err := Read("/tmp/foo")
 	require.NoError(t, err)
@@ -28,15 +27,16 @@ func TestRead(t *testing.T) {
 }
 
 func TestReadDir(t *testing.T) {
-	origfs := fs
-	defer func() { fs = origfs }()
-	fs = afero.NewMemMapFs()
-	fs.Mkdir("/tmp", 0777)
-	fs.Create("/tmp/foo")
-	fs.Create("/tmp/bar")
-	fs.Create("/tmp/baz")
-	fs.Mkdir("/tmp/qux", 0777)
-	fs.Create("/tmp/qux/quux")
+	oldFS := fsys
+	defer func() { fsys = oldFS }()
+	fsys = datafs.WrapWdFS(fstest.MapFS{
+		"tmp":          &fstest.MapFile{Mode: fs.ModeDir | 0o777},
+		"tmp/foo":      &fstest.MapFile{Data: []byte("foo")},
+		"tmp/bar":      &fstest.MapFile{Data: []byte("bar")},
+		"tmp/baz":      &fstest.MapFile{Data: []byte("baz")},
+		"tmp/qux":      &fstest.MapFile{Mode: fs.ModeDir | 0o777},
+		"tmp/qux/quux": &fstest.MapFile{Data: []byte("quux")},
+	})
 
 	actual, err := ReadDir("/tmp")
 	require.NoError(t, err)
@@ -44,80 +44,4 @@ func TestReadDir(t *testing.T) {
 
 	_, err = ReadDir("/tmp/foo")
 	assert.Error(t, err)
-}
-
-func TestWrite(t *testing.T) {
-	oldwd, _ := os.Getwd()
-	defer os.Chdir(oldwd)
-
-	rootDir := tfs.NewDir(t, "gomplate-test")
-	defer rootDir.Remove()
-
-	newwd := rootDir.Join("the", "path", "we", "want")
-	badwd := rootDir.Join("some", "other", "dir")
-	fs.MkdirAll(newwd, 0755)
-	fs.MkdirAll(badwd, 0755)
-	newwd, _ = filepath.EvalSymlinks(newwd)
-	badwd, _ = filepath.EvalSymlinks(badwd)
-
-	err := os.Chdir(newwd)
-	require.NoError(t, err)
-
-	err = Write("/foo", []byte("Hello world"))
-	assert.Error(t, err)
-
-	rel, err := filepath.Rel(newwd, badwd)
-	require.NoError(t, err)
-	err = Write(rel, []byte("Hello world"))
-	assert.Error(t, err)
-
-	foopath := filepath.Join(newwd, "foo")
-	err = Write(foopath, []byte("Hello world"))
-	require.NoError(t, err)
-
-	out, err := os.ReadFile(foopath)
-	require.NoError(t, err)
-	assert.Equal(t, "Hello world", string(out))
-
-	err = Write(foopath, []byte("truncate"))
-	require.NoError(t, err)
-
-	out, err = os.ReadFile(foopath)
-	require.NoError(t, err)
-	assert.Equal(t, "truncate", string(out))
-
-	foopath = filepath.Join(newwd, "nonexistant", "subdir", "foo")
-	err = Write(foopath, []byte("Hello subdirranean world!"))
-	require.NoError(t, err)
-
-	out, err = os.ReadFile(foopath)
-	require.NoError(t, err)
-	assert.Equal(t, "Hello subdirranean world!", string(out))
-}
-
-func TestAssertPathInWD(t *testing.T) {
-	oldwd, _ := os.Getwd()
-	defer os.Chdir(oldwd)
-
-	err := assertPathInWD("/tmp")
-	assert.Error(t, err)
-
-	err = assertPathInWD(filepath.Join(oldwd, "subpath"))
-	require.NoError(t, err)
-
-	err = assertPathInWD("subpath")
-	require.NoError(t, err)
-
-	err = assertPathInWD("./subpath")
-	require.NoError(t, err)
-
-	err = assertPathInWD(filepath.Join("..", "bogus"))
-	assert.Error(t, err)
-
-	err = assertPathInWD(filepath.Join("..", "..", "bogus"))
-	assert.Error(t, err)
-
-	base := filepath.Base(oldwd)
-	err = assertPathInWD(filepath.Join("..", base))
-	require.NoError(t, err)
 }

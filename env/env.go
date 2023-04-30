@@ -2,11 +2,12 @@
 package env
 
 import (
-	"io"
+	"io/fs"
 	"os"
 	"strings"
 
-	"github.com/spf13/afero"
+	osfs "github.com/hack-pad/hackpadfs/os"
+	"github.com/hairyhenderson/gomplate/v4/internal/datafs"
 )
 
 // Getenv - retrieves the value of the environment variable named by the key.
@@ -14,24 +15,26 @@ import (
 // referenced file will be read into the value.
 // Otherwise the provided default (or an emptry string) is returned.
 func Getenv(key string, def ...string) string {
-	return getenvVFS(afero.NewOsFs(), key, def...)
+	fsys := datafs.WrapWdFS(osfs.NewFS())
+	return getenvVFS(fsys, key, def...)
 }
 
 // ExpandEnv - like os.ExpandEnv, except supports `_FILE` vars as well
 func ExpandEnv(s string) string {
-	return expandEnvVFS(afero.NewOsFs(), s)
+	fsys := datafs.WrapWdFS(osfs.NewFS())
+	return expandEnvVFS(fsys, s)
 }
 
 // expandEnvVFS -
-func expandEnvVFS(fs afero.Fs, s string) string {
+func expandEnvVFS(fsys fs.FS, s string) string {
 	return os.Expand(s, func(s string) string {
-		return getenvVFS(fs, s)
+		return getenvVFS(fsys, s)
 	})
 }
 
 // getenvVFS - a convenience function intended for internal use only!
-func getenvVFS(fs afero.Fs, key string, def ...string) string {
-	val := getenvFile(fs, key)
+func getenvVFS(fsys fs.FS, key string, def ...string) string {
+	val := getenvFile(fsys, key)
 	if val == "" && len(def) > 0 {
 		return def[0]
 	}
@@ -39,7 +42,7 @@ func getenvVFS(fs afero.Fs, key string, def ...string) string {
 	return val
 }
 
-func getenvFile(fs afero.Fs, key string) string {
+func getenvFile(fsys fs.FS, key string) string {
 	val := os.Getenv(key)
 	if val != "" {
 		return val
@@ -47,7 +50,7 @@ func getenvFile(fs afero.Fs, key string) string {
 
 	p := os.Getenv(key + "_FILE")
 	if p != "" {
-		val, err := readFile(fs, p)
+		val, err := readFile(fsys, p)
 		if err != nil {
 			return ""
 		}
@@ -57,14 +60,11 @@ func getenvFile(fs afero.Fs, key string) string {
 	return ""
 }
 
-func readFile(fs afero.Fs, p string) (string, error) {
-	f, err := fs.OpenFile(p, os.O_RDONLY, 0)
+func readFile(fsys fs.FS, p string) (string, error) {
+	b, err := fs.ReadFile(fsys, p)
 	if err != nil {
 		return "", err
 	}
-	b, err := io.ReadAll(f)
-	if err != nil {
-		return "", err
-	}
+
 	return string(b), nil
 }

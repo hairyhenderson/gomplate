@@ -2,10 +2,13 @@ package env
 
 import (
 	"errors"
+	"io/fs"
 	"os"
 	"testing"
+	"testing/fstest"
 
-	"github.com/spf13/afero"
+	"github.com/hack-pad/hackpadfs"
+	"github.com/hairyhenderson/gomplate/v4/internal/datafs"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -17,22 +20,22 @@ func TestGetenv(t *testing.T) {
 }
 
 func TestGetenvFile(t *testing.T) {
-	fs := afero.NewMemMapFs()
-	_ = fs.Mkdir("/tmp", 0777)
-	f, _ := fs.Create("/tmp/foo")
-	_, _ = f.Write([]byte("foo"))
+	fsys := fs.FS(fstest.MapFS{
+		"tmp":            &fstest.MapFile{Mode: fs.ModeDir | 0o777},
+		"tmp/foo":        &fstest.MapFile{Data: []byte("foo")},
+		"tmp/unreadable": &fstest.MapFile{Data: []byte("foo"), Mode: 0o000},
+	})
+	fsys = datafs.WrapWdFS(fsys)
 
-	defer os.Unsetenv("FOO_FILE")
-	os.Setenv("FOO_FILE", "/tmp/foo")
-	assert.Equal(t, "foo", getenvVFS(fs, "FOO", "bar"))
+	t.Setenv("FOO_FILE", "/tmp/foo")
+	assert.Equal(t, "foo", getenvVFS(fsys, "FOO", "bar"))
 
-	os.Setenv("FOO_FILE", "/tmp/missing")
-	assert.Equal(t, "bar", getenvVFS(fs, "FOO", "bar"))
+	t.Setenv("FOO_FILE", "/tmp/missing")
+	assert.Equal(t, "bar", getenvVFS(fsys, "FOO", "bar"))
 
-	_, _ = fs.Create("/tmp/unreadable")
-	fs = writeOnly(fs)
-	os.Setenv("FOO_FILE", "/tmp/unreadable")
-	assert.Equal(t, "bar", getenvVFS(fs, "FOO", "bar"))
+	fsys = writeOnly(fsys)
+	t.Setenv("FOO_FILE", "/tmp/unreadable")
+	assert.Equal(t, "bar", getenvVFS(fsys, "FOO", "bar"))
 }
 
 func TestExpandEnv(t *testing.T) {
@@ -44,73 +47,62 @@ func TestExpandEnv(t *testing.T) {
 }
 
 func TestExpandEnvFile(t *testing.T) {
-	fs := afero.NewMemMapFs()
-	_ = fs.Mkdir("/tmp", 0777)
-	f, _ := fs.Create("/tmp/foo")
-	_, _ = f.Write([]byte("foo"))
+	fsys := fs.FS(fstest.MapFS{
+		"tmp":            &fstest.MapFile{Mode: fs.ModeDir | 0o777},
+		"tmp/foo":        &fstest.MapFile{Data: []byte("foo")},
+		"tmp/unreadable": &fstest.MapFile{Data: []byte("foo"), Mode: 0o000},
+	})
+	fsys = datafs.WrapWdFS(fsys)
 
-	defer os.Unsetenv("FOO_FILE")
-	os.Setenv("FOO_FILE", "/tmp/foo")
-	assert.Equal(t, "foo is foo", expandEnvVFS(fs, "foo is $FOO"))
+	t.Setenv("FOO_FILE", "/tmp/foo")
+	assert.Equal(t, "foo is foo", expandEnvVFS(fsys, "foo is $FOO"))
 
-	os.Setenv("FOO_FILE", "/tmp/missing")
-	assert.Equal(t, "empty", expandEnvVFS(fs, "${FOO}empty"))
+	t.Setenv("FOO_FILE", "/tmp/missing")
+	assert.Equal(t, "empty", expandEnvVFS(fsys, "${FOO}empty"))
 
-	_, _ = fs.Create("/tmp/unreadable")
-	fs = writeOnly(fs)
-	os.Setenv("FOO_FILE", "/tmp/unreadable")
-	assert.Equal(t, "", expandEnvVFS(fs, "${FOO}"))
+	fsys = writeOnly(fsys)
+	t.Setenv("FOO_FILE", "/tmp/unreadable")
+	assert.Equal(t, "", expandEnvVFS(fsys, "${FOO}"))
 }
 
 // Maybe extract this into a separate package sometime...
 // writeOnly - represents a filesystem that's writeable, but read operations fail
-func writeOnly(fs afero.Fs) afero.Fs {
-	return &woFS{fs}
+func writeOnly(fsys fs.FS) fs.FS {
+	return &woFS{fsys}
 }
 
 type woFS struct {
-	afero.Fs
+	fsys fs.FS
 }
 
-func (fs woFS) Remove(name string) error {
-	return fs.Fs.Remove(name)
+func (fsys woFS) Open(name string) (fs.File, error) {
+	f, err := fsys.fsys.Open(name)
+	return writeOnlyFile(f), err
 }
 
-func (fs woFS) Rename(oldpath, newpath string) error {
-	return fs.Fs.Rename(oldpath, newpath)
+func (fsys woFS) ReadDir(_ string) ([]fs.DirEntry, error) {
+	return nil, ErrWriteOnly
 }
 
-func (fs woFS) Mkdir(name string, perm os.FileMode) error {
-	return fs.Fs.Mkdir(name, perm)
+func (fsys woFS) Stat(_ string) (fs.FileInfo, error) {
+	return nil, ErrWriteOnly
 }
 
-func (fs woFS) OpenFile(name string, flag int, perm os.FileMode) (afero.File, error) {
-	f, err := fs.Fs.OpenFile(name, flag, perm)
-	if err != nil {
-		return writeOnlyFile(f), err
+func writeOnlyFile(f fs.File) fs.File {
+	if f == nil {
+		return nil
 	}
-	return writeOnlyFile(f), nil
-}
 
-func (fs woFS) ReadDir(_ string) ([]os.FileInfo, error) {
-	return nil, ErrWriteOnly
-}
-
-func (fs woFS) Stat(_ string) (os.FileInfo, error) {
-	return nil, ErrWriteOnly
-}
-
-func writeOnlyFile(f afero.File) afero.File {
 	return &woFile{f}
 }
 
 type woFile struct {
-	afero.File
+	fs.File
 }
 
-// Write is disabled and returns ErrWriteOnly
+// Write -
 func (f woFile) Write(p []byte) (n int, err error) {
-	return f.File.Write(p)
+	return hackpadfs.WriteFile(f.File, p)
 }
 
 // Read is disabled and returns ErrWriteOnly

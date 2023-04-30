@@ -1,24 +1,24 @@
 package integration
 
 import (
+	"io/fs"
 	"os"
 	"path/filepath"
 	"sort"
 	"testing"
 
-	"github.com/spf13/afero"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"gotest.tools/v3/fs"
+	tfs "gotest.tools/v3/fs"
 )
 
-func setupGomplateignoreTest(t *testing.T) func(inFileOps ...fs.PathOp) *fs.Dir {
+func setupGomplateignoreTest(t *testing.T) func(inFileOps ...tfs.PathOp) *tfs.Dir {
 	basedir := "gomplate-gomplateignore-tests"
 
-	inBuilder := func(inFileOps ...fs.PathOp) *fs.Dir {
-		tmpDir := fs.NewDir(t, basedir,
-			fs.WithDir("in", inFileOps...),
-			fs.WithDir("out"),
+	inBuilder := func(inFileOps ...tfs.PathOp) *tfs.Dir {
+		tmpDir := tfs.NewDir(t, basedir,
+			tfs.WithDir("in", inFileOps...),
+			tfs.WithDir("out"),
 		)
 		t.Cleanup(tmpDir.Remove)
 		return tmpDir
@@ -27,14 +27,14 @@ func setupGomplateignoreTest(t *testing.T) func(inFileOps ...fs.PathOp) *fs.Dir 
 	return inBuilder
 }
 
-func execute(t *testing.T, ignoreContent string, inFileOps ...fs.PathOp) ([]string, error) {
+func execute(t *testing.T, ignoreContent string, inFileOps ...tfs.PathOp) ([]string, error) {
 	return executeOpts(t, ignoreContent, []string{}, inFileOps...)
 }
 
-func executeOpts(t *testing.T, ignoreContent string, opts []string, inFileOps ...fs.PathOp) ([]string, error) {
+func executeOpts(t *testing.T, ignoreContent string, opts []string, inFileOps ...tfs.PathOp) ([]string, error) {
 	inBuilder := setupGomplateignoreTest(t)
 
-	inFileOps = append(inFileOps, fs.WithFile(".gomplateignore", ignoreContent))
+	inFileOps = append(inFileOps, tfs.WithFile(".gomplateignore", ignoreContent))
 	tmpDir := inBuilder(inFileOps...)
 
 	argv := []string{}
@@ -48,13 +48,14 @@ func executeOpts(t *testing.T, ignoreContent string, opts []string, inFileOps ..
 
 	files := []string{}
 
-	fs := afero.NewBasePathFs(afero.NewOsFs(), tmpDir.Join("out"))
-	afero.Walk(fs, "", func(path string, info os.FileInfo, werr error) error {
-		if werr != nil {
-			err = werr
-			return nil
+	fsys := os.DirFS(tmpDir.Join("out") + "/")
+	err = fs.WalkDir(fsys, ".", func(path string, d fs.DirEntry, err error) error {
+		if err != nil {
+			return err
 		}
-		if path != "" && !info.IsDir() {
+
+		if path != "" && !d.IsDir() {
+			path = filepath.FromSlash(path)
 			files = append(files, path)
 		}
 		return nil
@@ -69,8 +70,8 @@ func TestGomplateignore_Simple(t *testing.T) {
 	files, err := execute(t, `# all dot files
 .*
 *.log`,
-		fs.WithFile("empty.log", ""),
-		fs.WithFile("rain.txt", ""))
+		tfs.WithFile("empty.log", ""),
+		tfs.WithFile("rain.txt", ""))
 
 	require.NoError(t, err)
 	assert.Equal(t, []string{"rain.txt"}, files)
@@ -87,15 +88,15 @@ func TestGomplateignore_Folder(t *testing.T) {
 	files, err := execute(t, `.gomplateignore
 f[o]o/bar
 !foo/bar/tool`,
-		fs.WithDir("foo",
-			fs.WithDir("bar",
-				fs.WithDir("tool",
-					fs.WithFile("lex.txt", ""),
+		tfs.WithDir("foo",
+			tfs.WithDir("bar",
+				tfs.WithDir("tool",
+					tfs.WithFile("lex.txt", ""),
 				),
-				fs.WithFile("1.txt", ""),
+				tfs.WithFile("1.txt", ""),
 			),
-			fs.WithDir("tar",
-				fs.WithFile("2.txt", ""),
+			tfs.WithDir("tar",
+				tfs.WithFile("2.txt", ""),
 			),
 		),
 	)
@@ -108,11 +109,11 @@ f[o]o/bar
 func TestGomplateignore_Root(t *testing.T) {
 	files, err := execute(t, `.gomplateignore
 /1.txt`,
-		fs.WithDir("sub",
-			fs.WithFile("1.txt", ""),
-			fs.WithFile("2.txt", ""),
+		tfs.WithDir("sub",
+			tfs.WithFile("1.txt", ""),
+			tfs.WithFile("2.txt", ""),
 		),
-		fs.WithFile("1.txt", ""),
+		tfs.WithFile("1.txt", ""),
 	)
 
 	require.NoError(t, err)
@@ -126,14 +127,14 @@ func TestGomplateignore_Exclusion(t *testing.T) {
 !/e2.txt
 en/e3.txt
 !`,
-		fs.WithFile("!", ""),
-		fs.WithFile("e1.txt", ""),
-		fs.WithFile("e2.txt", ""),
-		fs.WithFile("e3.txt", ""),
-		fs.WithDir("en",
-			fs.WithFile("e1.txt", ""),
-			fs.WithFile("e2.txt", ""),
-			fs.WithFile("e3.txt", ""),
+		tfs.WithFile("!", ""),
+		tfs.WithFile("e1.txt", ""),
+		tfs.WithFile("e2.txt", ""),
+		tfs.WithFile("e3.txt", ""),
+		tfs.WithDir("en",
+			tfs.WithFile("e1.txt", ""),
+			tfs.WithFile("e2.txt", ""),
+			tfs.WithFile("e3.txt", ""),
 		),
 	)
 
@@ -144,16 +145,16 @@ en/e3.txt
 
 func TestGomplateignore_Nested(t *testing.T) {
 	files, err := execute(t, `inner/foo.md`,
-		fs.WithDir("inner",
-			fs.WithDir("inner2",
-				fs.WithFile(".gomplateignore", "moss.ini\n!/jess.ini"),
-				fs.WithFile("jess.ini", ""),
-				fs.WithFile("moss.ini", "")),
-			fs.WithFile(".gomplateignore", "*.lst\njess.ini"),
-			fs.WithFile("2.lst", ""),
-			fs.WithFile("foo.md", ""),
+		tfs.WithDir("inner",
+			tfs.WithDir("inner2",
+				tfs.WithFile(".gomplateignore", "moss.ini\n!/jess.ini"),
+				tfs.WithFile("jess.ini", ""),
+				tfs.WithFile("moss.ini", "")),
+			tfs.WithFile(".gomplateignore", "*.lst\njess.ini"),
+			tfs.WithFile("2.lst", ""),
+			tfs.WithFile("foo.md", ""),
 		),
-		fs.WithFile("1.txt", ""),
+		tfs.WithFile("1.txt", ""),
 	)
 
 	require.NoError(t, err)
@@ -166,20 +167,20 @@ func TestGomplateignore_Nested(t *testing.T) {
 func TestGomplateignore_ByName(t *testing.T) {
 	files, err := execute(t, `.gomplateignore
 world.txt`,
-		fs.WithDir("aa",
-			fs.WithDir("a1",
-				fs.WithDir("a2",
-					fs.WithFile("hello.txt", ""),
-					fs.WithFile("world.txt", "")),
-				fs.WithFile("hello.txt", ""),
-				fs.WithFile("world.txt", "")),
-			fs.WithFile("hello.txt", ""),
-			fs.WithFile("world.txt", "")),
-		fs.WithDir("bb",
-			fs.WithFile("hello.txt", ""),
-			fs.WithFile("world.txt", "")),
-		fs.WithFile("hello.txt", ""),
-		fs.WithFile("world.txt", ""),
+		tfs.WithDir("aa",
+			tfs.WithDir("a1",
+				tfs.WithDir("a2",
+					tfs.WithFile("hello.txt", ""),
+					tfs.WithFile("world.txt", "")),
+				tfs.WithFile("hello.txt", ""),
+				tfs.WithFile("world.txt", "")),
+			tfs.WithFile("hello.txt", ""),
+			tfs.WithFile("world.txt", "")),
+		tfs.WithDir("bb",
+			tfs.WithFile("hello.txt", ""),
+			tfs.WithFile("world.txt", "")),
+		tfs.WithFile("hello.txt", ""),
+		tfs.WithFile("world.txt", ""),
 	)
 
 	require.NoError(t, err)
@@ -193,12 +194,12 @@ func TestGomplateignore_BothName(t *testing.T) {
 loss.txt
 !2.log
 `,
-		fs.WithDir("loss.txt",
-			fs.WithFile("1.log", ""),
-			fs.WithFile("2.log", "")),
-		fs.WithDir("foo",
-			fs.WithFile("loss.txt", ""),
-			fs.WithFile("bare.txt", "")),
+		tfs.WithDir("loss.txt",
+			tfs.WithFile("1.log", ""),
+			tfs.WithFile("2.log", "")),
+		tfs.WithDir("foo",
+			tfs.WithFile("loss.txt", ""),
+			tfs.WithFile("bare.txt", "")),
 	)
 
 	require.NoError(t, err)
@@ -213,12 +214,12 @@ func TestGomplateignore_LeadingSpace(t *testing.T) {
 *.log
 !  dart.log
 `,
-		fs.WithDir("inner",
-			fs.WithFile("  what.txt", ""),
-			fs.WithFile("  dart.log", "")),
-		fs.WithDir("inner2",
-			fs.WithFile("  what.txt", "")),
-		fs.WithFile("  what.txt", ""),
+		tfs.WithDir("inner",
+			tfs.WithFile("  what.txt", ""),
+			tfs.WithFile("  dart.log", "")),
+		tfs.WithDir("inner2",
+			tfs.WithFile("  what.txt", "")),
+		tfs.WithFile("  what.txt", ""),
 	)
 
 	require.NoError(t, err)
@@ -234,20 +235,20 @@ func TestGomplateignore_WithExcludes(t *testing.T) {
 		"--exclude", "rules/*.txt",
 		"--exclude", "sprites/*.ini",
 	},
-		fs.WithDir("logs",
-			fs.WithFile("archive.zip", ""),
-			fs.WithFile("engine.log", ""),
-			fs.WithFile("skills.log", "")),
-		fs.WithDir("rules",
-			fs.WithFile("index.csv", ""),
-			fs.WithFile("fire.txt", ""),
-			fs.WithFile("earth.txt", "")),
-		fs.WithDir("sprites",
-			fs.WithFile("human.csv", ""),
-			fs.WithFile("demon.xml", ""),
-			fs.WithFile("alien.ini", "")),
-		fs.WithFile("manifest.json", ""),
-		fs.WithFile("crash.bin", ""),
+		tfs.WithDir("logs",
+			tfs.WithFile("archive.zip", ""),
+			tfs.WithFile("engine.log", ""),
+			tfs.WithFile("skills.log", "")),
+		tfs.WithDir("rules",
+			tfs.WithFile("index.csv", ""),
+			tfs.WithFile("fire.txt", ""),
+			tfs.WithFile("earth.txt", "")),
+		tfs.WithDir("sprites",
+			tfs.WithFile("human.csv", ""),
+			tfs.WithFile("demon.xml", ""),
+			tfs.WithFile("alien.ini", "")),
+		tfs.WithFile("manifest.json", ""),
+		tfs.WithFile("crash.bin", ""),
 	)
 
 	require.NoError(t, err)
@@ -263,16 +264,16 @@ func TestGomplateignore_WithIncludes(t *testing.T) {
 		"--include", "rules/*",
 		"--exclude", "rules/*.txt",
 	},
-		fs.WithDir("logs",
-			fs.WithFile("archive.zip", ""),
-			fs.WithFile("engine.log", ""),
-			fs.WithFile("skills.log", "")),
-		fs.WithDir("rules",
-			fs.WithFile("index.csv", ""),
-			fs.WithFile("fire.txt", ""),
-			fs.WithFile("earth.txt", "")),
-		fs.WithFile("manifest.json", ""),
-		fs.WithFile("crash.bin", ""),
+		tfs.WithDir("logs",
+			tfs.WithFile("archive.zip", ""),
+			tfs.WithFile("engine.log", ""),
+			tfs.WithFile("skills.log", "")),
+		tfs.WithDir("rules",
+			tfs.WithFile("index.csv", ""),
+			tfs.WithFile("fire.txt", ""),
+			tfs.WithFile("earth.txt", "")),
+		tfs.WithFile("manifest.json", ""),
+		tfs.WithFile("crash.bin", ""),
 	)
 
 	require.NoError(t, err)

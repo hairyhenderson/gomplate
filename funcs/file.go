@@ -2,11 +2,13 @@ package funcs
 
 import (
 	"context"
-	"os"
+	"io/fs"
+	"path/filepath"
 
+	osfs "github.com/hack-pad/hackpadfs/os"
 	"github.com/hairyhenderson/gomplate/v4/conv"
-	"github.com/hairyhenderson/gomplate/v4/file"
-	"github.com/spf13/afero"
+	"github.com/hairyhenderson/gomplate/v4/internal/datafs"
+	"github.com/hairyhenderson/gomplate/v4/internal/iohelpers"
 )
 
 // FileNS - the File namespace
@@ -27,10 +29,16 @@ func AddFileFuncs(f map[string]interface{}) {
 
 // CreateFileFuncs -
 func CreateFileFuncs(ctx context.Context) map[string]interface{} {
+	fsys, err := datafs.FSysForPath(ctx, "/")
+	if err != nil {
+		fsys = datafs.WrapWdFS(osfs.NewFS())
+	}
+
 	ns := &FileFuncs{
 		ctx: ctx,
-		fs:  afero.NewOsFs(),
+		fs:  fsys,
 	}
+
 	return map[string]interface{}{
 		"file": func() interface{} { return ns },
 	}
@@ -39,17 +47,18 @@ func CreateFileFuncs(ctx context.Context) map[string]interface{} {
 // FileFuncs -
 type FileFuncs struct {
 	ctx context.Context
-	fs  afero.Fs
+	fs  fs.FS
 }
 
 // Read -
 func (f *FileFuncs) Read(path interface{}) (string, error) {
-	return file.Read(conv.ToString(path))
+	b, err := fs.ReadFile(f.fs, conv.ToString(path))
+	return string(b), err
 }
 
 // Stat -
-func (f *FileFuncs) Stat(path interface{}) (os.FileInfo, error) {
-	return f.fs.Stat(conv.ToString(path))
+func (f *FileFuncs) Stat(path interface{}) (fs.FileInfo, error) {
+	return fs.Stat(f.fs, conv.ToString(path))
 }
 
 // Exists -
@@ -66,16 +75,32 @@ func (f *FileFuncs) IsDir(path interface{}) bool {
 
 // ReadDir -
 func (f *FileFuncs) ReadDir(path interface{}) ([]string, error) {
-	return file.ReadDir(conv.ToString(path))
+	des, err := fs.ReadDir(f.fs, conv.ToString(path))
+	if err != nil {
+		return nil, err
+	}
+
+	names := make([]string, len(des))
+	for i, de := range des {
+		names[i] = de.Name()
+	}
+
+	return names, nil
 }
 
 // Walk -
 func (f *FileFuncs) Walk(path interface{}) ([]string, error) {
 	files := make([]string, 0)
-	err := afero.Walk(f.fs, conv.ToString(path), func(subpath string, finfo os.FileInfo, err error) error {
+	err := fs.WalkDir(f.fs, conv.ToString(path), func(subpath string, d fs.DirEntry, err error) error {
 		if err != nil {
 			return err
 		}
+
+		// fs.WalkDir always uses slash-separated paths, even on Windows. We
+		// need to convert them to the OS-specific separator as that was the
+		// previous behavior.
+		subpath = filepath.FromSlash(subpath)
+
 		files = append(files, subpath)
 		return nil
 	})
@@ -84,10 +109,20 @@ func (f *FileFuncs) Walk(path interface{}) ([]string, error) {
 
 // Write -
 func (f *FileFuncs) Write(path interface{}, data interface{}) (s string, err error) {
+	type byteser interface{ Bytes() []byte }
+
+	var content []byte
+	fname := conv.ToString(path)
+
 	if b, ok := data.([]byte); ok {
-		err = file.Write(conv.ToString(path), b)
+		content = b
+	} else if b, ok := data.(byteser); ok {
+		content = b.Bytes()
 	} else {
-		err = file.Write(conv.ToString(path), []byte(conv.ToString(data)))
+		content = []byte(conv.ToString(data))
 	}
+
+	err = iohelpers.WriteFile(f.fs, fname, content)
+
 	return "", err
 }

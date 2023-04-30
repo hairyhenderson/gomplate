@@ -7,9 +7,10 @@ import (
 	"net/url"
 	"runtime"
 	"testing"
+	"testing/fstest"
 
 	"github.com/hairyhenderson/gomplate/v4/internal/config"
-	"github.com/spf13/afero"
+	"github.com/hairyhenderson/gomplate/v4/internal/datafs"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -45,26 +46,23 @@ func TestNewData(t *testing.T) {
 func TestDatasource(t *testing.T) {
 	setup := func(ext, mime string, contents []byte) *Data {
 		fname := "foo." + ext
-		fs := afero.NewMemMapFs()
 		var uPath string
-		var f afero.File
 		if runtime.GOOS == osWindows {
-			_ = fs.Mkdir("C:\\tmp", 0777)
-			f, _ = fs.Create("C:\\tmp\\" + fname)
 			uPath = "C:/tmp/" + fname
 		} else {
-			_ = fs.Mkdir("/tmp", 0777)
-			f, _ = fs.Create("/tmp/" + fname)
 			uPath = "/tmp/" + fname
 		}
-		_, _ = f.Write(contents)
+
+		fsys := datafs.WrapWdFS(fstest.MapFS{
+			"tmp/" + fname: &fstest.MapFile{Data: contents},
+		})
 
 		sources := map[string]*Source{
 			"foo": {
 				Alias:     "foo",
 				URL:       &url.URL{Scheme: "file", Path: uPath},
 				mediaType: mime,
-				fs:        fs,
+				fs:        fsys,
 			},
 		}
 		return &Data{Sources: sources}
@@ -102,31 +100,28 @@ func TestDatasource(t *testing.T) {
 
 func TestDatasourceReachable(t *testing.T) {
 	fname := "foo.json"
-	fs := afero.NewMemMapFs()
 	var uPath string
-	var f afero.File
 	if runtime.GOOS == osWindows {
-		_ = fs.Mkdir("C:\\tmp", 0777)
-		f, _ = fs.Create("C:\\tmp\\" + fname)
 		uPath = "C:/tmp/" + fname
 	} else {
-		_ = fs.Mkdir("/tmp", 0777)
-		f, _ = fs.Create("/tmp/" + fname)
 		uPath = "/tmp/" + fname
 	}
-	_, _ = f.Write([]byte("{}"))
+
+	fsys := datafs.WrapWdFS(fstest.MapFS{
+		"tmp/" + fname: &fstest.MapFile{Data: []byte("{}")},
+	})
 
 	sources := map[string]*Source{
 		"foo": {
 			Alias:     "foo",
 			URL:       &url.URL{Scheme: "file", Path: uPath},
 			mediaType: jsonMimetype,
-			fs:        fs,
+			fs:        fsys,
 		},
 		"bar": {
 			Alias: "bar",
 			URL:   &url.URL{Scheme: "file", Path: "/bogus"},
-			fs:    fs,
+			fs:    fsys,
 		},
 	}
 	data := &Data{Sources: sources}
@@ -148,27 +143,24 @@ func TestInclude(t *testing.T) {
 	ext := "txt"
 	contents := "hello world"
 	fname := "foo." + ext
-	fs := afero.NewMemMapFs()
 
 	var uPath string
-	var f afero.File
 	if runtime.GOOS == osWindows {
-		_ = fs.Mkdir("C:\\tmp", 0777)
-		f, _ = fs.Create("C:\\tmp\\" + fname)
 		uPath = "C:/tmp/" + fname
 	} else {
-		_ = fs.Mkdir("/tmp", 0777)
-		f, _ = fs.Create("/tmp/" + fname)
 		uPath = "/tmp/" + fname
 	}
-	_, _ = f.Write([]byte(contents))
+
+	fsys := datafs.WrapWdFS(fstest.MapFS{
+		"tmp/" + fname: &fstest.MapFile{Data: []byte(contents)},
+	})
 
 	sources := map[string]*Source{
 		"foo": {
 			Alias:     "foo",
 			URL:       &url.URL{Scheme: "file", Path: uPath},
 			mediaType: textMimetype,
-			fs:        fs,
+			fs:        fsys,
 		},
 	}
 	data := &Data{
@@ -185,7 +177,6 @@ func (e errorReader) Read(_ []byte) (n int, err error) {
 	return 0, fmt.Errorf("error")
 }
 
-// nolint: megacheck
 func TestDefineDatasource(t *testing.T) {
 	d := &Data{}
 	_, err := d.DefineDatasource("", "foo.json")
@@ -204,8 +195,7 @@ func TestDefineDatasource(t *testing.T) {
 	s := d.Sources["data"]
 	require.NoError(t, err)
 	assert.Equal(t, "data", s.Alias)
-	assert.Equal(t, "file", s.URL.Scheme)
-	assert.True(t, s.URL.IsAbs())
+	assert.EqualValues(t, &url.URL{Path: "foo.json"}, s.URL)
 
 	d = &Data{}
 	_, err = d.DefineDatasource("data", "/otherdir/foo.json")

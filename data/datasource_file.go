@@ -5,18 +5,22 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io"
+	"io/fs"
 	"net/url"
-	"os"
 	"path/filepath"
 	"strings"
 
-	"github.com/spf13/afero"
+	"github.com/hairyhenderson/gomplate/v4/internal/datafs"
 )
 
-func readFile(_ context.Context, source *Source, args ...string) ([]byte, error) {
+func readFile(ctx context.Context, source *Source, args ...string) ([]byte, error) {
 	if source.fs == nil {
-		source.fs = afero.NewOsFs()
+		fsp := datafs.FSProviderFromContext(ctx)
+		fsys, err := fsp.New(source.URL)
+		if err != nil {
+			return nil, fmt.Errorf("filesystem provider for %q unavailable: %w", source.URL, err)
+		}
+		source.fs = fsys
 	}
 
 	p := filepath.FromSlash(source.URL.Path)
@@ -35,13 +39,18 @@ func readFile(_ context.Context, source *Source, args ...string) ([]byte, error)
 		source.mediaType = ""
 	}
 
+	isDir := strings.HasSuffix(p, string(filepath.Separator))
+	if strings.HasSuffix(p, string(filepath.Separator)) {
+		p = p[:len(p)-1]
+	}
+
 	// make sure we can access the file
-	i, err := source.fs.Stat(p)
+	i, err := fs.Stat(source.fs, p)
 	if err != nil {
 		return nil, fmt.Errorf("stat %s: %w", p, err)
 	}
 
-	if strings.HasSuffix(p, string(filepath.Separator)) {
+	if isDir {
 		source.mediaType = jsonArrayMimetype
 		if i.IsDir() {
 			return readFileDir(source, p)
@@ -49,25 +58,19 @@ func readFile(_ context.Context, source *Source, args ...string) ([]byte, error)
 		return nil, fmt.Errorf("%s is not a directory", p)
 	}
 
-	f, err := source.fs.OpenFile(p, os.O_RDONLY, 0)
+	b, err := fs.ReadFile(source.fs, p)
 	if err != nil {
-		return nil, fmt.Errorf("openFile %s: %w", p, err)
-	}
-
-	defer f.Close()
-
-	b, err := io.ReadAll(f)
-	if err != nil {
-		return nil, fmt.Errorf("readAll %s: %w", p, err)
+		return nil, fmt.Errorf("readFile %s: %w", p, err)
 	}
 	return b, nil
 }
 
 func readFileDir(source *Source, p string) ([]byte, error) {
-	names, err := afero.ReadDir(source.fs, p)
+	names, err := fs.ReadDir(source.fs, p)
 	if err != nil {
 		return nil, err
 	}
+
 	files := make([]string, len(names))
 	for i, v := range names {
 		files[i] = v.Name()

@@ -6,7 +6,13 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"io/fs"
+	"os"
+	"path/filepath"
+	"strings"
 	"sync"
+
+	"github.com/hack-pad/hackpadfs"
 )
 
 type emptySkipper struct {
@@ -211,4 +217,53 @@ func (l *lazyWriteCloser) Write(p []byte) (n int, err error) {
 		return 0, err
 	}
 	return w.Write(p)
+}
+
+// WriteFile writes the given content to the file, truncating any existing file,
+// and creating the directory structure leading up to it if necessary.
+func WriteFile(fsys fs.FS, filename string, content []byte) error {
+	err := assertPathInWD(filename)
+	if err != nil {
+		return fmt.Errorf("failed to open %s: %w", filename, err)
+	}
+
+	fi, err := fs.Stat(fsys, filename)
+	if err != nil && !errors.Is(err, fs.ErrNotExist) {
+		return fmt.Errorf("failed to stat %s: %w", filename, err)
+	}
+	mode := NormalizeFileMode(0o644)
+	if fi != nil {
+		mode = fi.Mode()
+	}
+
+	err = hackpadfs.MkdirAll(fsys, filepath.Dir(filename), 0o755)
+	if err != nil {
+		return fmt.Errorf("failed to make dirs for %s: %w", filename, err)
+	}
+
+	err = hackpadfs.WriteFullFile(fsys, filename, content, mode)
+	if err != nil {
+		return fmt.Errorf("failed to write %s: %w", filename, err)
+	}
+
+	return nil
+}
+
+func assertPathInWD(filename string) error {
+	wd, err := os.Getwd()
+	if err != nil {
+		return err
+	}
+	f, err := filepath.Abs(filename)
+	if err != nil {
+		return err
+	}
+	r, err := filepath.Rel(wd, f)
+	if err != nil {
+		return err
+	}
+	if strings.HasPrefix(r, "..") {
+		return fmt.Errorf("path %s not contained by working directory %s (rel: %s)", filename, wd, r)
+	}
+	return nil
 }

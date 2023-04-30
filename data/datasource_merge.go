@@ -6,7 +6,7 @@ import (
 	"strings"
 
 	"github.com/hairyhenderson/gomplate/v4/coll"
-	"github.com/hairyhenderson/gomplate/v4/internal/config"
+	"github.com/hairyhenderson/gomplate/v4/internal/datafs"
 )
 
 // readMerge demultiplexes a `merge:` datasource. The 'args' parameter currently
@@ -31,7 +31,7 @@ func (d *Data) readMerge(ctx context.Context, source *Source, _ ...string) ([]by
 		subSource, err := d.lookupSource(part)
 		if err != nil {
 			// maybe it's a relative filename?
-			u, uerr := config.ParseSourceURL(part)
+			u, uerr := datafs.ParseSourceURL(part)
 			if uerr != nil {
 				return nil, uerr
 			}
