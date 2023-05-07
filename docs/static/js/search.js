@@ -63,7 +63,7 @@ function populateResults(result) {
           }
           let end = contents.length
           if (endIdx + summaryInclude < contents.length) {
-             endIdx + summaryInclude
+              endIdx + summaryInclude
           }
           snippet += contents.substring(start, end)
           snippetHighlights.push(
