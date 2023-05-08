@@ -1,36 +1,51 @@
 baseURL = "/"
 languageCode = "en-us"
 title = "gomplate documentation"
-theme = "hugo-material-docs"
+theme = "hugo-theme-relearn"
 googleAnalytics = "UA-82637990-3"
 
 [params]
+  alwaysopen = false
+  editURL = "https://github.com/hairyhenderson/gomplate/edit/main/docs/content/"
   author = "hairyhenderson"
   description = "gomplate documentation"
-  copyright = "Released under the MIT license"
-  provider = "GitHub"
-  repo_url = "https://github.com/hairyhenderson/gomplate"
-  logo = "images/gomplate-icon.svg"
-  favicon = "favicon.ico"
-  custom_css = [
-    "stylesheets/search.css",
-    "stylesheets/custom-palettes.css",
-  ]
-  custom_js = [
-    "https://code.jquery.com/jquery-3.3.1.min.js",
-    "https://cdnjs.cloudflare.com/ajax/libs/fuse.js/3.4.4/fuse.min.js",
-    "https://cdnjs.cloudflare.com/ajax/libs/mark.js/8.11.1/jquery.mark.min.js",
-    "js/search.js",
-    "js/faro.js"
-  ]
+  showVisitedLinks = false
+  disableSearch = false
+  disableSearchHiddenPages = false
+  disableSeoHiddenPages = false
+  disableTagHiddenPages = false
+  disableAssetsBusting = false
+  disableGeneratorVersion = false
+  disableInlineCopyToClipBoard = true
+  disableShortcutsTitle = false
+  disableLandingPageButton = false
+  disableLanguageSwitchingButton = false
+  disableBreadcrumb = false
+  disableToc = false
+  disableMathJax = true
+  disableMermaid = true
+  disableSwagger = true
+  disableNextPrev = false
+  ordersectionsby = "weight"
+  themeVariantAuto = ["gomplate-light", "gomplate-dark"]
+  themeVariant = ["auto", "gomplate-light", "gomplate-dark"]
+  titleSeparator = "-"
+  collapsibleMenu = true
+  additionalContentLanguage = [ "en" ]
+  disableExplicitIndexURLs = true
+  externalLinkTarget = "_blank"
 
-[params.palette]
-  primary = "spalding-gray"
-  accent = "spalding-blue"
-
-[social]
-  twitter = "hairyhenderson"
-  github  = "hairyhenderson"
+[markup]
+  [markup.highlight]
+    guessSyntax = false
+    noClasses = false
 
 [outputs]
-  home = ["HTML", "RSS", "JSON"]
+  home = [ "HTML", "RSS", "SEARCH", "SEARCHPAGE"]
+
+[privacy]
+  [privacy.googleAnalytics]
+    disable = false
+    anonymizeIP = true
+    respectDoNotTrack = true
+    useSessionStorage = false

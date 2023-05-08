@@ -200,10 +200,10 @@ gen-changelog:
 	docker run -it -v $(shell pwd):/app --workdir /app -e CHANGELOG_GITHUB_TOKEN hairyhenderson/github_changelog_generator \
 		github_changelog_generator --no-filter-by-milestone --exclude-labels duplicate,question,invalid,wontfix,admin
 
-docs/themes/hugo-material-docs:
-	git clone https://github.com/digitalcraftsman/hugo-material-docs.git $@
+docs/themes/hugo-theme-relearn:
+	git clone --depth=1 https://github.com/McShelby/hugo-theme-relearn.git $@
 
-gen-docs: docs/themes/hugo-material-docs
+gen-docs: docs/themes/hugo-theme-relearn
 	cd docs/; hugo
 
 docs/content/functions/%.md: docs-src/content/functions/%.yml docs-src/content/functions/func_doc.md.tmpl

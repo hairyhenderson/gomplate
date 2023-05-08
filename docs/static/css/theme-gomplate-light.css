@@ -1,0 +1,61 @@
+@import "chroma-gomplate-light.css";
+
+:root {
+  --PRIMARY-color: rgb( 145, 132, 121 ); /* brand primary color */
+  --SECONDARY-color: rgb( 120, 133, 145 ); /* brand secondary color */
+  --ACCENT-color: #bb8550; /* brand accent color, used for search highlights */
+
+  --MAIN-LINK-HOVER-color: #202891; /* hoverd link color of content */
+  --MAIN-BG-color: #ffffff; /* background color of content */
+  --MAIN-TEXT-color: #101010; /* text color of content and h1 titles */
+  --MAIN-TITLES-TEXT-color: #4a4a4a; /* text color of h2-h6 titles and transparent box titles */
+
+  --CODE-BLOCK-color: #000000; /* fallback text color of block code; should be adjusted to your selected chroma style */
+  --CODE-BLOCK-BG-color: #f8f8f8; /* fallback background color of block code; should be adjusted to your selected chroma style */
+  --CODE-BLOCK-BORDER-color: #d8d8d8; /* border color of block code */
+
+  --CODE-INLINE-color: #5e5e5e; /* text color of inline code */
+  --CODE-INLINE-BG-color: #fffae9; /* background color of inline code */
+  --CODE-INLINE-BORDER-color: rgb( 0, 0, 0, 0 ); /* border color of inline code */
+
+  --BROWSER-theme: light; /* name of the theme for browser scrollbars of the main section */
+  --MERMAID-theme: default; /* name of the default Mermaid theme for this variant, can be overridden in config.toml */
+  --SWAGGER-theme: light; /* name of the default Swagger theme for this variant, can be overridden in config.toml */
+
+  --MENU-HOME-LINK-color: #404040; /* home button color if configured */
+  --MENU-HOME-LINK-HOVER-color: #000000; /* hoverd home button color if configured */
+
+  --MENU-SEARCH-color: #404040; /* text and icon color of search box */
+  --MENU-SEARCH-BG-color: rgba(255,255,255, 0.2); /* background color of search box */
+  --MENU-SEARCH-BORDER-color: transparent; /* border color of search box */
+
+  --MENU-SECTIONS-BG-color: #f4f4f4; /* background of the menu; this is NOT just a color value but can be a complete CSS background definition including gradients, etc. */
+  --MENU-SECTIONS-ACTIVE-BG-color: rgba( 255, 255, 255, .2 ); /* background color of the active menu section */
+  --MENU-SECTIONS-LINK-color: #323232; /* link color of menu topics */
+  --MENU-SECTIONS-LINK-HOVER-color: #rgba( 255, 255, 255, .2 ); /* hoverd link color of menu topics */
+  --MENU-SECTION-ACTIVE-CATEGORY-color: #323232; /* text color of the displayed menu topic */
+  --MENU-SECTION-HR-color: #606060; /* separator color of menu footer */
+
+  --BOX-CAPTION-color: rgba( 255, 255, 255, 1 ); /* text color of colored box titles */
+  --BOX-BG-color: rgba( 255, 255, 255, .833 ); /* background color of colored boxes */
+  --BOX-TEXT-color: rgba( 16, 16, 16, 1 ); /* text color of colored box content */
+  --BOX-BLUE-color: rgb( 120, 133, 145 ); /* background color of blue boxes */
+  --BOX-ORANGE-color: #bb8550; /* background color of orange boxes */
+}
+
+/* I use inline code in some titles, but I don't want it to be rendered like
+  it is elsewhere */
+  h2 code {
+    font-size: unset;
+    font-weight: unset;
+    color: unset;
+    background-color: unset;
+  }
+  
+  nav code {
+    font-size: unset;
+    font-weight: unset;
+    color: unset;
+    background-color: unset;
+  }
+  

@@ -15,10 +15,15 @@ preamble: |
 
   To demonstrate how this can be used, here's an example that lists all of the IPv4 addresses available on the system:
 
-  ```console
-  $ gomplate -i '{{ range (sockaddr.GetAllInterfaces | sockaddr.Include "type" "ipv4") -}}
+  _in.tmpl:_
+  ```
+  {{ range (sockaddr.GetAllInterfaces | sockaddr.Include "type" "ipv4") -}}
   {{ . | sockaddr.Attr "address" }}
-  {{end}}'
+  {{end}}
+  ```
+
+  ```console
+  $ gomplate -f in.tmpl
   127.0.0.1
   10.0.0.8
   132.79.79.79
