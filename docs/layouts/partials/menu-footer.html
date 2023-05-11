@@ -1,0 +1,20 @@
+<style>
+  #footer {
+    font-size: .75rem;
+    height: 6.25rem;
+    margin-left: auto;
+    margin-right: auto;
+    padding: 1rem 1rem;
+    text-align: center;
+    min-width: 14.375rem;
+    max-width: 18.75rem;
+  }
+  #footer p {
+    margin: 0;
+  }
+</style>
+
+<a class="github-button" href="https://github.com/hairyhenderson/gomplate/releases/latest" data-icon="octicon-cloud-download" aria-label="Latest release">Latest</a>
+<a class="github-button" href="https://github.com/hairyhenderson/gomplate" data-icon="octicon-star" data-show-count="true" aria-label="Star hairyhenderson/gomplate on GitHub">Star</a>
+
+<script async src="{{"js/buttons.js" | relURL}}{{ if not .Site.Params.disableAssetsBusting }}?{{ now.Unix }}{{ end }}"></script>

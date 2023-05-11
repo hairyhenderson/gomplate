@@ -27,7 +27,7 @@ On macOS, you can also install gomplate using [MacPorts](https://www.macports.or
 $ sudo port install gomplate
 ```
 
-## [![Chocolatey](https://img.shields.io/chocolatey/v/gomplate.svg)](https://chocolatey.org/packages/gomplate) Windows with Chocolatey
+## Windows with Chocolatey
 
 The simplest method for installing gomplate on Windows is to use [`choco`](https://community.chocolatey.org/packages/gomplate):
 
@@ -59,12 +59,11 @@ Of course, there are some drawbacks - any files to be used for [datasources][]
 must be mounted and any environment variables to be used must be passed through:
 
 ```console
-$ echo 'My voice is my {{.Env.THING}}. {{(datasource "vault").value}}' \
-  | docker run -i -e THING=passport -v /home/me/.vault-token:/root/.vault-token hairyhenderson/gomplate -d vault=vault:///secret/sneakers -f -
+$ echo 'My voice is my {{.Env.THING}}. {{(datasource "vault").value}}' | docker run -i -e THING=passport -v /home/me/.vault-token:/root/.vault-token hairyhenderson/gomplate -d vault=vault:///secret/sneakers -f -
 My voice is my passport. Verify me.
 ```
 
-It can be pretty awkward to always type `docker run hairyhenderson/gomplate:stable`,
+It can be awkward to always type `docker run hairyhenderson/gomplate:stable`,
 so this can be made simpler with a shell alias:
 
 ```console
@@ -145,6 +144,7 @@ $ sh <(curl https://tea.xyz) +gomplate.ca sh
 $ gomplate --version
 ...
 ```
+
 [releases]: https://github.com/hairyhenderson/gomplate/releases
 [multi-stage builds]: https://docs.docker.com/develop/develop-images/multistage-build/
 [hairyhenderson/gomplate]: https://hub.docker.com/r/hairyhenderson/gomplate/tags/

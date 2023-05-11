@@ -3,11 +3,11 @@
 {{- define "usage" }}### Usage
 {{- $arguments := index . "arguments" | default coll.Slice }}
 {{ if has . "rawUsage" }}{{ .rawUsage | strings.TrimSpace }}{{ else }}
-```go
+```
 {{ .name }}{{ range $a := $arguments }} {{template "argName" $a }}{{end}}
 ```
 {{- if (index . "pipeline" | default false) }}
-```go
+```
 {{ $last := (sub (len $arguments) 1) -}}
 {{ (index $arguments $last).name }} | {{ .name }}{{ range $i, $a := $arguments }}{{if not (eq $i $last)}} {{template "argName" $a }}{{end}}{{end}}
 ```

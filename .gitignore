@@ -6,3 +6,4 @@ report.xml
 *.cid
 *.iid
 *.out
+.netlify
