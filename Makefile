@@ -28,6 +28,9 @@ GO_LDFLAGS ?= $(COMMIT_FLAG) $(VERSION_FLAG)
 GOOS ?= $(shell $(GO) version | sed 's/^.*\ \([a-z0-9]*\)\/\([a-z0-9]*\)/\1/')
 GOARCH ?= $(shell $(GO) version | sed 's/^.*\ \([a-z0-9]*\)\/\([a-z0-9]*\)/\2/')
 
+# allow overriding CGO_ENABLED for scenarios where gomplate must be compiled with CGO enabled, such as when using boringcrypto.
+CGO_ENABLED ?= 0
+
 ifeq ("$(TARGETVARIANT)","")
 ifneq ("$(GOARM)","")
 TARGETVARIANT := v$(GOARM)
