@@ -106,35 +106,35 @@ build-release: artifacts.cid
 docker-images: gomplate.iid
 
 $(PREFIX)/bin/$(PKG_NAME)_%v5$(call extension,$(GOOS)): $(shell find $(PREFIX) -type f -name "*.go")
-	GOOS=$(shell echo $* | cut -f1 -d-) GOARCH=$(shell echo $* | cut -f2 -d- ) GOARM=5 CGO_ENABLED=0 \
+	GOOS=$(shell echo $* | cut -f1 -d-) GOARCH=$(shell echo $* | cut -f2 -d- ) GOARM=5 CGO_ENABLED=$(CGO_ENABLED) \
 		$(GO) build \
 			-ldflags "-w -s $(GO_LDFLAGS)" \
 			-o $@ \
 			./cmd/$(PKG_NAME)
 
 $(PREFIX)/bin/$(PKG_NAME)_%v6$(call extension,$(GOOS)): $(shell find $(PREFIX) -type f -name "*.go")
-	GOOS=$(shell echo $* | cut -f1 -d-) GOARCH=$(shell echo $* | cut -f2 -d- ) GOARM=6 CGO_ENABLED=0 \
+	GOOS=$(shell echo $* | cut -f1 -d-) GOARCH=$(shell echo $* | cut -f2 -d- ) GOARM=6 CGO_ENABLED=$(CGO_ENABLED) \
 		$(GO) build \
 			-ldflags "-w -s $(GO_LDFLAGS)" \
 			-o $@ \
 			./cmd/$(PKG_NAME)
 
 $(PREFIX)/bin/$(PKG_NAME)_%v7$(call extension,$(GOOS)): $(shell find $(PREFIX) -type f -name "*.go")
-	GOOS=$(shell echo $* | cut -f1 -d-) GOARCH=$(shell echo $* | cut -f2 -d- ) GOARM=7 CGO_ENABLED=0 \
+	GOOS=$(shell echo $* | cut -f1 -d-) GOARCH=$(shell echo $* | cut -f2 -d- ) GOARM=7 CGO_ENABLED=$(CGO_ENABLED) \
 		$(GO) build \
 			-ldflags "-w -s $(GO_LDFLAGS)" \
 			-o $@ \
 			./cmd/$(PKG_NAME)
 
 $(PREFIX)/bin/$(PKG_NAME)_windows-%.exe: $(shell find $(PREFIX) -type f -name "*.go")
-	GOOS=windows GOARCH=$* GOARM= CGO_ENABLED=0 \
+	GOOS=windows GOARCH=$* GOARM= CGO_ENABLED=$(CGO_ENABLED) \
 		$(GO) build \
 			-ldflags "-w -s $(GO_LDFLAGS)" \
 			-o $@ \
 			./cmd/$(PKG_NAME)
 
 $(PREFIX)/bin/$(PKG_NAME)_%$(TARGETVARIANT)$(call extension,$(GOOS)): $(shell find $(PREFIX) -type f -name "*.go")
-	GOOS=$(shell echo $* | cut -f1 -d-) GOARCH=$(shell echo $* | cut -f2 -d- ) GOARM=$(GOARM) CGO_ENABLED=0 \
+	GOOS=$(shell echo $* | cut -f1 -d-) GOARCH=$(shell echo $* | cut -f2 -d- ) GOARM=$(GOARM) CGO_ENABLED=$(CGO_ENABLED) \
 		$(GO) build \
 			-ldflags "-w -s $(GO_LDFLAGS)" \
 			-o $@ \
