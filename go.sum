@@ -1212,8 +1212,8 @@ github.com/grpc-ecosystem/grpc-gateway v1.16.0/go.mod h1:BDjrQk3hbvj6Nolgz8mAMFb
 github.com/grpc-ecosystem/grpc-gateway/v2 v2.7.0/go.mod h1:hgWBS7lorOAVIJEQMi4ZsPv9hVvWI6+ch50m39Pf2Ks=
 github.com/grpc-ecosystem/grpc-gateway/v2 v2.11.1/go.mod h1:G+WkljZi4mflcqVxYSgvt8MNctRQHjEH8ubKtt1Ka3w=
 github.com/grpc-ecosystem/grpc-gateway/v2 v2.11.3/go.mod h1:o//XUCC/F+yRGJoPO/VU0GSB0f8Nhgmxx0VIRUvaC0w=
-github.com/hack-pad/hackpadfs v0.2.0 h1:biRa6fvmuwwdbmODi2lnA+WlNkCStvmj3jr6DndMqKY=
-github.com/hack-pad/hackpadfs v0.2.0/go.mod h1:8Pz+ynD4SBpYltFauQHxSvCL35CCaqfTJBAs9Zbs38k=
+github.com/hack-pad/hackpadfs v0.2.1 h1:FelFhIhv26gyjujoA/yeFO+6YGlqzmc9la/6iKMIxMw=
+github.com/hack-pad/hackpadfs v0.2.1/go.mod h1:khQBuCEwGXWakkmq8ZiFUvUZz84ZkJ2KNwKvChs4OrU=
 github.com/hairyhenderson/go-fsimpl v0.0.0-20230121155226-8aa24800449d h1:RqyRRWUi3ftiPrEuO9ZbaILf6C8TDRw90fLM8pqbzGs=
 github.com/hairyhenderson/go-fsimpl v0.0.0-20230121155226-8aa24800449d/go.mod h1:2k9HLXToBp8dOXrbgZUTaZfm03JZlkCGkrgvp4ip/JQ=
 github.com/hairyhenderson/toml v0.4.2-0.20210923231440-40456b8e66cf h1:I1sbT4ZbIt9i+hB1zfKw2mE8C12TuGxPiW7YmtLbPa4=
