@@ -97,7 +97,7 @@ And a datasource `filemap.json`:
 We can blend these two together:
 
 ```console
-$ gomplate -t out=out.t -c filemap.json --input-dir=in --output-map='{{ template "out" }}'
+$ gomplate -t out=out.t -c filemap.json --input-dir=in --output-map='{{ template "out" . }}'
 ```
 
 ### `--chmod`
