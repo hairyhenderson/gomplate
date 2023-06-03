@@ -17,7 +17,7 @@ require (
 	github.com/hairyhenderson/go-fsimpl v0.0.0-20230121155226-8aa24800449d
 	github.com/hairyhenderson/toml v0.4.2-0.20210923231440-40456b8e66cf
 	github.com/hairyhenderson/xignore v0.3.3-0.20230403012150-95fe86932830 // iofs-port branch
-	github.com/hashicorp/consul/api v1.20.0
+	github.com/hashicorp/consul/api v1.21.0
 	github.com/hashicorp/go-sockaddr v1.0.2
 	github.com/hashicorp/vault/api v1.9.2
 	github.com/itchyny/gojq v0.12.12
