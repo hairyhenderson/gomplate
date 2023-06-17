@@ -29,10 +29,10 @@ require (
 	github.com/ugorji/go/codec v1.2.11
 	go4.org/netipx v0.0.0-20230125063823-8449b0a6169f
 	gocloud.dev v0.29.0
-	golang.org/x/crypto v0.9.0
-	golang.org/x/sys v0.8.0
-	golang.org/x/term v0.8.0
-	golang.org/x/text v0.9.0
+	golang.org/x/crypto v0.10.0
+	golang.org/x/sys v0.9.0
+	golang.org/x/term v0.9.0
+	golang.org/x/text v0.10.0
 	gotest.tools/v3 v3.4.0
 	inet.af/netaddr v0.0.0-20220811202034-502d2d690317
 	k8s.io/client-go v0.27.2
