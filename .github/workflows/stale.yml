@@ -15,6 +15,7 @@ jobs:
       - uses: actions/stale@v8
         # See https://github.com/actions/stale#all-options
         with:
+          exempt-all-milestones: true
           days-before-stale: 60
           days-before-close: 14
           stale-issue-message: |
