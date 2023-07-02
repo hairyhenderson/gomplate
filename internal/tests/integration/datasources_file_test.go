@@ -31,6 +31,24 @@ FOO.BAR = "values can be double-quoted, and shell\nescapes are supported"
 BAZ = "variable expansion: ${FOO}"
 QUX='single quotes ignore $variables'
 `,
+			"test.cue": `package core
+
+import "regexp"
+
+matches: regexp.FindSubmatch(#"^([^:]*):(\d+)$"#, "localhost:443")
+
+one: 1
+two: 2
+
+// A field using quotes.
+"two-and-a-half": 2.5
+
+list: [
+	1,
+	2,
+	3,
+]
+`,
 		}),
 		fs.WithDir("sortorder", fs.WithFiles(map[string]string{
 			"template": `aws_zones = {
@@ -120,7 +138,7 @@ func TestDatasources_File(t *testing.T) {
 
 	o, e, err = cmd(t, "-d", "dir="+tmpDir.Path()+"/",
 		"-i", `{{ range (ds "dir") }}{{ . }} {{ end }}`).run()
-	assertSuccess(t, o, e, err, "ajsonfile config.json config.yml config2.yml encrypted.json foo.csv sortorder test.env ")
+	assertSuccess(t, o, e, err, "ajsonfile config.json config.yml config2.yml encrypted.json foo.csv sortorder test.cue test.env ")
 
 	o, e, err = cmd(t, "-d", "enc="+tmpDir.Join("encrypted.json"),
 		"-i", `{{ (ds "enc").password }}`).
@@ -149,6 +167,14 @@ func TestDatasources_File(t *testing.T) {
   "FOO.BAR": "values can be double-quoted, and shell\nescapes are supported",
   "QUX": "single quotes ignore $variables"
 }`)
+
+	o, e, err = cmd(t, "-d", "cuedata="+tmpDir.Join("test.cue"),
+		"-i", `{{ (ds "cuedata").matches | data.ToJSONPretty "  " }}`).run()
+	assertSuccess(t, o, e, err, `[
+  "localhost:443",
+  "localhost",
+  "443"
+]`)
 }
 
 func TestDatasources_File_Directory(t *testing.T) {

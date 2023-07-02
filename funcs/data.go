@@ -48,11 +48,13 @@ func CreateDataFuncs(ctx context.Context,
 	f["csv"] = ns.CSV
 	f["csvByRow"] = ns.CSVByRow
 	f["csvByColumn"] = ns.CSVByColumn
+	f["cue"] = ns.CUE
 	f["toJSON"] = ns.ToJSON
 	f["toJSONPretty"] = ns.ToJSONPretty
 	f["toYAML"] = ns.ToYAML
 	f["toTOML"] = ns.ToTOML
 	f["toCSV"] = ns.ToCSV
+	f["toCUE"] = ns.ToCUE
 	return f
 }
 
@@ -101,9 +103,19 @@ func (f *DataFuncs) CSVByColumn(args ...string) (cols map[string][]string, err e
 	return data.CSVByColumn(args...)
 }
 
+// CUE -
+func (f *DataFuncs) CUE(in interface{}) (interface{}, error) {
+	return data.CUE(conv.ToString(in))
+}
+
 // ToCSV -
 func (f *DataFuncs) ToCSV(args ...interface{}) (string, error) {
 	return data.ToCSV(args...)
+}
+
+// ToCUE -
+func (f *DataFuncs) ToCUE(in interface{}) (string, error) {
+	return data.ToCUE(in)
 }
 
 // ToJSON -

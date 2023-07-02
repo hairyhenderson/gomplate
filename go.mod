@@ -3,6 +3,7 @@ module github.com/hairyhenderson/gomplate/v4
 go 1.21
 
 require (
+	cuelang.org/go v0.6.0
 	github.com/Masterminds/goutils v1.1.1
 	github.com/Masterminds/semver/v3 v3.2.1
 	github.com/Shopify/ejson v1.4.1
@@ -74,6 +75,7 @@ require (
 	github.com/aws/smithy-go v1.13.5 // indirect
 	github.com/cenkalti/backoff/v3 v3.2.2 // indirect
 	github.com/cloudflare/circl v1.3.3 // indirect
+	github.com/cockroachdb/apd/v3 v3.2.0 // indirect
 	github.com/cyphar/filepath-securejoin v0.2.4 // indirect
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
 	github.com/dustin/gojson v0.0.0-20160307161227-2e71ec9dd5ad // indirect
@@ -110,6 +112,7 @@ require (
 	github.com/mattn/go-isatty v0.0.19 // indirect
 	github.com/mitchellh/go-homedir v1.1.0 // indirect
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
+	github.com/mpvl/unique v0.0.0-20150818121801-cbe035fff7de // indirect
 	github.com/pjbgf/sha1cd v0.3.0 // indirect
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
 	github.com/ryanuber/go-glob v1.0.0 // indirect
