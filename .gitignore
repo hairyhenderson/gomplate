@@ -1,7 +1,10 @@
 .git
+.bin
 bin
 report.xml
 ./gomplate
 *.cid
 *.iid
 *.out
+
+.vscode

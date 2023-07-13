@@ -193,3 +193,15 @@ ci-lint:
 .PHONY: gen-changelog clean test build-x build-release build test-integration-docker gen-docs lint clean-images clean-containers docker-images
 .DELETE_ON_ERROR:
 .SECONDARY:
+
+.PHONY: gencel
+gencel:
+	go build -o .bin/gencel -gcflags="all=-N -l" cmd/gencel.go
+
+.PHONY: gencel-gen
+gencel-gen: gencel
+	cd funcs/ && ../.bin/gencel
+
+.PHONY: cleancel
+cleancel:
+	rm funcs/*_gen.go
