@@ -1,6 +1,7 @@
 package gencel
 
 import (
+	"fmt"
 	"go/ast"
 	"log"
 	"regexp"
@@ -38,6 +39,8 @@ func (t *File) visitor(n ast.Node) bool {
 }
 
 func (t *File) handleFuncDecl(n *ast.FuncDecl) bool {
+
+	fmt.Printf("handle: %s", n.Name.Name)
 	for _, blf := range blacklistedFuncs {
 		if blf.MatchString(n.Name.Name) {
 			log.Printf("Ignoring func [%s]. Blacklisted pattern", n.Name.Name)

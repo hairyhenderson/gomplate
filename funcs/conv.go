@@ -7,7 +7,6 @@ import (
 
 	"github.com/flanksource/gomplate/v3/coll"
 	"github.com/flanksource/gomplate/v3/conv"
-	"github.com/flanksource/gomplate/v3/internal/deprecated"
 )
 
 // ConvNS -
@@ -46,7 +45,6 @@ type ConvFuncs struct {
 // Bool -
 // Deprecated: use ToBool instead
 func (f *ConvFuncs) Bool(s interface{}) bool {
-	deprecated.WarnDeprecated(f.ctx, "conv.Bool is deprecated - use conv.ToBool instead")
 	return conv.Bool(conv.ToString(s))
 }
 
@@ -63,7 +61,6 @@ func (ConvFuncs) ToBools(in ...interface{}) []bool {
 // Slice -
 // Deprecated: use coll.Slice instead
 func (f *ConvFuncs) Slice(args ...interface{}) []interface{} {
-	deprecated.WarnDeprecated(f.ctx, "conv.Slice is deprecated - use coll.Slice instead")
 	return coll.Slice(args...)
 }
 
@@ -75,7 +72,6 @@ func (ConvFuncs) Join(in interface{}, sep string) (string, error) {
 // Has -
 // Deprecated: use coll.Has instead
 func (f *ConvFuncs) Has(in interface{}, key string) bool {
-	deprecated.WarnDeprecated(f.ctx, "conv.Has is deprecated - use coll.Has instead")
 	return coll.Has(in, key)
 }
 
@@ -155,6 +151,5 @@ func (ConvFuncs) Default(def, in interface{}) interface{} {
 // Dict -
 // Deprecated: use coll.Dict instead
 func (f *ConvFuncs) Dict(in ...interface{}) (map[string]interface{}, error) {
-	deprecated.WarnDeprecated(f.ctx, "conv.Dict is deprecated - use coll.Dict instead")
 	return coll.Dict(in...)
 }

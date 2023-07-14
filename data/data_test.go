@@ -9,10 +9,6 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/stretchr/testify/assert"
-
-	"os"
-
-	"gotest.tools/v3/fs"
 )
 
 func TestUnmarshalObj(t *testing.T) {
@@ -503,72 +499,6 @@ true = true
 	out, err := ToTOML(in)
 	assert.NoError(t, err)
 	assert.Equal(t, expected, out)
-}
-
-func TestDecryptEJSON(t *testing.T) {
-	privateKey := "e282d979654f88267f7e6c2d8268f1f4314b8673579205ed0029b76de9c8223f"
-	publicKey := "6e05ec625bcdca34864181cc43e6fcc20a57732a453bc2f4a2e117ffdf1a6762"
-	expected := map[string]interface{}{
-		"password":     "supersecret",
-		"_unencrypted": "notsosecret",
-	}
-	in := `{
-		"_public_key": "` + publicKey + `",
-		"password": "EJ[1:yJ7n4UorqxkJZMoKevIA1dJeDvaQhkbgENIVZW18jig=:0591iW+paVSh4APOytKBVW/ZcxHO/5wO:TssnpVtkiXmpDIxPlXSiYdgnWyd44stGcwG1]",
-		"_unencrypted": "notsosecret"
-	}`
-
-	os.Setenv("EJSON_KEY", privateKey)
-	defer os.Unsetenv("EJSON_KEY")
-	actual, err := decryptEJSON(in)
-	assert.NoError(t, err)
-	assert.EqualValues(t, expected, actual)
-
-	actual, err = JSON(in)
-	assert.NoError(t, err)
-	assert.EqualValues(t, expected, actual)
-
-	tmpDir := fs.NewDir(t, "gomplate-ejsontest",
-		fs.WithFile(publicKey, privateKey),
-	)
-	defer tmpDir.Remove()
-
-	os.Unsetenv("EJSON_KEY")
-	os.Setenv("EJSON_KEY_FILE", tmpDir.Join(publicKey))
-	defer os.Unsetenv("EJSON_KEY_FILE")
-	actual, err = decryptEJSON(in)
-	assert.NoError(t, err)
-	assert.EqualValues(t, expected, actual)
-
-	os.Unsetenv("EJSON_KEY")
-	os.Unsetenv("EJSON_KEY_FILE")
-	os.Setenv("EJSON_KEYDIR", tmpDir.Path())
-	defer os.Unsetenv("EJSON_KEYDIR")
-	actual, err = decryptEJSON(in)
-	assert.NoError(t, err)
-	assert.EqualValues(t, expected, actual)
-}
-
-func TestDotEnv(t *testing.T) {
-	in := `FOO=a regular unquoted value
-export BAR=another value, exports are ignored
-
-# comments are totally ignored, as are blank lines
-FOO.BAR = "values can be double-quoted, and shell\nescapes are supported"
-
-BAZ = "variable expansion: ${FOO}"
-QUX='single quotes ignore $variables'
-`
-	expected := map[string]interface{}{
-		"FOO":     "a regular unquoted value",
-		"BAR":     "another value, exports are ignored",
-		"FOO.BAR": "values can be double-quoted, and shell\nescapes are supported",
-		"BAZ":     "variable expansion: a regular unquoted value",
-		"QUX":     "single quotes ignore $variables",
-	}
-	out, err := dotEnv(in)
-	assert.NoError(t, err)
-	assert.EqualValues(t, expected, out)
 }
 
 func TestStringifyYAMLArrayMapKeys(t *testing.T) {

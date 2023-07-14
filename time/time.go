@@ -2,9 +2,8 @@
 package time
 
 import (
+	"os"
 	"time"
-
-	"github.com/flanksource/gomplate/v3/env"
 )
 
 // ZoneName - a convenience function for determining the current timezone's name
@@ -20,11 +19,15 @@ func ZoneOffset() int {
 }
 
 func zone() (string, int) {
+
+	tz := os.Getenv("TZ")
+	if tz == "" {
+		tz = "Local"
+	}
 	// re-read TZ env var in case it's changed since the process started.
 	// This may happen in certain rare instances when this is being called as a
 	// library, or in a test. It allows for a bit more flexibility too, as
 	// changing time.Local is prone to data races.
-	tz := env.Getenv("TZ", "Local")
 	loc, err := time.LoadLocation(tz)
 	if err != nil {
 		loc = time.Local

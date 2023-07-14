@@ -117,3 +117,10 @@ func (f TestFuncs) IsKind(kind string, arg interface{}) bool {
 	}
 	return k == kind
 }
+
+func must(r interface{}, err error) interface{} {
+	if err != nil {
+		panic(err)
+	}
+	return r
+}

@@ -12,12 +12,7 @@ import (
 	"io"
 	"strings"
 
-	"github.com/joho/godotenv"
-
-	"github.com/Shopify/ejson"
-	ejsonJson "github.com/Shopify/ejson/json"
 	"github.com/flanksource/gomplate/v3/conv"
-	"github.com/flanksource/gomplate/v3/env"
 
 	// XXX: replace once https://github.com/BurntSushi/toml/pull/179 is merged
 	"github.com/hairyhenderson/toml"
@@ -51,31 +46,7 @@ func JSON(in string) (map[string]interface{}, error) {
 		return out, err
 	}
 
-	_, ok := out[ejsonJson.PublicKeyField]
-	if ok {
-		out, err = decryptEJSON(in)
-	}
 	return out, err
-}
-
-// decryptEJSON - decrypts an ejson input, and unmarshals it, stripping the _public_key field.
-func decryptEJSON(in string) (map[string]interface{}, error) {
-	keyDir := env.Getenv("EJSON_KEYDIR", "/opt/ejson/keys")
-	key := env.Getenv("EJSON_KEY")
-
-	rIn := bytes.NewBufferString(in)
-	rOut := &bytes.Buffer{}
-	err := ejson.Decrypt(rIn, rOut, keyDir, key)
-	if err != nil {
-		return nil, errors.WithStack(err)
-	}
-	obj := make(map[string]interface{})
-	out, err := unmarshalObj(obj, rOut.String(), yaml.Unmarshal)
-	if err != nil {
-		return nil, errors.WithStack(err)
-	}
-	delete(out, ejsonJson.PublicKeyField)
-	return out, nil
 }
 
 // JSONArray - Unmarshal a JSON Array
@@ -187,19 +158,6 @@ func stringifyMapKeys(in interface{}) (interface{}, bool) {
 func TOML(in string) (interface{}, error) {
 	obj := make(map[string]interface{})
 	return unmarshalObj(obj, in, toml.Unmarshal)
-}
-
-// dotEnv - Unmarshal a dotenv file
-func dotEnv(in string) (interface{}, error) {
-	env, err := godotenv.Unmarshal(in)
-	if err != nil {
-		return nil, err
-	}
-	out := make(map[string]interface{})
-	for k, v := range env {
-		out[k] = v
-	}
-	return out, nil
 }
 
 func parseCSV(args ...string) ([][]string, []string, error) {

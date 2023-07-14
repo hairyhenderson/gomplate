@@ -3,12 +3,12 @@ package funcs
 import (
 	"context"
 	"fmt"
+	"os"
 	"strconv"
 	"strings"
 	gotime "time"
 
 	"github.com/flanksource/gomplate/v3/conv"
-	"github.com/flanksource/gomplate/v3/env"
 	"github.com/flanksource/gomplate/v3/time"
 )
 
@@ -105,7 +105,10 @@ func (TimeFuncs) Parse(layout string, value interface{}) (gotime.Time, error) {
 
 // ParseLocal -
 func (f TimeFuncs) ParseLocal(layout string, value interface{}) (gotime.Time, error) {
-	tz := env.Getenv("TZ", "Local")
+	tz := os.Getenv("TZ")
+	if tz == "" {
+		tz = "Local"
+	}
 	return f.ParseInLocation(layout, tz, value)
 }
 

@@ -3,10 +3,8 @@ package funcs
 import (
 	"context"
 	"strconv"
-	"strings"
 	"testing"
 
-	"github.com/flanksource/gomplate/v3/internal/config"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -26,32 +24,7 @@ func TestCreateCryptoFuncs(t *testing.T) {
 }
 
 func testCryptoNS() *CryptoFuncs {
-	return &CryptoFuncs{ctx: config.SetExperimental(context.Background())}
-}
-
-func TestPBKDF2(t *testing.T) {
-	t.Parallel()
-
-	c := testCryptoNS()
-	dk, err := c.PBKDF2("password", []byte("IEEE"), "4096", 32)
-	assert.Equal(t, "f42c6fc52df0ebef9ebb4b90b38a5f902e83fe1b135a70e23aed762e9710a12e", dk)
-	assert.NoError(t, err)
-
-	dk, err = c.PBKDF2([]byte("password"), "IEEE", 4096, "64", "SHA-512")
-	assert.Equal(t, "c16f4cb6d03e23614399dee5e7f676fb1da0eb9471b6a74a6c5bc934c6ec7d2ab7028fbb1000b1beb97f17646045d8144792352f6676d13b20a4c03754903d7e", dk)
-	assert.NoError(t, err)
-
-	_, err = c.PBKDF2(nil, nil, nil, nil, "bogus")
-	assert.Error(t, err)
-}
-
-func TestWPAPSK(t *testing.T) {
-	t.Parallel()
-
-	c := testCryptoNS()
-	dk, err := c.WPAPSK("password", "MySSID")
-	assert.Equal(t, "3a98def84b11644a17ebcc9b17955d2360ce8b8a85b8a78413fc551d722a84e7", dk)
-	assert.NoError(t, err)
+	return &CryptoFuncs{}
 }
 
 func TestSHA(t *testing.T) {
@@ -73,155 +46,4 @@ func TestSHA(t *testing.T) {
 	assert.Equal(t, sha512, c.SHA512(in))
 	assert.Equal(t, sha512_224, c.SHA512_224(in))
 	assert.Equal(t, sha512_256, c.SHA512_256(in))
-}
-
-func TestBcrypt(t *testing.T) {
-	t.Parallel()
-
-	if testing.Short() {
-		t.Skip("skipping slow test")
-	}
-
-	in := "foo"
-	c := testCryptoNS()
-
-	t.Run("no arg default", func(t *testing.T) {
-		t.Parallel()
-
-		actual, err := c.Bcrypt(in)
-		assert.NoError(t, err)
-		assert.True(t, strings.HasPrefix(actual, "$2a$10$"))
-	})
-
-	t.Run("cost less than min", func(t *testing.T) {
-		t.Parallel()
-
-		actual, err := c.Bcrypt(0, in)
-		assert.NoError(t, err)
-		assert.True(t, strings.HasPrefix(actual, "$2a$10$"))
-	})
-
-	t.Run("cost equal to min", func(t *testing.T) {
-		t.Parallel()
-
-		actual, err := c.Bcrypt(4, in)
-		assert.NoError(t, err)
-		assert.True(t, strings.HasPrefix(actual, "$2a$04$"))
-	})
-
-	t.Run("no args errors", func(t *testing.T) {
-		t.Parallel()
-
-		_, err := c.Bcrypt()
-		assert.Error(t, err)
-	})
-}
-
-func TestRSAGenerateKey(t *testing.T) {
-	t.Parallel()
-
-	c := testCryptoNS()
-	_, err := c.RSAGenerateKey(0)
-	assert.Error(t, err)
-
-	_, err = c.RSAGenerateKey(0, "foo", true)
-	assert.Error(t, err)
-
-	key, err := c.RSAGenerateKey(2048)
-	assert.NoError(t, err)
-	assert.True(t, strings.HasPrefix(key,
-		"-----BEGIN RSA PRIVATE KEY-----"))
-	assert.True(t, strings.HasSuffix(key,
-		"-----END RSA PRIVATE KEY-----\n"))
-}
-
-func TestECDSAGenerateKey(t *testing.T) {
-	c := testCryptoNS()
-	_, err := c.ECDSAGenerateKey("")
-	assert.Error(t, err)
-
-	_, err = c.ECDSAGenerateKey(0, "P-999", true)
-	assert.Error(t, err)
-
-	key, err := c.ECDSAGenerateKey("P-256")
-	assert.NoError(t, err)
-	assert.True(t, strings.HasPrefix(key,
-		"-----BEGIN EC PRIVATE KEY-----"))
-	assert.True(t, strings.HasSuffix(key,
-		"-----END EC PRIVATE KEY-----\n"))
-}
-
-func TestECDSADerivePublicKey(t *testing.T) {
-	c := testCryptoNS()
-
-	_, err := c.ECDSADerivePublicKey("")
-	assert.Error(t, err)
-
-	key, _ := c.ECDSAGenerateKey("P-256")
-	pub, err := c.ECDSADerivePublicKey(key)
-	assert.NoError(t, err)
-	assert.True(t, strings.HasPrefix(pub,
-		"-----BEGIN PUBLIC KEY-----"))
-	assert.True(t, strings.HasSuffix(pub,
-		"-----END PUBLIC KEY-----\n"))
-}
-
-func TestRSACrypt(t *testing.T) {
-	t.Parallel()
-
-	if testing.Short() {
-		t.Skip("skipping slow test")
-	}
-
-	c := testCryptoNS()
-	key, err := c.RSAGenerateKey()
-	assert.NoError(t, err)
-	pub, err := c.RSADerivePublicKey(key)
-	assert.NoError(t, err)
-
-	in := "hello world"
-	enc, err := c.RSAEncrypt(pub, in)
-	assert.NoError(t, err)
-
-	dec, err := c.RSADecrypt(key, enc)
-	assert.NoError(t, err)
-	assert.Equal(t, in, dec)
-
-	b, err := c.RSADecryptBytes(key, enc)
-	assert.NoError(t, err)
-	assert.Equal(t, dec, string(b))
-}
-
-func TestAESCrypt(t *testing.T) {
-	c := testCryptoNS()
-	key := "0123456789012345"
-	in := "hello world"
-
-	_, err := c.EncryptAES(key, 1, 2, 3, 4)
-	assert.Error(t, err)
-
-	_, err = c.DecryptAES(key, 1, 2, 3, 4)
-	assert.Error(t, err)
-
-	enc, err := c.EncryptAES(key, in)
-	assert.NoError(t, err)
-
-	dec, err := c.DecryptAES(key, enc)
-	assert.NoError(t, err)
-	assert.Equal(t, in, dec)
-
-	b, err := c.DecryptAESBytes(key, enc)
-	assert.NoError(t, err)
-	assert.Equal(t, dec, string(b))
-
-	enc, err = c.EncryptAES(key, 128, in)
-	assert.NoError(t, err)
-
-	dec, err = c.DecryptAES(key, 128, enc)
-	assert.NoError(t, err)
-	assert.Equal(t, in, dec)
-
-	b, err = c.DecryptAESBytes(key, 128, enc)
-	assert.NoError(t, err)
-	assert.Equal(t, dec, string(b))
 }

@@ -5,7 +5,7 @@ import (
 
 	"github.com/flanksource/gomplate/v3/funcs"
 	"github.com/google/cel-go/cel"
-	"gotest.tools/v3/assert"
+	"github.com/stretchr/testify/assert"
 )
 
 func panIf(err error) {
@@ -29,7 +29,7 @@ func executeTemplate(t *testing.T, i int, input string, output any) {
 	out, _, err := prg.Eval(map[string]any{})
 	panIf(err)
 
-	assert.DeepEqual(t, out.Value(), output)
+	assert.EqualValues(t, out.Value(), output)
 }
 
 func TestCelNamespace(t *testing.T) {

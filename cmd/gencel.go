@@ -2,8 +2,8 @@ package main
 
 import (
 	"flag"
+	"fmt"
 
-	"github.com/flanksource/commons/logger"
 	"github.com/flanksource/gomplate/v3/gencel"
 )
 
@@ -13,7 +13,7 @@ func main() {
 	if len(args) == 0 {
 		args = []string{"."}
 	}
-	logger.Infof("Generating cel functions for %s\n", args)
+	fmt.Printf("Generating cel functions for %s\n", args)
 
 	g := gencel.Generator{}
 	g.ParsePkg(args...)

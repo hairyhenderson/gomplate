@@ -11,7 +11,6 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/flanksource/commons/logger"
 	"golang.org/x/tools/go/packages"
 )
 
@@ -42,10 +41,12 @@ func (g *Generator) ParsePkg(patterns ...string) {
 	}
 	pkgs, err := packages.Load(cfg, patterns...)
 	if err != nil {
-		logger.Fatalf("failed to load packages: %v", err)
+		fmt.Printf("failed to load packages: %v", err)
+		os.Exit(1)
 	}
 	if len(pkgs) != 1 {
-		logger.Fatalf("expected 1 packages but found %d", len(pkgs))
+		fmt.Printf("expected 1 packages but found %d", len(pkgs))
+		os.Exit(1)
 	}
 
 	g.addPackage(pkgs[0])
@@ -65,10 +66,6 @@ func (g *Generator) addPackage(pkg *packages.Package) {
 	g.pkg.baseDir = filepath.Dir(pkg.GoFiles[0])
 
 	for i, astFile := range pkg.Syntax {
-		if _, ok := exlusions[filepath.Base(pkg.GoFiles[i])]; ok {
-			logger.Infof("Excluding file: %s", pkg.GoFiles[i])
-			continue
-		}
 
 		g.pkg.files = append(g.pkg.files, &File{
 			file: astFile,
@@ -105,7 +102,8 @@ func (g *Generator) generateExports() {
 	outputName := filepath.Join(g.pkg.baseDir, "cel_gen_exports.go")
 	err := os.WriteFile(outputName, g.format(), 0644)
 	if err != nil {
-		logger.Fatalf("error writing to file: %v", err)
+		fmt.Printf("error writing to file: %v", err)
+		os.Exit(1)
 	}
 }
 
@@ -162,7 +160,8 @@ func (g *Generator) generateFile(file *File) {
 	outputName := filepath.Join(filepath.Dir(file.path), fmt.Sprintf("%s_gen.go", fileName))
 	err := os.WriteFile(outputName, g.format(), 0644)
 	if err != nil {
-		logger.Fatalf("%v", err)
+		fmt.Printf("%v", err)
+		os.Exit(1)
 	}
 }
 
@@ -189,7 +188,8 @@ func (g *Generator) renderHeader(pkgName string, imports ...PkgImport) {
 func (g *Generator) printf(format string, args ...interface{}) {
 	_, err := fmt.Fprintf(&g.buf, format, args...)
 	if err != nil {
-		logger.Fatalf("fmt.Fprintf(): %v", err)
+		fmt.Printf("fmt.Fprintf(): %v", err)
+		os.Exit(1)
 	}
 }
 
@@ -198,12 +198,15 @@ func (g *Generator) renderExport(model interface{}) {
 
 	t, err := t.Parse(exportAllTemplate)
 	if err != nil {
-		logger.Fatalf("instance template parse: %v", err)
+		fmt.Printf("instance template parse: %v", err)
+		os.Exit(1)
 	}
 
 	err = t.Execute(&g.buf, model)
 	if err != nil {
-		logger.Fatalf("Execute: %v", err)
+		fmt.Printf("Execute: %v", err)
+		os.Exit(1)
+
 	}
 }
 
@@ -212,26 +215,29 @@ func (g *Generator) render(model interface{}) {
 
 	t, err := t.Parse(funcDefTemplate)
 	if err != nil {
-		logger.Fatalf("instance template parse: %v", err)
+		fmt.Printf("instance template parse: %v", err)
+		os.Exit(1)
 	}
 
 	t, err = t.Parse(funcBodyTemplate)
 	if err != nil {
-		logger.Fatalf("instance template parse: %v", err)
+		fmt.Printf("instance template parse: %v", err)
+		os.Exit(1)
+
 	}
 
 	err = t.Execute(&g.buf, model)
 	if err != nil {
-		logger.Fatalf("Execute: %v", err)
-		return
+		fmt.Printf("Execute: %v", err)
+		os.Exit(1)
 	}
 }
 
 func (g *Generator) format() []byte {
 	src, err := format.Source(g.buf.Bytes())
 	if err != nil {
-		logger.Debugf("warning: internal error: invalid Go generated: %s", err)
-		logger.Debugf("warning: compile the package to analyze the error")
+		fmt.Printf("warning: internal error: invalid Go generated: %s", err)
+		fmt.Printf("warning: compile the package to analyze the error")
 		return g.buf.Bytes()
 	}
 	return src
@@ -240,18 +246,7 @@ func (g *Generator) format() []byte {
 // Some imports are difficult to infer.
 // We hardcode some imports for some files here.
 var importConf = map[string][]PkgImport{
-	"time.go":     {{alias: "gotime", importPath: "time"}},
-	"sockaddr.go": {{alias: "sockaddr", importPath: "github.com/hashicorp/go-sockaddr"}},
-}
-
-// List of files that should be excluded.
-// We don't generate cel functions for these files.
-var exlusions = map[string]struct{}{
-	"aws.go":    {},
-	"base64.go": {},
-	"env.go":    {},
-	"gcp.go":    {},
-	"net.go":    {},
+	"time.go": {{alias: "gotime", importPath: "time"}},
 }
 
 // List of files that shouldn't be namespaced.
@@ -262,4 +257,5 @@ var exlusions = map[string]struct{}{
 var notNamespaced = map[string]struct{}{
 	"coll.go":    {},
 	"strings.go": {},
+	"k8s.go":     {},
 }

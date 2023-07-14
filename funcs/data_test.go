@@ -17,7 +17,7 @@ func TestCreateDataFuncs(t *testing.T) {
 			t.Parallel()
 
 			ctx := context.Background()
-			fmap := CreateDataFuncs(ctx, nil)
+			fmap := CreateDataFuncs(ctx)
 			actual := fmap["data"].(func() interface{})
 
 			assert.Same(t, ctx, actual().(*DataFuncs).ctx)
