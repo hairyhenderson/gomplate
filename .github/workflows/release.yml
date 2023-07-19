@@ -1,0 +1,18 @@
+name: Create Release
+on:
+  push:
+    branches:
+      - main
+jobs:
+  semantic-release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: codfish/semantic-release-action@v2
+        id: semantic
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    outputs:
+      release-version: ${{ steps.semantic.outputs.release-version }}
+      new-release-published: ${{ steps.semantic.outputs.new-release-published }}
+ 
