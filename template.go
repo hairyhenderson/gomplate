@@ -5,11 +5,16 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"os"
 	"strings"
 	gotemplate "text/template"
 
 	"github.com/flanksource/gomplate/v3/funcs"
+	_ "github.com/flanksource/gomplate/v3/js"
 	"github.com/google/cel-go/cel"
+	"github.com/robertkrimen/otto"
+	"github.com/robertkrimen/otto/registry"
+	_ "github.com/robertkrimen/otto/underscore"
 )
 
 var funcMap gotemplate.FuncMap
@@ -19,9 +24,9 @@ func init() {
 }
 
 type Template struct {
-	Template   string `yaml:"template,omitempty" json:"template,omitempty"`
+	Template   string `yaml:"template,omitempty" json:"template,omitempty"` // Go template
 	JSONPath   string `yaml:"jsonPath,omitempty" json:"jsonPath,omitempty"`
-	Expression string `yaml:"expr,omitempty" json:"expr,omitempty"`
+	Expression string `yaml:"expr,omitempty" json:"expr,omitempty"` // A cel-go expression
 	Javascript string `yaml:"javascript,omitempty" json:"javascript,omitempty"`
 }
 
@@ -29,31 +34,26 @@ func (t Template) IsEmpty() bool {
 	return t.Template == "" && t.JSONPath == "" && t.Expression == "" && t.Javascript == ""
 }
 
-func RunTemplate(environment map[string]interface{}, template Template) (string, error) {
+func RunTemplate(environment map[string]any, template Template) (string, error) {
 	// javascript
 	if template.Javascript != "" {
-		// // FIXME: whitelist allowed files
-		// vm := otto.New()
-		// for k, v := range environment {
-		// 	if err := vm.Set(k, v); err != nil {
-		// 		return "", errors.Wrapf(err, "error setting %s", k)
-		// 	}
-		// }
+		vm := otto.New()
+		for k, v := range environment {
+			if err := vm.Set(k, v); err != nil {
+				return "", fmt.Errorf("error setting %s", k)
+			}
+		}
 
-		// if err != nil {
-		// 	return "", errors.Wrapf(err, "error setting findConfigItem function")
-		// }
+		out, err := vm.Run(template.Javascript)
+		if err != nil {
+			return "", fmt.Errorf("failed to run javascript: %v", err)
+		}
 
-		// out, err := vm.Run(template.Javascript)
-		// if err != nil {
-		// 	return "", errors.Wrapf(err, "failed to run javascript")
-		// }
-
-		// if s, err := out.ToString(); err != nil {
-		// 	return "", errors.Wrapf(err, "failed to cast output to string")
-		// } else {
-		// 	return s, nil
-		// }
+		if s, err := out.ToString(); err != nil {
+			return "", fmt.Errorf("failed to cast output to string: %v", err)
+		} else {
+			return s, nil
+		}
 	}
 
 	// gotemplate
@@ -64,9 +64,9 @@ func RunTemplate(environment map[string]interface{}, template Template) (string,
 			return "", err
 		}
 
-		// marshal data from interface{} to map[string]interface{}
+		// marshal data from any to map[string]any
 		data, _ := json.Marshal(environment)
-		unstructured := make(map[string]interface{})
+		unstructured := make(map[string]any)
 		if err := json.Unmarshal(data, &unstructured); err != nil {
 			return "", err
 		}
@@ -107,4 +107,17 @@ func RunTemplate(environment map[string]interface{}, template Template) (string,
 	}
 
 	return "", nil
+}
+
+// LoadSharedLibrary loads a shared library for Otto
+func LoadSharedLibrary(source string) error {
+	source = strings.TrimSpace(source)
+	data, err := os.ReadFile(source)
+	if err != nil {
+		return fmt.Errorf("failed to read shared library %s: %s", source, err)
+	}
+
+	fmt.Printf("Loaded %s: \n%s\n", source, string(data))
+	registry.Register(func() string { return string(data) })
+	return nil
 }
