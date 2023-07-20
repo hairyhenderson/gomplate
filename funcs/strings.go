@@ -72,19 +72,19 @@ func CreateStringFuncs(ctx context.Context) map[string]interface{} {
 	return f
 }
 
-func (ns StringFuncs) HumanDuration(in interface{}) (string, error) {
+func (f StringFuncs) HumanDuration(in interface{}) (string, error) {
 	return gompstrings.HumanDuration(in), nil
 }
 
-func (ns StringFuncs) HumanSize(in interface{}) (string, error) {
+func (f StringFuncs) HumanSize(in interface{}) (string, error) {
 	return gompstrings.HumanBytes(in), nil
 }
 
-func (ns StringFuncs) Semver(in string) (*semver.Version, error) {
+func (f StringFuncs) Semver(in string) (*semver.Version, error) {
 	return gompstrings.Semver(in)
 }
 
-func (ns StringFuncs) SemverMap(in string) (map[string]string, error) {
+func (f StringFuncs) SemverMap(in string) (map[string]string, error) {
 	v, err := gompstrings.Semver(in)
 	if err != nil {
 		return nil, err
@@ -102,7 +102,7 @@ func (ns StringFuncs) SemverMap(in string) (map[string]string, error) {
 	return res, nil
 }
 
-func (ns StringFuncs) SemverCompare(v1, v2 string) (bool, error) {
+func (f StringFuncs) SemverCompare(v1, v2 string) (bool, error) {
 	return gompstrings.SemverCompare(v1, v2)
 }
 

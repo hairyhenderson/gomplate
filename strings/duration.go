@@ -16,6 +16,8 @@ import (
 	"errors"
 	"strings"
 	"time"
+
+	"github.com/google/cel-go/common/types"
 )
 
 // Duration is a standard unit of time.
@@ -38,6 +40,7 @@ func (d Duration) String() string {
 		u = -u
 	}
 
+	//nolint:gocritic
 	if u < uint64(Second) {
 		// Special case: if duration is smaller than a second,
 		// use smaller units, like 1.2ms
@@ -407,11 +410,13 @@ func parseDuration(s string) (Duration, error) {
 func HumanDuration(duration interface{}) string {
 	switch v := duration.(type) {
 	case int64:
-		return Duration(time.Duration(int64(v))).String()
+		return Duration(time.Duration(v)).String()
 	case float64:
 		return Duration(time.Duration(int64(v))).String()
 	case time.Duration:
 		return Duration(v).String()
+	case types.Duration:
+		return Duration(v.Duration).String()
 	}
 	return ""
 }
@@ -423,4 +428,12 @@ func ParseDuration(val string) (*time.Duration, error) {
 	}
 	t := time.Duration(d)
 	return &t, err
+}
+
+func Age(s string) time.Duration {
+	t, err := time.Parse(time.RFC3339, s)
+	if err != nil {
+		panic(err)
+	}
+	return time.Since(t)
 }

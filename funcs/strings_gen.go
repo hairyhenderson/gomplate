@@ -11,20 +11,14 @@ import (
 
 var stringsHumanDurationGen = cel.Function("HumanDuration",
 	cel.Overload("HumanDuration_interface{}",
-
 		[]*cel.Type{
 			cel.DynType,
 		},
-		cel.DynType,
-		cel.FunctionBinding(func(args ...ref.Val) ref.Val {
-
+		cel.StringType,
+		cel.UnaryBinding(func(arg  ref.Val) ref.Val {
 			var x StringFuncs
-
-			a0, a1 := x.HumanDuration(args[0])
-			return types.DefaultTypeAdapter.NativeToValue([]any{
-				a0, a1,
-			})
-
+			a0, _ := x.HumanDuration(arg)
+			return types.String(a0)
 		}),
 	),
 )

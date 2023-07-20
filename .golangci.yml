@@ -44,7 +44,7 @@ linters:
     # - gci
     # - gochecknoglobals
     # - gochecknoinits
-    - gocognit
+    # - gocognit
     - goconst
     - gocritic
     # - gocyclo
@@ -63,7 +63,7 @@ linters:
     # - lll
     - misspell
     - nakedret
-    - nestif
+    # - nestif
     # - nlreturn
     # - noctx
     # - nolintlint

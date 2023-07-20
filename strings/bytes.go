@@ -86,22 +86,22 @@ func HumanBytes(size interface{}) string {
 	switch {
 	case bytes >= EXABYTE:
 		unit = "E"
-		value = value / EXABYTE
+		value /= EXABYTE
 	case bytes >= PETABYTE:
 		unit = "P"
-		value = value / PETABYTE
+		value /= PETABYTE
 	case bytes >= TERABYTE:
 		unit = "T"
-		value = value / TERABYTE
+		value /= TERABYTE
 	case bytes >= GIGABYTE:
 		unit = "G"
-		value = value / GIGABYTE
+		value /= GIGABYTE
 	case bytes >= MEGABYTE:
 		unit = "M"
-		value = value / MEGABYTE
+		value /= MEGABYTE
 	case bytes >= KILOBYTE:
 		unit = "K"
-		value = value / KILOBYTE
+		value /= KILOBYTE
 	case bytes >= BYTE:
 		unit = "B"
 	case bytes == 0:

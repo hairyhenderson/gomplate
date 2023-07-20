@@ -22,11 +22,7 @@ func transferSlice[K any](arg ref.Val) []K {
 }
 
 var CelEnvOption = []cel.EnvOption{
-	durationStringGen,
-	durationNanosecondsGen,
-	durationSecondsGen,
-	durationHoursGen,
-	durationDaysGen,
-	durationWeeksGen,
-	durationMinutesGen,
+	durationAgeGen,
+	// durationHumanize,
+	durationDurationGen,
 }

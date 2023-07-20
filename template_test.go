@@ -83,6 +83,24 @@ func TestCel(t *testing.T) {
 		{map[string]interface{}{"v": "1.2.3-beta.1+c0ff33"}, "Semver(v).prerelease", "beta.1"},
 		{map[string]interface{}{"old": "1.2.3", "new": "1.2.3"}, "SemverCompare(new, old)", "true"},
 		{map[string]interface{}{"old": "1.2.3", "new": "1.2.4"}, "SemverCompare(new, old)", "false"},
+		{map[string]interface{}{"code": 200}, "string(code) + ' is not equal to 500'", "200 is not equal to 500"},
+
+		// Durations
+		{nil, `HumanDuration(duration("1008h"))`, "6w0d0h"},
+		{nil, `Duration("7d").getHours()`, "168"},
+		{nil, `duration("1h") > duration("2h")`, "false"},
+		{map[string]interface{}{"t": "2020-01-01T00:00:00Z"}, `Age(t) > duration('1h')`, "true"},
+		{map[string]interface{}{"t": "2020-01-01T00:00:00Z"}, `Age(t) > Duration('3d')`, "true"},
+		{nil, `duration('24h') > Duration('3d')`, "false"},
+		{map[string]interface{}{"code": 200, "sslAge": time.Hour}, `code in [200,201,301] && sslAge > duration('59m')`, "true"},
+
+		// Extensions
+		{nil, `base64.encode(b"flanksource")`, "Zmxhbmtzb3VyY2U="},        // encoding lib
+		{nil, `string(base64.decode("Zmxhbmtzb3VyY2U="))`, "flanksource"}, // encoding lib
+		{nil, `math.greatest(-42.0, -21.5, -100.0)`, "-21.5"},             // math lib
+		{nil, `"hello, world".replace("world", "team")`, "hello, team"},   // strings lib
+		{nil, `sets.contains([1, 2, 3, 4], [2, 3])`, "true"},              // sets lib
+		{nil, `[1,2,3,4].slice(1, 3)`, "[2 3]"},                           // lists lib
 	}
 
 	for _, tc := range tests {
