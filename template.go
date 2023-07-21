@@ -3,9 +3,9 @@ package gomplate
 import (
 	"bytes"
 	"context"
-	"encoding/json"
 	"fmt"
 	"os"
+	"reflect"
 	"strings"
 	gotemplate "text/template"
 
@@ -14,6 +14,7 @@ import (
 	pkgStrings "github.com/flanksource/gomplate/v3/strings"
 	"github.com/google/cel-go/cel"
 	"github.com/google/cel-go/ext"
+	"github.com/mitchellh/mapstructure"
 	"github.com/robertkrimen/otto"
 	"github.com/robertkrimen/otto/registry"
 	_ "github.com/robertkrimen/otto/underscore"
@@ -66,15 +67,13 @@ func RunTemplate(environment map[string]any, template Template) (string, error) 
 			return "", err
 		}
 
-		// marshal data from any to map[string]any
-		data, _ := json.Marshal(environment)
-		unstructured := make(map[string]any)
-		if err := json.Unmarshal(data, &unstructured); err != nil {
+		data, err := serialize(environment)
+		if err != nil {
 			return "", err
 		}
 
 		var buf bytes.Buffer
-		if err := tpl.Execute(&buf, unstructured); err != nil {
+		if err := tpl.Execute(&buf, data); err != nil {
 			return "", fmt.Errorf("error executing template %s: %v", strings.Split(template.Template, "\n")[0], err)
 		}
 		return strings.TrimSpace(buf.String()), nil
@@ -107,10 +106,17 @@ func RunTemplate(environment map[string]any, template Template) (string, error) 
 		if err != nil {
 			return "", err
 		}
-		out, _, err := prg.Eval(environment)
+
+		data, err := serialize(environment)
 		if err != nil {
 			return "", err
 		}
+
+		out, _, err := prg.Eval(data)
+		if err != nil {
+			return "", err
+		}
+
 		return fmt.Sprintf("%v", out.Value()), nil
 	}
 
@@ -128,4 +134,34 @@ func LoadSharedLibrary(source string) error {
 	fmt.Printf("Loaded %s: \n%s\n", source, string(data))
 	registry.Register(func() string { return string(data) })
 	return nil
+}
+
+// serialize iterates over each key-value pair in the input map
+// serializes any struct value to map[string]any.
+func serialize(in map[string]any) (map[string]any, error) {
+	if in == nil {
+		return nil, nil
+	}
+
+	newMap := make(map[string]any, len(in))
+	for k, v := range in {
+		if reflect.ValueOf(v).Kind() != reflect.Struct {
+			newMap[k] = v
+			continue
+		}
+
+		var vMap map[string]any
+		dec, err := mapstructure.NewDecoder(&mapstructure.DecoderConfig{TagName: "json", Result: &vMap})
+		if err != nil {
+			return nil, fmt.Errorf("error creating new mapstructure decoder: %w", err)
+		}
+
+		if err := dec.Decode(v); err != nil {
+			return nil, fmt.Errorf("error decoding %T to map[string]any: %w", v, err)
+		}
+
+		newMap[k] = vMap
+	}
+
+	return newMap, nil
 }
