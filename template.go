@@ -151,7 +151,7 @@ func serialize(in map[string]any) (map[string]any, error) {
 		}
 
 		var vMap map[string]any
-		dec, err := mapstructure.NewDecoder(&mapstructure.DecoderConfig{TagName: "json", Result: &vMap})
+		dec, err := mapstructure.NewDecoder(&mapstructure.DecoderConfig{TagName: "json", Result: &vMap, Squash: true})
 		if err != nil {
 			return nil, fmt.Errorf("error creating new mapstructure decoder: %w", err)
 		}

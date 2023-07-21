@@ -31,6 +31,40 @@ var structEnv = map[string]any{
 	},
 }
 
+type Totals struct {
+	Passed   int     `json:"passed"`
+	Failed   int     `json:"failed"`
+	Skipped  int     `json:"skipped,omitempty"`
+	Error    int     `json:"error,omitempty"`
+	Duration float64 `json:"duration"`
+}
+
+type JunitTest struct {
+	Name string `json:"name" yaml:"name"`
+}
+
+type JunitTestSuite struct {
+	Name   string `json:"name"`
+	Totals `json:",inline"`
+	Tests  []JunitTest `json:"tests"`
+}
+
+type JunitTestSuites struct {
+	Suites []JunitTestSuite `json:"suites,omitempty"`
+	Totals `json:",inline"`
+}
+
+var junitEnv = JunitTestSuites{
+	Totals: Totals{
+		Passed: 1,
+	},
+}
+
+type SQLDetails struct {
+	Rows  []map[string]interface{} `json:"rows,omitempty"`
+	Count int                      `json:"count,omitempty"`
+}
+
 func TestJavascript(t *testing.T) {
 	tests := []struct {
 		env map[string]interface{}
@@ -78,6 +112,14 @@ func TestGomplate(t *testing.T) {
 		{map[string]interface{}{"old": "1.2.3", "new": "1.2.3"}, "{{  .old | semverCompare .new }}", "true"},
 		{map[string]interface{}{"old": "1.2.3", "new": "1.2.4"}, "{{  .old | semverCompare .new }}", "false"},
 		{structEnv, `{{.results.name}} {{.results.Address.city_name}}`, "Aditya Kathmandu"},
+		{map[string]any{"results": junitEnv}, `{{.results.passed}}`, "1"},
+		{
+			map[string]any{
+				"results": SQLDetails{
+					Rows: []map[string]any{{"name": "apm-hub"}, {"name": "config-db"}},
+				},
+			},
+			`{{range $r := .results.rows }}{{range $x, $y := $r }}{{ $y }}{{end}}{{end}}`, "apm-hubconfig-db"},
 	}
 
 	for _, tc := range tests {
@@ -129,6 +171,7 @@ func TestCel(t *testing.T) {
 
 		// Support structs as environment var (by default they are not)
 		{structEnv, `results.Address.city_name == "Kathmandu" && results.name == "Aditya"`, "true"},
+		{map[string]any{"results": junitEnv}, `results.passed`, "1"},
 	}
 
 	for _, tc := range tests {
