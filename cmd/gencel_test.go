@@ -9,7 +9,7 @@ import (
 )
 
 // Not really a test but just a runner so it's easier to attach a debugger.
-func TestGencel(t *testing.T) {
+func testGencel(t *testing.T) {
 	wd, _ := os.Getwd()
 	fmt.Printf("WD: %s", wd)
 

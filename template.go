@@ -12,9 +12,9 @@ import (
 	"github.com/flanksource/gomplate/v3/funcs"
 	_ "github.com/flanksource/gomplate/v3/js"
 	pkgStrings "github.com/flanksource/gomplate/v3/strings"
+	"github.com/flanksource/mapstructure"
 	"github.com/google/cel-go/cel"
 	"github.com/google/cel-go/ext"
-	"github.com/mitchellh/mapstructure"
 	"github.com/robertkrimen/otto"
 	"github.com/robertkrimen/otto/registry"
 	_ "github.com/robertkrimen/otto/underscore"
@@ -114,7 +114,7 @@ func RunTemplate(environment map[string]any, template Template) (string, error) 
 
 		out, _, err := prg.Eval(data)
 		if err != nil {
-			return "", err
+			return "", fmt.Errorf("error evaluating expression %s: %v", template.Expression, err)
 		}
 
 		return fmt.Sprintf("%v", out.Value()), nil
@@ -145,22 +145,44 @@ func serialize(in map[string]any) (map[string]any, error) {
 
 	newMap := make(map[string]any, len(in))
 	for k, v := range in {
-		if reflect.ValueOf(v).Kind() != reflect.Struct {
+		var dec *mapstructure.Decoder
+		var err error
+
+		vt := reflect.TypeOf(v)
+		switch vt.Kind() {
+		case reflect.Struct:
+			var result map[string]any
+			dec, err = mapstructure.NewDecoder(&mapstructure.DecoderConfig{TagName: "json", Result: &result, Squash: true, Deep: true})
+			if err != nil {
+				return nil, fmt.Errorf("error creating new mapstructure decoder: %w", err)
+			}
+
+			if err := dec.Decode(v); err != nil {
+				return nil, fmt.Errorf("error decoding %T to map[string]any: %w", v, err)
+			}
+
+			newMap[k] = result
+
+		case reflect.Slice:
+			var result any
+			if vt.Elem().Kind() == reflect.Struct {
+				result = make([]map[string]any, 0)
+			}
+
+			dec, err = mapstructure.NewDecoder(&mapstructure.DecoderConfig{TagName: "json", Result: &result, Squash: true, Deep: true})
+			if err != nil {
+				return nil, fmt.Errorf("error creating new mapstructure decoder: %w", err)
+			}
+			if err := dec.Decode(v); err != nil {
+				return nil, fmt.Errorf("error decoding %T to map[string]any: %w", v, err)
+			}
+
+			newMap[k] = result
+
+		default:
 			newMap[k] = v
 			continue
 		}
-
-		var vMap map[string]any
-		dec, err := mapstructure.NewDecoder(&mapstructure.DecoderConfig{TagName: "json", Result: &vMap, Squash: true})
-		if err != nil {
-			return nil, fmt.Errorf("error creating new mapstructure decoder: %w", err)
-		}
-
-		if err := dec.Decode(v); err != nil {
-			return nil, fmt.Errorf("error decoding %T to map[string]any: %w", v, err)
-		}
-
-		newMap[k] = vMap
 	}
 
 	return newMap, nil

@@ -1,6 +1,7 @@
 package gomplate
 
 import (
+	"reflect"
 	"testing"
 	"time"
 
@@ -10,22 +11,28 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+type NoStructTag struct {
+	Name  string
+	UPPER string
+}
+
 type Address struct {
 	City string `json:"city_name"`
 }
 
 type Person struct {
-	Name     string `json:"name"`
-	Address  Address
-	MetaData map[string]any
-	Codes    []string
+	Name      string         `json:"name"`
+	Address   *Address       `json:",omitempty"`
+	MetaData  map[string]any `json:",omitempty"`
+	Codes     []string       `json:",omitempty"`
+	Addresses []Address      `json:"addresses,omitempty"`
 }
 
 // A shared test data for all template test
 var structEnv = map[string]any{
 	"results": Person{
 		Name: "Aditya",
-		Address: Address{
+		Address: &Address{
 			City: "Kathmandu",
 		},
 	},
@@ -58,6 +65,7 @@ var junitEnv = JunitTestSuites{
 	Totals: Totals{
 		Passed: 1,
 	},
+	Suites: []JunitTestSuite{{Name: "hi", Totals: Totals{Failed: 2}}},
 }
 
 type SQLDetails struct {
@@ -112,7 +120,11 @@ func TestGomplate(t *testing.T) {
 		{map[string]interface{}{"old": "1.2.3", "new": "1.2.3"}, "{{  .old | semverCompare .new }}", "true"},
 		{map[string]interface{}{"old": "1.2.3", "new": "1.2.4"}, "{{  .old | semverCompare .new }}", "false"},
 		{structEnv, `{{.results.name}} {{.results.Address.city_name}}`, "Aditya Kathmandu"},
-		{map[string]any{"results": junitEnv}, `{{.results.passed}}`, "1"},
+		{
+			map[string]any{"results": junitEnv},
+			`{{.results.passed}}{{ range $r := .results.suites}}{{$r.name}} ✅ {{$r.passed}} ❌ {{$r.failed}} in 🕑 {{$r.duration}}{{end}}`,
+			"1hi ✅ 0 ❌ 2 in 🕑 0",
+		},
 		{
 			map[string]any{
 				"results": SQLDetails{
@@ -181,6 +193,82 @@ func TestCel(t *testing.T) {
 			})
 			assert.ErrorIs(t, nil, err)
 			assert.Equal(t, tc.out, out)
+		})
+	}
+}
+
+func Test_serialize(t *testing.T) {
+	tests := []struct {
+		name    string
+		in      map[string]any
+		want    map[string]any
+		wantErr bool
+	}{
+		{name: "nil", in: nil, want: nil, wantErr: false},
+		{name: "empty", in: map[string]any{}, want: map[string]any{}, wantErr: false},
+		{
+			name:    "simple - no struct tags",
+			in:      map[string]any{"r": NoStructTag{Name: "Kathmandu", UPPER: "u"}},
+			want:    map[string]any{"r": map[string]any{"Name": "Kathmandu", "UPPER": "u"}},
+			wantErr: false,
+		},
+		{name: "simple - struct tags", in: map[string]any{"r": Address{City: "Kathmandu"}}, want: map[string]any{"r": map[string]any{"city_name": "Kathmandu"}}, wantErr: false},
+		{
+			name:    "nested struct",
+			in:      map[string]any{"r": Person{Name: "Aditya", Address: &Address{City: "Kathmandu"}}},
+			want:    map[string]any{"r": map[string]any{"name": "Aditya", "Address": map[string]any{"city_name": "Kathmandu"}}},
+			wantErr: false,
+		},
+		{
+			name: "slice of struct",
+			in: map[string]any{
+				"r": []Address{
+					{City: "Kathmandu"},
+					{City: "Lalitpur"},
+				},
+			},
+			want: map[string]any{
+				"r": []map[string]any{
+					{"city_name": "Kathmandu"},
+					{"city_name": "Lalitpur"},
+				},
+			},
+			wantErr: false,
+		},
+		{
+			name: "nested slice of struct",
+			in: map[string]any{
+				"r": Person{
+					Name: "Aditya",
+					Addresses: []Address{
+						{City: "Kathmandu"},
+						{City: "Lalitpur"},
+					},
+				},
+			},
+			want: map[string]any{
+				"r": map[string]any{
+					"name": "Aditya",
+					"addresses": []map[string]any{
+						{"city_name": "Kathmandu"},
+						{"city_name": "Lalitpur"},
+					},
+				},
+			},
+			wantErr: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := serialize(tt.in)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("serialize() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("serialize() = %v, want %v", got, tt.want)
+			}
 		})
 	}
 }

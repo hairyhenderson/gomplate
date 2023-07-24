@@ -6,12 +6,12 @@ require (
 	github.com/Masterminds/goutils v1.1.1
 	github.com/Masterminds/semver/v3 v3.2.1
 	github.com/flanksource/is-healthy v0.0.0-20230705092916-3b4cf510c5fc
+	github.com/flanksource/mapstructure v1.6.0
 	github.com/google/cel-go v0.17.1
 	github.com/google/uuid v1.3.0
 	github.com/gosimple/slug v1.13.1
 	github.com/hairyhenderson/toml v0.4.2-0.20210923231440-40456b8e66cf
 	github.com/itchyny/gojq v0.12.13
-	github.com/mitchellh/mapstructure v1.5.0
 	github.com/pkg/errors v0.9.1
 	github.com/robertkrimen/otto v0.2.1
 	github.com/stretchr/testify v1.8.4
