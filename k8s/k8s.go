@@ -35,7 +35,11 @@ func GetUnstructured(in interface{}) *unstructured.Unstructured {
 	case types.Bytes:
 		err = yaml.Unmarshal(v, &obj)
 	case map[string]interface{}:
-		obj = v
+		if val, ok := v["Object"].(map[string]any); ok {
+			obj = val
+		} else {
+			obj = v
+		}
 	case unstructured.Unstructured:
 		obj = v.Object
 	default:

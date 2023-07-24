@@ -149,6 +149,10 @@ func serialize(in map[string]any) (map[string]any, error) {
 		var err error
 
 		vt := reflect.TypeOf(v)
+		if vt.Kind() == reflect.Ptr {
+			vt = vt.Elem()
+		}
+
 		switch vt.Kind() {
 		case reflect.Struct:
 			var result map[string]any

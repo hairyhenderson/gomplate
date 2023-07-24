@@ -257,6 +257,19 @@ func Test_serialize(t *testing.T) {
 			},
 			wantErr: false,
 		},
+		{
+			name: "pointers",
+			in: map[string]any{
+				"r": &Address{
+					City: "Bhaktapur",
+				},
+			},
+			want: map[string]any{
+				"r": map[string]any{
+					"city_name": "Bhaktapur",
+				},
+			},
+		},
 	}
 
 	for _, tt := range tests {
