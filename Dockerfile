@@ -38,7 +38,7 @@ COPY --from=build /bin/gomplate_${TARGETOS}-${TARGETARCH}${TARGETVARIANT} /gompl
 
 ENTRYPOINT [ "/gomplate" ]
 
-FROM alpine:3.18.2 AS gomplate-alpine
+FROM alpine:3.18.3 AS gomplate-alpine
 
 ARG VCS_REF
 ARG TARGETOS
