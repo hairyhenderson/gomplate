@@ -9,12 +9,10 @@ import (
 	"strings"
 	gotemplate "text/template"
 
-	"github.com/flanksource/gomplate/v3/funcs"
+	"github.com/flanksource/gomplate/v3/celext"
 	_ "github.com/flanksource/gomplate/v3/js"
-	pkgStrings "github.com/flanksource/gomplate/v3/strings"
 	"github.com/flanksource/mapstructure"
 	"github.com/google/cel-go/cel"
-	"github.com/google/cel-go/ext"
 	"github.com/robertkrimen/otto"
 	"github.com/robertkrimen/otto/registry"
 	_ "github.com/robertkrimen/otto/underscore"
@@ -66,7 +64,6 @@ func RunTemplate(environment map[string]any, template Template) (string, error) 
 		if err != nil {
 			return "", err
 		}
-
 		data, err := serialize(environment)
 		if err != nil {
 			return "", err
@@ -81,18 +78,7 @@ func RunTemplate(environment map[string]any, template Template) (string, error) 
 
 	// cel-go
 	if template.Expression != "" {
-		var opts = funcs.CelEnvOption
-		opts = append(opts, pkgStrings.CelEnvOption...)
-
-		// load other cel-go extensions that aren't available by default
-		extensions := []cel.EnvOption{ext.Math(), ext.Encoders(), ext.Strings(), ext.Sets(), ext.Lists()}
-		opts = append(opts, extensions...)
-
-		for k := range environment {
-			opts = append(opts, cel.Variable(k, cel.AnyType))
-		}
-
-		env, err := cel.NewEnv(opts...)
+		env, err := cel.NewEnv(celext.GetCelEnv(environment)...)
 		if err != nil {
 			return "", err
 		}

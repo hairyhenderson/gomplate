@@ -1,9 +1,10 @@
-package cel
+package celext
 
 import (
+	"fmt"
 	"testing"
 
-	"github.com/flanksource/gomplate/v3/funcs"
+	"github.com/flanksource/gomplate/v3/k8s"
 	"github.com/google/cel-go/cel"
 	"github.com/stretchr/testify/assert"
 )
@@ -14,8 +15,8 @@ func panIf(err error) {
 	}
 }
 
-func executeTemplate(t *testing.T, i int, input string, output any) {
-	env, err := cel.NewEnv(funcs.CelEnvOption...)
+func executeTemplate(t *testing.T, i int, input string, output any, environment map[string]any) {
+	env, err := cel.NewEnv(GetCelEnv(environment)...)
 	panIf(err)
 
 	ast, issues := env.Compile(input)
@@ -23,13 +24,13 @@ func executeTemplate(t *testing.T, i int, input string, output any) {
 		panIf(err)
 	}
 
-	prg, err := env.Program(ast)
+	prg, err := env.Program(ast, cel.Globals(environment))
 	panIf(err)
 
-	out, _, err := prg.Eval(map[string]any{})
+	out, _, err := prg.Eval(environment)
 	panIf(err)
 
-	assert.EqualValues(t, out.Value(), output)
+	assert.EqualValues(t, output, out.Value(), fmt.Sprintf("Test:%d failed", i+1))
 }
 
 func TestCelNamespace(t *testing.T) {
@@ -44,7 +45,7 @@ func TestCelNamespace(t *testing.T) {
 	}
 
 	for i, td := range testData {
-		executeTemplate(t, i, td.Input, td.Output)
+		executeTemplate(t, i, td.Input, td.Output, nil)
 	}
 }
 
@@ -59,7 +60,7 @@ func TestCelMultipleReturns(t *testing.T) {
 	}
 
 	for i, td := range testData {
-		executeTemplate(t, i, td.Input, td.Outputs)
+		executeTemplate(t, i, td.Input, td.Outputs, nil)
 	}
 }
 
@@ -74,7 +75,7 @@ func TestCelVariadic(t *testing.T) {
 	}
 
 	for i, td := range testData {
-		executeTemplate(t, i, td.Input, td.Output)
+		executeTemplate(t, i, td.Input, td.Output, nil)
 	}
 }
 
@@ -87,6 +88,26 @@ func TestCelSliceReturn(t *testing.T) {
 	}
 
 	for i, td := range testData {
-		executeTemplate(t, i, td.Input, td.Output)
+		executeTemplate(t, i, td.Input, td.Output, nil)
+	}
+}
+
+func TestCelK8s(t *testing.T) {
+	testData := []struct {
+		Input  string
+		Output any
+	}{
+		{Input: `k8s.is_healthy(healthy_obj)`, Output: true},
+		{Input: `k8s.is_healthy(unhealthy_obj)`, Output: false},
+		{Input: `k8s.health(healthy_obj).status`, Output: "Healthy"},
+		{Input: `k8s.health(unhealthy_obj).message`, Output: "Back-off 40s restarting failed container=main pod=my-pod_argocd(63674389-f613-11e8-a057-fe5f49266390)"},
+	}
+
+	for i, td := range testData {
+		environment := map[string]any{
+			"healthy_obj":   k8s.TestHealthy,
+			"unhealthy_obj": k8s.TestUnhealthy,
+		}
+		executeTemplate(t, i, td.Input, td.Output, environment)
 	}
 }
