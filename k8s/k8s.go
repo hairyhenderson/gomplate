@@ -12,9 +12,9 @@ import (
 )
 
 type HealthStatus struct {
-	Status  string `json:"status,omitempty"`
-	Message string `json:"message,omitempty"`
-	OK      bool   `json:"ok,omitempty"`
+	Status  string `json:"status"`
+	Message string `json:"message"`
+	OK      bool   `json:"ok"`
 }
 
 func GetUnstructuredMap(in interface{}) []byte {

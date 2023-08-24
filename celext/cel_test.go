@@ -101,6 +101,8 @@ func TestCelK8s(t *testing.T) {
 		{Input: `k8s.is_healthy(unhealthy_obj)`, Output: false},
 		{Input: `k8s.health(healthy_obj).status`, Output: "Healthy"},
 		{Input: `k8s.health(unhealthy_obj).message`, Output: "Back-off 40s restarting failed container=main pod=my-pod_argocd(63674389-f613-11e8-a057-fe5f49266390)"},
+		{Input: `k8s.health(unhealthy_obj).ok`, Output: false},
+		{Input: `k8s.health(healthy_obj).message`, Output: ""},
 	}
 
 	for i, td := range testData {

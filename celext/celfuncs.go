@@ -2,6 +2,7 @@ package celext
 
 import (
 	"encoding/json"
+	"reflect"
 
 	"github.com/flanksource/gomplate/v3/funcs"
 	"github.com/flanksource/gomplate/v3/k8s"
@@ -12,8 +13,15 @@ import (
 	"github.com/google/cel-go/ext"
 )
 
+var customCelFuncs = []cel.EnvOption{
+	k8sHealth(),
+	k8sIsHealthy(),
+	jsonArrayDump(),
+	jsonDump(),
+}
+
 func GetCelEnv(environment map[string]any) []cel.EnvOption {
-	var opts []cel.EnvOption
+	opts := funcs.CelEnvOption
 
 	// Generated functions
 	opts = append(opts, funcs.CelEnvOption...)
@@ -29,7 +37,7 @@ func GetCelEnv(environment map[string]any) []cel.EnvOption {
 		opts = append(opts, cel.Variable(k, cel.AnyType))
 	}
 
-	opts = append(opts, []cel.EnvOption{k8sHealth(), k8sIsHealthy()}...)
+	opts = append(opts, customCelFuncs...)
 	return opts
 }
 
@@ -53,6 +61,46 @@ func k8sIsHealthy() cel.EnvOption {
 			cel.StringType,
 			cel.UnaryBinding(func(obj ref.Val) ref.Val {
 				return types.Bool(k8s.GetHealth(obj.Value()).OK)
+			}),
+		),
+	)
+}
+
+func jsonArrayDump() cel.EnvOption {
+	return cel.Function("data.JSONArrayDump",
+		cel.Overload("data.JSONArrayDump_any",
+			[]*cel.Type{cel.AnyType},
+			cel.StringType,
+			cel.UnaryBinding(func(obj ref.Val) ref.Val {
+				nativeType, err := obj.ConvertToNative(reflect.TypeOf([]map[string]any{}))
+				if err != nil {
+					return types.String(err.Error())
+				}
+				jsonStr, err := json.Marshal(nativeType)
+				if err != nil {
+					return types.String(err.Error())
+				}
+				return types.String(string(jsonStr))
+			}),
+		),
+	)
+}
+
+func jsonDump() cel.EnvOption {
+	return cel.Function("data.JSONDump",
+		cel.Overload("data.JSONDump_any",
+			[]*cel.Type{cel.AnyType},
+			cel.StringType,
+			cel.UnaryBinding(func(obj ref.Val) ref.Val {
+				nativeType, err := obj.ConvertToNative(reflect.TypeOf(map[string]any{}))
+				if err != nil {
+					return types.String(err.Error())
+				}
+				jsonStr, err := json.Marshal(nativeType)
+				if err != nil {
+					return types.String(err.Error())
+				}
+				return types.String(string(jsonStr))
 			}),
 		),
 	)
