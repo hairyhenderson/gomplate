@@ -20,7 +20,7 @@ func TestCreateDataFuncs(t *testing.T) {
 			fmap := CreateDataFuncs(ctx)
 			actual := fmap["data"].(func() interface{})
 
-			assert.Same(t, ctx, actual().(*DataFuncs).ctx)
+			assert.Equal(t, ctx, actual().(*DataFuncs).ctx)
 		})
 	}
 }

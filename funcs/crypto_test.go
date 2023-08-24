@@ -18,7 +18,7 @@ func TestCreateCryptoFuncs(t *testing.T) {
 			fmap := CreateCryptoFuncs(ctx)
 			actual := fmap["crypto"].(func() interface{})
 
-			assert.Same(t, ctx, actual().(*CryptoFuncs).ctx)
+			assert.Equal(t, ctx, actual().(*CryptoFuncs).ctx)
 		})
 	}
 }

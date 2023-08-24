@@ -21,7 +21,7 @@ func TestCreateRandomFuncs(t *testing.T) {
 			fmap := CreateRandomFuncs(ctx)
 			actual := fmap["random"].(func() interface{})
 
-			assert.Same(t, ctx, actual().(*RandomFuncs).ctx)
+			assert.Equal(t, ctx, actual().(*RandomFuncs).ctx)
 		})
 	}
 }
