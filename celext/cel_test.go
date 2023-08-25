@@ -105,11 +105,27 @@ func TestCelK8s(t *testing.T) {
 		{Input: `k8s.health(healthy_obj).message`, Output: ""},
 	}
 
+	environment := map[string]any{
+		"healthy_obj":   k8s.TestHealthy,
+		"unhealthy_obj": k8s.TestUnhealthy,
+	}
 	for i, td := range testData {
-		environment := map[string]any{
-			"healthy_obj":   k8s.TestHealthy,
-			"unhealthy_obj": k8s.TestUnhealthy,
-		}
 		executeTemplate(t, i, td.Input, td.Output, environment)
+	}
+}
+
+func TestCelJSON(t *testing.T) {
+	testData := []struct {
+		Input  string
+		Output any
+	}{
+		{Input: `dyn([{'name': 'John', 'age': 30}]).toJSONArray()`, Output: `[{"age":30,"name":"John"}]`},
+		{Input: `[{'name': 'John'}].toJSONArray()`, Output: `[{"name":"John"}]`},
+		{Input: `dyn({'name': 'John'}).toJSON()`, Output: `{"name":"John"}`},
+		{Input: `{'name': 'John'}.toJSON()`, Output: `{"name":"John"}`},
+	}
+
+	for i, td := range testData {
+		executeTemplate(t, i, td.Input, td.Output, nil)
 	}
 }

@@ -16,8 +16,8 @@ import (
 var customCelFuncs = []cel.EnvOption{
 	k8sHealth(),
 	k8sIsHealthy(),
-	jsonArrayDump(),
-	jsonDump(),
+	toJSONArray(),
+	toJSON(),
 }
 
 func GetCelEnv(environment map[string]any) []cel.EnvOption {
@@ -47,7 +47,7 @@ func k8sHealth() cel.EnvOption {
 			[]*cel.Type{cel.AnyType},
 			cel.AnyType,
 			cel.UnaryBinding(func(obj ref.Val) ref.Val {
-				jsonObj, _ := toJSON(k8s.GetHealth(obj.Value()))
+				jsonObj, _ := anyToMapStringAny(k8s.GetHealth(obj.Value()))
 				return types.NewDynamicMap(types.DefaultTypeAdapter, jsonObj)
 			}),
 		),
@@ -66,10 +66,10 @@ func k8sIsHealthy() cel.EnvOption {
 	)
 }
 
-func jsonArrayDump() cel.EnvOption {
-	return cel.Function("data.JSONArrayDump",
-		cel.Overload("data.JSONArrayDump_any",
-			[]*cel.Type{cel.AnyType},
+func toJSONArray() cel.EnvOption {
+	return cel.Function("toJSONArray",
+		cel.MemberOverload("dyn_toJSONArray_string",
+			[]*cel.Type{cel.DynType},
 			cel.StringType,
 			cel.UnaryBinding(func(obj ref.Val) ref.Val {
 				nativeType, err := obj.ConvertToNative(reflect.TypeOf([]map[string]any{}))
@@ -86,10 +86,10 @@ func jsonArrayDump() cel.EnvOption {
 	)
 }
 
-func jsonDump() cel.EnvOption {
-	return cel.Function("data.JSONDump",
-		cel.Overload("data.JSONDump_any",
-			[]*cel.Type{cel.AnyType},
+func toJSON() cel.EnvOption {
+	return cel.Function("toJSON",
+		cel.MemberOverload("dyn_toJSON_string",
+			[]*cel.Type{cel.DynType},
 			cel.StringType,
 			cel.UnaryBinding(func(obj ref.Val) ref.Val {
 				nativeType, err := obj.ConvertToNative(reflect.TypeOf(map[string]any{}))
@@ -106,7 +106,7 @@ func jsonDump() cel.EnvOption {
 	)
 }
 
-func toJSON(v any) (map[string]any, error) {
+func anyToMapStringAny(v any) (map[string]any, error) {
 	var jsonObj map[string]any
 	b, err := json.Marshal(v)
 	if err != nil {
