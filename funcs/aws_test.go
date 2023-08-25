@@ -21,7 +21,7 @@ func TestCreateAWSFuncs(t *testing.T) {
 			fmap := CreateAWSFuncs(ctx)
 			actual := fmap["aws"].(func() interface{})
 
-			assert.Same(t, ctx, actual().(*Funcs).ctx)
+			assert.Equal(t, ctx, actual().(*Funcs).ctx)
 		})
 	}
 }

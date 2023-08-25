@@ -21,7 +21,7 @@ func TestCreateStringFuncs(t *testing.T) {
 			fmap := CreateStringFuncs(ctx)
 			actual := fmap["strings"].(func() interface{})
 
-			assert.Same(t, ctx, actual().(*StringFuncs).ctx)
+			assert.Equal(t, ctx, actual().(*StringFuncs).ctx)
 		})
 	}
 }

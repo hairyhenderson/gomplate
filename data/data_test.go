@@ -505,6 +505,7 @@ true = true
 	assert.Equal(t, expected, out)
 }
 
+//nolint:gosec
 func TestDecryptEJSON(t *testing.T) {
 	privateKey := "e282d979654f88267f7e6c2d8268f1f4314b8673579205ed0029b76de9c8223f"
 	publicKey := "6e05ec625bcdca34864181cc43e6fcc20a57732a453bc2f4a2e117ffdf1a6762"
