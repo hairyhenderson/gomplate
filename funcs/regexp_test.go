@@ -21,7 +21,7 @@ func TestCreateReFuncs(t *testing.T) {
 			fmap := CreateReFuncs(ctx)
 			actual := fmap["regexp"].(func() interface{})
 
-			assert.Same(t, ctx, actual().(*ReFuncs).ctx)
+			assert.Equal(t, ctx, actual().(*ReFuncs).ctx)
 		})
 	}
 }

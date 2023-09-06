@@ -21,7 +21,7 @@ func TestCreateTestFuncs(t *testing.T) {
 			fmap := CreateTestFuncs(ctx)
 			actual := fmap["test"].(func() interface{})
 
-			assert.Same(t, ctx, actual().(*TestFuncs).ctx)
+			assert.Equal(t, ctx, actual().(*TestFuncs).ctx)
 		})
 	}
 }

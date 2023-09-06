@@ -21,7 +21,7 @@ func TestCreateConvFuncs(t *testing.T) {
 			fmap := CreateConvFuncs(ctx)
 			actual := fmap["conv"].(func() interface{})
 
-			assert.Same(t, ctx, actual().(*ConvFuncs).ctx)
+			assert.Equal(t, ctx, actual().(*ConvFuncs).ctx)
 		})
 	}
 }

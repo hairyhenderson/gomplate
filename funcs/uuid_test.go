@@ -22,7 +22,7 @@ func TestCreateUUIDFuncs(t *testing.T) {
 			fmap := CreateUUIDFuncs(ctx)
 			actual := fmap["uuid"].(func() interface{})
 
-			assert.Same(t, ctx, actual().(*UUIDFuncs).ctx)
+			assert.Equal(t, ctx, actual().(*UUIDFuncs).ctx)
 		})
 	}
 }
