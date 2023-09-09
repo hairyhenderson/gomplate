@@ -15,7 +15,7 @@ jobs:
       DOCKER_BUILDKIT: 1
       DOCKER_CLI_EXPERIMENTAL: enabled
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Quick build (linux/alpine only)
       run: |
         docker build --target gomplate-alpine -t gomplate .
