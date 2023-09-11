@@ -80,6 +80,8 @@ func TestTitle(t *testing.T) {
 		{`ǉoo ǆar`, `ǈoo ǅar`},
 		{`foo bar᳇baz`, `Foo Bar᳇Baz`}, // ᳇ should be treated as punctuation
 		{`foo,bar&baz`, `Foo,Bar&Baz`},
+		{`FOO`, `FOO`},
+		{`bar FOO`, `Bar FOO`},
 	}
 
 	for _, d := range testdata {

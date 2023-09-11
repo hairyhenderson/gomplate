@@ -235,7 +235,7 @@ func (StringFuncs) TrimSuffix(cutset string, s interface{}) string {
 
 // Title -
 func (f *StringFuncs) Title(s interface{}) string {
-	return cases.Title(f.tag).String(conv.ToString(s))
+	return cases.Title(f.tag, cases.NoLower).String(conv.ToString(s))
 }
 
 // ToUpper -
