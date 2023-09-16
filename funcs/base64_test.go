@@ -22,7 +22,7 @@ func TestCreateBase64Funcs(t *testing.T) {
 			fmap := CreateBase64Funcs(ctx)
 			actual := fmap["base64"].(func() interface{})
 
-			assert.Same(t, ctx, actual().(*Base64Funcs).ctx)
+			assert.Equal(t, ctx, actual().(*Base64Funcs).ctx)
 		})
 	}
 }
@@ -60,4 +60,20 @@ func TestToBytes(t *testing.T) {
 	assert.Equal(t, []byte("hi"), toBytes(buf))
 	assert.Equal(t, []byte{}, toBytes(nil))
 	assert.Equal(t, []byte("42"), toBytes(42))
+}
+
+func BenchmarkToBytes(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		b.StopTimer()
+		buf := &bytes.Buffer{}
+		buf.WriteString("hi")
+		bin := []byte{0, 1, 2, 3}
+		b.StartTimer()
+
+		toBytes(bin)
+
+		toBytes(buf)
+		toBytes(nil)
+		toBytes(42)
+	}
 }

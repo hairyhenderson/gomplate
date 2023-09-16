@@ -11,16 +11,38 @@ import (
 func TestIndent(t *testing.T) {
 	actual := "hello\nworld\n!"
 	expected := "  hello\n  world\n  !"
-	assert.Equal(t, actual, Indent(0, "  ", actual))
-	assert.Equal(t, actual, Indent(-1, "  ", actual))
-	assert.Equal(t, expected, Indent(1, "  ", actual))
-	assert.Equal(t, "\n", Indent(1, "  ", "\n"))
-	assert.Equal(t, "  foo\n", Indent(1, "  ", "foo\n"))
-	assert.Equal(t, "   foo", Indent(1, "   ", "foo"))
-	assert.Equal(t, "   foo", Indent(3, " ", "foo"))
+	require.Equal(t, actual, Indent(0, "  ", actual))
+	require.Equal(t, actual, Indent(-1, "  ", actual))
+	require.Equal(t, expected, Indent(1, "  ", actual))
+	require.Equal(t, "\n", Indent(1, "  ", "\n"))
+	require.Equal(t, "  foo\n", Indent(1, "  ", "foo\n"))
+	require.Equal(t, "   foo", Indent(1, "   ", "foo"))
+	require.Equal(t, "   foo", Indent(3, " ", "foo"))
 
 	// indenting with newline is not permitted
-	assert.Equal(t, "foo", Indent(3, "\n", "foo"))
+	require.Equal(t, "foo", Indent(3, "\n", "foo"))
+}
+
+func BenchmarkIndent(b *testing.B) {
+	actual := "hello\nworld\n!"
+	longString := strings.Repeat("a fairly long string \n", 20)
+	outs := make([]string, b.N*8)
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		outs[0+i*8] = Indent(20, " ", longString)
+		outs[1+i*8] = Indent(-1, "  ", actual)
+		outs[2+i*8] = Indent(1, "  ", actual)
+		outs[3+i*8] = Indent(1, "  ", "\n")
+		outs[4+i*8] = Indent(1, "  ", "foo\n")
+		outs[5+i*8] = Indent(1, "   ", "foo")
+		outs[6+i*8] = Indent(3, " ", "foo")
+		outs[7+i*8] = Indent(3, "\n", "foo")
+	}
+	b.StopTimer()
+
+	if len(outs) != b.N*8 {
+		b.Fail()
+	}
 }
 
 func TestTrunc(t *testing.T) {

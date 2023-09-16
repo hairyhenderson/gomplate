@@ -23,6 +23,12 @@ func TestLookupIPs(t *testing.T) {
 	assert.Equal(t, []string{"93.184.216.34"}, must(LookupIPs("example.com")))
 }
 
+func BenchmarkLookupIPs(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		must(LookupIPs("localhost"))
+	}
+}
+
 func TestLookupTXT(t *testing.T) {
 	assert.NotEmpty(t, must(LookupTXT("example.com")))
 }

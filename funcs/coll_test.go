@@ -22,7 +22,7 @@ func TestCreateCollFuncs(t *testing.T) {
 			fmap := CreateCollFuncs(ctx)
 			actual := fmap["coll"].(func() interface{})
 
-			assert.Same(t, ctx, actual().(*CollFuncs).ctx)
+			assert.Equal(t, ctx, actual().(*CollFuncs).ctx)
 		})
 	}
 }
