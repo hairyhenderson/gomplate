@@ -23,10 +23,16 @@ func LookupIPs(name string) ([]string, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	// perf note: this slice is not really worth pre-allocating - srcIPs tends
+	// to be very small, and net.LookupIP is relatively expensive
 	var ips []string
 	for _, v := range srcIPs {
-		if v.To4() != nil && !contains(ips, v.String()) {
-			ips = append(ips, v.String())
+		if v.To4() != nil {
+			s := v.String()
+			if !contains(ips, s) {
+				ips = append(ips, s)
+			}
 		}
 	}
 	return ips, nil
