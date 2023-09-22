@@ -56,8 +56,8 @@ There are also a few _actions_, which are used for control flow and other purpos
 - `range`: Looping control flow. See discussion in the [Arrays](#arrays) and [Maps](#maps) sections.
   - `break`: The innermost `range` loop is ended early, stopping the current iteration and bypassing all remaining iterations.
   - `continue`: The current iteration of the innermost `range` loop is stopped, and the loop starts the next iteration.
-- `template`: Include the output of a named template. See the [Nested templates](#nested-templates) section for more details, and the [`tmpl`](../functions/tmpl) namespace for more flexible versions of `template`.
-- `define`: Define a named nested template. See the [Nested templates](#nested-templates) section for more details.
+- `template`: Include the output of a named template. See the [Nested templates](/syntax/#nested-templates) section for more details, and the [`tmpl`](../functions/tmpl) namespace for more flexible versions of `template`.
+- `define`: Define a named nested template. See the [Nested templates](/syntax/#nested-templates) section for more details.
 - `block`: Shorthand for `define` followed immediately by `template`.
 
 ## gomplate functions
