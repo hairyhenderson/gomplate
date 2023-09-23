@@ -4,7 +4,7 @@ extension = $(patsubst windows,.exe,$(filter windows,$(1)))
 PKG_NAME := gomplate
 DOCKER_REPO ?= hairyhenderson/$(PKG_NAME)
 PREFIX := .
-DOCKER_LINUX_PLATFORMS ?= linux/amd64,linux/arm64,linux/arm/v6,linux/arm/v7,linux/ppc64le
+DOCKER_LINUX_PLATFORMS ?= linux/amd64,linux/arm64,linux/arm/v6,linux/arm/v7,linux/ppc64le,linux/s390x
 DOCKER_PLATFORMS ?= $(DOCKER_LINUX_PLATFORMS),windows/amd64
 # we just load by default, as a "dry run"
 BUILDX_ACTION ?= --load
@@ -38,7 +38,7 @@ endif
 endif
 
 # platforms := freebsd-amd64 linux-amd64 linux-386 linux-armv5 linux-armv6 linux-armv7 linux-arm64 darwin-amd64 solaris-amd64 windows-amd64.exe windows-386.exe
-platforms := freebsd-amd64 linux-amd64 linux-386 linux-armv6 linux-armv7 linux-arm64 linux-ppc64le darwin-amd64 darwin-arm64 solaris-amd64 windows-amd64.exe windows-386.exe
+platforms := freebsd-amd64 linux-amd64 linux-386 linux-armv6 linux-armv7 linux-arm64 linux-ppc64le linux-s390x darwin-amd64 darwin-arm64 solaris-amd64 windows-amd64.exe windows-386.exe
 compressed-platforms := linux-amd64-slim linux-armv6-slim linux-armv7-slim linux-arm64-slim darwin-amd64-slim windows-amd64-slim.exe
 
 clean:
