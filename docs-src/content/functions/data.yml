@@ -4,6 +4,7 @@ preamble: |
 funcs:
   - name: datasource
     alias: ds
+    released: v0.5.0
     description: |
       Parses a given datasource (provided by the [`--datasource/-d`](../../usage/#datasource-d) argument or [`defineDatasource`](#definedatasource)).
 
@@ -30,6 +31,7 @@ funcs:
         Hello Dave
         ```
   - name: datasourceExists
+    released: v1.3.0
     description: |
       Tests whether or not a given datasource was defined on the commandline (with the
       [`--datasource/-d`](../../usage/#datasource-d) argument). This is intended mainly to allow
@@ -49,6 +51,7 @@ funcs:
         $ echo '{{if (datasourceExists "test")}}{{datasource "test"}}{{else}}no worries{{end}}' | gomplate
         no worries
   - name: datasourceReachable
+    released: v2.5.0
     description: |
       Tests whether or not a given datasource is defined and reachable, where the definition of "reachable" differs by datasource, but generally means the data is able to be read successfully.
 
@@ -63,6 +66,7 @@ funcs:
         $ gomplate -i '{{if (datasourceReachable "test")}}{{datasource "test"}}{{else}}no worries{{end}}' -d test=https://bogus.example.com/wontwork.json
         no worries
   - name: listDatasources
+    released: v3.11.0
     description: |
       Lists all the datasources defined, list returned will be sorted in ascending order.
     pipeline: false
@@ -72,6 +76,7 @@ funcs:
         Datasource-bar
         Datasource-person
   - name: defineDatasource
+    released: v2.7.0
     description: |
       Define a datasource alias with target URL inside the template. Overridden by the [`--datasource/-d`](../../usage/#datasource-d) flag.
 
@@ -102,6 +107,7 @@ funcs:
         Hello Daisy
         ```
   - name: include
+    released: v1.8.0
     description: |
       Includes the content of a given datasource (provided by the [`--datasource/-d`](../../usage/#datasource-d) argument).
 
@@ -140,6 +146,7 @@ funcs:
         ```
   - name: data.JSON
     alias: json
+    released: v1.4.0
     description: |
       Converts a JSON string into an object. Works for JSON Objects, but will
       also parse JSON Arrays. Will not parse other valid JSON types.
@@ -172,6 +179,7 @@ funcs:
         ```
   - name: data.JSONArray
     alias: jsonArray
+    released: v2.0.0
     description: |
       Converts a JSON string into a slice. Only works for JSON Arrays.
     pipeline: true
@@ -193,6 +201,7 @@ funcs:
         ```
   - name: data.YAML
     alias: yaml
+    released: v2.0.0
     description: |
       Converts a YAML string into an object. Works for YAML Objects but will
       also parse YAML Arrays. This can be used to access properties of YAML objects.
@@ -217,6 +226,7 @@ funcs:
         ```
   - name: data.YAMLArray
     alias: yamlArray
+    released: v2.0.0
     description: |
       Converts a YAML string into a slice. Only works for YAML Arrays.
     pipeline: true
@@ -238,6 +248,7 @@ funcs:
         ```
   - name: data.TOML
     alias: toml
+    released: v2.0.0
     description: |
       Converts a [TOML](https://github.com/toml-lang/toml) document into an object.
       This can be used to access properties of TOML documents.
@@ -263,6 +274,7 @@ funcs:
         ```
   - name: data.CSV
     alias: csv
+    released: v2.0.0
     description: |
       Converts a CSV-format string into a 2-dimensional string array.
 
@@ -296,6 +308,7 @@ funcs:
         ```
   - name: data.CSVByRow
     alias: csvByRow
+    released: v2.0.0
     description: |
       Converts a CSV-format string into a slice of maps.
 
@@ -337,6 +350,7 @@ funcs:
         ```
   - name: data.CSVByColumn
     alias: csvByColumn
+    released: v2.0.0
     description: |
       Like [`csvByRow`](#csvByRow), except that the data is presented as a columnar
       (column-oriented) map.
@@ -371,6 +385,7 @@ funcs:
         ```
   - name: data.ToJSON
     alias: toJSON
+    released: v2.0.0
     description: |
       Converts an object to a JSON document. Input objects may be the result of `json`, `yaml`, `jsonArray`, or `yamlArray` functions, or they could be provided by a `datasource`.
     pipeline: true
@@ -393,6 +408,7 @@ funcs:
         ```
   - name: data.ToJSONPretty
     alias: toJSONPretty
+    released: v2.0.0
     description: |
       Converts an object to a pretty-printed (or _indented_) JSON document.
       Input objects may be the result of functions like `data.JSON`, `data.YAML`,
@@ -423,6 +439,7 @@ funcs:
         ```
   - name: data.ToYAML
     alias: toYAML
+    released: v2.0.0
     description: |
       Converts an object to a YAML document. Input objects may be the result of
       `data.JSON`, `data.YAML`, `data.JSONArray`, or `data.YAMLArray` functions,
@@ -447,6 +464,7 @@ funcs:
         ```
   - name: data.ToTOML
     alias: toTOML
+    released: v2.0.0
     description: |
       Converts an object to a [TOML](https://github.com/toml-lang/toml) document.
     pipeline: true
@@ -460,6 +478,7 @@ funcs:
         foo = "bar"
   - name: data.ToCSV
     alias: toCSV
+    released: v2.0.0
     description: |
       Converts an object to a CSV document. The input object must be a 2-dimensional
       array of strings (a `[][]string`). Objects produced by [`data.CSVByRow`](#conv-csvbyrow)

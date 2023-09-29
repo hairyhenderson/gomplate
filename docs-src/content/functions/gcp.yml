@@ -15,6 +15,7 @@ preamble: |
   | `GCP_TIMEOUT` | _(Default `500`)_ Adjusts timeout for API requests, in milliseconds. |
 funcs:
   - name: gcp.Meta
+    released: v3.8.0
     description: |
       Queries GCP [Instance Metadata](https://cloud.google.com/compute/docs/storing-retrieving-metadata) for information.
 

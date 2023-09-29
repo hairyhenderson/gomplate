@@ -10,12 +10,13 @@ menu:
 
 Encode data as a Base64 string. Specifically, this uses the standard Base64 encoding as defined in [RFC4648 &sect;4](https://tools.ietf.org/html/rfc4648#section-4) (and _not_ the URL-safe encoding).
 
+_Added in gomplate [v1.8.0](https://github.com/hairyhenderson/gomplate/releases/tag/v1.8.0)_
 ### Usage
 
-```go
+```
 base64.Encode input
 ```
-```go
+```
 input | base64.Encode
 ```
 
@@ -44,12 +45,13 @@ This function outputs the data as a string, so it may not be appropriate
 for decoding binary data. Use [`base64.DecodeBytes`](#base64.DecodeBytes)
 for binary data.
 
+_Added in gomplate [v1.8.0](https://github.com/hairyhenderson/gomplate/releases/tag/v1.8.0)_
 ### Usage
 
-```go
+```
 base64.Decode input
 ```
-```go
+```
 input | base64.Decode
 ```
 
@@ -78,9 +80,10 @@ This function outputs the data as a byte array, so it's most useful for
 outputting binary data that will be processed further.
 Use [`base64.Decode`](#base64.Decode) to output a plain string.
 
+_Added in gomplate [v3.8.0](https://github.com/hairyhenderson/gomplate/releases/tag/v3.8.0)_
 ### Usage
 
-```go
+```
 base64.DecodeBytes input
 ```
 

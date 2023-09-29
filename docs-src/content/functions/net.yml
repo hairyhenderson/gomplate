@@ -11,6 +11,7 @@ preamble: |
   [`net`]: https://pkg.go.dev/net
 funcs:
   - name: net.LookupIP
+    released: v1.9.0
     description: |
       Resolve an IPv4 address for a given host name. When multiple IP addresses
       are resolved, the first one is returned.
@@ -24,6 +25,7 @@ funcs:
         $ gomplate -i '{{ net.LookupIP "example.com" }}'
         93.184.216.34
   - name: net.LookupIPs
+    released: v1.9.0
     description: |
       Resolve all IPv4 addresses for a given host name. Returns an array of strings.
     pipeline: true
@@ -36,6 +38,7 @@ funcs:
         $ gomplate -i '{{ join (net.LookupIPs "twitter.com") "," }}'
         104.244.42.65,104.244.42.193
   - name: net.LookupCNAME
+    released: v1.9.0
     description: |
       Resolve the canonical name for a given host name. This does a DNS lookup for the
       `CNAME` record type. If no `CNAME` is present, a canonical form of the given name
@@ -50,6 +53,7 @@ funcs:
         $ gomplate -i '{{ net.LookupCNAME "www.amazon.com" }}'
         d3ag4hukkh62yn.cloudfront.net.
   - name: net.LookupSRV
+    released: v1.9.0
     description: |
       Resolve a DNS [`SRV` service record](https://en.wikipedia.org/wiki/SRV_record).
       This implementation supports the canonical [RFC2782](https://tools.ietf.org/html/rfc2782)
@@ -78,6 +82,7 @@ funcs:
           "Weight": 1
         }
   - name: net.LookupSRVs
+    released: v1.9.0
     description: |
       Resolve a DNS [`SRV` service record](https://en.wikipedia.org/wiki/SRV_record).
       This implementation supports the canonical [RFC2782](https://tools.ietf.org/html/rfc2782)
@@ -111,6 +116,7 @@ funcs:
         priority=20/port=5060
         ```
   - name: net.LookupTXT
+    released: v1.9.0
     description: |
       Resolve a DNS [`TXT` record](https://en.wikipedia.org/wiki/SRV_record).
 
@@ -127,6 +133,7 @@ funcs:
           "v=spf1 -all"
         ]
   - name: net.ParseAddr
+    # released: v4.0.0
     description: |
       Parse the given string as an IP address (a
       [`netip.Addr`](https://pkg.go.dev/net/netip#Addr)).
@@ -146,6 +153,7 @@ funcs:
           {{ $ip.Prefix 12 }}'
         93.176.0.0/12
   - name: net.ParseIP
+    released: v3.10.0
     deprecated: Use [`net.ParseAddr`](#net-parseaddr) instead.
     description: |
       Parse the given string as an IP address (a `netaddr.IP` from the
@@ -166,6 +174,7 @@ funcs:
           {{ $ip.Prefix 12 }}'
         93.176.0.0/12
   - name: net.ParsePrefix
+    # released: v4.0.0
     description: |
       Parse the given string as an IP address prefix (CIDR) representing an IP
       network (a [`netip.Prefix`](https://pkg.go.dev/net/netip#Prefix)).
@@ -189,6 +198,7 @@ funcs:
           {{ $net.Contains $ip }}'
         true
   - name: net.ParseIPPrefix
+    released: v3.10.0
     deprecated: Use [`net.ParsePrefix`](#net-parseprefix) instead.
     description: |
       Parse the given string as an IP address prefix (CIDR) representing an IP
@@ -218,6 +228,7 @@ funcs:
         93.176.0.0-93.191.255.255
   - name: net.ParseRange
     experimental: true
+    # released: v4.0.0
     description: |
       Parse the given string as an inclusive range of IP addresses from the same
       address family (a [`netipx.IPRange`](https://pkg.go.dev/go4.org/netipx#IPRange)
@@ -245,6 +256,7 @@ funcs:
           {{ $range.Prefixes }}'
         [1.2.3.0/25 1.2.3.128/26 1.2.3.192/27 1.2.3.224/29 1.2.3.232/31]
   - name: net.ParseIPRange
+    released: v3.10.0
     deprecated: Use [`net.ParseRange`](#net-parserange) instead.
     description: |
       Parse the given string as an inclusive range of IP addresses from the same
@@ -268,6 +280,7 @@ funcs:
         [1.2.3.0/25 1.2.3.128/26 1.2.3.192/27]
   - name: net.CIDRHost
     experimental: true
+    released: v3.11.0
     description: |
       Calculates a full host IP address for a given host number within a given IP network address prefix.
 
@@ -290,6 +303,7 @@ funcs:
         10.12.113.12
   - name: net.CIDRNetmask
     experimental: true
+    released: v3.11.0
     description: |
       The result is a subnet address formatted in the conventional dotted-decimal IPv4 address syntax or hexadecimal IPv6 address syntax, as expected by some software.
 
@@ -308,6 +322,7 @@ funcs:
         ffff:ffff:ffff:ffff:ff00::
   - name: net.CIDRSubnets
     experimental: true
+    released: v3.11.0
     description: |
       Calculates a subnet address within given IP network address prefix.
 
@@ -329,6 +344,7 @@ funcs:
         [10.0.0.0/18 10.0.64.0/18 10.0.128.0/18 10.0.192.0/18]
   - name: net.CIDRSubnetSizes
     experimental: true
+    released: v3.11.0
     description: |
       Calculates a sequence of consecutive IP address ranges within a particular CIDR prefix.
 

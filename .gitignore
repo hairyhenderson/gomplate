@@ -7,3 +7,4 @@ report.xml
 *.iid
 *.out
 .netlify
+docs/.hugo_build.lock

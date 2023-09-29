@@ -11,12 +11,13 @@ Functions for working with files.
 
 Reports whether a file or directory exists at the given path.
 
+_Added in gomplate [v2.4.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.4.0)_
 ### Usage
 
-```go
+```
 file.Exists path
 ```
-```go
+```
 path | file.Exists
 ```
 
@@ -45,12 +46,13 @@ yes
 
 Reports whether a given path is a directory.
 
+_Added in gomplate [v2.4.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.4.0)_
 ### Usage
 
-```go
+```
 file.IsDir path
 ```
-```go
+```
 path | file.IsDir
 ```
 
@@ -82,12 +84,13 @@ yes
 
 Reads a given file _as text_. Note that this will succeed if the given file is binary, but the output may be gibberish.
 
+_Added in gomplate [v2.4.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.4.0)_
 ### Usage
 
-```go
+```
 file.Read path
 ```
-```go
+```
 path | file.Read
 ```
 
@@ -109,12 +112,13 @@ hello world
 
 Reads a directory and lists the files and directories contained within.
 
+_Added in gomplate [v2.4.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.4.0)_
 ### Usage
 
-```go
+```
 file.ReadDir path
 ```
-```go
+```
 path | file.ReadDir
 ```
 
@@ -143,12 +147,13 @@ Returns a [`os.FileInfo`](https://golang.org/pkg/os/#FileInfo) describing the na
 
 Essentially a wrapper for Go's [`os.Stat`](https://golang.org/pkg/os/#Stat) function.
 
+_Added in gomplate [v2.4.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.4.0)_
 ### Usage
 
-```go
+```
 file.Stat path
 ```
-```go
+```
 path | file.Stat
 ```
 
@@ -176,12 +181,13 @@ Walk does not follow symbolic links.
 
 Similar to Go's [`filepath.Walk`](https://golang.org/pkg/path/filepath/#Walk) function.
 
+_Added in gomplate [v2.6.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.6.0)_
 ### Usage
 
-```go
+```
 file.Walk path
 ```
-```go
+```
 path | file.Walk
 ```
 
@@ -222,12 +228,13 @@ Non-existing directories in the output path will be created.
 
 If the data is a byte array (`[]byte`), it will be written as-is. Otherwise, it will be converted to a string before being written.
 
+_Added in gomplate [v2.4.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.4.0)_
 ### Usage
 
-```go
+```
 file.Write filename data
 ```
-```go
+```
 data | file.Write filename
 ```
 

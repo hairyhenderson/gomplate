@@ -19,12 +19,13 @@ Returns the last element of path. Trailing path separators are removed before ex
 
 A wrapper for Go's [`filepath.Base`](https://golang.org/pkg/path/filepath/#Base) function.
 
+_Added in gomplate [v2.7.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.7.0)_
 ### Usage
 
-```go
+```
 filepath.Base path
 ```
-```go
+```
 path | filepath.Base
 ```
 
@@ -47,12 +48,13 @@ Clean returns the shortest path name equivalent to path by purely lexical proces
 
 A wrapper for Go's [`filepath.Clean`](https://golang.org/pkg/path/filepath/#Clean) function.
 
+_Added in gomplate [v2.7.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.7.0)_
 ### Usage
 
-```go
+```
 filepath.Clean path
 ```
-```go
+```
 path | filepath.Clean
 ```
 
@@ -75,12 +77,13 @@ Returns all but the last element of path, typically the path's directory.
 
 A wrapper for Go's [`filepath.Dir`](https://golang.org/pkg/path/filepath/#Dir) function.
 
+_Added in gomplate [v2.7.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.7.0)_
 ### Usage
 
-```go
+```
 filepath.Dir path
 ```
-```go
+```
 path | filepath.Dir
 ```
 
@@ -103,12 +106,13 @@ Returns the file name extension used by path.
 
 A wrapper for Go's [`filepath.Ext`](https://golang.org/pkg/path/filepath/#Ext) function.
 
+_Added in gomplate [v2.7.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.7.0)_
 ### Usage
 
-```go
+```
 filepath.Ext path
 ```
-```go
+```
 path | filepath.Ext
 ```
 
@@ -131,12 +135,13 @@ Returns the result of replacing each slash (`/`) character in the path with the 
 
 A wrapper for Go's [`filepath.FromSlash`](https://golang.org/pkg/path/filepath/#FromSlash) function.
 
+_Added in gomplate [v2.7.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.7.0)_
 ### Usage
 
-```go
+```
 filepath.FromSlash path
 ```
-```go
+```
 path | filepath.FromSlash
 ```
 
@@ -161,12 +166,13 @@ Reports whether the path is absolute.
 
 A wrapper for Go's [`filepath.IsAbs`](https://golang.org/pkg/path/filepath/#IsAbs) function.
 
+_Added in gomplate [v2.7.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.7.0)_
 ### Usage
 
-```go
+```
 filepath.IsAbs path
 ```
-```go
+```
 path | filepath.IsAbs
 ```
 
@@ -191,9 +197,10 @@ Joins any number of path elements into a single path, adding a separator if nece
 
 A wrapper for Go's [`filepath.Join`](https://golang.org/pkg/path/filepath/#Join) function.
 
+_Added in gomplate [v2.7.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.7.0)_
 ### Usage
 
-```go
+```
 filepath.Join elem...
 ```
 
@@ -218,9 +225,10 @@ Reports whether name matches the shell file name pattern.
 
 A wrapper for Go's [`filepath.Match`](https://golang.org/pkg/path/filepath/#Match) function.
 
+_Added in gomplate [v2.7.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.7.0)_
 ### Usage
 
-```go
+```
 filepath.Match pattern path
 ```
 
@@ -244,9 +252,10 @@ Returns a relative path that is lexically equivalent to targetpath when joined t
 
 A wrapper for Go's [`filepath.Rel`](https://golang.org/pkg/path/filepath/#Rel) function.
 
+_Added in gomplate [v2.7.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.7.0)_
 ### Usage
 
-```go
+```
 filepath.Rel basepath targetpath
 ```
 
@@ -272,12 +281,13 @@ The function returns an array with two values, the first being the diretory, and
 
 A wrapper for Go's [`filepath.Split`](https://golang.org/pkg/path/filepath/#Split) function.
 
+_Added in gomplate [v2.7.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.7.0)_
 ### Usage
 
-```go
+```
 filepath.Split path
 ```
-```go
+```
 path | filepath.Split
 ```
 
@@ -302,12 +312,13 @@ Returns the result of replacing each separator character in path with a slash (`
 
 A wrapper for Go's [`filepath.ToSlash`](https://golang.org/pkg/path/filepath/#ToSlash) function.
 
+_Added in gomplate [v2.7.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.7.0)_
 ### Usage
 
-```go
+```
 filepath.ToSlash path
 ```
-```go
+```
 path | filepath.ToSlash
 ```
 
@@ -332,12 +343,13 @@ Returns the leading volume name. Given `C:\foo\bar` it returns `C:` on Windows. 
 
 A wrapper for Go's [`filepath.VolumeName`](https://golang.org/pkg/path/filepath/#VolumeName) function.
 
+_Added in gomplate [v2.7.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.7.0)_
 ### Usage
 
-```go
+```
 filepath.VolumeName path
 ```
-```go
+```
 path | filepath.VolumeName
 ```
 

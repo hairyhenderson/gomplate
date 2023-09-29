@@ -2,6 +2,7 @@ ns: strings
 preamble: ''
 funcs:
   - name: strings.Abbrev
+    released: v2.6.0
     description: |
       Abbreviates a string using `...` (ellipses). Takes an optional offset from the beginning of the string, and a maximum final width (including added ellipses).
 
@@ -24,6 +25,7 @@ funcs:
         $ gomplate -i '{{ "foobarbazquxquux" | strings.Abbrev 6 9 }}'
         ...baz...
   - name: strings.Contains
+    released: v1.9.0
     description: |
       Reports whether a substring is contained within a string.
     pipeline: true
@@ -48,6 +50,7 @@ funcs:
         no
         ```
   - name: strings.HasPrefix
+    released: v1.9.0
     description: |
       Tests whether a string begins with a certain prefix.
     pipeline: true
@@ -65,6 +68,7 @@ funcs:
         $ URL=https://example.com gomplate -i '{{if .Env.URL | strings.HasPrefix "https"}}foo{{else}}bar{{end}}'
         foo
   - name: strings.HasSuffix
+    released: v1.9.0
     description: |
       Tests whether a string ends with a certain suffix.
     pipeline: true
@@ -87,6 +91,7 @@ funcs:
         http://example.com:80
         ```
   - name: strings.Indent
+    released: v1.9.0
     alias: indent
     description: |
       Indents a string. If the input string has multiple lines, each line will be indented.
@@ -125,6 +130,7 @@ funcs:
             quuz: 42
         ```
   - name: strings.Sort
+    released: v2.7.0
     deprecated: Use [`coll.Sort`](../coll/#coll-sort) instead
     description: |
       Returns an alphanumerically-sorted copy of a given string list.
@@ -138,6 +144,7 @@ funcs:
         $ gomplate -i '{{ (coll.Slice "foo" "bar" "baz") | strings.Sort }}'
         [bar baz foo]
   - name: strings.SkipLines
+    # released: v4.0.0
     description: |
       Skips the given number of lines (each ending in a `\n`), returning the
       remainder.
@@ -161,6 +168,7 @@ funcs:
         bar
         baz
   - name: strings.Split
+    released: v1.9.0
     description: |
       _Not to be confused with [`split`](#split), which is deprecated._
 
@@ -198,6 +206,7 @@ funcs:
         Two
         Three
   - name: strings.SplitN
+    released: v1.9.0
     description: |
       _Not to be confused with [`splitN`](#splitn), which is deprecated._
 
@@ -232,6 +241,7 @@ funcs:
         foo
         bar:baz
   - name: strings.Quote
+    released: v3.1.0
     alias: quote
     description: |
       Surrounds an input string with double-quote characters (`"`). If the input is not a string, converts first.
@@ -255,6 +265,7 @@ funcs:
         $ gomplate -i '{{ strings.Quote 500 }}'
         "500"
   - name: strings.Repeat
+    released: v2.6.0
     description: |
       Returns a new string consisting of `count` copies of the input string.
 
@@ -274,6 +285,7 @@ funcs:
         $ gomplate -i '{{ "hello " | strings.Repeat 5 }}'
         hello hello hello hello hello
   - name: strings.ReplaceAll
+    released: v1.9.0
     alias: replaceAll
     description: |
       Replaces all occurrences of a given string with another.
@@ -295,6 +307,7 @@ funcs:
         $ gomplate -i '{{ "172.21.1.42" | strings.ReplaceAll "." "-" }}'
         172-21-1-42
   - name: strings.Slug
+    released: v2.6.0
     description: |
       Creates a a "slug" from a given string - supports Unicode correctly. This wraps the [github.com/gosimple/slug](https://github.com/gosimple/slug) package. See [the github.com/gosimple/slug docs](https://godoc.org/github.com/gosimple/slug) for more information.
     pipeline: true
@@ -311,6 +324,7 @@ funcs:
         rock-and-roll-at-cafe-wha
   - name: strings.ShellQuote
     alias: shellQuote
+    released: v3.6.0
     description: |
       Given a string, emits a version of that string that will evaluate to its literal data when expanded by any POSIX-compliant shell.
 
@@ -329,6 +343,7 @@ funcs:
         'it'"'"'s a banana'
   - name: strings.Squote
     alias: squote
+    released: v3.1.0
     description: |
       Surrounds an input string with a single-quote (apostrophe) character (`'`). If the input is not a string, converts first.
 
@@ -347,6 +362,7 @@ funcs:
         'it''s a banana'
   - name: strings.Title
     alias: title
+    released: v1.9.0
     description: |
       Convert to title-case.
     pipeline: true
@@ -360,6 +376,7 @@ funcs:
         Hello, World!
   - name: strings.ToLower
     alias: toLower
+    released: v1.9.0
     description: |
       Convert to lower-case.
     pipeline: true
@@ -373,6 +390,7 @@ funcs:
         hello, world!
   - name: strings.ToUpper
     alias: toUpper
+    released: v1.9.0
     description: |
       Convert to upper-case.
     pipeline: true
@@ -385,6 +403,7 @@ funcs:
         $ gomplate -i '{{strings.ToUpper "hello, world!"}}'
         HELLO, WORLD!
   - name: strings.Trim
+    released: v1.9.0
     description: |
       Trims a string by removing the given characters from the beginning and end of
       the string.
@@ -401,6 +420,7 @@ funcs:
         $ gomplate -i '{{ "_-foo-_" | strings.Trim "_-" }}
         foo
   - name: strings.TrimPrefix
+    released: v2.5.0
     description: |
       Returns a string without the provided leading prefix string, if the prefix is present.
 
@@ -419,6 +439,7 @@ funcs:
         world
   - name: strings.TrimSpace
     alias: trimSpace
+    released: v1.9.0
     description: |
       Trims a string by removing whitespace from the beginning and end of
       the string.
@@ -432,6 +453,7 @@ funcs:
         $ gomplate -i '{{ "  \n\t foo" | strings.TrimSpace }}'
         foo
   - name: strings.TrimSuffix
+    released: v2.6.0
     description: |
       Returns a string without the provided trailing suffix string, if the suffix is present.
 
@@ -449,6 +471,7 @@ funcs:
         $ gomplate -i '{{ "hello, world" | strings.TrimSuffix "world" }}jello'
         hello, jello
   - name: strings.Trunc
+    released: v2.6.0
     description: |
       Returns a string truncated to the given length.
 
@@ -466,6 +489,7 @@ funcs:
         $ gomplate -i '{{ "hello, world" | strings.Trunc 5 }}'
         hello
   - name: strings.CamelCase
+    released: v3.3.0
     description: |
       Converts a sentence to CamelCase, i.e. `The quick brown fox` becomes `TheQuickBrownFox`.
 
@@ -485,6 +509,7 @@ funcs:
         $ gomplate -i '{{ "hello jello" | strings.CamelCase }}'
         helloJello
   - name: strings.SnakeCase
+    released: v3.3.0
     description: |
       Converts a sentence to snake_case, i.e. `The quick brown fox` becomes `The_quick_brown_fox`.
 
@@ -504,6 +529,7 @@ funcs:
         $ gomplate -i '{{ "hello jello" | strings.SnakeCase }}'
         hello_jello
   - name: strings.KebabCase
+    released: v3.3.0
     description: |
       Converts a sentence to kebab-case, i.e. `The quick brown fox` becomes `The-quick-brown-fox`.
 
@@ -523,6 +549,7 @@ funcs:
         $ gomplate -i '{{ "hello jello" | strings.KebabCase }}'
         hello-jello
   - name: strings.WordWrap
+    released: v3.3.0
     description: |
       Inserts new line breaks into the input string so it ends up with lines that are at most `width` characters wide.
 
@@ -555,6 +582,7 @@ funcs:
         which should not be
         broken
   - name: strings.RuneCount
+    released: v3.4.0
     description: |
       Return the number of _runes_ (Unicode code-points) contained within the
       input. This is similar to the built-in `len` function, but `len` counts
@@ -579,6 +607,7 @@ funcs:
         ᐰ is 3 bytes and 1 runes
   - name: contains
     deprecated: Use [`strings.Contains`](#strings-contains) instead
+    released: v1.4.0
     description: |
       **See [`strings.Contains`](#strings-contains) for a pipeline-compatible version**
 
@@ -607,6 +636,7 @@ funcs:
         ```
   - name: hasPrefix
     deprecated: Use [`strings.HasPrefix`](#strings-hasprefix) instead
+    released: v1.4.0
     description: |
       **See [`strings.HasPrefix`](#strings-hasprefix) for a pipeline-compatible version**
 
@@ -635,6 +665,7 @@ funcs:
         ```
   - name: hasSuffix
     deprecated: Use [`strings.HasSuffix`](#strings-hassuffix) instead
+    released: v1.4.0
     description: |
       **See [`strings.HasSuffix`](#strings-hassuffix) for a pipeline-compatible version**
 
@@ -661,6 +692,7 @@ funcs:
         ```
   - name: split
     deprecated: Use [`strings.Split`](#strings-split) instead
+    released: v1.4.0
     description: |
       **See [`strings.Split`](#strings-split) for a pipeline-compatible version**
 
@@ -683,6 +715,7 @@ funcs:
         Hello, Maggie
   - name: splitN
     deprecated: Use [`strings.SplitN`](#strings-splitn) instead
+    released: v1.7.0
     description: |
       **See [`strings.SplitN`](#strings-splitn) for a pipeline-compatible version**
 
@@ -707,6 +740,7 @@ funcs:
         bar:baz
   - name: trim
     deprecated: Use [`strings.Trim`](#strings-trim) instead
+    released: v1.4.0
     description: |
       **See [`strings.Trim`](#strings-trim) for a pipeline-compatible version**
 

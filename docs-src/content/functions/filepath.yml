@@ -9,6 +9,7 @@ preamble: |
   These functions are wrappers for Go's [`path/filepath`](https://golang.org/pkg/path/filepath/) package.
 funcs:
   - name: filepath.Base
+    released: v2.7.0
     description: |
       Returns the last element of path. Trailing path separators are removed before extracting the last element. If the path is empty, Base returns `.`. If the path consists entirely of separators, Base returns a single separator.
 
@@ -23,6 +24,7 @@ funcs:
         $ gomplate -i '{{ filepath.Base "/tmp/foo" }}'
         foo
   - name: filepath.Clean
+    released: v2.7.0
     description: |
       Clean returns the shortest path name equivalent to path by purely lexical processing.
 
@@ -37,6 +39,7 @@ funcs:
         $ gomplate -i '{{ filepath.Clean "/tmp//foo/../" }}'
         /tmp
   - name: filepath.Dir
+    released: v2.7.0
     description: |
       Returns all but the last element of path, typically the path's directory.
 
@@ -51,6 +54,7 @@ funcs:
         $ gomplate -i '{{ filepath.Dir "/tmp/foo" }}'
         /tmp
   - name: filepath.Ext
+    released: v2.7.0
     description: |
       Returns the file name extension used by path.
 
@@ -65,6 +69,7 @@ funcs:
         $ gomplate -i '{{ filepath.Ext "/tmp/foo.csv" }}'
         .csv
   - name: filepath.FromSlash
+    released: v2.7.0
     description: |
       Returns the result of replacing each slash (`/`) character in the path with the platform's separator character.
 
@@ -81,6 +86,7 @@ funcs:
         C:\> gomplate.exe -i '{{ filepath.FromSlash "/foo/bar" }}'
         C:\foo\bar
   - name: filepath.IsAbs
+    released: v2.7.0
     description: |
       Reports whether the path is absolute.
 
@@ -97,6 +103,7 @@ funcs:
         $ gomplate -i 'the path is {{ if (filepath.IsAbs "../foo.csv") }}absolute{{else}}relative{{end}}'
         the path is relative
   - name: filepath.Join
+    released: v2.7.0
     description: |
       Joins any number of path elements into a single path, adding a separator if necessary.
 
@@ -112,6 +119,7 @@ funcs:
         C:\> gomplate.exe -i '{{ filepath.Join "C:\tmp" "foo" "bar" }}'
         C:\tmp\foo\bar
   - name: filepath.Match
+    released: v2.7.0
     description: |
       Reports whether name matches the shell file name pattern.
 
@@ -128,6 +136,7 @@ funcs:
         $ gomplate -i '{{ filepath.Match "*.csv" "foo.csv" }}'
         true
   - name: filepath.Rel
+    released: v2.7.0
     description: |
       Returns a relative path that is lexically equivalent to targetpath when joined to basepath with an intervening separator.
 
@@ -144,6 +153,7 @@ funcs:
         $ gomplate -i '{{ filepath.Rel "/a" "/a/b/c" }}'
         b/c
   - name: filepath.Split
+    released: v2.7.0
     description: |
       Splits path immediately following the final path separator, separating it into a directory and file name component.
 
@@ -162,6 +172,7 @@ funcs:
         C:\> gomplate.exe -i '{{ $p := filepath.Split `C:\tmp\foo` }}{{ $dir := index $p 0 }}{{ $file := index $p 1 }}dir is {{$dir}}, file is {{$file}}'
         dir is C:\tmp\, file is foo
   - name: filepath.ToSlash
+    released: v2.7.0
     description: |
       Returns the result of replacing each separator character in path with a slash (`/`) character.
 
@@ -178,6 +189,7 @@ funcs:
         C:\> gomplate.exe -i '{{ filepath.ToSlash `foo\bar\baz` }}'
         foo/bar/baz
   - name: filepath.VolumeName
+    released: v2.7.0
     description: |
       Returns the leading volume name. Given `C:\foo\bar` it returns `C:` on Windows. Given a UNC like `\\host\share\foo` it returns `\\host\share`. On other platforms it returns an empty string.
 

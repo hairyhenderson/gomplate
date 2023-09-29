@@ -4,6 +4,7 @@ preamble: |
   Functions for defining or executing templates.
 funcs:
   - name: tmpl.Exec
+    released: v3.3.0
     description: |
       Execute (render) the named template. This is equivalent to using the [`template`](https://golang.org/pkg/text/template/#hdr-Actions) action, except the result is returned as a string.
 
@@ -25,6 +26,7 @@ funcs:
         Hello, World!
   - name: tmpl.Inline
     alias: tpl
+    released: v3.3.0
     description: |
       Render the given string as a template, just like a nested template.
 
@@ -56,6 +58,7 @@ funcs:
         hello world
         goodbye world
   - name: tmpl.Path
+    released: v3.11.0
     description: |
       Output the path of the current template, if it came from a file. For
       inline templates, this will be an empty string.
@@ -75,6 +78,7 @@ funcs:
         this template is in subdir/input.tpl
         ```
   - name: tmpl.PathDir
+    released: v3.11.0
     description: |
       Output the current template's directory. For inline templates, this will
       be an empty string.

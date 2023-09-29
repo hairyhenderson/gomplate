@@ -6,6 +6,7 @@ preamble: |
 funcs:
   - name: conv.Bool
     alias: bool
+    released: v0.2.0
     description: |
       **Note:** See also [`conv.ToBool`](#conv-tobool) for a more flexible variant.
 
@@ -30,6 +31,7 @@ funcs:
         ```
   - name: conv.Default
     alias: default
+    released: v2.5.0
     description: |
       Provides a default value given an empty input. Empty inputs are `0` for numeric
       types, `""` for strings, `false` for booleans, empty arrays/maps, and `nil`.
@@ -52,6 +54,7 @@ funcs:
   - name: conv.Dict
     deprecated: Renamed to [`coll.Dict`](#coll-dict)
     alias: dict
+    released: v3.0.0
     description: |
       Dict is a convenience function that creates a map with string keys.
       Provide arguments as key/value pairs. If an odd number of arguments
@@ -88,6 +91,7 @@ funcs:
   - name: conv.Slice
     deprecated: Renamed to [`coll.Slice`](#coll-slice)
     alias: slice
+    released: v0.3.0
     description: |
       Creates a slice (like an array or list). Useful when needing to `range` over a bunch of variables.
     pipeline: false
@@ -104,6 +108,7 @@ funcs:
   - name: conv.Has
     deprecated: Renamed to [`coll.Has`](#coll-has)
     alias: has
+    released: v1.5.0
     description: |
       Reports whether a given object has a property with the given key, or whether a given array/slice contains the given value. Can be used with `if` to prevent the template from trying to access a non-existent property in an object.
     pipeline: false
@@ -130,6 +135,7 @@ funcs:
         THERE IS NO FOO
   - name: conv.Join
     alias: join
+    released: v0.4.0
     description: |
       Concatenates the elements of an array to create a string. The separator string `sep` is placed between elements in the resulting string.
     arguments:
@@ -145,6 +151,7 @@ funcs:
         1-2-3
   - name: conv.URL
     alias: urlParse
+    released: v2.0.0
     description: |
       Parses a string as a URL for later use. Equivalent to [url.Parse](https://golang.org/pkg/net/url/#Parse)
 
@@ -176,6 +183,7 @@ funcs:
         https://user:xxxxx@example.com
         ```
   - name: conv.ParseInt
+    released: v1.4.0
     description: |
       _**Note:**_ See [`conv.ToInt64`](#conv-toint64) instead for a simpler and more flexible variant of this function.
 
@@ -194,6 +202,7 @@ funcs:
         The value in decimal is 1984
         ```
   - name: conv.ParseFloat
+    released: v1.4.0
     description: |
       _**Note:**_ See [`conv.ToFloat`](#conv-tofloat) instead for a simpler and more flexible variant of this function.
 
@@ -213,6 +222,7 @@ funcs:
         pi is greater than 3
         ```
   - name: conv.ParseUint
+    released: v1.4.0
     description: |
       Parses a string as an uint64 for later use. Equivalent to [strconv.ParseUint](https://golang.org/pkg/strconv/#ParseUint)
     rawExamples:
@@ -229,6 +239,7 @@ funcs:
         18446744073709551615 is max uint64
         ```
   - name: conv.Atoi
+    released: v1.4.0
     description: |
       _**Note:**_ See [`conv.ToInt`](#conv-toint) and [`conv.ToInt64`](#conv-toint64) instead for simpler and more flexible variants of this function.
 
@@ -250,6 +261,7 @@ funcs:
         The number is greater than 5
         ```
   - name: conv.ToBool
+    released: v2.7.0
     description: |
       Converts the input to a boolean value.
       Possible `true` values are: `1` or the strings `"t"`, `"true"`, or `"yes"`
@@ -266,6 +278,7 @@ funcs:
         $ gomplate -i '{{ conv.ToBool false }} {{ conv.ToBool "blah" }} {{ conv.ToBool 0 }}'
         false false false
   - name: conv.ToBools
+    released: v2.7.0
     description: |
       Converts a list of inputs to an array of boolean values.
       Possible `true` values are: `1` or the strings `"t"`, `"true"`, or `"yes"`
@@ -282,6 +295,7 @@ funcs:
         $ gomplate -i '{{ conv.ToBools false "blah" 0 }}'
         [false false false]
   - name: conv.ToInt64
+    released: v2.2.0
     description: |
       Converts the input to an `int64` (64-bit signed integer).
 
@@ -306,6 +320,7 @@ funcs:
         $ gomplate -i '{{conv.ToInt64 true }}'
         1
   - name: conv.ToInt
+    released: v2.2.0
     description: |
       Converts the input to an `int` (signed integer, 32- or 64-bit depending
       on platform). This is similar to [`conv.ToInt64`](#conv-toint64) on 64-bit
@@ -333,6 +348,7 @@ funcs:
         $ gomplate -i '{{conv.ToInt true }}'
         1
   - name: conv.ToInt64s
+    released: v2.2.0
     description: |
       Converts the inputs to an array of `int64`s.
 
@@ -346,6 +362,7 @@ funcs:
         gomplate -i '{{ conv.ToInt64s true 0x42 "123,456.99" "1.2345e+3"}}'
         [1 66 123456 1234]
   - name: conv.ToInts
+    released: v2.2.0
     description: |
       Converts the inputs to an array of `int`s.
 
@@ -359,6 +376,7 @@ funcs:
         gomplate -i '{{ conv.ToInts true 0x42 "123,456.99" "1.2345e+3"}}'
         [1 66 123456 1234]
   - name: conv.ToFloat64
+    released: v2.2.0
     description: |
       Converts the input to a `float64`.
 
@@ -377,6 +395,7 @@ funcs:
         $ gomplate -i '{{ conv.ToFloat64 "9,000.09"}}'
         9000.09
   - name: conv.ToFloat64s
+    released: v2.2.0
     description: |
       Converts the inputs to an array of `float64`s.
 
@@ -390,6 +409,7 @@ funcs:
         $ gomplate -i '{{ conv.ToFloat64s true 0x42 "123,456.99" "1.2345e+3"}}'
         [1 66 123456.99 1234.5]
   - name: conv.ToString
+    released: v2.5.0
     description: |
       Converts the input (of any type) to a `string`.
 
@@ -407,6 +427,7 @@ funcs:
         $ gomplate -i '{{ conv.ToString nil }}'
         nil
   - name: conv.ToStrings
+    released: v2.5.0
     description: |
       Converts the inputs (of any type) to an array of `string`s
 

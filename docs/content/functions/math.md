@@ -33,9 +33,10 @@ $ gomplate -i '{{ add 2.5 2.5 }}'
 
 Returns the absolute value of a given number. When the input is an integer, the result will be an `int64`, otherwise it will be a `float64`.
 
+_Added in gomplate [v2.6.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.6.0)_
 ### Usage
 
-```go
+```
 math.Abs num
 ```
 
@@ -58,9 +59,10 @@ $ gomplate -i '{{ math.Abs -3.5 }} {{ math.Abs 3.5 }} {{ math.Abs -42 }}'
 
 Adds all given operators. When one of the inputs is a floating-point number, the result will be a `float64`, otherwise it will be an `int64`.
 
+_Added in gomplate [v2.2.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.2.0)_
 ### Usage
 
-```go
+```
 math.Add n...
 ```
 
@@ -83,9 +85,10 @@ Returns the least integer value greater than or equal to a given floating-point 
 
 **Note:** the return value of this function is a `float64` so that the special-cases `NaN` and `Inf` can be returned appropriately.
 
+_Added in gomplate [v2.6.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.6.0)_
 ### Usage
 
-```go
+```
 math.Ceil num
 ```
 
@@ -114,12 +117,13 @@ ceil "-0" = 0
 
 Divide the first number by the second. Division by zero is disallowed. The result will be a `float64`.
 
+_Added in gomplate [v2.2.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.2.0)_
 ### Usage
 
-```go
+```
 math.Div a b
 ```
-```go
+```
 b | math.Div a
 ```
 
@@ -143,9 +147,10 @@ Returns the greatest integer value less than or equal to a given floating-point 
 
 **Note:** the return value of this function is a `float64` so that the special-cases `NaN` and `Inf` can be returned appropriately.
 
+_Added in gomplate [v2.6.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.6.0)_
 ### Usage
 
-```go
+```
 math.Floor num
 ```
 
@@ -174,9 +179,10 @@ Returns whether or not the given number can be interpreted as a floating-point l
 
 **Note:** If a decimal point is part of the input number, it will be considered a floating-point number, even if the decimal is `0`.
 
+_Added in gomplate [v2.6.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.6.0)_
 ### Usage
 
-```go
+```
 math.IsFloat num
 ```
 
@@ -202,9 +208,10 @@ Inf is a float
 
 Returns whether or not the given number is an integer.
 
+_Added in gomplate [v2.6.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.6.0)_
 ### Usage
 
-```go
+```
 math.IsInt num
 ```
 
@@ -227,9 +234,10 @@ $ gomplate -i '{{ range (coll.Slice 1.0 "-1.0" 5.1 42 "3.14" "foo" "0xFF" "NaN" 
 
 Returns whether the given input is a number. Useful for `if` conditions.
 
+_Added in gomplate [v2.6.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.6.0)_
 ### Usage
 
-```go
+```
 math.IsNum in
 ```
 
@@ -250,9 +258,10 @@ false true
 
 Returns the largest number provided. If any values are floating-point numbers, a `float64` is returned, otherwise an `int64` is returned. The same special-cases as Go's [`math.Max`](https://golang.org/pkg/math/#Max) are followed.
 
+_Added in gomplate [v2.6.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.6.0)_
 ### Usage
 
-```go
+```
 math.Max nums...
 ```
 
@@ -273,9 +282,10 @@ $ gomplate -i '{{ math.Max 0 8.0 4.5 "-1.5e-11" }}'
 
 Returns the smallest number provided. If any values are floating-point numbers, a `float64` is returned, otherwise an `int64` is returned. The same special-cases as Go's [`math.Min`](https://golang.org/pkg/math/#Min) are followed.
 
+_Added in gomplate [v2.6.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.6.0)_
 ### Usage
 
-```go
+```
 math.Min nums...
 ```
 
@@ -298,9 +308,10 @@ $ gomplate -i '{{ math.Min 0 8 4.5 "-1.5e-11" }}'
 
 Multiply all given operators together.
 
+_Added in gomplate [v2.2.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.2.0)_
 ### Usage
 
-```go
+```
 math.Mul n...
 ```
 
@@ -323,9 +334,10 @@ $ gomplate -i '{{ math.Mul 8 8 2 }}'
 
 Calculate an exponent - _b<sup>n</sup>_. This wraps Go's [`math.Pow`](https://golang.org/pkg/math/#Pow). If any values are floating-point numbers, a `float64` is returned, otherwise an `int64` is returned.
 
+_Added in gomplate [v2.2.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.2.0)_
 ### Usage
 
-```go
+```
 math.Pow b n
 ```
 
@@ -353,12 +365,13 @@ $ gomplate -i '{{ math.Pow 1.5 2 }}'
 
 Return the remainder from an integer division operation.
 
+_Added in gomplate [v2.2.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.2.0)_
 ### Usage
 
-```go
+```
 math.Rem a b
 ```
-```go
+```
 b | math.Rem a
 ```
 
@@ -384,9 +397,10 @@ Returns the nearest integer, rounding half away from zero.
 
 **Note:** the return value of this function is a `float64` so that the special-cases `NaN` and `Inf` can be returned appropriately.
 
+_Added in gomplate [v2.6.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.6.0)_
 ### Usage
 
-```go
+```
 math.Round num
 ```
 
@@ -416,9 +430,10 @@ down as well as up, including with negative numbers.
 
 Note that the sequence _may_ not end at `end`, if `end` is not divisible by `step`.
 
+_Added in gomplate [v2.2.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.2.0)_
 ### Usage
 
-```go
+```
 math.Seq [start] end [step]
 ```
 
@@ -447,12 +462,13 @@ $ gomplate -i '{{ conv.Join (math.Seq 10 -3 2) ", " }}'
 
 Subtract the second from the first of the given operators.  When one of the inputs is a floating-point number, the result will be a `float64`, otherwise it will be an `int64`.
 
+_Added in gomplate [v2.2.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.2.0)_
 ### Usage
 
-```go
+```
 math.Sub a b
 ```
-```go
+```
 b | math.Sub a
 ```
 

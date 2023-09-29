@@ -15,12 +15,13 @@ assumptions and can cause template generation to fail in specific cases.
 Asserts that the given expression or value is `true`. If it is not, causes
 template generation to fail immediately with an optional message.
 
+_Added in gomplate [v2.7.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.7.0)_
 ### Usage
 
-```go
+```
 test.Assert [message] value
 ```
-```go
+```
 value | test.Assert [message]
 ```
 
@@ -46,12 +47,13 @@ template: <arg>:1:3: executing "<arg>" at <assert "something ho...>: error calli
 
 Cause template generation to fail immediately, with an optional message.
 
+_Added in gomplate [v2.7.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.7.0)_
 ### Usage
 
-```go
+```
 test.Fail [message]
 ```
-```go
+```
 message | test.Fail
 ```
 
@@ -94,12 +96,13 @@ This is useful when the specific numeric type is unknown.
 
 See also [`test.Kind`](test-kind).
 
+_Added in gomplate [v3.8.0](https://github.com/hairyhenderson/gomplate/releases/tag/v3.8.0)_
 ### Usage
 
-```go
+```
 test.IsKind kind value
 ```
-```go
+```
 value | test.IsKind kind
 ```
 
@@ -145,12 +148,13 @@ If you need to know the precise type of a value, use `printf "%T" $value`.
 
 See also [`test.IsKind`](test-iskind).
 
+_Added in gomplate [v3.8.0](https://github.com/hairyhenderson/gomplate/releases/tag/v3.8.0)_
 ### Usage
 
-```go
+```
 test.Kind value
 ```
-```go
+```
 value | test.Kind
 ```
 
@@ -187,12 +191,13 @@ but has slightly different behaviour. Notably, gomplate will always fail in
 cases where a referenced _key_ is missing, and this function will have no
 effect.
 
+_Added in gomplate [v3.0.0](https://github.com/hairyhenderson/gomplate/releases/tag/v3.0.0)_
 ### Usage
 
-```go
+```
 test.Required [message] value
 ```
-```go
+```
 value | test.Required [message]
 ```
 
@@ -238,12 +243,13 @@ This is effectively a short-form of the following template:
 
 Keep in mind that using an explicit `if`/`else` block is often easier to understand than ternary expressions!
 
+_Added in gomplate [v3.1.0](https://github.com/hairyhenderson/gomplate/releases/tag/v3.1.0)_
 ### Usage
 
-```go
+```
 test.Ternary truevalue falsevalue condition
 ```
-```go
+```
 condition | test.Ternary truevalue falsevalue
 ```
 

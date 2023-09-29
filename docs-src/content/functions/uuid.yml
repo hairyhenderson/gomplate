@@ -14,6 +14,7 @@ preamble: |
   [log an issue]: https://github.com/hairyhenderson/gomplate/issues/new
 funcs:
   - name: uuid.V1
+    released: v3.4.0
     description: |
       Create a version 1 UUID (based on the current MAC address and the current date/time).
 
@@ -24,6 +25,7 @@ funcs:
         $ gomplate -i '{{ uuid.V1 }}'
         4d757e54-446d-11e9-a8fa-72000877c7b0
   - name: uuid.V4
+    released: v3.4.0
     description: |
       Create a version 4 UUID (randomly generated).
 
@@ -34,6 +36,7 @@ funcs:
         $ gomplate -i '{{ uuid.V4 }}'
         40b3c2d2-e491-4b19-94cd-461e6fa35a60
   - name: uuid.Nil
+    released: v3.4.0
     description: |
       Returns the _nil_ UUID, that is, `00000000-0000-0000-0000-000000000000`,
       mostly for testing scenarios.
@@ -43,6 +46,7 @@ funcs:
         $ gomplate -i '{{ uuid.Nil }}'
         00000000-0000-0000-0000-000000000000
   - name: uuid.IsValid
+    released: v3.4.0
     description: |
       Checks that the given UUID is in the correct format. It does not validate
       whether the version or variant are correct.
@@ -59,6 +63,7 @@ funcs:
         $ gomplate -i '{{ uuid.IsValid "urn:uuid:12345678-90ab-cdef-fedc-ba9876543210" }}'
         true
   - name: uuid.Parse
+    released: v3.4.0
     description: |
       Parse a UUID for further manipulation or inspection.
 

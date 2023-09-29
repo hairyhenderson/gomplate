@@ -19,12 +19,13 @@ Returns the last element of path. Trailing slashes are removed before extracting
 
 A wrapper for Go's [`path.Base`](https://golang.org/pkg/path/#Base) function.
 
+_Added in gomplate [v2.7.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.7.0)_
 ### Usage
 
-```go
+```
 path.Base path
 ```
-```go
+```
 path | path.Base
 ```
 
@@ -47,12 +48,13 @@ Clean returns the shortest path name equivalent to path by purely lexical proces
 
 A wrapper for Go's [`path.Clean`](https://golang.org/pkg/path/#Clean) function.
 
+_Added in gomplate [v2.7.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.7.0)_
 ### Usage
 
-```go
+```
 path.Clean path
 ```
-```go
+```
 path | path.Clean
 ```
 
@@ -75,12 +77,13 @@ Returns all but the last element of path, typically the path's directory.
 
 A wrapper for Go's [`path.Dir`](https://golang.org/pkg/path/#Dir) function.
 
+_Added in gomplate [v2.7.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.7.0)_
 ### Usage
 
-```go
+```
 path.Dir path
 ```
-```go
+```
 path | path.Dir
 ```
 
@@ -103,12 +106,13 @@ Returns the file name extension used by path.
 
 A wrapper for Go's [`path.Ext`](https://golang.org/pkg/path/#Ext) function.
 
+_Added in gomplate [v2.7.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.7.0)_
 ### Usage
 
-```go
+```
 path.Ext path
 ```
-```go
+```
 path | path.Ext
 ```
 
@@ -131,12 +135,13 @@ Reports whether the path is absolute.
 
 A wrapper for Go's [`path.IsAbs`](https://golang.org/pkg/path/#IsAbs) function.
 
+_Added in gomplate [v2.7.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.7.0)_
 ### Usage
 
-```go
+```
 path.IsAbs path
 ```
-```go
+```
 path | path.IsAbs
 ```
 
@@ -161,9 +166,10 @@ Joins any number of path elements into a single path, adding a separating slash 
 
 A wrapper for Go's [`path.Join`](https://golang.org/pkg/path/#Join) function.
 
+_Added in gomplate [v2.7.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.7.0)_
 ### Usage
 
-```go
+```
 path.Join elem...
 ```
 
@@ -186,9 +192,10 @@ Reports whether name matches the shell file name pattern.
 
 A wrapper for Go's [`path.Match`](https://golang.org/pkg/path/#Match) function.
 
+_Added in gomplate [v2.7.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.7.0)_
 ### Usage
 
-```go
+```
 path.Match pattern path
 ```
 
@@ -214,12 +221,13 @@ The function returns an array with two values, the first being the directory, an
 
 A wrapper for Go's [`path.Split`](https://golang.org/pkg/path/#Split) function.
 
+_Added in gomplate [v2.7.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.7.0)_
 ### Usage
 
-```go
+```
 path.Split path
 ```
-```go
+```
 path | path.Split
 ```
 

@@ -3,6 +3,7 @@ preamble: |
   Functions for working with files.
 funcs:
   - name: file.Exists
+    released: v2.4.0
     description: |
       Reports whether a file or directory exists at the given path.
     pipeline: true
@@ -25,6 +26,7 @@ funcs:
         yes
         ```
   - name: file.IsDir
+    released: v2.4.0
     description: |
       Reports whether a given path is a directory.
     pipeline: true
@@ -50,6 +52,7 @@ funcs:
         yes
         ```
   - name: file.Read
+    released: v2.4.0
     description: |
       Reads a given file _as text_. Note that this will succeed if the given file is binary, but the output may be gibberish.
     pipeline: true
@@ -63,6 +66,7 @@ funcs:
         $ gomplate -i '{{file.Read "/tmp/hi"}}'
         hello world
   - name: file.ReadDir
+    released: v2.4.0
     description: |
       Reads a directory and lists the files and directories contained within.
     pipeline: true
@@ -81,6 +85,7 @@ funcs:
         c
         d
   - name: file.Stat
+    released: v2.4.0
     description: |
       Returns a [`os.FileInfo`](https://golang.org/pkg/os/#FileInfo) describing the named path.
 
@@ -96,6 +101,7 @@ funcs:
         $ gomplate -i '{{ $s := file.Stat "/tmp/foo" }}{{ $s.Mode }} {{ $s.Size }} {{ $s.Name }}'
         -rw-r--r-- 12 foo
   - name: file.Walk
+    released: v2.6.0
     description: |
       Like a recursive [`file.ReadDir`](#file-readdir), recursively walks the file tree rooted at `path`, and returns an array of all files and directories contained within.
 
@@ -128,6 +134,7 @@ funcs:
         /tmp/foo/three is a file
         /tmp/foo/two is a file
   - name: file.Write
+    released: v2.4.0
     description: |
       Write the given data to the given file. If the file exists, it will be overwritten.
 
