@@ -5,7 +5,6 @@ import (
 	"reflect"
 
 	"github.com/flanksource/gomplate/v3/funcs"
-	"github.com/flanksource/gomplate/v3/k8s"
 	pkgStrings "github.com/flanksource/gomplate/v3/strings"
 	"github.com/google/cel-go/cel"
 	"github.com/google/cel-go/common/types"
@@ -14,10 +13,12 @@ import (
 )
 
 var customCelFuncs = []cel.EnvOption{
-	k8sHealth(),
-	k8sIsHealthy(),
 	toJSONArray(),
 	toJSON(),
+	k8sHealth(),
+	k8sIsHealthy(),
+	k8sCPUAsMillicores(),
+	k8sMemoryAsBytes(),
 }
 
 func GetCelEnv(environment map[string]any) []cel.EnvOption {
@@ -39,31 +40,6 @@ func GetCelEnv(environment map[string]any) []cel.EnvOption {
 
 	opts = append(opts, customCelFuncs...)
 	return opts
-}
-
-func k8sHealth() cel.EnvOption {
-	return cel.Function("k8s.health",
-		cel.Overload("k8s.health_any",
-			[]*cel.Type{cel.AnyType},
-			cel.AnyType,
-			cel.UnaryBinding(func(obj ref.Val) ref.Val {
-				jsonObj, _ := anyToMapStringAny(k8s.GetHealth(obj.Value()))
-				return types.NewDynamicMap(types.DefaultTypeAdapter, jsonObj)
-			}),
-		),
-	)
-}
-
-func k8sIsHealthy() cel.EnvOption {
-	return cel.Function("k8s.is_healthy",
-		cel.Overload("k8s.is_healthy_any",
-			[]*cel.Type{cel.AnyType},
-			cel.StringType,
-			cel.UnaryBinding(func(obj ref.Val) ref.Val {
-				return types.Bool(k8s.GetHealth(obj.Value()).OK)
-			}),
-		),
-	)
 }
 
 func toJSONArray() cel.EnvOption {
