@@ -88,6 +88,8 @@ var CelEnvOption = []cel.EnvOption{
 	dataToJSONPrettyGen,
 	dataToYAMLGen,
 	dataToTOMLGen,
+	urlEncodeGen,
+	urlDecodeGen,
 	filepathBaseGen,
 	filepathCleanGen,
 	filepathDirGen,

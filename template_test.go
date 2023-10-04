@@ -111,6 +111,8 @@ func TestGomplate(t *testing.T) {
 		out      string
 	}{
 		{map[string]interface{}{"hello": "world"}, "{{ .hello }}", "world"},
+		{map[string]interface{}{"hello": "hello world ?"}, "{{ .hello | urlencode }}", `hello+world+%3F`},
+		{map[string]interface{}{"hello": "hello+world+%3F"}, "{{ .hello | urldecode }}", `hello world ?`},
 		{map[string]interface{}{"age": 75 * time.Second}, "{{ .age | humanDuration  }}", "1m15s"},
 		{map[string]interface{}{"healthySvc": k8s.GetUnstructured(k8s.TestHealthy)}, "{{ (.healthySvc | isHealthy) }}", "true"},
 		{map[string]interface{}{"healthySvc": k8s.GetUnstructured(k8s.TestLuaStatus)}, "{{ (.healthySvc | getStatus) }}", "Degraded: found less than two generators, Merge requires two or more"},
@@ -153,6 +155,8 @@ func TestCel(t *testing.T) {
 	}{
 		{nil, `math.Add([1,2,3,4,5])`, "15"},
 		{map[string]interface{}{"hello": "world"}, "hello", "world"},
+		{map[string]interface{}{"hello": "hello world ?"}, "urlencode(hello)", `hello+world+%3F`},
+		{map[string]interface{}{"hello": "hello+world+%3F"}, "urldecode(hello)", `hello world ?`},
 		{map[string]interface{}{"age": 75 * time.Second}, "age", "1m15s"},
 		{map[string]interface{}{"healthySvc": k8s.GetUnstructuredMap(k8s.TestHealthy)}, "IsHealthy(healthySvc)", "true"},
 		{map[string]interface{}{"healthySvc": k8s.GetUnstructuredMap(k8s.TestLuaStatus)}, "GetStatus(healthySvc)", "Degraded: found less than two generators, Merge requires two or more"},

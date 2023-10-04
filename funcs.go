@@ -25,6 +25,7 @@ func CreateFuncs(ctx context.Context) template.FuncMap {
 	addToMap(f, funcs.CreateCollFuncs(ctx))
 	addToMap(f, funcs.CreateUUIDFuncs(ctx))
 	addToMap(f, funcs.CreateRandomFuncs(ctx))
+	addToMap(f, funcs.CreateEncodeFuncs(ctx))
 	return f
 }
 
