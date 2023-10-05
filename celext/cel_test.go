@@ -56,7 +56,7 @@ func TestCelMultipleReturns(t *testing.T) {
 	}{
 		// {Input: `base64.Encode("flanksource")`, Outputs: []any{"Zmxhbmtzb3VyY2U=", nil}},
 		// {Input: `base64.Decode("Zmxhbmtzb3VyY2U=")`, Outputs: []any{"flanksource", nil}},
-		{Input: `data.JSONArray("[\"name\",\"flanksource\"]")`, Outputs: []any{[]any{"name", "flanksource"}, nil}},
+		{Input: `JSONArray("[\"name\",\"flanksource\"]")`, Outputs: []any{"name", "flanksource"}},
 	}
 
 	for i, td := range testData {
@@ -84,7 +84,7 @@ func TestCelSliceReturn(t *testing.T) {
 		Input  string
 		Output any
 	}{
-		{Input: `Split("-", "open-source")`, Output: []string{"open", "source"}},
+		{Input: `"open-source".split("-")`, Output: []string{"open", "source"}},
 	}
 
 	for i, td := range testData {
