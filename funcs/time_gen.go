@@ -15,7 +15,7 @@ var timeZoneNameGen = cel.Function("time.ZoneName",
 
 			var x TimeFuncs
 
-			return types.DefaultTypeAdapter.NativeToValue(x.ZoneName())
+			return types.String(x.ZoneName())
 
 		}),
 	),
@@ -29,7 +29,7 @@ var timeZoneOffsetGen = cel.Function("time.ZoneOffset",
 
 			var x TimeFuncs
 
-			return types.DefaultTypeAdapter.NativeToValue(x.ZoneOffset())
+			return types.Int(x.ZoneOffset())
 
 		}),
 	),
@@ -46,10 +46,11 @@ var timeParseGen = cel.Function("time.Parse",
 
 			var x TimeFuncs
 
-			a0, a1 := x.Parse(args[0].Value().(string), args[1])
-			return types.DefaultTypeAdapter.NativeToValue([]any{
-				a0, a1,
-			})
+			result, err := x.Parse(args[0].Value().(string), args[1])
+			if err != nil {
+				return types.NewErr(err.Error())
+			}
+			return types.DefaultTypeAdapter.NativeToValue(result)
 
 		}),
 	),
@@ -66,10 +67,12 @@ var timeParseLocalGen = cel.Function("time.ParseLocal",
 
 			var x TimeFuncs
 
-			a0, a1 := x.ParseLocal(args[0].Value().(string), args[1])
-			return types.DefaultTypeAdapter.NativeToValue([]any{
-				a0, a1,
-			})
+			result, err := x.ParseLocal(args[0].Value().(string), args[1])
+			if err != nil {
+				return types.NewErr(err.Error())
+			}
+			return types.DefaultTypeAdapter.NativeToValue(result)
+
 
 		}),
 	),
@@ -86,11 +89,11 @@ var timeParseInLocationGen = cel.Function("time.ParseInLocation",
 
 			var x TimeFuncs
 
-			a0, a1 := x.ParseInLocation(args[0].Value().(string), args[1].Value().(string), args[2])
-			return types.DefaultTypeAdapter.NativeToValue([]any{
-				a0, a1,
-			})
-
+			result, err := x.ParseInLocation(args[0].Value().(string), args[1].Value().(string), args[2])
+			if err != nil {
+				return types.NewErr(err.Error())
+			}
+			return types.DefaultTypeAdapter.NativeToValue(result)
 		}),
 	),
 )
@@ -120,9 +123,9 @@ var timeUnixGen = cel.Function("time.Unix",
 
 			var x TimeFuncs
 
-			a0, a1 := x.Unix(args[0])
+			result, err := x.Unix(args[0])
 			return types.DefaultTypeAdapter.NativeToValue([]any{
-				a0, a1,
+				result, err,
 			})
 
 		}),
@@ -231,6 +234,27 @@ var timeHourGen = cel.Function("time.Hour",
 	),
 )
 
+
+var timeParseDurationGen2= cel.Function("duration",
+	cel.Overload("duration_interface{}",
+
+		[]*cel.Type{
+			cel.DynType,
+		},
+		cel.DynType,
+		cel.FunctionBinding(func(args ...ref.Val) ref.Val {
+
+			var x TimeFuncs
+
+			result, err := x.ParseDuration(args[0])
+			if err != nil {
+				return types.NewErr(err.Error())
+			}
+			return types.DefaultTypeAdapter.NativeToValue(result)
+
+		}),
+	),
+)
 var timeParseDurationGen = cel.Function("time.ParseDuration",
 	cel.Overload("time.ParseDuration_interface{}",
 
@@ -242,10 +266,12 @@ var timeParseDurationGen = cel.Function("time.ParseDuration",
 
 			var x TimeFuncs
 
-			a0, a1 := x.ParseDuration(args[0])
-			return types.DefaultTypeAdapter.NativeToValue([]any{
-				a0, a1,
-			})
+			result, err := x.ParseDuration(args[0])
+			if err != nil {
+				return types.NewErr(err.Error())
+			}
+			return types.DefaultTypeAdapter.NativeToValue(result)
+
 
 		}),
 	),

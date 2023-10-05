@@ -5,6 +5,7 @@ package funcs
 import "github.com/google/cel-go/cel"
 import "github.com/google/cel-go/common/types"
 import "github.com/google/cel-go/common/types/ref"
+import "reflect"
 
 var collSliceGen = cel.Function("Slice",
 	cel.Overload("Slice_interface{}",
@@ -53,11 +54,11 @@ var collDictGen = cel.Function("Dict",
 			var x CollFuncs
 			list := transferSlice[interface{}](args[0].(ref.Val))
 
-			a0, a1 := x.Dict(list...)
-			return types.DefaultTypeAdapter.NativeToValue([]any{
-				a0, a1,
-			})
-
+			result, err := x.Dict(list...)
+			if err != nil {
+				return types.NewErr(err.Error())
+			}
+			return types.DefaultTypeAdapter.NativeToValue(result)
 		}),
 	),
 )
@@ -74,9 +75,9 @@ var collKeysGen = cel.Function("Keys",
 			var x CollFuncs
 			list := transferSlice[map[string]interface{}](args[0].(ref.Val))
 
-			a0, a1 := x.Keys(list...)
+			result, err := x.Keys(list...)
 			return types.DefaultTypeAdapter.NativeToValue([]any{
-				a0, a1,
+				result, err,
 			})
 
 		}),
@@ -95,10 +96,11 @@ var collValuesGen = cel.Function("Values",
 			var x CollFuncs
 			list := transferSlice[map[string]interface{}](args[0].(ref.Val))
 
-			a0, a1 := x.Values(list...)
-			return types.DefaultTypeAdapter.NativeToValue([]any{
-				a0, a1,
-			})
+			result, err := x.Values(list...)
+			if err != nil {
+				return types.NewErr(err.Error())
+			}
+			return types.DefaultTypeAdapter.NativeToValue(result)
 
 		}),
 	),
@@ -115,11 +117,11 @@ var collAppendGen = cel.Function("Append",
 
 			var x CollFuncs
 
-			a0, a1 := x.Append(args[0], args[1])
-			return types.DefaultTypeAdapter.NativeToValue([]any{
-				a0, a1,
-			})
-
+			result, err := x.Append(args[0], args[1])
+			if err != nil {
+				return types.NewErr(err.Error())
+			}
+			return types.DefaultTypeAdapter.NativeToValue(result)
 		}),
 	),
 )
@@ -135,30 +137,34 @@ var collPrependGen = cel.Function("Prepend",
 
 			var x CollFuncs
 
-			a0, a1 := x.Prepend(args[0], args[1])
-			return types.DefaultTypeAdapter.NativeToValue([]any{
-				a0, a1,
-			})
+			result, err := x.Prepend(args[0], args[1])
+			if err != nil {
+				return types.NewErr(err.Error())
+			}
+			return types.DefaultTypeAdapter.NativeToValue(result)
 
 		}),
 	),
 )
 
-var collUniqGen = cel.Function("Uniq",
+var collUniqGen = cel.Function("uniq",
 	cel.Overload("Uniq_interface{}",
 
 		[]*cel.Type{
-			cel.DynType,
+			cel.ListType(cel.StringType),
 		},
-		cel.DynType,
+		cel.ListType(cel.StringType),
 		cel.FunctionBinding(func(args ...ref.Val) ref.Val {
 
 			var x CollFuncs
 
-			a0, a1 := x.Uniq(args[0])
-			return types.DefaultTypeAdapter.NativeToValue([]any{
-				a0, a1,
-			})
+			list, _ := args[0].ConvertToNative(reflect.TypeOf([]string{}))
+
+			result, err := x.Uniq(list)
+			if err != nil {
+				return types.NewErr(err.Error())
+			}
+			return types.DefaultTypeAdapter.NativeToValue(result)
 
 		}),
 	),
@@ -175,10 +181,11 @@ var collReverseGen = cel.Function("Reverse",
 
 			var x CollFuncs
 
-			a0, a1 := x.Reverse(args[0])
-			return types.DefaultTypeAdapter.NativeToValue([]any{
-				a0, a1,
-			})
+			result, err := x.Reverse(args[0])
+			if err != nil {
+				return types.NewErr(err.Error())
+			}
+			return types.DefaultTypeAdapter.NativeToValue(result)
 
 		}),
 	),
@@ -196,10 +203,11 @@ var collMergeGen = cel.Function("Merge",
 			var x CollFuncs
 			list := transferSlice[map[string]interface{}](args[1].(ref.Val))
 
-			a0, a1 := x.Merge(args[0].Value().(map[string]interface{}), list...)
-			return types.DefaultTypeAdapter.NativeToValue([]any{
-				a0, a1,
-			})
+			result, err := x.Merge(args[0].Value().(map[string]interface{}), list...)
+			if err != nil {
+				return types.NewErr(err.Error())
+			}
+			return types.DefaultTypeAdapter.NativeToValue(result)
 
 		}),
 	),
@@ -217,17 +225,18 @@ var collSortGen = cel.Function("Sort",
 			var x CollFuncs
 			list := transferSlice[interface{}](args[0].(ref.Val))
 
-			a0, a1 := x.Sort(list...)
-			return types.DefaultTypeAdapter.NativeToValue([]any{
-				a0, a1,
-			})
+			result, err := x.Sort(list...)
+			if err != nil {
+				return types.NewErr(err.Error())
+			}
+			return types.DefaultTypeAdapter.NativeToValue(result)
 
 		}),
 	),
 )
 
-var collJQGen = cel.Function("JQ",
-	cel.Overload("JQ_string_interface{}",
+var collJQGen = cel.Function("jq",
+	cel.Overload("jq_string_interface{}",
 
 		[]*cel.Type{
 			cel.StringType, cel.DynType,
@@ -237,10 +246,11 @@ var collJQGen = cel.Function("JQ",
 
 			var x CollFuncs
 
-			a0, a1 := x.JQ(args[0].Value().(string), args[1])
-			return types.DefaultTypeAdapter.NativeToValue([]any{
-				a0, a1,
-			})
+			result, err := x.JQ(args[0].Value().(string), args[1].Value())
+			if err != nil {
+				return types.NewErr(err.Error())
+			}
+			return types.DefaultTypeAdapter.NativeToValue(result)
 
 		}),
 	),
@@ -258,9 +268,9 @@ var collFlattenGen = cel.Function("Flatten",
 			var x CollFuncs
 			list := transferSlice[interface{}](args[0].(ref.Val))
 
-			a0, a1 := x.Flatten(list...)
+			result, err := x.Flatten(list...)
 			return types.DefaultTypeAdapter.NativeToValue([]any{
-				a0, a1,
+				result, err,
 			})
 
 		}),
@@ -279,10 +289,11 @@ var collPickGen = cel.Function("Pick",
 			var x CollFuncs
 			list := transferSlice[interface{}](args[0].(ref.Val))
 
-			a0, a1 := x.Pick(list...)
-			return types.DefaultTypeAdapter.NativeToValue([]any{
-				a0, a1,
-			})
+			result, err := x.Pick(list...)
+			if err != nil {
+				return types.NewErr(err.Error())
+			}
+			return types.DefaultTypeAdapter.NativeToValue(result)
 
 		}),
 	),
@@ -290,7 +301,6 @@ var collPickGen = cel.Function("Pick",
 
 var collOmitGen = cel.Function("Omit",
 	cel.Overload("Omit_interface{}",
-
 		[]*cel.Type{
 			cel.DynType,
 		},
@@ -300,11 +310,11 @@ var collOmitGen = cel.Function("Omit",
 			var x CollFuncs
 			list := transferSlice[interface{}](args[0].(ref.Val))
 
-			a0, a1 := x.Omit(list...)
-			return types.DefaultTypeAdapter.NativeToValue([]any{
-				a0, a1,
-			})
-
+			result, err := x.Omit(list...)
+			if err != nil {
+				return types.NewErr(err.Error())
+			}
+			return types.DefaultTypeAdapter.NativeToValue(result)
 		}),
 	),
 )

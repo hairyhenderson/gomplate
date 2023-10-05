@@ -13,6 +13,7 @@ import (
 	_ "github.com/flanksource/gomplate/v3/js"
 	"github.com/flanksource/mapstructure"
 	"github.com/google/cel-go/cel"
+	"github.com/pkg/errors"
 	"github.com/robertkrimen/otto"
 	"github.com/robertkrimen/otto/registry"
 	_ "github.com/robertkrimen/otto/underscore"
@@ -82,7 +83,6 @@ func RunTemplate(environment map[string]any, template Template) (string, error) 
 		if err != nil {
 			return "", err
 		}
-
 		ast, issues := env.Compile(template.Expression)
 		if issues != nil && issues.Err() != nil {
 			return "", issues.Err()
@@ -100,7 +100,7 @@ func RunTemplate(environment map[string]any, template Template) (string, error) 
 
 		out, _, err := prg.Eval(data)
 		if err != nil {
-			return "", fmt.Errorf("error evaluating expression %s: %v", template.Expression, err)
+			return "", errors.Wrapf(err, "error evaluating expression %s: %s, %v", template.Expression, err, data)
 		}
 
 		return fmt.Sprintf("%v", out.Value()), nil

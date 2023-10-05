@@ -2,40 +2,90 @@
 
 package funcs
 
-import (
-	"github.com/flanksource/gomplate/v3/conv"
-	"github.com/google/cel-go/cel"
-	"github.com/google/cel-go/common/types"
-	"github.com/google/cel-go/common/types/ref"
-)
+import "github.com/google/cel-go/cel"
+import "github.com/google/cel-go/common/types"
+import "github.com/google/cel-go/common/types/ref"
 
 var stringsHumanDurationGen = cel.Function("HumanDuration",
 	cel.Overload("HumanDuration_interface{}",
+
 		[]*cel.Type{
 			cel.DynType,
 		},
 		cel.StringType,
-		cel.UnaryBinding(func(arg  ref.Val) ref.Val {
-			var x StringFuncs
-			a0, _ := x.HumanDuration(arg)
-			return types.String(a0)
-		}),
-	),
-)
-
-var stringsHumanSizeGen = cel.Function("HumanSize",
-	cel.Overload("HumanSize_interface{}",
-
-		[]*cel.Type{
-			cel.DynType,
-		},
-		cel.DynType,
 		cel.FunctionBinding(func(args ...ref.Val) ref.Val {
 
 			var x StringFuncs
 
-			a0, _ := x.HumanSize(conv.ToString(args[0])) // Never returns error
-			return types.String(a0)
+			result, err := x.HumanDuration(args[0])
+			if err != nil {
+				return types.NewErr(err.Error())
+			}
+			return types.String(result)
+
+		}),
+	),
+)
+
+var stringsHumanDurationGen2 = cel.Function("humanDuration",
+	cel.Overload("umanDuration_interface{}",
+
+		[]*cel.Type{
+			cel.DynType,
+		},
+		cel.StringType,
+		cel.FunctionBinding(func(args ...ref.Val) ref.Val {
+
+			var x StringFuncs
+
+			result, err := x.HumanDuration(args[0])
+			if err != nil {
+				return types.NewErr(err.Error())
+			}
+			return types.String(result)
+
+		}),
+	),
+)
+
+
+
+var stringsHumanSizeGen = cel.Function("HumanSize",
+	cel.Overload("HumanSize_interface{}",
+		[]*cel.Type{
+			cel.DynType,
+		},
+		cel.StringType,
+		cel.FunctionBinding(func(args ...ref.Val) ref.Val {
+
+			var x StringFuncs
+
+			result, err := x.HumanSize(args[0])
+			if err != nil {
+				return types.NewErr(err.Error())
+			}
+			return types.String(result)
+
+		}),
+	),
+)
+
+var stringsHumanSizeGen2 = cel.Function("humanSize",
+	cel.Overload("humanSize_interface{}",
+		[]*cel.Type{
+			cel.DynType,
+		},
+		cel.StringType,
+		cel.FunctionBinding(func(args ...ref.Val) ref.Val {
+
+			var x StringFuncs
+
+			result, err := x.HumanSize(args[0])
+			if err != nil {
+				return types.NewErr(err.Error())
+			}
+			return types.String(result)
+
 		}),
 	),
 )
@@ -51,13 +101,11 @@ var stringsSemverGen = cel.Function("Semver",
 
 			var x StringFuncs
 
-			a0, a1 := x.SemverMap(args[0].Value().(string))
-			if a1 != nil {
-				return types.String("")
+			result, err := x.SemverMap(args[0].Value().(string))
+			if err != nil {
+				return types.NewErr(err.Error())
 			}
-
-
-			return types.DefaultTypeAdapter.NativeToValue(a0)
+			return types.DefaultTypeAdapter.NativeToValue(result)
 		}),
 	),
 )
@@ -68,18 +116,16 @@ var stringsSemverCompareGen = cel.Function("SemverCompare",
 		[]*cel.Type{
 			cel.StringType, cel.StringType,
 		},
-		cel.DynType,
+		cel.BoolType,
 		cel.FunctionBinding(func(args ...ref.Val) ref.Val {
 
 			var x StringFuncs
 
-			a0, a1 := x.SemverCompare(args[0].Value().(string), args[1].Value().(string))
-			if a1 != nil {
-				return types.Bool(false)
+			result, err := x.SemverCompare(args[0].Value().(string), args[1].Value().(string))
+			if err != nil {
+				return types.NewErr(err.Error())
 			}
-
-			return types.DefaultTypeAdapter.NativeToValue(a0)
-
+			return types.Bool(result)
 		}),
 	),
 )
@@ -90,23 +136,24 @@ var stringsAbbrevGen = cel.Function("Abbrev",
 		[]*cel.Type{
 			cel.DynType,
 		},
-		cel.DynType,
+		cel.StringType,
 		cel.FunctionBinding(func(args ...ref.Val) ref.Val {
 
 			var x StringFuncs
 			list := transferSlice[interface{}](args[0].(ref.Val))
 
-			a0, a1 := x.Abbrev(list...)
-			return types.DefaultTypeAdapter.NativeToValue([]any{
-				a0, a1,
-			})
+			result, err := x.Abbrev(list...)
+			if err != nil {
+				return types.NewErr(err.Error())
+			}
+			return types.String(result)
 
 		}),
 	),
 )
 
-var stringsReplaceAllGen = cel.Function("ReplaceAll",
-	cel.Overload("ReplaceAll_string_string_interface{}",
+var stringsReplaceAllGen = cel.Function("replaceAll",
+	cel.MemberOverload("ReplaceAll_string_string_interface{}",
 
 		[]*cel.Type{
 			cel.StringType, cel.StringType, cel.DynType,
@@ -116,7 +163,7 @@ var stringsReplaceAllGen = cel.Function("ReplaceAll",
 
 			var x StringFuncs
 
-			return types.DefaultTypeAdapter.NativeToValue(x.ReplaceAll(args[0].Value().(string), args[1].Value().(string), args[2]))
+			return types.String(x.ReplaceAll(args[0].Value().(string), args[1].Value().(string), args[2]))
 
 		}),
 	),
@@ -133,61 +180,29 @@ var stringsContainsGen = cel.Function("Contains",
 
 			var x StringFuncs
 
-			return types.DefaultTypeAdapter.NativeToValue(x.Contains(args[0].Value().(string), args[1]))
+			return types.Bool(x.Contains(args[0].Value().(string), args[1]))
 
 		}),
 	),
 )
 
-var stringsHasPrefixGen = cel.Function("HasPrefix",
-	cel.Overload("HasPrefix_string_interface{}",
 
-		[]*cel.Type{
-			cel.StringType, cel.DynType,
-		},
-		cel.BoolType,
-		cel.FunctionBinding(func(args ...ref.Val) ref.Val {
-
-			var x StringFuncs
-
-			return types.DefaultTypeAdapter.NativeToValue(x.HasPrefix(args[0].Value().(string), args[1]))
-
-		}),
-	),
-)
-
-var stringsHasSuffixGen = cel.Function("HasSuffix",
-	cel.Overload("HasSuffix_string_interface{}",
-
-		[]*cel.Type{
-			cel.StringType, cel.DynType,
-		},
-		cel.BoolType,
-		cel.FunctionBinding(func(args ...ref.Val) ref.Val {
-
-			var x StringFuncs
-
-			return types.DefaultTypeAdapter.NativeToValue(x.HasSuffix(args[0].Value().(string), args[1]))
-
-		}),
-	),
-)
-
-var stringsRepeatGen = cel.Function("Repeat",
-	cel.Overload("Repeat_int_interface{}",
+var stringsRepeatGen = cel.Function("repeat",
+	cel.MemberOverload("string_repeat",
 
 		[]*cel.Type{
 			cel.IntType, cel.DynType,
 		},
-		cel.DynType,
+		cel.StringType,
 		cel.FunctionBinding(func(args ...ref.Val) ref.Val {
 
 			var x StringFuncs
 
-			a0, a1 := x.Repeat(args[0].Value().(int), args[1])
-			return types.DefaultTypeAdapter.NativeToValue([]any{
-				a0, a1,
-			})
+			result, err := x.Repeat(args[0].Value().(int), args[1])
+			if err != nil {
+				return types.NewErr(err.Error())
+			}
+			return types.String(result)
 
 		}),
 	),
@@ -204,27 +219,10 @@ var stringsSortGen = cel.Function("Sort",
 
 			var x StringFuncs
 
-			a0, a1 := x.Sort(args[0])
+			result, err := x.Sort(args[0])
 			return types.DefaultTypeAdapter.NativeToValue([]any{
-				a0, a1,
+				result, err,
 			})
-
-		}),
-	),
-)
-
-var stringsSplitGen = cel.Function("Split",
-	cel.Overload("Split_string_interface{}",
-
-		[]*cel.Type{
-			cel.StringType, cel.DynType,
-		},
-		cel.DynType,
-		cel.FunctionBinding(func(args ...ref.Val) ref.Val {
-
-			var x StringFuncs
-
-			return types.DefaultTypeAdapter.NativeToValue(x.Split(args[0].Value().(string), args[1]))
 
 		}),
 	),
@@ -247,8 +245,10 @@ var stringsSplitNGen = cel.Function("SplitN",
 	),
 )
 
-var stringsTrimGen = cel.Function("Trim",
-	cel.Overload("Trim_string_interface{}",
+
+
+var stringsTrimPrefixGen = cel.Function("trimPrefix",
+	cel.MemberOverload("string_trimPrefix",
 
 		[]*cel.Type{
 			cel.StringType, cel.DynType,
@@ -258,31 +258,14 @@ var stringsTrimGen = cel.Function("Trim",
 
 			var x StringFuncs
 
-			return types.DefaultTypeAdapter.NativeToValue(x.Trim(args[0].Value().(string), args[1]))
+			return types.String(x.TrimPrefix(args[0].Value().(string), args[1]))
 
 		}),
 	),
 )
 
-var stringsTrimPrefixGen = cel.Function("TrimPrefix",
-	cel.Overload("TrimPrefix_string_interface{}",
-
-		[]*cel.Type{
-			cel.StringType, cel.DynType,
-		},
-		cel.StringType,
-		cel.FunctionBinding(func(args ...ref.Val) ref.Val {
-
-			var x StringFuncs
-
-			return types.DefaultTypeAdapter.NativeToValue(x.TrimPrefix(args[0].Value().(string), args[1]))
-
-		}),
-	),
-)
-
-var stringsTrimSuffixGen = cel.Function("TrimSuffix",
-	cel.Overload("TrimSuffix_string_interface{}",
+var stringsTrimSuffixGen = cel.Function("trimSuffix",
+	cel.MemberOverload("string_trimSuffix",
 
 		[]*cel.Type{
 			cel.StringType, cel.DynType,
@@ -298,8 +281,25 @@ var stringsTrimSuffixGen = cel.Function("TrimSuffix",
 	),
 )
 
-var stringsTitleGen = cel.Function("Title",
-	cel.Overload("Title_interface{}",
+
+
+
+var stringsTitleGen = cel.Function("title",
+	cel.MemberOverload("string_title",
+		[]*cel.Type{
+			cel.StringType,
+		},
+		cel.StringType,
+		cel.UnaryBinding(
+			func(arg ref.Val) ref.Val {
+			var x StringFuncs
+			return types.String(x.Title(arg))
+		}),
+	),
+)
+
+var stringsToUpperGen = cel.Function("toUpper",
+	cel.Overload("string_toUpper",
 
 		[]*cel.Type{
 			cel.DynType,
@@ -309,14 +309,14 @@ var stringsTitleGen = cel.Function("Title",
 
 			var x StringFuncs
 
-			return types.DefaultTypeAdapter.NativeToValue(x.Title(args[0]))
+			return types.String(x.ToUpper(args[0]))
 
 		}),
 	),
 )
 
-var stringsToUpperGen = cel.Function("ToUpper",
-	cel.Overload("ToUpper_interface{}",
+var stringsToLowerGen = cel.Function("toLower",
+	cel.Overload("string_toLower",
 
 		[]*cel.Type{
 			cel.DynType,
@@ -326,14 +326,14 @@ var stringsToUpperGen = cel.Function("ToUpper",
 
 			var x StringFuncs
 
-			return types.DefaultTypeAdapter.NativeToValue(x.ToUpper(args[0]))
+			return types.String(x.ToLower(args[0]))
 
 		}),
 	),
 )
 
-var stringsToLowerGen = cel.Function("ToLower",
-	cel.Overload("ToLower_interface{}",
+var stringsTrimSpaceGen = cel.Function("trimSpace",
+	cel.Overload("string_trimSpace",
 
 		[]*cel.Type{
 			cel.DynType,
@@ -343,31 +343,14 @@ var stringsToLowerGen = cel.Function("ToLower",
 
 			var x StringFuncs
 
-			return types.DefaultTypeAdapter.NativeToValue(x.ToLower(args[0]))
+			return types.String(x.TrimSpace(args[0]))
 
 		}),
 	),
 )
 
-var stringsTrimSpaceGen = cel.Function("TrimSpace",
-	cel.Overload("TrimSpace_interface{}",
-
-		[]*cel.Type{
-			cel.DynType,
-		},
-		cel.StringType,
-		cel.FunctionBinding(func(args ...ref.Val) ref.Val {
-
-			var x StringFuncs
-
-			return types.DefaultTypeAdapter.NativeToValue(x.TrimSpace(args[0]))
-
-		}),
-	),
-)
-
-var stringsTruncGen = cel.Function("Trunc",
-	cel.Overload("Trunc_int_interface{}",
+var stringsTruncGen = cel.Function("trunc",
+	cel.MemberOverload("string_trunc",
 
 		[]*cel.Type{
 			cel.IntType, cel.DynType,
@@ -377,156 +360,160 @@ var stringsTruncGen = cel.Function("Trunc",
 
 			var x StringFuncs
 
-			return types.DefaultTypeAdapter.NativeToValue(x.Trunc(args[0].Value().(int), args[1]))
+			return types.String(x.Trunc(args[0].Value().(int), args[1]))
 
 		}),
 	),
 )
 
-var stringsIndentGen = cel.Function("Indent",
-	cel.Overload("Indent_interface{}",
+var stringsIndentGen = cel.Function("indent",
+	cel.MemberOverload("string_indent",
 
 		[]*cel.Type{
 			cel.DynType,
 		},
-		cel.DynType,
+		cel.StringType,
 		cel.FunctionBinding(func(args ...ref.Val) ref.Val {
 
 			var x StringFuncs
 			list := transferSlice[interface{}](args[0].(ref.Val))
 
-			a0, a1 := x.Indent(list...)
-			return types.DefaultTypeAdapter.NativeToValue([]any{
-				a0, a1,
-			})
+			result, err := x.Indent(list...)
+			if err != nil {
+				return types.NewErr(err.Error())
+			}
+			return types.String(result)
 
 		}),
 	),
 )
 
-var stringsSlugGen = cel.Function("Slug",
-	cel.Overload("Slug_interface{}",
+var stringsSlugGen = cel.Function("slug",
+	cel.MemberOverload("string_slug",
+
+		[]*cel.Type{
+			cel.StringType,
+		},
+		cel.StringType,
+		cel.UnaryBinding(func(arg ref.Val) ref.Val {
+
+			var x StringFuncs
+
+			return types.String(x.Slug(arg))
+
+		}),
+	),
+)
+
+var stringsQuoteGen = cel.Function("quote",
+	cel.MemberOverload("string_quote",
 
 		[]*cel.Type{
 			cel.DynType,
+		},
+		cel.StringType,
+		cel.UnaryBinding(func(arg ref.Val) ref.Val {
+
+			var x StringFuncs
+
+			return types.String(x.Quote(arg))
+
+		}),
+	),
+)
+
+var stringsShellQuoteGen = cel.Function("shellQuote",
+	cel.MemberOverload("string_shell_quote",
+
+		[]*cel.Type{
+			cel.StringType,
+		},
+		cel.StringType,
+		cel.UnaryBinding(func(arg ref.Val) ref.Val {
+
+			var x StringFuncs
+
+			return types.String(x.ShellQuote(arg))
+
+		}),
+	),
+)
+
+var stringsSquoteGen = cel.Function("squote",
+	cel.MemberOverload("string_squote",
+
+		[]*cel.Type{
+			cel.StringType,
 		},
 		cel.StringType,
 		cel.FunctionBinding(func(args ...ref.Val) ref.Val {
 
 			var x StringFuncs
 
-			return types.DefaultTypeAdapter.NativeToValue(x.Slug(args[0]))
+			return types.String(x.Squote(args[0]))
 
 		}),
 	),
 )
 
-var stringsQuoteGen = cel.Function("Quote",
-	cel.Overload("Quote_interface{}",
+var stringsSnakeCaseGen = cel.Function("snakeCase",
+	cel.MemberOverload("string_snakeCase",
 
 		[]*cel.Type{
-			cel.DynType,
+			cel.StringType,
 		},
 		cel.StringType,
 		cel.FunctionBinding(func(args ...ref.Val) ref.Val {
 
 			var x StringFuncs
 
-			return types.DefaultTypeAdapter.NativeToValue(x.Quote(args[0]))
+			result, err := x.SnakeCase(args[0])
+			if err != nil {
+				return types.NewErr(err.Error())
+			}
+			return types.String(result)
 
 		}),
 	),
 )
 
-var stringsShellQuoteGen = cel.Function("ShellQuote",
-	cel.Overload("ShellQuote_interface{}",
+var stringsCamelCaseGen = cel.Function("camelCase",
+	cel.MemberOverload("string_camel_case",
 
 		[]*cel.Type{
-			cel.DynType,
+			cel.StringType,
 		},
 		cel.StringType,
 		cel.FunctionBinding(func(args ...ref.Val) ref.Val {
 
 			var x StringFuncs
 
-			return types.DefaultTypeAdapter.NativeToValue(x.ShellQuote(args[0]))
+			result, err := x.CamelCase(args[0])
+			if err != nil {
+				return types.NewErr(err.Error())
+			}
+			return types.String(result)
 
 		}),
 	),
 )
 
-var stringsSquoteGen = cel.Function("Squote",
-	cel.Overload("Squote_interface{}",
+var stringsKebabCaseGen = cel.Function("kebabCase",
+	cel.MemberOverload("string_kebab_case",
 
 		[]*cel.Type{
-			cel.DynType,
+			cel.StringType,
 		},
 		cel.StringType,
 		cel.FunctionBinding(func(args ...ref.Val) ref.Val {
 
 			var x StringFuncs
 
-			return types.DefaultTypeAdapter.NativeToValue(x.Squote(args[0]))
-
-		}),
-	),
-)
-
-var stringsSnakeCaseGen = cel.Function("SnakeCase",
-	cel.Overload("SnakeCase_interface{}",
-
-		[]*cel.Type{
-			cel.DynType,
-		},
-		cel.DynType,
-		cel.FunctionBinding(func(args ...ref.Val) ref.Val {
-
-			var x StringFuncs
-
-			a0, a1 := x.SnakeCase(args[0])
-			return types.DefaultTypeAdapter.NativeToValue([]any{
-				a0, a1,
-			})
-
-		}),
-	),
-)
-
-var stringsCamelCaseGen = cel.Function("CamelCase",
-	cel.Overload("CamelCase_interface{}",
-
-		[]*cel.Type{
-			cel.DynType,
-		},
-		cel.DynType,
-		cel.FunctionBinding(func(args ...ref.Val) ref.Val {
-
-			var x StringFuncs
-
-			a0, a1 := x.CamelCase(args[0])
-			return types.DefaultTypeAdapter.NativeToValue([]any{
-				a0, a1,
-			})
-
-		}),
-	),
-)
-
-var stringsKebabCaseGen = cel.Function("KebabCase",
-	cel.Overload("KebabCase_interface{}",
-
-		[]*cel.Type{
-			cel.DynType,
-		},
-		cel.DynType,
-		cel.FunctionBinding(func(args ...ref.Val) ref.Val {
-
-			var x StringFuncs
-
-			a0, a1 := x.KebabCase(args[0])
-			return types.DefaultTypeAdapter.NativeToValue([]any{
-				a0, a1,
-			})
+			result, err := x.KebabCase(args[0])
+			if err != nil {
+				return types.NewErr(err.Error())
+			}
+			return types.String(result)
 
 		}),
 	),
@@ -538,37 +525,39 @@ var stringsWordWrapGen = cel.Function("WordWrap",
 		[]*cel.Type{
 			cel.DynType,
 		},
-		cel.DynType,
+		cel.StringType,
 		cel.FunctionBinding(func(args ...ref.Val) ref.Val {
 
 			var x StringFuncs
 			list := transferSlice[interface{}](args[0].(ref.Val))
 
-			a0, a1 := x.WordWrap(list...)
-			return types.DefaultTypeAdapter.NativeToValue([]any{
-				a0, a1,
-			})
+			result, err := x.WordWrap(list...)
+			if err != nil {
+				return types.NewErr(err.Error())
+			}
+			return types.String(result)
 
 		}),
 	),
 )
 
-var stringsRuneCountGen = cel.Function("RuneCount",
-	cel.Overload("RuneCount_interface{}",
+var stringsRuneCountGen = cel.Function("runeCount",
+	cel.MemberOverload("string_rune_count",
 
 		[]*cel.Type{
-			cel.DynType,
+			cel.StringType,
 		},
-		cel.DynType,
+		cel.IntType,
 		cel.FunctionBinding(func(args ...ref.Val) ref.Val {
 
 			var x StringFuncs
 			list := transferSlice[interface{}](args[0].(ref.Val))
 
-			a0, a1 := x.RuneCount(list...)
-			return types.DefaultTypeAdapter.NativeToValue([]any{
-				a0, a1,
-			})
+			result, err := x.RuneCount(list...)
+			if err != nil {
+				return types.NewErr(err.Error())
+			}
+			return types.Int(int64(result))
 
 		}),
 	),

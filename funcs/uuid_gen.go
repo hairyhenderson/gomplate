@@ -9,16 +9,16 @@ import "github.com/google/cel-go/common/types/ref"
 var uuidV1Gen = cel.Function("uuid.V1",
 	cel.Overload("uuid.V1_",
 		nil,
-		cel.DynType,
+		cel.StringType,
 		cel.FunctionBinding(func(args ...ref.Val) ref.Val {
 
 			var x UUIDFuncs
 
-			a0, a1 := x.V1()
-			return types.DefaultTypeAdapter.NativeToValue([]any{
-				a0, a1,
-			})
-
+			result, err := x.V1()
+			if err != nil {
+				return types.NewErr(err.Error())
+			}
+			return types.String(result)
 		}),
 	),
 )
@@ -26,15 +26,16 @@ var uuidV1Gen = cel.Function("uuid.V1",
 var uuidV4Gen = cel.Function("uuid.V4",
 	cel.Overload("uuid.V4_",
 		nil,
-		cel.DynType,
+		cel.StringType,
 		cel.FunctionBinding(func(args ...ref.Val) ref.Val {
 
 			var x UUIDFuncs
 
-			a0, a1 := x.V4()
-			return types.DefaultTypeAdapter.NativeToValue([]any{
-				a0, a1,
-			})
+			result, err := x.V4()
+			if err != nil {
+				return types.NewErr(err.Error())
+			}
+			return types.String(result)
 
 		}),
 	),
@@ -43,15 +44,16 @@ var uuidV4Gen = cel.Function("uuid.V4",
 var uuidNilGen = cel.Function("uuid.Nil",
 	cel.Overload("uuid.Nil_",
 		nil,
-		cel.DynType,
+		cel.StringType,
 		cel.FunctionBinding(func(args ...ref.Val) ref.Val {
 
 			var x UUIDFuncs
 
-			a0, a1 := x.Nil()
-			return types.DefaultTypeAdapter.NativeToValue([]any{
-				a0, a1,
-			})
+			result, err := x.Nil()
+			if err != nil {
+				return types.NewErr(err.Error())
+			}
+			return types.String(result)
 
 		}),
 	),
@@ -61,18 +63,18 @@ var uuidIsValidGen = cel.Function("uuid.IsValid",
 	cel.Overload("uuid.IsValid_interface{}",
 
 		[]*cel.Type{
-			cel.DynType,
+			cel.StringType,
 		},
-		cel.DynType,
+		cel.BoolType,
 		cel.FunctionBinding(func(args ...ref.Val) ref.Val {
 
 			var x UUIDFuncs
 
-			a0, a1 := x.IsValid(args[0])
-			return types.DefaultTypeAdapter.NativeToValue([]any{
-				a0, a1,
-			})
-
+			result, err := x.IsValid(args[0])
+			if err != nil {
+				return types.NewErr(err.Error())
+			}
+			return types.Bool(result)
 		}),
 	),
 )
@@ -88,10 +90,11 @@ var uuidParseGen = cel.Function("uuid.Parse",
 
 			var x UUIDFuncs
 
-			a0, a1 := x.Parse(args[0])
-			return types.DefaultTypeAdapter.NativeToValue([]any{
-				a0, a1,
-			})
+			result, err := x.Parse(args[0])
+			if err != nil {
+				return types.NewErr(err.Error())
+			}
+			return types.DefaultTypeAdapter.NativeToValue(result)
 
 		}),
 	),

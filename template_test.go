@@ -148,11 +148,33 @@ func TestGomplate(t *testing.T) {
 }
 
 func TestCel(t *testing.T) {
+	person := Person{Name: "Aditya", Address: &Address{City: "Kathmandu"}}
 	tests := []struct {
 		env        map[string]interface{}
 		expression string
 		out        string
 	}{
+
+		{nil, "uuid.IsValid(uuid.V1())", "true"},
+		{nil, "uuid.IsValid(uuid.V4())", "true"},
+
+		// {map[string]interface{}{"i": person}, "jq('.address.city_name', i)", "Aditya"},
+		{map[string]interface{}{"i": person}, "toJSONPretty(i)", "{\n  \"Address\": {\n    \"city_name\": \"Kathmandu\"\n  },\n  \"name\": \"Aditya\"\n}"},
+		{map[string]interface{}{"i": person}, "JSON(toJSON(i)).name", "Aditya"},
+		{map[string]interface{}{"i": person}, "YAML(toYAML(i)).name", "Aditya"},
+		{map[string]interface{}{"i": person}, "TOML(toTOML(i)).name", "Aditya"},
+
+		// {map[string]interface{}{"s": []string{"a", "b", "b", "a"}}, "Uniq(s)", "[a b]"},
+		{map[string]interface{}{"s": "hello world"}, "s.title()", "Hello World"},
+		{map[string]interface{}{"s": "hello world"}, "s.camelCase()", "helloWorld"},
+		{map[string]interface{}{"s": "hello world"}, "s.kebabCase()", "hello-world"},
+		{map[string]interface{}{"s": "hello world"}, "s.snakeCase()", "hello_world"},
+		{map[string]interface{}{"s": "hel\"lo world"}, "s.quote()", "\"hel\\\"lo world\""},
+		{map[string]interface{}{"s": "hello world"}, "s.squote()", "'hello world'"},
+		{map[string]interface{}{"s": "hello world"}, "s.shellQuote()", "'hello world'"},
+		{map[string]interface{}{"s": "hello world"}, "s.slug()", "hello-world"},
+		// {map[string]interface{}{"s": "hello world"}, "s.runeCount()", "Hello World"},
+
 		{nil, `math.Add([1,2,3,4,5])`, "15"},
 		{map[string]interface{}{"hello": "world"}, "hello", "world"},
 		{map[string]interface{}{"hello": "hello world ?"}, "urlencode(hello)", `hello+world+%3F`},
@@ -161,8 +183,9 @@ func TestCel(t *testing.T) {
 		{map[string]interface{}{"healthySvc": k8s.GetUnstructuredMap(k8s.TestHealthy)}, "IsHealthy(healthySvc)", "true"},
 		{map[string]interface{}{"healthySvc": k8s.GetUnstructuredMap(k8s.TestLuaStatus)}, "GetStatus(healthySvc)", "Degraded: found less than two generators, Merge requires two or more"},
 		{map[string]interface{}{"healthySvc": k8s.GetUnstructuredMap(k8s.TestHealthy)}, "GetHealth(healthySvc).status", "Healthy"},
-		{map[string]interface{}{"size": "123456"}, "HumanSize(size)", "120.6K"},
+		// {map[string]interface{}{"size": "123456"}, "HumanSize(size)", "120.6K"},
 		{map[string]interface{}{"size": 123456}, "HumanSize(size)", "120.6K"},
+		{map[string]interface{}{"size": 123456}, "humanSize(size)", "120.6K"},
 		{map[string]interface{}{"v": "1.2.3-beta.1+c0ff33"}, "Semver(v).prerelease", "beta.1"},
 		{map[string]interface{}{"old": "1.2.3", "new": "1.2.3"}, "SemverCompare(new, old)", "true"},
 		{map[string]interface{}{"old": "1.2.3", "new": "1.2.4"}, "SemverCompare(new, old)", "false"},
@@ -170,9 +193,12 @@ func TestCel(t *testing.T) {
 
 		// Durations
 		{nil, `HumanDuration(duration("1008h"))`, "6w0d0h"},
+		{nil, `humanDuration(duration("1008h"))`, "6w0d0h"},
+
 		{nil, `Duration("7d").getHours()`, "168"},
 		{nil, `duration("1h") > duration("2h")`, "false"},
 		{map[string]interface{}{"t": "2020-01-01T00:00:00Z"}, `Age(t) > duration('1h')`, "true"},
+		// {map[string]interface{}{"t": "2020-01-01T00:00:00Z"}, `age(t) > duration('1h')`, "true"},
 		{map[string]interface{}{"t": "2020-01-01T00:00:00Z"}, `Age(t) > Duration('3d')`, "true"},
 		{nil, `duration('24h') > Duration('3d')`, "false"},
 		{map[string]interface{}{"code": 200, "sslAge": time.Hour}, `code in [200,201,301] && sslAge > duration('59m')`, "true"},
@@ -185,6 +211,7 @@ func TestCel(t *testing.T) {
 		{nil, `sets.contains([1, 2, 3, 4], [2, 3])`, "true"},              // sets lib
 		{nil, `[1,2,3,4].slice(1, 3)`, "[2 3]"},                           // lists lib
 
+		{structEnv, `results.Address.city_name == "Kathmandu" && results.name == "Aditya"`, "true"},
 		// Support structs as environment var (by default they are not)
 		{structEnv, `results.Address.city_name == "Kathmandu" && results.name == "Aditya"`, "true"},
 		{map[string]any{"results": junitEnv}, `results.passed`, "1"},

@@ -113,74 +113,6 @@ var convHasGen = cel.Function("conv.Has",
 	),
 )
 
-var convParseIntGen = cel.Function("conv.ParseInt",
-	cel.Overload("conv.ParseInt_interface{}_int_int",
-
-		[]*cel.Type{
-			cel.DynType, cel.IntType, cel.IntType,
-		},
-		cel.IntType,
-		cel.FunctionBinding(func(args ...ref.Val) ref.Val {
-
-			var x ConvFuncs
-
-			return types.DefaultTypeAdapter.NativeToValue(x.ParseInt(args[0], args[1].Value().(int), args[2].Value().(int)))
-
-		}),
-	),
-)
-
-var convParseFloatGen = cel.Function("conv.ParseFloat",
-	cel.Overload("conv.ParseFloat_interface{}_int",
-
-		[]*cel.Type{
-			cel.DynType, cel.IntType,
-		},
-		cel.DoubleType,
-		cel.FunctionBinding(func(args ...ref.Val) ref.Val {
-
-			var x ConvFuncs
-
-			return types.DefaultTypeAdapter.NativeToValue(x.ParseFloat(args[0], args[1].Value().(int)))
-
-		}),
-	),
-)
-
-var convParseUintGen = cel.Function("conv.ParseUint",
-	cel.Overload("conv.ParseUint_interface{}_int_int",
-
-		[]*cel.Type{
-			cel.DynType, cel.IntType, cel.IntType,
-		},
-		cel.UintType,
-		cel.FunctionBinding(func(args ...ref.Val) ref.Val {
-
-			var x ConvFuncs
-
-			return types.DefaultTypeAdapter.NativeToValue(x.ParseUint(args[0], args[1].Value().(int), args[2].Value().(int)))
-
-		}),
-	),
-)
-
-var convAtoiGen = cel.Function("conv.Atoi",
-	cel.Overload("conv.Atoi_interface{}",
-
-		[]*cel.Type{
-			cel.DynType,
-		},
-		cel.IntType,
-		cel.FunctionBinding(func(args ...ref.Val) ref.Val {
-
-			var x ConvFuncs
-
-			return types.DefaultTypeAdapter.NativeToValue(x.Atoi(args[0]))
-
-		}),
-	),
-)
-
 var convURLGen = cel.Function("conv.URL",
 	cel.Overload("conv.URL_interface{}",
 
@@ -364,16 +296,18 @@ var convDictGen = cel.Function("conv.Dict",
 		[]*cel.Type{
 			cel.DynType,
 		},
-		cel.DynType,
+		cel.MapType(cel.StringType, cel.AnyType),
 		cel.FunctionBinding(func(args ...ref.Val) ref.Val {
+
 
 			var x ConvFuncs
 			list := transferSlice[interface{}](args[0].(ref.Val))
 
 			a0, a1 := x.Dict(list...)
-			return types.DefaultTypeAdapter.NativeToValue([]any{
-				a0, a1,
-			})
+			if a1 != nil {
+				return types.NewErr(a1.Error())
+			}
+			return types.DefaultTypeAdapter.NativeToValue(a0)
 
 		}),
 	),
