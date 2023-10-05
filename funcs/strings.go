@@ -115,6 +115,7 @@ type StringFuncs struct {
 }
 
 // Abbrev -
+// nolint:stylecheck
 func (StringFuncs) Abbrev(args ...interface{}) (string, error) {
 	str := ""
 	offset := 0
