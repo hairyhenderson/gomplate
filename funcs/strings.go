@@ -46,6 +46,7 @@ func CreateStringFuncs(ctx context.Context) map[string]interface{} {
 	f["strings"] = func() interface{} { return ns }
 
 	f["replaceAll"] = ns.ReplaceAll
+	f["join"] = ns.Join
 	f["title"] = ns.Title
 	f["toUpper"] = ns.ToUpper
 	f["toLower"] = ns.ToLower
@@ -153,6 +154,11 @@ func (StringFuncs) Abbrev(args ...interface{}) (string, error) {
 // ReplaceAll -
 func (StringFuncs) ReplaceAll(old, new string, s interface{}) string {
 	return strings.ReplaceAll(conv.ToString(s), old, new)
+}
+
+// Join -
+func (StringFuncs) Join(elems []interface{}, sep interface{}) string {
+	return strings.Join(conv.ToStrings(elems...), conv.ToString(sep))
 }
 
 // Contains -

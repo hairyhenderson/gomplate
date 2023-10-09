@@ -37,6 +37,17 @@ func TestReplaceAll(t *testing.T) {
 		sf.ReplaceAll("Orig", "Replaced", "OrigOrig"))
 }
 
+func TestJoin(t *testing.T) {
+	t.Parallel()
+
+	sf := &StringFuncs{}
+
+	assert.Equal(t, "hello world",
+		sf.Join([]interface{}{"hello", "world"}, " "))
+	assert.Equal(t, "1hello2",
+		sf.Join([]interface{}{1, "hello", 2}, ""))
+}
+
 func TestIndent(t *testing.T) {
 	t.Parallel()
 

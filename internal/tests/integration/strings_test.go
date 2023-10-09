@@ -33,6 +33,11 @@ func TestStrings_Repeat(t *testing.T) {
 	assert.ErrorContains(t, err, `negative count`)
 }
 
+func TestStrings_Join(t *testing.T) {
+	inOutTest(t, `{{ strings.Join (coll.Slice "hello" "world") " " }}`, `hello world`)
+	inOutTest(t, `{{ strings.Join (coll.Slice 1 2 3) "," }}`, `1,2,3`)
+}
+
 func TestStrings_Slug(t *testing.T) {
 	inOutTest(t, `{{ strings.Slug "Hellö, Wôrld! Free @ last..." }}`, `hello-world-free-at-last`)
 }

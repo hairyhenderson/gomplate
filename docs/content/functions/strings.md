@@ -438,6 +438,30 @@ $ gomplate -i '{{ "172.21.1.42" | strings.ReplaceAll "." "-" }}'
 172-21-1-42
 ```
 
+## `strings.Join`
+
+Joins a list of elements using a string separator.
+
+### Usage
+
+```go
+strings.Join elems sep
+```
+
+### Arguments
+
+| name | description |
+|------|-------------|
+| `elems` | _(required)_ slice with elements to join |
+| `sep` | _(required)_ separator to use |
+
+### Examples
+
+```console
+$ gomplate -i '{{ strings.Join (slice 1 2 3 "step") " " }}'
+1 2 3 step
+```
+
 ## `strings.Slug`
 
 Creates a a "slug" from a given string - supports Unicode correctly. This wraps the [github.com/gosimple/slug](https://github.com/gosimple/slug) package. See [the github.com/gosimple/slug docs](https://godoc.org/github.com/gosimple/slug) for more information.
