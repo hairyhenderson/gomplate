@@ -7,18 +7,24 @@ import (
 	"github.com/flanksource/gomplate/v3/funcs"
 	pkgStrings "github.com/flanksource/gomplate/v3/strings"
 	"github.com/google/cel-go/cel"
-	"github.com/google/cel-go/common/types"
-	"github.com/google/cel-go/common/types/ref"
 	"github.com/google/cel-go/ext"
+	"google.golang.org/protobuf/types/known/structpb"
+)
+
+var (
+	listType   = reflect.TypeOf(&structpb.ListValue{})
+	mapType    = reflect.TypeOf(&structpb.Struct{})
+	mapStrDyn  = cel.MapType(cel.StringType, cel.DynType)
+	listStrDyn = cel.ListType(cel.DynType)
 )
 
 var customCelFuncs = []cel.EnvOption{
-	toJSONArray(),
-	toJSON(),
 	k8sHealth(),
 	k8sIsHealthy(),
 	k8sCPUAsMillicores(),
 	k8sMemoryAsBytes(),
+	marshalJSON(),
+	parseJSON(),
 }
 
 func GetCelEnv(environment map[string]any) []cel.EnvOption {
@@ -40,46 +46,6 @@ func GetCelEnv(environment map[string]any) []cel.EnvOption {
 
 	opts = append(opts, customCelFuncs...)
 	return opts
-}
-
-func toJSONArray() cel.EnvOption {
-	return cel.Function("toJSONArray",
-		cel.MemberOverload("dyn_toJSONArray_string",
-			[]*cel.Type{cel.DynType},
-			cel.StringType,
-			cel.UnaryBinding(func(obj ref.Val) ref.Val {
-				nativeType, err := obj.ConvertToNative(reflect.TypeOf([]map[string]any{}))
-				if err != nil {
-					return types.String(err.Error())
-				}
-				jsonStr, err := json.Marshal(nativeType)
-				if err != nil {
-					return types.String(err.Error())
-				}
-				return types.String(string(jsonStr))
-			}),
-		),
-	)
-}
-
-func toJSON() cel.EnvOption {
-	return cel.Function("toJSON",
-		cel.MemberOverload("dyn_toJSON_string",
-			[]*cel.Type{cel.DynType},
-			cel.StringType,
-			cel.UnaryBinding(func(obj ref.Val) ref.Val {
-				nativeType, err := obj.ConvertToNative(reflect.TypeOf(map[string]any{}))
-				if err != nil {
-					return types.String(err.Error())
-				}
-				jsonStr, err := json.Marshal(nativeType)
-				if err != nil {
-					return types.String(err.Error())
-				}
-				return types.String(string(jsonStr))
-			}),
-		),
-	)
 }
 
 func anyToMapStringAny(v any) (map[string]any, error) {

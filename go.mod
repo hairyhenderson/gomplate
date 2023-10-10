@@ -18,6 +18,7 @@ require (
 	github.com/ugorji/go/codec v1.2.11
 	golang.org/x/text v0.13.0
 	golang.org/x/tools v0.13.0
+	google.golang.org/protobuf v1.31.0
 	gotest.tools/v3 v3.4.0
 	k8s.io/apimachinery v0.28.2
 	sigs.k8s.io/yaml v1.3.0
@@ -49,7 +50,6 @@ require (
 	golang.org/x/sys v0.12.0 // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20231002182017-d307bd883b97 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20231002182017-d307bd883b97 // indirect
-	google.golang.org/protobuf v1.31.0 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	gopkg.in/sourcemap.v1 v1.0.5 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
