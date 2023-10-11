@@ -11,7 +11,7 @@ import (
 
 // Reference: https://github.com/tektoncd/triggers/blob/main/pkg/interceptors/cel/triggers.go
 
-func marshalJSON() cel.EnvOption {
+func toJSON() cel.EnvOption {
 	valToJSONString := func(val ref.Val) ref.Val {
 		var typeDesc reflect.Type
 
@@ -21,7 +21,7 @@ func marshalJSON() cel.EnvOption {
 		case types.ListType:
 			typeDesc = listType
 		default:
-			return types.ValOrErr(val, "unexpected type:%v passed to marshalJSON", val.Type())
+			return types.ValOrErr(val, "unexpected type:%v passed to toJSON", val.Type())
 		}
 
 		nativeVal, err := val.ConvertToNative(typeDesc)
@@ -37,10 +37,8 @@ func marshalJSON() cel.EnvOption {
 		return types.String(marshaledVal)
 	}
 
-	return cel.Function("marshalJSON",
-		cel.MemberOverload("marshalJSON_map", []*cel.Type{mapStrDyn}, cel.StringType,
-			cel.UnaryBinding(valToJSONString)),
-		cel.MemberOverload("marshalJSON_list", []*cel.Type{listStrDyn}, cel.StringType,
+	return cel.Function("toJSON",
+		cel.MemberOverload("toJSON_dyn", []*cel.Type{cel.DynType}, cel.StringType,
 			cel.UnaryBinding(valToJSONString)),
 	)
 }

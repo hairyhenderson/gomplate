@@ -12,10 +12,9 @@ import (
 )
 
 var (
-	listType   = reflect.TypeOf(&structpb.ListValue{})
-	mapType    = reflect.TypeOf(&structpb.Struct{})
-	mapStrDyn  = cel.MapType(cel.StringType, cel.DynType)
-	listStrDyn = cel.ListType(cel.DynType)
+	listType  = reflect.TypeOf(&structpb.ListValue{})
+	mapType   = reflect.TypeOf(&structpb.Struct{})
+	mapStrDyn = cel.MapType(cel.StringType, cel.DynType)
 )
 
 var customCelFuncs = []cel.EnvOption{
@@ -23,7 +22,7 @@ var customCelFuncs = []cel.EnvOption{
 	k8sIsHealthy(),
 	k8sCPUAsMillicores(),
 	k8sMemoryAsBytes(),
-	marshalJSON(),
+	toJSON(),
 	parseJSON(),
 }
 

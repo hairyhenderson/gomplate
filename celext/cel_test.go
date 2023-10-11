@@ -119,10 +119,10 @@ func TestCelJSON(t *testing.T) {
 		Input  string
 		Output any
 	}{
-		{Input: `dyn([{'name': 'John', 'age': 30}]).marshalJSON()`, Output: `[{"age":30,"name":"John"}]`},
-		{Input: `[{'name': 'John'}].marshalJSON()`, Output: `[{"name":"John"}]`},
-		{Input: `dyn({'name': 'John'}).marshalJSON()`, Output: `{"name":"John"}`},
-		{Input: `{'name': 'John'}.marshalJSON()`, Output: `{"name":"John"}`},
+		{Input: `dyn([{'name': 'John', 'age': 30}]).toJSON()`, Output: `[{"age":30,"name":"John"}]`},
+		{Input: `[{'name': 'John'}].toJSON()`, Output: `[{"name":"John"}]`},
+		{Input: `dyn({'name': 'John'}).toJSON()`, Output: `{"name":"John"}`},
+		{Input: `{'name': 'John'}.toJSON()`, Output: `{"name":"John"}`},
 	}
 
 	for i, td := range testData {
