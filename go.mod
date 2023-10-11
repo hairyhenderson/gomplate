@@ -29,9 +29,9 @@ require (
 	github.com/ugorji/go/codec v1.2.11
 	go4.org/netipx v0.0.0-20230125063823-8449b0a6169f
 	gocloud.dev v0.29.0
-	golang.org/x/crypto v0.13.0
-	golang.org/x/sys v0.12.0
-	golang.org/x/term v0.12.0
+	golang.org/x/crypto v0.14.0
+	golang.org/x/sys v0.13.0
+	golang.org/x/term v0.13.0
 	golang.org/x/text v0.13.0
 	gotest.tools/v3 v3.5.1
 	inet.af/netaddr v0.0.0-20220811202034-502d2d690317
@@ -124,7 +124,7 @@ require (
 	go4.org/unsafe/assume-no-moving-gc v0.0.0-20230525183740-e7c30c78aeb2 // indirect
 	golang.org/x/exp v0.0.0-20230321023759-10a507213a29 // indirect
 	golang.org/x/mod v0.12.0 // indirect
-	golang.org/x/net v0.15.0 // indirect
+	golang.org/x/net v0.17.0 // indirect
 	golang.org/x/oauth2 v0.9.0 // indirect
 	golang.org/x/time v0.3.0 // indirect
 	golang.org/x/tools v0.13.0 // indirect
