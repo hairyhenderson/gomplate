@@ -11,18 +11,19 @@ import (
 	"github.com/google/cel-go/common/types/ref"
 )
 
-func convertMap[K string, V any](arg ref.Val) (map[K]V, error) {
-	m, ok := arg.Value().(map[ref.Val]ref.Val)
-	if !ok {
+func convertMap(arg ref.Val) (map[string]any, error) {
+	switch m := arg.Value().(type) {
+	case  map[ref.Val]ref.Val:
+		var out = make(map[string]any)
+		for key, val := range m {
+			out[key.Value().(string)] = val.Value()
+		}
+		return out, nil
+	case  map[string]any:
+		return m, nil
+	default:
 		return nil, 	fmt.Errorf("Not a map %T\n", arg.Value())
 	}
-
-	var out = make(map[K]V)
-	for key, val := range m {
-		out[key.Value().(K)] = val.Value().(V)
-	}
-
-	return out, nil
 }
 
 func transferSlice[K any](arg ref.Val) []K {

@@ -73,7 +73,7 @@ var collKeysGen = cel.Function("keys",
 		cel.ListType(cel.StringType),
 		cel.UnaryBinding(func(arg ref.Val) ref.Val {
 			var x CollFuncs
-			_map, err := convertMap[string,any](arg)
+			_map, err := convertMap(arg)
 			if err != nil {
 				return types.NewErr(err.Error())
 			}
@@ -95,7 +95,7 @@ var collValuesGen = cel.Function("values",
 
 			var x CollFuncs
 
-			_map, err := convertMap[string,any](arg)
+			_map, err := convertMap(arg)
 			if err != nil {
 				return types.NewErr(err.Error())
 			}
