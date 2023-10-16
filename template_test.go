@@ -160,6 +160,8 @@ func TestCel(t *testing.T) {
 		{nil, "[1,2, 3].min()", "1"},
 		{nil, "[1,2, 3].max()", "3"},
 		{nil, "[1,2, 3].sum()", "6"},
+		{nil, "{'a': 1, 'b': 2}.keys().join(',')", "a,b"},
+		{nil, "{'a': 1, 'b': 2}.values().sum()", "3"},
 
 		// {map[string]interface{}{"i": person}, "jq('.address.city_name', i)", "Aditya"},
 		{map[string]interface{}{"i": person}, "toJSONPretty(i)", "{\n  \"Address\": {\n    \"city_name\": \"Kathmandu\"\n  },\n  \"name\": \"Aditya\"\n}"},

@@ -3,12 +3,27 @@
 package funcs
 
 import (
+	"fmt"
 	"log"
 
 	"github.com/flanksource/gomplate/v3/kubernetes"
 	"github.com/google/cel-go/cel"
 	"github.com/google/cel-go/common/types/ref"
 )
+
+func convertMap[K string, V any](arg ref.Val) (map[K]V, error) {
+	m, ok := arg.Value().(map[ref.Val]ref.Val)
+	if !ok {
+		return nil, 	fmt.Errorf("Not a map %T\n", arg.Value())
+	}
+
+	var out = make(map[K]V)
+	for key, val := range m {
+		out[key.Value().(K)] = val.Value().(V)
+	}
+
+	return out, nil
+}
 
 func transferSlice[K any](arg ref.Val) []K {
 	list, ok := arg.Value().([]ref.Val)

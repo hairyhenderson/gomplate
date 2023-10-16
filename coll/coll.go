@@ -61,7 +61,7 @@ func Dict(v ...interface{}) (map[string]interface{}, error) {
 
 // Keys returns the list of keys in one or more maps. The returned list of keys
 // is ordered by map, each in sorted key order.
-func Keys(in ...map[string]interface{}) ([]string, error) {
+func Keys(in ...map[string]any) ([]string, error) {
 	if len(in) == 0 {
 		return nil, fmt.Errorf("need at least one argument")
 	}

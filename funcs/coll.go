@@ -67,13 +67,21 @@ func (CollFuncs) Dict(in ...interface{}) (map[string]interface{}, error) {
 }
 
 // Keys -
-func (CollFuncs) Keys(in ...map[string]interface{}) ([]string, error) {
-	return coll.Keys(in...)
+func (CollFuncs) Keys(in map[string]any) []string {
+	keys := []string{}
+	for k := range in {
+		keys = append(keys, k)
+	}
+	return keys
 }
 
 // Values -
-func (CollFuncs) Values(in ...map[string]interface{}) ([]interface{}, error) {
-	return coll.Values(in...)
+func (CollFuncs) Values(in map[string]any) []any {
+	values := []any{}
+	for _, v := range in {
+		values = append(values, v)
+	}
+	return values
 }
 
 // Append -

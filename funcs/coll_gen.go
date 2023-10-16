@@ -6,6 +6,7 @@ import "github.com/google/cel-go/cel"
 import "github.com/google/cel-go/common/types"
 import "github.com/google/cel-go/common/types/ref"
 import "reflect"
+import "sort"
 
 var collSliceGen = cel.Function("Slice",
 	cel.Overload("Slice_interface{}",
@@ -63,45 +64,44 @@ var collDictGen = cel.Function("Dict",
 	),
 )
 
-var collKeysGen = cel.Function("Keys",
-	cel.Overload("Keys_map[string]interface{}",
+var collKeysGen = cel.Function("keys",
+	cel.MemberOverload("map_keys",
 
 		[]*cel.Type{
-			cel.DynType,
+			cel.MapType(cel.StringType, cel.AnyType),
 		},
-		cel.DynType,
-		cel.FunctionBinding(func(args ...ref.Val) ref.Val {
-
+		cel.ListType(cel.StringType),
+		cel.UnaryBinding(func(arg ref.Val) ref.Val {
 			var x CollFuncs
-			list := transferSlice[map[string]interface{}](args[0].(ref.Val))
-
-			result, err := x.Keys(list...)
-			return types.DefaultTypeAdapter.NativeToValue([]any{
-				result, err,
-			})
-
+			_map, err := convertMap[string,any](arg)
+			if err != nil {
+				return types.NewErr(err.Error())
+			}
+			result := x.Keys(_map)
+			sort.Strings(result)
+			return types.DefaultTypeAdapter.NativeToValue(result)
 		}),
 	),
 )
 
-var collValuesGen = cel.Function("Values",
-	cel.Overload("Values_map[string]interface{}",
+var collValuesGen = cel.Function("values",
+	cel.MemberOverload("map_values",
 
-		[]*cel.Type{
-			cel.DynType,
-		},
-		cel.DynType,
-		cel.FunctionBinding(func(args ...ref.Val) ref.Val {
+	[]*cel.Type{
+		cel.MapType(cel.StringType, cel.AnyType),
+	},
+	cel.ListType(cel.AnyType),
+		cel.UnaryBinding(func(arg ref.Val) ref.Val {
 
 			var x CollFuncs
-			list := transferSlice[map[string]interface{}](args[0].(ref.Val))
 
-			result, err := x.Values(list...)
+			_map, err := convertMap[string,any](arg)
 			if err != nil {
 				return types.NewErr(err.Error())
 			}
-			return types.DefaultTypeAdapter.NativeToValue(result)
 
+			result := x.Values(_map)
+			return types.DefaultTypeAdapter.NativeToValue(result)
 		}),
 	),
 )
