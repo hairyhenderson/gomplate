@@ -2,9 +2,13 @@
 
 package funcs
 
-import "log"
-import "github.com/google/cel-go/common/types/ref"
-import "github.com/google/cel-go/cel"
+import (
+	"log"
+
+	"github.com/flanksource/gomplate/v3/kubernetes"
+	"github.com/google/cel-go/cel"
+	"github.com/google/cel-go/common/types/ref"
+)
 
 func transferSlice[K any](arg ref.Val) []K {
 	list, ok := arg.Value().([]ref.Val)
@@ -22,6 +26,9 @@ func transferSlice[K any](arg ref.Val) []K {
 }
 
 var CelEnvOption = []cel.EnvOption{
+	kubernetes.Lists(),
+	kubernetes.URLs(),
+	kubernetes.Regex(),
 	base64EncodeGen,
 	base64DecodeGen,
 	base64DecodeBytesGen,
