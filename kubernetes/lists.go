@@ -275,6 +275,7 @@ func cmp(opName string, opPreferCmpResult ref.Val) functions.UnaryOp {
 	}
 }
 
+//nolint:unconvert
 func indexOf(list ref.Val, item ref.Val) ref.Val {
 	lister, ok := list.(traits.Lister)
 	if !ok {
@@ -289,6 +290,7 @@ func indexOf(list ref.Val, item ref.Val) ref.Val {
 	return types.Int(-1)
 }
 
+//nolint:unconvert
 func lastIndexOf(list ref.Val, item ref.Val) ref.Val {
 	lister, ok := list.(traits.Lister)
 	if !ok {

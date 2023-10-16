@@ -209,6 +209,7 @@ func (*urls) ProgramOptions() []cel.ProgramOption {
 	return []cel.ProgramOption{}
 }
 
+// nolint: stylecheck
 func stringToUrl(arg ref.Val) ref.Val {
 	s, ok := arg.Value().(string)
 	if !ok {
