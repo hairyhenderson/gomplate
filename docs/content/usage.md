@@ -13,7 +13,7 @@ The template is read from standard in, and written to standard out.
 Use it like this:
 
 ```console
-$ echo "Hello, {{.Env.USER}}" | gomplate
+$ echo "Hello, {{ .Env.USER }}" | gomplate
 Hello, hairyhenderson
 ```
 
