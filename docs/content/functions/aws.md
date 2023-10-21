@@ -31,9 +31,10 @@ Queries AWS [EC2 Instance Metadata](http://docs.aws.amazon.com/AWSEC2/latest/Use
 
 For times when running outside EC2, or when the metadata API can't be reached, a `default` value can be provided.
 
+_Added in gomplate [v1.8.0](https://github.com/hairyhenderson/gomplate/releases/tag/v1.8.0)_
 ### Usage
 
-```go
+```
 aws.EC2Meta key [default]
 ```
 
@@ -59,9 +60,10 @@ Queries AWS [EC2 Instance Dynamic Metadata](http://docs.aws.amazon.com/AWSEC2/la
 
 For times when running outside EC2, or when the metadata API can't be reached, a `default` value can be provided.
 
+_Added in gomplate [v1.8.0](https://github.com/hairyhenderson/gomplate/releases/tag/v1.8.0)_
 ### Usage
 
-```go
+```
 aws.EC2Dynamic key [default]
 ```
 
@@ -86,9 +88,10 @@ us-east-1
 Queries AWS to get the region. An optional default can be provided, or returns
 `unknown` if it can't be determined for some reason.
 
+_Added in gomplate [v1.8.0](https://github.com/hairyhenderson/gomplate/releases/tag/v1.8.0)_
 ### Usage
 
-```go
+```
 aws.EC2Region [default]
 ```
 
@@ -120,9 +123,10 @@ foo
 Queries the AWS EC2 API to find the value of the given [user-defined tag](http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/Using_Tags.html). An optional default
 can be provided.
 
+_Added in gomplate [v3.8.0](https://github.com/hairyhenderson/gomplate/releases/tag/v3.8.0)_
 ### Usage
 
-```go
+```
 aws.EC2Tag tag [default]
 ```
 
@@ -150,9 +154,10 @@ I am a meat popsicle.
 
 Queries the AWS EC2 API to find all the tags/values [user-defined tag](http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/Using_Tags.html).
 
+_Added in gomplate [v3.8.0](https://github.com/hairyhenderson/gomplate/releases/tag/v3.8.0)_
 ### Usage
 
-```go
+```
 aws.EC2Tags
 ```
 
@@ -170,7 +175,8 @@ Name=bar
 svc:name=foobar
 ```
 
-## `aws.KMSEncrypt`
+## `aws.KMSEncrypt`_(unreleased)_
+**Unreleased:** _This function is in development, and not yet available in released builds of gomplate._
 
 Encrypt an input string with the AWS Key Management Service (KMS).
 
@@ -195,10 +201,10 @@ See also [`aws.KMSDecrypt`](#aws-kmsdecrypt).
 
 ### Usage
 
-```go
+```
 aws.KMSEncrypt keyID input
 ```
-```go
+```
 input | aws.KMSEncrypt keyID
 ```
 
@@ -228,12 +234,13 @@ for more details.
 
 See also [`aws.KMSEncrypt`](#aws-kmsencrypt).
 
+_Added in gomplate [v3.4.0](https://github.com/hairyhenderson/gomplate/releases/tag/v3.4.0)_
 ### Usage
 
-```go
+```
 aws.KMSDecrypt input
 ```
-```go
+```
 input | aws.KMSDecrypt
 ```
 
@@ -258,9 +265,10 @@ Wraps the [STS GetCallerIdentity API](https://docs.aws.amazon.com/STS/latest/API
 
 See also [`aws.UserID`](#aws-userid) and [`aws.ARN`](#aws-arn).
 
+_Added in gomplate [v3.4.0](https://github.com/hairyhenderson/gomplate/releases/tag/v3.4.0)_
 ### Usage
 
-```go
+```
 aws.Account
 ```
 
@@ -280,9 +288,10 @@ Wraps the [STS GetCallerIdentity API](https://docs.aws.amazon.com/STS/latest/API
 
 See also [`aws.UserID`](#aws-userid) and [`aws.Account`](#aws-account).
 
+_Added in gomplate [v3.4.0](https://github.com/hairyhenderson/gomplate/releases/tag/v3.4.0)_
 ### Usage
 
-```go
+```
 aws.ARN
 ```
 
@@ -305,9 +314,10 @@ Wraps the [STS GetCallerIdentity API](https://docs.aws.amazon.com/STS/latest/API
 
 See also [`aws.ARN`](#aws-arn) and [`aws.Account`](#aws-account).
 
+_Added in gomplate [v3.4.0](https://github.com/hairyhenderson/gomplate/releases/tag/v3.4.0)_
 ### Usage
 
-```go
+```
 aws.UserID
 ```
 

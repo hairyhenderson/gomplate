@@ -26,9 +26,10 @@ The `_FILE` fallback is especially useful for use with [12-factor][]-style
 applications configurable only by environment variables, and especially in
 conjunction with features like [Docker Secrets][].
 
+_Added in gomplate [v0.2.0](https://github.com/hairyhenderson/gomplate/releases/tag/v0.2.0)_
 ### Usage
 
-```go
+```
 env.Getenv var [default]
 ```
 
@@ -63,9 +64,10 @@ current environment variables. References to undefined variables are replaced by
 
 Like [`env.Getenv`](#env-getenv), the `_FILE` variant of a variable is used.
 
+_Added in gomplate [v2.5.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.5.0)_
 ### Usage
 
-```go
+```
 env.ExpandEnv input
 ```
 

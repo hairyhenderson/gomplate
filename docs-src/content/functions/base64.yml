@@ -2,6 +2,7 @@ ns: base64
 preamble: ''
 funcs:
   - name: base64.Encode
+    released: v1.8.0
     description: |
       Encode data as a Base64 string. Specifically, this uses the standard Base64 encoding as defined in [RFC4648 &sect;4](https://tools.ietf.org/html/rfc4648#section-4) (and _not_ the URL-safe encoding).
     pipeline: true
@@ -17,6 +18,7 @@ funcs:
         $ gomplate -i '{{ "hello world" | base64.Encode }}'
         aGVsbG8gd29ybGQ=
   - name: base64.Decode
+    released: v1.8.0
     description: |
       Decode a Base64 string. This supports both standard ([RFC4648 &sect;4](https://tools.ietf.org/html/rfc4648#section-4)) and URL-safe ([RFC4648 &sect;5](https://tools.ietf.org/html/rfc4648#section-5)) encodings.
 
@@ -36,6 +38,7 @@ funcs:
         $ gomplate -i '{{ "aGVsbG8gd29ybGQ=" | base64.Decode }}'
         hello world
   - name: base64.DecodeBytes
+    released: v3.8.0
     description: |
       Decode a Base64 string. This supports both standard ([RFC4648 &sect;4](https://tools.ietf.org/html/rfc4648#section-4)) and URL-safe ([RFC4648 &sect;5](https://tools.ietf.org/html/rfc4648#section-5)) encodings.
 

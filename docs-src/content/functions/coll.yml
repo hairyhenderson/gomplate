@@ -8,6 +8,7 @@ preamble: |
   input was a different type.
 funcs:
   - name: coll.Dict
+    released: v3.2.0
     alias: dict
     description: |
       Dict is a convenience function that creates a map with string keys.
@@ -43,6 +44,7 @@ funcs:
         Hello world!
         Hello everybody!
   - name: coll.Slice
+    released: v3.2.0
     deprecated: The `slice` alias is deprecated, use the full name `coll.Slice` instead.
     alias: slice
     description: |
@@ -59,6 +61,7 @@ funcs:
         Hello, Lisa
         Hello, Maggie
   - name: coll.GoSlice
+    # released: v4.0.0
     description: |
       This exposes the `slice` function from Go's [`text/template`](https://golang.org/pkg/text/template/#hdr-Functions)
       package. Note that using `slice` will use the `coll.Slice` function instead,
@@ -89,6 +92,7 @@ funcs:
         $ gomplate -i '{{ coll.GoSlice "hello world" 3 8 }}'
         lo wo
   - name: coll.Has
+    released: v3.2.0
     alias: has
     description: |
       Reports whether a given object has a property with the given key, or whether a given array/slice contains the given value. Can be used with `if` to prevent the template from trying to access a non-existent property in an object.
@@ -115,6 +119,7 @@ funcs:
         {{ if (has $o "foo") }}{{ $o.foo }}{{ else }}THERE IS NO FOO{{ end }}'
         THERE IS NO FOO
   - name: coll.Index
+    # released: v4.0.0
     description: |
       Returns the result of indexing the given map, slice, or array by the given
       key or index. This is similar to the built-in `index` function, but the
@@ -144,6 +149,7 @@ funcs:
         bar
   - name: coll.JSONPath
     alias: jsonpath
+    released: v3.4.0
     description: |
       Extracts portions of an input object or list using a [JSONPath][] expression.
 
@@ -166,6 +172,7 @@ funcs:
         [Alice's Adventures in Wonderland Gulliver's Travels]
   - name: coll.JQ
     alias: jq
+    # released: v4.0.0
     description: |
       Filters an input object or list using the [jq](https://stedolan.github.io/jq/) language, as implemented by [gojq](https://github.com/itchyny/gojq).
 
@@ -194,6 +201,7 @@ funcs:
            -c books=https://openlibrary.org/subjects/fantasy.json
         map[authors:[Lewis Carroll] published:1865 title:Alice's Adventures in Wonderland]
   - name: coll.Keys
+    released: v3.2.0
     alias: keys
     description: |
       Return a list of keys in one or more maps.
@@ -215,6 +223,7 @@ funcs:
         [bar foo baz qux]
   - name: coll.Values
     alias: values
+    released: v3.2.0
     description: |
       Return a list of values in one or more maps.
 
@@ -235,6 +244,7 @@ funcs:
         [2 1 3 4]
   - name: coll.Append
     alias: append
+    released: v3.2.0
     description: |
       Append a value to the end of a list.
 
@@ -255,6 +265,7 @@ funcs:
         [1 1 2 3 5]
   - name: coll.Prepend
     alias: prepend
+    released: v3.2.0
     description: |
       Prepend a value to the beginning of a list.
 
@@ -275,6 +286,7 @@ funcs:
         [5 4 3 2 1]
   - name: coll.Uniq
     alias: uniq
+    released: v3.2.0
     description: |
       Remove any duplicate values from the list, without changing order.
 
@@ -290,6 +302,7 @@ funcs:
         [1 2 3 4 5]
   - name: coll.Flatten
     alias: flatten
+    released: v3.6.0
     description: |
       Flatten a nested list. Defaults to completely flattening all nested lists,
       but can be limited with `depth`.
@@ -312,6 +325,7 @@ funcs:
         [1 2 3 4 [[5] 6] 7]
   - name: coll.Reverse
     alias: reverse
+    released: v3.2.0
     description: |
       Reverse a list.
 
@@ -327,6 +341,7 @@ funcs:
         [1 2 3 4]
   - name: coll.Sort
     alias: sort
+    released: v3.2.0
     description: |
       Sort a given list. Uses the natural sort order if possible. For inputs
       that are not sortable (either because the elements are of different types,
@@ -360,6 +375,7 @@ funcs:
         bar
   - name: coll.Merge
     alias: merge
+    released: v3.2.0
     description: |
       Merge maps together by overriding src with dst.
 
@@ -390,6 +406,7 @@ funcs:
         {{ coll.Merge $dst $src1 $src2 }}'
         map[foo:1 bar:5 baz:4]
   - name: coll.Pick
+    released: v3.7.0
     description: |
       Given a map, returns a new map with any entries that have the given keys.
 
@@ -412,6 +429,7 @@ funcs:
         {{ coll.Pick "foo" "baz" $data }}'
         map[baz:3 foo:1]
   - name: coll.Omit
+    released: v3.7.0
     description: |
       Given a map, returns a new map without any entries that have the given keys.
 

@@ -17,9 +17,10 @@ If the `alias` is undefined, but is a valid URL, `datasource` will dynamically r
 
 See [Datasources](../../datasources) for (much!) more information.
 
+_Added in gomplate [v0.5.0](https://github.com/hairyhenderson/gomplate/releases/tag/v0.5.0)_
 ### Usage
 
-```go
+```
 datasource alias [subpath]
 ```
 
@@ -53,9 +54,10 @@ Note: this does _not_ verify if the datasource is reachable.
 
 Useful when used in an `if`/`else` block.
 
+_Added in gomplate [v1.3.0](https://github.com/hairyhenderson/gomplate/releases/tag/v1.3.0)_
 ### Usage
 
-```go
+```
 datasourceExists alias
 ```
 
@@ -78,9 +80,10 @@ Tests whether or not a given datasource is defined and reachable, where the defi
 
 Useful when used in an `if`/`else` block.
 
+_Added in gomplate [v2.5.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.5.0)_
 ### Usage
 
-```go
+```
 datasourceReachable alias
 ```
 
@@ -101,9 +104,10 @@ no worries
 
 Lists all the datasources defined, list returned will be sorted in ascending order.
 
+_Added in gomplate [v3.11.0](https://github.com/hairyhenderson/gomplate/releases/tag/v3.11.0)_
 ### Usage
 
-```go
+```
 listDatasources
 ```
 
@@ -126,9 +130,10 @@ This function can provide a good way to set a default datasource when sharing te
 
 See [Datasources](../../datasources) for (much!) more information.
 
+_Added in gomplate [v2.7.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.7.0)_
 ### Usage
 
-```go
+```
 defineDatasource alias url
 ```
 
@@ -159,9 +164,10 @@ Includes the content of a given datasource (provided by the [`--datasource/-d`](
 
 This is similar to [`datasource`](#datasource), except that the data is not parsed. There is no restriction on the type of data included, except that it should be textual.
 
+_Added in gomplate [v1.8.0](https://github.com/hairyhenderson/gomplate/releases/tag/v1.8.0)_
 ### Usage
 
-```go
+```
 include alias [subpath]
 ```
 
@@ -214,12 +220,13 @@ If the input is in the [EJSON](https://github.com/Shopify/ejson) format (i.e. ha
 - set the `EJSON_KEY_FILE` environment variable to the path to a file containing the private key
 - set the `EJSON_KEYDIR` environment variable to the path to a directory containing private keys (filename must be the public key), just like [`ejson decrypt`'s `--keydir`](https://github.com/Shopify/ejson/blob/master/man/man1/ejson.1.ronn) flag. Defaults to `/opt/ejson/keys`.
 
+_Added in gomplate [v1.4.0](https://github.com/hairyhenderson/gomplate/releases/tag/v1.4.0)_
 ### Usage
 
-```go
+```
 data.JSON in
 ```
-```go
+```
 in | data.JSON
 ```
 
@@ -248,12 +255,13 @@ Hello world
 
 Converts a JSON string into a slice. Only works for JSON Arrays.
 
+_Added in gomplate [v2.0.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.0.0)_
 ### Usage
 
-```go
+```
 data.JSONArray in
 ```
-```go
+```
 in | data.JSONArray
 ```
 
@@ -285,12 +293,13 @@ also parse YAML Arrays. This can be used to access properties of YAML objects.
 
 For more explict YAML Array support, see [`data.JSONArray`](#data-yamlarray).
 
+_Added in gomplate [v2.0.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.0.0)_
 ### Usage
 
-```go
+```
 data.YAML in
 ```
-```go
+```
 in | data.YAML
 ```
 
@@ -319,12 +328,13 @@ Hello world
 
 Converts a YAML string into a slice. Only works for YAML Arrays.
 
+_Added in gomplate [v2.0.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.0.0)_
 ### Usage
 
-```go
+```
 data.YAMLArray in
 ```
-```go
+```
 in | data.YAMLArray
 ```
 
@@ -356,12 +366,13 @@ This can be used to access properties of TOML documents.
 
 Compatible with [TOML v0.4.0](https://github.com/toml-lang/toml/blob/master/versions/en/toml-v0.4.0.md).
 
+_Added in gomplate [v2.0.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.0.0)_
 ### Usage
 
-```go
+```
 data.TOML input
 ```
-```go
+```
 input | data.TOML
 ```
 
@@ -394,12 +405,13 @@ Converts a CSV-format string into a 2-dimensional string array.
 By default, the [RFC 4180](https://tools.ietf.org/html/rfc4180) format is
 supported, but any single-character delimiter can be specified.
 
+_Added in gomplate [v2.0.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.0.0)_
 ### Usage
 
-```go
+```
 data.CSV [delim] input
 ```
-```go
+```
 input | data.CSV [delim]
 ```
 
@@ -442,12 +454,13 @@ Also by default, the first line of the string will be assumed to be the header,
 but this can be overridden by providing an explicit header, or auto-indexing
 can be used.
 
+_Added in gomplate [v2.0.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.0.0)_
 ### Usage
 
-```go
+```
 data.CSVByRow [delim] [header] input
 ```
-```go
+```
 input | data.CSVByRow [delim] [header]
 ```
 
@@ -486,12 +499,13 @@ COBOL has 357 keywords.
 Like [`csvByRow`](#csvByRow), except that the data is presented as a columnar
 (column-oriented) map.
 
+_Added in gomplate [v2.0.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.0.0)_
 ### Usage
 
-```go
+```
 data.CSVByColumn [delim] [header] input
 ```
-```go
+```
 input | data.CSVByColumn [delim] [header]
 ```
 
@@ -528,12 +542,13 @@ COBOL
 
 Converts an object to a JSON document. Input objects may be the result of `json`, `yaml`, `jsonArray`, or `yamlArray` functions, or they could be provided by a `datasource`.
 
+_Added in gomplate [v2.0.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.0.0)_
 ### Usage
 
-```go
+```
 data.ToJSON obj
 ```
-```go
+```
 obj | data.ToJSON
 ```
 
@@ -568,12 +583,13 @@ by a [`datasource`](../general/datasource).
 
 The indent string must be provided as an argument.
 
+_Added in gomplate [v2.0.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.0.0)_
 ### Usage
 
-```go
+```
 data.ToJSONPretty indent obj
 ```
-```go
+```
 obj | data.ToJSONPretty indent
 ```
 
@@ -606,12 +622,13 @@ Converts an object to a YAML document. Input objects may be the result of
 `data.JSON`, `data.YAML`, `data.JSONArray`, or `data.YAMLArray` functions,
 or they could be provided by a [`datasource`](../general/datasource).
 
+_Added in gomplate [v2.0.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.0.0)_
 ### Usage
 
-```go
+```
 data.ToYAML obj
 ```
-```go
+```
 obj | data.ToYAML
 ```
 
@@ -641,12 +658,13 @@ hello: world
 
 Converts an object to a [TOML](https://github.com/toml-lang/toml) document.
 
+_Added in gomplate [v2.0.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.0.0)_
 ### Usage
 
-```go
+```
 data.ToTOML obj
 ```
-```go
+```
 obj | data.ToTOML
 ```
 
@@ -677,12 +695,13 @@ which means that line terminators are `CRLF` (Windows format, or `\r\n`). If
 you require `LF` (UNIX format, or `\n`), the output can be piped through
 [`strings.ReplaceAll`](../strings/#strings-replaceall) to replace `"\r\n"` with `"\n"`.
 
+_Added in gomplate [v2.0.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.0.0)_
 ### Usage
 
-```go
+```
 data.ToCSV [delim] input
 ```
-```go
+```
 input | data.ToCSV [delim]
 ```
 

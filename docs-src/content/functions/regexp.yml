@@ -6,6 +6,7 @@ preamble: |
   and is the same general syntax used by Perl, Python, and other languages.
 funcs:
   - name: regexp.Find
+    released: v3.1.0
     description: |
       Returns a string holding the text of the leftmost match in `input`
       of the regular expression `expression`.
@@ -28,6 +29,7 @@ funcs:
         $ gomplate -i 'no {{ "will not match" | regexp.Find "[0-9]" }}numbers'
         no numbers
   - name: regexp.FindAll
+    released: v3.1.0
     description: |
       Returns a list of all successive matches of the regular expression.
 
@@ -56,6 +58,7 @@ funcs:
         $ gomplate -i '{{ "foo bar baz qux" | regexp.FindAll "[a-z]{3}" 3 | toJSON}}'
         ["foo", "bar", "baz"]
   - name: regexp.Match
+    released: v1.9.0
     description: |
       Returns `true` if a given regular expression matches a given input.
 
@@ -73,6 +76,7 @@ funcs:
         $ gomplate -i '{{ if (.Env.USER | regexp.Match `^h`) }}username ({{.Env.USER}}) starts with h!{{end}}'
         username (hairyhenderson) starts with h!
   - name: regexp.QuoteMeta
+    released: v3.7.0
     description: |
       Escapes all regular expression metacharacters in the input. The returned string is a regular expression matching the literal text.
 
@@ -88,6 +92,7 @@ funcs:
         $ gomplate -i '{{ `{hello}` | regexp.QuoteMeta }}'
         \{hello\}
   - name: regexp.Replace
+    released: v1.9.0
     description: |
       Replaces matches of a regular expression with the replacement string.
 
@@ -114,6 +119,7 @@ funcs:
         $ gomplate -i '{{ regexp.Replace "(?P<first>[a-zA-Z]+) (?P<last>[a-zA-Z]+)" "${last}, ${first}" "Alan Turing"}}'
         Turing, Alan
   - name: regexp.ReplaceLiteral
+    released: v3.1.0
     description: |
       Replaces matches of a regular expression with the replacement string.
 
@@ -141,6 +147,7 @@ funcs:
         $ gomplate -i '{{ `foo.bar,baz` | regexp.ReplaceLiteral `\W` `$` }}'
         foo$bar$baz
   - name: regexp.Split
+    released: v3.1.0
     description: |
       Splits `input` into sub-strings, separated by the expression.
 

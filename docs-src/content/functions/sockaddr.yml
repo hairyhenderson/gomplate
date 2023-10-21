@@ -33,6 +33,7 @@ preamble: |
   [RFC 6890]: http://tools.ietf.org/html/rfc6890
 funcs:
   - name: sockaddr.GetAllInterfaces
+    released: v2.4.0
     description: |
       Iterates over all available network interfaces and finds all available IP
       addresses on each interface and converts them to `sockaddr.IPAddrs`, and returning
@@ -40,11 +41,13 @@ funcs:
 
       Should be piped through a further function to refine and extract attributes.
   - name: sockaddr.GetDefaultInterfaces
+    released: v2.4.0
     description: |
       Returns `IfAddrs` of the addresses attached to the default route.
 
       Should be piped through a further function to refine and extract attributes.
   - name: sockaddr.GetPrivateInterfaces
+    released: v2.4.0
     description: |
       Returns an array of `IfAddr`s containing every IP that matches
       [RFC 6890][], is attached to the interface with
@@ -57,12 +60,14 @@ funcs:
 
       Should be piped through a further function to refine and extract attributes.
   - name: sockaddr.GetPublicInterfaces
+    released: v2.4.0
     description: |
       Returns an array of `IfAddr`s that do not match [RFC 6890][],
       are attached to the default route, and are forwardable.
 
       Should be piped through a further function to refine and extract attributes.
   - name: sockaddr.Sort
+    released: v2.4.0
     description: |
       Returns an array of `IfAddr`s sorted based on the given selector. Multiple sort
       clauses can be passed in as a comma-delimited list without whitespace.
@@ -101,6 +106,7 @@ funcs:
         $ gomplate -i '{{ sockaddr.GetAllInterfaces | sockaddr.Sort "name,-address" }}'
         ```
   - name: sockaddr.Exclude
+    released: v2.4.0
     description: |
       Returns an array of `IfAddr`s filtered by interfaces that do not match the given
       selector's value.
@@ -144,6 +150,7 @@ funcs:
         $ gomplate -i '{{ sockaddr.GetAllInterfaces | sockaddr.Exclude "type" "ipv6" }}'
         ```
   - name: sockaddr.Include
+    released: v2.4.0
     description: |
       Returns an array of `IfAddr`s filtered by interfaces that match the given
       selector's value.
@@ -161,6 +168,7 @@ funcs:
         required: true
         description: the array of `IfAddr`s to consider
   - name: sockaddr.Attr
+    released: v2.4.0
     description: |
       Returns the named attribute as a string.
     pipeline: true
@@ -176,6 +184,7 @@ funcs:
         $ gomplate -i '{{ range (sockaddr.GetAllInterfaces | sockaddr.Include "type" "ipv4") }}{{ . | sockaddr.Attr "name" }} {{end}}'
         lo0 en0
   - name: sockaddr.Join
+    released: v2.4.0
     description: |
       Selects the given attribute from each `IfAddr` in the source array, and joins
       the results with the given separator.
@@ -195,6 +204,7 @@ funcs:
         $ gomplate -i '{{ sockaddr.GetAllInterfaces | sockaddr.Join "name" "," }}'
         lo0,lo0,lo0,en0,en0
   - name: sockaddr.Limit
+    released: v2.4.0
     description: |
       Returns a slice of `IfAddr`s based on the specified limit.
     pipeline: true
@@ -210,6 +220,7 @@ funcs:
         $ gomplate -i '{{ sockaddr.GetAllInterfaces | sockaddr.Limit 2 | sockaddr.Join "name" "|" }}'
         lo0|lo0
   - name: sockaddr.Offset
+    released: v2.4.0
     description: |
       Returns a slice of `IfAddr`s based on the specified offset.
     pipeline: true
@@ -225,6 +236,7 @@ funcs:
         $ gomplate -i '{{ sockaddr.GetAllInterfaces | sockaddr.Limit 2 | sockaddr.Offset 1 | sockaddr.Attr "address" }}'
         ::1
   - name: sockaddr.Unique
+    released: v2.4.0
     description: |
       Creates a unique array of `IfAddr`s based on the matching selector. Assumes the input has
       already been sorted.
@@ -241,6 +253,7 @@ funcs:
         $ gomplate -i '{{ sockaddr.GetAllInterfaces | sockaddr.Unique "name" | sockaddr.Join "name" ", " }}'
         lo0, en0
   - name: sockaddr.Math
+    released: v2.4.0
     description: |
       Applies a math operation to each `IfAddr` in the input. Any failure will result in zero results.
 
@@ -262,6 +275,7 @@ funcs:
         $ gomplate -i '{{ sockaddr.GetAllInterfaces | sockaddr.Math "address" "+5" | sockaddr.Attr "address" }}'
         127.0.0.6
   - name: sockaddr.GetPrivateIP
+    released: v2.4.0
     description: |
       Returns a string with a single IP address that is part of [RFC 6890][] and has a
       default route. If the system can't determine its IP address or find an [RFC 6890][]
@@ -272,6 +286,7 @@ funcs:
         $ gomplate -i '{{ sockaddr.GetPrivateIP }}'
         10.0.0.28
   - name: sockaddr.GetPrivateIPs
+    released: v2.4.0
     description: |
       Returns a space-separated string with all IP addresses that are part of [RFC 6890][]
       (regardless of whether or not there is a default route, unlike `GetPublicIP`).
@@ -283,6 +298,7 @@ funcs:
         $ gomplate -i '{{ sockaddr.GetPrivateIPs }}'
         10.0.0.28 192.168.0.1
   - name: sockaddr.GetPublicIP
+    released: v2.4.0
     description: |
       Returns a string with a single IP address that is NOT part of [RFC 6890][] and
       has a default route. If the system can't determine its IP address or find a
@@ -293,6 +309,7 @@ funcs:
         $ gomplate -i '{{ sockaddr.GetPublicIP }}'
         8.1.2.3
   - name: sockaddr.GetPublicIPs
+    released: v2.4.0
     description: |
       Returns a space-separated string with all IP addresses that are NOT part of
       [RFC 6890][] (regardless of whether or not there is a default route, unlike
@@ -304,6 +321,7 @@ funcs:
         $ gomplate -i '{{ sockaddr.GetPublicIPs }}'
         8.1.2.3 8.2.3.4
   - name: sockaddr.GetInterfaceIP
+    released: v2.4.0
     description: |
       Returns a string with a single IP address sorted by the size of the network
       (i.e. IP addresses with a smaller netmask, larger network size, are sorted first).
@@ -317,6 +335,7 @@ funcs:
         $ gomplate -i '{{ sockaddr.GetInterfaceIP "en0" }}'
         10.0.0.28
   - name: sockaddr.GetInterfaceIPs
+    released: v2.4.0
     description: |
       Returns a string with all IPs, sorted by the size of the network (i.e. IP
       addresses with a smaller netmask, larger network size, are sorted first), on a

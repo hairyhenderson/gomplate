@@ -11,6 +11,7 @@ preamble: |
   these functions will not deplete system entropy.
 funcs:
   - name: random.ASCII
+    released: v3.4.0
     description: |
       Generates a random string of a desired length, containing the set of
       printable characters from the 7-bit [ASCII](https://en.wikipedia.org/wiki/ASCII)
@@ -25,6 +26,7 @@ funcs:
         $ gomplate -i '{{ random.ASCII 8 }}'
         _woJ%D&K
   - name: random.Alpha
+    released: v3.4.0
     description: |
       Generates a random alphabetical (`A-Z`, `a-z`) string of a desired length.
     pipeline: false
@@ -37,6 +39,7 @@ funcs:
         $ gomplate -i '{{ random.Alpha 42 }}'
         oAqHKxHiytYicMxTMGHnUnAfltPVZDhFkVkgDvatJK
   - name: random.AlphaNum
+    released: v3.4.0
     description: |
       Generates a random alphanumeric (`0-9`, `A-Z`, `a-z`) string of a desired length.
     pipeline: false
@@ -49,6 +52,7 @@ funcs:
         $ gomplate -i '{{ random.AlphaNum 16 }}'
         4olRl9mRmVp1nqSm
   - name: random.String
+    released: v3.4.0
     description: |
       Generates a random string of a desired length.
       
@@ -100,6 +104,7 @@ funcs:
         $ gomplate -i 'Poker time! {{ random.String 5 "\U0001f0a1" "\U0001f0de" }}'
         Poker time! 🂼🂺🂳🃅🂪
   - name: random.Item
+    released: v3.4.0
     description: |
       Pick an element at a random from a given slice or array.
     pipeline: true
@@ -116,6 +121,7 @@ funcs:
         $ gomplate -i '{{ getenv "SLICE" | jsonArray | random.Item }}'
         blue
   - name: random.Number
+    released: v3.4.0
     description: |
       Pick a random integer. By default, a number between `0` and `100`
       (inclusive) is chosen, but this range can be overridden.
@@ -142,6 +148,7 @@ funcs:
         $ gomplate -i '{{ random.Number 5 }}'
         2
   - name: random.Float
+    released: v3.4.0
     description: |
       Pick a random decimal floating-point number. By default, a number between
       `0.0` and `1.0` (_exclusive_, i.e. `[0.0,1.0)`) is chosen, but this range

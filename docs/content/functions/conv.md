@@ -16,12 +16,13 @@ to another - generally from a `string` to something else, and vice-versa.
 
 Converts a true-ish string to a boolean. Can be used to simplify conditional statements based on environment variables or other text input.
 
+_Added in gomplate [v0.2.0](https://github.com/hairyhenderson/gomplate/releases/tag/v0.2.0)_
 ### Usage
 
-```go
+```
 conv.Bool in
 ```
-```go
+```
 in | conv.Bool
 ```
 
@@ -56,12 +57,13 @@ Note that this will not provide a default for the case where the input is undefi
 (i.e. referencing things like `.foo` where there is no `foo` field of `.`), but
 [`conv.Has`](#conv-has) can be used for that.
 
+_Added in gomplate [v2.5.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.5.0)_
 ### Usage
 
-```go
+```
 conv.Default default in
 ```
-```go
+```
 in | conv.Default default
 ```
 
@@ -98,9 +100,10 @@ For creating more complex maps, see [`data.JSON`](../data/#data-json) or [`data.
 
 For creating arrays, see [`coll.Slice`](#coll-slice).
 
+_Added in gomplate [v3.0.0](https://github.com/hairyhenderson/gomplate/releases/tag/v3.0.0)_
 ### Usage
 
-```go
+```
 conv.Dict in...
 ```
 
@@ -136,9 +139,10 @@ Hello everybody!
 
 Creates a slice (like an array or list). Useful when needing to `range` over a bunch of variables.
 
+_Added in gomplate [v0.3.0](https://github.com/hairyhenderson/gomplate/releases/tag/v0.3.0)_
 ### Usage
 
-```go
+```
 conv.Slice in...
 ```
 
@@ -164,9 +168,10 @@ Hello, Maggie
 
 Reports whether a given object has a property with the given key, or whether a given array/slice contains the given value. Can be used with `if` to prevent the template from trying to access a non-existent property in an object.
 
+_Added in gomplate [v1.5.0](https://github.com/hairyhenderson/gomplate/releases/tag/v1.5.0)_
 ### Usage
 
-```go
+```
 conv.Has in item
 ```
 
@@ -202,9 +207,10 @@ THERE IS NO FOO
 
 Concatenates the elements of an array to create a string. The separator string `sep` is placed between elements in the resulting string.
 
+_Added in gomplate [v0.4.0](https://github.com/hairyhenderson/gomplate/releases/tag/v0.4.0)_
 ### Usage
 
-```go
+```
 conv.Join in sep
 ```
 
@@ -230,9 +236,10 @@ Parses a string as a URL for later use. Equivalent to [url.Parse](https://golang
 
 Any of `url.URL`'s methods can be called on the result.
 
+_Added in gomplate [v2.0.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.0.0)_
 ### Usage
 
-```go
+```
 conv.URL in
 ```
 
@@ -270,9 +277,10 @@ _**Note:**_ See [`conv.ToInt64`](#conv-toint64) instead for a simpler and more f
 
 Parses a string as an int64. Equivalent to [strconv.ParseInt](https://golang.org/pkg/strconv/#ParseInt)
 
+_Added in gomplate [v1.4.0](https://github.com/hairyhenderson/gomplate/releases/tag/v1.4.0)_
 ### Usage
 
-```go
+```
 conv.ParseInt
 ```
 
@@ -297,9 +305,10 @@ _**Note:**_ See [`conv.ToFloat`](#conv-tofloat) instead for a simpler and more f
 
 Parses a string as an float64 for later use. Equivalent to [strconv.ParseFloat](https://golang.org/pkg/strconv/#ParseFloat)
 
+_Added in gomplate [v1.4.0](https://github.com/hairyhenderson/gomplate/releases/tag/v1.4.0)_
 ### Usage
 
-```go
+```
 conv.ParseFloat
 ```
 
@@ -323,9 +332,10 @@ pi is greater than 3
 
 Parses a string as an uint64 for later use. Equivalent to [strconv.ParseUint](https://golang.org/pkg/strconv/#ParseUint)
 
+_Added in gomplate [v1.4.0](https://github.com/hairyhenderson/gomplate/releases/tag/v1.4.0)_
 ### Usage
 
-```go
+```
 conv.ParseUint
 ```
 
@@ -350,9 +360,10 @@ _**Note:**_ See [`conv.ToInt`](#conv-toint) and [`conv.ToInt64`](#conv-toint64) 
 
 Parses a string as an int for later use. Equivalent to [strconv.Atoi](https://golang.org/pkg/strconv/#Atoi)
 
+_Added in gomplate [v1.4.0](https://github.com/hairyhenderson/gomplate/releases/tag/v1.4.0)_
 ### Usage
 
-```go
+```
 conv.Atoi
 ```
 
@@ -380,12 +391,13 @@ Converts the input to a boolean value.
 Possible `true` values are: `1` or the strings `"t"`, `"true"`, or `"yes"`
 (any capitalizations). All other values are considered `false`.
 
+_Added in gomplate [v2.7.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.7.0)_
 ### Usage
 
-```go
+```
 conv.ToBool input
 ```
-```go
+```
 input | conv.ToBool
 ```
 
@@ -410,12 +422,13 @@ Converts a list of inputs to an array of boolean values.
 Possible `true` values are: `1` or the strings `"t"`, `"true"`, or `"yes"`
 (any capitalizations). All other values are considered `false`.
 
+_Added in gomplate [v2.7.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.7.0)_
 ### Usage
 
-```go
+```
 conv.ToBools input
 ```
-```go
+```
 input | conv.ToBools
 ```
 
@@ -445,9 +458,10 @@ errors, or `0` or `-1`.
 
 Floating-point numbers (with decimal points) are truncated.
 
+_Added in gomplate [v2.2.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.2.0)_
 ### Usage
 
-```go
+```
 conv.ToInt64 in
 ```
 
@@ -486,9 +500,10 @@ the result is `-1`. This is done to protect against
 
 See also [`conv.ToInt64`](#conv-toint64).
 
+_Added in gomplate [v2.2.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.2.0)_
 ### Usage
 
-```go
+```
 conv.ToInt in
 ```
 
@@ -519,9 +534,10 @@ Converts the inputs to an array of `int64`s.
 
 This delegates to [`conv.ToInt64`](#conv-toint64) for each input argument.
 
+_Added in gomplate [v2.2.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.2.0)_
 ### Usage
 
-```go
+```
 conv.ToInt64s in...
 ```
 
@@ -544,9 +560,10 @@ Converts the inputs to an array of `int`s.
 
 This delegates to [`conv.ToInt`](#conv-toint) for each input argument.
 
+_Added in gomplate [v2.2.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.2.0)_
 ### Usage
 
-```go
+```
 conv.ToInts in...
 ```
 
@@ -572,9 +589,10 @@ and booleans), but behaviour when the input can not be converted is
 undefined and subject to change. Unconvertable inputs may result in
 errors, or `0` or `-1`.
 
+_Added in gomplate [v2.2.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.2.0)_
 ### Usage
 
-```go
+```
 conv.ToFloat64 in
 ```
 
@@ -599,9 +617,10 @@ Converts the inputs to an array of `float64`s.
 
 This delegates to [`conv.ToFloat64`](#conv-tofloat64) for each input argument.
 
+_Added in gomplate [v2.2.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.2.0)_
 ### Usage
 
-```go
+```
 conv.ToFloat64s in...
 ```
 
@@ -624,9 +643,10 @@ Converts the input (of any type) to a `string`.
 
 The input will always be represented in _some_ way.
 
+_Added in gomplate [v2.5.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.5.0)_
 ### Usage
 
-```go
+```
 conv.ToString in
 ```
 
@@ -653,9 +673,10 @@ Converts the inputs (of any type) to an array of `string`s
 
 This delegates to [`conv.ToString`](#conv-tostring) for each input argument.
 
+_Added in gomplate [v2.5.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.5.0)_
 ### Usage
 
-```go
+```
 conv.ToStrings in...
 ```
 

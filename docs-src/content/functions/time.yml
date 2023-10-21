@@ -70,6 +70,7 @@ preamble: |
   For other durations, such as `2h10m`, [`time.ParseDuration`](#time-parseduration) can be used.
 funcs:
   - name: time.Now
+    released: v2.1.0
     description: |
       Returns the current local time, as a `time.Time`. This wraps [`time.Now`](https://golang.org/pkg/time/#Now).
 
@@ -103,6 +104,7 @@ funcs:
         ... ... BEEP
         ```
   - name: time.Parse
+    released: v2.1.0
     description: |
       Parses a timestamp defined by the given layout. This wraps [`time.Parse`](https://golang.org/pkg/time/#Parse).
 
@@ -129,6 +131,7 @@ funcs:
         Saturday October 23, 1993 UTC
         ```
   - name: time.ParseDuration
+    released: v2.1.0
     description: |
       Parses a duration string. This wraps [`time.ParseDuration`](https://golang.org/pkg/time/#ParseDuration).
 
@@ -147,6 +150,7 @@ funcs:
         12:43AM
         3:13AM
   - name: time.ParseLocal
+    released: v2.2.0
     description: |
       Same as [`time.Parse`](#time-parse), except that in the absence of a time zone
       indicator, the timestamp wil be parsed in the local timezone.
@@ -166,6 +170,7 @@ funcs:
         06:00 EST
         ```
   - name: time.ParseInLocation
+    released: v2.2.0
     description: |
       Same as [`time.Parse`](#time-parse), except that the time is parsed in the given location's time zone.
 
@@ -189,6 +194,7 @@ funcs:
         06:00 LMT
         ```
   - name: time.Since
+    released: v2.5.0
     description: |
       Returns the time elapsed since a given time. This wraps [`time.Since`](https://golang.org/pkg/time/#Since).
 
@@ -203,6 +209,7 @@ funcs:
         $ gomplate -i '{{ $t := time.Parse time.RFC3339 "1970-01-01T00:00:00Z" }}time since the epoch:{{ time.Since $t }}'
         time since the epoch:423365h0m24.353828924s
   - name: time.Unix
+    released: v2.1.0
     description: |
       Returns the local `Time` corresponding to the given Unix time, in seconds since
       January 1, 1970 UTC. Note that fractional seconds can be used to denote
@@ -226,6 +233,7 @@ funcs:
         Jan  2 10:17:36.789
         ```
   - name: time.Until
+    released: v2.5.0
     description: |
       Returns the duration until a given time. This wraps [`time.Until`](https://golang.org/pkg/time/#Until).
 
@@ -248,6 +256,7 @@ funcs:
         only 14923h0m0s to go...
         ```
   - name: time.ZoneName
+    released: v2.1.0
     description: |
       Return the local system's time zone's name.
     pipeline: false
@@ -256,6 +265,7 @@ funcs:
         $ gomplate -i '{{time.ZoneName}}'
         EDT
   - name: time.ZoneOffset
+    released: v2.2.0
     description: |
       Return the local system's time zone offset, in seconds east of UTC.
     pipeline: false

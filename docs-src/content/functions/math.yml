@@ -25,6 +25,7 @@ preamble: |
   ```
 funcs:
   - name: math.Abs
+    released: v2.6.0
     description: |
       Returns the absolute value of a given number. When the input is an integer, the result will be an `int64`, otherwise it will be a `float64`.
     arguments:
@@ -37,6 +38,7 @@ funcs:
         3.5 3.5 42
   - name: math.Add
     alias: add
+    released: v2.2.0
     description: |
       Adds all given operators. When one of the inputs is a floating-point number, the result will be a `float64`, otherwise it will be an `int64`.
     arguments:
@@ -48,6 +50,7 @@ funcs:
         $ gomplate -i '{{ math.Add 1 2 3 4 }} {{ math.Add 1.5 2 3 }}'
         10 6.5
   - name: math.Ceil
+    released: v2.6.0
     description: |
       Returns the least integer value greater than or equal to a given floating-point number. This wraps Go's [`math.Ceil`](https://golang.org/pkg/math/#Ceil).
 
@@ -68,6 +71,7 @@ funcs:
         ceil "-0" = 0
   - name: math.Div
     alias: div
+    released: v2.2.0
     description: |
       Divide the first number by the second. Division by zero is disallowed. The result will be a `float64`.
     pipeline: true
@@ -83,6 +87,7 @@ funcs:
         $ gomplate -i '{{ math.Div 8 2 }} {{ math.Div 3 2 }}'
         4 1.5
   - name: math.Floor
+    released: v2.6.0
     description: |
       Returns the greatest integer value less than or equal to a given floating-point number. This wraps Go's [`math.Floor`](https://golang.org/pkg/math/#Floor).
 
@@ -102,6 +107,7 @@ funcs:
         floor "Inf" = +Inf
         floor "-0" = 0
   - name: math.IsFloat
+    released: v2.6.0
     description: |
       Returns whether or not the given number can be interpreted as a floating-point literal, as defined by the [Go language reference](https://golang.org/ref/spec#Floating-point_literals).
 
@@ -120,6 +126,7 @@ funcs:
         NaN is a float
         Inf is a float
   - name: math.IsInt
+    released: v2.6.0
     description: |
       Returns whether or not the given number is an integer.
     arguments:
@@ -133,6 +140,7 @@ funcs:
         0xFF is an integer
         -0 is an integer
   - name: math.IsNum
+    released: v2.6.0
     description: |
       Returns whether the given input is a number. Useful for `if` conditions.
     arguments:
@@ -144,6 +152,7 @@ funcs:
         $ gomplate -i '{{ math.IsNum "foo" }} {{ math.IsNum 0xDeadBeef }}'
         false true
   - name: math.Max
+    released: v2.6.0
     description: |
       Returns the largest number provided. If any values are floating-point numbers, a `float64` is returned, otherwise an `int64` is returned. The same special-cases as Go's [`math.Max`](https://golang.org/pkg/math/#Max) are followed.
     arguments:
@@ -155,6 +164,7 @@ funcs:
         $ gomplate -i '{{ math.Max 0 8.0 4.5 "-1.5e-11" }}'
         8
   - name: math.Min
+    released: v2.6.0
     description: |
       Returns the smallest number provided. If any values are floating-point numbers, a `float64` is returned, otherwise an `int64` is returned. The same special-cases as Go's [`math.Min`](https://golang.org/pkg/math/#Min) are followed.
     arguments:
@@ -167,6 +177,7 @@ funcs:
         -1.5e-11
   - name: math.Mul
     alias: mul
+    released: v2.2.0
     description: |
       Multiply all given operators together.
     arguments:
@@ -179,6 +190,7 @@ funcs:
         128
   - name: math.Pow
     alias: pow
+    released: v2.2.0
     description: |
       Calculate an exponent - _b<sup>n</sup>_. This wraps Go's [`math.Pow`](https://golang.org/pkg/math/#Pow). If any values are floating-point numbers, a `float64` is returned, otherwise an `int64` is returned.
     arguments:
@@ -198,6 +210,7 @@ funcs:
         2.2
   - name: math.Rem
     alias: rem
+    released: v2.2.0
     description: |
       Return the remainder from an integer division operation.
     pipeline: true
@@ -215,6 +228,7 @@ funcs:
         $ gomplate -i '{{ math.Rem -5 3 }}'
         -2
   - name: math.Round
+    released: v2.6.0
     description: |
       Returns the nearest integer, rounding half away from zero.
 
@@ -233,6 +247,7 @@ funcs:
         round 6.5 = 7
   - name: math.Seq
     alias: seq
+    released: v2.2.0
     description: |
       Return a sequence from `start` to `end`, in steps of `step`. Can handle counting
       down as well as up, including with negative numbers.
@@ -257,6 +272,7 @@ funcs:
         10, 8, 6, 4, 2, 0, -2
   - name: math.Sub
     alias: sub
+    released: v2.2.0
     description: |
       Subtract the second from the first of the given operators.  When one of the inputs is a floating-point number, the result will be a `float64`, otherwise it will be an `int64`.
     pipeline: true

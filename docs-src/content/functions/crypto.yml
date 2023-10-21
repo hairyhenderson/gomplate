@@ -10,6 +10,7 @@ preamble: |
   before using gomplate for critical security infrastructure!_
 funcs:
   - name: crypto.Bcrypt
+    released: v2.6.0
     description: |
       Uses the [bcrypt](https://en.wikipedia.org/wiki/Bcrypt) password hashing algorithm to generate the hash of a given string. Wraps the [`golang.org/x/crypto/brypt`](https://godoc.org/golang.org/x/crypto/bcrypt) package.
     pipeline: true
@@ -29,6 +30,7 @@ funcs:
         $2a$04$zjba3N38sjyYsw0Y7IRCme1H4gD0MJxH8Ixai0/sgsrf7s1MFUK1C
   - name: crypto.DecryptAES
     experimental: true
+    released: v3.11.0
     description: |
       Decrypts the given input using the given key. By default,
       uses AES-256-CBC, but supports 128- and 192-bit keys as well.
@@ -57,6 +59,7 @@ funcs:
         hello world
   - name: crypto.DecryptAESBytes
     experimental: true
+    released: v3.11.0
     description: |
       Decrypts the given input using the given key. By default,
       uses AES-256-CBC, but supports 128- and 192-bit keys as well.
@@ -84,6 +87,7 @@ funcs:
         hello world
   - name: crypto.EncryptAES
     experimental: true
+    released: v3.11.0
     description: |
       Encrypts the given input using the given key. By default,
       uses AES-256-CBC, but supports 128- and 192-bit keys as well.
@@ -108,6 +112,7 @@ funcs:
         MnRutHovsh/9JN3YrJtBVjZtI6xXZh33bCQS2iZ4SDI=
   - name: crypto.ECDSAGenerateKey
     experimental: true
+    released: v3.11.0
     description: |
       Generate a new Elliptic Curve Private Key and output in
       PEM-encoded PKCS#1 ASN.1 DER form.
@@ -131,6 +136,7 @@ funcs:
         ...
   - name: crypto.ECDSADerivePublicKey
     experimental: true
+    released: v3.11.0
     description: |
       Derive a public key from an elliptic curve private key and output in PKIX
       ASN.1 DER form.
@@ -153,6 +159,7 @@ funcs:
         aztsmrD79OXXnhUlURI=
         -----END PUBLIC KEY-----
   - name: crypto.PBKDF2
+    released: v2.3.0
     description: |
       Run the Password-Based Key Derivation Function &num;2 as defined in
       [RFC 8018 (PKCS &num;5 v2.1)](https://tools.ietf.org/html/rfc8018#section-5.2).
@@ -181,6 +188,7 @@ funcs:
         32c4907c3c80792b
   - name: crypto.RSADecrypt
     experimental: true
+    released: v3.8.0
     description: |
       Decrypt an RSA-encrypted input and print the output as a string. Note that
       this may result in unreadable text if the decrypted payload is binary. See
@@ -214,6 +222,7 @@ funcs:
         hello
   - name: crypto.RSADecryptBytes
     experimental: true
+    released: v3.8.0
     description: |
       Decrypt an RSA-encrypted input and output the decrypted byte array.
 
@@ -248,6 +257,7 @@ funcs:
         hello
   - name: crypto.RSAEncrypt
     experimental: true
+    released: v3.8.0
     description: |
       Encrypt the input with RSA and the padding scheme from PKCS#1 v1.5.
 
@@ -287,6 +297,7 @@ funcs:
         71729b87cccabb248b9e0e5173f0b12c01d9d2a0565bad18aef9d332ce984bde06acb8bb69334a01446f7f6430077f269e6fbf2ccacd972fe5856dd4719252ebddf599948d937d96ea41540dad291b868f6c0cf647dffdb5acb22cd33557f9a1ddd0ee6c1ad2bbafc910ba8f817b66ea0569afc06e5c7858fd9dc2638861fe7c97391b2f190e4c682b4aa2c9b0050081efe18b10aa8c2b2b5f5b68a42dcc06c9da35b37fca9b1509fddc940eb99f516a2e0195405bcb3993f0fa31bc038d53d2e7231dff08cc39448105ed2d0ac52d375cb543ca8a399f807cc5d007e2c44c69876d189667eee66361a393c4916826af77479382838cd4e004b8baa05636805a
   - name: crypto.RSAGenerateKey
     experimental: true
+    released: v3.8.0
     description: |
       Generate a new RSA Private Key and output in PEM-encoded PKCS#1 ASN.1 DER
       form.
@@ -317,6 +328,7 @@ funcs:
         hello
   - name: crypto.RSADerivePublicKey
     experimental: true
+    released: v3.8.0
     description: |
       Derive a public key from an RSA private key and output in PKIX ASN.1 DER
       form.
@@ -340,6 +352,7 @@ funcs:
           {{ crypto.RSADecrypt .privKey $enc }}'
         hello
   - rawName: "`crypto.SHA1`, `crypto.SHA224`, `crypto.SHA256`, `crypto.SHA384`, `crypto.SHA512`, `crypto.SHA512_224`, `crypto.SHA512_256`"
+    released: v2.3.0
     description: |
       Compute a checksum with a SHA-1 or SHA-2 algorithm as defined in [RFC 3174](https://tools.ietf.org/html/rfc3174) (SHA-1) and [FIPS 180-4](http://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.180-4.pdf) (SHA-2).
 
@@ -369,6 +382,7 @@ funcs:
         $ gomplate -i '{{ crypto.SHA512 "bar" }}'
         cc06808cbbee0510331aa97974132e8dc296aeb795be229d064bae784b0a87a5cf4281d82e8c99271b75db2148f08a026c1a60ed9cabdb8cac6d24242dac4063
   - rawName: "`crypto.SHA1Bytes`, `crypto.SHA224Bytes`, `crypto.SHA256Bytes`, `crypto.SHA384Bytes`, `crypto.SHA512Bytes`, `crypto.SHA512_224Bytes`, `crypto.SHA512_256Bytes`"
+    released: v3.11.0
     description: |
       Compute a checksum with a SHA-1 or SHA-2 algorithm as defined in [RFC 3174](https://tools.ietf.org/html/rfc3174) (SHA-1) and [FIPS 180-4](http://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.180-4.pdf) (SHA-2).
 
@@ -395,6 +409,7 @@ funcs:
         $ gomplate -i '{{ crypto.SHA256Bytes "foo" | base64.Encode }}'
         LCa0a2j/xo/5m0U8HTBBNBNCLXBkg7+g+YpeiGJm564=
   - name: crypto.WPAPSK
+    released: v2.3.0
     description: |
       This is really an alias to [`crypto.PBKDF2`](#crypto.PBKDF2) with the
       values necessary to convert ASCII passphrases to the WPA pre-shared keys for use with WiFi networks.

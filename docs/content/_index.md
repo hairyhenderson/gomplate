@@ -1,6 +1,7 @@
 ---
 title: gomplate
 type: index
+archetype: "home"
 weight: 1
 menu:
   main:

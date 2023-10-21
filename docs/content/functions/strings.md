@@ -12,12 +12,13 @@ Abbreviates a string using `...` (ellipses). Takes an optional offset from the b
 
 _Also see [`strings.Trunc`](#strings-trunc)._
 
+_Added in gomplate [v2.6.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.6.0)_
 ### Usage
 
-```go
+```
 strings.Abbrev [offset] width input
 ```
-```go
+```
 input | strings.Abbrev [offset] width
 ```
 
@@ -42,12 +43,13 @@ $ gomplate -i '{{ "foobarbazquxquux" | strings.Abbrev 6 9 }}'
 
 Reports whether a substring is contained within a string.
 
+_Added in gomplate [v1.9.0](https://github.com/hairyhenderson/gomplate/releases/tag/v1.9.0)_
 ### Usage
 
-```go
+```
 strings.Contains substr input
 ```
-```go
+```
 input | strings.Contains substr
 ```
 
@@ -76,12 +78,13 @@ no
 
 Tests whether a string begins with a certain prefix.
 
+_Added in gomplate [v1.9.0](https://github.com/hairyhenderson/gomplate/releases/tag/v1.9.0)_
 ### Usage
 
-```go
+```
 strings.HasPrefix prefix input
 ```
-```go
+```
 input | strings.HasPrefix prefix
 ```
 
@@ -105,12 +108,13 @@ foo
 
 Tests whether a string ends with a certain suffix.
 
+_Added in gomplate [v1.9.0](https://github.com/hairyhenderson/gomplate/releases/tag/v1.9.0)_
 ### Usage
 
-```go
+```
 strings.HasSuffix suffix input
 ```
-```go
+```
 input | strings.HasSuffix suffix
 ```
 
@@ -139,12 +143,13 @@ http://example.com:80
 
 Indents a string. If the input string has multiple lines, each line will be indented.
 
+_Added in gomplate [v1.9.0](https://github.com/hairyhenderson/gomplate/releases/tag/v1.9.0)_
 ### Usage
 
-```go
+```
 strings.Indent [width] [indent] input
 ```
-```go
+```
 input | strings.Indent [width] [indent]
 ```
 
@@ -185,12 +190,13 @@ foo:
 
 Returns an alphanumerically-sorted copy of a given string list.
 
+_Added in gomplate [v2.7.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.7.0)_
 ### Usage
 
-```go
+```
 strings.Sort list
 ```
-```go
+```
 list | strings.Sort
 ```
 
@@ -207,7 +213,8 @@ $ gomplate -i '{{ (coll.Slice "foo" "bar" "baz") | strings.Sort }}'
 [bar baz foo]
 ```
 
-## `strings.SkipLines`
+## `strings.SkipLines`_(unreleased)_
+**Unreleased:** _This function is in development, and not yet available in released builds of gomplate._
 
 Skips the given number of lines (each ending in a `\n`), returning the
 remainder.
@@ -217,10 +224,10 @@ returned.
 
 ### Usage
 
-```go
+```
 strings.SkipLines skip in
 ```
-```go
+```
 in | strings.SkipLines skip
 ```
 
@@ -261,12 +268,13 @@ of `-1`.
 
 Note that the delimiter is not included in the resulting elements.
 
+_Added in gomplate [v1.9.0](https://github.com/hairyhenderson/gomplate/releases/tag/v1.9.0)_
 ### Usage
 
-```go
+```
 strings.Split separator input
 ```
-```go
+```
 input | strings.Split separator
 ```
 
@@ -311,12 +319,13 @@ The `count` determines the number of substrings to return:
 
 See [`strings.Split`](#strings-split) for more details.
 
+_Added in gomplate [v1.9.0](https://github.com/hairyhenderson/gomplate/releases/tag/v1.9.0)_
 ### Usage
 
-```go
+```
 strings.SplitN separator count input
 ```
-```go
+```
 input | strings.SplitN separator count
 ```
 
@@ -351,12 +360,13 @@ This is a convenience function which is equivalent to:
 {{ print "%q" "input string" }}
 ```
 
+_Added in gomplate [v3.1.0](https://github.com/hairyhenderson/gomplate/releases/tag/v3.1.0)_
 ### Usage
 
-```go
+```
 strings.Quote in
 ```
-```go
+```
 in | strings.Quote
 ```
 
@@ -383,12 +393,13 @@ It errors if `count` is negative or if the length of `input` multiplied by `coun
 
 This wraps Go's [`strings.Repeat`](https://golang.org/pkg/strings/#Repeat).
 
+_Added in gomplate [v2.6.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.6.0)_
 ### Usage
 
-```go
+```
 strings.Repeat count input
 ```
-```go
+```
 input | strings.Repeat count
 ```
 
@@ -412,12 +423,13 @@ hello hello hello hello hello
 
 Replaces all occurrences of a given string with another.
 
+_Added in gomplate [v1.9.0](https://github.com/hairyhenderson/gomplate/releases/tag/v1.9.0)_
 ### Usage
 
-```go
+```
 strings.ReplaceAll old new input
 ```
-```go
+```
 input | strings.ReplaceAll old new
 ```
 
@@ -442,12 +454,13 @@ $ gomplate -i '{{ "172.21.1.42" | strings.ReplaceAll "." "-" }}'
 
 Creates a a "slug" from a given string - supports Unicode correctly. This wraps the [github.com/gosimple/slug](https://github.com/gosimple/slug) package. See [the github.com/gosimple/slug docs](https://godoc.org/github.com/gosimple/slug) for more information.
 
+_Added in gomplate [v2.6.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.6.0)_
 ### Usage
 
-```go
+```
 strings.Slug input
 ```
-```go
+```
 input | strings.Slug
 ```
 
@@ -476,12 +489,13 @@ Given a string, emits a version of that string that will evaluate to its literal
 
 Given an array or slice, emit a single string which will evaluate to a series of shell words, one per item in that array or slice.
 
+_Added in gomplate [v3.6.0](https://github.com/hairyhenderson/gomplate/releases/tag/v3.6.0)_
 ### Usage
 
-```go
+```
 strings.ShellQuote in
 ```
-```go
+```
 in | strings.ShellQuote
 ```
 
@@ -510,12 +524,13 @@ Surrounds an input string with a single-quote (apostrophe) character (`'`). If t
 
 `'` characters in the input are first escaped in the YAML-style (by repetition: `''`).
 
+_Added in gomplate [v3.1.0](https://github.com/hairyhenderson/gomplate/releases/tag/v3.1.0)_
 ### Usage
 
-```go
+```
 strings.Squote in
 ```
-```go
+```
 in | strings.Squote
 ```
 
@@ -542,12 +557,13 @@ $ gomplate -i "{{ strings.Squote \"it's a banana\" }}"
 
 Convert to title-case.
 
+_Added in gomplate [v1.9.0](https://github.com/hairyhenderson/gomplate/releases/tag/v1.9.0)_
 ### Usage
 
-```go
+```
 strings.Title input
 ```
-```go
+```
 input | strings.Title
 ```
 
@@ -570,12 +586,13 @@ Hello, World!
 
 Convert to lower-case.
 
+_Added in gomplate [v1.9.0](https://github.com/hairyhenderson/gomplate/releases/tag/v1.9.0)_
 ### Usage
 
-```go
+```
 strings.ToLower input
 ```
-```go
+```
 input | strings.ToLower
 ```
 
@@ -598,12 +615,13 @@ hello, world!
 
 Convert to upper-case.
 
+_Added in gomplate [v1.9.0](https://github.com/hairyhenderson/gomplate/releases/tag/v1.9.0)_
 ### Usage
 
-```go
+```
 strings.ToUpper input
 ```
-```go
+```
 input | strings.ToUpper
 ```
 
@@ -625,12 +643,13 @@ HELLO, WORLD!
 Trims a string by removing the given characters from the beginning and end of
 the string.
 
+_Added in gomplate [v1.9.0](https://github.com/hairyhenderson/gomplate/releases/tag/v1.9.0)_
 ### Usage
 
-```go
+```
 strings.Trim cutset input
 ```
-```go
+```
 input | strings.Trim cutset
 ```
 
@@ -654,12 +673,13 @@ Returns a string without the provided leading prefix string, if the prefix is pr
 
 This wraps Go's [`strings.TrimPrefix`](https://golang.org/pkg/strings/#TrimPrefix).
 
+_Added in gomplate [v2.5.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.5.0)_
 ### Usage
 
-```go
+```
 strings.TrimPrefix prefix input
 ```
-```go
+```
 input | strings.TrimPrefix prefix
 ```
 
@@ -684,12 +704,13 @@ world
 Trims a string by removing whitespace from the beginning and end of
 the string.
 
+_Added in gomplate [v1.9.0](https://github.com/hairyhenderson/gomplate/releases/tag/v1.9.0)_
 ### Usage
 
-```go
+```
 strings.TrimSpace input
 ```
-```go
+```
 input | strings.TrimSpace
 ```
 
@@ -712,12 +733,13 @@ Returns a string without the provided trailing suffix string, if the suffix is p
 
 This wraps Go's [`strings.TrimSuffix`](https://golang.org/pkg/strings/#TrimSuffix).
 
+_Added in gomplate [v2.6.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.6.0)_
 ### Usage
 
-```go
+```
 strings.TrimSuffix suffix input
 ```
-```go
+```
 input | strings.TrimSuffix suffix
 ```
 
@@ -741,12 +763,13 @@ Returns a string truncated to the given length.
 
 _Also see [`strings.Abbrev`](#strings-abbrev)._
 
+_Added in gomplate [v2.6.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.6.0)_
 ### Usage
 
-```go
+```
 strings.Trunc length input
 ```
-```go
+```
 input | strings.Trunc length
 ```
 
@@ -772,12 +795,13 @@ All non-alphanumeric characters are stripped, and the beginnings of words are up
 
 See [CamelCase on Wikipedia](https://en.wikipedia.org/wiki/Camel_case) for more details.
 
+_Added in gomplate [v3.3.0](https://github.com/hairyhenderson/gomplate/releases/tag/v3.3.0)_
 ### Usage
 
-```go
+```
 strings.CamelCase in
 ```
-```go
+```
 in | strings.CamelCase
 ```
 
@@ -806,12 +830,13 @@ All non-alphanumeric characters are stripped, and spaces are replaced with an un
 
 See [Snake Case on Wikipedia](https://en.wikipedia.org/wiki/Snake_case) for more details.
 
+_Added in gomplate [v3.3.0](https://github.com/hairyhenderson/gomplate/releases/tag/v3.3.0)_
 ### Usage
 
-```go
+```
 strings.SnakeCase in
 ```
-```go
+```
 in | strings.SnakeCase
 ```
 
@@ -840,12 +865,13 @@ All non-alphanumeric characters are stripped, and spaces are replaced with a hyp
 
 See [Kebab Case on Wikipedia](https://en.wikipedia.org/wiki/Kebab_case) for more details.
 
+_Added in gomplate [v3.3.0](https://github.com/hairyhenderson/gomplate/releases/tag/v3.3.0)_
 ### Usage
 
-```go
+```
 strings.KebabCase in
 ```
-```go
+```
 in | strings.KebabCase
 ```
 
@@ -876,12 +902,13 @@ When words that are longer than the desired width are encountered (e.g. long URL
 
 The line-break sequence defaults to `\n` (i.e. the LF/Line Feed character), regardless of OS.
 
+_Added in gomplate [v3.3.0](https://github.com/hairyhenderson/gomplate/releases/tag/v3.3.0)_
 ### Usage
 
-```go
+```
 strings.WordWrap [width] [lbseq] in
 ```
-```go
+```
 in | strings.WordWrap [width] [lbseq]
 ```
 
@@ -922,12 +949,13 @@ concatenated.
 This wraps Go's [`utf8.RuneCountInString`](https://golang.org/pkg/unicode/utf8/#RuneCountInString)
 function.
 
+_Added in gomplate [v3.4.0](https://github.com/hairyhenderson/gomplate/releases/tag/v3.4.0)_
 ### Usage
 
-```go
+```
 strings.RuneCount input
 ```
-```go
+```
 input | strings.RuneCount
 ```
 
@@ -954,9 +982,10 @@ $ gomplate -i '{{ range (coll.Slice "\u03a9" "\u0030" "\u1430") }}{{ printf "%s 
 Contains reports whether the second string is contained within the first. Equivalent to
 [strings.Contains](https://golang.org/pkg/strings#Contains)
 
+_Added in gomplate [v1.4.0](https://github.com/hairyhenderson/gomplate/releases/tag/v1.4.0)_
 ### Usage
 
-```go
+```
 contains input substring
 ```
 
@@ -989,9 +1018,10 @@ no
 Tests whether the string begins with a certain substring. Equivalent to
 [strings.HasPrefix](https://golang.org/pkg/strings#HasPrefix)
 
+_Added in gomplate [v1.4.0](https://github.com/hairyhenderson/gomplate/releases/tag/v1.4.0)_
 ### Usage
 
-```go
+```
 hasPrefix input prefix
 ```
 
@@ -1024,9 +1054,10 @@ foo
 Tests whether the string ends with a certain substring. Equivalent to
 [strings.HasSuffix](https://golang.org/pkg/strings#HasSuffix)
 
+_Added in gomplate [v1.4.0](https://github.com/hairyhenderson/gomplate/releases/tag/v1.4.0)_
 ### Usage
 
-```go
+```
 hasSuffix input suffix
 ```
 
@@ -1057,9 +1088,10 @@ http://example.com:80
 Creates a slice by splitting a string on a given delimiter. Equivalent to
 [strings.Split](https://golang.org/pkg/strings#Split)
 
+_Added in gomplate [v1.4.0](https://github.com/hairyhenderson/gomplate/releases/tag/v1.4.0)_
 ### Usage
 
-```go
+```
 split input separator
 ```
 
@@ -1088,9 +1120,10 @@ Hello, Maggie
 Creates a slice by splitting a string on a given delimiter. The count determines
 the number of substrings to return. Equivalent to [strings.SplitN](https://golang.org/pkg/strings#SplitN)
 
+_Added in gomplate [v1.7.0](https://github.com/hairyhenderson/gomplate/releases/tag/v1.7.0)_
 ### Usage
 
-```go
+```
 splitN input separator count
 ```
 
@@ -1119,9 +1152,10 @@ bar:baz
 Trims a string by removing the given characters from the beginning and end of
 the string. Equivalent to [strings.Trim](https://golang.org/pkg/strings/#Trim)
 
+_Added in gomplate [v1.4.0](https://github.com/hairyhenderson/gomplate/releases/tag/v1.4.0)_
 ### Usage
 
-```go
+```
 trim input cutset
 ```
 

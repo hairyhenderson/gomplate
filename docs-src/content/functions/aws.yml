@@ -20,6 +20,7 @@ preamble: |
 funcs:
   - name: aws.EC2Meta
     alias: ec2meta
+    released: v1.8.0
     description: |
       Queries AWS [EC2 Instance Metadata](http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-metadata.html) for information. This only retrieves data in the `meta-data` path -- for data in the `dynamic` path use `aws.EC2Dynamic`.
 
@@ -38,6 +39,7 @@ funcs:
         i-12345678
   - name: aws.EC2Dynamic
     alias: ec2dynamic
+    released: v1.8.0
     description: |
       Queries AWS [EC2 Instance Dynamic Metadata](http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-metadata.html) for information. This only retrieves data in the `dynamic` path -- for data in the `meta-data` path use `aws.EC2Meta`.
 
@@ -56,6 +58,7 @@ funcs:
         us-east-1
   - name: aws.EC2Region
     alias: ec2region
+    released: v1.8.0
     description: |
       Queries AWS to get the region. An optional default can be provided, or returns
       `unknown` if it can't be determined for some reason.
@@ -80,6 +83,7 @@ funcs:
         ```
   - name: aws.EC2Tag
     alias: ec2tag
+    released: v3.8.0
     description: |
       Queries the AWS EC2 API to find the value of the given [user-defined tag](http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/Using_Tags.html). An optional default
       can be provided.
@@ -100,6 +104,7 @@ funcs:
         I am a meat popsicle.
   - name: aws.EC2Tags
     alias: ec2tags
+    released: v3.8.0
     description: |
       Queries the AWS EC2 API to find all the tags/values [user-defined tag](http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/Using_Tags.html).
     pipeline: false
@@ -111,6 +116,7 @@ funcs:
         Name=bar
         svc:name=foobar
   - name: aws.KMSEncrypt
+    # released: v4.0.0
     description: |
       Encrypt an input string with the AWS Key Management Service (KMS).
 
@@ -145,6 +151,7 @@ funcs:
         $ export CIPHER=$(gomplate -i '{{ aws.KMSEncrypt "alias/gomplate" "hello world" }}')
         $ gomplate -i '{{ env.Getenv "CIPHER" | aws.KMSDecrypt }}'
   - name: aws.KMSDecrypt
+    released: v3.4.0
     description: |
       Decrypt ciphertext that was encrypted with the AWS Key Management Service
       (KMS).
@@ -165,6 +172,7 @@ funcs:
         $ export CIPHER=$(gomplate -i '{{ aws.KMSEncrypt "alias/gomplate" "hello world" }}')
         $ gomplate -i '{{ env.Getenv "CIPHER" | aws.KMSDecrypt }}'
   - name: aws.Account
+    released: v3.4.0
     description: |
       Returns the currently-authenticated AWS account ID number.
 
@@ -177,6 +185,7 @@ funcs:
         $ gomplate -i 'My account is {{ aws.Account }}'
         My account is 123456789012
   - name: aws.ARN
+    released: v3.4.0
     description: |
       Returns the AWS ARN (Amazon Resource Name) associated with the current authentication credentials.
 
@@ -189,6 +198,7 @@ funcs:
         $ gomplate -i 'Calling from {{ aws.ARN }}'
         Calling from arn:aws:iam::123456789012:user/Alice
   - name: aws.UserID
+    released: v3.4.0
     description: |
       Returns the unique identifier of the calling entity. The exact value
       depends on the type of entity making the call. The values returned are those

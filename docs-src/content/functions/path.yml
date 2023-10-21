@@ -9,6 +9,7 @@ preamble: |
   These functions are wrappers for Go's [`path`](https://golang.org/pkg/path/) and [`path/filepath`](https://golang.org/pkg/path/filepath/) packages.
 funcs:
   - name: path.Base
+    released: v2.7.0
     description: |
       Returns the last element of path. Trailing slashes are removed before extracting the last element. If the path is empty, Base returns `.`. If the path consists entirely of slashes, Base returns `/`.
 
@@ -23,6 +24,7 @@ funcs:
         $ gomplate -i '{{ path.Base "/tmp/foo" }}'
         foo
   - name: path.Clean
+    released: v2.7.0
     description: |
       Clean returns the shortest path name equivalent to path by purely lexical processing.
 
@@ -37,6 +39,7 @@ funcs:
         $ gomplate -i '{{ path.Clean "/tmp//foo/../" }}'
         /tmp
   - name: path.Dir
+    released: v2.7.0
     description: |
       Returns all but the last element of path, typically the path's directory.
 
@@ -51,6 +54,7 @@ funcs:
         $ gomplate -i '{{ path.Dir "/tmp/foo" }}'
         /tmp
   - name: path.Ext
+    released: v2.7.0
     description: |
       Returns the file name extension used by path.
 
@@ -65,6 +69,7 @@ funcs:
         $ gomplate -i '{{ path.Ext "/tmp/foo.csv" }}'
         .csv
   - name: path.IsAbs
+    released: v2.7.0
     description: |
       Reports whether the path is absolute.
 
@@ -81,6 +86,7 @@ funcs:
         $ gomplate -i 'the path is {{ if (path.IsAbs "../foo.csv") }}absolute{{else}}relative{{end}}'
         the path is relative
   - name: path.Join
+    released: v2.7.0
     description: |
       Joins any number of path elements into a single path, adding a separating slash if necessary.
 
@@ -94,6 +100,7 @@ funcs:
         $ gomplate -i '{{ path.Join "/tmp" "foo" "bar" }}'
         /tmp/foo/bar
   - name: path.Match
+    released: v2.7.0
     description: |
       Reports whether name matches the shell file name pattern.
 
@@ -110,6 +117,7 @@ funcs:
         $ gomplate -i '{{ path.Match "*.csv" "foo.csv" }}'
         true
   - name: path.Split
+    released: v2.7.0
     description: |
       Splits path immediately following the final slash, separating it into a directory and file name component.
 

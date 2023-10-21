@@ -18,12 +18,13 @@ of the regular expression `expression`.
 This function provides the same behaviour as Go's
 [`regexp.FindString`](https://golang.org/pkg/regexp/#Regexp.FindString) function.
 
+_Added in gomplate [v3.1.0](https://github.com/hairyhenderson/gomplate/releases/tag/v3.1.0)_
 ### Usage
 
-```go
+```
 regexp.Find expression input
 ```
-```go
+```
 input | regexp.Find expression
 ```
 
@@ -56,12 +57,13 @@ to be returned.
 This function provides the same behaviour as Go's
 [`regexp.FindAllString`](https://golang.org/pkg/regexp/#Regexp.FindAllString) function.
 
+_Added in gomplate [v3.1.0](https://github.com/hairyhenderson/gomplate/releases/tag/v3.1.0)_
 ### Usage
 
-```go
+```
 regexp.FindAll expression [n] input
 ```
-```go
+```
 input | regexp.FindAll expression [n]
 ```
 
@@ -90,12 +92,13 @@ Returns `true` if a given regular expression matches a given input.
 
 This returns a boolean which can be used in an `if` condition, for example.
 
+_Added in gomplate [v1.9.0](https://github.com/hairyhenderson/gomplate/releases/tag/v1.9.0)_
 ### Usage
 
-```go
+```
 regexp.Match expression input
 ```
-```go
+```
 input | regexp.Match expression
 ```
 
@@ -120,12 +123,13 @@ Escapes all regular expression metacharacters in the input. The returned string 
 This function provides the same behaviour as Go's
 [`regexp.QuoteMeta`](https://golang.org/pkg/regexp/#Regexp.QuoteMeta) function.
 
+_Added in gomplate [v3.7.0](https://github.com/hairyhenderson/gomplate/releases/tag/v3.7.0)_
 ### Usage
 
-```go
+```
 regexp.QuoteMeta input
 ```
-```go
+```
 input | regexp.QuoteMeta
 ```
 
@@ -151,12 +155,13 @@ The replacement is substituted after expanding variables beginning with `$`.
 This function provides the same behaviour as Go's
 [`regexp.ReplaceAllString`](https://golang.org/pkg/regexp/#Regexp.ReplaceAllString) function.
 
+_Added in gomplate [v1.9.0](https://github.com/hairyhenderson/gomplate/releases/tag/v1.9.0)_
 ### Usage
 
-```go
+```
 regexp.Replace expression replacement input
 ```
-```go
+```
 input | regexp.Replace expression replacement
 ```
 
@@ -189,12 +194,13 @@ beginning with `$`.
 This function provides the same behaviour as Go's
 [`regexp.ReplaceAllLiteralString`](https://golang.org/pkg/regexp/#Regexp.ReplaceAllLiteralString) function.
 
+_Added in gomplate [v3.1.0](https://github.com/hairyhenderson/gomplate/releases/tag/v3.1.0)_
 ### Usage
 
-```go
+```
 regexp.ReplaceLiteral expression replacement input
 ```
-```go
+```
 input | regexp.ReplaceLiteral expression replacement
 ```
 
@@ -231,12 +237,13 @@ except that regular expressions are supported.
 This function provides the same behaviour as Go's
 [`regexp.Split`](https://golang.org/pkg/regexp/#Regexp.Split) function.
 
+_Added in gomplate [v3.1.0](https://github.com/hairyhenderson/gomplate/releases/tag/v3.1.0)_
 ### Usage
 
-```go
+```
 regexp.Split expression [n] input
 ```
-```go
+```
 input | regexp.Split expression [n]
 ```
 
