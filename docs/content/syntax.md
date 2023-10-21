@@ -219,6 +219,12 @@ built-in function instead:
 {{ index $map "foo-bar" }}
 ```
 
+`index` also supports nested keys and can be combined with other functions as such:
+
+```
+{{ index $map "foo" (env.Getenv "BAR") "baz" ... }}
+``` 
+
 **Note:** _while `index` can be used to access awkwardly-named values in maps,
 it behaves differently than the `.` operator. If the key doesn't exist, `index`
 will simply not return a value, while `.` will error._
