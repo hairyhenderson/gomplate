@@ -140,21 +140,21 @@ func ExampleRenderer_manyTemplates() {
 func ExampleRenderer_datasources() {
 	ctx := context.Background()
 
-	// a datasource that retrieves JSON from a maritime registry dataset
-	u, _ := url.Parse("https://www.econdb.com/maritime/vessel/9437/")
+	// a datasource that retrieves JSON from a public transit API
+	u, _ := url.Parse("https://v6.db.transport.rest/stops/8011160")
 	tr := NewRenderer(Options{
 		Context: map[string]Datasource{
-			"vessel": {URL: u},
+			"transitstop": {URL: u},
 		},
 	})
 
 	err := tr.Render(ctx, "jsontest",
-		`{{"\U0001F6A2"}} The {{ .vessel.data.Name }}'s call sign is {{ .vessel.data.Callsign }}.`,
+		`{{"\U0001F68F"}} The {{ .transitstop.name }} transit station has {{ len .transitstop.entrances }} entrances.`,
 		os.Stdout)
 	if err != nil {
 		panic(err)
 	}
 
 	// Output:
-	// 🚢 The MONTREAL EXPRESS's call sign is ZCET4.
+	// 🚏 The Berlin Hbf transit station has 18 entrances.
 }

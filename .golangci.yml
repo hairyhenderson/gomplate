@@ -11,7 +11,8 @@ linters-settings:
     threshold: 100
   goconst:
     min-len: 2
-    min-occurrences: 4
+    min-occurrences: 6
+    ignore-tests: true
   lll:
     line-length: 140
   nolintlint:
