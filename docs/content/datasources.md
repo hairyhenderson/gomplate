@@ -659,6 +659,10 @@ These are all valid `vault` URLs:
 - `vault:///ssh/creds/foo?ip=10.1.2.3&username=user` - create a dynamic secret with the parameters `ip` and `username` provided in the body
 - `vault:///secret/configs/` - returns a list of key names with the prefix of `secret/configs/`
 
+### KV secrets engine - version 2 support
+
+A proper support of KV secrets engine - version 2 is coming. In the meanwhile there are workarounds to make it work even now: you need to include an extra `data` segment in the vault URL right after the secret engine mount point, e.g. `vault:///kv2/data/configs/`. Currently it is not possible to retreive a specific secret version.
+
 ### Vault Authentication
 
 This table describes the currently-supported authentication mechanisms and how to use them, in order of precedence:
@@ -689,6 +693,12 @@ In addition to the variables documented [above](#vault-authentication), a number
 
 ```console
 $ gomplate -d vault=vault:///secret/sneakers -i 'My voice is my passport. {{(datasource "vault").value}}' 
+My voice is my passport. Verify me.
+```
+Same for KV secrets engine - version 2 (note the second extra `data` when retreiving the value):
+
+```console
+$ gomplate -d vault=vault:///kv2/data/sneakers -i 'My voice is my passport. {{(datasource "vault").data.value}}' 
 My voice is my passport. Verify me.
 ```
 
