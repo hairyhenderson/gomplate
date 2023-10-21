@@ -13,6 +13,7 @@ func must(r interface{}, err error) interface{} {
 	}
 	return r
 }
+
 func TestLookupIP(t *testing.T) {
 	assert.Equal(t, "127.0.0.1", must(LookupIP("localhost")))
 	assert.Equal(t, "93.184.216.34", must(LookupIP("example.com")))

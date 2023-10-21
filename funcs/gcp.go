@@ -38,19 +38,15 @@ func CreateGCPFuncs(ctx context.Context) map[string]interface{} {
 type GcpFuncs struct {
 	ctx context.Context
 
-	meta     *gcp.MetaClient
-	metaInit sync.Once
-	gcpopts  gcp.ClientOptions
+	meta    *gcp.MetaClient
+	gcpopts gcp.ClientOptions
 }
 
 // Meta -
 func (a *GcpFuncs) Meta(key string, def ...string) (string, error) {
-	a.metaInit.Do(a.initGcpMeta)
-	return a.meta.Meta(key, def...)
-}
+	a.meta = sync.OnceValue[*gcp.MetaClient](func() *gcp.MetaClient {
+		return gcp.NewMetaClient(a.ctx, a.gcpopts)
+	})()
 
-func (a *GcpFuncs) initGcpMeta() {
-	if a.meta == nil {
-		a.meta = gcp.NewMetaClient(a.gcpopts)
-	}
+	return a.meta.Meta(key, def...)
 }

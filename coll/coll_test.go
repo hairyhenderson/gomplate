@@ -241,7 +241,8 @@ func TestMerge(t *testing.T) {
 	assert.EqualValues(t, expected, out)
 
 	dst = map[string]interface{}{"a": true, "c": 5}
-	src = map[string]interface{}{"a": false,
+	src = map[string]interface{}{
+		"a": false,
 		"b": map[string]interface{}{
 			"ca": "foo",
 		},
@@ -261,7 +262,8 @@ func TestMerge(t *testing.T) {
 			"ca": "foo",
 			"cb": "bar",
 		},
-		"c": 5}
+		"c": 5,
+	}
 	src = map[string]interface{}{
 		"a": false,
 		"b": map[string]interface{}{
@@ -478,24 +480,28 @@ func TestFlatten(t *testing.T) {
 		{in: []int{1, 2, 3}, expected: []interface{}{1, 2, 3}},
 		{in: [3]int{1, 2, 3}, expected: []interface{}{1, 2, 3}},
 		{in: []interface{}{[]string{}, []int{1, 2}, 3}, expected: []interface{}{[]string{}, []int{1, 2}, 3}},
-		{in: []interface{}{[]string{"one"}, [][]int{{1, 2}}, 3},
+		{
+			in:       []interface{}{[]string{"one"}, [][]int{{1, 2}}, 3},
 			expected: []interface{}{[]string{"one"}, [][]int{{1, 2}}, 3},
 		},
 		{depth: 1, in: []int{1, 2, 3}, expected: []interface{}{1, 2, 3}},
 		{depth: 1, in: [3]int{1, 2, 3}, expected: []interface{}{1, 2, 3}},
 		{depth: 1, in: []interface{}{[]string{}, []int{1, 2}, 3}, expected: []interface{}{1, 2, 3}},
-		{depth: 1,
+		{
+			depth:    1,
 			in:       []interface{}{[]string{"one"}, [][]int{{1, 2}}, 3},
 			expected: []interface{}{"one", []int{1, 2}, 3},
 		},
 		{depth: 2, in: []int{1, 2, 3}, expected: []interface{}{1, 2, 3}},
 		{depth: 2, in: [3]int{1, 2, 3}, expected: []interface{}{1, 2, 3}},
 		{depth: 2, in: []interface{}{[]string{}, []int{1, 2}, 3}, expected: []interface{}{1, 2, 3}},
-		{depth: 2,
+		{
+			depth:    2,
 			in:       []interface{}{[]string{"one"}, [][]int{{1, 2}}, 3},
 			expected: []interface{}{"one", 1, 2, 3},
 		},
-		{depth: 2,
+		{
+			depth: 2,
 			in: []interface{}{
 				[]string{"one"},
 				[]interface{}{
@@ -512,11 +518,13 @@ func TestFlatten(t *testing.T) {
 		{depth: -1, in: []int{1, 2, 3}, expected: []interface{}{1, 2, 3}},
 		{depth: -1, in: [3]int{1, 2, 3}, expected: []interface{}{1, 2, 3}},
 		{depth: -1, in: []interface{}{[]string{}, []int{1, 2}, 3}, expected: []interface{}{1, 2, 3}},
-		{depth: -1,
+		{
+			depth:    -1,
 			in:       []interface{}{[]string{"one"}, [][]int{{1, 2}}, 3},
 			expected: []interface{}{"one", 1, 2, 3},
 		},
-		{depth: -1,
+		{
+			depth: -1,
 			in: []interface{}{
 				[]string{"one"},
 				[]interface{}{

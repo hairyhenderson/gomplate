@@ -254,17 +254,17 @@ func (c *Config) MergeFrom(o *Config) *Config {
 	if c.Templates == nil {
 		c.Templates = o.Templates
 	} else {
-		mergeDataSources(c.Templates, o.Templates)
+		c.Templates = mergeDataSources(c.Templates, o.Templates)
 	}
 	if c.DataSources == nil {
 		c.DataSources = o.DataSources
 	} else {
-		mergeDataSources(c.DataSources, o.DataSources)
+		c.DataSources = mergeDataSources(c.DataSources, o.DataSources)
 	}
 	if c.Context == nil {
 		c.Context = o.Context
 	} else {
-		mergeDataSources(c.Context, o.Context)
+		c.Context = mergeDataSources(c.Context, o.Context)
 	}
 	if len(o.Plugins) > 0 {
 		for k, v := range o.Plugins {
@@ -559,7 +559,7 @@ func (c *Config) GetMode() (os.FileMode, bool, error) {
 	}
 	mode := iohelpers.NormalizeFileMode(os.FileMode(m))
 	if mode == 0 && c.Input != "" {
-		mode = iohelpers.NormalizeFileMode(0644)
+		mode = iohelpers.NormalizeFileMode(0o644)
 	}
 	return mode, modeOverride, nil
 }

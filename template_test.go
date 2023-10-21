@@ -40,11 +40,11 @@ func TestOpenOutFile(t *testing.T) {
 
 	i, err := hackpadfs.Stat(fsys, "/tmp/foo")
 	require.NoError(t, err)
-	assert.Equal(t, iohelpers.NormalizeFileMode(0644), i.Mode())
+	assert.Equal(t, iohelpers.NormalizeFileMode(0o644), i.Mode())
 
 	out := &bytes.Buffer{}
 
-	f, err = openOutFile(ctx, "-", 0755, 0644, false, out, false)
+	f, err = openOutFile(ctx, "-", 0o755, 0o644, false, out, false)
 	require.NoError(t, err)
 	assert.Equal(t, cfg.Stdout, f)
 }
@@ -116,14 +116,14 @@ func TestGatherTemplates(t *testing.T) {
 	assert.Len(t, templates, 1)
 	assert.Equal(t, "bar", templates[0].Text)
 	assert.NotEqual(t, cfg.Stdout, templates[0].Writer)
-	// assert.Equal(t, os.FileMode(0600), templates[0].mode)
+	// assert.Equal(t, os.FileMode(0o600), templates[0].mode)
 
 	_, err = templates[0].Writer.Write([]byte("hello world"))
 	require.NoError(t, err)
 
 	info, err = hackpadfs.Stat(fsys, "out")
 	require.NoError(t, err)
-	assert.Equal(t, iohelpers.NormalizeFileMode(0600), info.Mode())
+	assert.Equal(t, iohelpers.NormalizeFileMode(0o600), info.Mode())
 	hackpadfs.Remove(fsys, "out")
 
 	cfg = &config.Config{
@@ -137,14 +137,14 @@ func TestGatherTemplates(t *testing.T) {
 	assert.Len(t, templates, 1)
 	assert.Equal(t, "bar", templates[0].Text)
 	assert.NotEqual(t, cfg.Stdout, templates[0].Writer)
-	// assert.Equal(t, iohelpers.NormalizeFileMode(0755), templates[0].mode)
+	// assert.Equal(t, iohelpers.NormalizeFileMode(0o755), templates[0].mode)
 
 	_, err = templates[0].Writer.Write([]byte("hello world"))
 	require.NoError(t, err)
 
 	info, err = hackpadfs.Stat(fsys, "out")
 	require.NoError(t, err)
-	assert.Equal(t, iohelpers.NormalizeFileMode(0755), info.Mode())
+	assert.Equal(t, iohelpers.NormalizeFileMode(0o755), info.Mode())
 	hackpadfs.Remove(fsys, "out")
 
 	templates, err = gatherTemplates(ctx, &config.Config{
@@ -159,11 +159,11 @@ func TestGatherTemplates(t *testing.T) {
 
 func TestCreateOutFile(t *testing.T) {
 	fsys, _ := mem.NewFS()
-	_ = hackpadfs.Mkdir(fsys, "in", 0755)
+	_ = hackpadfs.Mkdir(fsys, "in", 0o755)
 
 	ctx := datafs.ContextWithFSProvider(context.Background(), datafs.WrappedFSProvider(fsys, "file"))
 
-	_, err := createOutFile(ctx, "in", 0755, 0644, false)
+	_, err := createOutFile(ctx, "in", 0o755, 0o644, false)
 	assert.Error(t, err)
 	assert.IsType(t, &fs.PathError{}, err)
 }

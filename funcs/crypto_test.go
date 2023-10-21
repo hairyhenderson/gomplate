@@ -55,7 +55,6 @@ func TestWPAPSK(t *testing.T) {
 	require.NoError(t, err)
 }
 
-//nolint:gosec
 func TestSHA(t *testing.T) {
 	t.Parallel()
 

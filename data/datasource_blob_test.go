@@ -23,32 +23,32 @@ func setupTestBucket(t *testing.T) (*httptest.Server, *url.URL) {
 	err := backend.CreateBucket("mybucket")
 	require.NoError(t, err)
 	c := "hello"
-	err = putFile(backend, "mybucket", "file1", "text/plain", c)
+	err = putFile(backend, "file1", "text/plain", c)
 	require.NoError(t, err)
 
 	c = `{"value": "goodbye world"}`
-	err = putFile(backend, "mybucket", "file2", "application/json", c)
+	err = putFile(backend, "file2", "application/json", c)
 	require.NoError(t, err)
 
 	c = `value: what a world`
-	err = putFile(backend, "mybucket", "file3", "application/yaml", c)
+	err = putFile(backend, "file3", "application/yaml", c)
 	require.NoError(t, err)
 
 	c = `value: out of this world`
-	err = putFile(backend, "mybucket", "dir1/file1", "application/yaml", c)
+	err = putFile(backend, "dir1/file1", "application/yaml", c)
 	require.NoError(t, err)
 
 	c = `value: foo`
-	err = putFile(backend, "mybucket", "dir1/file2", "application/yaml", c)
+	err = putFile(backend, "dir1/file2", "application/yaml", c)
 	require.NoError(t, err)
 
 	u, _ := url.Parse(ts.URL)
 	return ts, u
 }
 
-func putFile(backend gofakes3.Backend, bucket, file, mime, content string) error {
+func putFile(backend gofakes3.Backend, file, mime, content string) error {
 	_, err := backend.PutObject(
-		bucket,
+		"mybucket",
 		file,
 		map[string]string{"Content-Type": mime},
 		bytes.NewBufferString(content),

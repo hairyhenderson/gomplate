@@ -83,8 +83,8 @@ func TestBasic_RoutesInputsToProperOutputs(t *testing.T) {
 		content string
 		mode    os.FileMode
 	}{
-		{oneOut, "hi\n", 0640},
-		{twoOut, "hello\n", 0644},
+		{oneOut, "hi\n", 0o640},
+		{twoOut, "hello\n", 0o644},
 	}
 	for _, v := range testdata {
 		info, err := os.Stat(v.path)
@@ -204,8 +204,8 @@ func TestBasic_RoutesInputsToProperOutputsWithChmod(t *testing.T) {
 		content string
 		mode    os.FileMode
 	}{
-		{oneOut, "hi\n", 0600},
-		{twoOut, "hello\n", 0600},
+		{oneOut, "hi\n", 0o600},
+		{twoOut, "hello\n", 0o600},
 	}
 	for _, v := range testdata {
 		info, err := os.Stat(v.path)
@@ -233,7 +233,7 @@ func TestBasic_OverridesOutputModeWithChmod(t *testing.T) {
 		content string
 		mode    os.FileMode
 	}{
-		{out, "hi\n", 0600},
+		{out, "hi\n", 0o600},
 	}
 	for _, v := range testdata {
 		info, err := os.Stat(v.path)
@@ -258,7 +258,7 @@ func TestBasic_AppliesChmodBeforeWrite(t *testing.T) {
 
 	info, err := os.Stat(out)
 	assert.NilError(t, err)
-	assert.Equal(t, iohelpers.NormalizeFileMode(0644), info.Mode())
+	assert.Equal(t, iohelpers.NormalizeFileMode(0o644), info.Mode())
 	content, err := os.ReadFile(out)
 	assert.NilError(t, err)
 	assert.Equal(t, "hi\n", string(content))
@@ -272,7 +272,7 @@ func TestBasic_CreatesMissingDirectory(t *testing.T) {
 
 	info, err := os.Stat(out)
 	assert.NilError(t, err)
-	assert.Equal(t, iohelpers.NormalizeFileMode(0640), info.Mode())
+	assert.Equal(t, iohelpers.NormalizeFileMode(0o640), info.Mode())
 	content, err := os.ReadFile(out)
 	assert.NilError(t, err)
 	assert.Equal(t, "hi\n", string(content))

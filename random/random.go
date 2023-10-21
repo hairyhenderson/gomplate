@@ -15,7 +15,7 @@ const defaultSet = "-.0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstu
 // StringRE - Generate a random string that matches a given regular
 // expression. Defaults to "[a-zA-Z0-9_.-]"
 func StringRE(count int, match string) (r string, err error) {
-	var chars = []rune(defaultSet)
+	chars := []rune(defaultSet)
 	if match != "" {
 		chars, err = matchChars(match)
 		if err != nil {

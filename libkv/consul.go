@@ -48,7 +48,6 @@ func NewConsul(u *url.URL) (*LibKV, error) {
 
 	if token != "" {
 		// set CONSUL_HTTP_TOKEN before creating the client
-		// nolint: gosec
 		_ = os.Setenv(consulapi.HTTPTokenEnvName, token)
 	}
 

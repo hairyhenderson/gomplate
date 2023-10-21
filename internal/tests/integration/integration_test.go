@@ -92,12 +92,20 @@ func freeport(t *testing.T) (port int, addr string) {
 
 // waitForURL - waits up to 20s for a given URL to respond with a 200
 func waitForURL(t *testing.T, url string) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+	defer cancel()
+
 	client := http.DefaultClient
 	retries := 100
 	for retries > 0 {
 		retries--
 		time.Sleep(200 * time.Millisecond)
-		resp, err := client.Get(url)
+		req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+		if err != nil {
+			return err
+		}
+
+		resp, err := client.Do(req)
 		if err != nil {
 			t.Logf("Got error, retries left: %d (error: %v)", retries, err)
 			continue

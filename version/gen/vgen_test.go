@@ -24,8 +24,7 @@ func TestVersion(t *testing.T) {
 			l = semver.MustParse(td.latest)
 		}
 
-		ver, err := version(semver.MustParse(td.desc), l)
-		require.NoError(t, err)
+		ver := version(semver.MustParse(td.desc), l)
 		require.Equal(t, td.expected, ver.String())
 	}
 }

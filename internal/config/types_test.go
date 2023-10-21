@@ -76,8 +76,10 @@ func TestParseTemplateArg(t *testing.T) {
 		{in: "templatedir/", alias: "templatedir/", ds: DataSource{URL: mustURL("templatedir/")}},
 		{in: "dir=foo/bar/", alias: "dir", ds: DataSource{URL: mustURL("foo/bar/")}},
 		{in: "mytemplate.t", alias: "mytemplate.t", ds: DataSource{URL: mustURL("mytemplate.t")}},
-		{in: "remote=https://example.com/foo/bar/helloworld.tmpl",
-			alias: "remote", ds: DataSource{URL: mustURL("https://example.com/foo/bar/helloworld.tmpl")}},
+		{
+			in:    "remote=https://example.com/foo/bar/helloworld.tmpl",
+			alias: "remote", ds: DataSource{URL: mustURL("https://example.com/foo/bar/helloworld.tmpl")},
+		},
 	}
 
 	for _, d := range data {

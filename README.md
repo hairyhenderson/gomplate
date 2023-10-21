@@ -96,7 +96,7 @@ _Please report any bugs found in the [issue tracker](https://github.com/hairyhen
 
 [The MIT License](http://opensource.org/licenses/MIT)
 
-Copyright (c) 2016-2022 Dave Henderson
+Copyright (c) 2016-2023 Dave Henderson
 
 [gh-actions-image]: https://github.com/hairyhenderson/gomplate/workflows/Build/badge.svg?branch=main
 [gh-actions-url]: https://github.com/hairyhenderson/gomplate/actions?workflow=Build&branch=main
