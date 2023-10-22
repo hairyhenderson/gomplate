@@ -9,7 +9,6 @@ import (
 	"strings"
 	gotemplate "text/template"
 
-	"github.com/flanksource/gomplate/v3/celext"
 	_ "github.com/flanksource/gomplate/v3/js"
 	"github.com/flanksource/mapstructure"
 	"github.com/google/cel-go/cel"
@@ -34,6 +33,34 @@ type Template struct {
 
 func (t Template) IsEmpty() bool {
 	return t.Template == "" && t.JSONPath == "" && t.Expression == "" && t.Javascript == ""
+}
+
+func RunExpression(environment map[string]any, template Template) (any, error) {
+	env, err := cel.NewEnv(GetCelEnv(environment)...)
+	if err != nil {
+		return "", err
+	}
+	ast, issues := env.Compile(strings.ReplaceAll(template.Expression, "\n", " "))
+	if issues != nil && issues.Err() != nil {
+		return "", issues.Err()
+	}
+
+	prg, err := env.Program(ast, cel.Globals(environment))
+	if err != nil {
+		return "", err
+	}
+
+	data, err := Serialize(environment)
+	if err != nil {
+		return "", err
+	}
+
+	out, _, err := prg.Eval(data)
+	if err != nil {
+		return nil, errors.Wrapf(err, "error evaluating expression %s: %s, %v", template.Expression, err, data)
+	}
+	return out.Value(), nil
+
 }
 
 func RunTemplate(environment map[string]any, template Template) (string, error) {
@@ -65,7 +92,7 @@ func RunTemplate(environment map[string]any, template Template) (string, error) 
 		if err != nil {
 			return "", err
 		}
-		data, err := serialize(environment)
+		data, err := Serialize(environment)
 		if err != nil {
 			return "", err
 		}
@@ -79,31 +106,11 @@ func RunTemplate(environment map[string]any, template Template) (string, error) 
 
 	// cel-go
 	if template.Expression != "" {
-		env, err := cel.NewEnv(celext.GetCelEnv(environment)...)
+		out, err := RunExpression(environment, template)
 		if err != nil {
 			return "", err
 		}
-		ast, issues := env.Compile(template.Expression)
-		if issues != nil && issues.Err() != nil {
-			return "", issues.Err()
-		}
-
-		prg, err := env.Program(ast, cel.Globals(environment))
-		if err != nil {
-			return "", err
-		}
-
-		data, err := serialize(environment)
-		if err != nil {
-			return "", err
-		}
-
-		out, _, err := prg.Eval(data)
-		if err != nil {
-			return "", errors.Wrapf(err, "error evaluating expression %s: %s, %v", template.Expression, err, data)
-		}
-
-		return fmt.Sprintf("%v", out.Value()), nil
+		return fmt.Sprintf("%v", out), nil
 	}
 
 	return "", nil
@@ -122,9 +129,9 @@ func LoadSharedLibrary(source string) error {
 	return nil
 }
 
-// serialize iterates over each key-value pair in the input map
+// Serialize iterates over each key-value pair in the input map
 // serializes any struct value to map[string]any.
-func serialize(in map[string]any) (map[string]any, error) {
+func Serialize(in map[string]any) (map[string]any, error) {
 	if in == nil {
 		return nil, nil
 	}
