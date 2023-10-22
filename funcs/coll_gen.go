@@ -2,11 +2,20 @@
 
 package funcs
 
-import "github.com/google/cel-go/cel"
-import "github.com/google/cel-go/common/types"
-import "github.com/google/cel-go/common/types/ref"
-import "reflect"
-import "sort"
+import (
+	"context"
+	"reflect"
+	"sort"
+
+	"encoding/json"
+
+	"github.com/flanksource/gomplate/v3/coll"
+	"github.com/google/cel-go/cel"
+	"github.com/google/cel-go/common/types"
+	"github.com/google/cel-go/common/types/ref"
+)
+
+var typeMapStringAny = reflect.TypeOf(map[string]interface{}{})
 
 var collSliceGen = cel.Function("Slice",
 	cel.Overload("Slice_interface{}",
@@ -16,11 +25,12 @@ var collSliceGen = cel.Function("Slice",
 		},
 		cel.DynType,
 		cel.FunctionBinding(func(args ...ref.Val) ref.Val {
+			list, err := sliceToNative[interface{}](args[0].(ref.Val))
+			if err != nil {
+				return types.WrapErr(err)
+			}
 
-			var x CollFuncs
-			list := transferSlice[interface{}](args[0].(ref.Val))
-
-			return types.DefaultTypeAdapter.NativeToValue(x.Slice(list...))
+			return types.DefaultTypeAdapter.NativeToValue(coll.Slice(list...))
 
 		}),
 	),
@@ -34,11 +44,7 @@ var collHasGen = cel.Function("Has",
 		},
 		cel.BoolType,
 		cel.FunctionBinding(func(args ...ref.Val) ref.Val {
-
-			var x CollFuncs
-
-			return types.DefaultTypeAdapter.NativeToValue(x.Has(args[0], args[1].Value().(string)))
-
+			return types.DefaultTypeAdapter.NativeToValue(coll.Has(args[0], args[1].Value().(string)))
 		}),
 	),
 )
@@ -51,13 +57,14 @@ var collDictGen = cel.Function("Dict",
 		},
 		cel.DynType,
 		cel.FunctionBinding(func(args ...ref.Val) ref.Val {
-
-			var x CollFuncs
-			list := transferSlice[interface{}](args[0].(ref.Val))
-
-			result, err := x.Dict(list...)
+			list, err := sliceToNative[interface{}](args[0].(ref.Val))
 			if err != nil {
-				return types.NewErr(err.Error())
+				return types.WrapErr(err)
+			}
+
+			result, err := coll.Dict(list...)
+			if err != nil {
+				return types.WrapErr(err)
 			}
 			return types.DefaultTypeAdapter.NativeToValue(result)
 		}),
@@ -72,12 +79,14 @@ var collKeysGen = cel.Function("keys",
 		},
 		cel.ListType(cel.StringType),
 		cel.UnaryBinding(func(arg ref.Val) ref.Val {
-			var x CollFuncs
 			_map, err := convertMap(arg)
 			if err != nil {
-				return types.NewErr(err.Error())
+				return types.WrapErr(err)
 			}
-			result := x.Keys(_map)
+			var result []string
+			for k := range _map {
+				result = append(result, k)
+			}
 			sort.Strings(result)
 			return types.DefaultTypeAdapter.NativeToValue(result)
 		}),
@@ -92,15 +101,16 @@ var collValuesGen = cel.Function("values",
 	},
 	cel.ListType(cel.AnyType),
 		cel.UnaryBinding(func(arg ref.Val) ref.Val {
-
-			var x CollFuncs
-
 			_map, err := convertMap(arg)
 			if err != nil {
-				return types.NewErr(err.Error())
+				return types.WrapErr(err)
 			}
 
-			result := x.Values(_map)
+			var result []any
+
+			for _, v := range _map {
+				result = append(result, v)
+			}
 			return types.DefaultTypeAdapter.NativeToValue(result)
 		}),
 	),
@@ -114,12 +124,9 @@ var collAppendGen = cel.Function("Append",
 		},
 		cel.DynType,
 		cel.FunctionBinding(func(args ...ref.Val) ref.Val {
-
-			var x CollFuncs
-
-			result, err := x.Append(args[0], args[1])
+			result, err := coll.Append(args[0], args[1])
 			if err != nil {
-				return types.NewErr(err.Error())
+				return types.WrapErr(err)
 			}
 			return types.DefaultTypeAdapter.NativeToValue(result)
 		}),
@@ -134,12 +141,9 @@ var collPrependGen = cel.Function("Prepend",
 		},
 		cel.DynType,
 		cel.FunctionBinding(func(args ...ref.Val) ref.Val {
-
-			var x CollFuncs
-
-			result, err := x.Prepend(args[0], args[1])
+			result, err := coll.Prepend(args[0], args[1])
 			if err != nil {
-				return types.NewErr(err.Error())
+				return types.WrapErr(err)
 			}
 			return types.DefaultTypeAdapter.NativeToValue(result)
 
@@ -148,21 +152,18 @@ var collPrependGen = cel.Function("Prepend",
 )
 
 var collUniqGen = cel.Function("uniq",
-	cel.Overload("Uniq_interface{}",
+	cel.MemberOverload("uniq_interface{}",
 
 		[]*cel.Type{
 			cel.ListType(cel.StringType),
 		},
 		cel.ListType(cel.StringType),
-		cel.FunctionBinding(func(args ...ref.Val) ref.Val {
+		cel.UnaryBinding(func(arg ref.Val) ref.Val {
+			list, _ := arg.ConvertToNative(reflect.TypeOf([]string{}))
 
-			var x CollFuncs
-
-			list, _ := args[0].ConvertToNative(reflect.TypeOf([]string{}))
-
-			result, err := x.Uniq(list)
+			result, err := coll.Uniq(list)
 			if err != nil {
-				return types.NewErr(err.Error())
+				return types.WrapErr(err)
 			}
 			return types.DefaultTypeAdapter.NativeToValue(result)
 
@@ -170,20 +171,22 @@ var collUniqGen = cel.Function("uniq",
 	),
 )
 
-var collReverseGen = cel.Function("Reverse",
-	cel.Overload("Reverse_interface{}",
+var collReverseGen = cel.Function("reverse",
+	cel.MemberOverload("Reverse_interface{}",
 
 		[]*cel.Type{
-			cel.DynType,
+			cel.ListType(cel.AnyType),
 		},
-		cel.DynType,
-		cel.FunctionBinding(func(args ...ref.Val) ref.Val {
-
-			var x CollFuncs
-
-			result, err := x.Reverse(args[0])
+		cel.ListType(cel.AnyType),
+		cel.UnaryBinding(func(arg ref.Val) ref.Val {
+			list, err := sliceToNative[any](arg)
 			if err != nil {
-				return types.NewErr(err.Error())
+				return types.WrapErr(err)
+			}
+
+			result, err := coll.Reverse(list)
+			if err != nil {
+				return types.WrapErr(err)
 			}
 			return types.DefaultTypeAdapter.NativeToValue(result)
 
@@ -191,21 +194,29 @@ var collReverseGen = cel.Function("Reverse",
 	),
 )
 
-var collMergeGen = cel.Function("Merge",
-	cel.Overload("Merge_map[string]interface{}_map[string]interface{}",
+var collMergeGen = cel.Function("merge",
+	cel.MemberOverload("merge_map[string]interface{}",
 
 		[]*cel.Type{
-			cel.DynType, cel.DynType,
+			cel.MapType(cel.StringType, cel.DynType),
+			cel.MapType(cel.StringType, cel.DynType),
 		},
-		cel.DynType,
-		cel.FunctionBinding(func(args ...ref.Val) ref.Val {
-
-			var x CollFuncs
-			list := transferSlice[map[string]interface{}](args[1].(ref.Val))
-
-			result, err := x.Merge(args[0].Value().(map[string]interface{}), list...)
+		cel.MapType(cel.StringType, cel.DynType),
+		cel.BinaryBinding(func(into, from ref.Val) ref.Val {
+			_into, err := into.ConvertToNative(typeMapStringAny)
 			if err != nil {
-				return types.NewErr(err.Error())
+				return types.WrapErr(err)
+			}
+
+			_from, err := from.ConvertToNative(typeMapStringAny)
+			if err != nil {
+				return types.WrapErr(err)
+			}
+
+
+			result, err := coll.Merge(_into.(map[string]interface{}), _from.(map[string]interface{}))
+			if err != nil {
+				return types.WrapErr(err)
 			}
 			return types.DefaultTypeAdapter.NativeToValue(result)
 
@@ -213,21 +224,45 @@ var collMergeGen = cel.Function("Merge",
 	),
 )
 
-var collSortGen = cel.Function("Sort",
-	cel.Overload("Sort_interface{}",
+var collSortGen = cel.Function("sort",
+	cel.MemberOverload("sort_string_interface{}",
 
 		[]*cel.Type{
-			cel.DynType,
+			cel.ListType(cel.StringType),
 		},
-		cel.DynType,
-		cel.FunctionBinding(func(args ...ref.Val) ref.Val {
-
-			var x CollFuncs
-			list := transferSlice[interface{}](args[0].(ref.Val))
-
-			result, err := x.Sort(list...)
+		cel.ListType(cel.StringType),
+		cel.UnaryBinding(func(arg ref.Val) ref.Val {
+			list, err := sliceToNative[string](arg)
 			if err != nil {
-				return types.NewErr(err.Error())
+				return types.WrapErr(err)
+			}
+			sort.Strings(list)
+
+			return types.DefaultTypeAdapter.NativeToValue(list)
+
+		}),
+	),
+)
+
+var collSortByGen = cel.Function("sortBy",
+	cel.MemberOverload("sort_interface{}",
+
+		[]*cel.Type{
+			cel.ListType(cel.AnyType),
+			cel.StringType,
+		},
+		cel.ListType(cel.AnyType),
+		cel.BinaryBinding(func(arg ref.Val, key ref.Val) ref.Val {
+			var x CollFuncs
+
+			list, err := sliceToNative[any](arg)
+			if err != nil {
+				return types.WrapErr(err)
+			}
+
+			result, err := x.Sort(list, key.Value().(string))
+			if err != nil {
+				return types.WrapErr(err)
 			}
 			return types.DefaultTypeAdapter.NativeToValue(result)
 
@@ -237,18 +272,29 @@ var collSortGen = cel.Function("Sort",
 
 var collJQGen = cel.Function("jq",
 	cel.Overload("jq_string_interface{}",
-
 		[]*cel.Type{
 			cel.StringType, cel.DynType,
 		},
 		cel.DynType,
-		cel.FunctionBinding(func(args ...ref.Val) ref.Val {
+		cel.BinaryBinding(func(query, object ref.Val) ref.Val {
 
-			var x CollFuncs
+			var input interface{}
+			switch v := object.Value().(type) {
+			case string, []byte:
+				input = v
+			default:
+				data, err := json.Marshal(v)
+				if err != nil {
+					return types.WrapErr(err)
+				}
+				if err  := json.Unmarshal(data, &input); err != nil {
+					return types.WrapErr(err)
+				}
+			}
 
-			result, err := x.JQ(args[0].Value().(string), args[1].Value())
+			result, err := coll.JQ(context.Background(), query.Value().(string),input)
 			if err != nil {
-				return types.NewErr(err.Error())
+				return types.WrapErr(err)
 			}
 			return types.DefaultTypeAdapter.NativeToValue(result)
 
@@ -256,42 +302,25 @@ var collJQGen = cel.Function("jq",
 	),
 )
 
-var collFlattenGen = cel.Function("Flatten",
-	cel.Overload("Flatten_interface{}",
+var collFlattenGen = cel.Function("flatten",
+	cel.MemberOverload("flatten_list{}",
 
 		[]*cel.Type{
-			cel.DynType,
+			cel.ListType(cel.AnyType),
 		},
-		cel.DynType,
-		cel.FunctionBinding(func(args ...ref.Val) ref.Val {
+		cel.ListType(cel.AnyType),
+		cel.UnaryBinding(func(arg ref.Val) ref.Val {
 
 			var x CollFuncs
-			list := transferSlice[interface{}](args[0].(ref.Val))
-
-			result, err := x.Flatten(list...)
-			return types.DefaultTypeAdapter.NativeToValue([]any{
-				result, err,
-			})
-
-		}),
-	),
-)
-
-var collPickGen = cel.Function("Pick",
-	cel.Overload("Pick_interface{}",
-
-		[]*cel.Type{
-			cel.DynType,
-		},
-		cel.DynType,
-		cel.FunctionBinding(func(args ...ref.Val) ref.Val {
-
-			var x CollFuncs
-			list := transferSlice[interface{}](args[0].(ref.Val))
-
-			result, err := x.Pick(list...)
+			list, err := sliceToNative[any](arg)
 			if err != nil {
-				return types.NewErr(err.Error())
+				return types.WrapErr(err)
+			}
+
+			result, err := x.Flatten(list)
+
+			if err != nil {
+				return types.WrapErr(err)
 			}
 			return types.DefaultTypeAdapter.NativeToValue(result)
 
@@ -299,21 +328,50 @@ var collPickGen = cel.Function("Pick",
 	),
 )
 
-var collOmitGen = cel.Function("Omit",
-	cel.Overload("Omit_interface{}",
+var collPickGen = cel.Function("pick",
+	cel.MemberOverload("pick_interface{}",
 		[]*cel.Type{
-			cel.DynType,
+			cel.AnyType,cel.ListType(cel.StringType),
 		},
-		cel.DynType,
+		cel.AnyType,
+		cel.OverloadIsNonStrict(),
 		cel.FunctionBinding(func(args ...ref.Val) ref.Val {
-
-			var x CollFuncs
-			list := transferSlice[interface{}](args[0].(ref.Val))
-
-			result, err := x.Omit(list...)
+			m, err :=  args[0].ConvertToNative(typeMapStringAny)
 			if err != nil {
-				return types.NewErr(err.Error())
+				return types.WrapErr(err)
 			}
+
+			list, err  := sliceToNative[string](args[1:]...)
+			if err != nil {
+				return types.WrapErr(err)
+			}
+			result := coll.Pick(m.(map[string]interface{}), list...)
+
+			return types.DefaultTypeAdapter.NativeToValue(result)
+		}),
+	),
+)
+
+var collOmitGen = cel.Function("omit",
+	cel.MemberOverload("omit_interface{}",
+	[]*cel.Type{
+		cel.MapType(cel.StringType, cel.AnyType),
+		cel.ListType(cel.StringType),
+		},
+		cel.MapType(cel.StringType, cel.AnyType),
+		cel.FunctionBinding(func(args ...ref.Val) ref.Val {
+			m, err :=  args[0].ConvertToNative(typeMapStringAny)
+			if err != nil {
+				return types.WrapErr(err)
+			}
+
+			list, err  := sliceToNative[string](args[1:]...)
+			if err != nil {
+				return types.WrapErr(err)
+			}
+
+			result := coll.Omit(m.(map[string]interface{}), list...)
+
 			return types.DefaultTypeAdapter.NativeToValue(result)
 		}),
 	),

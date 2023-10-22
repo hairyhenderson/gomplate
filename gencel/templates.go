@@ -110,7 +110,7 @@ type funcDefTemplateView struct {
 const funcBodyTemplate = `
 {{define "body"}}
 		var x {{.RecvType}}
-		{{if .VariadicArg}}list := transferSlice[{{.VariadicArg.Type}}](args[{{.VariadicArg.Pos}}].(ref.Val)){{end}}
+		{{if .VariadicArg}}list := sliceToNative[{{.VariadicArg.Type}}](args[{{.VariadicArg.Pos}}].(ref.Val)){{end}}
 		{{if gt (len .ReturnTypes) 1}}
 			{{getReturnIdentifiers .ReturnTypes}} := x.{{.FnName}}({{getArgs .Args}})
 			return types.DefaultTypeAdapter.NativeToValue([]any{
@@ -142,7 +142,7 @@ type exportFuncsTemplateView struct {
 }
 
 const exportAllTemplate = `
-func transferSlice[K any](arg ref.Val) []K {
+func sliceToNative[K any](arg ref.Val) []K {
 	list, ok := arg.Value().([]ref.Val)
 	if !ok {
 		log.Printf("Not a list %T\n", arg.Value())

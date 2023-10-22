@@ -11,7 +11,7 @@ type Address struct {
 
 type Person struct {
 	Name      string         `json:"name"`
-	Age       int            `json:"age"`
+	Age       int            `json:"age,omitempty"`
 	Address   *Address       `json:",omitempty"`
 	MetaData  map[string]any `json:",omitempty"`
 	Codes     []string       `json:",omitempty"`

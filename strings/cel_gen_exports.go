@@ -6,7 +6,7 @@ import "log"
 import "github.com/google/cel-go/common/types/ref"
 import "github.com/google/cel-go/cel"
 
-func transferSlice[K any](arg ref.Val) []K {
+func sliceToNative[K any](arg ref.Val) []K {
 	list, ok := arg.Value().([]ref.Val)
 	if !ok {
 		log.Printf("Not a list %T\n", arg.Value())
@@ -21,8 +21,8 @@ func transferSlice[K any](arg ref.Val) []K {
 	return out
 }
 
-var CelEnvOption = []cel.EnvOption{
-	durationAgeGen,
+var Library = []cel.EnvOption{
+	DurationAgeGen,
 	// durationHumanize,
-	durationDurationGen,
+	DurationDurationGen,
 }

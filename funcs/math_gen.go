@@ -50,7 +50,10 @@ var mathcontainsFloatGen = cel.Function("math.containsFloat",
 		cel.FunctionBinding(func(args ...ref.Val) ref.Val {
 
 			var x MathFuncs
-			list := transferSlice[interface{}](args[0].(ref.Val))
+			list, err := sliceToNative[interface{}](args[0].(ref.Val))
+			if err != nil {
+				return types.WrapErr(err)
+			}
 
 			return types.DefaultTypeAdapter.NativeToValue(x.containsFloat(list...))
 
@@ -102,7 +105,10 @@ var mathAddGen = cel.Function("math.Add",
 		cel.FunctionBinding(func(args ...ref.Val) ref.Val {
 
 			var x MathFuncs
-			list := transferSlice[interface{}](args[0].(ref.Val))
+			list, err := sliceToNative[interface{}](args[0].(ref.Val))
+			if err != nil {
+				return types.WrapErr(err)
+			}
 
 			return types.DefaultTypeAdapter.NativeToValue(x.Add(list...))
 
@@ -120,7 +126,10 @@ var mathMulGen = cel.Function("math.Mul",
 		cel.FunctionBinding(func(args ...ref.Val) ref.Val {
 
 			var x MathFuncs
-			list := transferSlice[interface{}](args[0].(ref.Val))
+			list, err := sliceToNative[interface{}](args[0].(ref.Val))
+			if err != nil {
+				return types.WrapErr(err)
+			}
 
 			return types.DefaultTypeAdapter.NativeToValue(x.Mul(list...))
 
@@ -209,12 +218,17 @@ var mathSeqGen = cel.Function("math.Seq",
 		cel.FunctionBinding(func(args ...ref.Val) ref.Val {
 
 			var x MathFuncs
-			list := transferSlice[interface{}](args[0].(ref.Val))
+			list, err := sliceToNative[interface{}](args[0].(ref.Val))
+			if err != nil {
+				return types.WrapErr(err)
+			}
 
-			a0, a1 := x.Seq(list...)
-			return types.DefaultTypeAdapter.NativeToValue([]any{
-				a0, a1,
-			})
+			result, err := x.Seq(list...)
+
+			if err != nil {
+				return types.WrapErr(err)
+			}
+			return types.DefaultTypeAdapter.NativeToValue(result)
 
 		}),
 	),
@@ -230,12 +244,17 @@ var mathMaxGen = cel.Function("math.Max",
 		cel.FunctionBinding(func(args ...ref.Val) ref.Val {
 
 			var x MathFuncs
-			list := transferSlice[interface{}](args[1].(ref.Val))
+			list, err := sliceToNative[interface{}](args[1].(ref.Val))
+			if err != nil {
+				return types.WrapErr(err)
+			}
 
-			a0, a1 := x.Max(args[0], list...)
-			return types.DefaultTypeAdapter.NativeToValue([]any{
-				a0, a1,
-			})
+			result, err := x.Max(args[0], list...)
+			if err != nil {
+				return types.WrapErr(err)
+			}
+
+			return types.DefaultTypeAdapter.NativeToValue(result	)
 
 		}),
 	),
@@ -251,12 +270,17 @@ var mathMinGen = cel.Function("math.Min",
 		cel.FunctionBinding(func(args ...ref.Val) ref.Val {
 
 			var x MathFuncs
-			list := transferSlice[interface{}](args[1].(ref.Val))
+			list, err := sliceToNative[interface{}](args[1].(ref.Val))
+			if err != nil {
+				return types.WrapErr(err)
+			}
 
-			a0, a1 := x.Min(args[0], list...)
-			return types.DefaultTypeAdapter.NativeToValue([]any{
-				a0, a1,
-			})
+			result, err := x.Min(args[0], list...)
+			if err != nil {
+				return types.WrapErr(err)
+			}
+
+			return types.DefaultTypeAdapter.NativeToValue(result)
 
 		}),
 	),

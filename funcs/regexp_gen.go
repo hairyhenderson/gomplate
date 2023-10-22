@@ -17,10 +17,11 @@ var regexpFindGen = cel.Function("regexp.Find",
 
 			var x ReFuncs
 
-			a0, a1 := x.Find(args[0], args[1])
-			return types.DefaultTypeAdapter.NativeToValue([]any{
-				a0, a1,
-			})
+			result, err := x.Find(args[0].Value(), args[1].Value())
+			if err != nil {
+				return types.WrapErr(err)
+			}
+			return types.DefaultTypeAdapter.NativeToValue(result)
 
 		}),
 	),
@@ -36,12 +37,16 @@ var regexpFindAllGen = cel.Function("regexp.FindAll",
 		cel.FunctionBinding(func(args ...ref.Val) ref.Val {
 
 			var x ReFuncs
-			list := transferSlice[interface{}](args[0].(ref.Val))
+			list, err := sliceToNative[interface{}](args[0].(ref.Val))
+			if err != nil {
+				return types.WrapErr(err)
+			}
 
-			a0, a1 := x.FindAll(list...)
-			return types.DefaultTypeAdapter.NativeToValue([]any{
-				a0, a1,
-			})
+			result, err := x.FindAll(list...)
+			if err != nil {
+				return types.WrapErr(err)
+			}
+			return types.DefaultTypeAdapter.NativeToValue(result)
 
 		}),
 	),
@@ -128,12 +133,16 @@ var regexpSplitGen = cel.Function("regexp.Split",
 		cel.FunctionBinding(func(args ...ref.Val) ref.Val {
 
 			var x ReFuncs
-			list := transferSlice[interface{}](args[0].(ref.Val))
+			list, err := sliceToNative[interface{}](args[0].(ref.Val))
+			if err != nil {
+				return types.WrapErr(err)
+			}
 
-			a0, a1 := x.Split(list...)
-			return types.DefaultTypeAdapter.NativeToValue([]any{
-				a0, a1,
-			})
+			result, err := x.Split(list...)
+			if err != nil {
+				return types.WrapErr(err)
+			}
+			return types.DefaultTypeAdapter.NativeToValue(result)
 
 		}),
 	),

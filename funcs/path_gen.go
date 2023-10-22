@@ -101,7 +101,10 @@ var pathJoinGen = cel.Function("path.Join",
 		cel.FunctionBinding(func(args ...ref.Val) ref.Val {
 
 			var x PathFuncs
-			list := transferSlice[interface{}](args[0].(ref.Val))
+			list, err := sliceToNative[interface{}](args[0].(ref.Val))
+			if err != nil {
+				return types.WrapErr(err)
+			}
 
 			return types.DefaultTypeAdapter.NativeToValue(x.Join(list...))
 

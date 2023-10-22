@@ -19,7 +19,7 @@ var stringsHumanDurationGen = cel.Function("HumanDuration",
 
 			result, err := x.HumanDuration(args[0])
 			if err != nil {
-				return types.NewErr(err.Error())
+				return types.WrapErr(err)
 			}
 			return types.String(result)
 
@@ -28,7 +28,7 @@ var stringsHumanDurationGen = cel.Function("HumanDuration",
 )
 
 var stringsHumanDurationGen2 = cel.Function("humanDuration",
-	cel.Overload("umanDuration_interface{}",
+	cel.Overload("humanDuration_interface{}",
 
 		[]*cel.Type{
 			cel.DynType,
@@ -40,7 +40,7 @@ var stringsHumanDurationGen2 = cel.Function("humanDuration",
 
 			result, err := x.HumanDuration(args[0])
 			if err != nil {
-				return types.NewErr(err.Error())
+				return types.WrapErr(err)
 			}
 			return types.String(result)
 
@@ -62,7 +62,7 @@ var stringsHumanSizeGen = cel.Function("HumanSize",
 
 			result, err := x.HumanSize(args[0])
 			if err != nil {
-				return types.NewErr(err.Error())
+				return types.WrapErr(err)
 			}
 			return types.String(result)
 
@@ -82,7 +82,7 @@ var stringsHumanSizeGen2 = cel.Function("humanSize",
 
 			result, err := x.HumanSize(args[0])
 			if err != nil {
-				return types.NewErr(err.Error())
+				return types.WrapErr(err)
 			}
 			return types.String(result)
 
@@ -103,7 +103,7 @@ var stringsSemverGen = cel.Function("Semver",
 
 			result, err := x.SemverMap(args[0].Value().(string))
 			if err != nil {
-				return types.NewErr(err.Error())
+				return types.WrapErr(err)
 			}
 			return types.DefaultTypeAdapter.NativeToValue(result)
 		}),
@@ -123,7 +123,7 @@ var stringsSemverCompareGen = cel.Function("SemverCompare",
 
 			result, err := x.SemverCompare(args[0].Value().(string), args[1].Value().(string))
 			if err != nil {
-				return types.NewErr(err.Error())
+				return types.WrapErr(err)
 			}
 			return types.Bool(result)
 		}),
@@ -140,11 +140,14 @@ var stringsAbbrevGen = cel.Function("Abbrev",
 		cel.FunctionBinding(func(args ...ref.Val) ref.Val {
 
 			var x StringFuncs
-			list := transferSlice[interface{}](args[0].(ref.Val))
+			list, err := sliceToNative[interface{}](args[0].(ref.Val))
+			if err != nil {
+				return types.WrapErr(err)
+			}
 
 			result, err := x.Abbrev(list...)
 			if err != nil {
-				return types.NewErr(err.Error())
+				return types.WrapErr(err)
 			}
 			return types.String(result)
 
@@ -200,7 +203,7 @@ var stringsRepeatGen = cel.Function("repeat",
 
 			result, err := x.Repeat(args[0].Value().(int), args[1])
 			if err != nil {
-				return types.NewErr(err.Error())
+				return types.WrapErr(err)
 			}
 			return types.String(result)
 
@@ -376,11 +379,14 @@ var stringsIndentGen = cel.Function("indent",
 		cel.FunctionBinding(func(args ...ref.Val) ref.Val {
 
 			var x StringFuncs
-			list := transferSlice[interface{}](args[0].(ref.Val))
+			list, err := sliceToNative[interface{}](args[0].(ref.Val))
+			if err != nil {
+				return types.WrapErr(err)
+			}
 
 			result, err := x.Indent(list...)
 			if err != nil {
-				return types.NewErr(err.Error())
+				return types.WrapErr(err)
 			}
 			return types.String(result)
 
@@ -469,7 +475,7 @@ var stringsSnakeCaseGen = cel.Function("snakeCase",
 
 			result, err := x.SnakeCase(args[0])
 			if err != nil {
-				return types.NewErr(err.Error())
+				return types.WrapErr(err)
 			}
 			return types.String(result)
 
@@ -490,7 +496,7 @@ var stringsCamelCaseGen = cel.Function("camelCase",
 
 			result, err := x.CamelCase(args[0])
 			if err != nil {
-				return types.NewErr(err.Error())
+				return types.WrapErr(err)
 			}
 			return types.String(result)
 
@@ -511,7 +517,7 @@ var stringsKebabCaseGen = cel.Function("kebabCase",
 
 			result, err := x.KebabCase(args[0])
 			if err != nil {
-				return types.NewErr(err.Error())
+				return types.WrapErr(err)
 			}
 			return types.String(result)
 
@@ -529,11 +535,14 @@ var stringsWordWrapGen = cel.Function("WordWrap",
 		cel.FunctionBinding(func(args ...ref.Val) ref.Val {
 
 			var x StringFuncs
-			list := transferSlice[interface{}](args[0].(ref.Val))
+			list, err := sliceToNative[interface{}](args[0].(ref.Val))
+			if err != nil {
+				return types.WrapErr(err)
+			}
 
 			result, err := x.WordWrap(list...)
 			if err != nil {
-				return types.NewErr(err.Error())
+				return types.WrapErr(err)
 			}
 			return types.String(result)
 
@@ -548,14 +557,13 @@ var stringsRuneCountGen = cel.Function("runeCount",
 			cel.StringType,
 		},
 		cel.IntType,
-		cel.FunctionBinding(func(args ...ref.Val) ref.Val {
+		cel.UnaryBinding(func(arg ref.Val) ref.Val {
 
 			var x StringFuncs
-			list := transferSlice[interface{}](args[0].(ref.Val))
 
-			result, err := x.RuneCount(list...)
+			result, err := x.RuneCount(arg.Value().(string))
 			if err != nil {
-				return types.NewErr(err.Error())
+				return types.WrapErr(err)
 			}
 			return types.Int(int64(result))
 

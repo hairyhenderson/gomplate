@@ -354,7 +354,7 @@ func toJSONBytes(in interface{}) ([]byte, error) {
 }
 
 // ToJSON - Stringify a struct as JSON
-func ToJSON(in interface{}) (string, error) {
+func ToJSON2(in interface{}) (string, error) {
 	s, err := toJSONBytes(in)
 	if err != nil {
 		return "", err

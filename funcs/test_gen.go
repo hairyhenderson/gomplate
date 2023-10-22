@@ -16,12 +16,16 @@ var testAssertGen = cel.Function("test.Assert",
 		cel.FunctionBinding(func(args ...ref.Val) ref.Val {
 
 			var x TestFuncs
-			list := transferSlice[interface{}](args[0].(ref.Val))
+			list, err := sliceToNative[interface{}](args[0].(ref.Val))
+			if err != nil {
+				return types.WrapErr(err)
+			}
 
-			a0, a1 := x.Assert(list...)
-			return types.DefaultTypeAdapter.NativeToValue([]any{
-				a0, a1,
-			})
+			result, err := x.Assert(list...)
+			if err != nil {
+				return types.WrapErr(err)
+			}
+			return types.DefaultTypeAdapter.NativeToValue(result)
 
 		}),
 	),
@@ -37,12 +41,16 @@ var testFailGen = cel.Function("test.Fail",
 		cel.FunctionBinding(func(args ...ref.Val) ref.Val {
 
 			var x TestFuncs
-			list := transferSlice[interface{}](args[0].(ref.Val))
+			list, err := sliceToNative[interface{}](args[0].(ref.Val))
+			if err != nil {
+				return types.WrapErr(err)
+			}
 
-			a0, a1 := x.Fail(list...)
-			return types.DefaultTypeAdapter.NativeToValue([]any{
-				a0, a1,
-			})
+			result, err := x.Fail(list...)
+			if err != nil {
+				return types.WrapErr(err)
+			}
+			return types.DefaultTypeAdapter.NativeToValue(result)
 
 		}),
 	),
@@ -58,12 +66,16 @@ var testRequiredGen = cel.Function("test.Required",
 		cel.FunctionBinding(func(args ...ref.Val) ref.Val {
 
 			var x TestFuncs
-			list := transferSlice[interface{}](args[0].(ref.Val))
+			list, err := sliceToNative[interface{}](args[0].(ref.Val))
+			if err != nil {
+				return types.WrapErr(err)
+			}
 
-			a0, a1 := x.Required(list...)
-			return types.DefaultTypeAdapter.NativeToValue([]any{
-				a0, a1,
-			})
+			result, err := x.Required(list...)
+			if err != nil {
+				return types.WrapErr(err)
+			}
+			return types.DefaultTypeAdapter.NativeToValue(result)
 
 		}),
 	),

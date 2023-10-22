@@ -16,7 +16,7 @@ var uuidV1Gen = cel.Function("uuid.V1",
 
 			result, err := x.V1()
 			if err != nil {
-				return types.NewErr(err.Error())
+				return types.WrapErr(err)
 			}
 			return types.String(result)
 		}),
@@ -33,7 +33,7 @@ var uuidV4Gen = cel.Function("uuid.V4",
 
 			result, err := x.V4()
 			if err != nil {
-				return types.NewErr(err.Error())
+				return types.WrapErr(err)
 			}
 			return types.String(result)
 
@@ -51,7 +51,7 @@ var uuidNilGen = cel.Function("uuid.Nil",
 
 			result, err := x.Nil()
 			if err != nil {
-				return types.NewErr(err.Error())
+				return types.WrapErr(err)
 			}
 			return types.String(result)
 
@@ -72,7 +72,7 @@ var uuidIsValidGen = cel.Function("uuid.IsValid",
 
 			result, err := x.IsValid(args[0])
 			if err != nil {
-				return types.NewErr(err.Error())
+				return types.WrapErr(err)
 			}
 			return types.Bool(result)
 		}),
@@ -92,7 +92,7 @@ var uuidParseGen = cel.Function("uuid.Parse",
 
 			result, err := x.Parse(args[0])
 			if err != nil {
-				return types.NewErr(err.Error())
+				return types.WrapErr(err)
 			}
 			return types.DefaultTypeAdapter.NativeToValue(result)
 

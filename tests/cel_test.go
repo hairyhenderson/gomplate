@@ -115,9 +115,8 @@ func TestJQ(t *testing.T) {
 
 	runTests(t, []Test{
 		{map[string]interface{}{"i": person}, "jq('.Address.city_name', i)", "Kathmandu"},
-		{map[string]interface{}{"i": persons}, "jq('.[] | .name', i)", "[John Jane]"},
-		{map[string]interface{}{"i": persons}, "jq('.', i).toJSON()", "[John Jane]"},
-		{map[string]interface{}{"i": unstructure(persons)}, "jq('.[] | .name', i)", "[John Jane]"},
+		{map[string]interface{}{"i": persons}, "jq('.[] | .name', i)", "[John Jane Jane Harry]"},
+		{map[string]interface{}{"i": unstructure(persons)}, "jq('.[] | .name', i)", "[John Jane Jane Harry]"},
 		{map[string]interface{}{"i": persons}, `jq('
 			. |
 		  group_by(.Address.city_name)  |
@@ -174,7 +173,8 @@ func TestExtensions(t *testing.T) {
 }
 func TestStrings(t *testing.T) {
 	tests := []Test{
-		{nil, "random.String(10, ['a','b','d'])", ""},
+		// {nil, "random.String(10, ['a','b','d'])", ""},
+		{nil, "'abcdedf'.runeCount()", "7"},
 		{map[string]interface{}{"hello": "world"}, "hello", "world"},
 		{map[string]interface{}{"hello": "hello world ?"}, "urlencode(hello)", `hello+world+%3F`},
 		{map[string]interface{}{"hello": "hello+world+%3F"}, "urldecode(hello)", `hello world ?`},

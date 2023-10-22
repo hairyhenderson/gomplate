@@ -17,10 +17,11 @@ var randomASCIIGen = cel.Function("random.ASCII",
 
 			var x RandomFuncs
 
-			a0, a1 := x.ASCII(args[0])
-			return types.DefaultTypeAdapter.NativeToValue([]any{
-				a0, a1,
-			})
+			result, err := x.ASCII(args[0])
+			if err != nil {
+				return types.WrapErr(err)
+			}
+			return types.DefaultTypeAdapter.NativeToValue(result)
 
 		}),
 	),
@@ -37,10 +38,11 @@ var randomAlphaGen = cel.Function("random.Alpha",
 
 			var x RandomFuncs
 
-			a0, a1 := x.Alpha(args[0])
-			return types.DefaultTypeAdapter.NativeToValue([]any{
-				a0, a1,
-			})
+			result, err := x.Alpha(args[0])
+			if err != nil {
+				return types.WrapErr(err)
+			}
+			return types.DefaultTypeAdapter.NativeToValue(result)
 
 		}),
 	),
@@ -57,10 +59,11 @@ var randomAlphaNumGen = cel.Function("random.AlphaNum",
 
 			var x RandomFuncs
 
-			a0, a1 := x.AlphaNum(args[0])
-			return types.DefaultTypeAdapter.NativeToValue([]any{
-				a0, a1,
-			})
+			result, err := x.AlphaNum(args[0])
+			if err != nil {
+				return types.WrapErr(err)
+			}
+			return types.DefaultTypeAdapter.NativeToValue(result)
 
 		}),
 	),
@@ -76,12 +79,16 @@ var randomStringGen = cel.Function("random.String",
 		cel.FunctionBinding(func(args ...ref.Val) ref.Val {
 
 			var x RandomFuncs
-			list := transferSlice[interface{}](args[1].(ref.Val))
+			list, err := sliceToNative[interface{}](args[1].(ref.Val))
+			if err != nil {
+				return types.WrapErr(err)
+			}
 
-			a0, a1 := x.String(args[0], list...)
-			return types.DefaultTypeAdapter.NativeToValue([]any{
-				a0, a1,
-			})
+			result, err := x.String(args[0], list...)
+			if err != nil {
+				return types.WrapErr(err)
+			}
+			return types.String(result)
 
 		}),
 	),
@@ -98,10 +105,12 @@ var randomItemGen = cel.Function("random.Item",
 
 			var x RandomFuncs
 
-			a0, a1 := x.Item(args[0])
-			return types.DefaultTypeAdapter.NativeToValue([]any{
-				a0, a1,
-			})
+			result, err := x.Item(args[0])
+			if err != nil {
+				return types.WrapErr(err)
+			}
+
+			return types.DefaultTypeAdapter.NativeToValue(result)
 
 		}),
 	),
@@ -117,12 +126,18 @@ var randomNumberGen = cel.Function("random.Number",
 		cel.FunctionBinding(func(args ...ref.Val) ref.Val {
 
 			var x RandomFuncs
-			list := transferSlice[interface{}](args[0].(ref.Val))
+			list, err := sliceToNative[interface{}](args[0].(ref.Val))
 
-			a0, a1 := x.Number(list...)
-			return types.DefaultTypeAdapter.NativeToValue([]any{
-				a0, a1,
-			})
+			if err != nil {
+				return types.WrapErr(err)
+			}
+
+			result, err := x.Number(list...)
+			if err != nil {
+				return types.WrapErr(err)
+			}
+
+			return types.DefaultTypeAdapter.NativeToValue(result)
 
 		}),
 	),
@@ -138,12 +153,17 @@ var randomFloatGen = cel.Function("random.Float",
 		cel.FunctionBinding(func(args ...ref.Val) ref.Val {
 
 			var x RandomFuncs
-			list := transferSlice[interface{}](args[0].(ref.Val))
+			list, err := sliceToNative[interface{}](args[0].(ref.Val))
+			if err != nil {
+				return types.WrapErr(err)
+			}
 
-			a0, a1 := x.Float(list...)
-			return types.DefaultTypeAdapter.NativeToValue([]any{
-				a0, a1,
-			})
+			result, err := x.Float(list...)
+			if err != nil {
+				return types.WrapErr(err)
+			}
+
+			return types.DefaultTypeAdapter.NativeToValue(result)
 
 		}),
 	),

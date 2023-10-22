@@ -24,6 +24,6 @@ func InterfaceSlice(slice interface{}) ([]interface{}, error) {
 		}
 		return ret, nil
 	default:
-		return nil, errors.Errorf("expected an array or slice, but got a %T", s)
+		return nil, errors.Errorf("expected an array or slice, but got a type=%T kind=%v = %v", slice, kind, s)
 	}
 }

@@ -188,11 +188,11 @@ func TestToJSON(t *testing.T) {
 			},
 		},
 	}
-	out, err := ToJSON(in)
+	out, err := ToJSON2(in)
 	assert.NoError(t, err)
 	assert.Equal(t, expected, out)
 
-	_, err = ToJSON(&badObject{})
+	_, err = ToJSON2(&badObject{})
 	assert.Error(t, err)
 }
 

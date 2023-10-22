@@ -16,7 +16,7 @@ import (
 // 	),
 // )
 
-var durationAgeGen = cel.Function("Age",
+var DurationAgeGen = cel.Function("Age",
 	cel.Overload("duration.Age",
 		[]*cel.Type{cel.StringType},
 		cel.DurationType,
@@ -27,7 +27,7 @@ var durationAgeGen = cel.Function("Age",
 	),
 )
 
-var durationDurationGen = cel.Function("Duration",
+var DurationDurationGen = cel.Function("Duration",
 	cel.Overload("duration.Duration",
 		[]*cel.Type{cel.StringType},
 		cel.DurationType,

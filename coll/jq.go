@@ -44,18 +44,36 @@ func JQ(ctx context.Context, jqExpr string, in interface{}) (interface{}, error)
 	return out, nil
 }
 
-// jqConvertType converts the input to a map[string]interface{}, []interface{},
-// or other supported primitive JSON types.
-func jqConvertType(in interface{}) (interface{}, error) {
-	// if it's already a supported type, pass it through
+func isSupportableType(in interface{}) bool {
 	switch in.(type) {
-	case map[string]interface{}, []interface{},
+	case map[string]interface{},
 		string, []byte,
 		nil, bool,
 		int, int8, int16, int32, int64,
 		uint, uint8, uint16, uint32, uint64,
 		float32, float64:
+
+		return true
+	}
+	return false
+}
+
+// jqConvertType converts the input to a map[string]interface{}, []interface{},
+// or other supported primitive JSON types.
+func jqConvertType(in interface{}) (interface{}, error) {
+	// if it's already a supported type, pass it through
+	if isSupportableType(in) {
 		return in, nil
+	} else if v, ok := in.([]interface{}); ok {
+		supported := true
+		for _, v := range v {
+			if !isSupportableType(v) {
+				supported = false
+			}
+		}
+		if supported {
+			return in, nil
+		}
 	}
 
 	inType := reflect.TypeOf(in)

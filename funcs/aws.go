@@ -40,7 +40,7 @@ var fromAwsMap = cel.Function("fromAWSMap",
 		cel.UnaryBinding(func(arg ref.Val) ref.Val {
 			list, err := arg.ConvertToNative(reflect.TypeOf([]map[string]string{}))
 			if err != nil {
-				return types.NewErr(err.Error())
+				return types.WrapErr(err)
 			}
 
 			var out = make(map[string]string)

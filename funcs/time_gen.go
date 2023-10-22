@@ -48,7 +48,7 @@ var timeParseGen = cel.Function("time.Parse",
 
 			result, err := x.Parse(args[0].Value().(string), args[1])
 			if err != nil {
-				return types.NewErr(err.Error())
+				return types.WrapErr(err)
 			}
 			return types.DefaultTypeAdapter.NativeToValue(result)
 
@@ -69,7 +69,7 @@ var timeParseLocalGen = cel.Function("time.ParseLocal",
 
 			result, err := x.ParseLocal(args[0].Value().(string), args[1])
 			if err != nil {
-				return types.NewErr(err.Error())
+				return types.WrapErr(err)
 			}
 			return types.DefaultTypeAdapter.NativeToValue(result)
 
@@ -91,7 +91,7 @@ var timeParseInLocationGen = cel.Function("time.ParseInLocation",
 
 			result, err := x.ParseInLocation(args[0].Value().(string), args[1].Value().(string), args[2])
 			if err != nil {
-				return types.NewErr(err.Error())
+				return types.WrapErr(err)
 			}
 			return types.DefaultTypeAdapter.NativeToValue(result)
 		}),
@@ -248,7 +248,7 @@ var timeParseDurationGen2= cel.Function("duration",
 
 			result, err := x.ParseDuration(args[0])
 			if err != nil {
-				return types.NewErr(err.Error())
+				return types.WrapErr(err)
 			}
 			return types.DefaultTypeAdapter.NativeToValue(result)
 
@@ -268,7 +268,7 @@ var timeParseDurationGen = cel.Function("time.ParseDuration",
 
 			result, err := x.ParseDuration(args[0])
 			if err != nil {
-				return types.NewErr(err.Error())
+				return types.WrapErr(err)
 			}
 			return types.DefaultTypeAdapter.NativeToValue(result)
 

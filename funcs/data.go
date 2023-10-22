@@ -89,7 +89,7 @@ func (f *DataFuncs) ToCSV(args ...interface{}) (string, error) {
 
 // ToJSON -
 func (f *DataFuncs) ToJSON(in interface{}) (string, error) {
-	return data.ToJSON(in)
+	return data.ToJSON2(in)
 }
 
 // ToJSONPretty -
