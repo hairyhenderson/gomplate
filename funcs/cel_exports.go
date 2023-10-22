@@ -3,50 +3,18 @@
 package funcs
 
 import (
-	"fmt"
-	"log"
 
-	"github.com/flanksource/gomplate/v3/kubernetes"
+	"github.com/flanksource/gomplate/v3/data"
 	"github.com/google/cel-go/cel"
-	"github.com/google/cel-go/common/types/ref"
+
 )
 
-func convertMap(arg ref.Val) (map[string]any, error) {
-	switch m := arg.Value().(type) {
-	case  map[ref.Val]ref.Val:
-		var out = make(map[string]any)
-		for key, val := range m {
-			out[key.Value().(string)] = val.Value()
-		}
-		return out, nil
-	case  map[string]any:
-		return m, nil
-	default:
-		return nil, 	fmt.Errorf("Not a map %T\n", arg.Value())
-	}
-}
-
-func transferSlice[K any](arg ref.Val) []K {
-	list, ok := arg.Value().([]ref.Val)
-	if !ok {
-		log.Printf("Not a list %T\n", arg.Value())
-		return nil
-	}
-
-	var out = make([]K, len(list))
-	for i, val := range list {
-		out[i] = val.Value().(K)
-	}
-
-	return out
-}
-
 var CelEnvOption = []cel.EnvOption{
+
+	data.ParseJSON(),
+	data.ToJSON(),
 	fromAwsMap,
 	arnToMap,
-	kubernetes.Lists(),
-	kubernetes.URLs(),
-	kubernetes.Regex(),
 	base64EncodeGen,
 	base64DecodeGen,
 	base64DecodeBytesGen,
@@ -58,19 +26,19 @@ var CelEnvOption = []cel.EnvOption{
 	collAppendGen,
 	collPrependGen,
 	collUniqGen,
-	collReverseGen,
+	// collReverseGen,
 	collSortGen,
 	collJQGen,
 	collFlattenGen,
 	collPickGen,
 	collOmitGen,
+	collMergeGen,
+
 	convSliceGen,
-	convJoinGen,
 	convHasGen,
 	convURLGen,
 	convToStringsGen,
 	convDefaultGen,
-	convDictGen,
 	cryptoSHA1Gen,
 	cryptoSHA224Gen,
 	cryptoSHA256Gen,
@@ -100,6 +68,13 @@ var CelEnvOption = []cel.EnvOption{
 	dataToTOMLGen,
 	urlEncodeGen,
 	urlDecodeGen,
+	regexpFindGen,
+	regexpFindAllGen,
+	regexpMatchGen,
+	regexpQuoteMetaGen,
+	regexpReplaceGen,
+	regexpReplaceLiteralGen,
+	regexpSplitGen,
 	filepathBaseGen,
 	filepathCleanGen,
 	filepathDirGen,
@@ -112,9 +87,6 @@ var CelEnvOption = []cel.EnvOption{
 	filepathSplitGen,
 	filepathToSlashGen,
 	filepathVolumeNameGen,
-	k8sIsHealthyGen,
-	k8sGetStatusGen,
-	k8sGetHealthGen,
 	mathIsIntGen,
 	mathIsFloatGen,
 	mathcontainsFloatGen,
@@ -147,13 +119,6 @@ var CelEnvOption = []cel.EnvOption{
 	randomItemGen,
 	randomNumberGen,
 	randomFloatGen,
-	regexpFindGen,
-	regexpFindAllGen,
-	regexpMatchGen,
-	regexpQuoteMetaGen,
-	regexpReplaceGen,
-	regexpReplaceLiteralGen,
-	regexpSplitGen,
 	stringsHumanDurationGen,
 	stringsHumanSizeGen,
 	stringsHumanDurationGen2,

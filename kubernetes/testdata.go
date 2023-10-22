@@ -1,4 +1,4 @@
-package k8s
+package kubernetes
 
 var TestHealthy = `
 apiVersion: v1

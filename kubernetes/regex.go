@@ -59,6 +59,15 @@ var regexLibraryDecls = map[string][]cel.FunctionOpt{
 	"find": {
 		cel.MemberOverload("string_find_string", []*cel.Type{cel.StringType, cel.StringType}, cel.StringType,
 			cel.BinaryBinding(find))},
+	"replaceAllRegex": {
+		cel.MemberOverload("string_replaceAllRegex_string", []*cel.Type{cel.StringType, cel.StringType, cel.StringType}, cel.StringType,
+			cel.FunctionBinding(replaceAll))},
+	"splitRegex": {
+		cel.MemberOverload("string_splitRegex_string", []*cel.Type{cel.StringType, cel.StringType}, cel.ListType(cel.StringType),
+			cel.BinaryBinding(splitRegex))},
+	"match": {
+		cel.MemberOverload("string_match_string", []*cel.Type{cel.StringType, cel.StringType}, cel.BoolType,
+			cel.BinaryBinding(find))},
 	"findAll": {
 		cel.MemberOverload("string_find_all_string", []*cel.Type{cel.StringType, cel.StringType},
 			cel.ListType(cel.StringType),
@@ -82,22 +91,59 @@ func (*regex) CompileOptions() []cel.EnvOption {
 
 func (*regex) ProgramOptions() []cel.ProgramOption {
 	return []cel.ProgramOption{
-		cel.OptimizeRegex(FindRegexOptimization, FindAllRegexOptimization),
+		cel.OptimizeRegex(FindRegexOptimization, FindAllRegexOptimization, MatchRegexOptimization, ReplaceAllRegexOptimization),
 	}
 }
 
-func find(strVal ref.Val, regexVal ref.Val) ref.Val {
+func match(strVal ref.Val, regexVal ref.Val) ref.Val {
+	str, re, err := compile(strVal, regexVal)
+	if err != nil {
+		return err
+	}
+	return types.Bool(re.Match([]byte(str)))
+}
+
+func compile(strVal ref.Val, regexVal ref.Val) (string, *regexp.Regexp, ref.Val) {
+	var err error
 	str, ok := strVal.Value().(string)
 	if !ok {
-		return types.MaybeNoSuchOverloadErr(strVal)
+		return "", nil, types.MaybeNoSuchOverloadErr(strVal)
 	}
 	regex, ok := regexVal.Value().(string)
 	if !ok {
-		return types.MaybeNoSuchOverloadErr(regexVal)
+		return "", nil, types.MaybeNoSuchOverloadErr(regexVal)
 	}
 	re, err := regexp.Compile(regex)
 	if err != nil {
-		return types.NewErr("Illegal regex: %v", err.Error())
+		return "", nil, types.NewErr("Illegal regex: %v", err.Error())
+	}
+	return str, re, nil
+}
+
+func splitRegex(strVal ref.Val, regexVal ref.Val) ref.Val {
+	str, re, err := compile(strVal, regexVal)
+	if err != nil {
+		return err
+	}
+	return types.DefaultTypeAdapter.NativeToValue(re.Split(str, 0))
+}
+
+func replaceAll(args ...ref.Val) ref.Val {
+	strVal := args[0]
+	regexVal := args[1]
+	with := args[2]
+	str, re, err := compile(strVal, regexVal)
+	if err != nil {
+		return err
+	}
+	result := re.ReplaceAllString(str, with.Value().(string))
+	return types.String(result)
+}
+
+func find(strVal ref.Val, regexVal ref.Val) ref.Val {
+	str, re, err := compile(strVal, regexVal)
+	if err != nil {
+		return err
 	}
 	result := re.FindString(str)
 	return types.String(result)
@@ -154,6 +200,52 @@ var FindRegexOptimization = &interpreter.RegexOptimization{
 				return types.MaybeNoSuchOverloadErr(args[0])
 			}
 			return types.String(compiledRegex.FindString(in))
+		}), nil
+	},
+}
+
+var MatchRegexOptimization = &interpreter.RegexOptimization{
+	Function:   "match",
+	RegexIndex: 1,
+	Factory: func(call interpreter.InterpretableCall, regexPattern string) (interpreter.InterpretableCall, error) {
+		compiledRegex, err := regexp.Compile(regexPattern)
+		if err != nil {
+			return nil, err
+		}
+		return interpreter.NewCall(call.ID(), call.Function(), call.OverloadID(), call.Args(), func(args ...ref.Val) ref.Val {
+			if len(args) != 2 {
+				return types.NoSuchOverloadErr()
+			}
+			in, ok := args[0].Value().(string)
+			if !ok {
+				return types.MaybeNoSuchOverloadErr(args[0])
+			}
+			return types.Bool(compiledRegex.Match([]byte(in)))
+		}), nil
+	},
+}
+
+var ReplaceAllRegexOptimization = &interpreter.RegexOptimization{
+	Function:   "replaceAll",
+	RegexIndex: 1,
+	Factory: func(call interpreter.InterpretableCall, regexPattern string) (interpreter.InterpretableCall, error) {
+		compiledRegex, err := regexp.Compile(regexPattern)
+		if err != nil {
+			return nil, err
+		}
+		return interpreter.NewCall(call.ID(), call.Function(), call.OverloadID(), call.Args(), func(args ...ref.Val) ref.Val {
+			if len(args) != 3 {
+				return types.NoSuchOverloadErr()
+			}
+			in, ok := args[0].Value().(string)
+			if !ok {
+				return types.MaybeNoSuchOverloadErr(args[0])
+			}
+			with, ok := args[2].Value().(string)
+			if !ok {
+				return types.MaybeNoSuchOverloadErr(args[2])
+			}
+			return types.String(compiledRegex.ReplaceAllString(in, with))
 		}), nil
 	},
 }

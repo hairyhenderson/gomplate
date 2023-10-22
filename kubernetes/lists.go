@@ -161,6 +161,11 @@ var listsLibraryDecls = map[string][]cel.FunctionOpt{
 		cel.MemberOverload("list_a_index_of_int", []*cel.Type{cel.ListType(paramA), paramA}, cel.IntType,
 			cel.BinaryBinding(indexOf)),
 	},
+
+	"contains": {
+		cel.MemberOverload("list_a_contains_bool", []*cel.Type{cel.ListType(paramA), paramA}, cel.BoolType,
+			cel.BinaryBinding(contains)),
+	},
 	"lastIndexOf": {
 		cel.MemberOverload("list_a_last_index_of_int", []*cel.Type{cel.ListType(paramA), paramA}, cel.IntType,
 			cel.BinaryBinding(lastIndexOf)),
@@ -288,6 +293,21 @@ func indexOf(list ref.Val, item ref.Val) ref.Val {
 		}
 	}
 	return types.Int(-1)
+}
+
+//nolint:unconvert
+func contains(list ref.Val, item ref.Val) ref.Val {
+	lister, ok := list.(traits.Lister)
+	if !ok {
+		return types.MaybeNoSuchOverloadErr(list)
+	}
+	sz := lister.Size().(types.Int)
+	for i := types.Int(0); i < sz; i++ {
+		if lister.Get(types.Int(i)).Equal(item) == types.True {
+			return types.Bool(true)
+		}
+	}
+	return types.Bool(false)
 }
 
 //nolint:unconvert

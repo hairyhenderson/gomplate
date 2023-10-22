@@ -4,7 +4,7 @@ import (
 	"context"
 	"encoding/json"
 
-	"github.com/flanksource/gomplate/v3/k8s"
+	"github.com/flanksource/gomplate/v3/kubernetes"
 )
 
 type KubernetesFuncs struct {
@@ -22,19 +22,19 @@ func CreateKubernetesFuncs(ctx context.Context) map[string]interface{} {
 }
 
 func (ns KubernetesFuncs) IsHealthy(in interface{}) bool {
-	return k8s.IsHealthy(in)
+	return kubernetes.IsHealthy(in)
 }
 
 func (ns KubernetesFuncs) GetStatus(in interface{}) string {
-	return k8s.GetStatus(in)
+	return kubernetes.GetStatus(in)
 }
 
-func (ns KubernetesFuncs) GetHealth(in interface{}) k8s.HealthStatus {
-	return k8s.GetHealth(in)
+func (ns KubernetesFuncs) GetHealth(in interface{}) kubernetes.HealthStatus {
+	return kubernetes.GetHealth(in)
 }
 
 func (ns KubernetesFuncs) GetHealthMap(in interface{}) map[string]string {
-	v := k8s.GetHealth(in)
+	v := kubernetes.GetHealth(in)
 	b, _ := json.Marshal(v)
 	var r map[string]string
 	_ = json.Unmarshal(b, &r)
