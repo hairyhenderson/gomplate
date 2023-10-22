@@ -17,7 +17,7 @@ func convertMap(arg ref.Val) (map[string]any, error) {
 	case map[string]any:
 		return m, nil
 	default:
-		return nil, fmt.Errorf("Not a map %T\n", arg.Value())
+		return nil, fmt.Errorf("not a map %T", arg.Value())
 	}
 }
 

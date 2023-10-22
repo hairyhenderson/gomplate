@@ -173,7 +173,7 @@ func TestExtensions(t *testing.T) {
 }
 func TestStrings(t *testing.T) {
 	tests := []Test{
-		// {nil, "random.String(10, ['a','b','d'])", ""},
+		{nil, `random.AlphaNum(10).size()`, "10"},
 		{nil, "'abcdedf'.runeCount()", "7"},
 		{map[string]interface{}{"hello": "world"}, "hello", "world"},
 		{map[string]interface{}{"hello": "hello world ?"}, "urlencode(hello)", `hello+world+%3F`},

@@ -165,33 +165,3 @@ func k8sIsHealthy2() cel.EnvOption {
 		),
 	)
 }
-
-var k8sGetStatusGen = cel.Function("GetStatus",
-	cel.Overload("GetStatus_interface{}",
-		[]*cel.Type{
-			cel.DynType,
-		},
-		cel.StringType,
-		cel.FunctionBinding(func(args ...ref.Val) ref.Val {
-			return types.DefaultTypeAdapter.NativeToValue(GetStatus(args[0].Value()))
-
-		}),
-	),
-)
-
-var k8sGetHealthGen = cel.Function("GetHealth",
-	cel.Overload("GetHealth_interface{}",
-
-		[]*cel.Type{
-			cel.DynType,
-		},
-		cel.DynType,
-		cel.UnaryBinding(func(in ref.Val) ref.Val {
-			v := GetHealth(in.Value())
-			b, _ := json.Marshal(v)
-			var r map[string]string
-			_ = json.Unmarshal(b, &r)
-			return types.DefaultTypeAdapter.NativeToValue(r)
-		}),
-	),
-)

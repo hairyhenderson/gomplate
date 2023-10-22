@@ -20,6 +20,14 @@ import (
 	"github.com/google/cel-go/common/types"
 )
 
+type InvalidDuration struct {
+	Duration string
+}
+
+func (m InvalidDuration) Error() string {
+	return "time: invalid duration " + m.Duration
+}
+
 // Duration is a standard unit of time.
 type Duration time.Duration
 
@@ -316,7 +324,7 @@ func parseDuration(s string) (Duration, error) {
 		return 0, nil
 	}
 	if s == "" {
-		return 0, errors.New("time: invalid duration " + orig)
+		return 0, InvalidDuration{Duration: orig}
 	}
 	for s != "" {
 		var (
@@ -328,13 +336,13 @@ func parseDuration(s string) (Duration, error) {
 
 		// The next character must be [0-9.]
 		if !(s[0] == '.' || '0' <= s[0] && s[0] <= '9') {
-			return 0, errors.New("time: invalid duration " + orig)
+			return 0, InvalidDuration{Duration: orig}
 		}
 		// Consume [0-9]*
 		pl := len(s)
 		v, s, err = leadingInt(s)
 		if err != nil {
-			return 0, errors.New("time: invalid duration " + orig)
+			return 0, InvalidDuration{Duration: orig}
 		}
 		pre := pl != len(s) // whether we consumed anything before a period
 		// Consume (\.[0-9]*)?
@@ -344,7 +352,7 @@ func parseDuration(s string) (Duration, error) {
 			pl := len(s)
 			f, s, err = leadingInt(s)
 			if err != nil {
-				return 0, errors.New("time: invalid duration " + orig)
+				return 0, InvalidDuration{Duration: orig}
 			}
 			for n := pl - len(s); n > 0; n-- {
 				scale *= 10
@@ -353,7 +361,7 @@ func parseDuration(s string) (Duration, error) {
 		}
 		if !pre && !post {
 			// no digits (e.g. ".s" or "-.s")
-			return 0, errors.New("time: invalid duration " + orig)
+			return 0, InvalidDuration{Duration: orig}
 		}
 
 		// Consume unit.
@@ -375,7 +383,7 @@ func parseDuration(s string) (Duration, error) {
 		}
 		if v > (1<<63-1)/unit {
 			// overflow
-			return 0, errors.New("time: invalid duration " + orig)
+			return 0, InvalidDuration{Duration: orig}
 		}
 		v *= unit
 		if f > 0 {
@@ -384,13 +392,13 @@ func parseDuration(s string) (Duration, error) {
 			v += int64(float64(f) * (float64(unit) / scale))
 			if v < 0 {
 				// overflow
-				return 0, errors.New("time: invalid duration " + orig)
+				return 0, InvalidDuration{Duration: orig}
 			}
 		}
 		d += v
 		if d < 0 {
 			// overflow
-			return 0, errors.New("time: invalid duration " + orig)
+			return 0, InvalidDuration{Duration: orig}
 		}
 	}
 
