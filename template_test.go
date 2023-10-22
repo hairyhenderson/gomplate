@@ -155,6 +155,11 @@ func TestCel(t *testing.T) {
 		out        string
 	}{
 
+		{nil, "arnToMap('arn:aws:sns:eu-west-1:123:MMS-Topic').account", "123"},
+		{map[string]interface{}{"x": []map[string]string{
+			{"Name": "hello", "Value": "world"},
+			{"Name": "John", "Value": "Doe"},
+		}}, "fromAWSMap(x).hello", "world"},
 		{nil, "uuid.IsValid(uuid.V1())", "true"},
 		{nil, "uuid.IsValid(uuid.V4())", "true"},
 		{nil, "[1,2, 3].min()", "1"},

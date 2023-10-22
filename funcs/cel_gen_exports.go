@@ -42,6 +42,8 @@ func transferSlice[K any](arg ref.Val) []K {
 }
 
 var CelEnvOption = []cel.EnvOption{
+	fromAwsMap,
+	arnToMap,
 	kubernetes.Lists(),
 	kubernetes.URLs(),
 	kubernetes.Regex(),
