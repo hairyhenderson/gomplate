@@ -8,6 +8,7 @@ const (
 	tomlMimetype      = "application/toml"
 	yamlMimetype      = "application/yaml"
 	envMimetype       = "application/x-env"
+	cueMimetype       = "application/cue"
 )
 
 // mimeTypeAliases defines a mapping for non-canonical mime types that are

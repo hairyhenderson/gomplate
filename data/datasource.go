@@ -32,6 +32,7 @@ func init() {
 	regExtension(".csv", csvMimetype)
 	regExtension(".toml", tomlMimetype)
 	regExtension(".env", envMimetype)
+	regExtension(".cue", cueMimetype)
 }
 
 // registerReaders registers the source-reader functions
@@ -348,6 +349,8 @@ func parseData(mimeType, s string) (out interface{}, err error) {
 		out, err = dotEnv(s)
 	case textMimetype:
 		out = s
+	case cueMimetype:
+		out, err = CUE(s)
 	default:
 		return nil, fmt.Errorf("datasources of type %s not yet supported", mimeType)
 	}

@@ -12,6 +12,9 @@ import (
 	"io"
 	"strings"
 
+	"cuelang.org/go/cue"
+	"cuelang.org/go/cue/cuecontext"
+	"cuelang.org/go/cue/format"
 	"github.com/Shopify/ejson"
 	ejsonJson "github.com/Shopify/ejson/json"
 	"github.com/hairyhenderson/gomplate/v4/conv"
@@ -441,4 +444,64 @@ func ToTOML(in interface{}) (string, error) {
 		return "", fmt.Errorf("unable to marshal %s: %w", in, err)
 	}
 	return buf.String(), nil
+}
+
+// CUE - Unmarshal a CUE expression into the appropriate type
+func CUE(in string) (interface{}, error) {
+	cuectx := cuecontext.New()
+	val := cuectx.CompileString(in)
+
+	if val.Err() != nil {
+		return nil, fmt.Errorf("unable to process CUE: %w", val.Err())
+	}
+
+	switch val.Kind() {
+	case cue.StructKind:
+		out := map[string]interface{}{}
+		err := val.Decode(&out)
+		return out, err
+	case cue.ListKind:
+		out := []interface{}{}
+		err := val.Decode(&out)
+		return out, err
+	case cue.BytesKind:
+		out := []byte{}
+		err := val.Decode(&out)
+		return out, err
+	case cue.StringKind:
+		out := ""
+		err := val.Decode(&out)
+		return out, err
+	case cue.IntKind:
+		out := 0
+		err := val.Decode(&out)
+		return out, err
+	case cue.NumberKind, cue.FloatKind:
+		out := 0.0
+		err := val.Decode(&out)
+		return out, err
+	case cue.BoolKind:
+		out := false
+		err := val.Decode(&out)
+		return out, err
+	case cue.NullKind:
+		return nil, nil
+	default:
+		return nil, fmt.Errorf("unsupported CUE type %q", val.Kind())
+	}
+}
+
+func ToCUE(in interface{}) (string, error) {
+	cuectx := cuecontext.New()
+	v := cuectx.Encode(in)
+	if v.Err() != nil {
+		return "", v.Err()
+	}
+
+	bs, err := format.Node(v.Syntax())
+	if err != nil {
+		return "", err
+	}
+
+	return string(bs), nil
 }

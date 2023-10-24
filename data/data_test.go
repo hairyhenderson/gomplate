@@ -660,3 +660,120 @@ func TestStringifyYAMLMapMapKeys(t *testing.T) {
 		assert.EqualValues(t, c.want, c.input)
 	}
 }
+
+func TestCUE(t *testing.T) {
+	in := `package foo
+import "regexp"
+matches: regexp.FindSubmatch(#"^([^:]*):(\d+)$"#, "localhost:443")
+one: 1
+two: 2
+// A field using quotes.
+"two-and-a-half": 2.5
+list: [ 1, 2, 3 ]
+`
+
+	expected := map[string]interface{}{
+		"matches": []interface{}{
+			"localhost:443",
+			"localhost",
+			"443",
+		},
+		"one":            1,
+		"two":            2,
+		"two-and-a-half": 2.5,
+		"list":           []interface{}{1, 2, 3},
+	}
+
+	out, err := CUE(in)
+	require.NoError(t, err)
+	assert.EqualValues(t, expected, out)
+
+	out, err = CUE(`[1,2,3]`)
+	require.NoError(t, err)
+	assert.EqualValues(t, []interface{}{1, 2, 3}, out)
+
+	out, err = CUE(`"hello world"`)
+	require.NoError(t, err)
+	assert.EqualValues(t, "hello world", out)
+
+	out, err = CUE(`true`)
+	require.NoError(t, err)
+	assert.EqualValues(t, true, out)
+
+	out, err = CUE(`'\x00\x01\x02\x03\x04'`)
+	require.NoError(t, err)
+	assert.EqualValues(t, []byte{0, 1, 2, 3, 4}, out)
+
+	out, err = CUE(`42`)
+	require.NoError(t, err)
+	assert.EqualValues(t, 42, out)
+
+	out, err = CUE(`42.0`)
+	require.NoError(t, err)
+	assert.EqualValues(t, 42.0, out)
+
+	out, err = CUE(`null`)
+	require.NoError(t, err)
+	assert.EqualValues(t, nil, out)
+
+	_, err = CUE(`>=0 & <=7 & >=3 & <=10`)
+	require.Error(t, err)
+}
+
+func TestToCUE(t *testing.T) {
+	in := map[string]interface{}{
+		"matches": []interface{}{
+			"localhost:443",
+			"localhost",
+			"443",
+		},
+		"one":            1,
+		"two":            2,
+		"two-and-a-half": 2.5,
+		"list":           []interface{}{1, 2, 3},
+	}
+
+	expected := `{
+	"two-and-a-half": 2.5
+	list: [1, 2, 3]
+	two: 2
+	one: 1
+	matches: ["localhost:443", "localhost", "443"]
+}`
+
+	out, err := ToCUE(in)
+	require.NoError(t, err)
+	assert.EqualValues(t, expected, out)
+
+	out, err = ToCUE([]interface{}{1, 2, 3})
+	require.NoError(t, err)
+	assert.EqualValues(t, `[1, 2, 3]`, out)
+
+	out, err = ToCUE("hello world")
+	require.NoError(t, err)
+	assert.EqualValues(t, `"hello world"`, out)
+
+	out, err = ToCUE(true)
+	require.NoError(t, err)
+	assert.EqualValues(t, `true`, out)
+
+	out, err = ToCUE([]byte{0, 1, 2, 3, 4})
+	require.NoError(t, err)
+	assert.EqualValues(t, `'\x00\x01\x02\x03\x04'`, out)
+
+	out, err = ToCUE(42)
+	require.NoError(t, err)
+	assert.EqualValues(t, `42`, out)
+
+	out, err = ToCUE(42.0)
+	require.NoError(t, err)
+	assert.EqualValues(t, `42.0`, out)
+
+	out, err = ToCUE(nil)
+	require.NoError(t, err)
+	assert.EqualValues(t, `null`, out)
+
+	out, err = ToCUE(struct{}{})
+	require.NoError(t, err)
+	assert.EqualValues(t, `{}`, out)
+}
