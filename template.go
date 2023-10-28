@@ -69,7 +69,7 @@ func RunTemplate(environment map[string]any, template Template) (string, error) 
 		vm := otto.New()
 		for k, v := range environment {
 			if err := vm.Set(k, v); err != nil {
-				return "", fmt.Errorf("error setting %s", k)
+				return "", fmt.Errorf("error setting %s: %v", k, err)
 			}
 		}
 
