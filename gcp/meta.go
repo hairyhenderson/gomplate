@@ -1,6 +1,7 @@
 package gcp
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"net/http"
@@ -49,6 +50,7 @@ func GetClientOptions() ClientOptions {
 // MetaClient is used to access metadata accessible via the GCP compute instance
 // metadata service version 1.
 type MetaClient struct {
+	ctx      context.Context
 	client   *http.Client
 	cache    map[string]string
 	endpoint string
@@ -58,13 +60,14 @@ type MetaClient struct {
 // NewMetaClient constructs a new MetaClient with the given ClientOptions. If the environment
 // contains a variable named `GCP_META_ENDPOINT`, the client will address that, if not the
 // value of `DefaultEndpoint` is used.
-func NewMetaClient(options ClientOptions) *MetaClient {
+func NewMetaClient(ctx context.Context, options ClientOptions) *MetaClient {
 	endpoint := env.Getenv("GCP_META_ENDPOINT")
 	if endpoint == "" {
 		endpoint = DefaultEndpoint
 	}
 
 	return &MetaClient{
+		ctx:      ctx,
 		cache:    make(map[string]string),
 		endpoint: endpoint,
 		options:  options,
@@ -75,12 +78,12 @@ func NewMetaClient(options ClientOptions) *MetaClient {
 // if the service is unavailable or the requested URL does not exist.
 func (c *MetaClient) Meta(key string, def ...string) (string, error) {
 	url := c.endpoint + "/computeMetadata/v1/instance/" + key
-	return c.retrieveMetadata(url, def...)
+	return c.retrieveMetadata(c.ctx, url, def...)
 }
 
 // retrieveMetadata executes an HTTP request to the GCP Instance Metadata Service with the
 // correct headers set, and extracts the returned value.
-func (c *MetaClient) retrieveMetadata(url string, def ...string) (string, error) {
+func (c *MetaClient) retrieveMetadata(ctx context.Context, url string, def ...string) (string, error) {
 	if value, ok := c.cache[url]; ok {
 		return value, nil
 	}
@@ -93,7 +96,7 @@ func (c *MetaClient) retrieveMetadata(url string, def ...string) (string, error)
 		c.client = &http.Client{Timeout: timeout}
 	}
 
-	request, err := http.NewRequest(http.MethodGet, url, nil)
+	request, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
 		return returnDefault(def), nil
 	}
@@ -104,7 +107,6 @@ func (c *MetaClient) retrieveMetadata(url string, def ...string) (string, error)
 		return returnDefault(def), nil
 	}
 
-	// nolint: errcheck
 	defer resp.Body.Close()
 	if resp.StatusCode > 399 {
 		return returnDefault(def), nil

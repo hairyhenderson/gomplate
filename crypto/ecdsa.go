@@ -10,15 +10,21 @@ import (
 	"fmt"
 )
 
-var (
-	// Curves is a map of curve names to curves
-	Curves = map[string]elliptic.Curve{
-		"P224": elliptic.P224(),
-		"P256": elliptic.P256(),
-		"P384": elliptic.P384(),
-		"P521": elliptic.P521(),
+// Curves -
+func Curves(c string) (elliptic.Curve, bool) {
+	switch c {
+	case "P224":
+		return elliptic.P224(), true
+	case "P256":
+		return elliptic.P256(), true
+	case "P384":
+		return elliptic.P384(), true
+	case "P521":
+		return elliptic.P521(), true
+	default:
+		return nil, false
 	}
-)
+}
 
 // ECDSAGenerateKey -
 func ECDSAGenerateKey(curve elliptic.Curve) ([]byte, error) {

@@ -2,6 +2,7 @@ package data
 
 import (
 	"fmt"
+	"os"
 	"testing"
 	"time"
 
@@ -9,8 +10,6 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-
-	"os"
 
 	"gotest.tools/v3/fs"
 )
@@ -65,12 +64,14 @@ escaped: "\"\/\\\b\f\n\r\t\u221e"
 }
 
 func TestUnmarshalArray(t *testing.T) {
-	expected := []interface{}{"foo", "bar",
+	expected := []interface{}{
+		"foo", "bar",
 		map[string]interface{}{
 			"baz":   map[string]interface{}{"qux": true},
 			"quux":  map[string]interface{}{"42": 18},
 			"corge": map[string]interface{}{"false": "blah"},
-		}}
+		},
+	}
 
 	test := func(actual []interface{}, err error) {
 		require.NoError(t, err)
@@ -167,15 +168,13 @@ func TestToJSONBytes(t *testing.T) {
 	assert.Error(t, err)
 }
 
-type badObject struct {
-}
+type badObject struct{}
 
 func (b *badObject) CodecEncodeSelf(_ *codec.Encoder) {
 	panic("boom")
 }
 
 func (b *badObject) CodecDecodeSelf(_ *codec.Decoder) {
-
 }
 
 func TestToJSON(t *testing.T) {
@@ -505,7 +504,6 @@ true = true
 	assert.Equal(t, expected, out)
 }
 
-//nolint:gosec
 func TestDecryptEJSON(t *testing.T) {
 	privateKey := "e282d979654f88267f7e6c2d8268f1f4314b8673579205ed0029b76de9c8223f"
 	publicKey := "6e05ec625bcdca34864181cc43e6fcc20a57732a453bc2f4a2e117ffdf1a6762"

@@ -56,7 +56,7 @@ func parseDatasourceURLArgs(sourceURL *url.URL, args ...string) (params map[stri
 	return params, p, nil
 }
 
-func readAWSSecretsManager(ctx context.Context, source *Source, args ...string) (output []byte, err error) {
+func readAWSSecretsManager(ctx context.Context, source *Source, args ...string) ([]byte, error) {
 	if source.awsSecretsManager == nil {
 		source.awsSecretsManager = secretsmanager.New(gaws.SDKSession())
 	}

@@ -12,10 +12,10 @@ import (
 
 func setupPluginsTest(t *testing.T) *fs.Dir {
 	tmpDir := fs.NewDir(t, "gomplate-inttests",
-		fs.WithFile("foo.sh", "#!/bin/sh\n\necho $*\n", fs.WithMode(0755)),
-		fs.WithFile("foo.ps1", "echo $args\r\n", fs.WithMode(0755)),
-		fs.WithFile("bar.sh", "#!/bin/sh\n\neval \"echo $*\"\n", fs.WithMode(0755)),
-		fs.WithFile("fail.sh", "#!/bin/sh\n\n>&2 echo $1\nexit $2\n", fs.WithMode(0755)),
+		fs.WithFile("foo.sh", "#!/bin/sh\n\necho $*\n", fs.WithMode(0o755)),
+		fs.WithFile("foo.ps1", "echo $args\r\n", fs.WithMode(0o755)),
+		fs.WithFile("bar.sh", "#!/bin/sh\n\neval \"echo $*\"\n", fs.WithMode(0o755)),
+		fs.WithFile("fail.sh", "#!/bin/sh\n\n>&2 echo $1\nexit $2\n", fs.WithMode(0o755)),
 		fs.WithFile("fail.ps1", `param (
 	[Parameter(Position=0)]
 	[string]$msg,
@@ -25,15 +25,15 @@ func setupPluginsTest(t *testing.T) *fs.Dir {
 )
 write-error $msg
 exit $code
-`, fs.WithMode(0755)),
-		fs.WithFile("sleep.sh", "#!/bin/sh\n\nexec sleep $1\n", fs.WithMode(0755)),
+`, fs.WithMode(0o755)),
+		fs.WithFile("sleep.sh", "#!/bin/sh\n\nexec sleep $1\n", fs.WithMode(0o755)),
 		fs.WithFile("replace.sh", `#!/bin/sh
 if [ "$#" -eq 2 ]; then
 	exec tr $1 $2
 elif [ "$#" -eq 3 ]; then
 	printf "=%s" $3 | tr $1 $2
 fi
-`, fs.WithMode(0755)),
+`, fs.WithMode(0o755)),
 	)
 	t.Cleanup(tmpDir.Remove)
 

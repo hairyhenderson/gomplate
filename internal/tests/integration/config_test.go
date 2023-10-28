@@ -16,7 +16,7 @@ func setupConfigTest(t *testing.T) *tfs.Dir {
 		tfs.WithDir("indir"),
 		tfs.WithDir("outdir"),
 		tfs.WithFile(".gomplate.yaml", "in: hello world\n"),
-		tfs.WithFile("sleep.sh", "#!/bin/sh\n\nexec sleep $1\n", tfs.WithMode(0755)),
+		tfs.WithFile("sleep.sh", "#!/bin/sh\n\nexec sleep $1\n", tfs.WithMode(0o755)),
 	)
 	t.Cleanup(tmpDir.Remove)
 	return tmpDir
@@ -26,7 +26,7 @@ func writeFile(t *testing.T, dir *tfs.Dir, f, content string) {
 	t.Helper()
 
 	f = dir.Join(f)
-	err := os.WriteFile(f, []byte(content), 0600)
+	err := os.WriteFile(f, []byte(content), 0o600)
 	if err != nil {
 		t.Fatal(err)
 	}

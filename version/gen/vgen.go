@@ -22,10 +22,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	ver, err := version(descVer, latest)
-	if err != nil {
-		log.Fatal(err)
-	}
+	ver := version(descVer, latest)
 
 	fmt.Println(ver.String())
 }
@@ -44,7 +41,7 @@ func describedVersion() (*semver.Version, error) {
 	return ver, nil
 }
 
-func version(descVer, latest *semver.Version) (*semver.Version, error) {
+func version(descVer, latest *semver.Version) *semver.Version {
 	ver := *descVer
 	if ver.Prerelease() != "" {
 		ver = ver.IncPatch().IncPatch()
@@ -57,7 +54,7 @@ func version(descVer, latest *semver.Version) (*semver.Version, error) {
 
 	// if we're on a release tag already, we're done
 	if descVer.Equal(&ver) {
-		return descVer, nil
+		return descVer
 	}
 
 	// If 'latest' is greater than 'ver', we need to skip to the next patch.
@@ -76,7 +73,7 @@ func version(descVer, latest *semver.Version) (*semver.Version, error) {
 		ver = v
 	}
 
-	return &ver, nil
+	return &ver
 }
 
 func latestTag() (*semver.Version, error) {

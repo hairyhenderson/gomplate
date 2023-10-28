@@ -67,7 +67,6 @@ func TestJoin(t *testing.T) {
 }
 
 func TestHas(t *testing.T) {
-
 	in := map[string]interface{}{
 		"foo": "bar",
 		"baz": map[string]interface{}{
@@ -315,25 +314,31 @@ func TestDict(t *testing.T) {
 		{expected: map[string]interface{}{}},
 		{
 			args:     []interface{}{},
-			expected: map[string]interface{}{}},
+			expected: map[string]interface{}{},
+		},
 		{
 			args:     []interface{}{"foo"},
-			expected: map[string]interface{}{"foo": ""}},
+			expected: map[string]interface{}{"foo": ""},
+		},
 		{
 			args:     []interface{}{42},
-			expected: map[string]interface{}{"42": ""}},
+			expected: map[string]interface{}{"42": ""},
+		},
 		{
 			args:     []interface{}{"foo", nil},
-			expected: map[string]interface{}{"foo": nil}},
+			expected: map[string]interface{}{"foo": nil},
+		},
 		{
 			args:     []interface{}{"foo", "bar"},
-			expected: map[string]interface{}{"foo": "bar"}},
+			expected: map[string]interface{}{"foo": "bar"},
+		},
 		{
 			args: []interface{}{"foo", "bar", "baz", true},
 			expected: map[string]interface{}{
 				"foo": "bar",
 				"baz": true,
-			}},
+			},
+		},
 	}
 
 	for _, d := range testdata {

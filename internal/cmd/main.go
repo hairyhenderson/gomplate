@@ -29,7 +29,7 @@ func postRunExec(ctx context.Context, args []string, stdin io.Reader, stdout, st
 
 		name := args[0]
 		args = args[1:]
-		// nolint: gosec
+
 		c := exec.CommandContext(ctx, name, args...)
 		c.Stdin = stdin
 		c.Stderr = stderr
@@ -49,7 +49,6 @@ func postRunExec(ctx context.Context, args []string, stdin io.Reader, stdout, st
 			case sig := <-sigs:
 				// Pass signals to the sub-process
 				if c.Process != nil {
-					// nolint: gosec
 					_ = c.Process.Signal(sig)
 				}
 			case <-ctx.Done():

@@ -130,6 +130,7 @@ func TestParseRange(t *testing.T) {
 	require.NoError(t, err)
 	assert.Equal(t, "192.168.0.2-192.168.23.255", iprange.String())
 }
+
 func testNetNS() *NetFuncs {
 	return &NetFuncs{ctx: config.SetExperimental(context.Background())}
 }

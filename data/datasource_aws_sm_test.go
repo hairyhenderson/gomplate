@@ -153,7 +153,7 @@ func TestAWSSecretsManager_ReadSecret(t *testing.T) {
 		},
 	})
 
-	output, err := readAWSSecretsManagerParam(context.Background(), s, "/foo/bar")
+	output, err := readAWSSecretsManager(context.Background(), s, "/bar")
 	assert.True(t, calledOk)
 	require.NoError(t, err)
 	assert.Equal(t, []byte("blub"), output)
@@ -170,7 +170,7 @@ func TestAWSSecretsManager_ReadSecretBinary(t *testing.T) {
 		},
 	})
 
-	output, err := readAWSSecretsManagerParam(context.Background(), s, "/foo/bar")
+	output, err := readAWSSecretsManager(context.Background(), s, "/bar")
 	assert.True(t, calledOk)
 	require.NoError(t, err)
 	assert.Equal(t, []byte("supersecret"), output)

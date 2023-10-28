@@ -162,7 +162,8 @@ func parseNestedTemplate(_ context.Context, fsys fs.FS, alias, fname string, tmp
 }
 
 // gatherTemplates - gather and prepare templates for rendering
-// nolint: gocyclo
+//
+//nolint:gocyclo
 func gatherTemplates(ctx context.Context, cfg *config.Config, outFileNamer func(context.Context, string) (string, error)) ([]Template, error) {
 	mode, modeOverride, err := cfg.GetMode()
 	if err != nil {
@@ -314,7 +315,7 @@ func fileToTemplate(ctx context.Context, cfg *config.Config, inFile, outFile str
 
 	// open the output file - no need to close it, as it will be closed by the
 	// caller later
-	target, err := openOutFile(ctx, outFile, 0755, mode, modeOverride, cfg.Stdout, cfg.SuppressEmpty)
+	target, err := openOutFile(ctx, outFile, 0o755, mode, modeOverride, cfg.Stdout, cfg.SuppressEmpty)
 	if err != nil {
 		return Template{}, fmt.Errorf("openOutFile: %w", err)
 	}
@@ -336,6 +337,8 @@ func fileToTemplate(ctx context.Context, cfg *config.Config, inFile, outFile str
 //
 // TODO: the 'suppressEmpty' behaviour should be always enabled, in the next
 // major release (v4.x).
+//
+//nolint:unparam // TODO: dirMode is always called with 0o755 - should either remove or make it configurable
 func openOutFile(ctx context.Context, filename string, dirMode, mode os.FileMode, modeOverride bool, stdout io.Writer, suppressEmpty bool) (out io.Writer, err error) {
 	if suppressEmpty {
 		out = iohelpers.NewEmptySkipper(func() (io.Writer, error) {

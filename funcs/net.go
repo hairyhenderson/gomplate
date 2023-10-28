@@ -136,8 +136,6 @@ func (f NetFuncs) ParseRange(iprange interface{}) (netipx.IPRange, error) {
 // }
 
 // TODO: look at using this instead of parseStdnetIPNet
-//
-//nolint:unused
 func (f *NetFuncs) parseNetipPrefix(prefix interface{}) (netip.Prefix, error) {
 	switch p := prefix.(type) {
 	case *stdnet.IPNet:

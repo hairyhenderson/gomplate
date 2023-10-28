@@ -105,6 +105,7 @@ func mustSeq(t *testing.T, n ...interface{}) []int64 {
 	}
 	return s
 }
+
 func TestSeq(t *testing.T) {
 	t.Parallel()
 

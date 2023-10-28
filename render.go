@@ -11,7 +11,6 @@ import (
 	"time"
 
 	"github.com/hairyhenderson/gomplate/v4/data"
-	"github.com/hairyhenderson/gomplate/v4/funcs" //nolint:staticcheck
 	"github.com/hairyhenderson/gomplate/v4/internal/config"
 )
 
@@ -210,27 +209,7 @@ func (t *Renderer) RenderTemplates(ctx context.Context, templates []Template) er
 func (t *Renderer) renderTemplatesWithData(ctx context.Context, templates []Template, tmplctx interface{}) error {
 	// update funcs with the current context
 	// only done here to ensure the context is properly set in func namespaces
-	f := template.FuncMap{}
-	addToMap(f, funcs.CreateDataFuncs(ctx, t.data))
-	addToMap(f, funcs.CreateAWSFuncs(ctx))
-	addToMap(f, funcs.CreateGCPFuncs(ctx))
-	addToMap(f, funcs.CreateBase64Funcs(ctx))
-	addToMap(f, funcs.CreateNetFuncs(ctx))
-	addToMap(f, funcs.CreateReFuncs(ctx))
-	addToMap(f, funcs.CreateStringFuncs(ctx))
-	addToMap(f, funcs.CreateEnvFuncs(ctx))
-	addToMap(f, funcs.CreateConvFuncs(ctx))
-	addToMap(f, funcs.CreateTimeFuncs(ctx))
-	addToMap(f, funcs.CreateMathFuncs(ctx))
-	addToMap(f, funcs.CreateCryptoFuncs(ctx))
-	addToMap(f, funcs.CreateFileFuncs(ctx))
-	addToMap(f, funcs.CreateFilePathFuncs(ctx))
-	addToMap(f, funcs.CreatePathFuncs(ctx))
-	addToMap(f, funcs.CreateSockaddrFuncs(ctx))
-	addToMap(f, funcs.CreateTestFuncs(ctx))
-	addToMap(f, funcs.CreateCollFuncs(ctx))
-	addToMap(f, funcs.CreateUUIDFuncs(ctx))
-	addToMap(f, funcs.CreateRandomFuncs(ctx))
+	f := CreateFuncs(ctx, t.data)
 
 	// add user-defined funcs last so they override the built-in funcs
 	addToMap(f, t.funcs)

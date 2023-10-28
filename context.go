@@ -22,9 +22,9 @@ func (c *tmplctx) Env() map[string]string {
 }
 
 // createTmplContext reads the datasources for the given aliases
-func createTmplContext(_ context.Context, aliases []string,
-	//nolint:staticcheck
-	d *data.Data) (interface{}, error) {
+//
+//nolint:staticcheck
+func createTmplContext(_ context.Context, aliases []string, d *data.Data) (interface{}, error) {
 	var err error
 	tctx := &tmplctx{}
 	for _, a := range aliases {

@@ -54,8 +54,7 @@ func readGit(ctx context.Context, source *Source, args ...string) ([]byte, error
 	return out, err
 }
 
-type gitsource struct {
-}
+type gitsource struct{}
 
 func (g gitsource) parseArgURL(arg string) (u *url.URL, err error) {
 	if strings.HasPrefix(arg, "//") {
@@ -136,7 +135,7 @@ func (g gitsource) parseGitPath(u *url.URL, args ...string) (out *url.URL, p str
 	return out, p, err
 }
 
-// nolint: interfacer
+//nolint:interfacer
 func cloneURL(u *url.URL) *url.URL {
 	out, _ := url.Parse(u.String())
 	return out

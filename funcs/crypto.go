@@ -76,7 +76,6 @@ func (f CryptoFuncs) WPAPSK(ssid, password interface{}) (string, error) {
 
 // SHA1 - Note: SHA-1 is cryptographically broken and should not be used for secure applications.
 func (f CryptoFuncs) SHA1(input interface{}) string {
-	// nolint: gosec
 	out, _ := f.SHA1Bytes(input)
 	return fmt.Sprintf("%02x", out)
 }
@@ -106,14 +105,16 @@ func (f CryptoFuncs) SHA512(input interface{}) string {
 }
 
 // SHA512_224 -
-// nolint: revive,stylecheck
+//
+//nolint:revive,stylecheck
 func (f CryptoFuncs) SHA512_224(input interface{}) string {
 	out, _ := f.SHA512_224Bytes(input)
 	return fmt.Sprintf("%02x", out)
 }
 
 // SHA512_256 -
-// nolint: revive,stylecheck
+//
+//nolint:revive,stylecheck
 func (f CryptoFuncs) SHA512_256(input interface{}) string {
 	out, _ := f.SHA512_256Bytes(input)
 	return fmt.Sprintf("%02x", out)
@@ -161,7 +162,6 @@ func (CryptoFuncs) SHA512Bytes(input interface{}) ([]byte, error) {
 }
 
 // SHA512_224 -
-// nolint: revive,stylecheck
 func (CryptoFuncs) SHA512_224Bytes(input interface{}) ([]byte, error) {
 	b := sha512.Sum512_224(toBytes(input))
 	out := make([]byte, len(b))
@@ -170,7 +170,6 @@ func (CryptoFuncs) SHA512_224Bytes(input interface{}) ([]byte, error) {
 }
 
 // SHA512_256 -
-// nolint: revive,stylecheck
 func (CryptoFuncs) SHA512_256Bytes(input interface{}) ([]byte, error) {
 	b := sha512.Sum512_256(toBytes(input))
 	out := make([]byte, len(b))
@@ -265,7 +264,7 @@ func (f *CryptoFuncs) ECDSAGenerateKey(args ...interface{}) (string, error) {
 		c = strings.ToUpper(c)
 		c = strings.ReplaceAll(c, "-", "")
 		var ok bool
-		curve, ok = crypto.Curves[c]
+		curve, ok = crypto.Curves(c)
 		if !ok {
 			return "", fmt.Errorf("unknown curve: %s", c)
 		}

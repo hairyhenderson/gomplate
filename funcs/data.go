@@ -24,9 +24,9 @@ func AddDataFuncs(f map[string]interface{}, d *data.Data) {
 }
 
 // CreateDataFuncs -
-func CreateDataFuncs(ctx context.Context,
-	//nolint:staticcheck
-	d *data.Data) map[string]interface{} {
+//
+//nolint:staticcheck
+func CreateDataFuncs(ctx context.Context, d *data.Data) map[string]interface{} {
 	f := map[string]interface{}{}
 	f["datasource"] = d.Datasource
 	f["ds"] = d.Datasource

@@ -179,8 +179,8 @@ func TestWrite(t *testing.T) {
 
 	newwd := rootDir.Join("the", "path", "we", "want")
 	badwd := rootDir.Join("some", "other", "dir")
-	hackpadfs.MkdirAll(fsys, newwd, 0755)
-	hackpadfs.MkdirAll(fsys, badwd, 0755)
+	hackpadfs.MkdirAll(fsys, newwd, 0o755)
+	hackpadfs.MkdirAll(fsys, badwd, 0o755)
 	newwd, _ = filepath.EvalSymlinks(newwd)
 	badwd, _ = filepath.EvalSymlinks(badwd)
 
