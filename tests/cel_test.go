@@ -29,13 +29,6 @@ type Test struct {
 	out        string
 }
 
-func TestCel(t *testing.T) {
-
-	tests := []Test{}
-
-	runTests(t, tests)
-}
-
 func runTests(t *testing.T, tests []Test) {
 	for _, tc := range tests {
 		t.Run(tc.expression, func(t *testing.T) {
@@ -46,6 +39,27 @@ func runTests(t *testing.T, tests []Test) {
 			assert.Equal(t, tc.out, out)
 		})
 	}
+}
+
+func TestFunctions(t *testing.T) {
+	funcs := map[string]func() any{
+		"fn": func() any {
+			return map[string]any{
+				"a": "b",
+				"c": 1,
+			}
+		},
+	}
+
+	out, err := gomplate.RunTemplate(map[string]interface{}{
+		"hello": "hi",
+	}, gomplate.Template{
+		Expression: "hello + ' ' + fn().a",
+		Functions:  funcs,
+	})
+
+	assert.ErrorIs(t, nil, err)
+	assert.Equal(t, "hi b", out)
 }
 
 func TestRegex(t *testing.T) {

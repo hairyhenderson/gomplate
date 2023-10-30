@@ -12,6 +12,8 @@ import (
 	_ "github.com/flanksource/gomplate/v3/js"
 	"github.com/flanksource/mapstructure"
 	"github.com/google/cel-go/cel"
+	"github.com/google/cel-go/common/types"
+	"github.com/google/cel-go/common/types/ref"
 	"github.com/pkg/errors"
 	"github.com/robertkrimen/otto"
 	"github.com/robertkrimen/otto/registry"
@@ -25,10 +27,11 @@ func init() {
 }
 
 type Template struct {
-	Template   string `yaml:"template,omitempty" json:"template,omitempty"` // Go template
-	JSONPath   string `yaml:"jsonPath,omitempty" json:"jsonPath,omitempty"`
-	Expression string `yaml:"expr,omitempty" json:"expr,omitempty"` // A cel-go expression
-	Javascript string `yaml:"javascript,omitempty" json:"javascript,omitempty"`
+	Template   string                `yaml:"template,omitempty" json:"template,omitempty"` // Go template
+	JSONPath   string                `yaml:"jsonPath,omitempty" json:"jsonPath,omitempty"`
+	Expression string                `yaml:"expr,omitempty" json:"expr,omitempty"` // A cel-go expression
+	Javascript string                `yaml:"javascript,omitempty" json:"javascript,omitempty"`
+	Functions  map[string]func() any `yaml:"-" json:"-"`
 }
 
 func (t Template) IsEmpty() bool {
@@ -36,7 +39,23 @@ func (t Template) IsEmpty() bool {
 }
 
 func RunExpression(environment map[string]any, template Template) (any, error) {
-	env, err := cel.NewEnv(GetCelEnv(environment)...)
+	funcs := GetCelEnv(environment)
+
+	for name, fn := range template.Functions {
+		_name := name
+		_fn := fn
+		funcs = append(funcs, cel.Function(_name, cel.Overload(
+			_name,
+			nil,
+			cel.AnyType,
+			cel.FunctionBinding(func(values ...ref.Val) ref.Val {
+				out := _fn()
+				return types.DefaultTypeAdapter.NativeToValue(out)
+			}),
+		)))
+	}
+
+	env, err := cel.NewEnv(funcs...)
 	if err != nil {
 		return "", err
 	}
@@ -57,7 +76,7 @@ func RunExpression(environment map[string]any, template Template) (any, error) {
 
 	out, _, err := prg.Eval(data)
 	if err != nil {
-		return nil, errors.Wrapf(err, "error evaluating expression %s: %s, %v", template.Expression, err, data)
+		return nil, errors.Wrapf(err, "error evaluating expression %s: %s, %+v", template.Expression, err, data)
 	}
 	return out.Value(), nil
 
@@ -88,7 +107,21 @@ func RunTemplate(environment map[string]any, template Template) (string, error) 
 	// gotemplate
 	if template.Template != "" {
 		tpl := gotemplate.New("")
-		tpl, err := tpl.Funcs(funcMap).Parse(template.Template)
+		funcs := make(map[string]any)
+		if len(template.Functions) > 0 {
+			for k, v := range funcMap {
+				funcs[k] = v
+			}
+			for k, v := range template.Functions {
+				funcs[k] = v
+			}
+		} else {
+			funcs = funcMap
+		}
+		for k, v := range template.Functions {
+			funcs[k] = v
+		}
+		tpl, err := tpl.Funcs(funcs).Parse(template.Template)
 		if err != nil {
 			return "", err
 		}

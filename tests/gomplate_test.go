@@ -11,6 +11,30 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func TestGomplateFunctions(t *testing.T) {
+	funcs := map[string]func() any{
+		"fn": func() any {
+			return map[string]any{
+				"a": "b",
+				"c": 1,
+			}
+		},
+		"fn1": func() any {
+			return "c"
+		},
+	}
+
+	out, err := gomplate.RunTemplate(map[string]interface{}{
+		"hello": "hi",
+	}, gomplate.Template{
+		Template:  "{{.hello}} {{fn1}}",
+		Functions: funcs,
+	})
+
+	assert.ErrorIs(t, nil, err)
+	assert.Equal(t, "hi c", out)
+}
+
 func TestGomplate(t *testing.T) {
 	tests := []struct {
 		env      map[string]interface{}
