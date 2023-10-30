@@ -12,7 +12,7 @@ func GetCelEnv(environment map[string]any) []cel.EnvOption {
 	// Generated functions
 	var opts = funcs.CelEnvOption
 	opts = append(opts, kubernetes.Library()...)
-	opts = append(opts, ext.Strings(), ext.Encoders(), ext.Lists(), ext.Math(), ext.Sets())
+	opts = append(opts, ext.Strings(), ext.Encoders(), ext.Lists(), ext.Math(), ext.Sets(), cel.StdLib(), cel.OptionalTypes())
 	opts = append(opts, strings.Library...)
 
 	// Load input as variables

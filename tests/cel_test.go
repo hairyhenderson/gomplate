@@ -66,8 +66,23 @@ func TestMath(t *testing.T) {
 }
 
 func TestMaps(t *testing.T) {
+	m := map[string]any{
+		"x": map[string]any{
+			"a": "b",
+			"c": 1,
+			"d": true,
+			"f": map[string]any{
+				"a": "5",
+			},
+		},
+	}
 	runTests(t, []Test{
-
+		{m, "x.a", "b"},
+		{m, "x.c", "1"},
+		{m, "x.d", "true"},
+		{m, "x.?e", "<nil>"},
+		{m, "x.?f.?a", "5"},
+		{m, "x.?f.?b", "<nil>"},
 		{nil, "{'a': 'c'}.merge({'b': 'd'}).keys().join(',')", "a,b"},
 		{nil, "{'a': '1', 'b': '2', 'c': '3'}.pick(['a', 'c']).keys()", "[a c]"},
 		{nil, "{'a': '1', 'b': '2', 'c': '3'}.omit(['b']).keys()", "[a c]"},
