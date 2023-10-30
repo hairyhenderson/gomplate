@@ -128,7 +128,7 @@ k8s = {
     for (i in results) {
       node = results[i].Object
       components.push({
-        name: k8s.getNodeName(node.metadata.name),
+        name: node.metadata.name,
         properties: [
           {
             name: "cpu",
@@ -180,9 +180,6 @@ k8s = {
       filtered[label] = labels[label]
     }
     return filtered
-  },
-  getNodeName: function(name) {
-    return name.replace(".compute.internal", "")
   },
   getPodTopology: function(results) {
     var pods = []
@@ -269,7 +266,7 @@ k8s = {
     for (i in results) {
       node = results[i].Object
       _node = {
-        name: k8s.getNodeName(node.metadata.name),
+        name: node.metadata.name,
         type: "KubernetesNode",
         external_id: node.metadata.name,
         labels: k8s.filterLabels(node.metadata.labels),

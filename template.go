@@ -69,17 +69,17 @@ func RunTemplate(environment map[string]any, template Template) (string, error) 
 		vm := otto.New()
 		for k, v := range environment {
 			if err := vm.Set(k, v); err != nil {
-				return "", fmt.Errorf("error setting %s: %v", k, err)
+				return "", fmt.Errorf("error setting %s: %w", k, err)
 			}
 		}
 
 		out, err := vm.Run(template.Javascript)
 		if err != nil {
-			return "", fmt.Errorf("failed to run javascript: %v", err)
+			return "", fmt.Errorf("failed to run javascript: %w", err)
 		}
 
 		if s, err := out.ToString(); err != nil {
-			return "", fmt.Errorf("failed to cast output to string: %v", err)
+			return "", fmt.Errorf("failed to cast output to string: %w", err)
 		} else {
 			return s, nil
 		}
