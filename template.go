@@ -32,6 +32,8 @@ type Template struct {
 	Expression string                `yaml:"expr,omitempty" json:"expr,omitempty"` // A cel-go expression
 	Javascript string                `yaml:"javascript,omitempty" json:"javascript,omitempty"`
 	Functions  map[string]func() any `yaml:"-" json:"-"`
+	RightDelim string                `yaml:"-" json:"-"`
+	LeftDelim  string                `yaml:"-" json:"-"`
 }
 
 func (t Template) IsEmpty() bool {
@@ -106,35 +108,7 @@ func RunTemplate(environment map[string]any, template Template) (string, error) 
 
 	// gotemplate
 	if template.Template != "" {
-		tpl := gotemplate.New("")
-		funcs := make(map[string]any)
-		if len(template.Functions) > 0 {
-			for k, v := range funcMap {
-				funcs[k] = v
-			}
-			for k, v := range template.Functions {
-				funcs[k] = v
-			}
-		} else {
-			funcs = funcMap
-		}
-		for k, v := range template.Functions {
-			funcs[k] = v
-		}
-		tpl, err := tpl.Funcs(funcs).Parse(template.Template)
-		if err != nil {
-			return "", err
-		}
-		data, err := Serialize(environment)
-		if err != nil {
-			return "", err
-		}
-
-		var buf bytes.Buffer
-		if err := tpl.Execute(&buf, data); err != nil {
-			return "", fmt.Errorf("error executing template %s: %v", strings.Split(template.Template, "\n")[0], err)
-		}
-		return strings.TrimSpace(buf.String()), nil
+		return goTemplate(template, environment)
 	}
 
 	// cel-go
@@ -147,6 +121,43 @@ func RunTemplate(environment map[string]any, template Template) (string, error) 
 	}
 
 	return "", nil
+}
+
+func goTemplate(template Template, environment map[string]any) (string, error) {
+	tpl := gotemplate.New("")
+
+	if template.LeftDelim != "" {
+		tpl = tpl.Delims(template.LeftDelim, template.RightDelim)
+	}
+
+	funcs := make(map[string]any)
+	if len(template.Functions) > 0 {
+		for k, v := range funcMap {
+			funcs[k] = v
+		}
+		for k, v := range template.Functions {
+			funcs[k] = v
+		}
+	} else {
+		funcs = funcMap
+	}
+	for k, v := range template.Functions {
+		funcs[k] = v
+	}
+	tpl, err := tpl.Funcs(funcs).Parse(template.Template)
+	if err != nil {
+		return "", err
+	}
+	data, err := Serialize(environment)
+	if err != nil {
+		return "", err
+	}
+
+	var buf bytes.Buffer
+	if err := tpl.Execute(&buf, data); err != nil {
+		return "", fmt.Errorf("error executing template %s: %v", strings.Split(template.Template, "\n")[0], err)
+	}
+	return strings.TrimSpace(buf.String()), nil
 }
 
 // LoadSharedLibrary loads a shared library for Otto

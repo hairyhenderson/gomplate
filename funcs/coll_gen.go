@@ -170,7 +170,6 @@ var collUniqGen = cel.Function("uniq",
 		}),
 	),
 )
-
 var collReverseGen = cel.Function("reverse",
 	cel.MemberOverload("Reverse_interface{}",
 
