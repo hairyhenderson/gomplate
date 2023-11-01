@@ -9,16 +9,6 @@ import (
 	"github.com/google/cel-go/common/types/ref"
 )
 
-// var durationHumanize = cel.Function("HumanDuration",
-// 	cel.Overload("duration.HumanDuration",
-// 		[]*cel.Type{cel.DynType},
-// 		cel.StringType,
-// 		cel.UnaryBinding(func(value ref.Val) ref.Val {
-// 			return types.String(HumanDuration(value.Value()))
-// 		}),
-// 	),
-// )
-
 func age(value ref.Val) ref.Val {
 	switch v := value.Value().(type) {
 	case int, int32, int64, float32, float64:
