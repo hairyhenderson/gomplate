@@ -1,5 +1,9 @@
 package tests
 
+import (
+	"time"
+)
+
 type NoStructTag struct {
 	Name  string
 	UPPER string
@@ -22,10 +26,53 @@ type Person struct {
 var structEnv = map[string]any{
 	"results": Person{
 		Name: "Aditya",
+
 		Address: &Address{
 			City: "Kathmandu",
 		},
 	},
+}
+
+type FolderCheck struct {
+	Oldest        *File  `json:"oldest,omitempty"`
+	Newest        *File  `json:"newest,omitempty"`
+	MinSize       *File  `json:"smallest,omitempty"`
+	MaxSize       *File  `json:"largest,omitempty"`
+	TotalSize     int64  `json:"size,omitempty"`
+	AvailableSize int64  `json:"availableSize,omitempty"`
+	Files         []File `json:"files,omitempty"`
+}
+
+type File struct {
+	Name     string    `json:"name,omitempty"`
+	Size     int64     `json:"size,omitempty"`
+	Mode     string    `json:"mode,omitempty"`
+	Modified time.Time `json:"modified,omitempty"`
+	IsDir    bool      `json:"is_dir,omitempty"`
+}
+
+var testDate = "2021-10-05T09:00:00Z"
+var testDateTime, _ = time.Parse(time.RFC3339Nano, testDate)
+
+func newFile() File {
+	t, _ := time.Parse(time.RFC3339, testDate)
+	return File{
+		Name:     "test",
+		Size:     10,
+		Mode:     "drwxr-xr-x",
+		Modified: t,
+	}
+}
+
+func newFolderCheck(count int) *FolderCheck {
+	f := newFile()
+	folder := FolderCheck{
+		Newest: &f,
+	}
+	for i := 0; i < count; i++ {
+		folder.Files = append(folder.Files, newFile())
+	}
+	return &folder
 }
 
 type Totals struct {

@@ -6,12 +6,14 @@ require (
 	github.com/Masterminds/goutils v1.1.1
 	github.com/Masterminds/semver/v3 v3.2.1
 	github.com/flanksource/is-healthy v0.0.0-20231003215854-76c51e3a3ff7
-	github.com/flanksource/mapstructure v1.6.0
 	github.com/google/cel-go v0.18.1
+	github.com/google/go-cmp v0.5.9
 	github.com/google/uuid v1.3.1
 	github.com/gosimple/slug v1.13.1
 	github.com/hairyhenderson/toml v0.4.2-0.20210923231440-40456b8e66cf
 	github.com/itchyny/gojq v0.12.13
+	github.com/mitchellh/reflectwalk v1.0.2
+	github.com/ohler55/ojg v1.20.2
 	github.com/pkg/errors v0.9.1
 	github.com/robertkrimen/otto v0.2.1
 	github.com/stretchr/testify v1.8.4
@@ -34,12 +36,10 @@ require (
 	github.com/go-logr/logr v1.2.4 // indirect
 	github.com/gobwas/glob v0.2.3 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
-	github.com/google/go-cmp v0.5.9 // indirect
 	github.com/google/gofuzz v1.2.0 // indirect
 	github.com/gosimple/unidecode v1.0.1 // indirect
 	github.com/itchyny/timefmt-go v0.1.5 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
-	github.com/mitchellh/reflectwalk v1.0.2 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect

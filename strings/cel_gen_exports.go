@@ -4,7 +4,6 @@ package strings
 
 import "log"
 import "github.com/google/cel-go/common/types/ref"
-import "github.com/google/cel-go/cel"
 
 func sliceToNative[K any](arg ref.Val) []K {
 	list, ok := arg.Value().([]ref.Val)
@@ -21,8 +20,8 @@ func sliceToNative[K any](arg ref.Val) []K {
 	return out
 }
 
-var Library = []cel.EnvOption{
+var Library = append(Durations,
 	DurationAgeGen,
-	// durationHumanize,
-	DurationDurationGen,
-}
+	DurationAgeGen2,
+)
+

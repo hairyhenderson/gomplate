@@ -133,12 +133,12 @@ func TestAws(t *testing.T) {
 }
 
 func TestJQ(t *testing.T) {
+
 	person := Person{Name: "Aditya", Address: &Address{City: "Kathmandu"}}
 	persons := []interface{}{
 		Person{Name: "John", Address: &Address{City: "Kathmandu"}, Age: 20},
 		Person{Name: "Jane", Address: &Address{City: "Nepal"}, Age: 30},
 		Person{Name: "Jane", Address: &Address{City: "Kathmandu"}, Age: 35},
-
 		Person{Name: "Harry", Address: &Address{City: "Kathmandu"}, Age: 40},
 	}
 
@@ -170,14 +170,23 @@ func unstructure(o any) interface{} {
 }
 
 func TestData(t *testing.T) {
-	person := Person{Name: "Aditya", Address: &Address{City: "Kathmandu"}}
+	person := Person{
+		Name:    "Aditya",
+		Address: &Address{City: "Kathmandu"}}
 	runTests(t, []Test{
-		// {map[string]interface{}{"i": person}, "jq('.address.city_name', i)", "Aditya"},
+		{map[string]interface{}{"i": newFolderCheck(1)}, "i.files[0].modified", testDate},
+		{nil, `dyn([{'name': 'John', 'age': 30}]).toJSON()`, `[{"age":30,"name":"John"}]`},
+		{nil, `[{'name': 'John'}].toJSON()`, `[{"name":"John"}]`},
+		{nil, `dyn({'name': 'John'}).toJSON()`, `{"name":"John"}`},
+		{nil, `{'name': 'John'}.toJSON()`, `{"name":"John"}`},
+		{map[string]interface{}{"i": person}, "jq('.Address.city_name', i)", "Kathmandu"},
 		{map[string]interface{}{"i": person}, "toJSONPretty(i)", "{\n  \"Address\": {\n    \"city_name\": \"Kathmandu\"\n  },\n  \"name\": \"Aditya\"\n}"},
+		{map[string]interface{}{"i": person}, "JSON(toJSONPretty(i)).name", "Aditya"},
 		{map[string]interface{}{"i": person}, "JSON(toJSON(i)).name", "Aditya"},
+		{map[string]interface{}{"i": person}, "JSON(i.toJSON()).name", "Aditya"},
 		{map[string]interface{}{"i": person}, "YAML(toYAML(i)).name", "Aditya"},
-		{map[string]interface{}{"i": person}, "TOML(toTOML(i)).name", "Aditya"},
-
+		// TOML doesn't use JSON tags,
+		{map[string]interface{}{"i": person}, "TOML(toTOML(i)).Address.city_name", "Kathmandu"},
 		{structEnv, `results.Address.city_name == "Kathmandu" && results.name == "Aditya"`, "true"},
 		// Support structs as environment var (by default they are not)
 		{structEnv, `results.Address.city_name == "Kathmandu" && results.name == "Aditya"`, "true"},
@@ -233,7 +242,12 @@ func TestStrings(t *testing.T) {
 }
 
 func TestDates(t *testing.T) {
+	timestamp, err := time.Parse(time.RFC3339Nano, "2020-01-01T14:30:33.456Z")
+	assert.NoError(t, err)
 	tests := []Test{
+		{map[string]interface{}{"t": timestamp}, "t.getSeconds()", "33"},
+		{map[string]interface{}{"t": timestamp}, "string(t)", "2020-01-01T14:30:33.456Z"},
+
 		// Durations
 		{map[string]interface{}{"age": 75 * time.Second}, "age", "1m15s"},
 		{nil, `HumanDuration(duration("1008h"))`, "6w0d0h"},
@@ -244,6 +258,11 @@ func TestDates(t *testing.T) {
 		// {map[string]interface{}{"t": "2020-01-01T00:00:00Z"}, `age(t) > duration('1h')`, "true"},
 		{map[string]interface{}{"t": "2020-01-01T00:00:00Z"}, `Age(t) > Duration('3d')`, "true"},
 		{nil, `duration('24h') > Duration('3d')`, "false"},
+
+		// {map[string]interface{}{"code": 200, "sslAge": time.Hour}, `code in [200,201,301] && sslAge > duration('59m')`, "true"},
+
+		{map[string]interface{}{"code": 200, "sslAge": time.Hour}, `sslAge`, "1h0m0s"},
+		{map[string]interface{}{"code": 200, "sslAge": time.Hour}, `sslAge < duration('2h')`, "true"},
 		{map[string]interface{}{"code": 200, "sslAge": time.Hour}, `code in [200,201,301] && sslAge > duration('59m')`, "true"},
 	}
 
@@ -310,7 +329,6 @@ func TestCelSliceReturn(t *testing.T) {
 }
 
 func TestCelK8sResources(t *testing.T) {
-
 	runTests(t, []Test{
 		{map[string]interface{}{"healthySvc": kubernetes.GetUnstructuredMap(kubernetes.TestHealthy)}, "IsHealthy(healthySvc)", "true"},
 		{map[string]interface{}{"healthySvc": kubernetes.GetUnstructuredMap(kubernetes.TestLuaStatus)}, "GetStatus(healthySvc)", "Degraded: found less than two generators, Merge requires two or more"},
@@ -338,22 +356,6 @@ func TestCelK8s(t *testing.T) {
 	}
 	for i, td := range testData {
 		executeTemplate(t, i, td.Input, td.Output, environment)
-	}
-}
-
-func TestCelJSON(t *testing.T) {
-	testData := []struct {
-		Input  string
-		Output any
-	}{
-		{Input: `dyn([{'name': 'John', 'age': 30}]).toJSON()`, Output: `[{"age":30,"name":"John"}]`},
-		{Input: `[{'name': 'John'}].toJSON()`, Output: `[{"name":"John"}]`},
-		{Input: `dyn({'name': 'John'}).toJSON()`, Output: `{"name":"John"}`},
-		{Input: `{'name': 'John'}.toJSON()`, Output: `{"name":"John"}`},
-	}
-
-	for i, td := range testData {
-		executeTemplate(t, i, td.Input, td.Output, nil)
 	}
 }
 

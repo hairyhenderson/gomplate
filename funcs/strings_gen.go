@@ -60,7 +60,7 @@ var stringsHumanSizeGen = cel.Function("HumanSize",
 
 			var x StringFuncs
 
-			result, err := x.HumanSize(args[0])
+			result, err := x.HumanSize(args[0].Value())
 			if err != nil {
 				return types.WrapErr(err)
 			}
@@ -80,7 +80,7 @@ var stringsHumanSizeGen2 = cel.Function("humanSize",
 
 			var x StringFuncs
 
-			result, err := x.HumanSize(args[0])
+			result, err := x.HumanSize(args[0].Value())
 			if err != nil {
 				return types.WrapErr(err)
 			}

@@ -3,16 +3,10 @@
 package funcs
 
 import (
-
-	"github.com/flanksource/gomplate/v3/data"
 	"github.com/google/cel-go/cel"
-
 )
 
 var CelEnvOption = []cel.EnvOption{
-
-	data.ParseJSON(),
-	data.ToJSON(),
 	fromAwsMap,
 	arnToMap,
 	collSliceGen,
@@ -49,6 +43,7 @@ var CelEnvOption = []cel.EnvOption{
 	cryptoSHA512_224BytesGen,
 	cryptoSHA512_256BytesGen,
 	dataJSONGen,
+	dataToJSONGen2,
 	dataJSONArrayGen,
 	dataYAMLGen,
 	dataYAMLArrayGen,

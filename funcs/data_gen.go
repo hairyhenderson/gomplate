@@ -2,11 +2,15 @@
 
 package funcs
 
-import "github.com/google/cel-go/cel"
-import "github.com/google/cel-go/common/types"
-import "github.com/google/cel-go/common/types/ref"
-import "github.com/flanksource/gomplate/v3/data"
-
+import (
+	"github.com/google/cel-go/cel"
+	"encoding/json"
+	"reflect"
+	"github.com/google/cel-go/common/types"
+	"github.com/google/cel-go/common/types/ref"
+	"google.golang.org/protobuf/types/known/structpb"
+	"github.com/flanksource/gomplate/v3/data"
+)
 
 var dataJSONGen = cel.Function("JSON",
 	cel.Overload("JSON_interface{}",
@@ -206,6 +210,40 @@ var dataToCSVGen = cel.Function("toCSV",
 	),
 )
 
+var (
+	listType  = reflect.TypeOf(&structpb.ListValue{})
+	mapType   = reflect.TypeOf(&structpb.Struct{})
+	mapStrDyn = cel.MapType(cel.StringType, cel.DynType)
+)
+
+func toJson(val ref.Val) ref.Val {
+	var typeDesc reflect.Type
+
+	switch val.Type() {
+	case types.ListType:
+		typeDesc = listType
+	case types.MapType:
+		typeDesc = mapType
+	default:
+		if result, err := json.Marshal(val.Value());  err != nil {
+			return types.WrapErr(err)
+		} else {
+			return types.String(result)
+		}
+	}
+
+	nativeVal, err := val.ConvertToNative(typeDesc)
+	if err != nil {
+		return types.NewErr("failed to convert to native: %w", err)
+	}
+
+	if result, err := json.Marshal(nativeVal); err != nil {
+		return types.WrapErr(err)
+	} else {
+		return types.String(result)
+	}
+}
+
 var dataToJSONGen = cel.Function("toJSON",
 	cel.Overload("toJSON_string",
 
@@ -213,17 +251,17 @@ var dataToJSONGen = cel.Function("toJSON",
 			cel.DynType,
 		},
 		cel.StringType,
-		cel.FunctionBinding(func(args ...ref.Val) ref.Val {
+		cel.UnaryBinding(toJson),
+	),
+)
 
-			var x DataFuncs
-
-			result, err := x.ToJSON(args[0].Value())
-			if err != nil {
-				return types.WrapErr(err)
-			}
-			return types.String(result)
-
-		}),
+var dataToJSONGen2 = cel.Function("toJSON",
+	cel.MemberOverload("dyn_toJSON",
+		[]*cel.Type{
+			cel.DynType,
+		},
+		cel.StringType,
+		cel.UnaryBinding(toJson),
 	),
 )
 
