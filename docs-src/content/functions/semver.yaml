@@ -1,0 +1,49 @@
+ns: semver
+preamble: |
+  These functions allow user you to parse a [semantic version](http://semver.org/) string or test it with constraint.
+  
+  It's implemented with https://github.com/Masterminds/semver.
+funcs:
+  - name: semver.Semver
+    description: |
+      Returns a semantic version struct holding the `input` version string.
+      
+      The returned struct are defined at: [`semver.Version`](https://pkg.go.dev/github.com/Masterminds/semver/v3#Version).
+    pipeline: true
+    arguments:
+      - name: input
+        required: true
+        description: The input to parse
+    examples:
+      - |
+        $ gomplate -i '{{ semver.Semver "v1.1.1"}}'
+        1.1.1
+      - |
+        $ gomplate -i '{{ (semver.Semver "v1.1.1").Major }}'
+        1
+      - |
+        $ gomplate -i 'the pre release version is {{ ("v1.1.1" | semver.Semver).SetPrerelease "beta.1" }}'
+        the pre release version is 1.1.1-beta.1
+  - name: semver.MatchConstraint
+    description: |
+      Test whether the input version matchs the constraint.
+
+      Ref: https://github.com/Masterminds/semver#checking-version-constraints
+    pipeline: true
+    arguments:
+      - name: constraint
+        required: true
+        description: The constraints expression to test.
+      - name: input
+        required: true
+        description: The input semantic version string to test.
+    examples:
+      - |
+        $ gomplate -i '{{ semver.MatchConstraint "> 1.0" "v1.1.1" }}'
+        true
+      - |
+        $ gomplate -i '{{ semver.MatchConstraint "> 1.0, <1.1" "v1.1.1" }}'
+        false        
+      - |
+        $ gomplate -i '{{ "v1.1.1" | semver.MatchConstraint "> 1.0" }}'
+        true
