@@ -1,4 +1,4 @@
-# syntax=docker/dockerfile:1.4.3-labs
+# syntax=docker/dockerfile:1.6-labs
 FROM --platform=linux/amd64 golang:1.21-alpine AS build
 
 ARG TARGETOS
@@ -47,6 +47,9 @@ ARG TARGETVARIANT
 
 LABEL org.opencontainers.image.revision=$VCS_REF \
 	org.opencontainers.image.source="https://github.com/hairyhenderson/gomplate"
+
+# tmp patch for CVE-2023-5363
+RUN apk upgrade --no-cache libcrypto3 libssl3
 
 COPY --from=build /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
 COPY --from=build /bin/gomplate_${TARGETOS}-${TARGETARCH}${TARGETVARIANT} /bin/gomplate
