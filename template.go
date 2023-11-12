@@ -156,7 +156,7 @@ func parseNestedTemplateDir(ctx context.Context, fsys fs.FS, alias, fname string
 	return nil
 }
 
-func parseNestedTemplate(ctx context.Context, fsys fs.FS, alias, fname string, tmpl *template.Template) error {
+func parseNestedTemplate(_ context.Context, fsys fs.FS, alias, fname string, tmpl *template.Template) error {
 	b, err := fs.ReadFile(fsys, fname)
 	if err != nil {
 		return fmt.Errorf("readFile %q: %w", fname, err)
@@ -171,7 +171,8 @@ func parseNestedTemplate(ctx context.Context, fsys fs.FS, alias, fname string, t
 }
 
 // gatherTemplates - gather and prepare templates for rendering
-// nolint: gocyclo
+//
+//nolint:gocyclo
 func gatherTemplates(ctx context.Context, cfg *config.Config, outFileNamer func(context.Context, string) (string, error)) (templates []Template, err error) {
 	mode, modeOverride, err := cfg.GetMode()
 	if err != nil {
@@ -183,7 +184,7 @@ func gatherTemplates(ctx context.Context, cfg *config.Config, outFileNamer func(
 	case cfg.Input != "":
 		// open the output file - no need to close it, as it will be closed by the
 		// caller later
-		target, oerr := openOutFile(cfg.OutputFiles[0], 0755, mode, modeOverride, cfg.Stdout, cfg.SuppressEmpty)
+		target, oerr := openOutFile(cfg.OutputFiles[0], 0o755, mode, modeOverride, cfg.Stdout, cfg.SuppressEmpty)
 		if oerr != nil {
 			return nil, oerr
 		}
@@ -293,7 +294,6 @@ func fileToTemplate(cfg *config.Config, inFile, outFile string, mode os.FileMode
 			return Template{}, fmt.Errorf("failed to open %s: %w", inFile, err)
 		}
 
-		//nolint: errcheck
 		defer f.Close()
 
 		b, err := io.ReadAll(f)
@@ -306,7 +306,7 @@ func fileToTemplate(cfg *config.Config, inFile, outFile string, mode os.FileMode
 
 	// open the output file - no need to close it, as it will be closed by the
 	// caller later
-	target, err := openOutFile(outFile, 0755, mode, modeOverride, cfg.Stdout, cfg.SuppressEmpty)
+	target, err := openOutFile(outFile, 0o755, mode, modeOverride, cfg.Stdout, cfg.SuppressEmpty)
 	if err != nil {
 		return Template{}, err
 	}

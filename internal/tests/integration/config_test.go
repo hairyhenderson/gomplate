@@ -13,7 +13,7 @@ func setupConfigTest(t *testing.T) *fs.Dir {
 		fs.WithDir("indir"),
 		fs.WithDir("outdir"),
 		fs.WithFile(".gomplate.yaml", "in: hello world\n"),
-		fs.WithFile("sleep.sh", "#!/bin/sh\n\nexec sleep $1\n", fs.WithMode(0755)),
+		fs.WithFile("sleep.sh", "#!/bin/sh\n\nexec sleep $1\n", fs.WithMode(0o755)),
 	)
 	t.Cleanup(tmpDir.Remove)
 	return tmpDir
@@ -21,7 +21,7 @@ func setupConfigTest(t *testing.T) *fs.Dir {
 
 func writeFile(t *testing.T, dir *fs.Dir, f, content string) {
 	f = dir.Join(f)
-	err := os.WriteFile(f, []byte(content), 0600)
+	err := os.WriteFile(f, []byte(content), 0o600)
 	if err != nil {
 		t.Fatal(err)
 	}

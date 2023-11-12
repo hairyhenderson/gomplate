@@ -48,11 +48,11 @@ func TestDatasource(t *testing.T) {
 		var uPath string
 		var f afero.File
 		if runtime.GOOS == osWindows {
-			_ = fs.Mkdir("C:\\tmp", 0777)
+			_ = fs.Mkdir("C:\\tmp", 0o777)
 			f, _ = fs.Create("C:\\tmp\\" + fname)
 			uPath = "C:/tmp/" + fname
 		} else {
-			_ = fs.Mkdir("/tmp", 0777)
+			_ = fs.Mkdir("/tmp", 0o777)
 			f, _ = fs.Create("/tmp/" + fname)
 			uPath = "/tmp/" + fname
 		}
@@ -105,11 +105,11 @@ func TestDatasourceReachable(t *testing.T) {
 	var uPath string
 	var f afero.File
 	if runtime.GOOS == osWindows {
-		_ = fs.Mkdir("C:\\tmp", 0777)
+		_ = fs.Mkdir("C:\\tmp", 0o777)
 		f, _ = fs.Create("C:\\tmp\\" + fname)
 		uPath = "C:/tmp/" + fname
 	} else {
-		_ = fs.Mkdir("/tmp", 0777)
+		_ = fs.Mkdir("/tmp", 0o777)
 		f, _ = fs.Create("/tmp/" + fname)
 		uPath = "/tmp/" + fname
 	}
@@ -152,11 +152,11 @@ func TestInclude(t *testing.T) {
 	var uPath string
 	var f afero.File
 	if runtime.GOOS == osWindows {
-		_ = fs.Mkdir("C:\\tmp", 0777)
+		_ = fs.Mkdir("C:\\tmp", 0o777)
 		f, _ = fs.Create("C:\\tmp\\" + fname)
 		uPath = "C:/tmp/" + fname
 	} else {
-		_ = fs.Mkdir("/tmp", 0777)
+		_ = fs.Mkdir("/tmp", 0o777)
 		f, _ = fs.Create("/tmp/" + fname)
 		uPath = "/tmp/" + fname
 	}
@@ -180,11 +180,11 @@ func TestInclude(t *testing.T) {
 
 type errorReader struct{}
 
-func (e errorReader) Read(p []byte) (n int, err error) {
+func (e errorReader) Read(_ []byte) (n int, err error) {
 	return 0, fmt.Errorf("error")
 }
 
-// nolint: megacheck
+//nolint:megacheck
 func TestDefineDatasource(t *testing.T) {
 	d := &Data{}
 	_, err := d.DefineDatasource("", "foo.json")
@@ -255,24 +255,36 @@ func TestMimeType(t *testing.T) {
 		mediaType string
 		expected  string
 	}{
-		{"http://example.com/foo.json",
+		{
+			"http://example.com/foo.json",
 			"",
-			jsonMimetype},
-		{"http://example.com/foo.json",
+			jsonMimetype,
+		},
+		{
+			"http://example.com/foo.json",
 			"text/foo",
-			"text/foo"},
-		{"http://example.com/foo.json?type=application/yaml",
 			"text/foo",
-			"application/yaml"},
-		{"http://example.com/list?type=application/array%2Bjson",
+		},
+		{
+			"http://example.com/foo.json?type=application/yaml",
 			"text/foo",
-			"application/array+json"},
-		{"http://example.com/list?type=application/array+json",
+			"application/yaml",
+		},
+		{
+			"http://example.com/list?type=application/array%2Bjson",
+			"text/foo",
+			"application/array+json",
+		},
+		{
+			"http://example.com/list?type=application/array+json",
 			"",
-			"application/array+json"},
-		{"http://example.com/unknown",
+			"application/array+json",
+		},
+		{
+			"http://example.com/unknown",
 			"",
-			"text/plain"},
+			"text/plain",
+		},
 	}
 
 	for i, d := range data {
@@ -297,38 +309,54 @@ func TestMimeTypeWithArg(t *testing.T) {
 		arg       string
 		expected  string
 	}{
-		{"http://example.com/unknown",
+		{
+			"http://example.com/unknown",
 			"",
 			"/foo.json",
-			"application/json"},
-		{"http://example.com/unknown",
+			"application/json",
+		},
+		{
+			"http://example.com/unknown",
 			"",
 			"foo.json",
-			"application/json"},
-		{"http://example.com/",
+			"application/json",
+		},
+		{
+			"http://example.com/",
 			"text/foo",
 			"/foo.json",
-			"text/foo"},
-		{"git+https://example.com/myrepo",
+			"text/foo",
+		},
+		{
+			"git+https://example.com/myrepo",
 			"",
 			"//foo.yaml",
-			"application/yaml"},
-		{"http://example.com/foo.json",
+			"application/yaml",
+		},
+		{
+			"http://example.com/foo.json",
 			"",
 			"/foo.yaml",
-			"application/yaml"},
-		{"http://example.com/foo.json?type=application/array+yaml",
+			"application/yaml",
+		},
+		{
+			"http://example.com/foo.json?type=application/array+yaml",
 			"",
 			"/foo.yaml",
-			"application/array+yaml"},
-		{"http://example.com/foo.json?type=application/array+yaml",
+			"application/array+yaml",
+		},
+		{
+			"http://example.com/foo.json?type=application/array+yaml",
 			"",
 			"/foo.yaml?type=application/yaml",
-			"application/yaml"},
-		{"http://example.com/foo.json?type=application/array+yaml",
+			"application/yaml",
+		},
+		{
+			"http://example.com/foo.json?type=application/array+yaml",
 			"text/plain",
 			"/foo.yaml?type=application/yaml",
-			"application/yaml"},
+			"application/yaml",
+		},
 	}
 
 	for i, d := range data {

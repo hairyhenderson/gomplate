@@ -23,11 +23,11 @@ func TestWalkDir(t *testing.T) {
 	_, err := walkDir(ctx, cfg, `C:\indir`, simpleNamer(`C:\outdir`), nil, 0, false)
 	assert.Error(t, err)
 
-	_ = aferoFS.MkdirAll(`C:\indir\one`, 0777)
-	_ = aferoFS.MkdirAll(`C:\indir\two`, 0777)
-	afero.WriteFile(aferoFS, `C:\indir\one\foo`, []byte("foo"), 0644)
-	afero.WriteFile(aferoFS, `C:\indir\one\bar`, []byte("bar"), 0644)
-	afero.WriteFile(aferoFS, `C:\indir\two\baz`, []byte("baz"), 0644)
+	_ = aferoFS.MkdirAll(`C:\indir\one`, 0o777)
+	_ = aferoFS.MkdirAll(`C:\indir\two`, 0o777)
+	afero.WriteFile(aferoFS, `C:\indir\one\foo`, []byte("foo"), 0o644)
+	afero.WriteFile(aferoFS, `C:\indir\one\bar`, []byte("bar"), 0o644)
+	afero.WriteFile(aferoFS, `C:\indir\two\baz`, []byte("baz"), 0o644)
 
 	templates, err := walkDir(ctx, cfg, `C:\indir`, simpleNamer(`C:\outdir`), []string{`*\two`}, 0, false)
 

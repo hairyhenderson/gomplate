@@ -18,7 +18,7 @@ func TestCreatePathFuncs(t *testing.T) {
 			fmap := CreatePathFuncs(ctx)
 			actual := fmap["path"].(func() interface{})
 
-			assert.Same(t, ctx, actual().(*PathFuncs).ctx)
+			assert.Equal(t, ctx, actual().(*PathFuncs).ctx)
 		})
 	}
 }

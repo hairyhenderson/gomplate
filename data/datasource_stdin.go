@@ -8,7 +8,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-func readStdin(ctx context.Context, source *Source, args ...string) ([]byte, error) {
+func readStdin(ctx context.Context, _ *Source, _ ...string) ([]byte, error) {
 	stdin := stdinFromContext(ctx)
 
 	b, err := io.ReadAll(stdin)

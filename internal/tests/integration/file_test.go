@@ -28,7 +28,7 @@ func TestFile_Write(t *testing.T) {
 	tmpDir := setupFileTest(t)
 
 	outDir := tmpDir.Join("writeOutput")
-	os.MkdirAll(outDir, 0755)
+	os.MkdirAll(outDir, 0o755)
 	o, e, err := cmd(t, "-i", `{{ "hello world" | file.Write "./out" }}`).
 		withDir(outDir).run()
 	assertSuccess(t, o, e, err, "")

@@ -29,7 +29,7 @@ type FakeStore struct {
 	data []*store.KVPair
 }
 
-func (s *FakeStore) Put(key string, value []byte, options *store.WriteOptions) error {
+func (s *FakeStore) Put(_ string, _ []byte, _ *store.WriteOptions) error {
 	return nil
 }
 
@@ -46,39 +46,39 @@ func (s *FakeStore) Get(key string) (*store.KVPair, error) {
 	return nil, nil
 }
 
-func (s *FakeStore) Delete(key string) error {
+func (s *FakeStore) Delete(_ string) error {
 	return nil
 }
 
-func (s *FakeStore) Exists(key string) (bool, error) {
+func (s *FakeStore) Exists(_ string) (bool, error) {
 	return false, nil
 }
 
-func (s *FakeStore) Watch(key string, stopCh <-chan struct{}) (<-chan *store.KVPair, error) {
+func (s *FakeStore) Watch(_ string, _ <-chan struct{}) (<-chan *store.KVPair, error) {
 	return nil, nil
 }
 
-func (s *FakeStore) WatchTree(directory string, stopCh <-chan struct{}) (<-chan []*store.KVPair, error) {
+func (s *FakeStore) WatchTree(_ string, _ <-chan struct{}) (<-chan []*store.KVPair, error) {
 	return nil, nil
 }
 
-func (s *FakeStore) NewLock(key string, options *store.LockOptions) (store.Locker, error) {
+func (s *FakeStore) NewLock(_ string, _ *store.LockOptions) (store.Locker, error) {
 	return nil, nil
 }
 
-func (s *FakeStore) List(directory string) ([]*store.KVPair, error) {
+func (s *FakeStore) List(_ string) ([]*store.KVPair, error) {
 	return nil, nil
 }
 
-func (s *FakeStore) DeleteTree(directory string) error {
+func (s *FakeStore) DeleteTree(_ string) error {
 	return nil
 }
 
-func (s *FakeStore) AtomicPut(key string, value []byte, previous *store.KVPair, options *store.WriteOptions) (bool, *store.KVPair, error) {
+func (s *FakeStore) AtomicPut(_ string, _ []byte, _ *store.KVPair, _ *store.WriteOptions) (bool, *store.KVPair, error) {
 	return false, nil, nil
 }
 
-func (s *FakeStore) AtomicDelete(key string, previous *store.KVPair) (bool, error) {
+func (s *FakeStore) AtomicDelete(_ string, _ *store.KVPair) (bool, error) {
 	return false, nil
 }
 

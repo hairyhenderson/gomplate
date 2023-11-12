@@ -5,7 +5,6 @@ import (
 )
 
 func TestDatasources_Env(t *testing.T) {
-
 	o, e, err := cmd(t, "-d", "foo=env:FOO", "-i", `{{ ds "foo" }}`).
 		withEnv("HELLO_WORLD", "hello world").
 		withEnv("HELLO_UNIVERSE", "hello universe").

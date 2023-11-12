@@ -235,7 +235,7 @@ func processIncludes(includes, excludes []string) []string {
 	return out
 }
 
-func applyEnvVars(ctx context.Context, cfg *config.Config) (*config.Config, error) {
+func applyEnvVars(_ context.Context, cfg *config.Config) (*config.Config, error) {
 	if to := env.Getenv("GOMPLATE_PLUGIN_TIMEOUT"); cfg.PluginTimeout == 0 && to != "" {
 		t, err := time.ParseDuration(to)
 		if err != nil {

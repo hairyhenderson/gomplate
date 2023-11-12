@@ -18,7 +18,7 @@ func TestCreateFilePathFuncs(t *testing.T) {
 			fmap := CreateFilePathFuncs(ctx)
 			actual := fmap["filepath"].(func() interface{})
 
-			assert.Same(t, ctx, actual().(*FilePathFuncs).ctx)
+			assert.Equal(t, ctx, actual().(*FilePathFuncs).ctx)
 		})
 	}
 }

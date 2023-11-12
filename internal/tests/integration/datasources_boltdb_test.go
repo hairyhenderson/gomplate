@@ -12,7 +12,7 @@ func setupDatasourcesBoltDBTest(t *testing.T) *fs.Dir {
 	tmpDir := fs.NewDir(t, "gomplate-inttests")
 	t.Cleanup(tmpDir.Remove)
 
-	db, err := bbolt.Open(tmpDir.Join("config.db"), 0600, nil)
+	db, err := bbolt.Open(tmpDir.Join("config.db"), 0o600, nil)
 	require.NoError(t, err)
 	defer db.Close()
 

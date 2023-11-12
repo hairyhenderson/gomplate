@@ -57,7 +57,7 @@ func (o *Config) defaults() *Config {
 	return o
 }
 
-// nolint: gocyclo
+//nolint:gocyclo
 func (o *Config) String() string {
 	o.defaults()
 

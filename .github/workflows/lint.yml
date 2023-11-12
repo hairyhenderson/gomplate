@@ -15,8 +15,7 @@ jobs:
     steps:
       - uses: actions/setup-go@v3
         with:
-          # Use 1.18 rather than 1.19 for linting due to https://github.com/golangci/golangci-lint/issues/2374
-          go-version: 1.18
+          go-version: '1.21'
       - uses: actions/checkout@v3
       - name: golangci-lint
         uses: golangci/golangci-lint-action@v3

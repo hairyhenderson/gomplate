@@ -6,8 +6,10 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-type m = map[string]interface{}
-type ar = []interface{}
+type (
+	m  = map[string]interface{}
+	ar = []interface{}
+)
 
 func TestJSONPath(t *testing.T) {
 	in := m{

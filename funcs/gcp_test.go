@@ -18,7 +18,7 @@ func TestCreateGCPFuncs(t *testing.T) {
 			fmap := CreateGCPFuncs(ctx)
 			actual := fmap["gcp"].(func() interface{})
 
-			assert.Same(t, ctx, actual().(*GcpFuncs).ctx)
+			assert.Equal(t, ctx, actual().(*GcpFuncs).ctx)
 		})
 	}
 }

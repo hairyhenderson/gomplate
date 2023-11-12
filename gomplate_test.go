@@ -6,7 +6,6 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
-
 	"text/template"
 
 	"github.com/hairyhenderson/gomplate/v3/aws"

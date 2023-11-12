@@ -157,7 +157,6 @@ func (p *plugin) run(args ...interface{}) (interface{}, error) {
 		case sig := <-sigs:
 			// Pass signals to the sub-process
 			if c.Process != nil {
-				// nolint: gosec
 				_ = c.Process.Signal(sig)
 			}
 		case <-ctx.Done():
