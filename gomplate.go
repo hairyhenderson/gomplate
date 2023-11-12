@@ -97,7 +97,7 @@ func mappingNamer(outMap string, tr *Renderer) func(context.Context, string) (st
 		// add '.in' to the template context and preserve the original context
 		// in '.ctx'
 		tctx := &tmplctx{}
-		// nolint: gocritic
+		//nolint: gocritic
 		switch c := tcontext.(type) {
 		case *tmplctx:
 			for k, v := range *c {

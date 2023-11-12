@@ -20,7 +20,7 @@ type DummyAWSSecretsManagerSecretGetter struct {
 	mockGetSecretValue func(input *secretsmanager.GetSecretValueInput) (*secretsmanager.GetSecretValueOutput, error)
 }
 
-func (d DummyAWSSecretsManagerSecretGetter) GetSecretValueWithContext(ctx context.Context, input *secretsmanager.GetSecretValueInput, opts ...request.Option) (*secretsmanager.GetSecretValueOutput, error) {
+func (d DummyAWSSecretsManagerSecretGetter) GetSecretValueWithContext(_ context.Context, input *secretsmanager.GetSecretValueInput, _ ...request.Option) (*secretsmanager.GetSecretValueOutput, error) {
 	if d.mockGetSecretValue != nil {
 		output, err := d.mockGetSecretValue(input)
 		return output, err

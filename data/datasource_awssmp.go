@@ -46,7 +46,6 @@ func readAWSSMPParam(ctx context.Context, source *Source, paramPath string) ([]b
 	}
 
 	response, err := source.asmpg.GetParameterWithContext(ctx, input)
-
 	if err != nil {
 		return nil, errors.Wrapf(err, "Error reading aws+smp from AWS using GetParameter with input %v", input)
 	}

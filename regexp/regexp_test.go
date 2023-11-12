@@ -37,6 +37,7 @@ func TestFindAll(t *testing.T) {
 		assert.EqualValues(t, d.expected, f)
 	}
 }
+
 func TestMatch(t *testing.T) {
 	assert.True(t, Match(`^[a-z]+\[[0-9]+\]$`, "adam[23]"))
 	assert.True(t, Match(`^[a-z]+\[[0-9]+\]$`, "eve[7]"))

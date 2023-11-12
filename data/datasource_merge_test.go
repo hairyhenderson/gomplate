@@ -23,7 +23,7 @@ func TestReadMerge(t *testing.T) {
 
 	fs := afero.NewMemMapFs()
 
-	_ = fs.Mkdir("/tmp", 0777)
+	_ = fs.Mkdir("/tmp", 0o777)
 	f, _ := fs.Create("/tmp/jsonfile.json")
 	_, _ = f.WriteString(jsonContent)
 	f, _ = fs.Create("/tmp/array.json")
@@ -34,7 +34,7 @@ func TestReadMerge(t *testing.T) {
 	_, _ = f.WriteString(`plain text...`)
 
 	wd, _ := os.Getwd()
-	_ = fs.Mkdir(wd, 0777)
+	_ = fs.Mkdir(wd, 0o777)
 	f, _ = fs.Create(filepath.Join(wd, "jsonfile.json"))
 	_, _ = f.WriteString(jsonContent)
 	f, _ = fs.Create(filepath.Join(wd, "array.json"))

@@ -9,6 +9,7 @@ import (
 	"context"
 	"fmt"
 	"reflect"
+	"strings"
 	"unicode/utf8"
 
 	"github.com/Masterminds/goutils"
@@ -17,8 +18,6 @@ import (
 	"github.com/pkg/errors"
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
-
-	"strings"
 
 	"github.com/gosimple/slug"
 	gompstrings "github.com/hairyhenderson/gomplate/v3/strings"

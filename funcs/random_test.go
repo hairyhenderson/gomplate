@@ -87,8 +87,8 @@ func TestToCodePoints(t *testing.T) {
 
 	l, u, err = toCodePoints("0011", "0777")
 	assert.NoError(t, err)
-	assert.Equal(t, rune(0011), l)
-	assert.Equal(t, rune(0777), u)
+	assert.Equal(t, rune(0o011), l)
+	assert.Equal(t, rune(0o777), u)
 
 	l, u, err = toCodePoints("♬", "♟")
 	assert.NoError(t, err)

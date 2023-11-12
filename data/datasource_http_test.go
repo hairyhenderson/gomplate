@@ -21,7 +21,6 @@ func must(r interface{}, err error) interface{} {
 
 func setupHTTP(code int, mimetype string, body string) (*httptest.Server, *http.Client) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-
 		w.Header().Set("Content-Type", mimetype)
 		w.WriteHeader(code)
 		if body == "" {

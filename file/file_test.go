@@ -14,7 +14,7 @@ func TestRead(t *testing.T) {
 	origfs := fs
 	defer func() { fs = origfs }()
 	fs = afero.NewMemMapFs()
-	_ = fs.Mkdir("/tmp", 0777)
+	_ = fs.Mkdir("/tmp", 0o777)
 	f, _ := fs.Create("/tmp/foo")
 	_, _ = f.Write([]byte("foo"))
 
@@ -30,11 +30,11 @@ func TestReadDir(t *testing.T) {
 	origfs := fs
 	defer func() { fs = origfs }()
 	fs = afero.NewMemMapFs()
-	fs.Mkdir("/tmp", 0777)
+	fs.Mkdir("/tmp", 0o777)
 	fs.Create("/tmp/foo")
 	fs.Create("/tmp/bar")
 	fs.Create("/tmp/baz")
-	fs.Mkdir("/tmp/qux", 0777)
+	fs.Mkdir("/tmp/qux", 0o777)
 	fs.Create("/tmp/qux/quux")
 
 	actual, err := ReadDir("/tmp")
@@ -54,8 +54,8 @@ func TestWrite(t *testing.T) {
 
 	newwd := rootDir.Join("the", "path", "we", "want")
 	badwd := rootDir.Join("some", "other", "dir")
-	fs.MkdirAll(newwd, 0755)
-	fs.MkdirAll(badwd, 0755)
+	fs.MkdirAll(newwd, 0o755)
+	fs.MkdirAll(badwd, 0o755)
 	newwd, _ = filepath.EvalSymlinks(newwd)
 	badwd, _ = filepath.EvalSymlinks(badwd)
 

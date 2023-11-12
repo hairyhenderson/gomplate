@@ -7,7 +7,7 @@ import (
 	"github.com/hairyhenderson/gomplate/v3/libkv"
 )
 
-func readConsul(ctx context.Context, source *Source, args ...string) (data []byte, err error) {
+func readConsul(_ context.Context, source *Source, args ...string) (data []byte, err error) {
 	if source.kv == nil {
 		source.kv, err = libkv.NewConsul(source.URL)
 		if err != nil {

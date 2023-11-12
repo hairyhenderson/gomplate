@@ -104,7 +104,6 @@ func (c *MetaClient) retrieveMetadata(url string, def ...string) (string, error)
 		return returnDefault(def), nil
 	}
 
-	// nolint: errcheck
 	defer resp.Body.Close()
 	if resp.StatusCode > 399 {
 		return returnDefault(def), nil

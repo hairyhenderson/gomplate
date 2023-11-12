@@ -18,7 +18,7 @@ func TestGetenv(t *testing.T) {
 
 func TestGetenvFile(t *testing.T) {
 	fs := afero.NewMemMapFs()
-	_ = fs.Mkdir("/tmp", 0777)
+	_ = fs.Mkdir("/tmp", 0o777)
 	f, _ := fs.Create("/tmp/foo")
 	_, _ = f.Write([]byte("foo"))
 
@@ -45,7 +45,7 @@ func TestExpandEnv(t *testing.T) {
 
 func TestExpandEnvFile(t *testing.T) {
 	fs := afero.NewMemMapFs()
-	_ = fs.Mkdir("/tmp", 0777)
+	_ = fs.Mkdir("/tmp", 0o777)
 	f, _ := fs.Create("/tmp/foo")
 	_, _ = f.Write([]byte("foo"))
 
@@ -92,11 +92,11 @@ func (fs woFS) OpenFile(name string, flag int, perm os.FileMode) (afero.File, er
 	return writeOnlyFile(f), nil
 }
 
-func (fs woFS) ReadDir(path string) ([]os.FileInfo, error) {
+func (fs woFS) ReadDir(_ string) ([]os.FileInfo, error) {
 	return nil, ErrWriteOnly
 }
 
-func (fs woFS) Stat(name string) (os.FileInfo, error) {
+func (fs woFS) Stat(_ string) (os.FileInfo, error) {
 	return nil, ErrWriteOnly
 }
 

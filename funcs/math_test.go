@@ -91,6 +91,7 @@ func mustSeq(t *testing.T, n ...interface{}) []int64 {
 	}
 	return s
 }
+
 func TestSeq(t *testing.T) {
 	m := MathFuncs{}
 	assert.EqualValues(t, []int64{0, 1, 2, 3}, mustSeq(t, 0, 3))

@@ -71,7 +71,7 @@ func TestTmpl_Exec(t *testing.T) {
 `)
 
 	outDir := tmpDir.Join("out")
-	err = os.MkdirAll(outDir, 0755)
+	err = os.MkdirAll(outDir, 0o755)
 	if err != nil {
 		assert.NilError(t, err)
 	}

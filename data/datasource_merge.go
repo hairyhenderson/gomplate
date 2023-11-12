@@ -20,7 +20,7 @@ import (
 // the source data. To merge datasources with query strings or fragments, define
 // separate sources first and specify the alias names. HTTP headers are also not
 // supported directly.
-func (d *Data) readMerge(ctx context.Context, source *Source, args ...string) ([]byte, error) {
+func (d *Data) readMerge(ctx context.Context, source *Source, _ ...string) ([]byte, error) {
 	opaque := source.URL.Opaque
 	parts := strings.Split(opaque, "|")
 	if len(parts) < 2 {

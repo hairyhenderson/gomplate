@@ -13,12 +13,12 @@ import (
 
 func setupPluginsTest(t *testing.T) *fs.Dir {
 	tmpDir := fs.NewDir(t, "gomplate-inttests",
-		fs.WithFile("foo.ps1", "echo $args\r\nexit 0\r\n", fs.WithMode(0644)),
-		fs.WithFile("foo.bat", "@ECHO OFF\r\nECHO %1\r\n", fs.WithMode(0644)),
+		fs.WithFile("foo.ps1", "echo $args\r\nexit 0\r\n", fs.WithMode(0o644)),
+		fs.WithFile("foo.bat", "@ECHO OFF\r\nECHO %1\r\n", fs.WithMode(0o644)),
 		fs.WithFile("fail.bat", `@ECHO OFF
 ECHO %1 1>&2
 EXIT /B %2
-`, fs.WithMode(0755)),
+`, fs.WithMode(0o755)),
 		fs.WithFile("fail.ps1", `param (
        [Parameter(Position=0)]
        [string]$msg,
@@ -28,7 +28,7 @@ EXIT /B %2
 )
 $host.ui.WriteErrorLine($msg)
 $host.SetShouldExit($code)
-`, fs.WithMode(0755)),
+`, fs.WithMode(0o755)),
 	)
 	t.Cleanup(tmpDir.Remove)
 

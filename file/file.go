@@ -22,8 +22,9 @@ func Read(filename string) (string, error) {
 	if err != nil {
 		return "", errors.Wrapf(err, "failed to open %s", filename)
 	}
-	// nolint: errcheck
+
 	defer inFile.Close()
+
 	bytes, err := io.ReadAll(inFile)
 	if err != nil {
 		err = errors.Wrapf(err, "read failed for %s", filename)

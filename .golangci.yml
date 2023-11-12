@@ -1,8 +1,7 @@
 linters-settings:
   govet:
     check-shadowing: true
-    enable:
-      - fieldalignment
+    enable-all: true
   golint:
     min-confidence: 0
   gocyclo:
@@ -11,7 +10,8 @@ linters-settings:
     threshold: 100
   goconst:
     min-len: 2
-    min-occurrences: 4
+    min-occurrences: 5
+    ignore-tests: true
   lll:
     line-length: 140
   nolintlint:
@@ -25,11 +25,9 @@ linters:
   enable:
     - asciicheck
     - bodyclose
-    - deadcode
-    - depguard
     # - dogsled
     # - dupl
-    # - errcheck
+    - errcheck
     # - exhaustive
     - exportloopref
     # - funlen
@@ -42,7 +40,7 @@ linters:
     # - gocyclo
     # - godox
     - gofmt
-    # - gofumpt
+    - gofumpt
     - goheader
     - goimports
     # - gomnd
@@ -58,21 +56,25 @@ linters:
     - nestif
     # - nlreturn
     # - noctx
-    # - nolintlint
+    - nolintlint
     - prealloc
     - revive
     - rowserrcheck
     - sqlclosecheck
     - staticcheck
-    - structcheck
     - stylecheck
     - typecheck
     - unconvert
     # - unparam
     - unused
-    - varcheck
-    # - whitespace
+    - whitespace
     # - wsl
+
+issues:
+  exclude-rules:
+    - path: _test\.go
+      linters:
+        - errcheck
 
 run:
   concurrency: 4

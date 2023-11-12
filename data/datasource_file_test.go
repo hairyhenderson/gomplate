@@ -15,11 +15,11 @@ func TestReadFile(t *testing.T) {
 	content := []byte(`hello world`)
 	fs := afero.NewMemMapFs()
 
-	_ = fs.Mkdir("/tmp", 0777)
+	_ = fs.Mkdir("/tmp", 0o777)
 	f, _ := fs.Create("/tmp/foo")
 	_, _ = f.Write(content)
 
-	_ = fs.Mkdir("/tmp/partial", 0777)
+	_ = fs.Mkdir("/tmp/partial", 0o777)
 	f, _ = fs.Create("/tmp/partial/foo.txt")
 	_, _ = f.Write(content)
 	_, _ = fs.Create("/tmp/partial/bar.txt")
