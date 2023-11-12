@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1.3.1-labs
 FROM --platform=linux/amd64 hairyhenderson/upx:3.94 AS upx
 
-FROM --platform=linux/amd64 golang:1.20-alpine AS build
+FROM --platform=linux/amd64 golang:1.21-alpine AS build
 
 ARG TARGETOS
 ARG TARGETARCH
@@ -25,7 +25,7 @@ RUN --mount=type=cache,id=go-build-${TARGETOS}-${TARGETARCH}${TARGETVARIANT},tar
 		make build
 RUN mv bin/gomplate* /bin/
 
-FROM --platform=linux/amd64 alpine:3.17 AS compress
+FROM --platform=linux/amd64 alpine:3.18 AS compress
 
 ARG TARGETOS
 ARG TARGETARCH
@@ -61,7 +61,7 @@ COPY --from=build /bin/gomplate_${TARGETOS}-${TARGETARCH}${TARGETVARIANT} /gompl
 
 ENTRYPOINT [ "/gomplate" ]
 
-FROM alpine:3.17 AS gomplate-alpine
+FROM alpine:3.18 AS gomplate-alpine
 
 ARG VCS_REF
 ARG TARGETOS
@@ -70,6 +70,9 @@ ARG TARGETVARIANT
 
 LABEL org.opencontainers.image.revision=$VCS_REF \
 	org.opencontainers.image.source="https://github.com/hairyhenderson/gomplate"
+
+# tmp patch for CVE-2023-5363
+RUN apk upgrade --no-cache libcrypto3 libssl3
 
 COPY --from=build /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
 COPY --from=build /bin/gomplate_${TARGETOS}-${TARGETARCH}${TARGETVARIANT} /bin/gomplate
