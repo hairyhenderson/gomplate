@@ -6,6 +6,7 @@ DOCKER_REPO ?= hairyhenderson/$(PKG_NAME)
 PREFIX := .
 DOCKER_LINUX_PLATFORMS ?= linux/amd64,linux/arm64,linux/arm/v6,linux/arm/v7,linux/ppc64le,linux/s390x
 DOCKER_PLATFORMS ?= $(DOCKER_LINUX_PLATFORMS),windows/amd64
+DOCKER_COMPRESSED_PLATFORMS ?= linux/amd64,linux/arm64,linux/arm/v6,linux/arm/v7,linux/ppc64le,windows/amd64
 # we just load by default, as a "dry run"
 BUILDX_ACTION ?= --load
 TAG_LATEST ?= latest
@@ -114,7 +115,7 @@ docker-multi: Dockerfile
 		$(BUILDX_ACTION) .
 	docker buildx build \
 		--build-arg VCS_REF=$(COMMIT) \
-		--platform $(DOCKER_PLATFORMS) \
+		--platform $(DOCKER_COMPRESSED_PLATFORMS) \
 		--tag $(DOCKER_REPO):$(TAG_SLIM) \
 		--target gomplate-slim \
 		$(BUILDX_ACTION) .
