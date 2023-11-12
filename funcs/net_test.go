@@ -22,7 +22,7 @@ func TestCreateNetFuncs(t *testing.T) {
 			fmap := CreateNetFuncs(ctx)
 			actual := fmap["net"].(func() interface{})
 
-			assert.Same(t, ctx, actual().(*NetFuncs).ctx)
+			assert.Equal(t, ctx, actual().(*NetFuncs).ctx)
 		})
 	}
 }

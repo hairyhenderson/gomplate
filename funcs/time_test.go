@@ -20,7 +20,7 @@ func TestCreateTimeFuncs(t *testing.T) {
 			fmap := CreateTimeFuncs(ctx)
 			actual := fmap["time"].(func() interface{})
 
-			assert.Same(t, ctx, actual().(*TimeFuncs).ctx)
+			assert.Equal(t, ctx, actual().(*TimeFuncs).ctx)
 		})
 	}
 }

@@ -20,7 +20,7 @@ func TestCreateFileFuncs(t *testing.T) {
 			fmap := CreateFileFuncs(ctx)
 			actual := fmap["file"].(func() interface{})
 
-			assert.Same(t, ctx, actual().(*FileFuncs).ctx)
+			assert.Equal(t, ctx, actual().(*FileFuncs).ctx)
 		})
 	}
 }

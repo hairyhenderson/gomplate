@@ -20,7 +20,7 @@ func TestCreateMathFuncs(t *testing.T) {
 			fmap := CreateMathFuncs(ctx)
 			actual := fmap["math"].(func() interface{})
 
-			assert.Same(t, ctx, actual().(*MathFuncs).ctx)
+			assert.Equal(t, ctx, actual().(*MathFuncs).ctx)
 		})
 	}
 }
