@@ -2,7 +2,7 @@ ns: semver
 preamble: |
   These functions allow user you to parse a [semantic version](http://semver.org/) string or test it with constraint.
   
-  It's implemented with https://github.com/Masterminds/semver.
+  It's implemented with the https://github.com/Masterminds/semver library.
 funcs:
   - name: semver.Semver
     description: |
