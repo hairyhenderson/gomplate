@@ -3,6 +3,8 @@ package funcs
 import (
 	"context"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestSemverFuncs_MatchConstraint(t *testing.T) {
@@ -45,15 +47,14 @@ func TestSemverFuncs_MatchConstraint(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			s := SemverFuncs{
-				ctx: context.TODO(),
+				ctx: context.Background(),
 			}
-			got, err := s.MatchConstraint(tt.constraint, tt.in)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("SemverFuncs.MatchConstraint() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if got != tt.want {
-				t.Errorf("SemverFuncs.MatchConstraint() = %v, want %v", got, tt.want)
+			got, err := s.CheckConstraint(tt.constraint, tt.in)
+			if tt.wantErr {
+				assert.Errorf(t, err, "SemverFuncs.CheckConstraint() error = %v, wantErr %v", err, tt.wantErr)
+			} else {
+				assert.NoErrorf(t, err, "SemverFuncs.CheckConstraint() error = %v, wantErr %v", err, tt.wantErr)
+				assert.Equal(t, tt.want, got)
 			}
 		})
 	}

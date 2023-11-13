@@ -24,8 +24,8 @@ func (SemverFuncs) Semver(version string) (*semver.Version, error) {
 	return semver.NewVersion(version)
 }
 
-// MatchConstraint -
-func (SemverFuncs) MatchConstraint(constraint, in string) (bool, error) {
+// CheckConstraint -
+func (SemverFuncs) CheckConstraint(constraint, in string) (bool, error) {
 	c, err := semver.NewConstraint(constraint)
 	if err != nil {
 		return false, err
