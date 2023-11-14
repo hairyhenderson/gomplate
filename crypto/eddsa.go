@@ -19,9 +19,12 @@ func Ed25519GenerateKey() ([]byte, error) {
 }
 
 // Ed25519GenerateKeyFromSeed returns a PEM encoded Ed25519 Private Key from
-// `seed`. Panics if len(seed) is not SeedSize.
+// `seed`. Returns error if len(seed) is not ed25519.SeedSize (32).
 func Ed25519GenerateKeyFromSeed(seed []byte) ([]byte, error) {
-	return pemEncodeEdPrivateKey(ed25519.NewKeyFromSeed(seed)) // Panics
+	if len(seed) != ed25519.SeedSize {
+		return nil, fmt.Errorf("Ed25519GenerateKeyFromSeed: incorrect seed size - given: %d wanted %d", len(seed), ed25519.SeedSize)
+	}
+	return pemEncodeEdPrivateKey(ed25519.NewKeyFromSeed(seed))
 }
 
 // Ed25519DerivePublicKey returns an ed25519 Public Key from given PEM encoded
@@ -29,11 +32,11 @@ func Ed25519GenerateKeyFromSeed(seed []byte) ([]byte, error) {
 func Ed25519DerivePublicKey(privatekey []byte) ([]byte, error) {
 	secret, err := ed25519DecodeFromPEM(privatekey)
 	if err != nil {
-		return nil, fmt.Errorf("EDDSADerivePublicKey: could not decode private key")
+		return nil, fmt.Errorf("ed25519DecodeFromPEM: could not decode private key: %w", err)
 	}
 	b, err := x509.MarshalPKIXPublicKey(secret.Public())
 	if err != nil {
-		return nil, fmt.Errorf("EDDSADerivePublicKey: failed to marshal PKIX public key: %w", err)
+		return nil, fmt.Errorf("MarshalPKIXPublicKey: failed to marshal PKIX public key: %w", err)
 	}
 	return pem.EncodeToMemory(&pem.Block{
 		Type:  "PUBLIC KEY",
@@ -45,7 +48,7 @@ func Ed25519DerivePublicKey(privatekey []byte) ([]byte, error) {
 func pemEncodeEdPrivateKey(secret ed25519.PrivateKey) ([]byte, error) {
 	der, err := x509.MarshalPKCS8PrivateKey(secret)
 	if err != nil {
-		return nil, fmt.Errorf("pemEncodeEdPrivateKey: failed to marshal ECDSA private key: %w", err)
+		return nil, fmt.Errorf("MarshalPKCS8PrivateKey: failed to marshal ed25519 private key: %w", err)
 	}
 	block := &pem.Block{
 		Type:  "PRIVATE KEY",
@@ -54,7 +57,7 @@ func pemEncodeEdPrivateKey(secret ed25519.PrivateKey) ([]byte, error) {
 	buf := &bytes.Buffer{}
 	err = pem.Encode(buf, block)
 	if err != nil {
-		return nil, fmt.Errorf("pemEncodeEdPrivateKey: failed to encode generated EDDSA private key: pem encoding failed: %w", err)
+		return nil, fmt.Errorf("Encode: failed to encode generated ed25519 private key: PEM encoding failed: %w", err)
 	}
 	return buf.Bytes(), nil
 }
@@ -64,15 +67,15 @@ func pemEncodeEdPrivateKey(secret ed25519.PrivateKey) ([]byte, error) {
 func ed25519DecodeFromPEM(privatekey []byte) (ed25519.PrivateKey, error) {
 	block, _ := pem.Decode(privatekey)
 	if block == nil {
-		return nil, fmt.Errorf("ed25519DecodeFromPEM: failed to read key: no key found")
+		return nil, fmt.Errorf("Decode: failed to read key")
 	}
 	priv, err := x509.ParsePKCS8PrivateKey(block.Bytes)
 	if err != nil {
-		return nil, fmt.Errorf("ed25519DecodeFromPEM: invalid private key: %w", err)
+		return nil, fmt.Errorf("ParsePKCS8PrivateKey: invalid private key: %w", err)
 	}
 	secret, ok := priv.(ed25519.PrivateKey)
 	if !ok {
-		return nil, fmt.Errorf("ed25519DecodeFromPEM: invalid private key: %w", err)
+		return nil, fmt.Errorf("ed25519DecodeFromPEM: invalid ed25519 Private Key - given type: %T", priv)
 	}
 	return secret, nil
 }
