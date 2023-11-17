@@ -2,6 +2,7 @@ name: Docker Build
 on:
   push:
     branches: [ main, 3.11.x ]
+    tags: [ 'v*', '!v*-pre*']
   pull_request:
     branches: [ main, 3.11.x ]
   workflow_dispatch:
