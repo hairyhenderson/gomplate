@@ -4,6 +4,7 @@ on:
     branches: [ main, 3.11.x ]
   pull_request:
     branches: [ main, 3.11.x ]
+  workflow_dispatch:
 
 jobs:
   docker-build:
