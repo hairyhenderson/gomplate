@@ -5,6 +5,7 @@ on:
     tags: [ 'v*', '!v*-pre*']
   pull_request:
     branches: [ main ]
+  workflow_dispatch:
 
 jobs:
   docker-build:
