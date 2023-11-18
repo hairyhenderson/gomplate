@@ -156,5 +156,5 @@ func ExampleRenderer_datasources() {
 	}
 
 	// Output:
-	// 🚏 The Berlin Hbf transit station has 18 entrances.
+	// 🚏 The Berlin Hbf transit station has 20 entrances.
 }
