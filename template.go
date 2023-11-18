@@ -90,7 +90,12 @@ func parseNestedTemplates(ctx context.Context, nested config.Templates, tmpl *te
 		}
 
 		// TODO: maybe need to do something with root here?
-		if _, reldir := datafs.ResolveLocalPath(u.Path); reldir != "" && reldir != "." {
+		_, reldir, err := datafs.ResolveLocalPath(u.Path)
+		if err != nil {
+			return fmt.Errorf("resolveLocalPath: %w", err)
+		}
+
+		if reldir != "" && reldir != "." {
 			fsys, err = fs.Sub(fsys, reldir)
 			if err != nil {
 				return fmt.Errorf("sub filesystem for %q unavailable: %w", &u, err)
@@ -220,7 +225,10 @@ func walkDir(ctx context.Context, cfg *config.Config, dir string, outFileNamer f
 
 	// we need dir to be relative to the root of fsys
 	// TODO: maybe need to do something with root here?
-	_, reldir := datafs.ResolveLocalPath(dir)
+	_, reldir, err := datafs.ResolveLocalPath(dir)
+	if err != nil {
+		return nil, fmt.Errorf("resolveLocalPath: %w", err)
+	}
 
 	subfsys, err := fs.Sub(fsys, reldir)
 	if err != nil {

@@ -33,8 +33,8 @@ func setupDatasourcesGitTest(t *testing.T) *fs.Dir {
 
 	repoPath := tmpDir.Join("repo")
 
-	icmd.RunCommand("git", "init", repoPath).
-		Assert(t, icmd.Expected{Out: "Initialized empty Git repository"})
+	icmd.RunCmd(icmd.Command("git", "init", repoPath), icmd.Dir(repoPath)).
+		Assert(t, icmd.Expected{Out: "Initialized empty Git repository in "})
 	icmd.RunCmd(icmd.Command("git", "add", "config.json"), icmd.Dir(repoPath)).Assert(t, icmd.Expected{})
 	icmd.RunCmd(icmd.Command("git", "add", "jsonfile"), icmd.Dir(repoPath)).Assert(t, icmd.Expected{})
 	icmd.RunCmd(icmd.Command("git", "add", "subdir"), icmd.Dir(repoPath)).Assert(t, icmd.Expected{})

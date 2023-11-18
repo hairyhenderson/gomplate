@@ -170,12 +170,17 @@ func TestResolveLocalPath_NonWindows(t *testing.T) {
 		{"tmp/foo", wd + "/tmp/foo"},
 		{"./tmp/foo", wd + "/tmp/foo"},
 		{"tmp/../foo", wd + "/foo"},
+		{"/", "."},
 	}
 
 	for _, td := range testdata {
-		root, path := ResolveLocalPath(td.path)
-		assert.Equal(t, "/", root)
-		assert.Equal(t, td.expected, path)
+		td := td
+		t.Run(td.path, func(t *testing.T) {
+			root, path, err := ResolveLocalPath(td.path)
+			require.NoError(t, err)
+			assert.Equal(t, "/", root)
+			assert.Equal(t, td.expected, path)
+		})
 	}
 }
 
@@ -203,7 +208,8 @@ func TestResolveLocalPath_Windows(t *testing.T) {
 	for _, td := range testdata {
 		td := td
 		t.Run(td.path, func(t *testing.T) {
-			root, path := ResolveLocalPath(td.path)
+			root, path, err := ResolveLocalPath(td.path)
+			require.NoError(t, err)
 			assert.Equal(t, td.expRoot, root)
 			assert.Equal(t, td.expected, path)
 		})
@@ -224,12 +230,14 @@ func TestWdFS_ResolveLocalPath_NonWindows(t *testing.T) {
 		{"tmp/foo", wd + "/tmp/foo"},
 		{"./tmp/foo", wd + "/tmp/foo"},
 		{"tmp/../foo", wd + "/foo"},
+		{"/", "."},
 	}
 
 	fsys := &wdFS{}
 
 	for _, td := range testdata {
-		root, path := fsys.resolveLocalPath(td.path)
+		root, path, err := fsys.resolveLocalPath(td.path)
+		require.NoError(t, err)
 		assert.Equal(t, "/", root)
 		assert.Equal(t, td.expected, path)
 	}
@@ -249,14 +257,14 @@ func TestWdFS_ResolveLocalPath_Windows(t *testing.T) {
 		expected string
 	}{
 		{"C:/tmp/foo", "C:", "tmp/foo"},
-		{"D:\\tmp\\foo", "D:", "tmp/foo"},
+		{`D:\tmp\foo`, "D:", "tmp/foo"},
 		{"/tmp/foo", volname, "tmp/foo"},
 		{"tmp/foo", volname, wd + "/tmp/foo"},
 		{"./tmp/foo", volname, wd + "/tmp/foo"},
 		{"tmp/../foo", volname, wd + "/foo"},
-		{`\\?\C:\tmp\foo`, "//?/C:", "tmp/foo"},
+		{`\\?\C:\tmp\foo`, "C:", "tmp/foo"},
 		{`\\somehost\share\foo\bar`, "//somehost/share", "foo/bar"},
-		{`//?/C:/tmp/foo`, "//?/C:", "tmp/foo"},
+		{`//?/C:/tmp/foo`, "C:", "tmp/foo"},
 		{`//somehost/share/foo/bar`, "//somehost/share", "foo/bar"},
 	}
 
@@ -265,9 +273,45 @@ func TestWdFS_ResolveLocalPath_Windows(t *testing.T) {
 	for _, td := range testdata {
 		td := td
 		t.Run(td.path, func(t *testing.T) {
-			root, path := fsys.resolveLocalPath(td.path)
+			root, path, err := fsys.resolveLocalPath(td.path)
+			require.NoError(t, err)
 			assert.Equal(t, td.expRoot, root)
 			assert.Equal(t, td.expected, path)
+		})
+	}
+}
+
+func TestWin32PathType(t *testing.T) {
+	testdata := []struct {
+		path     string
+		expected winPathtype
+	}{
+		{"", winPathUnknown},
+		{`\`, winPathRooted},
+		{`\\`, winPathUncAbsolute},
+		{`x`, winPathRelative},
+		{`x:`, winPathDriveRelative},
+		{"C:/tmp/foo", winPathDriveAbsolute},
+		{`D:\tmp\foo`, winPathDriveAbsolute},
+		{"/tmp/foo", winPathRooted},
+		{"tmp/foo", winPathRelative},
+		{"./tmp/foo", winPathRelative},
+		{"tmp/../foo", winPathRelative},
+		{`\\?\C:\tmp\foo`, winPathLocalDevice},
+		{`\\somehost\share\foo\bar`, winPathUncAbsolute},
+		{`//./C:/tmp/foo`, winPathLocalDevice},
+		{`//./pipe/foo`, winPathLocalDevice},
+		{`//./COM2`, winPathLocalDevice},
+		{`\\.`, winPathRootLocalDevice},
+		{`//?`, winPathRootLocalDevice},
+		{`/??/C:/`, winPathNT},
+		{`/??/UNC/server/foo`, winPathNT},
+	}
+
+	for _, td := range testdata {
+		td := td
+		t.Run(td.path, func(t *testing.T) {
+			assert.Equal(t, td.expected, win32PathType(td.path))
 		})
 	}
 }

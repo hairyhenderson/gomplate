@@ -241,7 +241,7 @@ func (g gitsource) clone(ctx context.Context, repoURL *url.URL, depth int) (bill
 		return g.clone(ctx, u, depth)
 	}
 	if err != nil {
-		return nil, nil, fmt.Errorf("git clone for %v failed: %w", repoURL, err)
+		return nil, nil, fmt.Errorf("git clone %s: %w", u, err)
 	}
 	return fs, repo, nil
 }

@@ -7,6 +7,7 @@ import (
 	"net/url"
 	"path"
 	"path/filepath"
+	"strings"
 
 	"github.com/hairyhenderson/go-fsimpl"
 )
@@ -81,7 +82,21 @@ func FSysForPath(ctx context.Context, path string) (fs.FS, error) {
 		return nil, fmt.Errorf("no filesystem provider in context")
 	}
 
-	fsys, err := fsp.New(&url.URL{Scheme: u.Scheme, Path: "/"})
+	// default to "/" so we have a rooted filesystem for all schemes, but also
+	// support volumes on Windows
+	origPath := u.Path
+	if u.Scheme == "file" || strings.HasSuffix(u.Scheme, "+file") || u.Scheme == "" {
+		u.Path, _, err = ResolveLocalPath(origPath)
+		if err != nil {
+			return nil, fmt.Errorf("resolve local path %q: %w", origPath, err)
+		}
+		// if this is a drive letter, add a trailing slash
+		if u.Path[0] != '/' {
+			u.Path += "/"
+		}
+	}
+
+	fsys, err := fsp.New(u)
 	if err != nil {
 		return nil, fmt.Errorf("filesystem provider for %q unavailable: %w", path, err)
 	}
