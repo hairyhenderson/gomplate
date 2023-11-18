@@ -5,6 +5,7 @@ package integration
 
 import (
 	"encoding/pem"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -14,14 +15,32 @@ import (
 )
 
 func setupDatasourcesVaultEc2Test(t *testing.T) (*fs.Dir, *vaultClient, *httptest.Server, []byte) {
+	t.Helper()
+
 	priv, der, _ := certificateGenerate()
 	cert := pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE", Bytes: der})
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("/latest/dynamic/instance-identity/pkcs7", pkcsHandler(priv, der))
 	mux.HandleFunc("/latest/dynamic/instance-identity/document", instanceDocumentHandler)
+	mux.HandleFunc("/latest/api/token", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		var b []byte
+		if r.Body != nil {
+			var err error
+			b, err = io.ReadAll(r.Body)
+			require.NoError(t, err)
+			defer r.Body.Close()
+		}
+		t.Logf("IMDS Token request: %s %s: %s", r.Method, r.URL, b)
+
+		w.Write([]byte("testtoken"))
+	}))
 	mux.HandleFunc("/sts/", stsHandler)
 	mux.HandleFunc("/ec2/", ec2Handler)
+	mux.HandleFunc("/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		t.Logf("unhandled request: %s %s", r.Method, r.URL)
+		w.WriteHeader(http.StatusNotFound)
+	}))
 
 	srv := httptest.NewServer(mux)
 	t.Cleanup(srv.Close)
