@@ -170,7 +170,8 @@ $(shell go list -f '{{ if not (eq "" (join .TestGoFiles "")) }}testbin/{{.Import
 # the GitHub workflow config in .github/workflows/build.yml for hints.
 # A recent PowerShell is also required, such as version 7.3 or later.
 #
-# An F: drive is expected to be available, with a tmp directory.
+# An F: drive is expected to be available, with a tmp directory. This is used
+# to make sure gomplate can deal with files on a different volume.
 .SECONDEXPANSION:
 $(shell go list -f '{{ if not (eq "" (join .TestGoFiles "")) }}testbin/{{.ImportPath}}.test.exe.remote{{end}}' ./...): $$(shell go list -f '{{.Dir}}' $$(subst testbin/,,$$(subst .test.exe.remote,,$$@)))
 	@echo $<

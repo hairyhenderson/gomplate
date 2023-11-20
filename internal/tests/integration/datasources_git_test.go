@@ -3,6 +3,7 @@ package integration
 import (
 	"bytes"
 	"os"
+	"path"
 	"path/filepath"
 	"strconv"
 	"testing"
@@ -82,6 +83,10 @@ func TestDatasources_GitFileDatasource(t *testing.T) {
 	tmpDir := setupDatasourcesGitTest(t)
 
 	u := filepath.ToSlash(tmpDir.Join("repo"))
+
+	// on Windows the path will start with a volume, but we need a 'file:///'
+	// prefix for the URL to be properly interpreted
+	u = path.Join("/", u)
 	o, e, err := cmd(t,
 		"-d", "config=git+file://"+u+"//config.json",
 		"-i", `{{ (datasource "config").foo.bar }}`,
