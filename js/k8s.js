@@ -250,6 +250,7 @@ k8s = {
 
       if (k8s.conditions.isReady(pod)) {
         _pod.status = "healthy"
+        _pod.status_reason = ""
       } else {
         _pod.status = "unhealthy"
         _pod.status_reason = k8s.conditions.getMessage(pod)
@@ -348,6 +349,7 @@ k8s = {
 
       if (k8s.conditions.isReady(node)) {
         _node.status = "healthy"
+        _node.status_reason = ""
       } else {
         _node.status = "unhealthy"
         _node.status_reason = k8s.conditions.getMessage(node)
