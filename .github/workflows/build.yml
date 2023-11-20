@@ -42,18 +42,20 @@ jobs:
   windows-build:
     runs-on: windows-latest
     env:
-      TMP: D:\a\tmp
+      # note: the tmp dir is set to C: so that it's not on the same drive as the
+      # repo, which is on D: - this will expose bugs with path handling!
+      TMP: C:\tmp
     steps:
       - run: pwd
-      - uses: actions/setup-go@v4
-        with:
-          go-version: '1.21'
-      - run: |
-          git config --global user.email "bogus@example.com"
-          git config --global user.name "Someone"
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+      - uses: actions/setup-go@v4
+        with:
+          go-version: '1.21.4'
+      - run: |
+          git config --global user.email "bogus@example.com"
+          git config --global user.name "Someone"
       - run: make build
       - name: Save binary
         uses: actions/upload-artifact@v3
