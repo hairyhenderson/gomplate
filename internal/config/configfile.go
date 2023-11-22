@@ -24,7 +24,7 @@ func Parse(in io.Reader) (*Config, error) {
 	dec := yaml.NewDecoder(in)
 	err := dec.Decode(out)
 	if err != nil && err != io.EOF {
-		return out, err
+		return out, fmt.Errorf("YAML decoding failed, syntax may be invalid: %w", err)
 	}
 	return out, nil
 }

@@ -238,6 +238,16 @@ suppressEmpty: true
 	assert.ErrorIs(t, err, fs.ErrNotExist)
 }
 
+func TestConfig_ConfigParseErrorSpecifiesFilename(t *testing.T) {
+	tmpDir := setupConfigTest(t)
+
+	writeConfig(t, tmpDir, `templates:
+  dir: /foo/bar
+`)
+	_, _, err := cmd(t).withDir(tmpDir.Path()).run()
+	assert.ErrorContains(t, err, `parsing config file ".gomplate.yaml": YAML decoding failed`)
+}
+
 func TestConfig_ConfigTemplatesSupportsMap(t *testing.T) {
 	tmpDir := setupConfigTest(t)
 
