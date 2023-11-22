@@ -85,13 +85,13 @@ func readConfigFile(ctx context.Context, cmd *cobra.Command) (cfg *config.Config
 	}
 
 	cfg, err = config.Parse(f)
-	if err != nil && configRequired {
-		return cfg, fmt.Errorf("config file requested, but couldn't be parsed: %w", err)
+	if err != nil {
+		return cfg, fmt.Errorf("parsing config file %q: %w", cfgFile, err)
 	}
 
 	log.Debug().Str("cfgFile", cfgFile).Msg("using config file")
 
-	return cfg, err
+	return cfg, nil
 }
 
 // cobraConfig - initialize a config from the commandline options
