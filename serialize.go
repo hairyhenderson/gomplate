@@ -32,20 +32,26 @@ func Serialize(in map[string]any) (map[string]any, error) {
 	}
 
 	// cel supports time.Time and time.Duration natively - save original and then replace it after decomposition
-	nativeTypes := make(map[*jp.Expr]any)
+	nativeTypes := make(map[string]any, len(in))
 	jp.Walk(in, func(path jp.Expr, value any) {
 		switch v := value.(type) {
 		case time.Duration, time.Time:
-			nativeTypes[&path] = v
+			nativeTypes[path.String()] = v
 		}
 	})
 
 	out := alt.Alter(in, &opts).(map[string]any)
 
 	for path, v := range nativeTypes {
-		if err := path.SetOne(out, v); err != nil {
+		expr, err := jp.ParseString(path)
+		if err != nil {
+			return nil, err
+		}
+
+		if err := expr.SetOne(out, v); err != nil {
 			return nil, err
 		}
 	}
+
 	return out, nil
 }
