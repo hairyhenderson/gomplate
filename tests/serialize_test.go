@@ -1,6 +1,7 @@
 package tests
 
 import (
+	"fmt"
 	"testing"
 	"time"
 
@@ -11,12 +12,18 @@ import (
 	_ "github.com/robertkrimen/otto/underscore"
 )
 
+type myTime struct {
+	Time     time.Time     `json:"time"`
+	Duration time.Duration `json:"duration"`
+}
+
 func Test_serialize(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
 		name    string
 		in      map[string]any
+		skip    bool
 		want    map[string]any
 		wantErr bool
 	}{
@@ -160,6 +167,22 @@ func Test_serialize(t *testing.T) {
 			},
 		},
 		{
+			name: "nested time.Duration",
+			skip: true, // TODO:
+			in: map[string]any{
+				"a": &myTime{
+					Time:     time.Now(),
+					Duration: time.Second,
+				},
+			},
+			want: map[string]any{
+				"a": map[string]any{
+					"time":     time.Now(),
+					"duration": time.Second,
+				},
+			},
+		},
+		{
 			name: "canary checker ctx.Environment",
 			in: map[string]any{
 				"canary": map[string]any{
@@ -234,6 +257,10 @@ func Test_serialize(t *testing.T) {
 
 	for i := range tests {
 		tt := tests[i]
+		if tt.skip {
+			fmt.Printf("Skipping %s\n", tt.name)
+			continue
+		}
 
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
