@@ -160,7 +160,7 @@ funcs:
         -----END PUBLIC KEY-----
   - name: crypto.Ed25519GenerateKey
     experimental: true
-    released: v3.11.5
+    released: v4.0.0
     description: |
       Generate a new Ed25519 Private Key and output in
       PEM-encoded PKCS#8 ASN.1 DER form.
@@ -172,7 +172,7 @@ funcs:
         ...
   - name: crypto.Ed25519GenerateKeyFromSeed
     experimental: true
-    released: v3.11.5
+    released: v4.0.0
     description: |
       Generate a new Ed25519 Private Key from a random seed and output in
       PEM-encoded PKCS#8 ASN.1 DER form.
@@ -191,7 +191,7 @@ funcs:
         ...
   - name: crypto.Ed25519DerivePublicKey
     experimental: true
-    released: v3.11.5
+    released: v4.0.0
     description: |
       Derive a public key from an Ed25519 private key and output in PKIX
       ASN.1 DER form.
