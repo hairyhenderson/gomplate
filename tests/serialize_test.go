@@ -12,6 +12,8 @@ import (
 )
 
 func Test_serialize(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name    string
 		in      map[string]any
@@ -160,32 +162,81 @@ func Test_serialize(t *testing.T) {
 		{
 			name: "canary checker ctx.Environment",
 			in: map[string]any{
-				"r": &Address{
-					City: "Bhaktapur",
+				"canary": map[string]any{
+					"id": "3ac56bb3-fbf6-4479-bf3b-5f2758e9fdbe",
+					"labels": map[string]string{
+						"Expected-Fail":                         "true",
+						"kustomize.toolkit.fluxcd.io/name":      "canaries",
+						"kustomize.toolkit.fluxcd.io/namespace": "default",
+					},
+					"name":      "http-fail",
+					"namespace": "canaries",
 				},
 				"check": map[string]any{
-					"name": "custom-check",
-					"meta": map[string]any{
-						"key": "value",
-					},
+					"description": "",
+					"endpoint":    "",
+					"id":          "018c0096-7342-6f80-5ea5-6df245079b7a",
+					"labels":      map[string]string(nil),
+					"name":        "http fail test expr check",
 				},
+				"code":     200,
+				"content":  "",
+				"duration": 681,
+				"elapsed":  681153615,
+				"headers": map[string]string{
+					"Access-Control-Allow-Credentials": "true",
+					"Access-Control-Allow-Origin":      "*",
+					"Content-Length":                   "0",
+					"Content-Type":                     "text/html; charset=utf-8",
+					"Date":                             "Wed,29 Nov 2023 06:19:30 GMT",
+					"Strict-Transport-Security":        "max-age=15724800; includeSubDomains",
+				},
+				"json":    map[string]any{},
+				"results": map[string]any{},
+				"sslAge":  7004023369313149,
 			},
 			want: map[string]any{
-				"r": map[string]any{
-					"city_name": "Bhaktapur",
+				"canary": map[string]any{
+					"id": "3ac56bb3-fbf6-4479-bf3b-5f2758e9fdbe",
+					"labels": map[string]any{
+						"Expected-Fail":                         "true",
+						"kustomize.toolkit.fluxcd.io/name":      "canaries",
+						"kustomize.toolkit.fluxcd.io/namespace": "default",
+					},
+					"name":      "http-fail",
+					"namespace": "canaries",
 				},
 				"check": map[string]any{
-					"name": "custom-check",
-					"meta": map[string]any{
-						"key": "value",
-					},
+					"description": "",
+					"endpoint":    "",
+					"id":          "018c0096-7342-6f80-5ea5-6df245079b7a",
+					"labels":      map[string]any{},
+					"name":        "http fail test expr check",
 				},
+				"code":     int64(200),
+				"content":  "",
+				"duration": int64(681),
+				"elapsed":  int64(681153615),
+				"headers": map[string]any{
+					"Access-Control-Allow-Credentials": "true",
+					"Access-Control-Allow-Origin":      "*",
+					"Content-Length":                   "0",
+					"Content-Type":                     "text/html; charset=utf-8",
+					"Date":                             "Wed,29 Nov 2023 06:19:30 GMT",
+					"Strict-Transport-Security":        "max-age=15724800; includeSubDomains",
+				},
+				"json":    map[string]any{},
+				"results": map[string]any{},
+				"sslAge":  int64(7004023369313149),
 			},
 		},
 	}
 
-	for _, tt := range tests {
+	for i := range tests {
+		tt := tests[i]
+
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
 			got, err := gomplate.Serialize(tt.in)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("serialize() error = %v, wantErr %v", err, tt.wantErr)
