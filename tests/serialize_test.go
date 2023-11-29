@@ -1,13 +1,13 @@
 package tests
 
 import (
-	"reflect"
 	"testing"
 	"time"
 
 	"github.com/flanksource/gomplate/v3"
 	"github.com/flanksource/gomplate/v3/data"
 	_ "github.com/flanksource/gomplate/v3/js"
+	"github.com/google/go-cmp/cmp"
 	_ "github.com/robertkrimen/otto/underscore"
 )
 
@@ -23,9 +23,11 @@ func Test_serialize(t *testing.T) {
 			name: "duration",
 			in: map[string]any{
 				"r": time.Second * 100,
+				"a": time.Minute,
 			},
 			want: map[string]any{
-				"r": (time.Second * 100).String(),
+				"r": (time.Second * 100),
+				"a": time.Minute,
 			},
 		},
 		{
@@ -34,7 +36,7 @@ func Test_serialize(t *testing.T) {
 				"r": testDateTime,
 			},
 			want: map[string]any{
-				"r": testDate,
+				"r": testDateTime,
 			},
 		},
 
@@ -57,15 +59,6 @@ func Test_serialize(t *testing.T) {
 			},
 		},
 		{
-			name: "duration",
-			in: map[string]any{
-				"r": 75 * time.Millisecond,
-			},
-			want: map[string]any{
-				"r": "hello world",
-			},
-		},
-		{
 			name: "dates",
 			in: map[string]any{
 				"r": newFile().Modified,
@@ -81,19 +74,19 @@ func Test_serialize(t *testing.T) {
 			},
 			want: map[string]any{
 				"r": map[string]any{
+					"files": []any{
+						map[string]any{
+							"name":     "test",
+							"size":     int64(10),
+							"mode":     "drwxr-xr-x",
+							"modified": testDate,
+						},
+					},
 					"newest": map[string]any{
 						"mode":     "drwxr-xr-x",
-						"modified": testDateTime,
+						"modified": testDate,
 						"name":     "test",
-						"size":     10,
-					},
-					"files": []map[string]any{
-						{
-							"name":     "test",
-							"size":     10,
-							"mode":     "drwxr-xr-x",
-							"modified": testDateTime,
-						},
+						"size":     int64(10),
 					},
 				},
 			},
@@ -122,9 +115,9 @@ func Test_serialize(t *testing.T) {
 				},
 			},
 			want: map[string]any{
-				"r": []map[string]any{
-					{"city_name": "Kathmandu"},
-					{"city_name": "Lalitpur"},
+				"r": []any{
+					map[string]any{"city_name": "Kathmandu"},
+					map[string]any{"city_name": "Lalitpur"},
 				},
 			},
 			wantErr: false,
@@ -143,9 +136,9 @@ func Test_serialize(t *testing.T) {
 			want: map[string]any{
 				"r": map[string]any{
 					"name": "Aditya",
-					"addresses": []map[string]any{
-						{"city_name": "Kathmandu"},
-						{"city_name": "Lalitpur"},
+					"addresses": []any{
+						map[string]any{"city_name": "Kathmandu"},
+						map[string]any{"city_name": "Lalitpur"},
 					},
 				},
 			},
@@ -164,6 +157,31 @@ func Test_serialize(t *testing.T) {
 				},
 			},
 		},
+		{
+			name: "canary checker ctx.Environment",
+			in: map[string]any{
+				"r": &Address{
+					City: "Bhaktapur",
+				},
+				"check": map[string]any{
+					"name": "custom-check",
+					"meta": map[string]any{
+						"key": "value",
+					},
+				},
+			},
+			want: map[string]any{
+				"r": map[string]any{
+					"city_name": "Bhaktapur",
+				},
+				"check": map[string]any{
+					"name": "custom-check",
+					"meta": map[string]any{
+						"key": "value",
+					},
+				},
+			},
+		},
 	}
 
 	for _, tt := range tests {
@@ -174,12 +192,15 @@ func Test_serialize(t *testing.T) {
 				return
 			}
 
-			if reflect.DeepEqual(got, tt.want) {
-				_got, _ := data.ToJSONPretty("  ", got)
-				_want, _ := data.ToJSONPretty("  ", tt.want)
-				if _got != _want {
-					t.Errorf("serialize() = \n%s\nwant\n %v", _got, _want)
-				}
+			if diff := cmp.Diff(got, tt.want); diff != "" {
+				t.Errorf("%v", diff)
+				return
+			}
+
+			_got, _ := data.ToJSONPretty("  ", got)
+			_want, _ := data.ToJSONPretty("  ", tt.want)
+			if _got != _want {
+				t.Errorf("serialize() = \n%s\nwant\n %v", _got, _want)
 			}
 		})
 	}
