@@ -160,11 +160,10 @@ funcs:
         -----END PUBLIC KEY-----
   - name: crypto.Ed25519GenerateKey
     experimental: true
-    released: v4.0.0
+    # released: v4.0.0
     description: |
       Generate a new Ed25519 Private Key and output in
       PEM-encoded PKCS#8 ASN.1 DER form.
-    pipeline: true
     examples:
       - |
         $ gomplate -i '{{ crypto.Ed25519GenerateKey }}'
@@ -172,7 +171,7 @@ funcs:
         ...
   - name: crypto.Ed25519GenerateKeyFromSeed
     experimental: true
-    released: v4.0.0
+    # released: v4.0.0
     description: |
       Generate a new Ed25519 Private Key from a random seed and output in
       PEM-encoded PKCS#8 ASN.1 DER form.
@@ -182,16 +181,16 @@ funcs:
         required: true
         description: the encoding that the seed is in (`hex` or `base64`)
       - name: seed
-        reqruired: true
+        required: true
         description: the random seed encoded in either base64 or hex
     examples:
       - |
-        $ gomplate -i '{{ crypto.Ed25519GenerateKeyFromSeed base64 MDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDA= }}'
+        $ gomplate -i '{{ crypto.Ed25519GenerateKeyFromSeed "base64" MDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDA= }}'
         -----BEGIN PRIVATE KEY-----
         ...
   - name: crypto.Ed25519DerivePublicKey
     experimental: true
-    released: v4.0.0
+    # released: v4.0.0
     description: |
       Derive a public key from an Ed25519 private key and output in PKIX
       ASN.1 DER form.
