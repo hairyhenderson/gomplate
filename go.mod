@@ -25,7 +25,7 @@ require (
 	github.com/rs/zerolog v1.31.0
 	github.com/spf13/cobra v1.8.0
 	github.com/stretchr/testify v1.8.4
-	github.com/ugorji/go/codec v1.2.11
+	github.com/ugorji/go/codec v1.2.12
 	go4.org/netipx v0.0.0-20230125063823-8449b0a6169f
 	gocloud.dev v0.34.0
 	golang.org/x/crypto v0.15.0
