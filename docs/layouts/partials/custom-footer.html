@@ -27,9 +27,10 @@
         } else if (isTrace(event.payload)) {
           // do something...although currently traces do not have a context/custom attribute property - could be useful to add?
           // maybe resourceSpans.resource.attributes?
-          event.payload.resourceSpans.resource.attributes = {
+          /* event.payload.resourceSpans.resource.attributes = {
             someAttribute: 'thing',
-          };
+          }; */
+          console.log('trace', event.payload);
         }
         return event;
       },
