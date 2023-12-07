@@ -11,6 +11,14 @@
         version: "1.0.0",
         environment: "production",
       },
+      meta: {
+        foo: "bar",
+      },
+      user: {
+        attributes: {
+          baz: "qux",
+        },
+      },
     });
 
     // Load instrumentations at the onLoad event of the web-SDK and after the above configuration.
