@@ -11,8 +11,25 @@
         version: "1.0.0",
         environment: "production",
       },
-      meta: {
-        foo: "bar",
+      beforeSend: function(event) {
+        const isLog = function(event) {
+          return event.level !== undefined;
+        };
+        const isTrace = function(event) {
+          return event.resourceSpans !== undefined;
+        };
+
+        if (isLog(event.payload)) {
+          // add log context here
+          event.payload.context = {
+            someContext: 'thing',
+          };
+        } else if (isTrace(event.payload)) {
+          // do something...although currently traces do not have a context/custom attribute property - could be useful to add?
+          // maybe resourceSpans.resource.attributes?
+          console.log('trace event', event.payload);
+        }
+        return event;
       },
       user: {
         attributes: {
