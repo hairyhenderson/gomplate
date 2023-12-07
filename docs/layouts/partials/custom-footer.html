@@ -12,11 +12,11 @@
         environment: "production",
       },
       beforeSend: function(event) {
-        const isLog = function(event) {
-          return event.level !== undefined;
+        const isLog = function(payload) {
+          return payload.level !== undefined;
         };
-        const isTrace = function(event) {
-          return event.resourceSpans !== undefined;
+        const isTrace = function(payload) {
+          return payload.resourceSpans !== undefined;
         };
 
         if (isLog(event.payload)) {
@@ -27,7 +27,9 @@
         } else if (isTrace(event.payload)) {
           // do something...although currently traces do not have a context/custom attribute property - could be useful to add?
           // maybe resourceSpans.resource.attributes?
-          console.log('trace event', event.payload);
+          event.payload.resourceSpans.resource.attributes = {
+            someAttribute: 'thing',
+          };
         }
         return event;
       },
