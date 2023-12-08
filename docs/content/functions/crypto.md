@@ -297,7 +297,7 @@ seed | crypto.Ed25519GenerateKeyFromSeed encoding
 ### Examples
 
 ```console
-$ gomplate -i '{{ crypto.Ed25519GenerateKeyFromSeed "base64" MDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDA= }}'
+$ gomplate -i '{{ crypto.Ed25519GenerateKeyFromSeed "base64" "MDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDA=" }}'
 -----BEGIN PRIVATE KEY-----
 ...
 ```
