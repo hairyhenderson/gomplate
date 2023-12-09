@@ -21,7 +21,7 @@ func TestEnvMapifiesEnvironment(t *testing.T) {
 func TestEnvGetsUpdatedEnvironment(t *testing.T) {
 	c := &tmplctx{}
 	assert.Empty(t, c.Env()["FOO"])
-	require.NoError(t, os.Setenv("FOO", "foo"))
+	t.Setenv("FOO", "foo")
 	assert.Equal(t, c.Env()["FOO"], "foo")
 }
 
@@ -42,8 +42,7 @@ func TestCreateContext(t *testing.T) {
 			".":   {URL: ub},
 		},
 	}
-	os.Setenv("foo", "foo: bar")
-	defer os.Unsetenv("foo")
+	t.Setenv("foo", "foo: bar")
 	c, err = createTmplContext(ctx, []string{"foo"}, d)
 	require.NoError(t, err)
 	assert.IsType(t, &tmplctx{}, c)
@@ -51,8 +50,7 @@ func TestCreateContext(t *testing.T) {
 	ds := ((*tctx)["foo"]).(map[string]interface{})
 	assert.Equal(t, "bar", ds["foo"])
 
-	os.Setenv("bar", "bar: baz")
-	defer os.Unsetenv("bar")
+	t.Setenv("bar", "bar: baz")
 	c, err = createTmplContext(ctx, []string{"."}, d)
 	require.NoError(t, err)
 	assert.IsType(t, map[string]interface{}{}, c)

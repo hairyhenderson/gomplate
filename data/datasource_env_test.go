@@ -3,7 +3,6 @@ package data
 import (
 	"context"
 	"net/url"
-	"os"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -19,10 +18,8 @@ func TestReadEnv(t *testing.T) {
 	ctx := context.Background()
 
 	content := []byte(`hello world`)
-	os.Setenv("HELLO_WORLD", "hello world")
-	defer os.Unsetenv("HELLO_WORLD")
-	os.Setenv("HELLO_UNIVERSE", "hello universe")
-	defer os.Unsetenv("HELLO_UNIVERSE")
+	t.Setenv("HELLO_WORLD", "hello world")
+	t.Setenv("HELLO_UNIVERSE", "hello universe")
 
 	source := &Source{Alias: "foo", URL: mustParseURL("env:HELLO_WORLD")}
 

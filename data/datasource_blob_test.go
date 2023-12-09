@@ -5,7 +5,6 @@ import (
 	"context"
 	"net/http/httptest"
 	"net/url"
-	"os"
 	"testing"
 
 	"github.com/johannesboyne/gofakes3"
@@ -64,50 +63,48 @@ func TestReadBlob(t *testing.T) {
 	ts, u := setupTestBucket(t)
 	defer ts.Close()
 
-	os.Setenv("AWS_ANON", "true")
-	defer os.Unsetenv("AWS_ANON")
+	t.Run("no authentication", func(t *testing.T) {
+		t.Setenv("AWS_ANON", "true")
 
-	d, err := NewData([]string{"-d", "data=s3://mybucket/file1?region=us-east-1&disableSSL=true&s3ForcePathStyle=true&type=text/plain&endpoint=" + u.Host}, nil)
-	require.NoError(t, err)
+		d, err := NewData([]string{"-d", "data=s3://mybucket/file1?region=us-east-1&disableSSL=true&s3ForcePathStyle=true&type=text/plain&endpoint=" + u.Host}, nil)
+		require.NoError(t, err)
 
-	var expected interface{}
-	expected = "hello"
-	out, err := d.Datasource("data")
-	require.NoError(t, err)
-	assert.Equal(t, expected, out)
+		expected := "hello"
+		out, err := d.Datasource("data")
+		require.NoError(t, err)
+		assert.Equal(t, expected, out)
+	})
 
-	os.Unsetenv("AWS_ANON")
+	t.Run("with authentication", func(t *testing.T) {
+		t.Setenv("AWS_ACCESS_KEY_ID", "fake")
+		t.Setenv("AWS_SECRET_ACCESS_KEY", "fake")
+		t.Setenv("AWS_S3_ENDPOINT", u.Host)
 
-	os.Setenv("AWS_ACCESS_KEY_ID", "fake")
-	os.Setenv("AWS_SECRET_ACCESS_KEY", "fake")
-	defer os.Unsetenv("AWS_ACCESS_KEY_ID")
-	defer os.Unsetenv("AWS_SECRET_ACCESS_KEY")
-	os.Setenv("AWS_S3_ENDPOINT", u.Host)
-	defer os.Unsetenv("AWS_S3_ENDPOINT")
+		d, err := NewData([]string{"-d", "data=s3://mybucket/file2?region=us-east-1&disableSSL=true&s3ForcePathStyle=true"}, nil)
+		require.NoError(t, err)
 
-	d, err = NewData([]string{"-d", "data=s3://mybucket/file2?region=us-east-1&disableSSL=true&s3ForcePathStyle=true"}, nil)
-	require.NoError(t, err)
+		var expected interface{}
+		expected = map[string]interface{}{"value": "goodbye world"}
+		out, err := d.Datasource("data")
+		require.NoError(t, err)
+		assert.Equal(t, expected, out)
 
-	expected = map[string]interface{}{"value": "goodbye world"}
-	out, err = d.Datasource("data")
-	require.NoError(t, err)
-	assert.Equal(t, expected, out)
+		d, err = NewData([]string{"-d", "data=s3://mybucket/?region=us-east-1&disableSSL=true&s3ForcePathStyle=true"}, nil)
+		require.NoError(t, err)
 
-	d, err = NewData([]string{"-d", "data=s3://mybucket/?region=us-east-1&disableSSL=true&s3ForcePathStyle=true"}, nil)
-	require.NoError(t, err)
+		expected = []interface{}{"dir1/", "file1", "file2", "file3"}
+		out, err = d.Datasource("data")
+		require.NoError(t, err)
+		assert.EqualValues(t, expected, out)
 
-	expected = []interface{}{"dir1/", "file1", "file2", "file3"}
-	out, err = d.Datasource("data")
-	require.NoError(t, err)
-	assert.EqualValues(t, expected, out)
+		d, err = NewData([]string{"-d", "data=s3://mybucket/dir1/?region=us-east-1&disableSSL=true&s3ForcePathStyle=true"}, nil)
+		require.NoError(t, err)
 
-	d, err = NewData([]string{"-d", "data=s3://mybucket/dir1/?region=us-east-1&disableSSL=true&s3ForcePathStyle=true"}, nil)
-	require.NoError(t, err)
-
-	expected = []interface{}{"file1", "file2"}
-	out, err = d.Datasource("data")
-	require.NoError(t, err)
-	assert.EqualValues(t, expected, out)
+		expected = []interface{}{"file1", "file2"}
+		out, err = d.Datasource("data")
+		require.NoError(t, err)
+		assert.EqualValues(t, expected, out)
+	})
 }
 
 func TestBlobURL(t *testing.T) {

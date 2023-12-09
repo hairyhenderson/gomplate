@@ -14,68 +14,80 @@ import (
 )
 
 func TestConsulURL(t *testing.T) {
-	defer os.Unsetenv("CONSUL_HTTP_SSL")
-	os.Setenv("CONSUL_HTTP_SSL", "true")
+	t.Run("consul scheme", func(t *testing.T) {
+		u, _ := url.Parse("consul+http://myconsul.server")
+		expected := &url.URL{Host: "myconsul.server", Scheme: "http"}
+		actual, err := consulURL(u)
+		require.NoError(t, err)
+		assert.Equal(t, expected, actual)
+	})
 
-	u, _ := url.Parse("consul://")
-	expected := &url.URL{Host: "localhost:8500", Scheme: "https"}
-	actual, err := consulURL(u)
-	require.NoError(t, err)
-	assert.Equal(t, expected, actual)
+	t.Run("consul scheme, CONSUL_HTTP_SSL unset", func(t *testing.T) {
+		os.Unsetenv("CONSUL_HTTP_SSL")
+		u, _ := url.Parse("consul://myconsul.server:2345")
+		expected := &url.URL{Host: "myconsul.server:2345", Scheme: "http"}
+		actual, err := consulURL(u)
+		require.NoError(t, err)
+		assert.Equal(t, expected, actual)
+	})
 
-	u, _ = url.Parse("consul+http://myconsul.server")
-	expected = &url.URL{Host: "myconsul.server", Scheme: "http"}
-	actual, err = consulURL(u)
-	require.NoError(t, err)
-	assert.Equal(t, expected, actual)
+	t.Run("consul scheme, CONSUL_HTTP_SSL set to true", func(t *testing.T) {
+		t.Setenv("CONSUL_HTTP_SSL", "true")
+		u, _ := url.Parse("consul://")
+		expected := &url.URL{Host: "localhost:8500", Scheme: "https"}
+		actual, err := consulURL(u)
+		require.NoError(t, err)
+		assert.Equal(t, expected, actual)
+	})
 
-	os.Setenv("CONSUL_HTTP_SSL", "false")
-	u, _ = url.Parse("consul+https://myconsul.server:1234")
-	expected = &url.URL{Host: "myconsul.server:1234", Scheme: "https"}
-	actual, err = consulURL(u)
-	require.NoError(t, err)
-	assert.Equal(t, expected, actual)
+	t.Run("consul+https scheme, CONSUL_HTTP_SSL set to false", func(t *testing.T) {
+		t.Setenv("CONSUL_HTTP_SSL", "false")
+		u, _ := url.Parse("consul+https://myconsul.server:1234")
+		expected := &url.URL{Host: "myconsul.server:1234", Scheme: "https"}
+		actual, err := consulURL(u)
+		require.NoError(t, err)
+		assert.Equal(t, expected, actual)
+	})
 
-	os.Unsetenv("CONSUL_HTTP_SSL")
-	u, _ = url.Parse("consul://myconsul.server:2345")
-	expected = &url.URL{Host: "myconsul.server:2345", Scheme: "http"}
-	actual, err = consulURL(u)
-	require.NoError(t, err)
-	assert.Equal(t, expected, actual)
+	t.Run("consul scheme, ignore path", func(t *testing.T) {
+		u, _ := url.Parse("consul://myconsul.server:3456/foo/bar/baz")
+		expected := &url.URL{Host: "myconsul.server:3456", Scheme: "http"}
+		actual, err := consulURL(u)
+		require.NoError(t, err)
+		assert.Equal(t, expected, actual)
+	})
 
-	u, _ = url.Parse("consul://myconsul.server:3456/foo/bar/baz")
+	t.Run("given URL takes precedence over env var", func(t *testing.T) {
+		t.Setenv("CONSUL_HTTP_ADDR", "https://foo:8500")
 
-	expected = &url.URL{Host: "myconsul.server:3456", Scheme: "http"}
-	actual, err = consulURL(u)
-	require.NoError(t, err)
-	assert.Equal(t, expected, actual)
+		u, _ := url.Parse("consul://myconsul.server:3456/foo/bar/baz")
+		expected := &url.URL{Host: "myconsul.server:3456", Scheme: "http"}
+		actual, err := consulURL(u)
+		require.NoError(t, err)
+		assert.Equal(t, expected, actual)
+	})
 
-	defer os.Unsetenv("CONSUL_HTTP_ADDR")
-	os.Setenv("CONSUL_HTTP_ADDR", "https://foo:8500")
+	t.Run("TLS enabled, HTTP_ADDR is set, URL has no host and ambiguous scheme", func(t *testing.T) {
+		t.Setenv("CONSUL_HTTP_ADDR", "https://foo:8500")
+		t.Setenv("CONSUL_HTTP_SSL", "true")
 
-	// given URL takes precedence over env var
-	expected = &url.URL{Host: "myconsul.server:3456", Scheme: "http"}
-	actual, err = consulURL(u)
-	require.NoError(t, err)
-	assert.Equal(t, expected, actual)
+		u, _ := url.Parse("consul://")
+		expected := &url.URL{Host: "foo:8500", Scheme: "https"}
+		actual, err := consulURL(u)
+		require.NoError(t, err)
+		assert.Equal(t, expected, actual)
+	})
 
-	u, _ = url.Parse("consul://")
+	t.Run("TLS enabled, HTTP_ADDR is set without host, URL has no host and ambiguous scheme", func(t *testing.T) {
+		t.Setenv("CONSUL_HTTP_ADDR", "localhost:8501")
+		t.Setenv("CONSUL_HTTP_SSL", "true")
 
-	defer os.Unsetenv("CONSUL_HTTP_SSL")
-	os.Setenv("CONSUL_HTTP_SSL", "true")
-
-	// TLS enabled, HTTP_ADDR is set, URL has no host and ambiguous scheme
-	expected = &url.URL{Host: "foo:8500", Scheme: "https"}
-	actual, err = consulURL(u)
-	require.NoError(t, err)
-	assert.Equal(t, expected, actual)
-
-	defer os.Unsetenv("CONSUL_HTTP_ADDR")
-	os.Setenv("CONSUL_HTTP_ADDR", "localhost:8501")
-	expected = &url.URL{Host: "localhost:8501", Scheme: "https"}
-	actual, err = consulURL(u)
-	require.NoError(t, err)
-	assert.Equal(t, expected, actual)
+		u, _ := url.Parse("consul://")
+		expected := &url.URL{Host: "localhost:8501", Scheme: "https"}
+		actual, err := consulURL(u)
+		require.NoError(t, err)
+		assert.Equal(t, expected, actual)
+	})
 }
 
 func TestConsulAddrFromEnv(t *testing.T) {
@@ -106,55 +118,56 @@ func TestSetupTLS(t *testing.T) {
 		KeyFile:  "keyfile",
 	}
 
-	defer os.Unsetenv("CONSUL_TLS_SERVER_NAME")
-	defer os.Unsetenv("CONSUL_CACERT")
-	defer os.Unsetenv("CONSUL_CAPATH")
-	defer os.Unsetenv("CONSUL_CLIENT_CERT")
-	defer os.Unsetenv("CONSUL_CLIENT_KEY")
-	os.Setenv("CONSUL_TLS_SERVER_NAME", expected.Address)
-	os.Setenv("CONSUL_CACERT", expected.CAFile)
-	os.Setenv("CONSUL_CAPATH", expected.CAPath)
-	os.Setenv("CONSUL_CLIENT_CERT", expected.CertFile)
-	os.Setenv("CONSUL_CLIENT_KEY", expected.KeyFile)
+	t.Setenv("CONSUL_TLS_SERVER_NAME", expected.Address)
+	t.Setenv("CONSUL_CACERT", expected.CAFile)
+	t.Setenv("CONSUL_CAPATH", expected.CAPath)
+	t.Setenv("CONSUL_CLIENT_CERT", expected.CertFile)
+	t.Setenv("CONSUL_CLIENT_KEY", expected.KeyFile)
 
 	assert.Equal(t, expected, setupTLS())
 
-	expected.InsecureSkipVerify = false
-	defer os.Unsetenv("CONSUL_HTTP_SSL_VERIFY")
-	os.Setenv("CONSUL_HTTP_SSL_VERIFY", "true")
-	assert.Equal(t, expected, setupTLS())
+	t.Run("CONSUL_HTTP_SSL_VERIFY is true", func(t *testing.T) {
+		expected.InsecureSkipVerify = false
+		t.Setenv("CONSUL_HTTP_SSL_VERIFY", "true")
+		assert.Equal(t, expected, setupTLS())
+	})
 
-	expected.InsecureSkipVerify = true
-	os.Setenv("CONSUL_HTTP_SSL_VERIFY", "false")
-	assert.Equal(t, expected, setupTLS())
+	t.Run("CONSUL_HTTP_SSL_VERIFY is false", func(t *testing.T) {
+		expected.InsecureSkipVerify = true
+		t.Setenv("CONSUL_HTTP_SSL_VERIFY", "false")
+		assert.Equal(t, expected, setupTLS())
+	})
 }
 
 func TestConsulConfig(t *testing.T) {
-	expectedConfig := &store.Config{}
+	t.Run("default ", func(t *testing.T) {
+		expectedConfig := &store.Config{}
 
-	actualConfig, err := consulConfig(false)
-	require.NoError(t, err)
+		actualConfig, err := consulConfig(false)
+		require.NoError(t, err)
 
-	assert.Equal(t, expectedConfig, actualConfig)
+		assert.Equal(t, expectedConfig, actualConfig)
+	})
 
-	defer os.Unsetenv("CONSUL_TIMEOUT")
-	os.Setenv("CONSUL_TIMEOUT", "10")
-	expectedConfig = &store.Config{
-		ConnectionTimeout: 10 * time.Second,
-	}
+	t.Run("with CONSUL_TIMEOUT", func(t *testing.T) {
+		t.Setenv("CONSUL_TIMEOUT", "10")
+		expectedConfig := &store.Config{
+			ConnectionTimeout: 10 * time.Second,
+		}
 
-	actualConfig, err = consulConfig(false)
-	require.NoError(t, err)
-	assert.Equal(t, expectedConfig, actualConfig)
+		actualConfig, err := consulConfig(false)
+		require.NoError(t, err)
+		assert.Equal(t, expectedConfig, actualConfig)
+	})
 
-	os.Unsetenv("CONSUL_TIMEOUT")
-	expectedConfig = &store.Config{
-		TLS: &tls.Config{MinVersion: tls.VersionTLS13},
-	}
-
-	actualConfig, err = consulConfig(true)
-	require.NoError(t, err)
-	assert.NotNil(t, actualConfig.TLS)
-	actualConfig.TLS = &tls.Config{MinVersion: tls.VersionTLS13}
-	assert.Equal(t, expectedConfig, actualConfig)
+	t.Run("with TLS", func(t *testing.T) {
+		expectedConfig := &store.Config{
+			TLS: &tls.Config{MinVersion: tls.VersionTLS13},
+		}
+		actualConfig, err := consulConfig(true)
+		require.NoError(t, err)
+		assert.NotNil(t, actualConfig.TLS)
+		actualConfig.TLS = &tls.Config{MinVersion: tls.VersionTLS13}
+		assert.Equal(t, expectedConfig, actualConfig)
+	})
 }
