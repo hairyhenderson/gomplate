@@ -165,11 +165,11 @@ var mathDivGen = cel.Function("math.Div",
 
 			var x MathFuncs
 
-			a0, a1 := x.Div(args[0], args[1])
-			return types.DefaultTypeAdapter.NativeToValue([]any{
-				a0, a1,
-			})
-
+			a0, err := x.Div(args[0], args[1])
+			if err != nil {
+				return types.WrapErr(err)
+			}
+			return types.DefaultTypeAdapter.NativeToValue(a0)
 		}),
 	),
 )
@@ -228,58 +228,6 @@ var mathSeqGen = cel.Function("math.Seq",
 			if err != nil {
 				return types.WrapErr(err)
 			}
-			return types.DefaultTypeAdapter.NativeToValue(result)
-
-		}),
-	),
-)
-
-var mathMaxGen = cel.Function("math.Max",
-	cel.Overload("math.Max_interface{}_interface{}",
-
-		[]*cel.Type{
-			cel.DynType, cel.DynType,
-		},
-		cel.DynType,
-		cel.FunctionBinding(func(args ...ref.Val) ref.Val {
-
-			var x MathFuncs
-			list, err := sliceToNative[interface{}](args[1].(ref.Val))
-			if err != nil {
-				return types.WrapErr(err)
-			}
-
-			result, err := x.Max(args[0], list...)
-			if err != nil {
-				return types.WrapErr(err)
-			}
-
-			return types.DefaultTypeAdapter.NativeToValue(result	)
-
-		}),
-	),
-)
-
-var mathMinGen = cel.Function("math.Min",
-	cel.Overload("math.Min_interface{}_interface{}",
-
-		[]*cel.Type{
-			cel.DynType, cel.DynType,
-		},
-		cel.DynType,
-		cel.FunctionBinding(func(args ...ref.Val) ref.Val {
-
-			var x MathFuncs
-			list, err := sliceToNative[interface{}](args[1].(ref.Val))
-			if err != nil {
-				return types.WrapErr(err)
-			}
-
-			result, err := x.Min(args[0], list...)
-			if err != nil {
-				return types.WrapErr(err)
-			}
-
 			return types.DefaultTypeAdapter.NativeToValue(result)
 
 		}),

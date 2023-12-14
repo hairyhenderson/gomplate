@@ -2,9 +2,11 @@
 
 package funcs
 
-import "github.com/google/cel-go/cel"
-import "github.com/google/cel-go/common/types"
-import "github.com/google/cel-go/common/types/ref"
+import (
+	"github.com/google/cel-go/cel"
+	"github.com/google/cel-go/common/types"
+	"github.com/google/cel-go/common/types/ref"
+)
 
 var stringsHumanDurationGen = cel.Function("HumanDuration",
 	cel.Overload("HumanDuration_interface{}",
@@ -157,17 +159,13 @@ var stringsAbbrevGen = cel.Function("Abbrev",
 
 var stringsReplaceAllGen = cel.Function("replaceAll",
 	cel.MemberOverload("ReplaceAll_string_string_interface{}",
-
 		[]*cel.Type{
 			cel.StringType, cel.StringType, cel.DynType,
 		},
 		cel.StringType,
 		cel.FunctionBinding(func(args ...ref.Val) ref.Val {
-
 			var x StringFuncs
-
 			return types.String(x.ReplaceAll(args[0].Value().(string), args[1].Value().(string), args[2]))
-
 		}),
 	),
 )
@@ -192,16 +190,13 @@ var stringsContainsGen = cel.Function("Contains",
 
 var stringsRepeatGen = cel.Function("repeat",
 	cel.MemberOverload("string_repeat",
-
 		[]*cel.Type{
-			cel.IntType, cel.DynType,
+			cel.StringType,cel.IntType,
 		},
 		cel.StringType,
-		cel.FunctionBinding(func(args ...ref.Val) ref.Val {
-
+		cel.BinaryBinding(func(lhs, rhs ref.Val) ref.Val {
 			var x StringFuncs
-
-			result, err := x.Repeat(args[0].Value().(int), args[1])
+			result, err := x.Repeat(int(rhs.Value().(int64)), lhs.Value())
 			if err != nil {
 				return types.WrapErr(err)
 			}
@@ -219,14 +214,18 @@ var stringsSortGen = cel.Function("Sort",
 		},
 		cel.DynType,
 		cel.FunctionBinding(func(args ...ref.Val) ref.Val {
+			list, err := sliceToNative[interface{}](args[0].(ref.Val))
+			if err != nil {
+				return types.WrapErr(err)
+			}
 
 			var x StringFuncs
+			result, err := x.Sort(list)
+			if err != nil {
+				return types.WrapErr(err)
+			}
 
-			result, err := x.Sort(args[0])
-			return types.DefaultTypeAdapter.NativeToValue([]any{
-				result, err,
-			})
-
+			return types.DefaultTypeAdapter.NativeToValue(result)
 		}),
 	),
 )
@@ -278,7 +277,7 @@ var stringsTrimSuffixGen = cel.Function("trimSuffix",
 
 			var x StringFuncs
 
-			return types.DefaultTypeAdapter.NativeToValue(x.TrimSuffix(args[0].Value().(string), args[1]))
+			return types.DefaultTypeAdapter.NativeToValue(x.TrimSuffix(args[1].Value().(string), args[0]))
 
 		}),
 	),
@@ -371,9 +370,8 @@ var stringsTruncGen = cel.Function("trunc",
 
 var stringsIndentGen = cel.Function("indent",
 	cel.MemberOverload("string_indent",
-
 		[]*cel.Type{
-			cel.DynType,
+			cel.StringType,
 		},
 		cel.StringType,
 		cel.FunctionBinding(func(args ...ref.Val) ref.Val {
@@ -389,7 +387,6 @@ var stringsIndentGen = cel.Function("indent",
 				return types.WrapErr(err)
 			}
 			return types.String(result)
-
 		}),
 	),
 )

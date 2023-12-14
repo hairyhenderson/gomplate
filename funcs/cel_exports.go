@@ -9,7 +9,8 @@ import (
 var CelEnvOption = []cel.EnvOption{
 	fromAwsMap,
 	arnToMap,
-	collSliceGen,
+
+	// collSliceGen,
 	collHasGen,
 	collDictGen,
 	collKeysGen,
@@ -24,10 +25,25 @@ var CelEnvOption = []cel.EnvOption{
 	collOmitGen,
 	collMergeGen,
 
-	convSliceGen,
-	convHasGen,
-	convToStringsGen,
-	convDefaultGen,
+	// NOTE: Conv Bool, int, Float, String are not needed
+	// as cel-go has native support for it.
+	// Slice, ToStrings are meaningless since
+	// cel-go doesn't support variadic functions.
+	// convBoolGen,
+	// convToBoolGen,
+	// convToBoolsGen,
+	// convToInt64Gen,
+	// convToIntGen,
+	// convToInt64sGen,
+	// convToIntsGen,
+	// convToFloat64Gen,
+	// convToFloat64sGen,
+	// convToStringGen,
+	// convSliceGen,
+	// convHasGen,
+	// convToStringsGen,
+	// convDefaultGen,
+
 	cryptoSHA1Gen,
 	cryptoSHA224Gen,
 	cryptoSHA256Gen,
@@ -42,22 +58,32 @@ var CelEnvOption = []cel.EnvOption{
 	cryptoSHA512BytesGen,
 	cryptoSHA512_224BytesGen,
 	cryptoSHA512_256BytesGen,
+	
+	// JSON
 	dataJSONGen,
 	dataToJSONGen2,
 	dataJSONArrayGen,
+	dataToJSONGen,
+	dataToJSONPrettyGen,
+
+	// YAML
 	dataYAMLGen,
 	dataYAMLArrayGen,
-	dataTOMLGen,
+	dataToYAMLGen,
+
+	// CSV
 	dataCSVGen,
 	dataCSVByRowGen,
 	dataCSVByColumnGen,
 	dataToCSVGen,
-	dataToJSONGen,
-	dataToJSONPrettyGen,
-	dataToYAMLGen,
+	
+	// TOML
+	dataTOMLGen,
 	dataToTOMLGen,
+	
 	urlEncodeGen,
 	urlDecodeGen,
+	
 	regexpFindGen,
 	regexpFindAllGen,
 	regexpMatchGen,
@@ -65,6 +91,7 @@ var CelEnvOption = []cel.EnvOption{
 	regexpReplaceGen,
 	regexpReplaceLiteralGen,
 	regexpSplitGen,
+
 	filepathBaseGen,
 	filepathCleanGen,
 	filepathDirGen,
@@ -77,6 +104,7 @@ var CelEnvOption = []cel.EnvOption{
 	filepathSplitGen,
 	filepathToSlashGen,
 	filepathVolumeNameGen,
+
 	mathIsIntGen,
 	mathIsFloatGen,
 	mathcontainsFloatGen,
@@ -89,19 +117,10 @@ var CelEnvOption = []cel.EnvOption{
 	mathRemGen,
 	mathPowGen,
 	mathSeqGen,
-	mathMaxGen,
-	mathMinGen,
 	mathCeilGen,
 	mathFloorGen,
 	mathRoundGen,
-	pathBaseGen,
-	pathCleanGen,
-	pathDirGen,
-	pathExtGen,
-	pathIsAbsGen,
-	pathJoinGen,
-	pathMatchGen,
-	pathSplitGen,
+
 	randomASCIIGen,
 	randomAlphaGen,
 	randomAlphaNumGen,
@@ -109,6 +128,7 @@ var CelEnvOption = []cel.EnvOption{
 	randomItemGen,
 	randomNumberGen,
 	randomFloatGen,
+	
 	stringsHumanDurationGen,
 	stringsHumanSizeGen,
 	stringsHumanDurationGen2,
@@ -138,12 +158,14 @@ var CelEnvOption = []cel.EnvOption{
 	stringsKebabCaseGen,
 	stringsWordWrapGen,
 	stringsRuneCountGen,
+
 	testAssertGen,
 	testFailGen,
 	testRequiredGen,
 	testTernaryGen,
 	testKindGen,
 	testIsKindGen,
+
 	timeZoneNameGen,
 	timeZoneOffsetGen,
 	timeParseGen,
@@ -160,6 +182,7 @@ var CelEnvOption = []cel.EnvOption{
 	timeParseDurationGen,
 	timeSinceGen,
 	timeUntilGen,
+
 	uuidV1Gen,
 	uuidV4Gen,
 	uuidNilGen,

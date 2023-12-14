@@ -62,24 +62,202 @@ func TestFunctions(t *testing.T) {
 	assert.Equal(t, "hi b", out)
 }
 
-func TestRegex(t *testing.T) {
+// unstructure marshalls a struct to and from JSON to remove any type details
+func unstructure(o any) interface{} {
+	data, err := json.Marshal(o)
+	if err != nil {
+		return nil
+	}
+	var out interface{}
+	_ = json.Unmarshal(data, &out)
+	return out
+}
+
+func TestCelAws(t *testing.T) {
 	runTests(t, []Test{
-		{nil, `' asdsa A123 asdsd'.find(r"A\d{3}")`, "A123"},
-		{nil, `regexp.Find("[0-9]+","/path/i-213213/")`, "213213"},
-		{nil, `regexp.Replace("[0-9]", ".","/path/i-213213/")`, "/path/i-....../"},
-		{nil, `"abc 123".find('[0-9]+')`, "123"},
-		{nil, `"/path/i-213213/aasd".matches('/path/(.*)/')`, "true"},
-		{nil, `"ABC-123 213213 DEF-456 dsadjkl 4234".findAll(r'\w{3}-\d{3}')`, "[ABC-123 DEF-456]"},
+		{nil, "arnToMap('arn:aws:sns:eu-west-1:123:MMS-Topic').account", "123"},
+		{map[string]interface{}{
+			"x": []map[string]string{
+				{"Name": "hello", "Value": "world"},
+				{"Name": "John", "Value": "Doe"},
+			},
+		},
+			"fromAWSMap(x).hello", "world"},
 	})
 }
 
-func TestMath(t *testing.T) {
+func TestCelBase64(t *testing.T) {
+	runTests(t, []Test{
+		{nil, "base64.encode(b'hello')", "aGVsbG8="},
+		{nil, "string(base64.decode('aGVsbG8='))", "hello"},
+	})
+}
+
+func TestCelColl(t *testing.T) {
+	runTests(t, []Test{
+		{nil, `Dict(['a','b', 'c', 'd']).a`, "b"},
+		{nil, `Dict(['a','b', 'c', 'd']).c`, "d"},
+		{nil, `Has(['a','b', 'c'], 'a')`, "true"},
+		{nil, `Has(['a','b', 'c'], 'e')`, "false"},
+	})
+}
+
+func TestCelCrypto(t *testing.T) {
+	runTests(t, []Test{
+		{nil, `crypto.SHA1('hello')`, "aaf4c61ddcc5e8a2dabede0f3b482cd9aea9434d"},
+		{nil, `crypto.SHA224('hello')`, "ea09ae9cc6768c50fcee903ed054556e5bfc8347907f12598aa24193"},
+		{nil, `crypto.SHA256('hello')`, "2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824"},
+		{nil, `crypto.SHA384('hello')`, "59e1748777448c69de6b800d7a33bbfb9ff1b463e44354c3553bcdb9c666fa90125a3c79f90397bdf5f6a13de828684f"},
+		{nil, `crypto.SHA512('hello')`, "9b71d224bd62f3785d96d46ad3ea3d73319bfbc2890caadae2dff72519673ca72323c3d99ba5c11d7c7acc6e14b8c5da0c4663475c2e5c3adef46f73bcdec043"},
+	})
+}
+
+func TestCelData(t *testing.T) {
+	person := Person{
+		Name:    "Aditya",
+		Address: &Address{City: "Kathmandu"},
+	}
+	runTests(t, []Test{
+		{map[string]interface{}{"i": newFolderCheck(1)}, "i.files[0].modified", testDate},
+		{map[string]interface{}{"i": person}, "YAML(toYAML(i)).name", "Aditya"},
+		// csv
+		{nil, `CSV(["Alice,30", "Bob,31"])[0][0]`, "Alice"},
+		// {nil, `data.CSVByRow(["sn,name,age,gender", "1,Alice,30,f", "2,Bob,31,m"])`, "Alice"},
+		// {nil, `toCSV("first,second,third\n1,2,3\n4,5,6")`, "Alice"},
+		// TOML doesn't use JSON tags,
+		{map[string]interface{}{"i": person}, "TOML(toTOML(i)).Address.city_name", "Kathmandu"},
+		{structEnv, `results.Address.city_name == "Kathmandu" && results.name == "Aditya"`, "true"},
+		// Support structs as environment var (by default they are not)
+		{structEnv, `results.Address.city_name == "Kathmandu" && results.name == "Aditya"`, "true"},
+		{map[string]any{"results": junitEnv}, `results.passed`, "1"},
+	})
+}
+
+func TestCelFilePath(t *testing.T) {
+	testData := []Test{
+		{nil, `filepath.Base("/home/flanksource/projects/gencel")`, "gencel"},
+		{nil, `filepath.Clean("/foo/bar/../baz")`, "/foo/baz"},
+		{nil, `filepath.Dir("/home/flanksource/projects/gencel")`, "/home/flanksource/projects"},
+		{nil, `filepath.Ext("/opt/image.jpg")`, ".jpg"},
+		{nil, `filepath.IsAbs("/opt/image.jpg")`, "true"},
+		{nil, `filepath.IsAbs("projects/image.jpg")`, "false"},
+		{nil, `filepath.Join(["/home/flanksource", "projects", "gencel"])`, "/home/flanksource/projects/gencel"},
+		{nil, `filepath.Match("*.txt", "foo.json")`, "false"},
+		{nil, `filepath.Match("*.txt", "foo.txt")`, "true"},
+		{nil, `filepath.Rel("/foo/bar", "/foo/bar/baz")`, "baz"},
+		{nil, `filepath.Split("/foo/bar/baz")`, "[/foo/bar/ baz]"},
+	}
+
+	runTests(t, testData)
+}
+
+func TestCelJSON(t *testing.T) {
+	person := Person{
+		Name:    "Aditya",
+		Address: &Address{City: "Kathmandu"},
+	}
+	runTests(t, []Test{
+		{nil, `dyn([{'name': 'John', 'age': 30}]).toJSON()`, `[{"age":30,"name":"John"}]`},
+		{nil, `[{'name': 'John'}].toJSON()`, `[{"name":"John"}]`},
+		{nil, `dyn({'name': 'John'}).toJSON()`, `{"name":"John"}`},
+		{nil, `{'name': 'John'}.toJSON()`, `{"name":"John"}`},
+		{map[string]interface{}{"i": person}, "jq('.Address.city_name', i)", "Kathmandu"},
+		{map[string]interface{}{"i": person}, "toJSONPretty('\t', i)", "{\n\t\"Address\": {\n\t\t\"city_name\": \"Kathmandu\"\n\t},\n\t\"name\": \"Aditya\"\n}"},
+		{map[string]interface{}{"i": person}, "toJSONPretty('\t', [\"Alice\", 30])", "[\n\t\"Alice\",\n\t30\n]"},
+		{map[string]interface{}{"i": person}, "toJSONPretty('\t', {'name': 'aditya'})",
+			`{
+	"name": "aditya"
+}`},
+		{map[string]interface{}{"i": person}, "JSON(toJSON(i)).name", "Aditya"},
+		{map[string]interface{}{"i": person}, "JSON(i.toJSON()).name", "Aditya"},
+		{map[string]interface{}{"i": person}, `JSONArray('["1", "2"]')[0]`, "1"},
+		{map[string]interface{}{"i": map[string]string{"name": "aditya"}}, `toJSON(i)`, `{"name":"aditya"}`},
+	})
+}
+
+func TestCelExtensions(t *testing.T) {
+	runTests(t, []Test{
+		{nil, "url('https://example.com/').getHost()", "example.com"},
+		{nil, "[1,2, 3].min()", "1"},
+		{nil, "[1,2, 3].max()", "3"},
+		{nil, "[1,2, 3].sum()", "6"},
+		// Extensions
+		{nil, `base64.encode(b"flanksource")`, "Zmxhbmtzb3VyY2U="},        // encoding lib
+		{nil, `string(base64.decode("Zmxhbmtzb3VyY2U="))`, "flanksource"}, // encoding lib
+		{nil, `math.greatest(-42.0, -21.5, -100.0)`, "-21.5"},             // math lib
+		{nil, `"hello, world".replace("world", "team")`, "hello, team"},   // strings lib
+		{nil, `sets.contains([1, 2, 3, 4], [2, 3])`, "true"},              // sets lib
+		{nil, `[1,2,3,4].slice(1, 3)`, "[2 3]"},                           // lists lib
+	})
+}
+
+func TestCelEncode(t *testing.T) {
+	tests := []Test{
+		{map[string]interface{}{"hello": "hello world ?"}, "urlencode(hello)", `hello+world+%3F`},
+		{map[string]interface{}{"hello": "hello+world+%3F"}, "urldecode(hello)", `hello world ?`},
+	}
+
+	runTests(t, tests)
+}
+
+func TestCelJQ(t *testing.T) {
+	person := Person{Name: "Aditya", Address: &Address{City: "Kathmandu"}}
+	persons := []interface{}{
+		Person{Name: "John", Address: &Address{City: "Kathmandu"}, Age: 20},
+		Person{Name: "Jane", Address: &Address{City: "Nepal"}, Age: 30},
+		Person{Name: "Jane", Address: &Address{City: "Kathmandu"}, Age: 35},
+		Person{Name: "Harry", Address: &Address{City: "Kathmandu"}, Age: 40},
+	}
+
+	runTests(t, []Test{
+		{map[string]interface{}{"i": person}, "jq('.Address.city_name', i)", "Kathmandu"},
+		{map[string]interface{}{"i": persons}, "jq('.[] | .name', i)", "[John Jane Jane Harry]"},
+		{map[string]interface{}{"i": unstructure(persons)}, "jq('.[] | .name', i)", "[John Jane Jane Harry]"},
+		{map[string]interface{}{"i": persons}, `jq('
+			. |
+		  group_by(.Address.city_name)  |
+			map({"city": .[0].Address.city_name,
+				 "sum": map(.age) | add,
+				 "count": map(.) | length
+			})', i)
+			.map(v, "%s=%d".format([v.city, int(v.sum)]))
+			.join(" ")`, "Kathmandu=95 Nepal=30"},
+	})
+}
+
+func TestCelLists(t *testing.T) {
+	runTests(t, []Test{
+		{nil, "['a','b', 'c'].join(',')", "a,b,c"},
+
+		{nil, "['a', ['b','c'], 'd'].flatten().join(',')", "a,b,c,d"},
+		{nil, "['b', 'a', 'c'].sort().join(',')", "a,b,c"},
+		{nil, "['b', 'a', 'c'].sort().join(',')", "a,b,c"},
+		{nil, "['a', 'a', 'b', 'c'].uniq().join(',')", "a,b,c"},
+		{nil, "{'a': 1, 'b': 2}.keys().join(',')", "a,b"},
+		{nil, "{'a': 1, 'b': 2}.values().sum()", "3"},
+	})
+}
+
+func TestCelMath(t *testing.T) {
 	runTests(t, []Test{
 		{nil, `math.Add([1,2,3,4,5])`, "15"},
+		{nil, `math.Sub(5,4)`, "1"},
+		{nil, `math.Mul([1, 2, 3, 4])`, "24"},
+		{nil, `math.Div(4, 2)`, "2"},
+		{nil, `math.Rem(4, 3)`, "1"},
+		{nil, `math.Pow(4, 2)`, "16"},
+		{nil, `math.Seq([1, 5])`, "[1 2 3 4 5]"},
+		{nil, `math.Seq([1, 6, 2])`, "[1 3 5]"},
+		{nil, `math.Abs(-1)`, "1"},
+		{nil, `math.greatest([1,2,3,4,5])`, "5"},
+		{nil, `math.least([1,2,3,4,5])`, "1"},
+		{nil, `math.Ceil(5.4)`, "6"},
+		{nil, `math.Floor(5.6)`, "5"},
+		{nil, `math.Round(5.6)`, "6"},
 	})
 }
 
-func TestMaps(t *testing.T) {
+func TestCelMaps(t *testing.T) {
 	m := map[string]any{
 		"x": map[string]any{
 			"a": "b",
@@ -108,140 +286,87 @@ func TestMaps(t *testing.T) {
 	})
 }
 
-func TestLists(t *testing.T) {
+func TestCelRandom(t *testing.T) {
 	runTests(t, []Test{
-		{nil, "['a','b', 'c'].join(',')", "a,b,c"},
-
-		{nil, "['a', ['b','c'], 'd'].flatten().join(',')", "a,b,c,d"},
-		{nil, "['b', 'a', 'c'].sort().join(',')", "a,b,c"},
-		{nil, "['b', 'a', 'c'].sort().join(',')", "a,b,c"},
-		{nil, "['a', 'a', 'b', 'c'].uniq().join(',')", "a,b,c"},
-		{nil, "{'a': 1, 'b': 2}.keys().join(',')", "a,b"},
-		{nil, "{'a': 1, 'b': 2}.values().sum()", "3"},
-	})
-
-}
-
-func TestAws(t *testing.T) {
-	runTests(t, []Test{
-		{nil, "arnToMap('arn:aws:sns:eu-west-1:123:MMS-Topic').account", "123"},
-		{map[string]interface{}{"x": []map[string]string{
-			{"Name": "hello", "Value": "world"},
-			{"Name": "John", "Value": "Doe"},
-		}}, "fromAWSMap(x).hello", "world"},
+		{nil, `random.ASCII(1).size()`, "1"},
+		{nil, `random.Alpha(25).size()`, "25"},
+		{nil, `random.AlphaNum(32).size()`, "32"},
+		{nil, `random.String(4, ['a', 'd']).size()`, "4"},
+		{nil, `random.String(4, []).size()`, "4"},
+		{nil, `random.Item(['a', 'b', 'c']).size()`, "1"},
+		{nil, `random.Number(['12', '12'])`, "12"},
+		// {nil, `random.Float([1, 2])`, "1.03"},
 	})
 }
 
-func TestJQ(t *testing.T) {
-
-	person := Person{Name: "Aditya", Address: &Address{City: "Kathmandu"}}
-	persons := []interface{}{
-		Person{Name: "John", Address: &Address{City: "Kathmandu"}, Age: 20},
-		Person{Name: "Jane", Address: &Address{City: "Nepal"}, Age: 30},
-		Person{Name: "Jane", Address: &Address{City: "Kathmandu"}, Age: 35},
-		Person{Name: "Harry", Address: &Address{City: "Kathmandu"}, Age: 40},
-	}
-
+func TestCelRegex(t *testing.T) {
 	runTests(t, []Test{
-		{map[string]interface{}{"i": person}, "jq('.Address.city_name', i)", "Kathmandu"},
-		{map[string]interface{}{"i": persons}, "jq('.[] | .name', i)", "[John Jane Jane Harry]"},
-		{map[string]interface{}{"i": unstructure(persons)}, "jq('.[] | .name', i)", "[John Jane Jane Harry]"},
-		{map[string]interface{}{"i": persons}, `jq('
-			. |
-		  group_by(.Address.city_name)  |
-			map({"city": .[0].Address.city_name,
-				 "sum": map(.age) | add,
-				 "count": map(.) | length
-			})', i)
-			.map(v, "%s=%d".format([v.city, int(v.sum)]))
-			.join(" ")`, "Kathmandu=95 Nepal=30"},
+		{nil, `' asdsa A123 asdsd'.find(r"A\d{3}")`, "A123"},
+		{nil, `regexp.Find("[0-9]+","/path/i-213213/")`, "213213"},
+		{nil, `regexp.Replace("[0-9]", ".","/path/i-213213/")`, "/path/i-....../"},
+		{nil, `"abc 123".find('[0-9]+')`, "123"},
+		{nil, `"/path/i-213213/aasd".matches('/path/(.*)/')`, "true"},
+		{nil, `"ABC-123 213213 DEF-456 dsadjkl 4234".findAll(r'\w{3}-\d{3}')`, "[ABC-123 DEF-456]"},
 	})
 }
 
-// unstructure marshalls a struct to and from JSON to remove any type details
-func unstructure(o any) interface{} {
-	data, err := json.Marshal(o)
-	if err != nil {
-		return nil
-	}
-	var out interface{}
-	_ = json.Unmarshal(data, &out)
-	return out
-}
-
-func TestData(t *testing.T) {
-	person := Person{
-		Name:    "Aditya",
-		Address: &Address{City: "Kathmandu"}}
-	runTests(t, []Test{
-		{map[string]interface{}{"i": newFolderCheck(1)}, "i.files[0].modified", testDate},
-		{nil, `dyn([{'name': 'John', 'age': 30}]).toJSON()`, `[{"age":30,"name":"John"}]`},
-		{nil, `[{'name': 'John'}].toJSON()`, `[{"name":"John"}]`},
-		{nil, `dyn({'name': 'John'}).toJSON()`, `{"name":"John"}`},
-		{nil, `{'name': 'John'}.toJSON()`, `{"name":"John"}`},
-		{map[string]interface{}{"i": person}, "jq('.Address.city_name', i)", "Kathmandu"},
-		{map[string]interface{}{"i": person}, "toJSONPretty(i)", "{\n  \"Address\": {\n    \"city_name\": \"Kathmandu\"\n  },\n  \"name\": \"Aditya\"\n}"},
-		{map[string]interface{}{"i": person}, "JSON(toJSONPretty(i)).name", "Aditya"},
-		{map[string]interface{}{"i": person}, "JSON(toJSON(i)).name", "Aditya"},
-		{map[string]interface{}{"i": person}, "JSON(i.toJSON()).name", "Aditya"},
-		{map[string]interface{}{"i": person}, "YAML(toYAML(i)).name", "Aditya"},
-		// TOML doesn't use JSON tags,
-		{map[string]interface{}{"i": person}, "TOML(toTOML(i)).Address.city_name", "Kathmandu"},
-		{structEnv, `results.Address.city_name == "Kathmandu" && results.name == "Aditya"`, "true"},
-		// Support structs as environment var (by default they are not)
-		{structEnv, `results.Address.city_name == "Kathmandu" && results.name == "Aditya"`, "true"},
-		{map[string]any{"results": junitEnv}, `results.passed`, "1"},
-	})
-}
-
-func TestExtensions(t *testing.T) {
-	runTests(t, []Test{
-		{nil, "url('https://example.com/').getHost()", "example.com"},
-		{nil, "[1,2, 3].min()", "1"},
-		{nil, "[1,2, 3].max()", "3"},
-		{nil, "[1,2, 3].sum()", "6"},
-		// Extensions
-		{nil, `base64.encode(b"flanksource")`, "Zmxhbmtzb3VyY2U="},        // encoding lib
-		{nil, `string(base64.decode("Zmxhbmtzb3VyY2U="))`, "flanksource"}, // encoding lib
-		{nil, `math.greatest(-42.0, -21.5, -100.0)`, "-21.5"},             // math lib
-		{nil, `"hello, world".replace("world", "team")`, "hello, team"},   // strings lib
-		{nil, `sets.contains([1, 2, 3, 4], [2, 3])`, "true"},              // sets lib
-		{nil, `[1,2,3,4].slice(1, 3)`, "[2 3]"},                           // lists lib
-	})
-}
-func TestStrings(t *testing.T) {
+func TestCelStrings(t *testing.T) {
 	tests := []Test{
-		{nil, `random.AlphaNum(10).size()`, "10"},
-		{nil, "'abcdedf'.runeCount()", "7"},
-		{map[string]interface{}{"hello": "world"}, "hello", "world"},
-		{map[string]interface{}{"hello": "hello world ?"}, "urlencode(hello)", `hello+world+%3F`},
-		{map[string]interface{}{"hello": "hello+world+%3F"}, "urldecode(hello)", `hello world ?`},
-		// {map[string]interface{}{"size": "123456"}, "HumanSize(size)", "120.6K"},
-		{map[string]interface{}{"size": 123456}, "HumanSize(size)", "120.6K"},
+		{nil, "Abbrev([1, 5, 'KubernetesPod'])", "Ku..."},
+		{nil, "Abbrev([6, 'KubernetesPod'])", "Kub..."},
+		{nil, "Abbrev([5, 20, 'Now is the time for all good men'])", "...s the time for..."},
+
+		{nil, "'the quick brown fox'.camelCase()", "theQuickBrownFox"},
+		{nil, "'the quick brown fox'.charAt(2)", "e"},
+		{nil, "'the quick brown fox'.contains('brown')", "true"},
+		{nil, "'the quick brown fox'.endsWith('fox')", "true"},
 		{map[string]interface{}{"size": 123456}, "humanSize(size)", "120.6K"},
+		// {nil, "'the\nquick'.indent('a')", "true"}, // TODO:
+		{nil, "'the quick brown fox'.indexOf('quick')", "4"},
+		{nil, "['hello', 'mellow'].join()", "hellomellow"},
+		{nil, "'hello mellow'.kebabCase()", "hello-mellow"},
+		{nil, "'hello mellow'.kebabCase()", "hello-mellow"},
+		{nil, "'hello hello hello'.lastIndexOf('hello')", "12"},
+		{nil, "'HeyThERE'.lowerAscii()", "heythere"},
+		{nil, "strings.quote('hello')", `"hello"`},
+		{nil, "'hello'.quote()", `"hello"`},
+		{nil, "'hello'.repeat(2)", `hellohello`},
+		{nil, "'hello'.replaceAll('l', 'f')", `heffo`},
+		{nil, "'hello'.reverse()", `olleh`},
+		{nil, "'hello'.reverse()", `olleh`},
+		{nil, `"Hello$World".runeCount()`, `11`},
+		{nil, `"rm -rf /home/*".shellQuote()`, `'rm -rf /home/*'`},
+		{nil, `"hello".size()`, `5`},
+		{nil, `"hello there".slug()`, `hello-there`},
+		{map[string]interface{}{"s": "hello world"}, "s.snakeCase()", "hello_world"},
+
+		// SemVer
+		{nil, "Semver('1.2.3').major", "1"},
 		{map[string]interface{}{"v": "1.2.3-beta.1+c0ff33"}, "Semver(v).prerelease", "beta.1"},
 		{map[string]interface{}{"old": "1.2.3", "new": "1.2.3"}, "SemverCompare(new, old)", "true"},
 		{map[string]interface{}{"old": "1.2.3", "new": "1.2.4"}, "SemverCompare(new, old)", "false"},
-		{map[string]interface{}{"code": 200}, "string(code) + ' is not equal to 500'", "200 is not equal to 500"},
 
-		// {map[string]interface{}{"s": []string{"a", "b", "b", "a"}}, "Uniq(s)", "[a b]"},
-		{map[string]interface{}{"s": "hello world"}, "s.title()", "Hello World"},
-		{map[string]interface{}{"s": "hello world"}, "s.camelCase()", "helloWorld"},
-		{map[string]interface{}{"s": "hello world"}, "s.kebabCase()", "hello-world"},
-		{map[string]interface{}{"s": "hello world"}, "s.snakeCase()", "hello_world"},
-		{map[string]interface{}{"s": "hel\"lo world"}, "s.quote()", "\"hel\\\"lo world\""},
-		{map[string]interface{}{"s": "hello world"}, "s.squote()", "'hello world'"},
 		{map[string]interface{}{"s": "hello world"}, "s.shellQuote()", "'hello world'"},
+		{nil, `Sort(["b", "a", "c"])`, `[a b c]`},
+		{map[string]interface{}{"s": "hello world"}, "s.split(' ')", "[hello world]"},
+		{map[string]interface{}{"s": "hello world"}, "s.squote()", "'hello world'"},
+		{nil, `"hello".startsWith("he")`, "true"},
+		{map[string]interface{}{"s": "hello world"}, "s.title()", "Hello World"},
+		{map[string]interface{}{"s": "    hello world\t\t\n"}, "s.trim()", "hello world"},
+		{map[string]interface{}{"s": "hello world"}, "s.trimSuffix(' world')", "hello"},
 		{map[string]interface{}{"s": "hello world"}, "s.slug()", "hello-world"},
-		// {map[string]interface{}{"s": "hello world"}, "s.runeCount()", "Hello World"},
-		{nil, "uuid.IsValid(uuid.V1())", "true"},
-		{nil, "uuid.IsValid(uuid.V4())", "true"},
+		{map[string]interface{}{"s": "testing this line from here"}, "WordWrap([4, s])", "testing\nthis\nline\nfrom\nhere"},
+		{nil, `WordWrap([9, "Hello Beautiful World"])`, "Hello\nBeautiful\nWorld"},
+
+		// Basic
+		{map[string]interface{}{"hello": "world"}, "hello", "world"},
+		{map[string]interface{}{"code": 200}, "string(code) + ' is not equal to 500'", "200 is not equal to 500"},
 	}
 
 	runTests(t, tests)
 }
 
-func TestDates(t *testing.T) {
+func TestCelDates(t *testing.T) {
 	timestamp, err := time.Parse(time.RFC3339Nano, "2020-01-01T14:30:33.456Z")
 	assert.NoError(t, err)
 	tests := []Test{
@@ -269,22 +394,6 @@ func TestDates(t *testing.T) {
 	runTests(t, tests)
 }
 
-func TestCelNamespace(t *testing.T) {
-	testData := []struct {
-		Input  string
-		Output any
-	}{
-		// {Input: `regexp.Replace("flank", "rank", "flanksource")`, Output: "ranksource"},
-		// {Input: `regexp.Replace("nothing", "rank", "flanksource")`, Output: "flanksource"},
-		// {Input: `regexp.Replace("", "", "flanksource")`, Output: "flanksource"},
-		{Input: `filepath.Join(["/home/flanksource", "projects", "gencel"])`, Output: "/home/flanksource/projects/gencel"},
-	}
-
-	for i, td := range testData {
-		executeTemplate(t, i, td.Input, td.Output, nil)
-	}
-}
-
 func TestCelMultipleReturns(t *testing.T) {
 	testData := []struct {
 		Input   string
@@ -307,7 +416,6 @@ func TestCelVariadic(t *testing.T) {
 	}{
 		{Input: `math.Add([1,2,3,4,5])`, Output: int64(15)},
 		{Input: `math.Mul([1,2,3,4,5])`, Output: int64(120)},
-		{Input: `Slice([1,2,3,4,5])`, Output: []any{int64(1), int64(2), int64(3), int64(4), int64(5)}},
 	}
 
 	for i, td := range testData {
@@ -407,4 +515,39 @@ func TestCelK8sMemoryResourceUnits(t *testing.T) {
 	for i, td := range testData {
 		executeTemplate(t, i, td.Input, td.Output, nil)
 	}
+}
+
+func TestCelYAML(t *testing.T) {
+	person := Person{
+		Name:    "Aditya",
+		Address: &Address{City: "Kathmandu"},
+	}
+	runTests(t, []Test{
+		{nil, "YAML('name: John\n').name", "John"},
+		{nil, "YAMLArray('- name\n')[0]", "name"},
+		{nil, `toYAML(['name', 'John'])`, "- name\n- John\n"},
+		{map[string]any{"person": person}, `toYAML(person)`, "Address:\n  city_name: Kathmandu\nname: Aditya\n"},
+		{nil, `toYAML({'name': 'John'})`, "name: John\n"},
+	})
+}
+
+func TestCelTOML(t *testing.T) {
+	person := Person{
+		Name: "Aditya",
+	}
+
+	runTests(t, []Test{
+		{nil, "TOML('name = \"John\"').name", "John"},
+		{map[string]any{"person": person}, `toTOML(person)`, "name = \"Aditya\"\n"},
+	})
+}
+
+func TestCelUUID(t *testing.T) {
+	runTests(t, []Test{
+		{nil, "uuid.Nil()", "00000000-0000-0000-0000-000000000000"},
+		{nil, "uuid.V1() != uuid.Nil()", "true"},
+		{nil, "uuid.V4() != uuid.Nil()", "true"},
+		{nil, "uuid.IsValid('2a42e576-c308-4db9-8525-0513af307586')", "true"},
+		{nil, "uuid.Parse('2a42e576-c308-4db9-8525-0513af307586')", "2a42e576-c308-4db9-8525-0513af307586"},
+	})
 }

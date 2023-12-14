@@ -126,7 +126,6 @@ var dataCSVGen = cel.Function("CSV",
 		},
 		cel.DynType,
 		cel.FunctionBinding(func(args ...ref.Val) ref.Val {
-
 			list, err := sliceToNative[string](args[0].(ref.Val))
 			if err != nil {
 				return types.WrapErr(err)
@@ -267,13 +266,12 @@ var dataToJSONGen2 = cel.Function("toJSON",
 
 var dataToJSONPrettyGen = cel.Function("toJSONPretty",
 	cel.Overload("toJSONPretty_interface{}",
-
 		[]*cel.Type{
-			 cel.DynType,
+			 cel.StringType, cel.DynType,
 		},
 		cel.StringType,
 		cel.FunctionBinding(func(args ...ref.Val) ref.Val {
-			result, err := data.ToJSONPretty("  ", args[0].Value())
+			result, err := data.ToJSONPretty(args[0].Value().(string), args[1].Value())
 			if err != nil {
 				return types.WrapErr(err)
 			}

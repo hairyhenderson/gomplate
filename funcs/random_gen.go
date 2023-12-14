@@ -71,19 +71,17 @@ var randomAlphaNumGen = cel.Function("random.AlphaNum",
 
 var randomStringGen = cel.Function("random.String",
 	cel.Overload("random.String_interface{}_interface{}",
-
 		[]*cel.Type{
 			cel.DynType, cel.DynType,
 		},
 		cel.DynType,
 		cel.FunctionBinding(func(args ...ref.Val) ref.Val {
-
-			var x RandomFuncs
 			list, err := sliceToNative[interface{}](args[1].(ref.Val))
 			if err != nil {
-				return types.WrapErr(err)
+					return types.WrapErr(err)
 			}
-
+			
+			var x RandomFuncs
 			result, err := x.String(args[0], list...)
 			if err != nil {
 				return types.WrapErr(err)
@@ -104,8 +102,12 @@ var randomItemGen = cel.Function("random.Item",
 		cel.FunctionBinding(func(args ...ref.Val) ref.Val {
 
 			var x RandomFuncs
+			list, err := sliceToNative[interface{}](args[0].(ref.Val))
+			if err != nil {
+				return types.WrapErr(err)
+			}
 
-			result, err := x.Item(args[0])
+			result, err := x.Item(list)
 			if err != nil {
 				return types.WrapErr(err)
 			}

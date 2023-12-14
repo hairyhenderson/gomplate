@@ -141,11 +141,12 @@ var filepathMatchGen = cel.Function("filepath.Match",
 
 			var x FilePathFuncs
 
-			a0, a1 := x.Match(args[0], args[1])
-			return types.DefaultTypeAdapter.NativeToValue([]any{
-				a0, a1,
-			})
+			a0, err := x.Match(args[0], args[1])
+			if err != nil {
+				return types.WrapErr(err)
+			}
 
+			return types.DefaultTypeAdapter.NativeToValue(a0)
 		}),
 	),
 )
@@ -161,11 +162,11 @@ var filepathRelGen = cel.Function("filepath.Rel",
 
 			var x FilePathFuncs
 
-			a0, a1 := x.Rel(args[0], args[1])
-			return types.DefaultTypeAdapter.NativeToValue([]any{
-				a0, a1,
-			})
-
+			a0, err := x.Rel(args[0], args[1])
+			if err != nil {
+				return types.WrapErr(err)
+			}
+			return types.DefaultTypeAdapter.NativeToValue(a0)
 		}),
 	),
 )

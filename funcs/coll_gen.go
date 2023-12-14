@@ -17,34 +17,41 @@ import (
 
 var typeMapStringAny = reflect.TypeOf(map[string]interface{}{})
 
-var collSliceGen = cel.Function("Slice",
-	cel.Overload("Slice_interface{}",
+// NOTE: Slice Makes no sense in cel-go because 
+// cel-go doesn't support variadic functions.
+// https://github.com/google/cel-go/issues/476#issuecomment-1029172709
+// var collSliceGen = cel.Function("Slice",
+// 	cel.Overload("Slice_interface{}",
 
-		[]*cel.Type{
-			cel.DynType,
-		},
-		cel.DynType,
-		cel.FunctionBinding(func(args ...ref.Val) ref.Val {
-			list, err := sliceToNative[interface{}](args[0].(ref.Val))
-			if err != nil {
-				return types.WrapErr(err)
-			}
+// 		[]*cel.Type{
+// 			cel.DynType,
+// 		},
+// 		cel.DynType,
+// 		cel.FunctionBinding(func(args ...ref.Val) ref.Val {
+// 			list, err := sliceToNative[interface{}](args[0].(ref.Val))
+// 			if err != nil {
+// 				return types.WrapErr(err)
+// 			}
 
-			return types.DefaultTypeAdapter.NativeToValue(coll.Slice(list...))
+// 			return types.DefaultTypeAdapter.NativeToValue(coll.Slice(list...))
 
-		}),
-	),
-)
+// 		}),
+// 	),
+// )
 
 var collHasGen = cel.Function("Has",
-	cel.Overload("Has_interface{}_string",
-
+	cel.Overload("Has_interface{}_any",
 		[]*cel.Type{
 			cel.DynType, cel.StringType,
 		},
 		cel.BoolType,
 		cel.FunctionBinding(func(args ...ref.Val) ref.Val {
-			return types.DefaultTypeAdapter.NativeToValue(coll.Has(args[0], args[1].Value().(string)))
+			list, err := args[0].ConvertToNative(reflect.TypeOf([]string{}))
+			if err != nil {
+				return types.WrapErr(err)
+			}
+
+			return types.DefaultTypeAdapter.NativeToValue(coll.Has(list, args[1].Value().(string)))
 		}),
 	),
 )
