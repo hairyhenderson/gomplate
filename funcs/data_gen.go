@@ -12,27 +12,6 @@ import (
 	"github.com/flanksource/gomplate/v3/data"
 )
 
-var dataJSONGen = cel.Function("JSON",
-	cel.Overload("JSON_interface{}",
-
-		[]*cel.Type{
-			cel.DynType,
-		},
-		cel.DynType,
-		cel.FunctionBinding(func(args ...ref.Val) ref.Val {
-
-			var x DataFuncs
-
-			result, err := x.JSON(args[0])
-			if err != nil {
-				return types.WrapErr(err)
-			}
-			return types.DefaultTypeAdapter.NativeToValue(result)
-
-		}),
-	),
-)
-
 var dataJSONMemberGen = cel.Function("JSON",
 	cel.MemberOverload(".string.JSON()",
 		[]*cel.Type{
@@ -42,23 +21,6 @@ var dataJSONMemberGen = cel.Function("JSON",
 		cel.UnaryBinding(func(arg ref.Val) ref.Val {
 			var x DataFuncs
 			result, err := x.JSON(arg)
-			if err != nil {
-				return types.WrapErr(err)
-			}
-			return types.DefaultTypeAdapter.NativeToValue(result)
-		}),
-	),
-)
-
-var dataJSONArrayGen = cel.Function("JSONArray",
-	cel.Overload("JSONArray_interface{}",
-		[]*cel.Type{
-			cel.DynType,
-		},
-		cel.DynType,
-		cel.FunctionBinding(func(args ...ref.Val) ref.Val {
-			var x DataFuncs
-			result, err := x.JSONArray(args[0])
 			if err != nil {
 				return types.WrapErr(err)
 			}
@@ -274,17 +236,6 @@ func toJson(val ref.Val) ref.Val {
 }
 
 var dataToJSONGen = cel.Function("toJSON",
-	cel.Overload("toJSON_string",
-
-		[]*cel.Type{
-			cel.DynType,
-		},
-		cel.StringType,
-		cel.UnaryBinding(toJson),
-	),
-)
-
-var dataToJSONGen2 = cel.Function("toJSON",
 	cel.MemberOverload("dyn_toJSON",
 		[]*cel.Type{
 			cel.DynType,
@@ -295,18 +246,17 @@ var dataToJSONGen2 = cel.Function("toJSON",
 )
 
 var dataToJSONPrettyGen = cel.Function("toJSONPretty",
-	cel.Overload("toJSONPretty_interface{}",
+	cel.MemberOverload("toJSONPretty_interface{}",
 		[]*cel.Type{
-			 cel.StringType, cel.DynType,
+			cel.DynType, cel.StringType,
 		},
 		cel.StringType,
 		cel.FunctionBinding(func(args ...ref.Val) ref.Val {
-			result, err := data.ToJSONPretty(args[0].Value().(string), args[1].Value())
+			result, err := data.ToJSONPretty(args[1].Value().(string), args[0].Value())
 			if err != nil {
 				return types.WrapErr(err)
 			}
 			return types.String(result)
-
 		}),
 	),
 )

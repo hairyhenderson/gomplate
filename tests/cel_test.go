@@ -35,6 +35,7 @@ func runTests(t *testing.T, tests []Test) {
 			out, err := gomplate.RunTemplate(tc.env, gomplate.Template{
 				Expression: tc.expression,
 			})
+
 			assert.ErrorIs(t, nil, err)
 			assert.Equal(t, tc.out, out)
 		})
@@ -75,14 +76,14 @@ func unstructure(o any) interface{} {
 
 func TestCelAws(t *testing.T) {
 	runTests(t, []Test{
-		{nil, "arnToMap('arn:aws:sns:eu-west-1:123:MMS-Topic').account", "123"},
+		{nil, "aws.arnToMap('arn:aws:sns:eu-west-1:123:MMS-Topic').account", "123"},
 		{map[string]interface{}{
 			"x": []map[string]string{
 				{"Name": "hello", "Value": "world"},
 				{"Name": "John", "Value": "Doe"},
 			},
 		},
-			"fromAWSMap(x).hello", "world"},
+			"aws.fromAWSMap(x).hello", "world"},
 	})
 }
 
@@ -161,22 +162,18 @@ func TestCelJSON(t *testing.T) {
 		{nil, `[{'name': 'John'}].toJSON()`, `[{"name":"John"}]`},
 		{nil, `dyn({'name': 'John'}).toJSON()`, `{"name":"John"}`},
 		{nil, `{'name': 'John'}.toJSON()`, `{"name":"John"}`},
-		{nil, `toJSON({'name': 'John'})`, `{"name":"John"}`},
 		{nil, `1.toJSON()`, `1`},
+		{map[string]interface{}{"i": person}, "i.toJSON().JSON().name", "Aditya"},
+		{map[string]interface{}{"i": person}, `'["1", "2"]'.JSONArray()[0]`, "1"},
+		{map[string]interface{}{"i": map[string]string{"name": "aditya"}}, `i.toJSON()`, `{"name":"aditya"}`},
+
 		{nil, `'{"name": "John"}'.JSON().name`, `John`},
 		{nil, `'{"name": "Alice", "age": 30}'.JSON().name`, `Alice`},
 		{nil, `'[1, 2, 3, 4, 5]'.JSONArray()[0]`, `1`},
 		{map[string]interface{}{"i": person}, "jq('.Address.city_name', i)", "Kathmandu"},
-		{map[string]interface{}{"i": person}, "toJSONPretty('\t', i)", "{\n\t\"Address\": {\n\t\t\"city_name\": \"Kathmandu\"\n\t},\n\t\"name\": \"Aditya\"\n}"},
-		{map[string]interface{}{"i": person}, "toJSONPretty('\t', [\"Alice\", 30])", "[\n\t\"Alice\",\n\t30\n]"},
-		{map[string]interface{}{"i": person}, "toJSONPretty('\t', {'name': 'aditya'})",
-			`{
-	"name": "aditya"
-}`},
-		{map[string]interface{}{"i": person}, "JSON(toJSON(i)).name", "Aditya"},
-		{map[string]interface{}{"i": person}, "JSON(i.toJSON()).name", "Aditya"},
-		{map[string]interface{}{"i": person}, `JSONArray('["1", "2"]')[0]`, "1"},
-		{map[string]interface{}{"i": map[string]string{"name": "aditya"}}, `toJSON(i)`, `{"name":"aditya"}`},
+		{map[string]interface{}{"i": person}, "i.toJSONPretty('\t')", "{\n\t\"Address\": {\n\t\t\"city_name\": \"Kathmandu\"\n\t},\n\t\"name\": \"Aditya\"\n}"},
+		{nil, "[\"Alice\", 30].toJSONPretty('\t')", "[\n\t\"Alice\",\n\t30\n]"},
+		{nil, "{'name': 'aditya'}.toJSONPretty('\t')", "{\n\t\"name\": \"aditya\"\n}"},
 	})
 }
 
@@ -317,16 +314,17 @@ func TestCelRegex(t *testing.T) {
 
 func TestCelStrings(t *testing.T) {
 	tests := []Test{
-		{nil, "Abbrev([1, 5, 'KubernetesPod'])", "Ku..."},
-		{nil, "Abbrev([6, 'KubernetesPod'])", "Kub..."},
-		{nil, "Abbrev([5, 20, 'Now is the time for all good men'])", "...s the time for..."},
-
+		// Methods
+		{nil, "'KubernetesPod'.abbrev(1, 5)", "Ku..."},
+		{nil, "'KubernetesPod'.abbrev(6)", "Kub..."},
+		{nil, "'Now is the time for all good men'.abbrev(5, 20)", "...s the time for..."},
 		{nil, "'the quick brown fox'.camelCase()", "theQuickBrownFox"},
 		{nil, "'the quick brown fox'.charAt(2)", "e"},
 		{nil, "'the quick brown fox'.contains('brown')", "true"},
 		{nil, "'the quick brown fox'.endsWith('fox')", "true"},
-		{map[string]interface{}{"size": 123456}, "humanSize(size)", "120.6K"},
-		// {nil, "'the\nquick'.indent('a')", "true"}, // TODO:
+		{nil, "'the quick brown fox'.indent('\t\t\t')", "\t\t\tthe quick brown fox"},
+		{nil, "'hello world'.indent('==')", "==hello world"},
+		{nil, "'hello world'.indent(4, '-')", "----hello world"},
 		{nil, "'the quick brown fox'.indexOf('quick')", "4"},
 		{nil, "['hello', 'mellow'].join()", "hellomellow"},
 		{nil, "'hello mellow'.kebabCase()", "hello-mellow"},
@@ -344,15 +342,8 @@ func TestCelStrings(t *testing.T) {
 		{nil, `"hello".size()`, `5`},
 		{nil, `"hello there".slug()`, `hello-there`},
 		{map[string]interface{}{"s": "hello world"}, "s.snakeCase()", "hello_world"},
-
-		// SemVer
-		{nil, "Semver('1.2.3').major", "1"},
-		{map[string]interface{}{"v": "1.2.3-beta.1+c0ff33"}, "Semver(v).prerelease", "beta.1"},
-		{map[string]interface{}{"old": "1.2.3", "new": "1.2.3"}, "SemverCompare(new, old)", "true"},
-		{map[string]interface{}{"old": "1.2.3", "new": "1.2.4"}, "SemverCompare(new, old)", "false"},
-
 		{map[string]interface{}{"s": "hello world"}, "s.shellQuote()", "'hello world'"},
-		{nil, `Sort(["b", "a", "c"])`, `[a b c]`},
+		{nil, `"hello".sort()`, `ehllo`},
 		{map[string]interface{}{"s": "hello world"}, "s.split(' ')", "[hello world]"},
 		{map[string]interface{}{"s": "hello world"}, "s.squote()", "'hello world'"},
 		{nil, `"hello".startsWith("he")`, "true"},
@@ -360,8 +351,18 @@ func TestCelStrings(t *testing.T) {
 		{map[string]interface{}{"s": "    hello world\t\t\n"}, "s.trim()", "hello world"},
 		{map[string]interface{}{"s": "hello world"}, "s.trimSuffix(' world')", "hello"},
 		{map[string]interface{}{"s": "hello world"}, "s.slug()", "hello-world"},
-		{map[string]interface{}{"s": "testing this line from here"}, "WordWrap([4, s])", "testing\nthis\nline\nfrom\nhere"},
-		{nil, `WordWrap([9, "Hello Beautiful World"])`, "Hello\nBeautiful\nWorld"},
+		{map[string]interface{}{"s": "testing this line from here"}, "s.wordWrap(2)", "testing\nthis\nline\nfrom\nhere"},
+		{map[string]interface{}{"s": "testing this line from here"}, "s.wordWrap(10)", "testing\nthis line\nfrom here"},
+		{map[string]interface{}{"s": "Hello$World"}, "s.wordWrap(5)", "Hello$World"},
+		{nil, `"Hello Beautiful World".wordWrap(16, '===')`, "Hello Beautiful===World"},
+		{nil, `"Hello Beautiful World".wordWrap(25, '')`, "Hello Beautiful World"}, // no need to wrap
+
+		// Functions
+		{nil, "HumanSize(123456)", "120.6K"},
+		{nil, "Semver('1.2.3').major", "1"},
+		{map[string]interface{}{"v": "1.2.3-beta.1+c0ff33"}, "Semver(v).prerelease", "beta.1"},
+		{map[string]interface{}{"old": "1.2.3", "new": "1.2.3"}, "SemverCompare(new, old)", "true"},
+		{map[string]interface{}{"old": "1.2.3", "new": "1.2.4"}, "SemverCompare(new, old)", "false"},
 
 		// Basic
 		{map[string]interface{}{"hello": "world"}, "hello", "world"},
@@ -381,7 +382,6 @@ func TestCelDates(t *testing.T) {
 		// Durations
 		{map[string]interface{}{"age": 75 * time.Second}, "age", "1m15s"},
 		{nil, `HumanDuration(duration("1008h"))`, "6w0d0h"},
-		{nil, `humanDuration(duration("1008h"))`, "6w0d0h"},
 		{nil, `Duration("7d").getHours()`, "168"},
 		{nil, `duration("1h") > duration("2h")`, "false"},
 		{map[string]interface{}{"t": "2020-01-01T00:00:00Z"}, `Age(t) > duration('1h')`, "true"},
@@ -397,21 +397,6 @@ func TestCelDates(t *testing.T) {
 	}
 
 	runTests(t, tests)
-}
-
-func TestCelMultipleReturns(t *testing.T) {
-	testData := []struct {
-		Input   string
-		Outputs []any
-	}{
-		// {Input: `base64.Encode("flanksource")`, Outputs: []any{"Zmxhbmtzb3VyY2U=", nil}},
-		// {Input: `base64.Decode("Zmxhbmtzb3VyY2U=")`, Outputs: []any{"flanksource", nil}},
-		{Input: `JSONArray("[\"name\",\"flanksource\"]")`, Outputs: []any{"name", "flanksource"}},
-	}
-
-	for i, td := range testData {
-		executeTemplate(t, i, td.Input, td.Outputs, nil)
-	}
 }
 
 func TestCelVariadic(t *testing.T) {
@@ -443,9 +428,9 @@ func TestCelSliceReturn(t *testing.T) {
 
 func TestCelK8sResources(t *testing.T) {
 	runTests(t, []Test{
-		{map[string]interface{}{"healthySvc": kubernetes.GetUnstructuredMap(kubernetes.TestHealthy)}, "IsHealthy(healthySvc)", "true"},
-		{map[string]interface{}{"healthySvc": kubernetes.GetUnstructuredMap(kubernetes.TestLuaStatus)}, "GetStatus(healthySvc)", "Degraded: found less than two generators, Merge requires two or more"},
-		{map[string]interface{}{"healthySvc": kubernetes.GetUnstructuredMap(kubernetes.TestHealthy)}, "GetHealth(healthySvc).status", "Healthy"},
+		{map[string]interface{}{"healthySvc": kubernetes.GetUnstructuredMap(kubernetes.TestHealthy)}, "k8s.isHealthy(healthySvc)", "true"},
+		{map[string]interface{}{"healthySvc": kubernetes.GetUnstructuredMap(kubernetes.TestLuaStatus)}, "k8s.getStatus(healthySvc)", "Degraded: found less than two generators, Merge requires two or more"},
+		{map[string]interface{}{"healthySvc": kubernetes.GetUnstructuredMap(kubernetes.TestHealthy)}, "k8s.getHealth(healthySvc).status", "Healthy"},
 	})
 }
 
@@ -455,12 +440,12 @@ func TestCelK8s(t *testing.T) {
 		Output any
 	}{
 
-		{Input: `k8s.is_healthy(healthy_obj)`, Output: true},
-		{Input: `k8s.is_healthy(unhealthy_obj)`, Output: false},
-		{Input: `k8s.health(healthy_obj).status`, Output: "Healthy"},
-		{Input: `k8s.health(unhealthy_obj).message`, Output: "Back-off 40s restarting failed container=main pod=my-pod_argocd(63674389-f613-11e8-a057-fe5f49266390)"},
-		{Input: `k8s.health(unhealthy_obj).ok`, Output: false},
-		{Input: `k8s.health(healthy_obj).message`, Output: ""},
+		{Input: `k8s.isHealthy(healthy_obj)`, Output: true},
+		{Input: `k8s.isHealthy(unhealthy_obj)`, Output: false},
+		{Input: `k8s.getHealth(healthy_obj).status`, Output: "Healthy"},
+		{Input: `k8s.getHealth(unhealthy_obj).message`, Output: "Back-off 40s restarting failed container=main pod=my-pod_argocd(63674389-f613-11e8-a057-fe5f49266390)"},
+		{Input: `k8s.getHealth(unhealthy_obj).ok`, Output: false},
+		{Input: `k8s.getHealth(healthy_obj).message`, Output: ""},
 	}
 
 	environment := map[string]any{

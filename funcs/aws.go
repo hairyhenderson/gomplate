@@ -11,7 +11,7 @@ import (
 
 var mapStringString = cel.MapType(cel.StringType, cel.StringType)
 
-var arnToMap = cel.Function("arnToMap",
+var arnToMap = cel.Function("aws.arnToMap",
 	cel.Overload("arnToMap",
 		[]*cel.Type{
 			cel.StringType,
@@ -31,7 +31,7 @@ var arnToMap = cel.Function("arnToMap",
 	),
 )
 
-var fromAwsMap = cel.Function("fromAWSMap",
+var fromAwsMap = cel.Function("aws.fromAWSMap",
 	cel.Overload("fromAWSMap_list_map",
 		[]*cel.Type{
 			cel.ListType(cel.MapType(cel.StringType, cel.StringType)),

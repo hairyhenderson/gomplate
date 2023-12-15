@@ -60,12 +60,9 @@ var CelEnvOption = []cel.EnvOption{
 	cryptoSHA512_256BytesGen,
 	
 	// JSON
-	dataJSONGen,
 	dataJSONMemberGen,
-	dataToJSONGen2,
-	dataJSONArrayGen,
-	dataJSONArrayMemberGen,
 	dataToJSONGen,
+	dataJSONArrayMemberGen,
 	dataToJSONPrettyGen,
 
 	// YAML
@@ -133,11 +130,10 @@ var CelEnvOption = []cel.EnvOption{
 	
 	stringsHumanDurationGen,
 	stringsHumanSizeGen,
-	stringsHumanDurationGen2,
-	stringsHumanSizeGen2,
 	stringsSemverGen,
 	stringsSemverCompareGen,
-	stringsAbbrevGen,
+	stringsAbbrevWidthGen,
+	stringsAbbrevWidthAndOffsetGen,
 	stringsReplaceAllGen,
 	stringsContainsGen,
 	stringsRepeatGen,
@@ -151,6 +147,7 @@ var CelEnvOption = []cel.EnvOption{
 	stringsTrimSpaceGen,
 	stringsTruncGen,
 	stringsIndentGen,
+	stringsIndentWithWidthGen,
 	stringsSlugGen,
 	stringsQuoteGen,
 	stringsShellQuoteGen,
@@ -159,6 +156,7 @@ var CelEnvOption = []cel.EnvOption{
 	stringsCamelCaseGen,
 	stringsKebabCaseGen,
 	stringsWordWrapGen,
+	stringsWordWrapSeqAndWidthGen,
 	stringsRuneCountGen,
 
 	testAssertGen,

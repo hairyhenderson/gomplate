@@ -104,21 +104,8 @@ func GetHealth(in interface{}) HealthStatus {
 	}
 }
 
-func k8sHealth() cel.EnvOption {
-	return cel.Function("k8s.health",
-		cel.Overload("k8s.health_any",
-			[]*cel.Type{cel.AnyType},
-			cel.AnyType,
-			cel.UnaryBinding(func(obj ref.Val) ref.Val {
-				jsonObj, _ := conv.AnyToMapStringAny(GetHealth(obj.Value()))
-				return types.NewDynamicMap(types.DefaultTypeAdapter, jsonObj)
-			}),
-		),
-	)
-}
-
 func k8sGetHealth() cel.EnvOption {
-	return cel.Function("GetHealth",
+	return cel.Function("k8s.getHealth",
 		cel.Overload("GetHealth_any",
 			[]*cel.Type{cel.AnyType},
 			cel.AnyType,
@@ -131,7 +118,7 @@ func k8sGetHealth() cel.EnvOption {
 }
 
 func k8sGetStatus() cel.EnvOption {
-	return cel.Function("GetStatus",
+	return cel.Function("k8s.getStatus",
 		cel.Overload("GetStatus",
 			[]*cel.Type{cel.AnyType},
 			cel.AnyType,
@@ -143,19 +130,7 @@ func k8sGetStatus() cel.EnvOption {
 }
 
 func k8sIsHealthy() cel.EnvOption {
-	return cel.Function("k8s.is_healthy",
-		cel.Overload("k8s.is_healthy_any",
-			[]*cel.Type{cel.AnyType},
-			cel.StringType,
-			cel.UnaryBinding(func(obj ref.Val) ref.Val {
-				return types.Bool(GetHealth(obj.Value()).OK)
-			}),
-		),
-	)
-}
-
-func k8sIsHealthy2() cel.EnvOption {
-	return cel.Function("IsHealthy",
+	return cel.Function("k8s.isHealthy",
 		cel.Overload("IsHealthy_interface{}",
 			[]*cel.Type{cel.AnyType},
 			cel.StringType,

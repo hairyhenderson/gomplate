@@ -3,6 +3,8 @@
 package funcs
 
 import (
+	"sort"
+
 	"github.com/google/cel-go/cel"
 	"github.com/google/cel-go/common/types"
 	"github.com/google/cel-go/common/types/ref"
@@ -10,15 +12,12 @@ import (
 
 var stringsHumanDurationGen = cel.Function("HumanDuration",
 	cel.Overload("HumanDuration_interface{}",
-
 		[]*cel.Type{
 			cel.DynType,
 		},
 		cel.StringType,
 		cel.FunctionBinding(func(args ...ref.Val) ref.Val {
-
 			var x StringFuncs
-
 			result, err := x.HumanDuration(args[0])
 			if err != nil {
 				return types.WrapErr(err)
@@ -28,29 +27,6 @@ var stringsHumanDurationGen = cel.Function("HumanDuration",
 		}),
 	),
 )
-
-var stringsHumanDurationGen2 = cel.Function("humanDuration",
-	cel.Overload("humanDuration_interface{}",
-
-		[]*cel.Type{
-			cel.DynType,
-		},
-		cel.StringType,
-		cel.FunctionBinding(func(args ...ref.Val) ref.Val {
-
-			var x StringFuncs
-
-			result, err := x.HumanDuration(args[0])
-			if err != nil {
-				return types.WrapErr(err)
-			}
-			return types.String(result)
-
-		}),
-	),
-)
-
-
 
 var stringsHumanSizeGen = cel.Function("HumanSize",
 	cel.Overload("HumanSize_interface{}",
@@ -59,29 +35,7 @@ var stringsHumanSizeGen = cel.Function("HumanSize",
 		},
 		cel.StringType,
 		cel.FunctionBinding(func(args ...ref.Val) ref.Val {
-
 			var x StringFuncs
-
-			result, err := x.HumanSize(args[0].Value())
-			if err != nil {
-				return types.WrapErr(err)
-			}
-			return types.String(result)
-
-		}),
-	),
-)
-
-var stringsHumanSizeGen2 = cel.Function("humanSize",
-	cel.Overload("humanSize_interface{}",
-		[]*cel.Type{
-			cel.DynType,
-		},
-		cel.StringType,
-		cel.FunctionBinding(func(args ...ref.Val) ref.Val {
-
-			var x StringFuncs
-
 			result, err := x.HumanSize(args[0].Value())
 			if err != nil {
 				return types.WrapErr(err)
@@ -132,27 +86,38 @@ var stringsSemverCompareGen = cel.Function("SemverCompare",
 	),
 )
 
-var stringsAbbrevGen = cel.Function("Abbrev",
-	cel.Overload("Abbrev_interface{}",
-
+var stringsAbbrevWidthGen = cel.Function("abbrev",
+	cel.MemberOverload("stringsAbbrevWidthGen",
 		[]*cel.Type{
-			cel.DynType,
+			cel.StringType, cel.IntType,
 		},
 		cel.StringType,
 		cel.FunctionBinding(func(args ...ref.Val) ref.Val {
-
 			var x StringFuncs
-			list, err := sliceToNative[interface{}](args[0].(ref.Val))
-			if err != nil {
-				return types.WrapErr(err)
-			}
-
+			list := []any{int(args[1].Value().(int64)), args[0].Value().(string)}
 			result, err := x.Abbrev(list...)
 			if err != nil {
 				return types.WrapErr(err)
 			}
 			return types.String(result)
+		}),
+	),
+)
 
+var stringsAbbrevWidthAndOffsetGen = cel.Function("abbrev",
+	cel.MemberOverload("stringsAbbrevWidthAndOffsetGen",
+		[]*cel.Type{
+			cel.StringType, cel.IntType, cel.IntType,
+		},
+		cel.StringType,
+		cel.FunctionBinding(func(args ...ref.Val) ref.Val {
+			var x StringFuncs
+			list := []any{int(args[1].Value().(int64)), int(args[2].Value().(int64)), args[0].Value().(string)}
+			result, err := x.Abbrev(list...)
+			if err != nil {
+				return types.WrapErr(err)
+			}
+			return types.String(result)
 		}),
 	),
 )
@@ -206,26 +171,19 @@ var stringsRepeatGen = cel.Function("repeat",
 	),
 )
 
-var stringsSortGen = cel.Function("Sort",
-	cel.Overload("Sort_interface{}",
-
+var stringsSortGen = cel.Function("sort",
+	cel.MemberOverload("Sort_interface{}",
 		[]*cel.Type{
-			cel.DynType,
+			cel.StringType,
 		},
-		cel.DynType,
-		cel.FunctionBinding(func(args ...ref.Val) ref.Val {
-			list, err := sliceToNative[interface{}](args[0].(ref.Val))
-			if err != nil {
-				return types.WrapErr(err)
-			}
+		cel.StringType,
+		cel.UnaryBinding(func(arg ref.Val) ref.Val {
+			slice := []byte(arg.Value().(string))
+			sort.Slice(slice, func(i, j int) bool {
+				return slice[i] < slice[j]
+			})
 
-			var x StringFuncs
-			result, err := x.Sort(list)
-			if err != nil {
-				return types.WrapErr(err)
-			}
-
-			return types.DefaultTypeAdapter.NativeToValue(result)
+			return types.DefaultTypeAdapter.NativeToValue(string(slice))
 		}),
 	),
 )
@@ -371,17 +329,30 @@ var stringsTruncGen = cel.Function("trunc",
 var stringsIndentGen = cel.Function("indent",
 	cel.MemberOverload("string_indent",
 		[]*cel.Type{
-			cel.StringType,
+			cel.StringType, cel.StringType,
 		},
 		cel.StringType,
 		cel.FunctionBinding(func(args ...ref.Val) ref.Val {
-
 			var x StringFuncs
-			list, err := sliceToNative[interface{}](args[0].(ref.Val))
+			list := []any{ args[1].Value().(string), args[0].Value().(string)}
+			result, err := x.Indent(list...)
 			if err != nil {
 				return types.WrapErr(err)
 			}
+			return types.String(result)
+		}),
+	),
+)
 
+var stringsIndentWithWidthGen = cel.Function("indent",
+	cel.MemberOverload("string_indent_with_width",
+		[]*cel.Type{
+			cel.StringType, cel.IntType,  cel.StringType, 
+		},
+		cel.StringType,
+		cel.FunctionBinding(func(args ...ref.Val) ref.Val {
+			var x StringFuncs
+			list := []any{int(args[1].Value().(int64)), args[2].Value().(string), args[0].Value().(string)}
 			result, err := x.Indent(list...)
 			if err != nil {
 				return types.WrapErr(err)
@@ -522,27 +493,38 @@ var stringsKebabCaseGen = cel.Function("kebabCase",
 	),
 )
 
-var stringsWordWrapGen = cel.Function("WordWrap",
-	cel.Overload("WordWrap_interface{}",
-
+var stringsWordWrapGen = cel.Function("wordWrap",
+	cel.MemberOverload("WordWrap_interface{}",
 		[]*cel.Type{
-			cel.DynType,
+			cel.StringType, cel.IntType,
 		},
 		cel.StringType,
 		cel.FunctionBinding(func(args ...ref.Val) ref.Val {
-
 			var x StringFuncs
-			list, err := sliceToNative[interface{}](args[0].(ref.Val))
-			if err != nil {
-				return types.WrapErr(err)
-			}
-
+			list := []any{args[1].Value().(int64), args[0].Value().(string)}
 			result, err := x.WordWrap(list...)
 			if err != nil {
 				return types.WrapErr(err)
 			}
 			return types.String(result)
+		}),
+	),
+)
 
+var stringsWordWrapSeqAndWidthGen = cel.Function("wordWrap",
+	cel.MemberOverload("stringsWordWrapSeqAndWidthGen",
+		[]*cel.Type{
+			cel.StringType, cel.IntType, cel.StringType,
+		},
+		cel.StringType,
+		cel.FunctionBinding(func(args ...ref.Val) ref.Val {
+			var x StringFuncs
+			list := []any{int(args[1].Value().(int64)), args[2].Value().(string), args[0].Value().(string)}
+			result, err := x.WordWrap(list...)
+			if err != nil {
+				return types.WrapErr(err)
+			}
+			return types.String(result)
 		}),
 	),
 )
