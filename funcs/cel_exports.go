@@ -61,8 +61,10 @@ var CelEnvOption = []cel.EnvOption{
 	
 	// JSON
 	dataJSONGen,
+	dataJSONMemberGen,
 	dataToJSONGen2,
 	dataJSONArrayGen,
+	dataJSONArrayMemberGen,
 	dataToJSONGen,
 	dataToJSONPrettyGen,
 

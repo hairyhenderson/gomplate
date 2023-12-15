@@ -33,23 +33,53 @@ var dataJSONGen = cel.Function("JSON",
 	),
 )
 
+var dataJSONMemberGen = cel.Function("JSON",
+	cel.MemberOverload(".string.JSON()",
+		[]*cel.Type{
+			cel.StringType,
+		},
+		cel.DynType,
+		cel.UnaryBinding(func(arg ref.Val) ref.Val {
+			var x DataFuncs
+			result, err := x.JSON(arg)
+			if err != nil {
+				return types.WrapErr(err)
+			}
+			return types.DefaultTypeAdapter.NativeToValue(result)
+		}),
+	),
+)
+
 var dataJSONArrayGen = cel.Function("JSONArray",
 	cel.Overload("JSONArray_interface{}",
-
 		[]*cel.Type{
 			cel.DynType,
 		},
 		cel.DynType,
 		cel.FunctionBinding(func(args ...ref.Val) ref.Val {
-
 			var x DataFuncs
-
 			result, err := x.JSONArray(args[0])
 			if err != nil {
 				return types.WrapErr(err)
 			}
 			return types.DefaultTypeAdapter.NativeToValue(result)
+		}),
+	),
+)
 
+var dataJSONArrayMemberGen = cel.Function("JSONArray",
+	cel.MemberOverload(".string.JSONArray()",
+		[]*cel.Type{
+			cel.StringType,
+		},
+		cel.DynType,
+		cel.UnaryBinding(func(arg ref.Val) ref.Val {
+			var x DataFuncs
+			result, err := x.JSONArray(arg)
+			if err != nil {
+				return types.WrapErr(err)
+			}
+			return types.DefaultTypeAdapter.NativeToValue(result)
 		}),
 	),
 )
