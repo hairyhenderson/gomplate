@@ -104,9 +104,9 @@ func GetHealth(in interface{}) HealthStatus {
 	}
 }
 
-func k8sGetHealth() cel.EnvOption {
-	return cel.Function("k8s.getHealth",
-		cel.Overload("GetHealth_any",
+func k8sGetHealth(fnName string) cel.EnvOption {
+	return cel.Function(fnName,
+		cel.Overload(fnName+"_overload",
 			[]*cel.Type{cel.AnyType},
 			cel.AnyType,
 			cel.UnaryBinding(func(obj ref.Val) ref.Val {
@@ -117,9 +117,9 @@ func k8sGetHealth() cel.EnvOption {
 	)
 }
 
-func k8sGetStatus() cel.EnvOption {
-	return cel.Function("k8s.getStatus",
-		cel.Overload("GetStatus",
+func k8sGetStatus(fnName string) cel.EnvOption {
+	return cel.Function(fnName,
+		cel.Overload(fnName+"_overload",
 			[]*cel.Type{cel.AnyType},
 			cel.AnyType,
 			cel.UnaryBinding(func(obj ref.Val) ref.Val {
@@ -129,9 +129,9 @@ func k8sGetStatus() cel.EnvOption {
 	)
 }
 
-func k8sIsHealthy() cel.EnvOption {
-	return cel.Function("k8s.isHealthy",
-		cel.Overload("IsHealthy_interface{}",
+func k8sIsHealthy(fnName string) cel.EnvOption {
+	return cel.Function(fnName,
+		cel.Overload(fnName+"_overload",
 			[]*cel.Type{cel.AnyType},
 			cel.StringType,
 			cel.UnaryBinding(func(obj ref.Val) ref.Val {

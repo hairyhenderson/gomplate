@@ -7,9 +7,9 @@ func Library() []cel.EnvOption {
 		Lists(),
 		URLs(),
 		Regex(),
-		k8sGetHealth(),
-		k8sGetStatus(),
-		k8sIsHealthy(),
+		k8sGetHealth("k8s.getHealth"), k8sGetHealth("GetHealth"),
+		k8sGetStatus("k8s.getStatus"), k8sGetStatus("GetStatus"),
+		k8sIsHealthy("k8s.isHealthy"), k8sIsHealthy("IsHealthy"), k8sIsHealthy("k8s.is_healthy"),
 		k8sCPUAsMillicores(),
 		k8sMemoryAsBytes(),
 	}

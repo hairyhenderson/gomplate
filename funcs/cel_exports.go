@@ -7,8 +7,8 @@ import (
 )
 
 var CelEnvOption = []cel.EnvOption{
-	fromAwsMap,
-	arnToMap,
+	fromAwsMap("aws.fromAWSMap"), fromAwsMap("fromAWSMap"),
+	arnToMap("aws.arnToMap"), arnToMap("arnToMap"),
 
 	// collSliceGen,
 	collHasGen,
