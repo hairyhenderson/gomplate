@@ -2,6 +2,7 @@ package funcs
 
 import (
 	"context"
+	"encoding/base64"
 	"strconv"
 	"strings"
 	"testing"
@@ -160,6 +161,55 @@ func TestECDSADerivePublicKey(t *testing.T) {
 
 	key, _ := c.ECDSAGenerateKey("P-256")
 	pub, err := c.ECDSADerivePublicKey(key)
+	require.NoError(t, err)
+	assert.True(t, strings.HasPrefix(pub,
+		"-----BEGIN PUBLIC KEY-----"))
+	assert.True(t, strings.HasSuffix(pub,
+		"-----END PUBLIC KEY-----\n"))
+}
+
+func TestEd25519GenerateKey(t *testing.T) {
+	c := testCryptoNS()
+	key, err := c.Ed25519GenerateKey()
+	require.NoError(t, err)
+
+	assert.True(t, strings.HasPrefix(key,
+		"-----BEGIN PRIVATE KEY-----"))
+	assert.True(t, strings.HasSuffix(key,
+		"-----END PRIVATE KEY-----\n"))
+}
+
+func TestEd25519GenerateKeyFromSeed(t *testing.T) {
+	c := testCryptoNS()
+	enc := ""
+	seed := ""
+	_, err := c.Ed25519GenerateKeyFromSeed(enc, seed)
+	assert.Error(t, err)
+
+	enc = "base64"
+	seed = "0000000000000000000000000000000" // 31 bytes, instead of wanted 32.
+	_, err = c.Ed25519GenerateKeyFromSeed(enc, seed)
+	assert.Error(t, err)
+
+	seed += "0" // 32 bytes.
+	b64seed := base64.StdEncoding.EncodeToString([]byte(seed))
+	key, err := c.Ed25519GenerateKeyFromSeed(enc, b64seed)
+	require.NoError(t, err)
+
+	assert.True(t, strings.HasPrefix(key,
+		"-----BEGIN PRIVATE KEY-----"))
+	assert.True(t, strings.HasSuffix(key,
+		"-----END PRIVATE KEY-----\n"))
+}
+
+func TestEd25519DerivePublicKey(t *testing.T) {
+	c := testCryptoNS()
+
+	_, err := c.Ed25519DerivePublicKey("")
+	assert.Error(t, err)
+
+	key, _ := c.Ed25519GenerateKey()
+	pub, err := c.Ed25519DerivePublicKey(key)
 	require.NoError(t, err)
 	assert.True(t, strings.HasPrefix(pub,
 		"-----BEGIN PUBLIC KEY-----"))

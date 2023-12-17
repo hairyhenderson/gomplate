@@ -245,6 +245,100 @@ aztsmrD79OXXnhUlURI=
 -----END PUBLIC KEY-----
 ```
 
+## `crypto.Ed25519GenerateKey`_(unreleased)_ _(experimental)_
+**Unreleased:** _This function is in development, and not yet available in released builds of gomplate._
+**Experimental:** This function is [_experimental_][experimental] and may be enabled with the [`--experimental`][experimental] flag.
+
+[experimental]: ../config/#experimental
+
+Generate a new Ed25519 Private Key and output in
+PEM-encoded PKCS#8 ASN.1 DER form.
+
+### Usage
+
+```
+crypto.Ed25519GenerateKey
+```
+
+
+### Examples
+
+```console
+$ gomplate -i '{{ crypto.Ed25519GenerateKey }}'
+-----BEGIN PRIVATE KEY-----
+...
+```
+
+## `crypto.Ed25519GenerateKeyFromSeed`_(unreleased)_ _(experimental)_
+**Unreleased:** _This function is in development, and not yet available in released builds of gomplate._
+**Experimental:** This function is [_experimental_][experimental] and may be enabled with the [`--experimental`][experimental] flag.
+
+[experimental]: ../config/#experimental
+
+Generate a new Ed25519 Private Key from a random seed and output in
+PEM-encoded PKCS#8 ASN.1 DER form.
+
+### Usage
+
+```
+crypto.Ed25519GenerateKeyFromSeed encoding seed
+```
+```
+seed | crypto.Ed25519GenerateKeyFromSeed encoding
+```
+
+### Arguments
+
+| name | description |
+|------|-------------|
+| `encoding` | _(required)_ the encoding that the seed is in (`hex` or `base64`) |
+| `seed` | _(required)_ the random seed encoded in either base64 or hex |
+
+### Examples
+
+```console
+$ gomplate -i '{{ crypto.Ed25519GenerateKeyFromSeed "base64" "MDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDA=" }}'
+-----BEGIN PRIVATE KEY-----
+...
+```
+
+## `crypto.Ed25519DerivePublicKey`_(unreleased)_ _(experimental)_
+**Unreleased:** _This function is in development, and not yet available in released builds of gomplate._
+**Experimental:** This function is [_experimental_][experimental] and may be enabled with the [`--experimental`][experimental] flag.
+
+[experimental]: ../config/#experimental
+
+Derive a public key from an Ed25519 private key and output in PKIX
+ASN.1 DER form.
+
+### Usage
+
+```
+crypto.Ed25519DerivePublicKey key
+```
+```
+key | crypto.Ed25519DerivePublicKey
+```
+
+### Arguments
+
+| name | description |
+|------|-------------|
+| `key` | _(required)_ the private key to derive a public key from |
+
+### Examples
+
+```console
+$ gomplate -i '{{ crypto.Ed25519GenerateKey | crypto.Ed25519DerivePublicKey }}'
+-----BEGIN PUBLIC KEY-----
+...
+```
+```console
+$ gomplate -d key=priv.pem -i '{{ crypto.Ed25519DerivePublicKey (include "key") }}'
+-----BEGIN PUBLIC KEY-----
+...PK
+```
+
 ## `crypto.PBKDF2`
 
 Run the Password-Based Key Derivation Function &num;2 as defined in

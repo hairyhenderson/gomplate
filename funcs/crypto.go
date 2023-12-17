@@ -7,8 +7,11 @@ import (
 	"crypto/sha1" //nolint: gosec
 	"crypto/sha256"
 	"crypto/sha512"
+	"encoding/base64"
+	"encoding/hex"
 	"fmt"
 	"strings"
+	"unicode/utf8"
 
 	"golang.org/x/crypto/bcrypt"
 
@@ -284,6 +287,52 @@ func (f *CryptoFuncs) ECDSADerivePublicKey(privateKey string) (string, error) {
 	}
 
 	out, err := crypto.ECDSADerivePublicKey([]byte(privateKey))
+	return string(out), err
+}
+
+// Ed25519GenerateKey -
+// Experimental!
+func (f *CryptoFuncs) Ed25519GenerateKey() (string, error) {
+	if err := checkExperimental(f.ctx); err != nil {
+		return "", err
+	}
+	out, err := crypto.Ed25519GenerateKey()
+	return string(out), err
+}
+
+// Ed25519GenerateKeyFromSeed -
+// Experimental!
+func (f *CryptoFuncs) Ed25519GenerateKeyFromSeed(encoding, seed string) (string, error) {
+	if err := checkExperimental(f.ctx); err != nil {
+		return "", err
+	}
+	if !utf8.ValidString(seed) {
+		return "", fmt.Errorf("given seed is not valid UTF-8") // Don't print out seed (private).
+	}
+	var seedB []byte
+	var err error
+	switch encoding {
+	case "base64":
+		seedB, err = base64.StdEncoding.DecodeString(seed)
+	case "hex":
+		seedB, err = hex.DecodeString(seed)
+	default:
+		return "", fmt.Errorf("invalid encoding given: %s - only 'hex' or 'base64' are valid options", encoding)
+	}
+	if err != nil {
+		return "", fmt.Errorf("could not decode given seed: %w", err)
+	}
+	out, err := crypto.Ed25519GenerateKeyFromSeed(seedB)
+	return string(out), err
+}
+
+// Ed25519DerivePublicKey -
+// Experimental!
+func (f *CryptoFuncs) Ed25519DerivePublicKey(privateKey string) (string, error) {
+	if err := checkExperimental(f.ctx); err != nil {
+		return "", err
+	}
+	out, err := crypto.Ed25519DerivePublicKey([]byte(privateKey))
 	return string(out), err
 }
 
