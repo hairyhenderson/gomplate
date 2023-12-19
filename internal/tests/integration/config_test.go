@@ -282,7 +282,6 @@ func TestConfig_MissingKeyDefault(t *testing.T) {
 missingKey: default
 `)
 	writeFile(t, tmpDir, "in", `{{ (ds "data").name }}`)
-	writeFile(t, tmpDir, "in.yaml", ``)
 
 	o, e, err := cmd(t).withDir(tmpDir.Path()).run()
 	assertSuccess(t, o, e, err, `<no value>`)
