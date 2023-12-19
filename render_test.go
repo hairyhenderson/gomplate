@@ -37,8 +37,7 @@ func TestRenderTemplate(t *testing.T) {
 	hu, _ := url.Parse("stdin:")
 	wu, _ := url.Parse("env:WORLD")
 
-	os.Setenv("WORLD", "world")
-	defer os.Unsetenv("WORLD")
+	t.Setenv("WORLD", "world")
 
 	tr = NewRenderer(Options{
 		Context: map[string]Datasource{

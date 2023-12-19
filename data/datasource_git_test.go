@@ -484,15 +484,13 @@ func TestGitAuth(t *testing.T) {
 	assert.NilError(t, err)
 	assert.DeepEqual(t, &http.BasicAuth{Username: "user", Password: "swordfish"}, a)
 
-	os.Setenv("GIT_HTTP_PASSWORD", "swordfish")
-	defer os.Unsetenv("GIT_HTTP_PASSWORD")
+	t.Setenv("GIT_HTTP_PASSWORD", "swordfish")
 	a, err = g.auth(mustParseURL("git+https://user@example.com/foo"))
 	assert.NilError(t, err)
 	assert.DeepEqual(t, &http.BasicAuth{Username: "user", Password: "swordfish"}, a)
 	os.Unsetenv("GIT_HTTP_PASSWORD")
 
-	os.Setenv("GIT_HTTP_TOKEN", "mytoken")
-	defer os.Unsetenv("GIT_HTTP_TOKEN")
+	t.Setenv("GIT_HTTP_TOKEN", "mytoken")
 	a, err = g.auth(mustParseURL("git+https://user@example.com/foo"))
 	assert.NilError(t, err)
 	assert.DeepEqual(t, &http.TokenAuth{Token: "mytoken"}, a)
@@ -508,25 +506,26 @@ func TestGitAuth(t *testing.T) {
 		assert.Equal(t, "git", sa.User)
 	}
 
-	key := string(testdata.PEMBytes["ed25519"])
-	os.Setenv("GIT_SSH_KEY", key)
-	defer os.Unsetenv("GIT_SSH_KEY")
-	a, err = g.auth(mustParseURL("git+ssh://git@example.com/foo"))
-	assert.NilError(t, err)
-	ka, ok := a.(*ssh.PublicKeys)
-	assert.Equal(t, true, ok)
-	assert.Equal(t, "git", ka.User)
-	os.Unsetenv("GIT_SSH_KEY")
+	t.Run("plain string ed25519", func(t *testing.T) {
+		key := string(testdata.PEMBytes["ed25519"])
+		t.Setenv("GIT_SSH_KEY", key)
+		a, err = g.auth(mustParseURL("git+ssh://git@example.com/foo"))
+		assert.NilError(t, err)
+		ka, ok := a.(*ssh.PublicKeys)
+		assert.Equal(t, true, ok)
+		assert.Equal(t, "git", ka.User)
+	})
 
-	key = base64.StdEncoding.EncodeToString(testdata.PEMBytes["ed25519"])
-	os.Setenv("GIT_SSH_KEY", key)
-	defer os.Unsetenv("GIT_SSH_KEY")
-	a, err = g.auth(mustParseURL("git+ssh://git@example.com/foo"))
-	assert.NilError(t, err)
-	ka, ok = a.(*ssh.PublicKeys)
-	assert.Equal(t, true, ok)
-	assert.Equal(t, "git", ka.User)
-	os.Unsetenv("GIT_SSH_KEY")
+	t.Run("base64 ed25519", func(t *testing.T) {
+		key := base64.StdEncoding.EncodeToString(testdata.PEMBytes["ed25519"])
+		t.Setenv("GIT_SSH_KEY", key)
+		a, err = g.auth(mustParseURL("git+ssh://git@example.com/foo"))
+		assert.NilError(t, err)
+		ka, ok := a.(*ssh.PublicKeys)
+		assert.Equal(t, true, ok)
+		assert.Equal(t, "git", ka.User)
+		os.Unsetenv("GIT_SSH_KEY")
+	})
 }
 
 func TestRefFromURL(t *testing.T) {

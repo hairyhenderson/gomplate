@@ -133,64 +133,64 @@ func TestNewEc2Info(t *testing.T) {
 }
 
 func TestGetRegion(t *testing.T) {
-	oldReg, ok := os.LookupEnv("AWS_REGION")
-	if ok {
-		defer os.Setenv("AWS_REGION", oldReg)
-	}
-	oldDefReg, ok := os.LookupEnv("AWS_DEFAULT_REGION")
-	if ok {
-		defer os.Setenv("AWS_REGION", oldDefReg)
-	}
-
-	os.Setenv("AWS_REGION", "kalamazoo")
-	os.Unsetenv("AWS_DEFAULT_REGION")
-	region, err := getRegion()
-	require.NoError(t, err)
-	assert.Empty(t, region)
-
-	os.Setenv("AWS_DEFAULT_REGION", "kalamazoo")
+	// unset AWS region env vars for clean tests
 	os.Unsetenv("AWS_REGION")
-	region, err = getRegion()
-	require.NoError(t, err)
-	assert.Empty(t, region)
-
 	os.Unsetenv("AWS_DEFAULT_REGION")
-	metaClient := NewDummyEc2Meta()
-	region, err = getRegion(metaClient)
-	require.NoError(t, err)
-	assert.Equal(t, "unknown", region)
 
-	ec2meta := MockEC2Meta(nil, nil, "us-east-1")
+	t.Run("with AWS_REGION set", func(t *testing.T) {
+		t.Setenv("AWS_REGION", "kalamazoo")
+		region, err := getRegion()
+		require.NoError(t, err)
+		assert.Empty(t, region)
+	})
 
-	region, err = getRegion(ec2meta)
-	require.NoError(t, err)
-	assert.Equal(t, "us-east-1", region)
+	t.Run("with AWS_DEFAULT_REGION set", func(t *testing.T) {
+		t.Setenv("AWS_DEFAULT_REGION", "kalamazoo")
+		region, err := getRegion()
+		require.NoError(t, err)
+		assert.Empty(t, region)
+	})
+
+	t.Run("with no AWS_REGION, AWS_DEFAULT_REGION set", func(t *testing.T) {
+		metaClient := NewDummyEc2Meta()
+		region, err := getRegion(metaClient)
+		require.NoError(t, err)
+		assert.Equal(t, "unknown", region)
+	})
+
+	t.Run("infer from EC2 metadata", func(t *testing.T) {
+		ec2meta := MockEC2Meta(nil, nil, "us-east-1")
+		region, err := getRegion(ec2meta)
+		require.NoError(t, err)
+		assert.Equal(t, "us-east-1", region)
+	})
 }
 
 func TestGetClientOptions(t *testing.T) {
-	oldVar, ok := os.LookupEnv("AWS_TIMEOUT")
-	if ok {
-		defer os.Setenv("AWS_TIMEOUT", oldVar)
-	}
-
 	co := GetClientOptions()
 	assert.Equal(t, ClientOptions{Timeout: 500 * time.Millisecond}, co)
 
-	os.Setenv("AWS_TIMEOUT", "42")
-	// reset the Once
-	coInit = sync.Once{}
-	co = GetClientOptions()
-	assert.Equal(t, ClientOptions{Timeout: 42 * time.Millisecond}, co)
+	t.Run("valid AWS_TIMEOUT, first call", func(t *testing.T) {
+		t.Setenv("AWS_TIMEOUT", "42")
+		// reset the Once
+		coInit = sync.Once{}
+		co = GetClientOptions()
+		assert.Equal(t, ClientOptions{Timeout: 42 * time.Millisecond}, co)
+	})
 
-	os.Setenv("AWS_TIMEOUT", "123")
-	// without resetting the Once, expect to be reused
-	co = GetClientOptions()
-	assert.Equal(t, ClientOptions{Timeout: 42 * time.Millisecond}, co)
+	t.Run("valid AWS_TIMEOUT, non-first call", func(t *testing.T) {
+		t.Setenv("AWS_TIMEOUT", "123")
+		// without resetting the Once, expect to be reused
+		co = GetClientOptions()
+		assert.Equal(t, ClientOptions{Timeout: 42 * time.Millisecond}, co)
+	})
 
-	os.Setenv("AWS_TIMEOUT", "foo")
-	// reset the Once
-	coInit = sync.Once{}
-	assert.Panics(t, func() {
-		GetClientOptions()
+	t.Run("invalid AWS_TIMEOUT", func(t *testing.T) {
+		t.Setenv("AWS_TIMEOUT", "foo")
+		// reset the Once
+		coInit = sync.Once{}
+		assert.Panics(t, func() {
+			GetClientOptions()
+		})
 	})
 }

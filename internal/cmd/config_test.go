@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"io/fs"
 	"net/url"
-	"os"
 	"testing"
 	"testing/fstest"
 	"time"
@@ -167,32 +166,38 @@ func TestPickConfigFile(t *testing.T) {
 	cmd := &cobra.Command{}
 	cmd.Flags().String("config", defaultConfigFile, "foo")
 
-	cf, req := pickConfigFile(cmd)
-	assert.False(t, req)
-	assert.Equal(t, defaultConfigFile, cf)
+	t.Run("default", func(t *testing.T) {
+		cf, req := pickConfigFile(cmd)
+		assert.False(t, req)
+		assert.Equal(t, defaultConfigFile, cf)
+	})
 
-	os.Setenv("GOMPLATE_CONFIG", "foo.yaml")
-	defer os.Unsetenv("GOMPLATE_CONFIG")
-	cf, req = pickConfigFile(cmd)
-	assert.True(t, req)
-	assert.Equal(t, "foo.yaml", cf)
+	t.Run("GOMPLATE_CONFIG env var", func(t *testing.T) {
+		t.Setenv("GOMPLATE_CONFIG", "foo.yaml")
+		cf, req := pickConfigFile(cmd)
+		assert.True(t, req)
+		assert.Equal(t, "foo.yaml", cf)
+	})
 
-	cmd.ParseFlags([]string{"--config", "config.file"})
-	cf, req = pickConfigFile(cmd)
-	assert.True(t, req)
-	assert.Equal(t, "config.file", cf)
+	t.Run("--config flag", func(t *testing.T) {
+		cmd.ParseFlags([]string{"--config", "config.file"})
+		cf, req := pickConfigFile(cmd)
+		assert.True(t, req)
+		assert.Equal(t, "config.file", cf)
 
-	os.Setenv("GOMPLATE_CONFIG", "ignored.yaml")
-	cf, req = pickConfigFile(cmd)
-	assert.True(t, req)
-	assert.Equal(t, "config.file", cf)
+		t.Setenv("GOMPLATE_CONFIG", "ignored.yaml")
+		cf, req = pickConfigFile(cmd)
+		assert.True(t, req)
+		assert.Equal(t, "config.file", cf)
+	})
 }
 
 func TestApplyEnvVars(t *testing.T) {
-	os.Setenv("GOMPLATE_PLUGIN_TIMEOUT", "bogus")
-	_, err := applyEnvVars(context.Background(), &config.Config{})
-	os.Unsetenv("GOMPLATE_PLUGIN_TIMEOUT")
-	assert.Error(t, err)
+	t.Run("invalid GOMPLATE_PLUGIN_TIMEOUT", func(t *testing.T) {
+		t.Setenv("GOMPLATE_PLUGIN_TIMEOUT", "bogus")
+		_, err := applyEnvVars(context.Background(), &config.Config{})
+		assert.Error(t, err)
+	})
 
 	data := []struct {
 		input, expected *config.Config
@@ -274,10 +279,9 @@ func TestApplyEnvVars(t *testing.T) {
 	for i, d := range data {
 		d := d
 		t.Run(fmt.Sprintf("applyEnvVars_%s_%s/%d", d.env, d.value, i), func(t *testing.T) {
-			os.Setenv(d.env, d.value)
+			t.Setenv(d.env, d.value)
 
 			actual, err := applyEnvVars(context.Background(), d.input)
-			os.Unsetenv(d.env)
 			require.NoError(t, err)
 			assert.EqualValues(t, d.expected, actual)
 		})

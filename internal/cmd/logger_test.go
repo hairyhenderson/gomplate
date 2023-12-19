@@ -14,13 +14,12 @@ import (
 
 func TestLogFormat(t *testing.T) {
 	os.Unsetenv("GOMPLATE_LOG_FORMAT")
-	defer os.Unsetenv("GOMPLATE_LOG_FORMAT")
 
 	assert.Equal(t, "json", logFormat(nil))
 	// os.Stdout isn't a terminal when this runs as a unit test...
 	assert.Equal(t, "json", logFormat(os.Stdout))
 
-	os.Setenv("GOMPLATE_LOG_FORMAT", "simple")
+	t.Setenv("GOMPLATE_LOG_FORMAT", "simple")
 	assert.Equal(t, "simple", logFormat(os.Stdout))
 	assert.Equal(t, "simple", logFormat(&bytes.Buffer{}))
 }
