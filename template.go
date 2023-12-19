@@ -52,7 +52,7 @@ func copyFuncMap(funcMap template.FuncMap) template.FuncMap {
 func parseTemplate(ctx context.Context, name, text string, funcs template.FuncMap, tmplctx interface{}, nested config.Templates, leftDelim, rightDelim string, missingKey string) (tmpl *template.Template, err error) {
 	tmpl = template.New(name)
 
-	missingKeyValues := []string{"error", "zero", "default"}
+	missingKeyValues := []string{"error", "zero", "default", "invalid"}
 	if !slices.Contains(missingKeyValues, missingKey) {
 		return nil, fmt.Errorf("not allowed value for the 'missing-key' flag: %s. Allowed values: %s", missingKey, strings.Join(missingKeyValues, ","))
 	}

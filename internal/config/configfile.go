@@ -469,7 +469,7 @@ func (c Config) Validate() (err error) {
 	}
 
 	if err == nil {
-		missingKeyValues := []string{"", "error", "zero", "default"}
+		missingKeyValues := []string{"", "error", "zero", "default", "invalid"}
 		if !slices.Contains(missingKeyValues, c.MissingKey) {
 			err = fmt.Errorf("not allowed value for the 'missing-key' flag: %s. Allowed values: %s", c.MissingKey, strings.Join(missingKeyValues, ","))
 		}
