@@ -48,9 +48,9 @@ func copyFuncMap(funcMap template.FuncMap) template.FuncMap {
 }
 
 // parseTemplate - parses text as a Go template with the given name and options
-func parseTemplate(ctx context.Context, name, text string, funcs template.FuncMap, tmplctx interface{}, nested config.Templates, leftDelim, rightDelim string) (tmpl *template.Template, err error) {
+func parseTemplate(ctx context.Context, name, text string, funcs template.FuncMap, tmplctx interface{}, nested config.Templates, leftDelim, rightDelim string, missingKey string) (tmpl *template.Template, err error) {
 	tmpl = template.New(name)
-	tmpl.Option("missingkey=error")
+	tmpl.Option("missingkey=" + missingKey)
 
 	funcMap := copyFuncMap(funcs)
 

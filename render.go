@@ -42,6 +42,9 @@ type Options struct {
 	// templates to the specified string. Defaults to "{{"
 	RDelim string
 
+	// MissingKey sets the behavior in case of non-existing key
+	MissingKey string
+
 	// Experimental - enable experimental features
 	Experimental bool
 }
@@ -78,6 +81,7 @@ func optionsFromConfig(cfg *config.Config) Options {
 		ExtraHeaders: cfg.ExtraHeaders,
 		LDelim:       cfg.LDelim,
 		RDelim:       cfg.RDelim,
+		MissingKey:   cfg.MissingKey,
 		Experimental: cfg.Experimental,
 	}
 
@@ -103,6 +107,7 @@ type Renderer struct {
 	funcs       template.FuncMap
 	lDelim      string
 	rDelim      string
+	missingKey  string
 	tctxAliases []string
 }
 
@@ -168,6 +173,7 @@ func NewRenderer(opts Options) *Renderer {
 		tctxAliases: tctxAliases,
 		lDelim:      opts.LDelim,
 		rDelim:      opts.RDelim,
+		missingKey:  opts.MissingKey,
 	}
 }
 
@@ -236,7 +242,7 @@ func (t *Renderer) renderTemplate(ctx context.Context, template Template, f temp
 
 	tstart := time.Now()
 	tmpl, err := parseTemplate(ctx, template.Name, template.Text,
-		f, tmplctx, t.nested, t.lDelim, t.rDelim)
+		f, tmplctx, t.nested, t.lDelim, t.rDelim, t.missingKey)
 	if err != nil {
 		return err
 	}

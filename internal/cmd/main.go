@@ -156,6 +156,8 @@ func InitFlags(command *cobra.Command) {
 	command.Flags().String("left-delim", ldDefault, "override the default left-`delimiter` [$GOMPLATE_LEFT_DELIM]")
 	command.Flags().String("right-delim", rdDefault, "override the default right-`delimiter` [$GOMPLATE_RIGHT_DELIM]")
 
+	command.Flags().String("missing-key", "error", "Control behavior for non-existent keys. error (default) - return an error, zero - fallback to zero value")
+
 	command.Flags().Bool("experimental", false, "enable experimental features [$GOMPLATE_EXPERIMENTAL]")
 
 	command.Flags().BoolP("verbose", "V", false, "output extra information about what gomplate is doing")

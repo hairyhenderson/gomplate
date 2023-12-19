@@ -3,6 +3,7 @@ package gomplate
 import (
 	"bytes"
 	"context"
+	"github.com/hairyhenderson/gomplate/v4/funcs"
 	"os"
 	"path/filepath"
 	"testing"
@@ -127,6 +128,38 @@ func TestHasTemplate(t *testing.T) {
 {{- $data.foo }}
 {{- end }}`
 	assert.Equal(t, "bar", testTemplate(t, g, tmpl))
+}
+
+func TestMissingKey(t *testing.T) {
+	g := NewRenderer(Options{
+		MissingKey: "zero",
+	})
+	tmpl := `{{ .name }}`
+	assert.Equal(t, "<no value>", testTemplate(t, g, tmpl))
+}
+
+func TestMissingKeyWithDefaultValue(t *testing.T) {
+	ns := funcs.CreateConvFuncs(context.TODO())
+	g := NewRenderer(Options{
+		MissingKey: "zero",
+		Funcs:      ns,
+	})
+	tmpl := `{{ .name | default "Alex" }}`
+	assert.Equal(t, "Alex", testTemplate(t, g, tmpl))
+}
+
+func TestMissingKeyRequired(t *testing.T) {
+	ns := funcs.CreateTestFuncs(context.TODO())
+	g := NewRenderer(Options{
+		MissingKey: "zero",
+		Funcs:      ns,
+	})
+	tmpl := `{{ .name | required }}`
+
+	var out bytes.Buffer
+	err := g.Render(context.Background(), "testtemplate", tmpl, &out)
+
+	assert.Error(t, err)
 }
 
 func TestCustomDelim(t *testing.T) {

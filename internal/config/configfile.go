@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"golang.org/x/exp/slices"
 	"io"
 	"net/http"
 	"net/url"
@@ -59,6 +60,8 @@ type Config struct {
 
 	LDelim string `yaml:"leftDelim,omitempty"`
 	RDelim string `yaml:"rightDelim,omitempty"`
+
+	MissingKey string `yaml:"missingKey,omitempty"`
 
 	PostExec []string `yaml:"postExec,omitempty,flow"`
 
@@ -465,6 +468,13 @@ func (c Config) Validate() (err error) {
 		}
 	}
 
+	if err == nil {
+		missingKeyValues := []string{"error", "zero"}
+		if !slices.Contains(missingKeyValues, c.MissingKey) {
+			err = fmt.Errorf("not allowed value for the 'missing-key' flag: %s. Allowed values: %s", c.MissingKey, strings.Join(missingKeyValues, ","))
+		}
+	}
+
 	return err
 }
 
@@ -532,6 +542,9 @@ func (c *Config) ApplyDefaults() {
 	}
 	if c.RDelim == "" {
 		c.RDelim = "}}"
+	}
+	if c.MissingKey == "" {
+		c.RDelim = "error"
 	}
 
 	if c.ExecPipe {

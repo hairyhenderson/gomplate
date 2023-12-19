@@ -160,6 +160,11 @@ func cobraConfig(cmd *cobra.Command, args []string) (cfg *config.Config, err err
 		return nil, err
 	}
 
+	cfg.MissingKey, err = getString(cmd, "missing-key")
+	if err != nil {
+		return nil, err
+	}
+
 	ds, err := getStringSlice(cmd, "datasource")
 	if err != nil {
 		return nil, err
