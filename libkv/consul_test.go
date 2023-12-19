@@ -14,25 +14,11 @@ import (
 )
 
 func TestConsulURL(t *testing.T) {
-	t.Run("consul scheme", func(t *testing.T) {
-		u, _ := url.Parse("consul+http://myconsul.server")
-		expected := &url.URL{Host: "myconsul.server", Scheme: "http"}
-		actual, err := consulURL(u)
-		require.NoError(t, err)
-		assert.Equal(t, expected, actual)
-	})
-
-	t.Run("consul scheme, CONSUL_HTTP_SSL unset", func(t *testing.T) {
-		os.Unsetenv("CONSUL_HTTP_SSL")
-		u, _ := url.Parse("consul://myconsul.server:2345")
-		expected := &url.URL{Host: "myconsul.server:2345", Scheme: "http"}
-		actual, err := consulURL(u)
-		require.NoError(t, err)
-		assert.Equal(t, expected, actual)
-	})
+	os.Unsetenv("CONSUL_HTTP_SSL")
 
 	t.Run("consul scheme, CONSUL_HTTP_SSL set to true", func(t *testing.T) {
 		t.Setenv("CONSUL_HTTP_SSL", "true")
+
 		u, _ := url.Parse("consul://")
 		expected := &url.URL{Host: "localhost:8500", Scheme: "https"}
 		actual, err := consulURL(u)
@@ -40,10 +26,27 @@ func TestConsulURL(t *testing.T) {
 		assert.Equal(t, expected, actual)
 	})
 
+	t.Run("consul+http scheme", func(t *testing.T) {
+		u, _ := url.Parse("consul+http://myconsul.server")
+		expected := &url.URL{Host: "myconsul.server", Scheme: "http"}
+		actual, err := consulURL(u)
+		require.NoError(t, err)
+		assert.Equal(t, expected, actual)
+	})
+
 	t.Run("consul+https scheme, CONSUL_HTTP_SSL set to false", func(t *testing.T) {
 		t.Setenv("CONSUL_HTTP_SSL", "false")
+
 		u, _ := url.Parse("consul+https://myconsul.server:1234")
 		expected := &url.URL{Host: "myconsul.server:1234", Scheme: "https"}
+		actual, err := consulURL(u)
+		require.NoError(t, err)
+		assert.Equal(t, expected, actual)
+	})
+
+	t.Run("consul scheme, CONSUL_HTTP_SSL unset", func(t *testing.T) {
+		u, _ := url.Parse("consul://myconsul.server:2345")
+		expected := &url.URL{Host: "myconsul.server:2345", Scheme: "http"}
 		actual, err := consulURL(u)
 		require.NoError(t, err)
 		assert.Equal(t, expected, actual)
@@ -78,7 +81,7 @@ func TestConsulURL(t *testing.T) {
 		assert.Equal(t, expected, actual)
 	})
 
-	t.Run("TLS enabled, HTTP_ADDR is set without host, URL has no host and ambiguous scheme", func(t *testing.T) {
+	t.Run("TLS enabled, HTTP_ADDR is set without scheme, URL has no host and ambiguous scheme", func(t *testing.T) {
 		t.Setenv("CONSUL_HTTP_ADDR", "localhost:8501")
 		t.Setenv("CONSUL_HTTP_SSL", "true")
 

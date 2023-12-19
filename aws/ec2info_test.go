@@ -133,9 +133,12 @@ func TestNewEc2Info(t *testing.T) {
 }
 
 func TestGetRegion(t *testing.T) {
+	// unset AWS region env vars for clean tests
+	os.Unsetenv("AWS_REGION")
+	os.Unsetenv("AWS_DEFAULT_REGION")
+
 	t.Run("with AWS_REGION set", func(t *testing.T) {
 		t.Setenv("AWS_REGION", "kalamazoo")
-		os.Unsetenv("AWS_DEFAULT_REGION")
 		region, err := getRegion()
 		require.NoError(t, err)
 		assert.Empty(t, region)
@@ -143,15 +146,12 @@ func TestGetRegion(t *testing.T) {
 
 	t.Run("with AWS_DEFAULT_REGION set", func(t *testing.T) {
 		t.Setenv("AWS_DEFAULT_REGION", "kalamazoo")
-		os.Unsetenv("AWS_REGION")
 		region, err := getRegion()
 		require.NoError(t, err)
 		assert.Empty(t, region)
 	})
 
 	t.Run("with no AWS_REGION, AWS_DEFAULT_REGION set", func(t *testing.T) {
-		os.Unsetenv("AWS_REGION")
-		os.Unsetenv("AWS_DEFAULT_REGION")
 		metaClient := NewDummyEc2Meta()
 		region, err := getRegion(metaClient)
 		require.NoError(t, err)
@@ -178,7 +178,7 @@ func TestGetClientOptions(t *testing.T) {
 		assert.Equal(t, ClientOptions{Timeout: 42 * time.Millisecond}, co)
 	})
 
-	t.Run("valid AWS_TIMEOUT, non-first call ", func(t *testing.T) {
+	t.Run("valid AWS_TIMEOUT, non-first call", func(t *testing.T) {
 		t.Setenv("AWS_TIMEOUT", "123")
 		// without resetting the Once, expect to be reused
 		co = GetClientOptions()
