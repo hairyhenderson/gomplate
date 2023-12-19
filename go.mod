@@ -10,7 +10,7 @@ require (
 	github.com/aws/aws-sdk-go v1.49.4
 	github.com/docker/libkv v0.2.2-0.20180912205406-458977154600
 	github.com/fullsailor/pkcs7 v0.0.0-20190404230743-d7302db945fa
-	github.com/google/uuid v1.4.0
+	github.com/google/uuid v1.5.0
 	github.com/gosimple/slug v1.13.1
 	github.com/hack-pad/hackpadfs v0.2.1
 	github.com/hairyhenderson/go-fsimpl v0.0.0-20230121155226-8aa24800449d
