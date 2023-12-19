@@ -166,6 +166,11 @@ func NewRenderer(opts Options) *Renderer {
 		opts.Funcs = template.FuncMap{}
 	}
 
+	missingKey := opts.MissingKey
+	if missingKey == "" {
+		missingKey = "error"
+	}
+
 	return &Renderer{
 		nested:      nested,
 		data:        d,
@@ -173,7 +178,7 @@ func NewRenderer(opts Options) *Renderer {
 		tctxAliases: tctxAliases,
 		lDelim:      opts.LDelim,
 		rDelim:      opts.RDelim,
-		missingKey:  opts.MissingKey,
+		missingKey:  missingKey,
 	}
 }
 
