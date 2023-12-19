@@ -25,11 +25,19 @@ import (
 const isWindows = runtime.GOOS == "windows"
 
 // a convenience...
-func inOutTest(t *testing.T, i, o string) {
+func inOutTest(t *testing.T, i, o string, args ...string) {
 	t.Helper()
 
-	stdout, stderr, err := cmd(t, "-i", i).run()
+	args = append(args, "-i", i)
+	stdout, stderr, err := cmd(t, args...).run()
 	assertSuccess(t, stdout, stderr, err, o)
+}
+func inOutContainsError(t *testing.T, i, e string, args ...string) {
+	t.Helper()
+
+	args = append(args, "-i", i)
+	stdout, stderr, err := cmd(t, args...).run()
+	assertFailed(t, stdout, stderr, err, e)
 }
 
 func inOutTestExperimental(t *testing.T, i, o string) {
@@ -54,6 +62,14 @@ func assertSuccess(t *testing.T, o, e string, err error, expected string) {
 	assert.Equal(t, "", e)
 	assert.Equal(t, expected, o)
 	require.NoError(t, err)
+}
+
+func assertFailed(t *testing.T, o, e string, err error, expected string) {
+	t.Helper()
+
+	assert.Contains(t, e, expected)
+	assert.Equal(t, "", o)
+	require.Error(t, err)
 }
 
 // mirrorHandler - reflects back the HTTP headers from the request

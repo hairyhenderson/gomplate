@@ -275,3 +275,24 @@ templates:
 	o, e, err := cmd(t).withDir(tmpDir.Path()).run()
 	assertSuccess(t, o, e, err, "12345")
 }
+
+func TestConfig_MissingKeyDefault(t *testing.T) {
+	tmpDir := setupConfigTest(t)
+	writeConfig(t, tmpDir, `inputFiles: [in]
+missingKey: default
+`)
+	writeFile(t, tmpDir, "in", `{{ (ds "data").name }}`)
+	writeFile(t, tmpDir, "in.yaml", ``)
+
+	o, e, err := cmd(t).withDir(tmpDir.Path()).run()
+	assertSuccess(t, o, e, err, `<no value>`)
+}
+
+func TestConfig_MissingKeyNotDefined(t *testing.T) {
+	tmpDir := setupConfigTest(t)
+	writeConfig(t, tmpDir, `inputFiles: [in]`)
+	writeFile(t, tmpDir, "in", `{{ (ds "data").name }}`)
+
+	o, e, err := cmd(t).withDir(tmpDir.Path()).run()
+	assertFailed(t, o, e, err, `map has no entry for key \"name\"`)
+}
