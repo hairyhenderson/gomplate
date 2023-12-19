@@ -281,7 +281,7 @@ func TestConfig_MissingKeyDefault(t *testing.T) {
 	writeConfig(t, tmpDir, `inputFiles: [in]
 missingKey: default
 `)
-	writeFile(t, tmpDir, "in", `{{ (ds "data").name }}`)
+	writeFile(t, tmpDir, "in", `{{ .name }}`)
 
 	o, e, err := cmd(t).withDir(tmpDir.Path()).run()
 	assertSuccess(t, o, e, err, `<no value>`)
@@ -290,7 +290,7 @@ missingKey: default
 func TestConfig_MissingKeyNotDefined(t *testing.T) {
 	tmpDir := setupConfigTest(t)
 	writeConfig(t, tmpDir, `inputFiles: [in]`)
-	writeFile(t, tmpDir, "in", `{{ (ds "data").name }}`)
+	writeFile(t, tmpDir, "in", `{{ .name }}`)
 
 	o, e, err := cmd(t).withDir(tmpDir.Path()).run()
 	assertFailed(t, o, e, err, `map has no entry for key \"name\"`)
