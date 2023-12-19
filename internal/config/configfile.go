@@ -544,7 +544,7 @@ func (c *Config) ApplyDefaults() {
 		c.RDelim = "}}"
 	}
 	if c.MissingKey == "" {
-		c.RDelim = "error"
+		c.MissingKey = "error"
 	}
 
 	if c.ExecPipe {
