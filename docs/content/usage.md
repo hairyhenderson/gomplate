@@ -187,8 +187,9 @@ $ gomplate -c .=http://xkcd.com/info.0.json -i '<a href="{{ .img }}">{{ .title }
 Changes behavior if key not exist in the datasource.
 
 Available values:
-- `error` (default) - Exit with error if key not exist
-- `default`, `invalid` or `zero` - prints `<no value>` if key not exist
+- `error` (default): Execution stops immediately with an error.
+- `default` or `invalid`: Do nothing and continue execution. If printed, the result is the string `"<no value>"`.
+- `zero`: The operation returns the zero value for the element (which may be `nil`, in which case the string `"<no value>"` is printed).
 
 Examples:
 
