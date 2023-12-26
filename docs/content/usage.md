@@ -184,7 +184,7 @@ $ gomplate -c .=http://xkcd.com/info.0.json -i '<a href="{{ .img }}">{{ .title }
 
 ### `--missing-key`
 
-Changes behavior if key not exist in the datasource.
+Control the behavior during execution if a map is indexed with a key that is not present in the map
 
 Available values:
 - `error` (default): Execution stops immediately with an error.

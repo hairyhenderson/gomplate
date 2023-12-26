@@ -241,7 +241,7 @@ leftDelim: '%{'
 
 See [`--missing-key`](../usage/#--missing-key).
 
-Sets the behavior in case of non-existent keys
+Control the behavior during execution if a map is indexed with a key that is not present in the map
 
 ```yaml
 missingKey: error

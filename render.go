@@ -42,7 +42,7 @@ type Options struct {
 	// templates to the specified string. Defaults to "{{"
 	RDelim string
 
-	// MissingKey sets the behavior in case of non-existing key
+	// MissingKey controls the behavior during execution if a map is indexed with a key that is not present in the map
 	MissingKey string
 
 	// Experimental - enable experimental features
