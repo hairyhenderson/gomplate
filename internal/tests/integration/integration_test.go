@@ -32,6 +32,7 @@ func inOutTest(t *testing.T, i, o string, args ...string) {
 	stdout, stderr, err := cmd(t, args...).run()
 	assertSuccess(t, stdout, stderr, err, o)
 }
+
 func inOutContainsError(t *testing.T, i, e string, args ...string) {
 	t.Helper()
 

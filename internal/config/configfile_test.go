@@ -539,6 +539,7 @@ inputFiles: ['-']
 outputFiles: ['-']
 leftDelim: '{{'
 rightDelim: '}}'
+missingKey: error
 pluginTimeout: 5s
 `
 		assert.Equal(t, expected, c.String())

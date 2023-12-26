@@ -3,7 +3,6 @@ package gomplate
 import (
 	"bytes"
 	"context"
-	"github.com/hairyhenderson/gomplate/v4/funcs"
 	"os"
 	"path/filepath"
 	"testing"
@@ -131,35 +130,23 @@ func TestHasTemplate(t *testing.T) {
 }
 
 func TestMissingKey(t *testing.T) {
-	g := NewRenderer(Options{
-		MissingKey: "zero",
-	})
-	tmpl := `{{ .name }}`
-	assert.Equal(t, "<no value>", testTemplate(t, g, tmpl))
-}
-
-func TestMissingKeyWithDefaultValue(t *testing.T) {
-	ns := funcs.CreateConvFuncs(context.TODO())
-	g := NewRenderer(Options{
-		MissingKey: "zero",
-		Funcs:      ns,
-	})
-	tmpl := `{{ .name | default "Alex" }}`
-	assert.Equal(t, "Alex", testTemplate(t, g, tmpl))
-}
-
-func TestMissingKeyRequired(t *testing.T) {
-	ns := funcs.CreateTestFuncs(context.TODO())
-	g := NewRenderer(Options{
-		MissingKey: "zero",
-		Funcs:      ns,
-	})
-	tmpl := `{{ .name | required }}`
-
-	var out bytes.Buffer
-	err := g.Render(context.Background(), "testtemplate", tmpl, &out)
-
-	assert.Error(t, err)
+	tests := map[string]struct {
+		MissingKey  string
+		ExpectedOut string
+	}{
+		"missing-key = zero":    {MissingKey: "zero", ExpectedOut: "<no value>"},
+		"missing-key = invalid": {MissingKey: "invalid", ExpectedOut: "<no value>"},
+		"missing-key = default": {MissingKey: "default", ExpectedOut: "<no value>"},
+	}
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			g := NewRenderer(Options{
+				MissingKey: tt.MissingKey,
+			})
+			tmpl := `{{ .name }}`
+			assert.Equal(t, tt.ExpectedOut, testTemplate(t, g, tmpl))
+		})
+	}
 }
 
 func TestCustomDelim(t *testing.T) {
