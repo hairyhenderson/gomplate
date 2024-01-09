@@ -27,7 +27,6 @@ func Test_serialize(t *testing.T) {
 		want    map[string]any
 		wantErr bool
 	}{
-
 		{
 			name: "duration",
 			in: map[string]any{

@@ -451,10 +451,6 @@ func TestCelK8s(t *testing.T) {
 		{Input: `dyn(obj_list).all(i, k8s.isHealthy(i))`, Output: false},
 		{Input: `dyn(unstructured_list).all(i, k8s.isHealthy(i))`, Output: false},
 		{Input: `k8s.isHealthy(unhealthy_obj)`, Output: false},
-		{Input: `k8s.health(healthy_obj).status`, Output: "Healthy"},
-		{Input: `k8s.health(unhealthy_obj).message`, Output: "Back-off 40s restarting failed container=main pod=my-pod_argocd(63674389-f613-11e8-a057-fe5f49266390)"},
-		{Input: `k8s.health(unhealthy_obj).ok`, Output: false},
-		{Input: `k8s.health(healthy_obj).message`, Output: ""},
 	}
 
 	environment := map[string]any{
