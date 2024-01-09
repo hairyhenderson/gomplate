@@ -203,7 +203,7 @@ k8s = {
       _pod = {
         name: pod.metadata.name,
         namespace: pod.metadata.namespace,
-        type: "KubernetesPod",
+        type: "Kubernetes::Pod",
         labels: labels,
         logs: [
           { name: "Kubernetes", type: "KubernetesPod" },
@@ -215,6 +215,10 @@ k8s = {
             type: "Kubernetes::Pod",
           }
         ],
+        parentLookup: {
+          name: pod.metadata.namespace,
+          type: "Kubernetes::Namespace"
+        },
         properties: [
           {
             name: "version",
@@ -268,7 +272,7 @@ k8s = {
       node = results[i].Object
       _node = {
         name: node.metadata.name,
-        type: "KubernetesNode",
+        type: "Kubernetes::Node",
         external_id: node.metadata.name,
         labels: k8s.filterLabels(node.metadata.labels),
         selectors: [{
