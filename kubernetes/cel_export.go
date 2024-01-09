@@ -12,5 +12,8 @@ func Library() []cel.EnvOption {
 		k8sIsHealthy("k8s.isHealthy"), k8sIsHealthy("IsHealthy"), k8sIsHealthy("k8s.is_healthy"),
 		k8sCPUAsMillicores(),
 		k8sMemoryAsBytes(),
+		celPodProperties(),
+		celNodeProperties(),
+		celk8sLabels(),
 	}
 }
