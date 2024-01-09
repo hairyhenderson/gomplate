@@ -323,6 +323,7 @@ func TestCelStrings(t *testing.T) {
 		{nil, "'the quick brown fox'.contains('brown')", "true"},
 		{nil, "'the quick brown fox'.endsWith('fox')", "true"},
 		{nil, "'the quick brown fox'.indent('\t\t\t')", "\t\t\tthe quick brown fox"},
+		{nil, `"this is a string: %s\nand an integer: %d".format(["str", 42])`, "this is a string: str\nand an integer: 42"},
 		{nil, "'hello world'.indent('==')", "==hello world"},
 		{nil, "'hello world'.indent(4, '-')", "----hello world"},
 		{nil, "'the quick brown fox'.indexOf('quick')", "4"},
@@ -446,11 +447,21 @@ func TestCelK8s(t *testing.T) {
 		{Input: `k8s.getHealth(unhealthy_obj).message`, Output: "Back-off 40s restarting failed container=main pod=my-pod_argocd(63674389-f613-11e8-a057-fe5f49266390)"},
 		{Input: `k8s.getHealth(unhealthy_obj).ok`, Output: false},
 		{Input: `k8s.getHealth(healthy_obj).message`, Output: ""},
+		{Input: `k8s.is_healthy(healthy_obj)`, Output: true},
+		{Input: `dyn(obj_list).all(i, k8s.isHealthy(i))`, Output: false},
+		{Input: `dyn(unstructured_list).all(i, k8s.isHealthy(i))`, Output: false},
+		{Input: `k8s.isHealthy(unhealthy_obj)`, Output: false},
+		{Input: `k8s.health(healthy_obj).status`, Output: "Healthy"},
+		{Input: `k8s.health(unhealthy_obj).message`, Output: "Back-off 40s restarting failed container=main pod=my-pod_argocd(63674389-f613-11e8-a057-fe5f49266390)"},
+		{Input: `k8s.health(unhealthy_obj).ok`, Output: false},
+		{Input: `k8s.health(healthy_obj).message`, Output: ""},
 	}
 
 	environment := map[string]any{
-		"healthy_obj":   kubernetes.TestHealthy,
-		"unhealthy_obj": kubernetes.TestUnhealthy,
+		"healthy_obj":       kubernetes.TestHealthy,
+		"unhealthy_obj":     kubernetes.TestUnhealthy,
+		"obj_list":          []string{kubernetes.TestHealthy, kubernetes.TestUnhealthy},
+		"unstructured_list": kubernetes.TestUnstructuredList,
 	}
 	for i, td := range testData {
 		executeTemplate(t, i, td.Input, td.Output, environment)

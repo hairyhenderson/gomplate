@@ -259,7 +259,7 @@ var stringsTitleGen = cel.Function("title",
 )
 
 var stringsToUpperGen = cel.Function("toUpper",
-	cel.Overload("string_toUpper",
+	cel.MemberOverload("string_toUpper",
 
 		[]*cel.Type{
 			cel.DynType,
@@ -276,7 +276,7 @@ var stringsToUpperGen = cel.Function("toUpper",
 )
 
 var stringsToLowerGen = cel.Function("toLower",
-	cel.Overload("string_toLower",
+	cel.MemberOverload("string_toLower",
 
 		[]*cel.Type{
 			cel.DynType,
@@ -293,7 +293,7 @@ var stringsToLowerGen = cel.Function("toLower",
 )
 
 var stringsTrimSpaceGen = cel.Function("trimSpace",
-	cel.Overload("string_trimSpace",
+	cel.MemberOverload("string_trimSpace",
 
 		[]*cel.Type{
 			cel.DynType,
@@ -347,7 +347,7 @@ var stringsIndentGen = cel.Function("indent",
 var stringsIndentWithWidthGen = cel.Function("indent",
 	cel.MemberOverload("string_indent_with_width",
 		[]*cel.Type{
-			cel.StringType, cel.IntType,  cel.StringType, 
+			cel.StringType, cel.IntType,  cel.StringType,
 		},
 		cel.StringType,
 		cel.FunctionBinding(func(args ...ref.Val) ref.Val {

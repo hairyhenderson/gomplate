@@ -133,7 +133,7 @@ func k8sIsHealthy(fnName string) cel.EnvOption {
 	return cel.Function(fnName,
 		cel.Overload(fnName+"_overload",
 			[]*cel.Type{cel.AnyType},
-			cel.StringType,
+			cel.BoolType,
 			cel.UnaryBinding(func(obj ref.Val) ref.Val {
 				return types.Bool(GetHealth(obj.Value()).OK)
 			}),

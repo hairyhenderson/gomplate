@@ -1,5 +1,7 @@
 package kubernetes
 
+import "k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+
 var TestHealthy = `
 apiVersion: v1
 kind: Service
@@ -29,6 +31,7 @@ status:
     - hostname: abc123.us-west-2.elb.amazonaws.com
 `
 
+var TesthealthyUnstructured = GetUnstructured(TestHealthy)
 var TestProgressing = `
 apiVersion: v1
 kind: Service
@@ -51,6 +54,8 @@ spec:
 status:
   loadBalancer: {}
 `
+
+var TestProgressingUnstructured = GetUnstructured(TestProgressing)
 
 var TestUnhealthy = `
 apiVersion: v1
@@ -141,6 +146,8 @@ status:
   startTime: 2018-12-02T09:19:36Z
 `
 
+var TestUnhealthyUnstructured = GetUnstructured(TestUnhealthy)
+
 var TestLuaStatus = `
 apiVersion: argoproj.io/v1alpha1
 kind: ApplicationSet
@@ -173,3 +180,9 @@ status:
       status: "True"
       type: ErrorOccurred
 `
+
+var TestLuaStatusUnstructured = GetUnstructured(TestLuaStatus)
+
+var TestUnstructuredList = []unstructured.Unstructured{
+	*TesthealthyUnstructured, *TestProgressingUnstructured, *TestUnhealthyUnstructured, *TestLuaStatusUnstructured,
+}
