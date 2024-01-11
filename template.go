@@ -5,7 +5,7 @@ import (
 	"context"
 	"fmt"
 	"os"
-	"slices"
+	"sort"
 	"strings"
 	gotemplate "text/template"
 	"time"
@@ -145,30 +145,41 @@ func RunTemplate(environment map[string]any, template Template) (string, error) 
 }
 
 func goTemplate(template Template, environment map[string]any) (string, error) {
-	tpl := gotemplate.New("")
-
-	if template.LeftDelim != "" {
-		tpl = tpl.Delims(template.LeftDelim, template.RightDelim)
+	var tpl *gotemplate.Template
+	if len(template.Functions) == 0 {
+		// only use cache if there's no custom template functions because
+		// we can't hash those functions to use them as a cache key
+		cached, ok := goTemplateCache.Get(cacheKey(nil, template.Template))
+		if ok {
+			if cachedTpl, ok := cached.(*gotemplate.Template); ok {
+				tpl = cachedTpl
+			}
+		}
 	}
 
-	funcs := make(map[string]any)
-	if len(template.Functions) > 0 {
+	if tpl == nil {
+		tpl = gotemplate.New("")
+		if template.LeftDelim != "" {
+			tpl = tpl.Delims(template.LeftDelim, template.RightDelim)
+		}
+
+		funcs := make(map[string]any)
 		for k, v := range funcMap {
 			funcs[k] = v
 		}
 		for k, v := range template.Functions {
 			funcs[k] = v
 		}
-	} else {
-		funcs = funcMap
+
+		var err error
+		tpl, err = tpl.Funcs(funcs).Parse(template.Template)
+		if err != nil {
+			return "", err
+		}
+
+		goTemplateCache.SetDefault(cacheKey(nil, template.Template), tpl)
 	}
-	for k, v := range template.Functions {
-		funcs[k] = v
-	}
-	tpl, err := tpl.Funcs(funcs).Parse(template.Template)
-	if err != nil {
-		return "", err
-	}
+
 	data, err := Serialize(environment)
 	if err != nil {
 		return "", err
@@ -178,6 +189,7 @@ func goTemplate(template Template, environment map[string]any) (string, error) {
 	if err := tpl.Execute(&buf, data); err != nil {
 		return "", fmt.Errorf("error executing template %s: %v", strings.Split(template.Template, "\n")[0], err)
 	}
+
 	return strings.TrimSpace(buf.String()), nil
 }
 
@@ -194,13 +206,13 @@ func LoadSharedLibrary(source string) error {
 	return nil
 }
 
-// cacheKey for cel expressions
+// cacheKey for cel expressions & go templates
 func cacheKey(env map[string]any, expr string) string {
-	var cacheKey []string
+	cacheKey := make([]string, 0, len(env)+1)
 	for k := range env {
 		cacheKey = append(cacheKey, k)
 	}
-	slices.Sort(cacheKey)
 
+	sort.Slice(cacheKey, func(i, j int) bool { return cacheKey[i] < cacheKey[j] })
 	return strings.Join(cacheKey, "-") + "--" + expr
 }

@@ -7,7 +7,7 @@ import (
 	_ "github.com/robertkrimen/otto/underscore"
 )
 
-func Test_hashFunction(t *testing.T) {
+func TestCacheKey(t *testing.T) {
 	type args struct {
 		env  map[string]any
 		expr string
@@ -25,6 +25,14 @@ func Test_hashFunction(t *testing.T) {
 				env:  map[string]any{"age": 19, "name": "james"},
 			},
 			want: "age-name--{{.name}}{{.age}}",
+		},
+		{
+			name: "simple",
+			args: args{
+				expr: "{{.name}}{{.age}}{{.profession}}",
+				env:  map[string]any{"profession": "software engineer", "age": 28, "name": "lex"},
+			},
+			want: "age-name-profession--{{.name}}{{.age}}{{.profession}}",
 		},
 	}
 	for _, tt := range tests {
