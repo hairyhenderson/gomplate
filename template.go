@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"reflect"
 	"sort"
 	"strings"
 	gotemplate "text/template"
@@ -24,8 +25,9 @@ import (
 var funcMap gotemplate.FuncMap
 
 var (
-	goTemplateCache    = cache.New(24*time.Hour, 24*time.Hour)
-	celExpressionCache = cache.New(24*time.Hour, 24*time.Hour)
+	// keep the cache period low as lots of anonymous functions can pile up the cache.
+	goTemplateCache    = cache.New(time.Hour, time.Hour)
+	celExpressionCache = cache.New(time.Hour, time.Hour)
 )
 
 func init() {
@@ -40,6 +42,27 @@ type Template struct {
 	Functions  map[string]func() any `yaml:"-" json:"-"`
 	RightDelim string                `yaml:"-" json:"-"`
 	LeftDelim  string                `yaml:"-" json:"-"`
+}
+
+func (t Template) CacheKey(env map[string]any) string {
+	envVars := make([]string, 0, len(env)+1)
+	for k := range env {
+		envVars = append(envVars, k)
+	}
+	sort.Slice(envVars, func(i, j int) bool { return envVars[i] < envVars[j] })
+
+	funcNames := make([]string, 0, len(t.Functions))
+	for k := range t.Functions {
+		funcNames = append(funcNames, k)
+	}
+	sort.Slice(funcNames, func(i, j int) bool { return funcNames[i] < funcNames[j] })
+
+	funcKeys := make([]string, 0, len(t.Functions))
+	for _, fnName := range funcNames {
+		funcKeys = append(funcKeys, fmt.Sprintf("%d", reflect.ValueOf(t.Functions[fnName]).Pointer()))
+	}
+
+	return strings.Join(envVars, "-") + strings.Join(funcKeys, "-") + t.RightDelim + t.LeftDelim + t.Expression + t.Javascript + t.JSONPath + t.Template
 }
 
 func (t Template) IsEmpty() bool {
@@ -68,13 +91,10 @@ func RunExpression(_environment map[string]any, template Template) (any, error) 
 	}
 
 	var prg cel.Program
-	if len(template.Functions) == 0 {
-		// only use cache if there's no custom template functions because we can't hash those functions to use them as a cache key
-		cached, ok := celExpressionCache.Get(cacheKey(_environment, template.Expression))
-		if ok {
-			if cachedPrg, ok := cached.(*cel.Program); ok {
-				prg = *cachedPrg
-			}
+	cached, ok := celExpressionCache.Get(template.CacheKey(_environment))
+	if ok {
+		if cachedPrg, ok := cached.(*cel.Program); ok {
+			prg = *cachedPrg
 		}
 	}
 
@@ -94,7 +114,7 @@ func RunExpression(_environment map[string]any, template Template) (any, error) 
 			return "", err
 		}
 
-		celExpressionCache.SetDefault(cacheKey(_environment, template.Expression), &prg)
+		celExpressionCache.SetDefault(template.CacheKey(_environment), &prg)
 	}
 
 	out, _, err := prg.Eval(data)
@@ -146,14 +166,10 @@ func RunTemplate(environment map[string]any, template Template) (string, error) 
 
 func goTemplate(template Template, environment map[string]any) (string, error) {
 	var tpl *gotemplate.Template
-	if len(template.Functions) == 0 {
-		// only use cache if there's no custom template functions because
-		// we can't hash those functions to use them as a cache key
-		cached, ok := goTemplateCache.Get(cacheKey(nil, template.Template))
-		if ok {
-			if cachedTpl, ok := cached.(*gotemplate.Template); ok {
-				tpl = cachedTpl
-			}
+	cached, ok := goTemplateCache.Get(template.CacheKey(nil))
+	if ok {
+		if cachedTpl, ok := cached.(*gotemplate.Template); ok {
+			tpl = cachedTpl
 		}
 	}
 
@@ -177,7 +193,7 @@ func goTemplate(template Template, environment map[string]any) (string, error) {
 			return "", err
 		}
 
-		goTemplateCache.SetDefault(cacheKey(nil, template.Template), tpl)
+		goTemplateCache.SetDefault(template.CacheKey(nil), tpl)
 	}
 
 	data, err := Serialize(environment)
@@ -204,15 +220,4 @@ func LoadSharedLibrary(source string) error {
 	fmt.Printf("Loaded %s: \n%s\n", source, string(data))
 	registry.Register(func() string { return string(data) })
 	return nil
-}
-
-// cacheKey for cel expressions & go templates
-func cacheKey(env map[string]any, expr string) string {
-	cacheKey := make([]string, 0, len(env)+1)
-	for k := range env {
-		cacheKey = append(cacheKey, k)
-	}
-
-	sort.Slice(cacheKey, func(i, j int) bool { return cacheKey[i] < cacheKey[j] })
-	return strings.Join(cacheKey, "-") + "--" + expr
 }

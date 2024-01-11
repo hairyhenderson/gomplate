@@ -7,39 +7,54 @@ import (
 	_ "github.com/robertkrimen/otto/underscore"
 )
 
-func TestCacheKey(t *testing.T) {
-	type args struct {
-		env  map[string]any
-		expr string
+func TestCacheKeyConsistency(t *testing.T) {
+	var hello = func() any {
+		return "world"
 	}
 
-	tests := []struct {
-		name string
-		args args
-		want string
-	}{
-		{
-			name: "simple",
-			args: args{
-				expr: "{{.name}}{{.age}}",
-				env:  map[string]any{"age": 19, "name": "james"},
-			},
-			want: "age-name--{{.name}}{{.age}}",
-		},
-		{
-			name: "simple",
-			args: args{
-				expr: "{{.name}}{{.age}}{{.profession}}",
-				env:  map[string]any{"profession": "software engineer", "age": 28, "name": "lex"},
-			},
-			want: "age-name-profession--{{.name}}{{.age}}{{.profession}}",
-		},
+	var foo = func() any {
+		return "bar"
 	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := cacheKey(tt.args.env, tt.args.expr); got != tt.want {
-				t.Errorf("hashFunction() = %v, want %v", got, tt.want)
+
+	{
+		tt := Template{
+			Expression: "{{.name}}{{.age}}",
+			Functions: map[string]func() any{
+				"hello": hello,
+				"Hello": foo,
+				"foo":   foo,
+				"Foo":   foo,
+			},
+		}
+
+		expectedCacheKey := tt.CacheKey(map[string]any{"age": 19, "name": "james"})
+		for i := 0; i < 10; i++ {
+			key := tt.CacheKey(map[string]any{"age": 19, "name": "james"})
+			if key != expectedCacheKey {
+				t.Errorf("cache key mismatch: %s != %s", key, expectedCacheKey)
 			}
-		})
+		}
+	}
+
+	{
+		tt := Template{
+			Template:   "{{.name}}{{.age}}",
+			LeftDelim:  "{{",
+			RightDelim: "}}",
+			Functions: map[string]func() any{
+				"hello": hello,
+				"Hello": foo,
+				"foo":   foo,
+				"Foo":   foo,
+			},
+		}
+
+		expectCacheKey := tt.CacheKey(map[string]any{"age": 19, "name": "james"})
+		for i := 0; i < 10; i++ {
+			key := tt.CacheKey(map[string]any{"age": 19, "name": "james"})
+			if key != expectCacheKey {
+				t.Errorf("cache key mismatch: %s != %s", key, expectCacheKey)
+			}
+		}
 	}
 }

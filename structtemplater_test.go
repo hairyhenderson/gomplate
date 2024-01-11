@@ -28,6 +28,7 @@ type test struct {
 
 var tests = []test{
 	{
+		name: "template and no template",
 		StructTemplater: StructTemplater{
 			RequiredTag: "template",
 			Values: map[string]interface{}{
@@ -44,6 +45,7 @@ var tests = []test{
 		},
 	},
 	{
+		name: "just template",
 		StructTemplater: StructTemplater{
 			DelimSets: []Delims{
 				{Left: "{{", Right: "}}"},
@@ -62,6 +64,7 @@ var tests = []test{
 		},
 	},
 	{
+		name: "template & no template but with maps",
 		StructTemplater: StructTemplater{
 			RequiredTag: "template",
 			DelimSets: []Delims{
