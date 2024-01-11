@@ -5,13 +5,16 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"slices"
 	"strings"
 	gotemplate "text/template"
+	"time"
 
 	_ "github.com/flanksource/gomplate/v3/js"
 	"github.com/google/cel-go/cel"
 	"github.com/google/cel-go/common/types"
 	"github.com/google/cel-go/common/types/ref"
+	"github.com/patrickmn/go-cache"
 	"github.com/pkg/errors"
 	"github.com/robertkrimen/otto"
 	"github.com/robertkrimen/otto/registry"
@@ -19,6 +22,11 @@ import (
 )
 
 var funcMap gotemplate.FuncMap
+
+var (
+	goTemplateCache    = cache.New(24*time.Hour, 24*time.Hour)
+	celExpressionCache = cache.New(24*time.Hour, 24*time.Hour)
+)
 
 func init() {
 	funcMap = CreateFuncs(context.Background())
@@ -39,17 +47,16 @@ func (t Template) IsEmpty() bool {
 }
 
 func RunExpression(_environment map[string]any, template Template) (any, error) {
-
 	data, err := Serialize(_environment)
 	if err != nil {
 		return "", err
 	}
 
-	funcs := GetCelEnv(data)
+	envOptions := GetCelEnv(data)
 	for name, fn := range template.Functions {
 		_name := name
 		_fn := fn
-		funcs = append(funcs, cel.Function(_name, cel.Overload(
+		envOptions = append(envOptions, cel.Function(_name, cel.Overload(
 			_name,
 			nil,
 			cel.AnyType,
@@ -60,18 +67,34 @@ func RunExpression(_environment map[string]any, template Template) (any, error) 
 		)))
 	}
 
-	env, err := cel.NewEnv(funcs...)
-	if err != nil {
-		return "", err
-	}
-	ast, issues := env.Compile(strings.ReplaceAll(template.Expression, "\n", " "))
-	if issues != nil && issues.Err() != nil {
-		return "", issues.Err()
+	var prg cel.Program
+	if len(template.Functions) == 0 {
+		// only use cache if there's no custom template functions because we can't hash those functions to use them as a cache key
+		cached, ok := celExpressionCache.Get(cacheKey(_environment, template.Expression))
+		if ok {
+			if cachedPrg, ok := cached.(*cel.Program); ok {
+				prg = *cachedPrg
+			}
+		}
 	}
 
-	prg, err := env.Program(ast, cel.Globals(data))
-	if err != nil {
-		return "", err
+	if prg == nil {
+		env, err := cel.NewEnv(envOptions...)
+		if err != nil {
+			return "", err
+		}
+
+		ast, issues := env.Compile(strings.ReplaceAll(template.Expression, "\n", " "))
+		if issues != nil && issues.Err() != nil {
+			return "", issues.Err()
+		}
+
+		prg, err = env.Program(ast, cel.Globals(data))
+		if err != nil {
+			return "", err
+		}
+
+		celExpressionCache.SetDefault(cacheKey(_environment, template.Expression), &prg)
 	}
 
 	out, _, err := prg.Eval(data)
@@ -169,4 +192,15 @@ func LoadSharedLibrary(source string) error {
 	fmt.Printf("Loaded %s: \n%s\n", source, string(data))
 	registry.Register(func() string { return string(data) })
 	return nil
+}
+
+// cacheKey for cel expressions
+func cacheKey(env map[string]any, expr string) string {
+	var cacheKey []string
+	for k := range env {
+		cacheKey = append(cacheKey, k)
+	}
+	slices.Sort(cacheKey)
+
+	return strings.Join(cacheKey, "-") + "--" + expr
 }

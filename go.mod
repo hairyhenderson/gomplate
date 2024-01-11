@@ -14,6 +14,7 @@ require (
 	github.com/itchyny/gojq v0.12.14
 	github.com/mitchellh/reflectwalk v1.0.2
 	github.com/ohler55/ojg v1.20.2
+	github.com/patrickmn/go-cache v2.1.0+incompatible
 	github.com/pkg/errors v0.9.1
 	github.com/robertkrimen/otto v0.2.1
 	github.com/stretchr/testify v1.8.4
@@ -22,6 +23,7 @@ require (
 	golang.org/x/tools v0.16.1
 	google.golang.org/protobuf v1.32.0
 	gotest.tools/v3 v3.5.1
+	k8s.io/api v0.28.2
 	k8s.io/apimachinery v0.28.2
 	sigs.k8s.io/yaml v1.3.0
 )
@@ -54,7 +56,6 @@ require (
 	gopkg.in/sourcemap.v1 v1.0.5 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
-	k8s.io/api v0.28.2 // indirect
 	k8s.io/klog/v2 v2.100.1 // indirect
 	k8s.io/utils v0.0.0-20230726121419-3b25d923346b // indirect
 	layeh.com/gopher-json v0.0.0-20201124131017-552bb3c4c3bf // indirect
