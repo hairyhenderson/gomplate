@@ -2,6 +2,7 @@
 package conv
 
 import (
+	"encoding/json"
 	"fmt"
 	"math"
 	"reflect"
@@ -137,7 +138,11 @@ func ToString(in interface{}) string {
 	if s, ok := in.([]byte); ok {
 		return string(s)
 	}
-
+	if reflect.TypeOf(in).Kind() == reflect.Map {
+		if s, err := json.Marshal(in); err == nil {
+			return string(s)
+		}
+	}
 	v, ok := printableValue(reflect.ValueOf(in))
 	if ok {
 		in = v

@@ -16,7 +16,7 @@ func Neat(in, outputFormat string) (string, error) {
 func k8sNeat() cel.EnvOption {
 	return cel.Function("k8s.neat",
 		cel.Overload("k8s_neat",
-			[]*cel.Type{cel.StringType},
+			[]*cel.Type{cel.DynType},
 			cel.StringType,
 			cel.UnaryBinding(func(obj ref.Val) ref.Val {
 				objVal := conv.ToString(obj.Value())
@@ -34,7 +34,7 @@ func k8sNeat() cel.EnvOption {
 func k8sNeatWithOption() cel.EnvOption {
 	return cel.Function("k8s.neat",
 		cel.Overload("k8s_neat_with_option",
-			[]*cel.Type{cel.StringType, cel.StringType},
+			[]*cel.Type{cel.DynType, cel.StringType},
 			cel.StringType,
 			cel.FunctionBinding(func(args ...ref.Val) ref.Val {
 				objVal := conv.ToString(args[0].Value())

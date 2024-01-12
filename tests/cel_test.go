@@ -9,6 +9,7 @@ import (
 	"github.com/flanksource/gomplate/v3"
 	"github.com/flanksource/gomplate/v3/kubernetes"
 	"github.com/stretchr/testify/assert"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 )
 
 func panIf(err error) {
@@ -17,10 +18,15 @@ func panIf(err error) {
 	}
 }
 
-func executeTemplate(t *testing.T, i int, input string, expectedOutput any, environment map[string]any) {
+func executeTemplate(t *testing.T, i int, input string, expectedOutput any, environment map[string]any, jsonCompare bool) {
 	out, err := gomplate.RunExpression(environment, gomplate.Template{Expression: input})
 	panIf(err)
-	assert.EqualValues(t, expectedOutput, out, fmt.Sprintf("Test:%d failed", i+1))
+
+	if jsonCompare {
+		assert.JSONEq(t, expectedOutput.(string), out.(string), fmt.Sprintf("Test:%d failed", i+1))
+	} else {
+		assert.EqualValues(t, expectedOutput, out, fmt.Sprintf("Test:%d failed", i+1))
+	}
 }
 
 type Test struct {
@@ -410,7 +416,7 @@ func TestCelVariadic(t *testing.T) {
 	}
 
 	for i, td := range testData {
-		executeTemplate(t, i, td.Input, td.Output, nil)
+		executeTemplate(t, i, td.Input, td.Output, nil, false)
 	}
 }
 
@@ -423,7 +429,7 @@ func TestCelSliceReturn(t *testing.T) {
 	}
 
 	for i, td := range testData {
-		executeTemplate(t, i, td.Input, td.Output, nil)
+		executeTemplate(t, i, td.Input, td.Output, nil, false)
 	}
 }
 
@@ -437,8 +443,9 @@ func TestCelK8sResources(t *testing.T) {
 
 func TestCelK8s(t *testing.T) {
 	testData := []struct {
-		Input  string
-		Output any
+		Input       string
+		Output      any
+		jsonCompare bool
 	}{
 		{Input: `k8s.isHealthy(healthy_obj)`, Output: true},
 		{Input: `k8s.isHealthy(unhealthy_obj)`, Output: false},
@@ -450,9 +457,15 @@ func TestCelK8s(t *testing.T) {
 		{Input: `dyn(obj_list).all(i, k8s.isHealthy(i))`, Output: false},
 		{Input: `dyn(unstructured_list).all(i, k8s.isHealthy(i))`, Output: false},
 		{Input: `k8s.isHealthy(unhealthy_obj)`, Output: false},
-		{Input: `k8s.neat(service_raw)`, Output: kubernetes.TestServiceNeat},
-		{Input: `k8s.neat(pod_raw)`, Output: kubernetes.TestPodNeat},
+		{Input: `k8s.neat(service_raw)`, Output: kubernetes.TestServiceNeat, jsonCompare: true},
+		{Input: `k8s.neat(pod_raw)`, Output: kubernetes.TestPodNeat, jsonCompare: true},
+		{Input: `k8s.neat(pod_raw_obj.Object)`, Output: kubernetes.TestPodNeat, jsonCompare: true},
 		{Input: `k8s.neat(pv_raw, 'yaml')`, Output: kubernetes.TestPVYAMLRaw},
+	}
+
+	var podRaw unstructured.Unstructured
+	if err := json.Unmarshal([]byte(kubernetes.TestPodRaw), &podRaw.Object); err != nil {
+		t.Fatal(err)
 	}
 
 	environment := map[string]any{
@@ -462,11 +475,12 @@ func TestCelK8s(t *testing.T) {
 		"unstructured_list": kubernetes.TestUnstructuredList,
 		"service_raw":       kubernetes.TestServiceRaw,
 		"pod_raw":           kubernetes.TestPodRaw,
+		"pod_raw_obj":       podRaw,
 		"pv_raw":            kubernetes.TestPVJsonRaw,
 	}
 
 	for i, td := range testData {
-		executeTemplate(t, i, td.Input, td.Output, environment)
+		executeTemplate(t, i, td.Input, td.Output, environment, td.jsonCompare)
 	}
 }
 
@@ -486,7 +500,7 @@ func TestCelK8sCPUResourceUnits(t *testing.T) {
 	}
 
 	for i, td := range testData {
-		executeTemplate(t, i, td.Input, td.Output, nil)
+		executeTemplate(t, i, td.Input, td.Output, nil, false)
 	}
 }
 
@@ -516,7 +530,7 @@ func TestCelK8sMemoryResourceUnits(t *testing.T) {
 	}
 
 	for i, td := range testData {
-		executeTemplate(t, i, td.Input, td.Output, nil)
+		executeTemplate(t, i, td.Input, td.Output, nil, false)
 	}
 }
 
