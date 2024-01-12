@@ -204,7 +204,7 @@ func gatherTemplates(ctx context.Context, cfg *config.Config, outFileNamer func(
 		}}
 	case cfg.InputDir != "":
 		// input dirs presume output dirs are set too
-		templates, err = walkDir(ctx, cfg, cfg.InputDir, outFileNamer, cfg.ExcludeGlob, mode, modeOverride)
+		templates, err = walkDir(ctx, cfg, cfg.InputDir, outFileNamer, cfg.ExcludeGlob, cfg.ExcludeProcessingGlob, mode, modeOverride)
 		if err != nil {
 			return nil, fmt.Errorf("walkDir: %w", err)
 		}
@@ -224,7 +224,7 @@ func gatherTemplates(ctx context.Context, cfg *config.Config, outFileNamer func(
 // walkDir - given an input dir `dir` and an output dir `outDir`, and a list
 // of .gomplateignore and exclude globs (if any), walk the input directory and create a list of
 // tplate objects, and an error, if any.
-func walkDir(ctx context.Context, cfg *config.Config, dir string, outFileNamer func(context.Context, string) (string, error), excludeGlob []string, mode os.FileMode, modeOverride bool) ([]Template, error) {
+func walkDir(ctx context.Context, cfg *config.Config, dir string, outFileNamer func(context.Context, string) (string, error), excludeGlob []string, excludeProcessingGlob []string, mode os.FileMode, modeOverride bool) ([]Template, error) {
 	dir = filepath.ToSlash(filepath.Clean(dir))
 
 	// get a filesystem rooted in the same volume as dir (or / on non-Windows)
@@ -256,7 +256,7 @@ func walkDir(ctx context.Context, cfg *config.Config, dir string, outFileNamer f
 	templates := make([]Template, 0)
 	matcher := xignore.NewMatcher(subfsys)
 
-	matches, err := matcher.Matches(".", &xignore.MatchesOptions{
+	excludeMatches, err := matcher.Matches(".", &xignore.MatchesOptions{
 		Ignorefile:    gomplateignore,
 		Nested:        true, // allow nested ignorefile
 		AfterPatterns: excludeGlob,
@@ -265,8 +265,24 @@ func walkDir(ctx context.Context, cfg *config.Config, dir string, outFileNamer f
 		return nil, fmt.Errorf("ignore matching failed for %s: %w", dir, err)
 	}
 
+	excludeProcessingMatches, err := matcher.Matches(".", &xignore.MatchesOptions{
+		Ignorefile:    gomplateignore,
+		Nested:        true, // allow nested ignorefile
+		AfterPatterns: excludeProcessingGlob,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("passthough matching failed for %s: %w", dir, err)
+	}
+
+	passthroughFiles := make(map[string]bool)
+
+	for _, file := range excludeProcessingMatches.MatchedFiles {
+		// files that need to be directly copied
+		passthroughFiles[file] = true
+	}
+
 	// Unmatched ignorefile rules's files
-	for _, file := range matches.UnmatchedFiles {
+	for _, file := range excludeMatches.UnmatchedFiles {
 		// we want to pass an absolute (as much as possible) path to fileToTemplate
 		inPath := filepath.Join(dir, file)
 		inPath = filepath.ToSlash(inPath)
@@ -275,6 +291,16 @@ func walkDir(ctx context.Context, cfg *config.Config, dir string, outFileNamer f
 		outFile, err := outFileNamer(ctx, file)
 		if err != nil {
 			return nil, fmt.Errorf("outFileNamer: %w", err)
+		}
+
+		_, ok := passthroughFiles[file]
+		if ok {
+			err = copyFileToOutDir(ctx, cfg, inPath, outFile, mode, modeOverride)
+			if err != nil {
+				return nil, fmt.Errorf("copyFileToOutDir: %w", err)
+			}
+
+			continue
 		}
 
 		tpl, err := fileToTemplate(ctx, cfg, inPath, outFile, mode, modeOverride)
@@ -297,46 +323,84 @@ func walkDir(ctx context.Context, cfg *config.Config, dir string, outFileNamer f
 	return templates, nil
 }
 
-func fileToTemplate(ctx context.Context, cfg *config.Config, inFile, outFile string, mode os.FileMode, modeOverride bool) (Template, error) {
-	source := ""
+func readInFile(ctx context.Context, cfg *config.Config, inFile string, mode os.FileMode) (source string, newmode os.FileMode, err error) {
+	source = ""
+	newmode = mode
 
 	//nolint:nestif
 	if inFile == "-" {
 		b, err := io.ReadAll(cfg.Stdin)
 		if err != nil {
-			return Template{}, fmt.Errorf("read from stdin: %w", err)
+			return source, newmode, fmt.Errorf("read from stdin: %w", err)
 		}
 
 		source = string(b)
 	} else {
 		fsys, err := datafs.FSysForPath(ctx, inFile)
 		if err != nil {
-			return Template{}, fmt.Errorf("fsysForPath: %w", err)
+			return source, newmode, fmt.Errorf("fsysForPath: %w", err)
 		}
 
 		si, err := fs.Stat(fsys, inFile)
 		if err != nil {
-			return Template{}, fmt.Errorf("stat %q: %w", inFile, err)
+			return source, newmode, fmt.Errorf("stat %q: %w", inFile, err)
 		}
 		if mode == 0 {
-			mode = si.Mode()
+			newmode = si.Mode()
 		}
 
 		// we read the file and store in memory immediately, to prevent leaking
 		// file descriptors.
 		b, err := fs.ReadFile(fsys, inFile)
 		if err != nil {
-			return Template{}, fmt.Errorf("readAll %q: %w", inFile, err)
+			return source, newmode, fmt.Errorf("readAll %q: %w", inFile, err)
 		}
 
 		source = string(b)
 	}
+	return
+}
 
+func getOutfileHandler(ctx context.Context, cfg *config.Config, outFile string, mode os.FileMode, modeOverride bool) (io.Writer, error) {
 	// open the output file - no need to close it, as it will be closed by the
 	// caller later
 	target, err := openOutFile(ctx, outFile, 0o755, mode, modeOverride, cfg.Stdout, cfg.SuppressEmpty)
 	if err != nil {
-		return Template{}, fmt.Errorf("openOutFile: %w", err)
+		return nil, fmt.Errorf("openOutFile: %w", err)
+	}
+
+	return target, nil
+}
+
+func copyFileToOutDir(ctx context.Context, cfg *config.Config, inFile, outFile string, mode os.FileMode, modeOverride bool) error {
+	sourceStr, newmode, err := readInFile(ctx, cfg, inFile, mode)
+	if err != nil {
+		return err
+	}
+
+	outFH, err := getOutfileHandler(ctx, cfg, outFile, newmode, modeOverride)
+	if err != nil {
+		return err
+	}
+
+	wr, ok := outFH.(io.Closer)
+	if ok && wr != os.Stdout {
+		defer wr.Close()
+	}
+
+	_, err = outFH.Write([]byte(sourceStr))
+	return err
+}
+
+func fileToTemplate(ctx context.Context, cfg *config.Config, inFile, outFile string, mode os.FileMode, modeOverride bool) (Template, error) {
+	source, newmode, err := readInFile(ctx, cfg, inFile, mode)
+	if err != nil {
+		return Template{}, err
+	}
+
+	target, err := getOutfileHandler(ctx, cfg, outFile, newmode, modeOverride)
+	if err != nil {
+		return Template{}, err
 	}
 
 	tmpl := Template{

@@ -23,7 +23,7 @@ func TestWalkDir_UNIX(t *testing.T) {
 
 	cfg := &config.Config{}
 
-	_, err := walkDir(ctx, cfg, "/indir", simpleNamer("/outdir"), nil, 0, false)
+	_, err := walkDir(ctx, cfg, "/indir", simpleNamer("/outdir"), nil, nil, 0, false)
 	assert.Error(t, err)
 
 	err = hackpadfs.MkdirAll(fsys, "/indir/one", 0o777)
@@ -37,7 +37,7 @@ func TestWalkDir_UNIX(t *testing.T) {
 	err = hackpadfs.WriteFullFile(fsys, "/indir/two/baz", []byte("baz"), 0o644)
 	require.NoError(t, err)
 
-	templates, err := walkDir(ctx, cfg, "/indir", simpleNamer("/outdir"), []string{"*/two"}, 0, false)
+	templates, err := walkDir(ctx, cfg, "/indir", simpleNamer("/outdir"), []string{"*/two"}, []string{}, 0, false)
 	require.NoError(t, err)
 
 	expected := []Template{
