@@ -440,7 +440,6 @@ func TestCelK8s(t *testing.T) {
 		Input  string
 		Output any
 	}{
-
 		{Input: `k8s.isHealthy(healthy_obj)`, Output: true},
 		{Input: `k8s.isHealthy(unhealthy_obj)`, Output: false},
 		{Input: `k8s.getHealth(healthy_obj).status`, Output: "Healthy"},
@@ -451,6 +450,9 @@ func TestCelK8s(t *testing.T) {
 		{Input: `dyn(obj_list).all(i, k8s.isHealthy(i))`, Output: false},
 		{Input: `dyn(unstructured_list).all(i, k8s.isHealthy(i))`, Output: false},
 		{Input: `k8s.isHealthy(unhealthy_obj)`, Output: false},
+		{Input: `k8s.neat(service_raw)`, Output: kubernetes.TestServiceNeat},
+		{Input: `k8s.neat(pod_raw)`, Output: kubernetes.TestPodNeat},
+		{Input: `k8s.neat(pv_raw, 'yaml')`, Output: kubernetes.TestPVYAMLRaw},
 	}
 
 	environment := map[string]any{
@@ -458,7 +460,11 @@ func TestCelK8s(t *testing.T) {
 		"unhealthy_obj":     kubernetes.TestUnhealthy,
 		"obj_list":          []string{kubernetes.TestHealthy, kubernetes.TestUnhealthy},
 		"unstructured_list": kubernetes.TestUnstructuredList,
+		"service_raw":       kubernetes.TestServiceRaw,
+		"pod_raw":           kubernetes.TestPodRaw,
+		"pv_raw":            kubernetes.TestPVJsonRaw,
 	}
+
 	for i, td := range testData {
 		executeTemplate(t, i, td.Input, td.Output, environment)
 	}

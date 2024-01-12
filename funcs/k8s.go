@@ -18,6 +18,7 @@ func CreateKubernetesFuncs(ctx context.Context) map[string]interface{} {
 	f["isHealthy"] = ns.IsHealthy
 	f["getStatus"] = ns.GetStatus
 	f["getHealth"] = ns.GetHealth
+	f["neat"] = ns.Neat
 	return f
 }
 
@@ -39,4 +40,8 @@ func (ns KubernetesFuncs) GetHealthMap(in interface{}) map[string]string {
 	var r map[string]string
 	_ = json.Unmarshal(b, &r)
 	return r
+}
+
+func (ns KubernetesFuncs) Neat(in string) (string, error) {
+	return kubernetes.Neat(in, "same")
 }
