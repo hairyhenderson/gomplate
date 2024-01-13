@@ -139,21 +139,21 @@ func ExampleRenderer_manyTemplates() {
 func ExampleRenderer_datasources() {
 	ctx := context.Background()
 
-	// a datasource that retrieves JSON from a public transit API
-	u, _ := url.Parse("https://v6.db.transport.rest/stops/8011160")
+	// a datasource that retrieves JSON from a public API
+	u, _ := url.Parse("https://ipinfo.io/1.1.1.1")
 	tr := NewRenderer(Options{
 		Context: map[string]Datasource{
-			"transitstop": {URL: u},
+			"info": {URL: u},
 		},
 	})
 
 	err := tr.Render(ctx, "jsontest",
-		`{{"\U0001F68F"}} The {{ .transitstop.name }} transit station has {{ len .transitstop.entrances }} entrances.`,
+		`{{"\U0001F30E"}} {{ .info.hostname }} is served from {{ .info.city }}, {{ .info.region }}`,
 		os.Stdout)
 	if err != nil {
 		panic(err)
 	}
 
 	// Output:
-	// 🚏 The Berlin Hbf transit station has 20 entrances.
+	// 🌎 one.one.one.one is served from Los Angeles, California
 }
