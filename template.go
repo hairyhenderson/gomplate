@@ -358,7 +358,7 @@ func readInFile(ctx context.Context, cfg *config.Config, inFile string, mode os.
 
 		source = string(b)
 	}
-	return
+	return source, newmode, err
 }
 
 func getOutfileHandler(ctx context.Context, cfg *config.Config, outFile string, mode os.FileMode, modeOverride bool) (io.Writer, error) {

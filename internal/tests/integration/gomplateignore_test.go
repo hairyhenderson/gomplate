@@ -279,3 +279,34 @@ func TestGomplateignore_WithIncludes(t *testing.T) {
 	require.NoError(t, err)
 	assert.Equal(t, fromSlashes("rules/index.csv"), files)
 }
+
+func TestGomplateignore_WithExcludeProcessing(t *testing.T) {
+	files, err := executeOpts(t, `.gomplateignore
+*.log
+`, []string{
+		"--exclude-processing", "crash.bin",
+		"--exclude-processing", "log/*.zip",
+		"--exclude", "rules/*.txt",
+		"--exclude", "sprites/*.ini",
+	},
+		tfs.WithDir("logs",
+			tfs.WithFile("archive.zip", ""),
+			tfs.WithFile("engine.log", ""),
+			tfs.WithFile("skills.log", "")),
+		tfs.WithDir("rules",
+			tfs.WithFile("index.csv", ""),
+			tfs.WithFile("fire.txt", ""),
+			tfs.WithFile("earth.txt", "")),
+		tfs.WithDir("sprites",
+			tfs.WithFile("human.csv", ""),
+			tfs.WithFile("demon.xml", ""),
+			tfs.WithFile("alien.ini", "")),
+		tfs.WithFile("manifest.json", ""),
+		tfs.WithFile("crash.bin", ""),
+	)
+
+	require.NoError(t, err)
+	assert.Equal(t, fromSlashes(
+		"crash.bin", "logs/archive.zip", "manifest.json", "rules/index.csv",
+		"sprites/demon.xml", "sprites/human.csv"), files)
+}
