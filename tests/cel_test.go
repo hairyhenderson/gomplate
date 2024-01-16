@@ -49,7 +49,7 @@ func runTests(t *testing.T, tests []Test) {
 }
 
 func TestFunctions(t *testing.T) {
-	funcs := map[string]func() any{
+	funcs := map[string]any{
 		"fn": func() any {
 			return map[string]any{
 				"a": "b",

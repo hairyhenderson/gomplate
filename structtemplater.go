@@ -11,7 +11,7 @@ type StructTemplater struct {
 	Values map[string]interface{}
 	// IgnoreFields from walking where key is field name and value is field type
 	IgnoreFields map[string]string
-	Funcs        map[string]func() any
+	Funcs        map[string]any
 	DelimSets    []Delims
 	// If specified create a function for each value so that is can be accessed via {{ value }} in addition to {{ .value }}
 	ValueFunctions bool
@@ -97,7 +97,7 @@ func (w StructTemplater) Template(val string) (string, error) {
 		return val, nil
 	}
 	if w.Funcs == nil {
-		w.Funcs = make(map[string]func() any)
+		w.Funcs = make(map[string]any)
 	}
 	if w.ValueFunctions {
 		for k, v := range w.Values {

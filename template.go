@@ -35,13 +35,23 @@ func init() {
 }
 
 type Template struct {
-	Template   string                `yaml:"template,omitempty" json:"template,omitempty"` // Go template
-	JSONPath   string                `yaml:"jsonPath,omitempty" json:"jsonPath,omitempty"`
-	Expression string                `yaml:"expr,omitempty" json:"expr,omitempty"` // A cel-go expression
-	Javascript string                `yaml:"javascript,omitempty" json:"javascript,omitempty"`
-	Functions  map[string]func() any `yaml:"-" json:"-"`
-	RightDelim string                `yaml:"-" json:"-"`
-	LeftDelim  string                `yaml:"-" json:"-"`
+	Template   string `yaml:"template,omitempty" json:"template,omitempty"` // Go template
+	JSONPath   string `yaml:"jsonPath,omitempty" json:"jsonPath,omitempty"`
+	Expression string `yaml:"expr,omitempty" json:"expr,omitempty"` // A cel-go expression
+	Javascript string `yaml:"javascript,omitempty" json:"javascript,omitempty"`
+	RightDelim string `yaml:"-" json:"-"`
+	LeftDelim  string `yaml:"-" json:"-"`
+
+	// Pass in additional cel-env options like functions
+	// that aren't simple enough to be included in Functions
+	CelEnvs []cel.EnvOption `yaml:"-" json:"-"`
+
+	// A map of functions that are accessible to cel expressions
+	// and go templates.
+	// NOTE: For cel expressions, the functions must be of type func() any.
+	// If any other function type is used, an error will be returned.
+	// Opt to CelEnvs for those cases.
+	Functions map[string]any `yaml:"-" json:"-"`
 }
 
 func (t Template) CacheKey(env map[string]any) string {
@@ -84,11 +94,18 @@ func RunExpression(_environment map[string]any, template Template) (any, error) 
 			nil,
 			cel.AnyType,
 			cel.FunctionBinding(func(values ...ref.Val) ref.Val {
-				out := _fn()
+				ogFunc, ok := _fn.(func() any)
+				if !ok {
+					return types.WrapErr(fmt.Errorf("%s is expected to be of type func() any", _name))
+				}
+
+				out := ogFunc()
 				return types.DefaultTypeAdapter.NativeToValue(out)
 			}),
 		)))
 	}
+
+	envOptions = append(envOptions, template.CelEnvs...)
 
 	var prg cel.Program
 	cached, ok := celExpressionCache.Get(template.CacheKey(_environment))
@@ -186,7 +203,6 @@ func goTemplate(template Template, environment map[string]any) (string, error) {
 		for k, v := range template.Functions {
 			funcs[k] = v
 		}
-
 		var err error
 		tpl, err = tpl.Funcs(funcs).Parse(template.Template)
 		if err != nil {

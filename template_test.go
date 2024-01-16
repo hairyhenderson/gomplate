@@ -19,7 +19,7 @@ func TestCacheKeyConsistency(t *testing.T) {
 	{
 		tt := Template{
 			Expression: "{{.name}}{{.age}}",
-			Functions: map[string]func() any{
+			Functions: map[string]any{
 				"hello": hello,
 				"Hello": foo,
 				"foo":   foo,
@@ -41,7 +41,7 @@ func TestCacheKeyConsistency(t *testing.T) {
 			Template:   "{{.name}}{{.age}}",
 			LeftDelim:  "{{",
 			RightDelim: "}}",
-			Functions: map[string]func() any{
+			Functions: map[string]any{
 				"hello": hello,
 				"Hello": foo,
 				"foo":   foo,
