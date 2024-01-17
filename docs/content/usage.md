@@ -182,6 +182,38 @@ $ gomplate -c .=http://xkcd.com/info.0.json -i '<a href="{{ .img }}">{{ .title }
 <a href="https://imgs.xkcd.com/comics/diploma_legal_notes.png">Diploma Legal Notes</a>
 ```
 
+### `--missing-key`
+
+Control the behavior during execution if a map is indexed with a key that is not present in the map.
+
+Available values:
+- `error` (default): Execution stops immediately with an error.
+- `default` or `invalid`: Do nothing and continue execution. If printed, the result is the string `"<no value>"`.
+- `zero`: The operation returns the zero value for the element (which may be `nil`, in which case the string `"<no value>"` is printed).
+
+Examples:
+
+```console
+$ gomplate --missing-key error -i 'Hi {{ .name }}'
+Hi 14:06:57 ERR  error="failed to render template <arg>: template: <arg>:1:6: executing \"<arg>\" at <.name>: map has no entry for key \"name\""
+```
+
+```console
+$ gomplate --missing-key default -i 'Hi {{ .name }}'
+Hi <no value>
+```
+
+```console
+$ gomplate --missing-key zero -i 'Hi {{ .name | default "Alex" }}'
+Hi Alex
+```
+
+```console
+$ gomplate --missing-key zero -i 'Hi {{ .name | required }}'
+Hi 14:12:04 ERR  error="failed to render template <arg>: template: <arg>:1:11: executing \"<arg>\" at <required>: error calling required: can not render template: a required value was not set"
+```
+
+
 ### Overriding the template delimiters
 
 Sometimes it's necessary to override the default template delimiters (`{{`/`}}`).

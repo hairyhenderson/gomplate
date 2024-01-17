@@ -237,6 +237,16 @@ Overrides the left template delimiter.
 leftDelim: '%{'
 ```
 
+## `missingKey`
+
+See [`--missing-key`](../usage/#--missing-key).
+
+Control the behavior during execution if a map is indexed with a key that is not present in the map
+
+```yaml
+missingKey: error
+```
+
 ## `outputDir`
 
 See [`--output-dir`](../usage/#input-dir-and-output-dir).
