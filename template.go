@@ -5,7 +5,6 @@ import (
 	"context"
 	"fmt"
 	"os"
-	"reflect"
 	"sort"
 	"strings"
 	gotemplate "text/template"
@@ -61,18 +60,26 @@ func (t Template) CacheKey(env map[string]any) string {
 	}
 	sort.Slice(envVars, func(i, j int) bool { return envVars[i] < envVars[j] })
 
-	funcNames := make([]string, 0, len(t.Functions))
-	for k := range t.Functions {
-		funcNames = append(funcNames, k)
-	}
-	sort.Slice(funcNames, func(i, j int) bool { return funcNames[i] < funcNames[j] })
+	return strings.Join(envVars, "-") +
+		t.RightDelim +
+		t.LeftDelim +
+		t.Expression +
+		t.Javascript +
+		t.JSONPath +
+		t.Template
+}
 
-	funcKeys := make([]string, 0, len(t.Functions))
-	for _, fnName := range funcNames {
-		funcKeys = append(funcKeys, fmt.Sprintf("%d", reflect.ValueOf(t.Functions[fnName]).Pointer()))
-	}
-
-	return strings.Join(envVars, "-") + strings.Join(funcKeys, "-") + t.RightDelim + t.LeftDelim + t.Expression + t.Javascript + t.JSONPath + t.Template
+func (t Template) IsCacheable() bool {
+	// Note: If custom functions are provided then we don't cache the template
+	// because it's not possible to uniquely identify a function to be used as a cache key.
+	// Pointers don't work well because different functions, that are behaviourly different,
+	// but syntatically identical, will have the same pointer value.
+	//
+	// Reference: https://pkg.go.dev/reflect#Value.Pointer
+	// 	> If v's Kind is Func, the returned pointer is an underlying code pointer,
+	//  > but not necessarily enough to identify a single function uniquely.
+	// 	> The only guarantee is that the result is zero if and only if v is a nil func Value.
+	return len(t.CelEnvs) == 0 && len(t.Functions) == 0
 }
 
 func (t Template) IsEmpty() bool {
@@ -108,10 +115,12 @@ func RunExpression(_environment map[string]any, template Template) (any, error) 
 	envOptions = append(envOptions, template.CelEnvs...)
 
 	var prg cel.Program
-	cached, ok := celExpressionCache.Get(template.CacheKey(_environment))
-	if ok {
-		if cachedPrg, ok := cached.(*cel.Program); ok {
-			prg = *cachedPrg
+	if template.IsCacheable() {
+		cached, ok := celExpressionCache.Get(template.CacheKey(_environment))
+		if ok {
+			if cachedPrg, ok := cached.(*cel.Program); ok {
+				prg = *cachedPrg
+			}
 		}
 	}
 
@@ -183,10 +192,13 @@ func RunTemplate(environment map[string]any, template Template) (string, error) 
 
 func goTemplate(template Template, environment map[string]any) (string, error) {
 	var tpl *gotemplate.Template
-	cached, ok := goTemplateCache.Get(template.CacheKey(nil))
-	if ok {
-		if cachedTpl, ok := cached.(*gotemplate.Template); ok {
-			tpl = cachedTpl
+
+	if template.IsCacheable() {
+		cached, ok := goTemplateCache.Get(template.CacheKey(nil))
+		if ok {
+			if cachedTpl, ok := cached.(*gotemplate.Template); ok {
+				tpl = cachedTpl
+			}
 		}
 	}
 
