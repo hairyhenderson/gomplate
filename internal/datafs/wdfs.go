@@ -331,7 +331,12 @@ func (w *wdFS) Sub(name string) (fs.FS, error) {
 	// we don't resolve the name here, because this name must necessarily be
 	// a path relative to the wrapped filesystem's root
 	if fsys, ok := w.fsys.(fs.SubFS); ok {
-		return fsys.Sub(name)
+		subfs, err := fsys.Sub(name)
+		if err != nil {
+			return nil, fmt.Errorf("sub %q: %w", name, err)
+		}
+
+		return &wdFS{vol: w.vol, fsys: subfs}, nil
 	}
 
 	return fs.Sub(w.fsys, name)

@@ -8,6 +8,7 @@ import (
 	"testing/fstest"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestEnvFS_Open(t *testing.T) {
@@ -22,8 +23,7 @@ func TestEnvFS_Open(t *testing.T) {
 
 func TestEnvFile_Read(t *testing.T) {
 	content := `hello world`
-	os.Setenv("HELLO_WORLD", "hello world")
-	defer os.Unsetenv("HELLO_WORLD")
+	t.Setenv("HELLO_WORLD", "hello world")
 
 	f := &envFile{name: "HELLO_WORLD"}
 	b := make([]byte, len(content))
@@ -35,8 +35,7 @@ func TestEnvFile_Read(t *testing.T) {
 	fsys := fstest.MapFS{}
 	fsys["foo/bar/baz.txt"] = &fstest.MapFile{Data: []byte("\nhello world\n")}
 
-	os.Setenv("FOO_FILE", "/foo/bar/baz.txt")
-	defer os.Unsetenv("FOO_FILE")
+	t.Setenv("FOO_FILE", "/foo/bar/baz.txt")
 
 	f = &envFile{name: "FOO", locfs: fsys}
 
@@ -51,8 +50,7 @@ func TestEnvFile_Read(t *testing.T) {
 
 func TestEnvFile_Stat(t *testing.T) {
 	content := []byte(`hello world`)
-	os.Setenv("HELLO_WORLD", "hello world")
-	defer os.Unsetenv("HELLO_WORLD")
+	t.Setenv("HELLO_WORLD", "hello world")
 
 	f := &envFile{name: "HELLO_WORLD"}
 
@@ -63,8 +61,7 @@ func TestEnvFile_Stat(t *testing.T) {
 	fsys := fstest.MapFS{}
 	fsys["foo/bar/baz.txt"] = &fstest.MapFile{Data: []byte("\nhello world\n")}
 
-	os.Setenv("FOO_FILE", "/foo/bar/baz.txt")
-	defer os.Unsetenv("FOO_FILE")
+	t.Setenv("FOO_FILE", "/foo/bar/baz.txt")
 
 	f = &envFile{name: "FOO", locfs: fsys}
 
@@ -87,19 +84,55 @@ func TestEnvFS(t *testing.T) {
 	assert.True(t, ok)
 	envfs.locfs = lfsys
 
-	os.Setenv("FOO_FILE", "/foo/bar/baz.txt")
-	defer os.Unsetenv("FOO_FILE")
+	t.Setenv("FOO_FILE", "/foo/bar/baz.txt")
 
 	b, err := fs.ReadFile(fsys, "FOO")
 	assert.NoError(t, err)
 	assert.Equal(t, "hello file", string(b))
 
-	os.Setenv("FOO", "hello world")
-	defer os.Unsetenv("FOO")
+	t.Setenv("FOO", "hello world")
 
 	b, err = fs.ReadFile(fsys, "FOO")
 	assert.NoError(t, err)
 	assert.Equal(t, "hello world", string(b))
 
 	assert.NoError(t, fstest.TestFS(fsys, "FOO", "FOO_FILE", "HOME"))
+}
+
+func TestEnvFile_ReadDir(t *testing.T) {
+	t.Cleanup(func() { environ = os.Environ })
+
+	t.Run("name must be .", func(t *testing.T) {
+		f := &envFile{name: "foo"}
+		_, err := f.ReadDir(-1)
+		require.Error(t, err)
+	})
+
+	t.Run("empty env should return empty dir", func(t *testing.T) {
+		f := &envFile{name: "."}
+		environ = func() []string { return []string{} }
+		des, err := f.ReadDir(-1)
+		require.NoError(t, err)
+		assert.Empty(t, des)
+	})
+
+	t.Run("non-empty env should return dir with entries", func(t *testing.T) {
+		f := &envFile{name: "."}
+		environ = func() []string { return []string{"FOO=bar", "BAR=quux"} }
+		des, err := f.ReadDir(-1)
+		require.NoError(t, err)
+		require.Len(t, des, 2)
+		assert.Equal(t, "FOO", des[0].Name())
+		assert.Equal(t, "BAR", des[1].Name())
+	})
+
+	t.Run("deal with odd Windows env vars like '=C:=C:\tmp'", func(t *testing.T) {
+		f := &envFile{name: "."}
+		environ = func() []string { return []string{"FOO=bar", "=C:=C:\\tmp", "BAR=quux"} }
+		des, err := f.ReadDir(-1)
+		require.NoError(t, err)
+		require.Len(t, des, 2)
+		assert.Equal(t, "FOO", des[0].Name())
+		assert.Equal(t, "BAR", des[1].Name())
+	})
 }

@@ -8,6 +8,7 @@ import (
 	"io/fs"
 	"net/http"
 	"net/url"
+	"runtime"
 	"sort"
 	"strings"
 
@@ -236,7 +237,7 @@ func (d *Data) readSource(ctx context.Context, source *Source, args ...string) (
 
 	fc, err := d.readFileContent(ctx, u, source.Header)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("reading %s: %w", u, err)
 	}
 	d.cache[cacheKey] = fc
 	return fc, nil
@@ -253,7 +254,7 @@ func (d Data) readFileContent(ctx context.Context, u *url.URL, hdr http.Header) 
 
 	// need to support absolute paths on local filesystem too
 	// TODO: this is a hack, probably fix this?
-	if u.Scheme == "file" {
+	if u.Scheme == "file" && runtime.GOOS != "windows" {
 		fname = u.Path + fname
 	}
 

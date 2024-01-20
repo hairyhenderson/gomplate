@@ -62,12 +62,26 @@ func FSysForPath(ctx context.Context, path string) (fs.FS, error) {
 		if rerr != nil {
 			return nil, fmt.Errorf("resolve local path %q: %w", origPath, rerr)
 		}
-		u.Path = root + name
+
+		// windows absolute paths need a slash between the volume and path
+		if root != "" && root[0] != '/' {
+			u.Path = root + "/" + name
+		} else {
+			u.Path = root + name
+		}
 
 		// if this is a drive letter, add a trailing slash
-		if u.Path[0] != '/' {
+		if len(u.Path) == 2 && u.Path[0] != '/' && u.Path[1] == ':' {
+			u.Path += "/"
+		} else if u.Path[0] != '/' {
 			u.Path += "/"
 		}
+
+		// if this starts with a drive letter, add a leading slash
+		// NOPE - this breaks lots of things
+		// if len(u.Path) > 2 && u.Path[0] != '/' && u.Path[1] == ':' {
+		// 	u.Path = "/" + u.Path
+		// }
 	default:
 		u.Path = "/"
 	}
@@ -76,6 +90,8 @@ func FSysForPath(ctx context.Context, path string) (fs.FS, error) {
 	if err != nil {
 		return nil, fmt.Errorf("filesystem provider for %q unavailable: %w", path, err)
 	}
+
+	// slog.Info("providing filesystem", "path", path, "fsys", fsys, "type", fmt.Sprintf("%T", fsys))
 
 	// inject vault auth methods if needed
 	switch u.Scheme {

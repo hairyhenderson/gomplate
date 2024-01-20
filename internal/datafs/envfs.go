@@ -54,18 +54,24 @@ var (
 	_ fs.ReadDirFile = (*envFile)(nil)
 )
 
+// overridable env functions
+var (
+	lookupEnv = os.LookupEnv
+	environ   = os.Environ
+)
+
 func (e *envFile) Close() error {
 	e.body = nil
 	return nil
 }
 
 func (e *envFile) envReader() (int, io.Reader, error) {
-	v, found := os.LookupEnv(e.name)
+	v, found := lookupEnv(e.name)
 	if found {
 		return len(v), bytes.NewBufferString(v), nil
 	}
 
-	fname, found := os.LookupEnv(e.name + "_FILE")
+	fname, found := lookupEnv(e.name + "_FILE")
 	if found && fname != "" {
 		fname = strings.TrimPrefix(fname, "/")
 
@@ -107,19 +113,24 @@ func (e *envFile) ReadDir(n int) ([]fs.DirEntry, error) {
 	// envFS has no concept of subdirectories, but we can support a root
 	// directory by listing all environment variables.
 	if e.name != "." {
-		return nil, fmt.Errorf("%s: is not a directory", e.name)
+		return nil, fmt.Errorf("%s: not a directory", e.name)
 	}
 
 	if e.dirents == nil {
-		envs := os.Environ()
-		e.dirents = make([]fs.DirEntry, len(envs))
-		for i, env := range envs {
+		envs := environ()
+		e.dirents = make([]fs.DirEntry, 0, len(envs))
+		for _, env := range envs {
 			parts := strings.SplitN(env, "=", 2)
 			name, value := parts[0], parts[1]
 
-			e.dirents[i] = FileInfoDirEntry(
+			if name == "" {
+				// this might be a Windows =C: style env var, so skip it
+				continue
+			}
+
+			e.dirents = append(e.dirents, FileInfoDirEntry(
 				FileInfo(name, int64(len(value)), 0o444, time.Time{}, ""),
-			)
+			))
 		}
 	}
 

@@ -259,8 +259,6 @@ github.com/gosimple/unidecode v1.0.1 h1:hZzFTMMqSswvf0LBJZCZgThIZrpDHFXux9KeGmn6
 github.com/gosimple/unidecode v1.0.1/go.mod h1:CP0Cr1Y1kogOtx0bJblKzsVWrqYaqfNOnHzpgWw4Awc=
 github.com/hack-pad/hackpadfs v0.2.1 h1:FelFhIhv26gyjujoA/yeFO+6YGlqzmc9la/6iKMIxMw=
 github.com/hack-pad/hackpadfs v0.2.1/go.mod h1:khQBuCEwGXWakkmq8ZiFUvUZz84ZkJ2KNwKvChs4OrU=
-github.com/hairyhenderson/go-fsimpl v0.0.0-20240114191526-af946dfaf65c h1:UGAv9wF8UVXUmnsywntzgKIx8hIlC3a+X9q6mVS/qF4=
-github.com/hairyhenderson/go-fsimpl v0.0.0-20240114191526-af946dfaf65c/go.mod h1:/8Yhp1ir+A+t3n4iYIL/O47X7c35QrkTi39ZjJpfoYw=
 github.com/hairyhenderson/go-fsimpl v0.0.0-20240117024222-dd2398b673d3 h1:hEAU1+bbqbGTUIQfoKcMiRgza+47nByeZ8jEHlOLDac=
 github.com/hairyhenderson/go-fsimpl v0.0.0-20240117024222-dd2398b673d3/go.mod h1:/8Yhp1ir+A+t3n4iYIL/O47X7c35QrkTi39ZjJpfoYw=
 github.com/hairyhenderson/go-git/v5 v5.0.0-20240112193603-9068a607f23a h1:tY0NASRMFiqOxJgT5CngoUft1ZZGTDK9jCWNljFrGMs=

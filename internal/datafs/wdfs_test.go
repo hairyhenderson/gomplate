@@ -140,6 +140,18 @@ func TestWDFS_WriteOps(t *testing.T) {
 	// and check that it's gone
 	_, err = fsys.Stat("/tmp/foo")
 	assert.ErrorIs(t, err, fs.ErrNotExist)
+
+	// make sure we can write to a subfs
+	subfs, err := fs.Sub(fsys, "tmp")
+	require.NoError(t, err)
+	assert.IsType(t, &wdFS{}, subfs)
+
+	err = hackpadfs.WriteFullFile(subfs, "/foo", []byte("hello world"), 0o600)
+	require.NoError(t, err)
+
+	b, err = fs.ReadFile(subfs, "/foo")
+	require.NoError(t, err)
+	assert.Equal(t, "hello world", string(b))
 }
 
 func skipWindows(t *testing.T) {

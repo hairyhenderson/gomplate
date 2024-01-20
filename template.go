@@ -230,7 +230,7 @@ func walkDir(ctx context.Context, cfg *config.Config, dir string, outFileNamer f
 	// we want a filesystem rooted at dir, for relative matching
 	fsys, err := datafs.FSysForPath(ctx, dir)
 	if err != nil {
-		return nil, fmt.Errorf("filesystem provider for %q unavailable: %w", dir, err)
+		return nil, err
 	}
 
 	// we need dir to be relative to the root of fsys
