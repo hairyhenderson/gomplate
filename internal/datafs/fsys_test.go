@@ -26,12 +26,14 @@ func TestFSysForPath(t *testing.T) {
 
 	t.Run("file url", func(t *testing.T) {
 		fsp := fsimpl.FSProviderFunc(func(u *url.URL) (fs.FS, error) {
+			assert.Equal(t, "file", u.Scheme)
+
 			if runtime.GOOS == "windows" {
-				assert.Equal(t, "file:///C:/tmp/foo", u.String())
-				return os.DirFS("C:/tmp/foo"), nil
+				assert.Equal(t, "C:/tmp/foo/", u.Path)
+				return os.DirFS("C:/tmp/foo/"), nil
 			}
 
-			assert.Equal(t, "file:///tmp/foo", u.String())
+			assert.Equal(t, "/tmp/foo", u.Path)
 			return os.DirFS("/tmp/foo"), nil
 		}, "file")
 
@@ -56,10 +58,11 @@ func TestFSysForPath(t *testing.T) {
 
 	t.Run("git+file url", func(t *testing.T) {
 		fsp := fsimpl.FSProviderFunc(func(u *url.URL) (fs.FS, error) {
+			assert.Equal(t, "git+file", u.Scheme)
 			if runtime.GOOS == "windows" {
-				assert.Equal(t, "git+file:///C:/tmp/repo", u.String())
+				assert.Equal(t, "C:/tmp/repo/", u.Path)
 			} else {
-				assert.Equal(t, "git+file:///tmp/repo", u.String())
+				assert.Equal(t, "/tmp/repo", u.Path)
 			}
 
 			return gitfs.New(u)

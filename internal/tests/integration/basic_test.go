@@ -16,11 +16,11 @@ func setupBasicTest(t *testing.T) *tfs.Dir {
 	t.Helper()
 
 	tmpDir := tfs.NewDir(t, "gomplate-inttests",
-		tfs.WithFile("one", "hi\n", tfs.WithMode(0o644)),
+		tfs.WithFile("one", "hi\n", tfs.WithMode(0o640)),
 		tfs.WithFile("two", "hello\n"),
 		tfs.WithFile("broken", "", tfs.WithMode(0o000)),
 		tfs.WithDir("subdir",
-			tfs.WithFile("f1", "first\n", tfs.WithMode(0o644)),
+			tfs.WithFile("f1", "first\n", tfs.WithMode(0o640)),
 			tfs.WithFile("f2", "second\n"),
 		),
 	)
@@ -268,24 +268,24 @@ func TestBasic_AppliesChmodBeforeWrite(t *testing.T) {
 func TestBasic_CreatesMissingDirectory(t *testing.T) {
 	tmpDir := setupBasicTest(t)
 	out := tmpDir.Join("foo/bar/baz")
-	// o, e, err := cmd(t, "-f", tmpDir.Join("one"), "-o", out).run()
-	// assertSuccess(t, o, e, err, "")
+	o, e, err := cmd(t, "-f", tmpDir.Join("one"), "-o", out).run()
+	assertSuccess(t, o, e, err, "")
 
-	// info, err := os.Stat(out)
-	// require.NoError(t, err)
-	// assert.Equal(t, iohelpers.NormalizeFileMode(0o640), info.Mode())
-	// content, err := os.ReadFile(out)
-	// require.NoError(t, err)
-	// assert.Equal(t, "hi\n", string(content))
+	info, err := os.Stat(out)
+	require.NoError(t, err)
+	assert.Equal(t, iohelpers.NormalizeFileMode(0o640), info.Mode())
+	content, err := os.ReadFile(out)
+	require.NoError(t, err)
+	assert.Equal(t, "hi\n", string(content))
 
 	out = tmpDir.Join("outdir")
-	o, e, err := cmd(t,
+	o, e, err = cmd(t,
 		"--input-dir", tmpDir.Join("subdir"),
 		"--output-dir", out,
 	).run()
 	assertSuccess(t, o, e, err, "")
 
-	info, err := os.Stat(out)
+	info, err = os.Stat(out)
 	require.NoError(t, err)
 
 	assert.Equal(t, iohelpers.NormalizeFileMode(0o755|fs.ModeDir), info.Mode())

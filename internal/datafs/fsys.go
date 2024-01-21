@@ -58,7 +58,7 @@ func FSysForPath(ctx context.Context, path string) (fs.FS, error) {
 	case "", "file", "git+file":
 		// default to "/" so we have a rooted filesystem for all schemes, but also
 		// support volumes on Windows
-		root, name, rerr := ResolveLocalPath(u.Path)
+		root, name, rerr := ResolveLocalPath(nil, u.Path)
 		if rerr != nil {
 			return nil, fmt.Errorf("resolve local path %q: %w", origPath, rerr)
 		}
@@ -90,8 +90,6 @@ func FSysForPath(ctx context.Context, path string) (fs.FS, error) {
 	if err != nil {
 		return nil, fmt.Errorf("filesystem provider for %q unavailable: %w", path, err)
 	}
-
-	// slog.Info("providing filesystem", "path", path, "fsys", fsys, "type", fmt.Sprintf("%T", fsys))
 
 	// inject vault auth methods if needed
 	switch u.Scheme {

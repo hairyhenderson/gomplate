@@ -13,20 +13,34 @@ import (
 	"github.com/hairyhenderson/go-fsimpl"
 )
 
-// ResolveLocalPath resolves a path on the local filesystem, relative to the
+// ResolveLocalPath resolves a path on the given filesystem, relative to the
 // current working directory, and returns both the root (/ or a volume name on
 // Windows) and the resolved path. If the path is absolute (e.g. starts with a `/` or
 // volume name on Windows), it is split and returned as-is.
+// If fsys is nil, the current working directory is used.
 // The output is suitable for use with [io/fs] functions.
-//
-// TODO: maybe take fsys as an argument, and if it's a wdFS, use its vol instead
-// of calling os.Getwd?
-func ResolveLocalPath(name string) (root, resolved string, err error) {
+func ResolveLocalPath(fsys fs.FS, name string) (root, resolved string, err error) {
 	// ignore empty names
 	if len(name) == 0 {
 		return "", "", nil
 	}
 
+	switch fsys := fsys.(type) {
+	case *wdFS:
+		return fsys.resolveLocalPath(name)
+	default:
+	}
+
+	vol, wd, err := getWdVol()
+	if err != nil {
+		return "", "", err
+	}
+
+	f := &wdFS{vol: vol, wd: wd}
+	return f.resolveLocalPath(name)
+}
+
+func getWdVol() (string, string, error) {
 	wd, err := os.Getwd()
 	if err != nil {
 		return "", "", fmt.Errorf("getwd: %w", err)
@@ -37,8 +51,7 @@ func ResolveLocalPath(name string) (root, resolved string, err error) {
 		vol = "/"
 	}
 
-	f := &wdFS{vol: vol}
-	return f.resolveLocalPath(name)
+	return vol, wd, nil
 }
 
 func (w *wdFS) resolveLocalPath(name string) (root, resolved string, err error) {
@@ -56,12 +69,7 @@ func (w *wdFS) resolveLocalPath(name string) (root, resolved string, err error) 
 		name = filepath.Join(w.vol, name)
 		// TODO: maybe this can be reduced to just '!filepath.IsAbs(name)'?
 	} else if name[0] != '/' && !filepath.IsAbs(name) {
-		abs := ""
-		abs, err = filepath.Abs(name)
-		if err != nil {
-			return "", "", fmt.Errorf("abs %q: %w", name, err)
-		}
-		name = abs
+		name = filepath.Join(w.wd, name)
 	}
 
 	name, err = normalizeWindowsPath(name)
@@ -200,10 +208,7 @@ var WdFS = fsimpl.FSProviderFunc(
 			return nil, fmt.Errorf("unsupported path %q: %w", u.Path, fs.ErrInvalid)
 		}
 
-		vol, _, err := ResolveLocalPath(u.Path)
-		if err != nil {
-			return nil, fmt.Errorf("resolve %q: %w", u.Path, err)
-		}
+		vol, wd, _ := getWdVol()
 
 		var fsys fs.FS
 		if vol == "" || vol == "/" {
@@ -216,7 +221,7 @@ var WdFS = fsimpl.FSProviderFunc(
 			}
 		}
 
-		return &wdFS{vol: vol, fsys: fsys}, nil
+		return &wdFS{vol: vol, wd: wd, fsys: fsys}, nil
 	},
 	// register for both file and empty scheme (empty when path is relative)
 	"file", "",
@@ -232,31 +237,34 @@ func WrapWdFS(fsys fs.FS) fs.FS {
 		return fsys
 	}
 
-	return &wdFS{fsys: fsys}
+	vol, wd, _ := getWdVol()
+
+	return &wdFS{fsys: fsys, vol: vol, wd: wd}
 }
 
 // wdFS is a filesystem wrapper that assumes non-absolute paths are relative to
 // the current working directory (as reported by [os.Getwd]).
-// It only works in a meaningful way when used  with a local filesystem (e.g.
+// It only works in a meaningful way when used with a local filesystem (e.g.
 // [os.DirFS] or [hackpadfs/os.FS]).
 type wdFS struct {
 	fsys fs.FS
 	vol  string
+	wd   string
 }
 
 var (
-	_ fs.FS                = &wdFS{}
-	_ fs.StatFS            = &wdFS{}
-	_ fs.ReadFileFS        = &wdFS{}
-	_ fs.ReadDirFS         = &wdFS{}
-	_ fs.SubFS             = &wdFS{}
-	_ fs.GlobFS            = &wdFS{}
-	_ hackpadfs.CreateFS   = &wdFS{}
-	_ hackpadfs.OpenFileFS = &wdFS{}
-	_ hackpadfs.MkdirFS    = &wdFS{}
-	_ hackpadfs.MkdirAllFS = &wdFS{}
-	_ hackpadfs.RemoveFS   = &wdFS{}
-	_ hackpadfs.ChmodFS    = &wdFS{}
+	_ fs.FS                = (*wdFS)(nil)
+	_ fs.StatFS            = (*wdFS)(nil)
+	_ fs.ReadFileFS        = (*wdFS)(nil)
+	_ fs.ReadDirFS         = (*wdFS)(nil)
+	_ fs.SubFS             = (*wdFS)(nil)
+	_ fs.GlobFS            = (*wdFS)(nil)
+	_ hackpadfs.CreateFS   = (*wdFS)(nil)
+	_ hackpadfs.OpenFileFS = (*wdFS)(nil)
+	_ hackpadfs.MkdirFS    = (*wdFS)(nil)
+	_ hackpadfs.MkdirAllFS = (*wdFS)(nil)
+	_ hackpadfs.RemoveFS   = (*wdFS)(nil)
+	_ hackpadfs.ChmodFS    = (*wdFS)(nil)
 )
 
 func (w *wdFS) fsysFor(vol string) (fs.FS, error) {
@@ -331,12 +339,7 @@ func (w *wdFS) Sub(name string) (fs.FS, error) {
 	// we don't resolve the name here, because this name must necessarily be
 	// a path relative to the wrapped filesystem's root
 	if fsys, ok := w.fsys.(fs.SubFS); ok {
-		subfs, err := fsys.Sub(name)
-		if err != nil {
-			return nil, fmt.Errorf("sub %q: %w", name, err)
-		}
-
-		return &wdFS{vol: w.vol, fsys: subfs}, nil
+		return fsys.Sub(name)
 	}
 
 	return fs.Sub(w.fsys, name)
