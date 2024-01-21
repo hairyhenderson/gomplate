@@ -15,6 +15,8 @@ import (
 )
 
 func TestFSysForPath(t *testing.T) {
+	vol, _, _ := getVolWd()
+
 	t.Run("no provider", func(t *testing.T) {
 		ctx := ContextWithFSProvider(context.Background(), nil)
 		_, err := FSysForPath(ctx, "foo")
@@ -29,12 +31,12 @@ func TestFSysForPath(t *testing.T) {
 			assert.Equal(t, "file", u.Scheme)
 
 			if runtime.GOOS == "windows" {
-				assert.Equal(t, "C:/tmp/foo/", u.Path)
-				return os.DirFS("C:/tmp/foo/"), nil
+				assert.Equal(t, vol+"/tmp/foo/", u.Path)
+				return os.DirFS(vol + "/"), nil
 			}
 
 			assert.Equal(t, "/tmp/foo", u.Path)
-			return os.DirFS("/tmp/foo"), nil
+			return os.DirFS("/"), nil
 		}, "file")
 
 		ctx := ContextWithFSProvider(context.Background(), fsp)
@@ -60,7 +62,7 @@ func TestFSysForPath(t *testing.T) {
 		fsp := fsimpl.FSProviderFunc(func(u *url.URL) (fs.FS, error) {
 			assert.Equal(t, "git+file", u.Scheme)
 			if runtime.GOOS == "windows" {
-				assert.Equal(t, "C:/tmp/repo/", u.Path)
+				assert.Equal(t, vol+"/tmp/repo/", u.Path)
 			} else {
 				assert.Equal(t, "/tmp/repo", u.Path)
 			}

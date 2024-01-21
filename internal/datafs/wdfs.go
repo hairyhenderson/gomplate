@@ -31,7 +31,7 @@ func ResolveLocalPath(fsys fs.FS, name string) (root, resolved string, err error
 	default:
 	}
 
-	vol, wd, err := getWdVol()
+	vol, wd, err := getVolWd()
 	if err != nil {
 		return "", "", err
 	}
@@ -40,7 +40,9 @@ func ResolveLocalPath(fsys fs.FS, name string) (root, resolved string, err error
 	return f.resolveLocalPath(name)
 }
 
-func getWdVol() (string, string, error) {
+// getVolWd - returns the volume name and current working directory, or "/" if
+// the current working directory has no volume name (e.g. on Unix).
+func getVolWd() (string, string, error) {
 	wd, err := os.Getwd()
 	if err != nil {
 		return "", "", fmt.Errorf("getwd: %w", err)
@@ -208,7 +210,7 @@ var WdFS = fsimpl.FSProviderFunc(
 			return nil, fmt.Errorf("unsupported path %q: %w", u.Path, fs.ErrInvalid)
 		}
 
-		vol, wd, _ := getWdVol()
+		vol, wd, _ := getVolWd()
 
 		var fsys fs.FS
 		if vol == "" || vol == "/" {
@@ -237,7 +239,7 @@ func WrapWdFS(fsys fs.FS) fs.FS {
 		return fsys
 	}
 
-	vol, wd, _ := getWdVol()
+	vol, wd, _ := getVolWd()
 
 	return &wdFS{fsys: fsys, vol: vol, wd: wd}
 }

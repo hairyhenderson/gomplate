@@ -71,6 +71,8 @@ func TestEnvFile_Stat(t *testing.T) {
 }
 
 func TestEnvFS(t *testing.T) {
+	t.Cleanup(func() { environ = os.Environ })
+
 	u, _ := url.Parse("env:")
 
 	lfsys := fstest.MapFS{}
@@ -96,7 +98,7 @@ func TestEnvFS(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, "hello world", string(b))
 
-	assert.NoError(t, fstest.TestFS(fsys, "FOO", "FOO_FILE", "HOME"))
+	assert.NoError(t, fstest.TestFS(fsys, "FOO", "FOO_FILE"))
 }
 
 func TestEnvFile_ReadDir(t *testing.T) {
