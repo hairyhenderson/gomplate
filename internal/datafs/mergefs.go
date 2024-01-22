@@ -9,6 +9,7 @@ import (
 	"io/fs"
 	"net/http"
 	"net/url"
+	"runtime"
 	"strings"
 	"sync"
 	"time"
@@ -121,9 +122,10 @@ func (f *mergeFS) Open(name string) (fs.File, error) {
 
 		// need to support absolute paths on local filesystem too
 		// TODO: this is a hack, probably fix this?
-		if fsURL.Scheme == "file" {
+		if fsURL.Scheme == "file" && runtime.GOOS != "windows" {
 			base = fsURL.Path + base
 		}
+
 		fsys, err := FSysForPath(f.ctx, fsURL.String())
 		if err != nil {
 			return nil, &fs.PathError{

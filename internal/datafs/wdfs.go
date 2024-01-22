@@ -27,25 +27,24 @@ func ResolveLocalPath(fsys fs.FS, name string) (root, resolved string, err error
 
 	switch fsys := fsys.(type) {
 	case *wdFS:
-		return fsys.resolveLocalPath(name)
+		return resolveLocalPath(fsys.vol, name)
 	default:
 	}
 
-	vol, wd, err := getVolWd()
+	vol, err := workingVolume()
 	if err != nil {
 		return "", "", err
 	}
 
-	f := &wdFS{vol: vol, wd: wd}
-	return f.resolveLocalPath(name)
+	return resolveLocalPath(vol, name)
 }
 
-// getVolWd - returns the volume name and current working directory, or "/" if
+// workingVolume - returns the current working directory's volume name, or "/" if
 // the current working directory has no volume name (e.g. on Unix).
-func getVolWd() (string, string, error) {
+func workingVolume() (string, error) {
 	wd, err := os.Getwd()
 	if err != nil {
-		return "", "", fmt.Errorf("getwd: %w", err)
+		return "", fmt.Errorf("getwd: %w", err)
 	}
 
 	vol := filepath.VolumeName(wd)
@@ -53,10 +52,10 @@ func getVolWd() (string, string, error) {
 		vol = "/"
 	}
 
-	return vol, wd, nil
+	return vol, nil
 }
 
-func (w *wdFS) resolveLocalPath(name string) (root, resolved string, err error) {
+func resolveLocalPath(wvol, name string) (root, resolved string, err error) {
 	// ignore empty names
 	if len(name) == 0 {
 		return "", "", nil
@@ -68,10 +67,11 @@ func (w *wdFS) resolveLocalPath(name string) (root, resolved string, err error) 
 	// special-case for (Windows) paths that start with '/' but have no volume
 	// name (e.g. "/foo/bar"). UNC paths (beginning with "//") are ignored.
 	if name[0] == '/' && (len(name) == 1 || (name[1] != '/' && name[1] != '?')) {
-		name = filepath.Join(w.vol, name)
+		name = filepath.Join(wvol, name)
 		// TODO: maybe this can be reduced to just '!filepath.IsAbs(name)'?
 	} else if name[0] != '/' && !filepath.IsAbs(name) {
-		name = filepath.Join(w.wd, name)
+		wd, _ := os.Getwd()
+		name = filepath.Join(wd, name)
 	}
 
 	name, err = normalizeWindowsPath(name)
@@ -210,7 +210,10 @@ var WdFS = fsimpl.FSProviderFunc(
 			return nil, fmt.Errorf("unsupported path %q: %w", u.Path, fs.ErrInvalid)
 		}
 
-		vol, wd, _ := getVolWd()
+		vol, _, err := ResolveLocalPath(nil, u.Path)
+		if err != nil {
+			return nil, fmt.Errorf("resolve %q: %w", u.Path, err)
+		}
 
 		var fsys fs.FS
 		if vol == "" || vol == "/" {
@@ -223,7 +226,7 @@ var WdFS = fsimpl.FSProviderFunc(
 			}
 		}
 
-		return &wdFS{vol: vol, wd: wd, fsys: fsys}, nil
+		return &wdFS{vol: vol, fsys: fsys}, nil
 	},
 	// register for both file and empty scheme (empty when path is relative)
 	"file", "",
@@ -239,9 +242,9 @@ func WrapWdFS(fsys fs.FS) fs.FS {
 		return fsys
 	}
 
-	vol, wd, _ := getVolWd()
+	vol, _ := workingVolume()
 
-	return &wdFS{fsys: fsys, vol: vol, wd: wd}
+	return &wdFS{vol: vol, fsys: fsys}
 }
 
 // wdFS is a filesystem wrapper that assumes non-absolute paths are relative to
@@ -250,8 +253,11 @@ func WrapWdFS(fsys fs.FS) fs.FS {
 // [os.DirFS] or [hackpadfs/os.FS]).
 type wdFS struct {
 	fsys fs.FS
-	vol  string
-	wd   string
+
+	// volume name used for drive-relative paths on Windows for cases when they
+	// shouldn't be relative to the current working directory's volume
+	// TODO: validate that this is actually needed
+	vol string
 }
 
 var (
@@ -290,7 +296,7 @@ func (w *wdFS) fsysFor(vol string) (fs.FS, error) {
 }
 
 func (w *wdFS) Open(name string) (fs.File, error) {
-	root, resolved, err := w.resolveLocalPath(name)
+	root, resolved, err := resolveLocalPath(w.vol, name)
 	if err != nil {
 		return nil, fmt.Errorf("resolve: %w", err)
 	}
@@ -302,7 +308,7 @@ func (w *wdFS) Open(name string) (fs.File, error) {
 }
 
 func (w *wdFS) Stat(name string) (fs.FileInfo, error) {
-	root, resolved, err := w.resolveLocalPath(name)
+	root, resolved, err := resolveLocalPath(w.vol, name)
 	if err != nil {
 		return nil, fmt.Errorf("resolve: %w", err)
 	}
@@ -314,7 +320,7 @@ func (w *wdFS) Stat(name string) (fs.FileInfo, error) {
 }
 
 func (w *wdFS) ReadFile(name string) ([]byte, error) {
-	root, resolved, err := w.resolveLocalPath(name)
+	root, resolved, err := resolveLocalPath(w.vol, name)
 	if err != nil {
 		return nil, fmt.Errorf("resolve: %w", err)
 	}
@@ -326,7 +332,7 @@ func (w *wdFS) ReadFile(name string) ([]byte, error) {
 }
 
 func (w *wdFS) ReadDir(name string) ([]fs.DirEntry, error) {
-	root, resolved, err := w.resolveLocalPath(name)
+	root, resolved, err := resolveLocalPath(w.vol, name)
 	if err != nil {
 		return nil, fmt.Errorf("resolve: %w", err)
 	}
@@ -354,7 +360,7 @@ func (w *wdFS) Glob(_ string) ([]string, error) {
 }
 
 func (w *wdFS) Create(name string) (fs.File, error) {
-	root, resolved, err := w.resolveLocalPath(name)
+	root, resolved, err := resolveLocalPath(w.vol, name)
 	if err != nil {
 		return nil, fmt.Errorf("resolve: %w", err)
 	}
@@ -366,7 +372,7 @@ func (w *wdFS) Create(name string) (fs.File, error) {
 }
 
 func (w *wdFS) OpenFile(name string, flag int, perm fs.FileMode) (fs.File, error) {
-	root, resolved, err := w.resolveLocalPath(name)
+	root, resolved, err := resolveLocalPath(w.vol, name)
 	if err != nil {
 		return nil, fmt.Errorf("resolve: %w", err)
 	}
@@ -378,7 +384,7 @@ func (w *wdFS) OpenFile(name string, flag int, perm fs.FileMode) (fs.File, error
 }
 
 func (w *wdFS) Mkdir(name string, perm fs.FileMode) error {
-	root, resolved, err := w.resolveLocalPath(name)
+	root, resolved, err := resolveLocalPath(w.vol, name)
 	if err != nil {
 		return fmt.Errorf("resolve: %w", err)
 	}
@@ -394,7 +400,7 @@ func (w *wdFS) Mkdir(name string, perm fs.FileMode) error {
 }
 
 func (w *wdFS) MkdirAll(name string, perm fs.FileMode) error {
-	root, resolved, err := w.resolveLocalPath(name)
+	root, resolved, err := resolveLocalPath(w.vol, name)
 	if err != nil {
 		return fmt.Errorf("resolve: %w", err)
 	}
@@ -406,7 +412,7 @@ func (w *wdFS) MkdirAll(name string, perm fs.FileMode) error {
 }
 
 func (w *wdFS) Remove(name string) error {
-	root, resolved, err := w.resolveLocalPath(name)
+	root, resolved, err := resolveLocalPath(w.vol, name)
 	if err != nil {
 		return fmt.Errorf("resolve: %w", err)
 	}
@@ -418,7 +424,7 @@ func (w *wdFS) Remove(name string) error {
 }
 
 func (w *wdFS) Chmod(name string, mode fs.FileMode) error {
-	root, resolved, err := w.resolveLocalPath(name)
+	root, resolved, err := resolveLocalPath(w.vol, name)
 	if err != nil {
 		return fmt.Errorf("resolve: %w", err)
 	}

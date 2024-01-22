@@ -174,7 +174,7 @@ func TestResolveLocalPath_NonWindows(t *testing.T) {
 	skipWindows(t)
 
 	wd, _ := os.Getwd()
-	fsys := &wdFS{vol: "/", wd: wd, fsys: osfs.NewFS()}
+	fsys := &wdFS{vol: "/", fsys: osfs.NewFS()}
 
 	wd = wd[1:]
 
@@ -207,7 +207,7 @@ func TestResolveLocalPath_Windows(t *testing.T) {
 	volname := filepath.VolumeName(wd)
 	wd = filepath.ToSlash(wd)
 
-	fsys := &wdFS{vol: volname, wd: wd, fsys: osfs.NewFS()}
+	fsys := &wdFS{vol: volname, fsys: osfs.NewFS()}
 
 	wd = wd[len(volname)+1:]
 
@@ -239,9 +239,6 @@ func TestWdFS_ResolveLocalPath_NonWindows(t *testing.T) {
 	skipWindows(t)
 
 	wd, _ := os.Getwd()
-
-	fsys := &wdFS{vol: "/", wd: wd}
-
 	wd = wd[1:]
 
 	testdata := []struct {
@@ -256,7 +253,7 @@ func TestWdFS_ResolveLocalPath_NonWindows(t *testing.T) {
 	}
 
 	for _, td := range testdata {
-		root, path, err := fsys.resolveLocalPath(td.path)
+		root, path, err := resolveLocalPath("/", td.path)
 		require.NoError(t, err)
 		assert.Equal(t, "/", root)
 		assert.Equal(t, td.expected, path)
@@ -269,9 +266,6 @@ func TestWdFS_ResolveLocalPath_Windows(t *testing.T) {
 	wd, _ := os.Getwd()
 	volname := filepath.VolumeName(wd)
 	wd = filepath.ToSlash(wd)
-
-	fsys := &wdFS{vol: volname, wd: wd}
-
 	wd = wd[len(volname)+1:]
 
 	testdata := []struct {
@@ -294,7 +288,7 @@ func TestWdFS_ResolveLocalPath_Windows(t *testing.T) {
 	for _, td := range testdata {
 		td := td
 		t.Run(td.path, func(t *testing.T) {
-			root, path, err := fsys.resolveLocalPath(td.path)
+			root, path, err := resolveLocalPath(volname, td.path)
 			require.NoError(t, err)
 			assert.Equal(t, td.expRoot, root)
 			assert.Equal(t, td.expected, path)

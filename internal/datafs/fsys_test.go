@@ -15,7 +15,7 @@ import (
 )
 
 func TestFSysForPath(t *testing.T) {
-	vol, _, _ := getVolWd()
+	vol, _ := workingVolume()
 
 	t.Run("no provider", func(t *testing.T) {
 		ctx := ContextWithFSProvider(context.Background(), nil)
