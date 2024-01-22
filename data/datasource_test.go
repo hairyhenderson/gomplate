@@ -52,7 +52,7 @@ func TestNewData(t *testing.T) {
 }
 
 func TestDatasource(t *testing.T) {
-	setup := func(ext, mime string, contents []byte) *Data {
+	setup := func(ext string, contents []byte) *Data {
 		fname := "foo." + ext
 		var uPath string
 		if runtime.GOOS == osWindows {
@@ -66,18 +66,16 @@ func TestDatasource(t *testing.T) {
 		})
 		ctx := datafs.ContextWithFSProvider(context.Background(), datafs.WrappedFSProvider(fsys, "file", ""))
 
-		sources := map[string]*Source{
+		sources := map[string]config.DataSource{
 			"foo": {
-				Alias:     "foo",
-				URL:       &url.URL{Scheme: "file", Path: uPath},
-				mediaType: mime,
+				URL: &url.URL{Scheme: "file", Path: uPath},
 			},
 		}
 		return &Data{Sources: sources, Ctx: ctx}
 	}
 
 	test := func(ext, mime string, contents []byte, expected interface{}) {
-		data := setup(ext, mime, contents)
+		data := setup(ext, contents)
 
 		actual, err := data.Datasource("foo", "?type="+mime)
 		require.NoError(t, err)
@@ -98,7 +96,7 @@ func TestDatasource(t *testing.T) {
 	test("yaml", yamlMimetype, []byte("---\n- 1\n- two\n- true\n"),
 		[]interface{}{1, "two", true})
 
-	d := setup("", textMimetype, nil)
+	d := setup("", nil)
 	actual, err := d.Datasource("foo")
 	require.NoError(t, err)
 	assert.Equal(t, "", actual)
@@ -121,15 +119,12 @@ func TestDatasourceReachable(t *testing.T) {
 	})
 	ctx := datafs.ContextWithFSProvider(context.Background(), datafs.WrappedFSProvider(fsys, "file", ""))
 
-	sources := map[string]*Source{
+	sources := map[string]config.DataSource{
 		"foo": {
-			Alias:     "foo",
-			URL:       &url.URL{Scheme: "file", Path: uPath},
-			mediaType: jsonMimetype,
+			URL: &url.URL{Scheme: "file", Path: uPath},
 		},
 		"bar": {
-			Alias: "bar",
-			URL:   &url.URL{Scheme: "file", Path: "/bogus"},
+			URL: &url.URL{Scheme: "file", Path: "/bogus"},
 		},
 	}
 	data := &Data{Sources: sources, Ctx: ctx}
@@ -139,8 +134,8 @@ func TestDatasourceReachable(t *testing.T) {
 }
 
 func TestDatasourceExists(t *testing.T) {
-	sources := map[string]*Source{
-		"foo": {Alias: "foo"},
+	sources := map[string]config.DataSource{
+		"foo": {},
 	}
 	data := &Data{Sources: sources}
 	assert.True(t, data.DatasourceExists("foo"))
@@ -164,11 +159,9 @@ func TestInclude(t *testing.T) {
 	})
 	ctx := datafs.ContextWithFSProvider(context.Background(), datafs.WrappedFSProvider(fsys, "file", ""))
 
-	sources := map[string]*Source{
+	sources := map[string]config.DataSource{
 		"foo": {
-			Alias:     "foo",
-			URL:       &url.URL{Scheme: "file", Path: uPath},
-			mediaType: textMimetype,
+			URL: &url.URL{Scheme: "file", Path: uPath},
 		},
 	}
 	data := &Data{Sources: sources, Ctx: ctx}
@@ -194,14 +187,12 @@ func TestDefineDatasource(t *testing.T) {
 	_, err = d.DefineDatasource("data", "foo.json")
 	s := d.Sources["data"]
 	require.NoError(t, err)
-	assert.Equal(t, "data", s.Alias)
 	assert.EqualValues(t, &url.URL{Path: "foo.json"}, s.URL)
 
 	d = &Data{}
 	_, err = d.DefineDatasource("data", "/otherdir/foo.json")
 	s = d.Sources["data"]
 	require.NoError(t, err)
-	assert.Equal(t, "data", s.Alias)
 	assert.Equal(t, "file", s.URL.Scheme)
 	assert.True(t, s.URL.IsAbs())
 	assert.Equal(t, "/otherdir/foo.json", s.URL.Path)
@@ -210,27 +201,26 @@ func TestDefineDatasource(t *testing.T) {
 	_, err = d.DefineDatasource("data", "sftp://example.com/blahblah/foo.json")
 	s = d.Sources["data"]
 	require.NoError(t, err)
-	assert.Equal(t, "data", s.Alias)
 	assert.Equal(t, "sftp", s.URL.Scheme)
 	assert.True(t, s.URL.IsAbs())
 	assert.Equal(t, "/blahblah/foo.json", s.URL.Path)
 
 	d = &Data{
-		Sources: map[string]*Source{
-			"data": {Alias: "data"},
+		Sources: map[string]config.DataSource{
+			"data": {},
 		},
 	}
 	_, err = d.DefineDatasource("data", "/otherdir/foo.json")
 	s = d.Sources["data"]
 	require.NoError(t, err)
-	assert.Equal(t, "data", s.Alias)
 	assert.Nil(t, s.URL)
 
 	d = &Data{}
 	_, err = d.DefineDatasource("data", "/otherdir/foo?type=application/x-env")
-	s = d.Sources["data"]
 	require.NoError(t, err)
-	assert.Equal(t, "data", s.Alias)
+	s = d.Sources["data"]
+	require.NotNil(t, s)
+	assert.Equal(t, "/otherdir/foo", s.URL.Path)
 }
 
 func TestFromConfig(t *testing.T) {
@@ -240,7 +230,7 @@ func TestFromConfig(t *testing.T) {
 	actual := FromConfig(ctx, cfg)
 	expected := &Data{
 		Ctx:     actual.Ctx,
-		Sources: map[string]*Source{},
+		Sources: map[string]config.DataSource{},
 	}
 	assert.EqualValues(t, expected, actual)
 
@@ -254,10 +244,9 @@ func TestFromConfig(t *testing.T) {
 	actual = FromConfig(ctx, cfg)
 	expected = &Data{
 		Ctx: actual.Ctx,
-		Sources: map[string]*Source{
+		Sources: map[string]config.DataSource{
 			"foo": {
-				Alias: "foo",
-				URL:   mustParseURL("http://example.com"),
+				URL: mustParseURL("http://example.com"),
 			},
 		},
 	}
@@ -286,14 +275,12 @@ func TestFromConfig(t *testing.T) {
 	actual = FromConfig(ctx, cfg)
 	expected = &Data{
 		Ctx: actual.Ctx,
-		Sources: map[string]*Source{
+		Sources: map[string]config.DataSource{
 			"foo": {
-				Alias: "foo",
-				URL:   mustParseURL("http://foo.com"),
+				URL: mustParseURL("http://foo.com"),
 			},
 			"bar": {
-				Alias: "bar",
-				URL:   mustParseURL("http://bar.com"),
+				URL: mustParseURL("http://bar.com"),
 				Header: http.Header{
 					"Foo": []string{"bar"},
 				},
@@ -309,9 +296,9 @@ func TestFromConfig(t *testing.T) {
 }
 
 func TestListDatasources(t *testing.T) {
-	sources := map[string]*Source{
-		"foo": {Alias: "foo"},
-		"bar": {Alias: "bar"},
+	sources := map[string]config.DataSource{
+		"foo": {},
+		"bar": {},
 	}
 	data := &Data{Sources: sources}
 

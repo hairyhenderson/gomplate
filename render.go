@@ -131,22 +131,17 @@ func NewRenderer(opts Options) *Renderer {
 	}
 
 	tctxAliases := []string{}
-	//nolint:staticcheck
-	sources := map[string]*data.Source{}
+	sources := map[string]config.DataSource{}
 
 	for alias, ds := range opts.Context {
 		tctxAliases = append(tctxAliases, alias)
-		//nolint:staticcheck
-		sources[alias] = &data.Source{
-			Alias:  alias,
+		sources[alias] = config.DataSource{
 			URL:    ds.URL,
 			Header: ds.Header,
 		}
 	}
 	for alias, ds := range opts.Datasources {
-		//nolint:staticcheck
-		sources[alias] = &data.Source{
-			Alias:  alias,
+		sources[alias] = config.DataSource{
 			URL:    ds.URL,
 			Header: ds.Header,
 		}

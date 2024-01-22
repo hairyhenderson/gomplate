@@ -8,6 +8,7 @@ import (
 
 	"github.com/hairyhenderson/go-fsimpl"
 	"github.com/hairyhenderson/gomplate/v4/data"
+	"github.com/hairyhenderson/gomplate/v4/internal/config"
 	"github.com/hairyhenderson/gomplate/v4/internal/datafs"
 
 	"github.com/stretchr/testify/assert"
@@ -44,7 +45,7 @@ func TestCreateContext(t *testing.T) {
 	ub, _ := url.Parse(barURL)
 	//nolint:staticcheck
 	d := &data.Data{
-		Sources: map[string]*data.Source{
+		Sources: map[string]config.DataSource{
 			"foo": {URL: uf},
 			".":   {URL: ub},
 		},
