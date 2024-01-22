@@ -168,9 +168,6 @@ func NewRenderer(opts Options) *Renderer {
 		Sources:      sources,
 	}
 
-	// make sure data cleanups are run on exit
-	addCleanupHook(d.Cleanup)
-
 	if opts.Funcs == nil {
 		opts.Funcs = template.FuncMap{}
 	}

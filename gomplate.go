@@ -29,7 +29,6 @@ func RunTemplates(o *Config) error {
 // Run all gomplate templates specified by the given configuration
 func Run(ctx context.Context, cfg *config.Config) error {
 	Metrics = newMetrics()
-	defer runCleanupHooks()
 
 	// apply defaults before validation
 	cfg.ApplyDefaults()
