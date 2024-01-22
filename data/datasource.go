@@ -99,12 +99,6 @@ type Source struct {
 }
 
 // Deprecated: no-op
-func (s *Source) inherit(_ *Source) {
-	// s.kv = parent.kv
-	// s.asmpg = parent.asmpg
-}
-
-// Deprecated: no-op
 func (s *Source) cleanup() {
 	// if s.kv != nil {
 	// 	s.kv.Logout()
