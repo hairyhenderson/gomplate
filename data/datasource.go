@@ -39,14 +39,6 @@ type fileContent struct {
 	b           []byte
 }
 
-// Cleanup - clean up datasources before shutting the process down - things
-// like Logging out happen here
-func (d *Data) Cleanup() {
-	for _, s := range d.Sources {
-		s.cleanup()
-	}
-}
-
 // NewData - constructor for Data
 //
 // Deprecated: will be replaced in future
@@ -96,13 +88,6 @@ type Source struct {
 	URL       *url.URL
 	Header    http.Header // used for http[s]: URLs, nil otherwise
 	mediaType string
-}
-
-// Deprecated: no-op
-func (s *Source) cleanup() {
-	// if s.kv != nil {
-	// 	s.kv.Logout()
-	// }
 }
 
 // String is the method to format the flag's value, part of the flag.Value interface.
