@@ -11,8 +11,8 @@ import (
 	"text/template"
 	"time"
 
-	"github.com/hairyhenderson/gomplate/v4/data"
 	"github.com/hairyhenderson/gomplate/v4/internal/config"
+	"github.com/hairyhenderson/gomplate/v4/internal/datafs"
 )
 
 // RunTemplates - run all gomplate templates specified by the given configuration
@@ -46,7 +46,7 @@ func Run(ctx context.Context, cfg *config.Config) error {
 	}
 
 	// if a custom Stdin is set in the config, inject it into the context now
-	ctx = data.ContextWithStdin(ctx, cfg.Stdin)
+	ctx = datafs.ContextWithStdin(ctx, cfg.Stdin)
 
 	opts := optionsFromConfig(cfg)
 	opts.Funcs = funcMap
@@ -87,7 +87,6 @@ func simpleNamer(outDir string) func(ctx context.Context, inPath string) (string
 
 func mappingNamer(outMap string, tr *Renderer) func(context.Context, string) (string, error) {
 	return func(ctx context.Context, inPath string) (string, error) {
-		tr.data.Ctx = ctx
 		tcontext, err := createTmplContext(ctx, tr.tctxAliases, tr.data)
 		if err != nil {
 			return "", err

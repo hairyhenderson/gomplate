@@ -100,7 +100,7 @@ func parseNestedTemplates(ctx context.Context, nested config.Templates, tmpl *te
 		}
 
 		// TODO: maybe need to do something with root here?
-		_, reldir, err := datafs.ResolveLocalPath(u.Path)
+		_, reldir, err := datafs.ResolveLocalPath(fsys, u.Path)
 		if err != nil {
 			return fmt.Errorf("resolveLocalPath: %w", err)
 		}
@@ -227,20 +227,21 @@ func gatherTemplates(ctx context.Context, cfg *config.Config, outFileNamer func(
 func walkDir(ctx context.Context, cfg *config.Config, dir string, outFileNamer func(context.Context, string) (string, error), excludeGlob []string, mode os.FileMode, modeOverride bool) ([]Template, error) {
 	dir = filepath.ToSlash(filepath.Clean(dir))
 
-	// we want a filesystem rooted at dir, for relative matching
+	// get a filesystem rooted in the same volume as dir (or / on non-Windows)
 	fsys, err := datafs.FSysForPath(ctx, dir)
 	if err != nil {
-		return nil, fmt.Errorf("filesystem provider for %q unavailable: %w", dir, err)
+		return nil, err
 	}
 
 	// we need dir to be relative to the root of fsys
 	// TODO: maybe need to do something with root here?
-	_, reldir, err := datafs.ResolveLocalPath(dir)
+	_, resolvedDir, err := datafs.ResolveLocalPath(fsys, dir)
 	if err != nil {
 		return nil, fmt.Errorf("resolveLocalPath: %w", err)
 	}
 
-	subfsys, err := fs.Sub(fsys, reldir)
+	// we need to sub the filesystem to the dir
+	subfsys, err := fs.Sub(fsys, resolvedDir)
 	if err != nil {
 		return nil, fmt.Errorf("sub: %w", err)
 	}
@@ -248,7 +249,7 @@ func walkDir(ctx context.Context, cfg *config.Config, dir string, outFileNamer f
 	// just check . because fsys is subbed to dir already
 	dirStat, err := fs.Stat(subfsys, ".")
 	if err != nil {
-		return nil, fmt.Errorf("stat %q (%q): %w", dir, reldir, err)
+		return nil, fmt.Errorf("stat %q (%q): %w", dir, resolvedDir, err)
 	}
 	dirMode := dirStat.Mode()
 

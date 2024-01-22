@@ -15,6 +15,8 @@ import (
 )
 
 func setupDatasourcesGitTest(t *testing.T) *fs.Dir {
+	t.Helper()
+
 	tmpDir := fs.NewDir(t, "gomplate-inttests",
 		fs.WithDir("repo",
 			fs.WithFiles(map[string]string{
@@ -44,6 +46,8 @@ func setupDatasourcesGitTest(t *testing.T) *fs.Dir {
 }
 
 func startGitDaemon(t *testing.T) string {
+	t.Helper()
+
 	tmpDir := setupDatasourcesGitTest(t)
 
 	pidDir := fs.NewDir(t, "gomplate-inttests-pid")

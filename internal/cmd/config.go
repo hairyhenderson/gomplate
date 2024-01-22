@@ -73,7 +73,7 @@ func readConfigFile(ctx context.Context, cmd *cobra.Command) (cfg *config.Config
 	// we only support loading configs from the local filesystem for now
 	fsys, err := datafs.FSysForPath(ctx, cfgFile)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("fsys for path %v: %w", cfgFile, err)
 	}
 
 	f, err := fsys.Open(cfgFile)

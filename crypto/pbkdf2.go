@@ -7,22 +7,23 @@ import (
 	"crypto/sha512"
 	"fmt"
 	"hash"
+	"sync"
 
 	"golang.org/x/crypto/pbkdf2"
 )
 
-var hashFuncs map[crypto.Hash]func() hash.Hash
+var hashFuncs = sync.OnceValue[map[crypto.Hash]func() hash.Hash](func() map[crypto.Hash]func() hash.Hash {
+	h := make(map[crypto.Hash]func() hash.Hash)
+	h[crypto.SHA1] = sha1.New
+	h[crypto.SHA224] = sha256.New224
+	h[crypto.SHA256] = sha256.New
+	h[crypto.SHA384] = sha512.New384
+	h[crypto.SHA512] = sha512.New
+	h[crypto.SHA512_224] = sha512.New512_224
+	h[crypto.SHA512_256] = sha512.New512_256
 
-func init() {
-	hashFuncs = make(map[crypto.Hash]func() hash.Hash)
-	hashFuncs[crypto.SHA1] = sha1.New
-	hashFuncs[crypto.SHA224] = sha256.New224
-	hashFuncs[crypto.SHA256] = sha256.New
-	hashFuncs[crypto.SHA384] = sha512.New384
-	hashFuncs[crypto.SHA512] = sha512.New
-	hashFuncs[crypto.SHA512_224] = sha512.New512_224
-	hashFuncs[crypto.SHA512_256] = sha512.New512_256
-}
+	return h
+})()
 
 // StrToHash - find a hash given a certain string
 func StrToHash(hash string) (crypto.Hash, error) {

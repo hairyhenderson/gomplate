@@ -10,7 +10,7 @@ import (
 	"testing"
 	"testing/fstest"
 
-	"github.com/hairyhenderson/gomplate/v4/data"
+	"github.com/hairyhenderson/go-fsimpl"
 	"github.com/hairyhenderson/gomplate/v4/internal/datafs"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -24,7 +24,11 @@ func TestRenderTemplate(t *testing.T) {
 	_ = os.Chdir("/")
 
 	fsys := fstest.MapFS{}
-	ctx := datafs.ContextWithFSProvider(context.Background(), datafs.WrappedFSProvider(fsys, "mem"))
+	fsp := fsimpl.NewMux()
+	fsp.Add(datafs.EnvFS)
+	fsp.Add(datafs.StdinFS)
+	fsp.Add(datafs.WrappedFSProvider(fsys, "mem", ""))
+	ctx := datafs.ContextWithFSProvider(context.Background(), fsp)
 
 	// no options - built-in function
 	tr := NewRenderer(Options{})
@@ -47,7 +51,7 @@ func TestRenderTemplate(t *testing.T) {
 			"world": {URL: wu},
 		},
 	})
-	ctx = data.ContextWithStdin(ctx, strings.NewReader("hello"))
+	ctx = datafs.ContextWithStdin(ctx, strings.NewReader("hello"))
 	out = &bytes.Buffer{}
 	err = tr.Render(ctx, "test", `{{ .hi | toUpper }} {{ (ds "world") | toUpper }}`, out)
 	require.NoError(t, err)

@@ -6,7 +6,9 @@ import (
 	"os"
 	"testing"
 
+	"github.com/hairyhenderson/go-fsimpl"
 	"github.com/hairyhenderson/gomplate/v4/data"
+	"github.com/hairyhenderson/gomplate/v4/internal/datafs"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -30,6 +32,11 @@ func TestCreateContext(t *testing.T) {
 	c, err := createTmplContext(ctx, nil, nil)
 	require.NoError(t, err)
 	assert.Empty(t, c)
+
+	fsmux := fsimpl.NewMux()
+	fsmux.Add(datafs.EnvFS)
+
+	ctx = datafs.ContextWithFSProvider(ctx, fsmux)
 
 	fooURL := "env:///foo?type=application/yaml"
 	barURL := "env:///bar?type=application/yaml"

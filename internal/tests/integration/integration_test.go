@@ -256,7 +256,9 @@ func (c *command) runInProcess() (o, e string, err error) {
 
 	stdin := strings.NewReader(c.stdin)
 
-	ctx := context.Background()
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
 	stdout, stderr := &bytes.Buffer{}, &bytes.Buffer{}
 	err = gcmd.Main(ctx, c.args, stdin, stdout, stderr)
 	return stdout.String(), stderr.String(), err

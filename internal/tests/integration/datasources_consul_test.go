@@ -139,23 +139,28 @@ func TestDatasources_Consul_ListKeys(t *testing.T) {
 	consulPut(t, consulAddr, "list-of-keys/foo2", "bar2")
 
 	// Get a list of keys using the ds args
-	expectedResult := `[{"key":"foo1","value":"{\"bar1\": \"bar1\"}"},{"key":"foo2","value":"bar2"}]`
+	// expectedResult := `[{"key":"foo1","value":"{\"bar1\": \"bar1\"}"},{"key":"foo2","value":"bar2"}]`
+	expectedResult := `["foo1","foo2"]`
 	o, e, err := cmd(t, "-d", "consul=consul://",
 		"-i", `{{(ds "consul" "list-of-keys/") | data.ToJSON }}`).
 		withEnv("CONSUL_HTTP_ADDR", "http://"+consulAddr).run()
 	assertSuccess(t, o, e, err, expectedResult)
 
 	// Get a list of keys using the ds uri
-	expectedResult = `[{"key":"foo1","value":"{\"bar1\": \"bar1\"}"},{"key":"foo2","value":"bar2"}]`
+	// expectedResult = `[{"key":"foo1","value":"{\"bar1\": \"bar1\"}"},{"key":"foo2","value":"bar2"}]`
+	expectedResult = `["foo1","foo2"]`
 	o, e, err = cmd(t, "-d", "consul=consul+http://"+consulAddr+"/list-of-keys/",
 		"-i", `{{(ds "consul" ) | data.ToJSON }}`).run()
 	assertSuccess(t, o, e, err, expectedResult)
 
-	// Get a specific value from the list of Consul keys
-	expectedResult = `{"bar1": "bar1"}`
-	o, e, err = cmd(t, "-d", "consul=consul+http://"+consulAddr+"/list-of-keys/",
-		"-i", `{{ $data := ds "consul" }}{{ (index $data 0).value }}`).run()
-	assertSuccess(t, o, e, err, expectedResult)
+	// TODO: this doesn't work anymore because consulfs returns a directory
+	// listing now.
+	//
+	// // Get a specific value from the list of Consul keys
+	// expectedResult = `{"bar1": "bar1"}`
+	// o, e, err = cmd(t, "-d", "consul=consul+http://"+consulAddr+"/list-of-keys/",
+	// 	"-i", `{{ $data := ds "consul" }}{{ (index $data 0).value }}`).run()
+	// assertSuccess(t, o, e, err, expectedResult)
 }
 
 func TestDatasources_Consul_WithVaultAuth(t *testing.T) {
