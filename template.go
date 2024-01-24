@@ -324,24 +324,26 @@ func walkDir(ctx context.Context, cfg *config.Config, dir string, outFileNamer f
 }
 
 func readInFile(ctx context.Context, cfg *config.Config, inFile string, mode os.FileMode) (source string, newmode os.FileMode, err error) {
-	source = ""
 	newmode = mode
+	var b []byte
 
 	//nolint:nestif
 	if inFile == "-" {
-		b, err := io.ReadAll(cfg.Stdin)
+		b, err = io.ReadAll(cfg.Stdin)
 		if err != nil {
 			return source, newmode, fmt.Errorf("read from stdin: %w", err)
 		}
 
 		source = string(b)
 	} else {
-		fsys, err := datafs.FSysForPath(ctx, inFile)
+		var fsys fs.FS
+		var si fs.FileInfo
+		fsys, err = datafs.FSysForPath(ctx, inFile)
 		if err != nil {
 			return source, newmode, fmt.Errorf("fsysForPath: %w", err)
 		}
 
-		si, err := fs.Stat(fsys, inFile)
+		si, err = fs.Stat(fsys, inFile)
 		if err != nil {
 			return source, newmode, fmt.Errorf("stat %q: %w", inFile, err)
 		}
@@ -351,7 +353,7 @@ func readInFile(ctx context.Context, cfg *config.Config, inFile string, mode os.
 
 		// we read the file and store in memory immediately, to prevent leaking
 		// file descriptors.
-		b, err := fs.ReadFile(fsys, inFile)
+		b, err = fs.ReadFile(fsys, inFile)
 		if err != nil {
 			return source, newmode, fmt.Errorf("readAll %q: %w", inFile, err)
 		}
