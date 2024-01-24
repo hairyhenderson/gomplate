@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1.3.1-labs
-FROM --platform=linux/amd64 golang:1.19-alpine AS build
+FROM --platform=linux/amd64 golang:1.19-alpine@sha256:0ec0646e208ea58e5d29e558e39f2e59fccf39b7bda306cb53bbaff91919eca5 AS build
 
 ARG TARGETOS
 ARG TARGETARCH
@@ -38,7 +38,7 @@ COPY --from=build /bin/gomplate_${TARGETOS}-${TARGETARCH}${TARGETVARIANT} /gompl
 
 ENTRYPOINT [ "/gomplate" ]
 
-FROM alpine:3.16 AS gomplate-alpine
+FROM alpine:3.16@sha256:e4cdb7d47b06ba0a062ad2a97a7d154967c8f83934594d9f2bd3efa89292996b AS gomplate-alpine
 
 ARG VCS_REF
 ARG TARGETOS
@@ -53,7 +53,7 @@ COPY --from=build /bin/gomplate_${TARGETOS}-${TARGETARCH}${TARGETVARIANT} /bin/g
 
 ENTRYPOINT [ "/bin/gomplate" ]
 
-FROM --platform=windows/amd64 mcr.microsoft.com/windows/nanoserver:2009 AS gomplate-windows
+FROM --platform=windows/amd64 mcr.microsoft.com/windows/nanoserver:2009@sha256:70ad3c3f156b1002a6a642d3c3b769264f9ca166f57eab62051f59c0dbe20a0f AS gomplate-windows
 ARG TARGETOS
 ARG TARGETARCH
 ARG TARGETVARIANT

@@ -3,12 +3,22 @@ on:
   push:
     branches:
       - main
+permissions:
+  contents: read
+
 jobs:
   semantic-release:
+    permissions:
+      contents: write  # for codfish/semantic-release-action to create release tags
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - uses: codfish/semantic-release-action@v2
+      - name: Harden Runner
+        uses: step-security/harden-runner@eb238b55efaa70779f274895e782ed17c84f2895 # v2.6.1
+        with:
+          egress-policy: audit
+
+      - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v3.6.0
+      - uses: codfish/semantic-release-action@3607258ae5976084750909dbda50a850cb76ec3a # v2.2.1
         id: semantic
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
