@@ -26,7 +26,7 @@ type Data struct {
 	Ctx context.Context
 
 	// TODO: remove this before 4.0
-	Sources map[string]*Source
+	Sources map[string]config.DataSource
 
 	cache map[string]*fileContent
 
@@ -58,21 +58,14 @@ func FromConfig(ctx context.Context, cfg *config.Config) *Data {
 	// when datasources are refactored
 	ctx = datafs.ContextWithStdin(ctx, cfg.Stdin)
 
-	sources := map[string]*Source{}
+	sources := map[string]config.DataSource{}
 	for alias, d := range cfg.DataSources {
-		sources[alias] = &Source{
-			Alias:  alias,
-			URL:    d.URL,
-			Header: d.Header,
-		}
+		sources[alias] = d
 	}
 	for alias, d := range cfg.Context {
-		sources[alias] = &Source{
-			Alias:  alias,
-			URL:    d.URL,
-			Header: d.Header,
-		}
+		sources[alias] = d
 	}
+
 	return &Data{
 		Ctx:          ctx,
 		Sources:      sources,
@@ -84,16 +77,14 @@ func FromConfig(ctx context.Context, cfg *config.Config) *Data {
 //
 // Deprecated: will be replaced in future
 type Source struct {
-	Alias     string
-	URL       *url.URL
-	Header    http.Header // used for http[s]: URLs, nil otherwise
-	mediaType string
+	URL    *url.URL
+	Header http.Header // used for http[s]: URLs, nil otherwise
 }
 
 // String is the method to format the flag's value, part of the flag.Value interface.
 // The String method's output will be used in diagnostics.
 func (s *Source) String() string {
-	return fmt.Sprintf("%s=%s (%s)", s.Alias, s.URL.String(), s.mediaType)
+	return s.URL.String()
 }
 
 // DefineDatasource -
@@ -108,13 +99,12 @@ func (d *Data) DefineDatasource(alias, value string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	s := &Source{
-		Alias:  alias,
+	s := config.DataSource{
 		URL:    srcURL,
 		Header: d.ExtraHeaders[alias],
 	}
 	if d.Sources == nil {
-		d.Sources = make(map[string]*Source)
+		d.Sources = make(map[string]config.DataSource)
 	}
 	d.Sources[alias] = s
 	return "", nil
@@ -126,24 +116,21 @@ func (d *Data) DatasourceExists(alias string) bool {
 	return ok
 }
 
-func (d *Data) lookupSource(alias string) (*Source, error) {
+func (d *Data) lookupSource(alias string) (*config.DataSource, error) {
 	source, ok := d.Sources[alias]
 	if !ok {
 		srcURL, err := url.Parse(alias)
 		if err != nil || !srcURL.IsAbs() {
 			return nil, fmt.Errorf("undefined datasource '%s': %w", alias, err)
 		}
-		source = &Source{
-			Alias:  alias,
+		source = config.DataSource{
 			URL:    srcURL,
 			Header: d.ExtraHeaders[alias],
 		}
 		d.Sources[alias] = source
 	}
-	if source.Alias == "" {
-		source.Alias = alias
-	}
-	return source, nil
+
+	return &source, nil
 }
 
 func (d *Data) readDataSource(ctx context.Context, alias string, args ...string) (*fileContent, error) {
@@ -151,7 +138,7 @@ func (d *Data) readDataSource(ctx context.Context, alias string, args ...string)
 	if err != nil {
 		return nil, err
 	}
-	fc, err := d.readSource(ctx, source, args...)
+	fc, err := d.readSource(ctx, alias, source, args...)
 	if err != nil {
 		return nil, fmt.Errorf("couldn't read datasource '%s': %w", alias, err)
 	}
@@ -186,17 +173,17 @@ func (d *Data) DatasourceReachable(alias string, args ...string) bool {
 	if !ok {
 		return false
 	}
-	_, err := d.readSource(d.Ctx, source, args...)
+	_, err := d.readSource(d.Ctx, alias, &source, args...)
 	return err == nil
 }
 
 // readSource returns the (possibly cached) data from the given source,
 // as referenced by the given args
-func (d *Data) readSource(ctx context.Context, source *Source, args ...string) (*fileContent, error) {
+func (d *Data) readSource(ctx context.Context, alias string, source *config.DataSource, args ...string) (*fileContent, error) {
 	if d.cache == nil {
 		d.cache = make(map[string]*fileContent)
 	}
-	cacheKey := source.Alias
+	cacheKey := alias
 	for _, v := range args {
 		cacheKey += v
 	}
