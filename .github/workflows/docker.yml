@@ -79,26 +79,35 @@ jobs:
       if: github.repository == 'hairyhenderson/gomplate' && github.ref == 'refs/heads/main'
     - name: Build & Push (tagged release)
       run: |
+        export srcrepo=hairyhenderson/gomplate
         make docker-multi COMMIT=${{ github.sha }} DOCKER_REPO=hairyhenderson/gomplate BUILDX_ACTION=--push
-        make docker-multi COMMIT=${{ github.sha }} DOCKER_REPO=ghcr.io/hairyhenderson/gomplate BUILDX_ACTION=--push
 
         set -x
         export repo=hairyhenderson/gomplate
-        docker buildx imagetools create -t ${repo}:stable ${repo}:latest
-        docker buildx imagetools create -t ${repo}:${git_tag} ${repo}:latest
-        docker buildx imagetools create -t ${repo}:${major_version} ${repo}:latest
+        docker buildx imagetools create -t ${repo}:stable ${srcrepo}:latest
+        docker buildx imagetools create -t ${repo}:${git_tag} ${srcrepo}:latest
+        docker buildx imagetools create -t ${repo}:${major_version} ${srcrepo}:latest
 
-        docker buildx imagetools create -t ${repo}:stable-alpine ${repo}:alpine
-        docker buildx imagetools create -t ${repo}:${git_tag}-alpine ${repo}:alpine
-        docker buildx imagetools create -t ${repo}:${major_version}-alpine ${repo}:alpine
+        docker buildx imagetools create -t ${repo}:stable-alpine ${srcrepo}:alpine
+        docker buildx imagetools create -t ${repo}:${git_tag}-alpine ${srcrepo}:alpine
+        docker buildx imagetools create -t ${repo}:${major_version}-alpine ${srcrepo}:alpine
+
+        export repo=gomplate/gomplate
+        docker buildx imagetools create -t ${repo}:stable ${srcrepo}:latest
+        docker buildx imagetools create -t ${repo}:${git_tag} ${srcrepo}:latest
+        docker buildx imagetools create -t ${repo}:${major_version} ${srcrepo}:latest
+
+        docker buildx imagetools create -t ${repo}:stable-alpine ${srcrepo}:alpine
+        docker buildx imagetools create -t ${repo}:${git_tag}-alpine ${srcrepo}:alpine
+        docker buildx imagetools create -t ${repo}:${major_version}-alpine ${srcrepo}:alpine
 
         # and now GHCR
         export repo=ghcr.io/hairyhenderson/gomplate
-        docker buildx imagetools create -t ${repo}:stable ${repo}:latest
-        docker buildx imagetools create -t ${repo}:${git_tag} ${repo}:latest
-        docker buildx imagetools create -t ${repo}:${major_version} ${repo}:latest
+        docker buildx imagetools create -t ${repo}:stable ${srcrepo}:latest
+        docker buildx imagetools create -t ${repo}:${git_tag} ${srcrepo}:latest
+        docker buildx imagetools create -t ${repo}:${major_version} ${srcrepo}:latest
 
-        docker buildx imagetools create -t ${repo}:stable-alpine ${repo}:alpine
-        docker buildx imagetools create -t ${repo}:${git_tag}-alpine ${repo}:alpine
-        docker buildx imagetools create -t ${repo}:${major_version}-alpine ${repo}:alpine
+        docker buildx imagetools create -t ${repo}:stable-alpine ${srcrepo}:alpine
+        docker buildx imagetools create -t ${repo}:${git_tag}-alpine ${srcrepo}:alpine
+        docker buildx imagetools create -t ${repo}:${major_version}-alpine ${srcrepo}:alpine
       if: github.repository == 'hairyhenderson/gomplate' && env.is_tag == 'true'
