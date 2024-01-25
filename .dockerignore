@@ -1,9 +1,8 @@
-Dockerfile
 .vscode
 *.md
 *.cid
 *.iid
 bin/
 coverage/
-Dockerfile
-Dockerfile.integration
+docs/
+testbin/
