@@ -12,38 +12,6 @@ import (
 	"github.com/hairyhenderson/gomplate/v4/time"
 )
 
-// TimeNS -
-//
-// Deprecated: don't use
-func TimeNS() *TimeFuncs {
-	return &TimeFuncs{
-		ANSIC:       gotime.ANSIC,
-		UnixDate:    gotime.UnixDate,
-		RubyDate:    gotime.RubyDate,
-		RFC822:      gotime.RFC822,
-		RFC822Z:     gotime.RFC822Z,
-		RFC850:      gotime.RFC850,
-		RFC1123:     gotime.RFC1123,
-		RFC1123Z:    gotime.RFC1123Z,
-		RFC3339:     gotime.RFC3339,
-		RFC3339Nano: gotime.RFC3339Nano,
-		Kitchen:     gotime.Kitchen,
-		Stamp:       gotime.Stamp,
-		StampMilli:  gotime.StampMilli,
-		StampMicro:  gotime.StampMicro,
-		StampNano:   gotime.StampNano,
-	}
-}
-
-// AddTimeFuncs -
-//
-// Deprecated: use [CreateTimeFuncs] instead
-func AddTimeFuncs(f map[string]interface{}) {
-	for k, v := range CreateTimeFuncs(context.Background()) {
-		f[k] = v
-	}
-}
-
 // CreateTimeFuncs -
 func CreateTimeFuncs(ctx context.Context) map[string]interface{} {
 	ns := &TimeFuncs{

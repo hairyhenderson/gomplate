@@ -9,13 +9,6 @@ import (
 	"github.com/hairyhenderson/gomplate/v4/internal/funcs"
 )
 
-// Funcs -
-//
-// Deprecated: use [CreateFuncs] instead
-func Funcs(d *data.Data) template.FuncMap {
-	return CreateFuncs(context.Background(), d)
-}
-
 // CreateFuncs - function mappings are created here
 //
 //nolint:staticcheck

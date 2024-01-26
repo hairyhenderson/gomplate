@@ -11,22 +11,6 @@ import (
 	"github.com/hairyhenderson/gomplate/v4/random"
 )
 
-// RandomNS -
-//
-// Deprecated: don't use
-func RandomNS() *RandomFuncs {
-	return &RandomFuncs{}
-}
-
-// AddRandomFuncs -
-//
-// Deprecated: use [CreateRandomFuncs] instead
-func AddRandomFuncs(f map[string]interface{}) {
-	for k, v := range CreateRandomFuncs(context.Background()) {
-		f[k] = v
-	}
-}
-
 // CreateRandomFuncs -
 func CreateRandomFuncs(ctx context.Context) map[string]interface{} {
 	ns := &RandomFuncs{ctx}

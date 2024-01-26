@@ -35,7 +35,7 @@ const (
 func TestV1(t *testing.T) {
 	t.Parallel()
 
-	u := UUIDNS()
+	u := UUIDFuncs{ctx: context.Background()}
 	i, err := u.V1()
 	require.NoError(t, err)
 	assert.Regexp(t, uuidV1Pattern, i)
@@ -44,7 +44,7 @@ func TestV1(t *testing.T) {
 func TestV4(t *testing.T) {
 	t.Parallel()
 
-	u := UUIDNS()
+	u := UUIDFuncs{ctx: context.Background()}
 	i, err := u.V4()
 	require.NoError(t, err)
 	assert.Regexp(t, uuidV4Pattern, i)
@@ -53,7 +53,7 @@ func TestV4(t *testing.T) {
 func TestNil(t *testing.T) {
 	t.Parallel()
 
-	u := UUIDNS()
+	u := UUIDFuncs{ctx: context.Background()}
 	i, err := u.Nil()
 	require.NoError(t, err)
 	assert.Equal(t, "00000000-0000-0000-0000-000000000000", i)
@@ -62,7 +62,7 @@ func TestNil(t *testing.T) {
 func TestIsValid(t *testing.T) {
 	t.Parallel()
 
-	u := UUIDNS()
+	u := UUIDFuncs{ctx: context.Background()}
 	in := interface{}(false)
 	i, err := u.IsValid(in)
 	require.NoError(t, err)
@@ -90,7 +90,7 @@ func TestIsValid(t *testing.T) {
 func TestParse(t *testing.T) {
 	t.Parallel()
 
-	u := UUIDNS()
+	u := UUIDFuncs{ctx: context.Background()}
 	in := interface{}(false)
 	_, err := u.Parse(in)
 	assert.Error(t, err)

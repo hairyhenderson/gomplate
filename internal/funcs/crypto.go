@@ -19,22 +19,6 @@ import (
 	"github.com/hairyhenderson/gomplate/v4/crypto"
 )
 
-// CryptoNS - the crypto namespace
-//
-// Deprecated: don't use
-func CryptoNS() *CryptoFuncs {
-	return &CryptoFuncs{}
-}
-
-// AddCryptoFuncs -
-//
-// Deprecated: use [CreateCryptoFuncs] instead
-func AddCryptoFuncs(f map[string]interface{}) {
-	for k, v := range CreateCryptoFuncs(context.Background()) {
-		f[k] = v
-	}
-}
-
 // CreateCryptoFuncs -
 func CreateCryptoFuncs(ctx context.Context) map[string]interface{} {
 	f := map[string]interface{}{}

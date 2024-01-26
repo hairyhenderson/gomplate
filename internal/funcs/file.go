@@ -11,22 +11,6 @@ import (
 	"github.com/hairyhenderson/gomplate/v4/internal/iohelpers"
 )
 
-// FileNS - the File namespace
-//
-// Deprecated: don't use
-func FileNS() *FileFuncs {
-	return &FileFuncs{}
-}
-
-// AddFileFuncs -
-//
-// Deprecated: use [CreateFileFuncs] instead
-func AddFileFuncs(f map[string]interface{}) {
-	for k, v := range CreateFileFuncs(context.Background()) {
-		f[k] = v
-	}
-}
-
 // CreateFileFuncs -
 func CreateFileFuncs(ctx context.Context) map[string]interface{} {
 	fsys, err := datafs.FSysForPath(ctx, "/")

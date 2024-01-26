@@ -7,22 +7,6 @@ import (
 	"github.com/hairyhenderson/gomplate/v4/conv"
 )
 
-// FilePathNS - the Path namespace
-//
-// Deprecated: don't use
-func FilePathNS() *FilePathFuncs {
-	return &FilePathFuncs{}
-}
-
-// AddFilePathFuncs -
-//
-// Deprecated: use [CreateFilePathFuncs] instead
-func AddFilePathFuncs(f map[string]interface{}) {
-	for k, v := range CreateFilePathFuncs(context.Background()) {
-		f[k] = v
-	}
-}
-
 // CreateFilePathFuncs -
 func CreateFilePathFuncs(ctx context.Context) map[string]interface{} {
 	ns := &FilePathFuncs{ctx}

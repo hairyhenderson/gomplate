@@ -8,22 +8,6 @@ import (
 	"github.com/google/uuid"
 )
 
-// UUIDNS -
-//
-// Deprecated: don't use
-func UUIDNS() *UUIDFuncs {
-	return &UUIDFuncs{}
-}
-
-// AddUUIDFuncs -
-//
-// Deprecated: use [CreateUUIDFuncs] instead
-func AddUUIDFuncs(f map[string]interface{}) {
-	for k, v := range CreateUUIDFuncs(context.Background()) {
-		f[k] = v
-	}
-}
-
 // CreateUUIDFuncs -
 func CreateUUIDFuncs(ctx context.Context) map[string]interface{} {
 	ns := &UUIDFuncs{ctx}

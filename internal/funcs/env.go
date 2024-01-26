@@ -7,22 +7,6 @@ import (
 	"github.com/hairyhenderson/gomplate/v4/env"
 )
 
-// EnvNS - the Env namespace
-//
-// Deprecated: don't use
-func EnvNS() *EnvFuncs {
-	return &EnvFuncs{}
-}
-
-// AddEnvFuncs -
-//
-// Deprecated: use [CreateEnvFuncs] instead
-func AddEnvFuncs(f map[string]interface{}) {
-	for k, v := range CreateEnvFuncs(context.Background()) {
-		f[k] = v
-	}
-}
-
 // CreateEnvFuncs -
 func CreateEnvFuncs(ctx context.Context) map[string]interface{} {
 	ns := &EnvFuncs{ctx}

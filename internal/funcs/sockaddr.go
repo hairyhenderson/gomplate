@@ -7,20 +7,6 @@ import (
 	"github.com/hashicorp/go-sockaddr/template"
 )
 
-// SockaddrNS - the sockaddr namespace
-//
-// Deprecated: don't use
-func SockaddrNS() *SockaddrFuncs {
-	return &SockaddrFuncs{}
-}
-
-// AddSockaddrFuncs -
-//
-// Deprecated: use [CreateSockaddrFuncs] instead
-func AddSockaddrFuncs(f map[string]interface{}) {
-	f["sockaddr"] = SockaddrNS
-}
-
 // CreateSockaddrFuncs -
 func CreateSockaddrFuncs(ctx context.Context) map[string]interface{} {
 	ns := &SockaddrFuncs{ctx}
