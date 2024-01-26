@@ -40,7 +40,7 @@ type Config struct {
 	DataSources map[string]DataSource   `yaml:"datasources,omitempty"`
 	Context     map[string]DataSource   `yaml:"context,omitempty"`
 	Plugins     map[string]PluginConfig `yaml:"plugins,omitempty"`
-	Templates   map[string]DataSource   `yaml:"templates,omitempty"`
+	Templates   Templates               `yaml:"templates,omitempty"`
 
 	// Extra HTTP headers not attached to pre-defined datsources. Potentially
 	// used by datasources defined in the template.
@@ -107,7 +107,7 @@ type DataSource struct {
 // well supported, and anyway we need to do some extra parsing
 func (d *DataSource) UnmarshalYAML(value *yaml.Node) error {
 	type raw struct {
-		Header http.Header `yaml:",omitempty"`
+		Header http.Header
 		URL    string
 	}
 	r := raw{}
@@ -130,10 +130,9 @@ func (d *DataSource) UnmarshalYAML(value *yaml.Node) error {
 // well supported, and anyway we need to do some extra parsing
 func (d DataSource) MarshalYAML() (interface{}, error) {
 	type raw struct {
-		Header http.Header `yaml:",omitempty"`
+		Header http.Header
 		URL    string
 	}
-
 	r := raw{
 		URL:    d.URL.String(),
 		Header: d.Header,

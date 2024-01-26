@@ -11,7 +11,6 @@ import (
 	"testing/fstest"
 
 	"github.com/hairyhenderson/go-fsimpl"
-	"github.com/hairyhenderson/gomplate/v4/internal/config"
 	"github.com/hairyhenderson/gomplate/v4/internal/datafs"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -45,10 +44,10 @@ func TestRenderTemplate(t *testing.T) {
 	t.Setenv("WORLD", "world")
 
 	tr = NewRenderer(Options{
-		Context: map[string]config.DataSource{
+		Context: map[string]Datasource{
 			"hi": {URL: hu},
 		},
-		Datasources: map[string]config.DataSource{
+		Datasources: map[string]Datasource{
 			"world": {URL: wu},
 		},
 	})
@@ -64,7 +63,7 @@ func TestRenderTemplate(t *testing.T) {
 		`<< . | toUpper >>`)}
 
 	tr = NewRenderer(Options{
-		Templates: map[string]config.DataSource{
+		Templates: map[string]Datasource{
 			"nested": {URL: nu},
 		},
 		LDelim: "<<",
@@ -147,7 +146,7 @@ func ExampleRenderer_datasources() {
 	// a datasource that retrieves JSON from a public API
 	u, _ := url.Parse("https://ipinfo.io/1.1.1.1")
 	tr := NewRenderer(Options{
-		Context: map[string]config.DataSource{
+		Context: map[string]Datasource{
 			"info": {URL: u},
 		},
 	})

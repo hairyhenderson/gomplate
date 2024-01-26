@@ -74,7 +74,7 @@ pluginTimeout: 2s
 		Plugins: map[string]PluginConfig{
 			"foo": {Cmd: "echo", Pipe: true},
 		},
-		Templates:     map[string]DataSource{"foo": {URL: mustURL("file:///tmp/foo.t")}},
+		Templates:     Templates{"foo": DataSource{URL: mustURL("file:///tmp/foo.t")}},
 		PluginTimeout: 2 * time.Second,
 	}
 
@@ -386,7 +386,7 @@ func TestMergeFrom(t *testing.T) {
 	cfg = &Config{
 		InputDir:    "indir/",
 		ExcludeGlob: []string{"*.txt"},
-		Templates: map[string]DataSource{
+		Templates: Templates{
 			"foo": {
 				URL: mustURL("file:///foo.yaml"),
 			},
@@ -402,7 +402,7 @@ func TestMergeFrom(t *testing.T) {
 		OutMode:     "600",
 		LDelim:      "${",
 		RDelim:      "}",
-		Templates: map[string]DataSource{
+		Templates: Templates{
 			"foo": {URL: mustURL("https://example.com/foo.yaml")},
 			"baz": {URL: mustURL("vault:///baz")},
 		},
@@ -414,7 +414,7 @@ func TestMergeFrom(t *testing.T) {
 		OutMode:     "600",
 		LDelim:      "${",
 		RDelim:      "}",
-		Templates: map[string]DataSource{
+		Templates: Templates{
 			"foo": {URL: mustURL("https://example.com/foo.yaml")},
 			"bar": {
 				URL:    mustURL("stdin:///"),
@@ -503,7 +503,7 @@ func TestParseDataSourceFlags(t *testing.T) {
 	)
 	require.NoError(t, err)
 	assert.EqualValues(t, &Config{
-		Templates: map[string]DataSource{
+		Templates: Templates{
 			"foo": {
 				URL:    mustURL("http://example.com"),
 				Header: http.Header{"Accept": {"application/json"}},
@@ -551,7 +551,7 @@ pluginTimeout: 5s
 			RDelim:      "R",
 			Input:       "foo",
 			OutputFiles: []string{"-"},
-			Templates: map[string]DataSource{
+			Templates: Templates{
 				"foo": {URL: mustURL("https://www.example.com/foo.tmpl")},
 				"bar": {URL: mustURL("file:///tmp/bar.t")},
 			},
@@ -576,7 +576,7 @@ templates:
 			RDelim:      "R",
 			Input:       "long input that should be truncated",
 			OutputFiles: []string{"-"},
-			Templates: map[string]DataSource{
+			Templates: Templates{
 				"foo": {URL: mustURL("https://www.example.com/foo.tmpl")},
 				"bar": {URL: mustURL("file:///tmp/bar.t")},
 			},
