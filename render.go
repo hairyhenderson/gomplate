@@ -6,7 +6,6 @@ import (
 	"io"
 	"net/http"
 	"net/url"
-	"os"
 	"sync"
 	"text/template"
 	"time"
@@ -244,8 +243,7 @@ func (t *Renderer) renderTemplatesWithData(ctx context.Context, templates []Temp
 
 func (t *Renderer) renderTemplate(ctx context.Context, template Template, f template.FuncMap, tmplctx interface{}) error {
 	if template.Writer != nil {
-		wr, ok := template.Writer.(io.Closer)
-		if ok && wr != os.Stdout {
+		if wr, ok := template.Writer.(io.Closer); ok {
 			defer wr.Close()
 		}
 	}
