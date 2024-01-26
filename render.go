@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"net/url"
 	"os"
 	"sync"
 	"text/template"
@@ -28,12 +27,12 @@ type Options struct {
 
 	// Datasources - map of datasources to be read on demand when the
 	// 'datasource'/'ds'/'include' functions are used.
-	Datasources map[string]Datasource
+	Datasources map[string]config.DataSource
 	// Context - map of datasources to be read immediately and added to the
 	// template's context
-	Context map[string]Datasource
+	Context map[string]config.DataSource
 	// Templates - map of templates that can be referenced as nested templates
-	Templates map[string]Datasource
+	Templates map[string]config.DataSource
 
 	// Extra HTTP headers not attached to pre-defined datsources. Potentially
 	// used by datasources defined in the template.
@@ -60,32 +59,10 @@ type Options struct {
 // optionsFromConfig - create a set of options from the internal config struct.
 // Does not set the Funcs field.
 func optionsFromConfig(cfg *config.Config) Options {
-	ds := make(map[string]Datasource, len(cfg.DataSources))
-	for k, v := range cfg.DataSources {
-		ds[k] = Datasource{
-			URL:    v.URL,
-			Header: v.Header,
-		}
-	}
-	cs := make(map[string]Datasource, len(cfg.Context))
-	for k, v := range cfg.Context {
-		cs[k] = Datasource{
-			URL:    v.URL,
-			Header: v.Header,
-		}
-	}
-	ts := make(map[string]Datasource, len(cfg.Templates))
-	for k, v := range cfg.Templates {
-		ts[k] = Datasource{
-			URL:    v.URL,
-			Header: v.Header,
-		}
-	}
-
 	opts := Options{
-		Datasources:  ds,
-		Context:      cs,
-		Templates:    ts,
+		Datasources:  cfg.DataSources,
+		Context:      cfg.Context,
+		Templates:    cfg.Templates,
 		ExtraHeaders: cfg.ExtraHeaders,
 		LDelim:       cfg.LDelim,
 		RDelim:       cfg.RDelim,
@@ -96,14 +73,6 @@ func optionsFromConfig(cfg *config.Config) Options {
 	return opts
 }
 
-// Datasource - a datasource URL with optional headers
-//
-// Experimental: subject to breaking changes before the next major release
-type Datasource struct {
-	URL    *url.URL
-	Header http.Header
-}
-
 // Renderer provides gomplate's core template rendering functionality.
 // It should be initialized with NewRenderer.
 //
@@ -112,7 +81,7 @@ type Renderer struct {
 	//nolint:staticcheck
 	data        *data.Data
 	fsp         fsimpl.FSProvider
-	nested      config.Templates
+	nested      map[string]config.DataSource
 	funcs       template.FuncMap
 	lDelim      string
 	rDelim      string
@@ -149,7 +118,7 @@ func NewRenderer(opts Options) *Renderer {
 
 	// convert the internal config.Templates to a map[string]Datasource
 	// TODO: simplify when config.Templates is removed
-	nested := config.Templates{}
+	nested := map[string]config.DataSource{}
 	for alias, ds := range opts.Templates {
 		nested[alias] = config.DataSource{
 			URL:    ds.URL,

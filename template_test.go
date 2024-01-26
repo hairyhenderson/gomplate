@@ -184,7 +184,7 @@ func TestParseNestedTemplates(t *testing.T) {
 
 	// simple test with single template
 	u, _ := url.Parse("foo.t")
-	nested := config.Templates{"foo": {URL: u}}
+	nested := map[string]config.DataSource{"foo": {URL: u}}
 
 	tmpl, _ := template.New("root").Parse(`{{ template "foo" }}`)
 
