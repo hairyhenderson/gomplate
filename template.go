@@ -49,7 +49,7 @@ func copyFuncMap(funcMap template.FuncMap) template.FuncMap {
 }
 
 // parseTemplate - parses text as a Go template with the given name and options
-func parseTemplate(ctx context.Context, name, text string, funcs template.FuncMap, tmplctx interface{}, nested config.Templates, leftDelim, rightDelim string, missingKey string) (tmpl *template.Template, err error) {
+func parseTemplate(ctx context.Context, name, text string, funcs template.FuncMap, tmplctx interface{}, nested map[string]config.DataSource, leftDelim, rightDelim string, missingKey string) (tmpl *template.Template, err error) {
 	tmpl = template.New(name)
 	if missingKey == "" {
 		missingKey = "error"
@@ -81,7 +81,7 @@ func parseTemplate(ctx context.Context, name, text string, funcs template.FuncMa
 	return tmpl, nil
 }
 
-func parseNestedTemplates(ctx context.Context, nested config.Templates, tmpl *template.Template) error {
+func parseNestedTemplates(ctx context.Context, nested map[string]config.DataSource, tmpl *template.Template) error {
 	fsp := datafs.FSProviderFromContext(ctx)
 
 	for alias, n := range nested {

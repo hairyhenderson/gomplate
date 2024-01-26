@@ -22,10 +22,10 @@ remote:
   url: https://example.com/foo/bar/helloworld.tmpl
   header:
     Accept: [text/plain, text/template]`
-	out := Templates{}
+	out := map[string]DataSource{}
 	err := yaml.Unmarshal([]byte(in), &out)
 	require.NoError(t, err)
-	assert.EqualValues(t, Templates{
+	assert.EqualValues(t, map[string]DataSource{
 		"t":            {URL: mustURL("foo/bar/helloworld.tmpl")},
 		"templatedir":  {URL: mustURL("templatedir/")},
 		"dir":          {URL: mustURL("foo/bar/")},
@@ -36,32 +36,9 @@ remote:
 		},
 	}, out)
 
-	// legacy array format
-	in = `- t=foo/bar/helloworld.tmpl
-- templatedir/
-- dir=foo/bar/
-- mytemplate.t
-- remote=https://example.com/foo/bar/helloworld.tmpl`
-	out = Templates{}
-	err = yaml.Unmarshal([]byte(in), &out)
-	require.NoError(t, err)
-	assert.EqualValues(t, Templates{
-		"t":            {URL: mustURL("foo/bar/helloworld.tmpl")},
-		"templatedir/": {URL: mustURL("templatedir/")},
-		"dir":          {URL: mustURL("foo/bar/")},
-		"mytemplate.t": {URL: mustURL("mytemplate.t")},
-		"remote":       {URL: mustURL("https://example.com/foo/bar/helloworld.tmpl")},
-	}, out)
-
 	// invalid format
 	in = `"neither an array nor a map"`
-	out = Templates{}
-	err = yaml.Unmarshal([]byte(in), &out)
-	assert.Error(t, err)
-
-	// invalid URL
-	in = `- t="not a:valid url"`
-	out = Templates{}
+	out = map[string]DataSource{}
 	err = yaml.Unmarshal([]byte(in), &out)
 	assert.Error(t, err)
 }
