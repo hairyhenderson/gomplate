@@ -1,10 +1,12 @@
 package config
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"strings"
 
+	"github.com/hairyhenderson/gomplate/v4/internal/deprecated"
 	"github.com/hairyhenderson/gomplate/v4/internal/urlhelpers"
 	"github.com/hairyhenderson/yaml"
 )
@@ -16,7 +18,7 @@ import (
 // Note that templates use the DataSource type, since they have the exact same
 // shape.
 // TODO: get rid of this and just use map[string]DataSource once the legacy
-// [k=]v array format is no longer supported
+// [k=]v array format is no longer supported (v4.1.0?)
 type Templates map[string]DataSource
 
 // UnmarshalYAML - satisfy the yaml.Umarshaler interface
@@ -39,6 +41,8 @@ func (t *Templates) UnmarshalYAML(value *yaml.Node) error {
 }
 
 func (t *Templates) unmarshalYAMLArray(value *yaml.Node) error {
+	deprecated.WarnDeprecated(context.Background(),
+		"config: the YAML array form for 'templates' is deprecated and will be removed in the next version. Use the map form instead.")
 	a := []string{}
 	err := value.Decode(&a)
 	if err != nil {

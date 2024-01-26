@@ -5,7 +5,8 @@ import (
 	"os"
 	"testing"
 
-	"gotest.tools/v3/assert"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	tfs "gotest.tools/v3/fs"
 )
 
@@ -102,7 +103,7 @@ datasources:
 	assertSuccess(t, o, e, err, "")
 
 	b, err := os.ReadFile(tmpDir.Join("outdir", "file"))
-	assert.NilError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, "hello world", string(b))
 }
 
@@ -128,7 +129,7 @@ outputFiles: [out]
 	assertSuccess(t, o, e, err, "")
 
 	b, err := os.ReadFile(tmpDir.Join("out"))
-	assert.NilError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, "hello world", string(b))
 }
 
@@ -170,7 +171,7 @@ datasources:
 
 	o, e, err := cmd(t).withDir(tmpDir.Path()).
 		withEnv("GOMPLATE_LEFT_DELIM", "<<").run()
-	assert.NilError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, "", e)
 	assert.Equal(t, "hello world", o)
 }
@@ -194,7 +195,7 @@ datasources:
 	o, e, err := cmd(t, "--left-delim={{").
 		withDir(tmpDir.Path()).
 		withEnv("GOMPLATE_LEFT_DELIM", "<<").run()
-	assert.NilError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, "", e)
 	assert.Equal(t, "hello world", o)
 }
@@ -232,7 +233,7 @@ suppressEmpty: true
 
 	_, _, err := cmd(t).withDir(tmpDir.Path()).
 		withEnv("GOMPLATE_SUPPRESS_EMPTY", "false").run()
-	assert.NilError(t, err)
+	require.NoError(t, err)
 
 	_, err = os.Stat(tmpDir.Join("missing"))
 	assert.ErrorIs(t, err, fs.ErrNotExist)
@@ -273,7 +274,9 @@ templates:
 	writeFile(t, tmpDir, "t1.tmpl", `{{ .testValue }}`)
 
 	o, e, err := cmd(t).withDir(tmpDir.Path()).run()
-	assertSuccess(t, o, e, err, "12345")
+	assert.Contains(t, e, "Deprecated: config: the YAML array form for 'templates' is deprecated")
+	assert.Equal(t, "12345", o)
+	require.NoError(t, err)
 }
 
 func TestConfig_MissingKeyDefault(t *testing.T) {

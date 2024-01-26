@@ -455,18 +455,6 @@ templates:
     url: https://example.com/api/v1/someremotetemplate
     header:
       Authorization: ["Basic aGF4MHI6c3dvcmRmaXNoCg=="]
-  dir: foo/bar/
-```
-
-_(Deprecated)_ Can also be an array of template references. Can be just a path,
-or an alias and a path:
-
-```yaml
-templates:
-  - t=foo/bar/helloworld.tmpl
-  - templatedir/
-  - dir=foo/bar/
-  - mytemplate.t
 ```
 
 [command-line arguments]: ../usage
