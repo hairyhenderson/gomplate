@@ -22,22 +22,6 @@ import (
 	"golang.org/x/text/language"
 )
 
-// StrNS -
-//
-// Deprecated: don't use
-func StrNS() *StringFuncs {
-	return &StringFuncs{}
-}
-
-// AddStringFuncs -
-//
-// Deprecated: use [CreateStringFuncs] instead
-func AddStringFuncs(f map[string]interface{}) {
-	for k, v := range CreateStringFuncs(context.Background()) {
-		f[k] = v
-	}
-}
-
 // CreateStringFuncs -
 func CreateStringFuncs(ctx context.Context) map[string]interface{} {
 	f := map[string]interface{}{}

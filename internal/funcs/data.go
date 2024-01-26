@@ -8,22 +8,6 @@ import (
 	"github.com/hairyhenderson/gomplate/v4/internal/parsers"
 )
 
-// DataNS -
-//
-// Deprecated: don't use
-func DataNS() *DataFuncs {
-	return &DataFuncs{}
-}
-
-// AddDataFuncs -
-//
-// Deprecated: use [CreateDataFuncs] instead
-func AddDataFuncs(f map[string]interface{}, d *data.Data) {
-	for k, v := range CreateDataFuncs(context.Background(), d) {
-		f[k] = v
-	}
-}
-
 // CreateDataFuncs -
 //
 //nolint:staticcheck

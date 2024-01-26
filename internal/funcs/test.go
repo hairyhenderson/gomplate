@@ -9,22 +9,6 @@ import (
 	"github.com/hairyhenderson/gomplate/v4/test"
 )
 
-// TestNS -
-//
-// Deprecated: don't use
-func TestNS() *TestFuncs {
-	return &TestFuncs{}
-}
-
-// AddTestFuncs -
-//
-// Deprecated: use [CreateTestFuncs] instead
-func AddTestFuncs(f map[string]interface{}) {
-	for k, v := range CreateTestFuncs(context.Background()) {
-		f[k] = v
-	}
-}
-
 // CreateTestFuncs -
 func CreateTestFuncs(ctx context.Context) map[string]interface{} {
 	f := map[string]interface{}{}

@@ -8,25 +8,6 @@ import (
 	"github.com/hairyhenderson/gomplate/v4/conv"
 )
 
-// AWSNS - the aws namespace
-//
-// Deprecated: don't use
-//
-//nolint:golint
-func AWSNS() *Funcs {
-	return &Funcs{}
-}
-
-// AWSFuncs -
-//
-// Deprecated: use [CreateAWSFuncs] instead
-func AWSFuncs(f map[string]interface{}) {
-	f2 := CreateAWSFuncs(context.Background())
-	for k, v := range f2 {
-		f[k] = v
-	}
-}
-
 // CreateAWSFuncs -
 func CreateAWSFuncs(ctx context.Context) map[string]interface{} {
 	f := map[string]interface{}{}

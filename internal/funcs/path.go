@@ -7,22 +7,6 @@ import (
 	"github.com/hairyhenderson/gomplate/v4/conv"
 )
 
-// PathNS - the Path namespace
-//
-// Deprecated: don't use
-func PathNS() *PathFuncs {
-	return &PathFuncs{}
-}
-
-// AddPathFuncs -
-//
-// Deprecated: use [CreatePathFuncs] instead
-func AddPathFuncs(f map[string]interface{}) {
-	for k, v := range CreatePathFuncs(context.Background()) {
-		f[k] = v
-	}
-}
-
 // CreatePathFuncs -
 func CreatePathFuncs(ctx context.Context) map[string]interface{} {
 	ns := &PathFuncs{ctx}

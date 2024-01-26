@@ -8,22 +8,6 @@ import (
 	"github.com/hairyhenderson/gomplate/v4/regexp"
 )
 
-// ReNS -
-//
-// Deprecated: don't use
-func ReNS() *ReFuncs {
-	return &ReFuncs{}
-}
-
-// AddReFuncs -
-//
-// Deprecated: use [CreateReFuncs] instead
-func AddReFuncs(f map[string]interface{}) {
-	for k, v := range CreateReFuncs(context.Background()) {
-		f[k] = v
-	}
-}
-
 // CreateReFuncs -
 func CreateReFuncs(ctx context.Context) map[string]interface{} {
 	ns := &ReFuncs{ctx}

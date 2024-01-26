@@ -7,22 +7,6 @@ import (
 	"github.com/hairyhenderson/gomplate/v4/gcp"
 )
 
-// GCPNS - the gcp namespace
-//
-// Deprecated: don't use
-func GCPNS() *GcpFuncs {
-	return &GcpFuncs{gcpopts: gcp.GetClientOptions()}
-}
-
-// AddGCPFuncs -
-//
-// Deprecated: use [CreateGCPFuncs] instead
-func AddGCPFuncs(f map[string]interface{}) {
-	for k, v := range CreateGCPFuncs(context.Background()) {
-		f[k] = v
-	}
-}
-
 // CreateGCPFuncs -
 func CreateGCPFuncs(ctx context.Context) map[string]interface{} {
 	ns := &GcpFuncs{

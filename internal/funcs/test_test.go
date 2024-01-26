@@ -29,7 +29,7 @@ func TestCreateTestFuncs(t *testing.T) {
 func TestAssert(t *testing.T) {
 	t.Parallel()
 
-	f := TestNS()
+	f := TestFuncs{ctx: context.Background()}
 	_, err := f.Assert(false)
 	assert.Error(t, err)
 
@@ -46,7 +46,7 @@ func TestAssert(t *testing.T) {
 func TestRequired(t *testing.T) {
 	t.Parallel()
 
-	f := TestNS()
+	f := TestFuncs{ctx: context.Background()}
 	errMsg := "can not render template: a required value was not set"
 	v, err := f.Required("")
 	assert.Error(t, err)
@@ -91,7 +91,7 @@ func TestRequired(t *testing.T) {
 func TestTernary(t *testing.T) {
 	t.Parallel()
 
-	f := TestNS()
+	f := TestFuncs{ctx: context.Background()}
 	testdata := []struct {
 		tval, fval, b interface{}
 		expected      interface{}
@@ -108,7 +108,7 @@ func TestTernary(t *testing.T) {
 func TestKind(t *testing.T) {
 	t.Parallel()
 
-	f := TestNS()
+	f := TestFuncs{ctx: context.Background()}
 	testdata := []struct {
 		arg      interface{}
 		expected string
@@ -131,7 +131,7 @@ func TestKind(t *testing.T) {
 func TestIsKind(t *testing.T) {
 	t.Parallel()
 
-	f := TestNS()
+	f := TestFuncs{ctx: context.Background()}
 	truedata := []struct {
 		arg  interface{}
 		kind string

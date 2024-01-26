@@ -7,22 +7,6 @@ import (
 	"github.com/hairyhenderson/gomplate/v4/conv"
 )
 
-// Base64NS - the base64 namespace
-//
-// Deprecated: don't use
-func Base64NS() *Base64Funcs {
-	return &Base64Funcs{}
-}
-
-// AddBase64Funcs -
-//
-// Deprecated: use [CreateBase64Funcs] instead
-func AddBase64Funcs(f map[string]interface{}) {
-	for k, v := range CreateBase64Funcs(context.Background()) {
-		f[k] = v
-	}
-}
-
 // CreateBase64Funcs -
 func CreateBase64Funcs(ctx context.Context) map[string]interface{} {
 	f := map[string]interface{}{}

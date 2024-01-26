@@ -12,22 +12,6 @@ import (
 	"github.com/hairyhenderson/gomplate/v4/coll"
 )
 
-// CollNS -
-//
-// Deprecated: don't use
-func CollNS() *CollFuncs {
-	return &CollFuncs{}
-}
-
-// AddCollFuncs -
-//
-// Deprecated: use CreateCollFuncs instead
-func AddCollFuncs(f map[string]interface{}) {
-	for k, v := range CreateCollFuncs(context.Background()) {
-		f[k] = v
-	}
-}
-
 // CreateCollFuncs -
 func CreateCollFuncs(ctx context.Context) map[string]interface{} {
 	f := map[string]interface{}{}

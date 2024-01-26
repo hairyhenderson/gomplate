@@ -5,26 +5,9 @@ import (
 	"net/url"
 	"text/template"
 
-	"github.com/hairyhenderson/gomplate/v4/coll"
 	"github.com/hairyhenderson/gomplate/v4/conv"
 	"github.com/hairyhenderson/gomplate/v4/internal/deprecated"
 )
-
-// ConvNS -
-//
-// Deprecated: don't use
-func ConvNS() *ConvFuncs {
-	return &ConvFuncs{}
-}
-
-// AddConvFuncs -
-//
-// Deprecated: use [CreateConvFuncs] instead
-func AddConvFuncs(f map[string]interface{}) {
-	for k, v := range CreateConvFuncs(context.Background()) {
-		f[k] = v
-	}
-}
 
 // CreateConvFuncs -
 func CreateConvFuncs(ctx context.Context) map[string]interface{} {
@@ -63,25 +46,9 @@ func (ConvFuncs) ToBools(in ...interface{}) []bool {
 	return conv.ToBools(in...)
 }
 
-// Slice -
-//
-// Deprecated: use [CollFuncs.Slice] instead
-func (f *ConvFuncs) Slice(args ...interface{}) []interface{} {
-	deprecated.WarnDeprecated(f.ctx, "conv.Slice is deprecated - use coll.Slice instead")
-	return coll.Slice(args...)
-}
-
 // Join -
 func (ConvFuncs) Join(in interface{}, sep string) (string, error) {
 	return conv.Join(in, sep)
-}
-
-// Has -
-//
-// Deprecated: use [CollFuncs.Has] instead
-func (f *ConvFuncs) Has(in interface{}, key string) bool {
-	deprecated.WarnDeprecated(f.ctx, "conv.Has is deprecated - use coll.Has instead")
-	return coll.Has(in, key)
 }
 
 // ParseInt -
@@ -155,12 +122,4 @@ func (ConvFuncs) Default(def, in interface{}) interface{} {
 		return in
 	}
 	return def
-}
-
-// Dict -
-//
-// Deprecated: use [CollFuncs.Dict] instead
-func (f *ConvFuncs) Dict(in ...interface{}) (map[string]interface{}, error) {
-	deprecated.WarnDeprecated(f.ctx, "conv.Dict is deprecated - use coll.Dict instead")
-	return coll.Dict(in...)
 }

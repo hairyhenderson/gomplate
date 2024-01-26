@@ -11,22 +11,6 @@ import (
 	"github.com/hairyhenderson/gomplate/v4/math"
 )
 
-// MathNS - the math namespace
-//
-// Deprecated: don't use
-func MathNS() *MathFuncs {
-	return &MathFuncs{}
-}
-
-// AddMathFuncs -
-//
-// Deprecated: use [CreateMathFuncs] instead
-func AddMathFuncs(f map[string]interface{}) {
-	for k, v := range CreateMathFuncs(context.Background()) {
-		f[k] = v
-	}
-}
-
 // CreateMathFuncs -
 func CreateMathFuncs(ctx context.Context) map[string]interface{} {
 	f := map[string]interface{}{}
