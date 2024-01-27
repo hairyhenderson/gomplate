@@ -9,7 +9,7 @@ require (
 	github.com/Shopify/ejson v1.4.1
 	github.com/aws/aws-sdk-go v1.50.0
 	github.com/fullsailor/pkcs7 v0.0.0-20190404230743-d7302db945fa
-	github.com/google/uuid v1.5.0
+	github.com/google/uuid v1.6.0
 	github.com/gosimple/slug v1.13.1
 	github.com/hack-pad/hackpadfs v0.2.1
 	github.com/hairyhenderson/go-fsimpl v0.0.0-20240117024222-dd2398b673d3
