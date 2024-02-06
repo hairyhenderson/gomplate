@@ -32,7 +32,7 @@ func TestWalkDir_Windows(t *testing.T) {
 
 	cfg := &config.Config{}
 
-	_, err := walkDir(ctx, cfg, `C:\indir`, simpleNamer(`C:/outdir`), nil, 0, false)
+	_, err := walkDir(ctx, cfg, `C:\indir`, simpleNamer(`C:/outdir`), nil, nil, 0, false)
 	assert.Error(t, err)
 
 	err = hackpadfs.MkdirAll(fsys, `C:\indir\one`, 0o777)
@@ -50,7 +50,7 @@ func TestWalkDir_Windows(t *testing.T) {
 	require.NoError(t, err)
 	assert.Equal(t, "baz", fi.Name())
 
-	templates, err := walkDir(ctx, cfg, `C:\indir`, simpleNamer(`C:/outdir`), []string{`*\two`}, 0, false)
+	templates, err := walkDir(ctx, cfg, `C:\indir`, simpleNamer(`C:/outdir`), []string{`*\two`}, []string{}, 0, false)
 	require.NoError(t, err)
 
 	expected := []Template{

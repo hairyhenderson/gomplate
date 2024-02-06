@@ -49,10 +49,11 @@ type Config struct {
 	// internal use only, can't be injected in YAML
 	PostExecInput io.Reader `yaml:"-"`
 
-	Input       string   `yaml:"in,omitempty"`
-	InputDir    string   `yaml:"inputDir,omitempty"`
-	InputFiles  []string `yaml:"inputFiles,omitempty,flow"`
-	ExcludeGlob []string `yaml:"excludes,omitempty"`
+	Input                 string   `yaml:"in,omitempty"`
+	InputDir              string   `yaml:"inputDir,omitempty"`
+	InputFiles            []string `yaml:"inputFiles,omitempty,flow"`
+	ExcludeGlob           []string `yaml:"excludes,omitempty"`
+	ExcludeProcessingGlob []string `yaml:"excludeProcessing,omitempty"`
 
 	OutputDir   string   `yaml:"outputDir,omitempty"`
 	OutputMap   string   `yaml:"outputMap,omitempty"`
@@ -245,6 +246,9 @@ func (c *Config) MergeFrom(o *Config) *Config {
 	}
 	if !isZero(o.ExcludeGlob) {
 		c.ExcludeGlob = o.ExcludeGlob
+	}
+	if !isZero(o.ExcludeProcessingGlob) {
+		c.ExcludeProcessingGlob = o.ExcludeProcessingGlob
 	}
 	if !isZero(o.OutMode) {
 		c.OutMode = o.OutMode

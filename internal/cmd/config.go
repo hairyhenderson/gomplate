@@ -114,6 +114,11 @@ func cobraConfig(cmd *cobra.Command, args []string) (cfg *config.Config, err err
 	if err != nil {
 		return nil, err
 	}
+	cfg.ExcludeProcessingGlob, err = getStringSlice(cmd, "exclude-processing")
+	if err != nil {
+		return nil, err
+	}
+
 	includesFlag, err := getStringSlice(cmd, "include")
 	if err != nil {
 		return nil, err

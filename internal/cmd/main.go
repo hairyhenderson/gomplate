@@ -139,6 +139,7 @@ func InitFlags(command *cobra.Command) {
 	command.Flags().String("input-dir", "", "`directory` which is examined recursively for templates (alternative to --file and --in)")
 
 	command.Flags().StringSlice("exclude", []string{}, "glob of files to not parse")
+	command.Flags().StringSlice("exclude-processing", []string{}, "glob of files to be copied without parsing")
 	command.Flags().StringSlice("include", []string{}, "glob of files to parse")
 
 	command.Flags().StringSliceP("out", "o", []string{"-"}, "output `file` name. Omit to use standard output.")

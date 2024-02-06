@@ -139,6 +139,20 @@ excludes:
 This will skip all files with the extension `.txt`, except for files named
 `include-this.txt`, which will be processed.
 
+## `excludeProcessing`
+
+See [`--exclude-processing`](../usage/#exclude-processing).
+
+This is an array of exclude patterns, used in conjunction with [`inputDir`](#inputdir).
+The matching files will be copied to the output directory without template rendering. 
+
+```yaml
+excludeProcessing:
+  - '*.jpg'
+```
+
+This will copy all files with the extension `.jpg` to the output directory.
+
 ## `execPipe`
 
 See [`--exec-pipe`](../usage/#exec-pipe).

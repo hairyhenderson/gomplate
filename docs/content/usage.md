@@ -130,6 +130,20 @@ $ gomplate --include *.tmpl --exclude foo*.tmpl --input-dir in/ --output-dir out
 
 This will cause only files ending in `.tmpl` to be processed, except for files with names beginning with `foo`: `template.tmpl` will be included, but `foo-template.tmpl` will not.
 
+### `--exclude-processing`
+
+When using the [`--input-dir`](#input-dir-and-output-dir) argument, it can be useful to skip some files from processing and copy them directly to the output directory. Like the `--exclude` flag, it takes a [`.gitignore`][]-style pattern, and any files match the pattern will be copied.
+
+_Note:_ These patterns are _not_ treated as filesystem globs, and so a pattern like `/foo/bar.json` will match relative to the input directory, not the root of the filesystem as they may appear!
+
+Examples:
+
+```console
+$ gomplate --exclude-processing `*.png` --input-dir in/ --output-dir out/
+```
+
+This will skip all `*.png` files in the `in/` directory from being processed, and copy them to the `out/` directory.
+
 #### `.gomplateignore` files
 
 You can also use a file named `.gomplateignore` containing one exclude pattern on each line. This has the same syntax as a [`.gitignore`][] file.

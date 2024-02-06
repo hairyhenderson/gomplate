@@ -16,15 +16,16 @@ import (
 // [github.com/hairyhenderson/gomplate/v4/internal/config.Config] is used
 // everywhere else, and will be exposed as API in a future version
 type Config struct {
-	Input       string
-	InputFiles  []string
-	InputDir    string
-	ExcludeGlob []string
-	OutputFiles []string
-	OutputDir   string
-	OutputMap   string
-	OutMode     string
-	Out         io.Writer
+	Input                 string
+	InputFiles            []string
+	InputDir              string
+	ExcludeGlob           []string
+	ExcludeProcessingGlob []string
+	OutputFiles           []string
+	OutputDir             string
+	OutputMap             string
+	OutMode               string
+	Out                   io.Writer
 
 	DataSources       []string
 	DataSourceHeaders []string
@@ -76,6 +77,10 @@ func (o *Config) String() string {
 		c += "\nexclude: " + strings.Join(o.ExcludeGlob, ", ")
 	}
 
+	if len(o.ExcludeProcessingGlob) > 0 {
+		c += "\nexcludeProcessing: " + strings.Join(o.ExcludeProcessingGlob, ", ")
+	}
+
 	c += "\noutput: "
 	switch {
 	case o.InputDir != "" && o.OutputDir != ".":
@@ -119,19 +124,20 @@ func (o *Config) String() string {
 
 func (o *Config) toNewConfig() (*config.Config, error) {
 	cfg := &config.Config{
-		Input:       o.Input,
-		InputFiles:  o.InputFiles,
-		InputDir:    o.InputDir,
-		ExcludeGlob: o.ExcludeGlob,
-		OutputFiles: o.OutputFiles,
-		OutputDir:   o.OutputDir,
-		OutputMap:   o.OutputMap,
-		OutMode:     o.OutMode,
-		LDelim:      o.LDelim,
-		RDelim:      o.RDelim,
-		Stdin:       os.Stdin,
-		Stdout:      &iohelpers.NopCloser{Writer: o.Out},
-		Stderr:      os.Stderr,
+		Input:                 o.Input,
+		InputFiles:            o.InputFiles,
+		InputDir:              o.InputDir,
+		ExcludeGlob:           o.ExcludeGlob,
+		ExcludeProcessingGlob: o.ExcludeProcessingGlob,
+		OutputFiles:           o.OutputFiles,
+		OutputDir:             o.OutputDir,
+		OutputMap:             o.OutputMap,
+		OutMode:               o.OutMode,
+		LDelim:                o.LDelim,
+		RDelim:                o.RDelim,
+		Stdin:                 os.Stdin,
+		Stdout:                &iohelpers.NopCloser{Writer: o.Out},
+		Stderr:                os.Stderr,
 	}
 	err := cfg.ParsePluginFlags(o.Plugins)
 	if err != nil {
