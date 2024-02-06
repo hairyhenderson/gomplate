@@ -266,6 +266,7 @@ func walkDir(ctx context.Context, cfg *config.Config, dir string, outFileNamer f
 	}
 
 	excludeProcessingMatches, err := matcher.Matches(".", &xignore.MatchesOptions{
+		// TODO: fix or replace xignore module so we can avoid attempting to read the .gomplateignore file for both exclude and excludeProcessing patterns
 		Ignorefile:    gomplateignore,
 		Nested:        true, // allow nested ignorefile
 		AfterPatterns: excludeProcessingGlob,
