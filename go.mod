@@ -26,10 +26,10 @@ require (
 	github.com/stretchr/testify v1.8.4
 	github.com/ugorji/go/codec v1.2.12
 	go4.org/netipx v0.0.0-20230303233057-f1b76eb4bb35
-	golang.org/x/crypto v0.18.0
+	golang.org/x/crypto v0.19.0
 	golang.org/x/exp v0.0.0-20231006140011-7918f672742d
-	golang.org/x/sys v0.16.0
-	golang.org/x/term v0.16.0
+	golang.org/x/sys v0.17.0
+	golang.org/x/term v0.17.0
 	golang.org/x/text v0.14.0
 	gotest.tools/v3 v3.5.1
 	inet.af/netaddr v0.0.0-20230525184311-b8eac61e914a
@@ -95,7 +95,7 @@ require (
 	github.com/go-git/gcfg v1.5.1-0.20230307220236-3a3c6141e376 // indirect
 	github.com/go-git/go-billy/v5 v5.5.0 // indirect
 	github.com/go-git/go-git/v5 v5.11.0 // indirect
-	github.com/go-jose/go-jose/v3 v3.0.1 // indirect
+	github.com/go-jose/go-jose/v3 v3.0.3 // indirect
 	github.com/go-logr/logr v1.3.0 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/golang-jwt/jwt/v5 v5.1.0 // indirect
