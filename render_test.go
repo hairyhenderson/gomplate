@@ -152,12 +152,12 @@ func ExampleRenderer_datasources() {
 	})
 
 	err := tr.Render(ctx, "jsontest",
-		`{{"\U0001F30E"}} {{ .info.hostname }} is served from {{ .info.city }}, {{ .info.region }}`,
+		`{{"\U0001F30E"}} {{ .info.hostname }} is served by {{ .info.org }}`,
 		os.Stdout)
 	if err != nil {
 		panic(err)
 	}
 
 	// Output:
-	// 🌎 one.one.one.one is served from Los Angeles, California
+	// 🌎 one.one.one.one is served by AS13335 Cloudflare, Inc.
 }
