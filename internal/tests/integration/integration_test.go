@@ -89,7 +89,7 @@ func mirrorHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func typeHandler(t, body string) func(http.ResponseWriter, *http.Request) {
-	return func(w http.ResponseWriter, r *http.Request) {
+	return func(w http.ResponseWriter, _ *http.Request) {
 		w.Header().Set("Content-Type", t)
 		w.Write([]byte(body))
 	}

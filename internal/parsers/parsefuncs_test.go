@@ -57,7 +57,7 @@ escaped: "\"\/\\\b\f\n\r\t\u221e"
 `))
 
 	obj := make(map[string]interface{})
-	_, err := unmarshalObj(obj, "SOMETHING", func(in []byte, out interface{}) error {
+	_, err := unmarshalObj(obj, "SOMETHING", func(_ []byte, _ interface{}) error {
 		return fmt.Errorf("fail")
 	})
 	assert.EqualError(t, err, "unable to unmarshal object SOMETHING: fail")
@@ -139,7 +139,7 @@ this shouldn't be reached
 		actual)
 
 	obj := make([]interface{}, 1)
-	_, err = unmarshalArray(obj, "SOMETHING", func(in []byte, out interface{}) error {
+	_, err = unmarshalArray(obj, "SOMETHING", func(_ []byte, _ interface{}) error {
 		return fmt.Errorf("fail")
 	})
 	assert.EqualError(t, err, "unable to unmarshal array SOMETHING: fail")
@@ -147,12 +147,12 @@ this shouldn't be reached
 
 func TestMarshalObj(t *testing.T) {
 	expected := "foo"
-	actual, err := marshalObj(nil, func(in interface{}) ([]byte, error) {
+	actual, err := marshalObj(nil, func(_ interface{}) ([]byte, error) {
 		return []byte("foo"), nil
 	})
 	require.NoError(t, err)
 	assert.Equal(t, expected, actual)
-	_, err = marshalObj(nil, func(in interface{}) ([]byte, error) {
+	_, err = marshalObj(nil, func(_ interface{}) ([]byte, error) {
 		return nil, fmt.Errorf("fail")
 	})
 	assert.Error(t, err)
