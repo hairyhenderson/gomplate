@@ -52,7 +52,7 @@ jobs:
           fetch-depth: 0
       - uses: actions/setup-go@v5
         with:
-          go-version: '1.21.4'
+          go-version: '1.22.x'
       - run: |
           git config --global user.email "bogus@example.com"
           git config --global user.name "Someone"
