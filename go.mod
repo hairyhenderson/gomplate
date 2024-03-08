@@ -1,6 +1,6 @@
 module github.com/hairyhenderson/gomplate/v4
 
-go 1.22.1
+go 1.22.3
 
 require (
 	cuelang.org/go v0.8.2
@@ -21,7 +21,7 @@ require (
 	github.com/itchyny/gojq v0.12.15
 	github.com/johannesboyne/gofakes3 v0.0.0-20240217095638-c55a48f17be6
 	github.com/joho/godotenv v1.5.1
-	github.com/rs/zerolog v1.32.0
+	github.com/lmittmann/tint v1.0.4
 	github.com/spf13/cobra v1.8.0
 	github.com/stretchr/testify v1.9.0
 	github.com/ugorji/go/codec v1.2.12

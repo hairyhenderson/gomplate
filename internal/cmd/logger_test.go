@@ -2,13 +2,14 @@ package cmd
 
 import (
 	"bytes"
+	"context"
 	"log"
+	"log/slog"
 	"os"
 	"strings"
 	"testing"
+	"time"
 
-	"github.com/rs/zerolog"
-	zlog "github.com/rs/zerolog/log"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -24,41 +25,64 @@ func TestLogFormat(t *testing.T) {
 	assert.Equal(t, "simple", logFormat(&bytes.Buffer{}))
 }
 
-func TestCreateLogger(t *testing.T) {
-	zerolog.SetGlobalLevel(zerolog.WarnLevel)
+// a slog handler that strips the 'time' field
+type noTimestampHandler struct {
+	slog.Handler
+}
+
+var _ slog.Handler = (*noTimestampHandler)(nil)
+
+func (h *noTimestampHandler) Handle(ctx context.Context, r slog.Record) error {
+	r.Time = time.Time{}
+
+	return h.Handler.Handle(ctx, r)
+}
+
+func TestCreateLogHandler(t *testing.T) {
 	buf := &bytes.Buffer{}
+	h := createLogHandler("", buf, slog.LevelWarn)
+	// strip the 'time' field for easier comparison
+	h = &noTimestampHandler{h}
+	l := slog.New(h)
+	slog.SetDefault(l)
 
-	// avoid timestamps
-	zlog.Logger = zerolog.New(buf)
-
-	l := createLogger("", buf)
-	l.Debug().Msg("this won't show up")
-	l.Warn().Msg("hello world")
+	l.Debug("this won't show up")
+	l.Warn("hello world")
 
 	actual := strings.TrimSpace(buf.String())
-	assert.Equal(t, `{"level":"warn","msg":"hello world"}`, actual)
+	assert.JSONEq(t, `{"level":"WARN","msg":"hello world"}`, actual)
 
 	buf.Reset()
-	zerolog.SetGlobalLevel(zerolog.DebugLevel)
-	l = createLogger("simple", buf)
-	l.Debug().Str("field", "a value").Msg("this will show up")
+	h = createLogHandler("simple", buf, slog.LevelDebug)
+	l = slog.New(h)
+	slog.SetDefault(l)
+
+	l.Debug("this will show up", "field", "a value")
 	log.Println("hello world")
 
 	actual = strings.TrimSpace(buf.String())
-	assert.Equal(t, "this will show up field=\"a value\"\nhello world stdlog=true", actual)
+	assert.Equal(t, "this will show up field=\"a value\"\n  hello world", actual)
 
 	buf.Reset()
-	l = createLogger("console", buf)
-	l.Debug().Msg("hello")
+	h = createLogHandler("console", buf, slog.LevelDebug)
+	h = &noTimestampHandler{h}
+	l = slog.New(h)
+	slog.SetDefault(l)
+
+	l.Debug("hello")
 	log.Println("world")
 
 	actual = strings.TrimSpace(buf.String())
-	assert.Equal(t, "<nil> DBG hello\n<nil> world stdlog=true", actual)
+	assert.Equal(t, "DBG hello\nINF world", actual)
 
 	buf.Reset()
-	l = createLogger("logfmt", buf)
-	l.Info().Str("field", "a value").Int("num", 84).Msg("hello\"")
+	h = createLogHandler("logfmt", buf, slog.LevelInfo)
+	h = &noTimestampHandler{h}
+	l = slog.New(h)
+	slog.SetDefault(l)
+
+	l.Info("hello\"", "field", "a value", "num", 84)
 
 	actual = strings.TrimSpace(buf.String())
-	assert.Equal(t, "level=info msg=\"hello\\\"\" field=\"a value\" num=84", actual)
+	assert.Equal(t, "level=INFO msg=\"hello\\\"\" field=\"a value\" num=84", actual)
 }

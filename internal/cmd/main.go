@@ -2,7 +2,9 @@ package cmd
 
 import (
 	"context"
+	"fmt"
 	"io"
+	"log/slog"
 	"os"
 	"os/exec"
 	"os/signal"
@@ -12,15 +14,13 @@ import (
 	"github.com/hairyhenderson/gomplate/v4/internal/datafs"
 	"github.com/hairyhenderson/gomplate/v4/version"
 
-	"github.com/rs/zerolog"
 	"github.com/spf13/cobra"
 )
 
 // postRunExec - if templating succeeds, the command following a '--' will be executed
 func postRunExec(ctx context.Context, args []string, stdin io.Reader, stdout, stderr io.Writer) error {
 	if len(args) > 0 {
-		log := zerolog.Ctx(ctx)
-		log.Debug().Strs("args", args).Msg("running post-exec command")
+		slog.DebugContext(ctx, "running post-exec command", "args", args)
 
 		//nolint:govet
 		ctx, cancel := context.WithCancel(ctx)
@@ -69,17 +69,19 @@ func optionalExecArgs(cmd *cobra.Command, args []string) error {
 }
 
 // NewGomplateCmd -
-func NewGomplateCmd() *cobra.Command {
+func NewGomplateCmd(stderr io.Writer) *cobra.Command {
 	rootCmd := &cobra.Command{
 		Use:     "gomplate",
 		Short:   "Process text files with Go templates",
 		Version: version.Version,
 		RunE: func(cmd *cobra.Command, args []string) error {
+			level := slog.LevelWarn
 			if v, _ := cmd.Flags().GetBool("verbose"); v {
-				zerolog.SetGlobalLevel(zerolog.DebugLevel)
+				level = slog.LevelDebug
 			}
+			initLogger(stderr, level)
+
 			ctx := cmd.Context()
-			log := zerolog.Ctx(ctx)
 
 			cfg, err := loadConfig(ctx, cmd, args)
 			if err != nil {
@@ -87,28 +89,26 @@ func NewGomplateCmd() *cobra.Command {
 			}
 
 			if cfg.Experimental {
-				log.UpdateContext(func(c zerolog.Context) zerolog.Context {
-					return c.Bool("experimental", true)
-				})
-				log.Info().Msg("experimental functions and features enabled!")
+				slog.SetDefault(slog.With("experimental", true))
+				slog.InfoContext(ctx, "experimental functions and features enabled!")
 
 				ctx = gomplate.SetExperimental(ctx)
 			}
 
-			log.Debug().Msgf("starting %s", cmd.Name())
-			log.Debug().
-				Str("version", version.Version).
-				Str("build", version.GitCommit).
-				Msgf("config is:\n%v", cfg)
+			slog.DebugContext(ctx, fmt.Sprintf("starting %s", cmd.Name()))
+			slog.DebugContext(ctx, fmt.Sprintf("config is:\n%v", cfg),
+				slog.String("version", version.Version),
+				slog.String("build", version.GitCommit),
+			)
 
 			err = gomplate.Run(ctx, cfg)
 			cmd.SilenceErrors = true
 			cmd.SilenceUsage = true
 
-			log.Debug().Int("templatesRendered", gomplate.Metrics.TemplatesProcessed).
-				Int("errors", gomplate.Metrics.Errors).
-				Dur("duration", gomplate.Metrics.TotalRenderDuration).
-				Msg("completed rendering")
+			slog.DebugContext(ctx, "completed rendering",
+				slog.Int("templatesRendered", gomplate.Metrics.TemplatesProcessed),
+				slog.Int("errors", gomplate.Metrics.Errors),
+				slog.Duration("duration", gomplate.Metrics.TotalRenderDuration))
 
 			if err != nil {
 				return err
@@ -167,15 +167,13 @@ func InitFlags(command *cobra.Command) {
 
 // Main -
 func Main(ctx context.Context, args []string, stdin io.Reader, stdout, stderr io.Writer) error {
-	ctx = initLogger(ctx, stderr)
-
 	// inject default filesystem provider if it hasn't already been provided in
 	// the context
 	if datafs.FSProviderFromContext(ctx) == nil {
 		ctx = datafs.ContextWithFSProvider(ctx, gomplate.DefaultFSProvider)
 	}
 
-	command := NewGomplateCmd()
+	command := NewGomplateCmd(stderr)
 	InitFlags(command)
 	command.SetArgs(args)
 	command.SetIn(stdin)
@@ -184,8 +182,7 @@ func Main(ctx context.Context, args []string, stdin io.Reader, stdout, stderr io
 
 	err := command.ExecuteContext(ctx)
 	if err != nil {
-		log := zerolog.Ctx(ctx)
-		log.Error().Err(err).Send()
+		slog.Error("", slog.Any("err", err))
 	}
 	return err
 }
