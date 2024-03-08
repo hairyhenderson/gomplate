@@ -16,8 +16,8 @@ require (
 	github.com/hairyhenderson/toml v0.4.2-0.20210923231440-40456b8e66cf
 	github.com/hairyhenderson/xignore v0.3.3-0.20230403012150-95fe86932830 // iofs-port branch
 	github.com/hashicorp/go-sockaddr v1.0.6
-	github.com/hashicorp/vault/api v1.11.0
-	github.com/hashicorp/vault/api/auth/aws v0.5.0
+	github.com/hashicorp/vault/api v1.12.0
+	github.com/hashicorp/vault/api/auth/aws v0.6.0
 	github.com/itchyny/gojq v0.12.14
 	github.com/johannesboyne/gofakes3 v0.0.0-20230914150226-f005f5cc03aa
 	github.com/joho/godotenv v1.5.1
