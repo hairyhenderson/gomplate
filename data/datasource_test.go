@@ -360,7 +360,7 @@ func TestReadFileContent(t *testing.T) {
 	_ = os.Chdir("/")
 
 	mux := http.NewServeMux()
-	mux.HandleFunc("/foo.json", func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("/foo.json", func(w http.ResponseWriter, _ *http.Request) {
 		w.Header().Set("Content-Type", jsonMimetype)
 		w.Write([]byte(`{"foo": "bar"}`))
 	})
