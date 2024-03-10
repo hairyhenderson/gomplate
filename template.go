@@ -192,7 +192,7 @@ func gatherTemplates(ctx context.Context, cfg *config.Config, outFileNamer func(
 	case cfg.Input != "":
 		// open the output file - no need to close it, as it will be closed by the
 		// caller later
-		target, oerr := openOutFile(ctx, cfg.OutputFiles[0], 0o755, mode, modeOverride, cfg.Stdout, cfg.SuppressEmpty)
+		target, oerr := openOutFile(ctx, cfg.OutputFiles[0], 0o755, mode, modeOverride, cfg.Stdout)
 		if oerr != nil {
 			return nil, fmt.Errorf("openOutFile: %w", oerr)
 		}
@@ -367,7 +367,7 @@ func readInFile(ctx context.Context, cfg *config.Config, inFile string, mode os.
 func getOutfileHandler(ctx context.Context, cfg *config.Config, outFile string, mode os.FileMode, modeOverride bool) (io.Writer, error) {
 	// open the output file - no need to close it, as it will be closed by the
 	// caller later
-	target, err := openOutFile(ctx, outFile, 0o755, mode, modeOverride, cfg.Stdout, cfg.SuppressEmpty)
+	target, err := openOutFile(ctx, outFile, 0o755, mode, modeOverride, cfg.Stdout)
 	if err != nil {
 		return nil, fmt.Errorf("openOutFile: %w", err)
 	}
@@ -417,29 +417,20 @@ func fileToTemplate(ctx context.Context, cfg *config.Config, inFile, outFile str
 
 // openOutFile returns a writer for the given file, creating the file if it
 // doesn't exist yet, and creating the parent directories if necessary. Will
-// defer actual opening until the first write (or the first non-empty write if
-// 'suppressEmpty' is true). If the file already exists, it will not be
-// overwritten until the first difference is encountered.
+// defer actual opening until the first non-empty write. If the file already
+// exists, it will not be overwritten until the first difference is encountered.
 //
-// TODO: the 'suppressEmpty' behaviour should be always enabled, in the next
-// major release (v4.x).
+// TODO: dirMode is always called with 0o755 - should either remove or make it configurable
 //
-//nolint:unparam // TODO: dirMode is always called with 0o755 - should either remove or make it configurable
-func openOutFile(ctx context.Context, filename string, dirMode, mode os.FileMode, modeOverride bool, stdout io.Writer, suppressEmpty bool) (out io.Writer, err error) {
-	if suppressEmpty {
-		out = iohelpers.NewEmptySkipper(func() (io.Writer, error) {
-			if filename == "-" {
-				return stdout, nil
-			}
-			return createOutFile(ctx, filename, dirMode, mode, modeOverride)
-		})
-		return out, nil
-	}
-
-	if filename == "-" {
-		return stdout, nil
-	}
-	return createOutFile(ctx, filename, dirMode, mode, modeOverride)
+//nolint:unparam
+func openOutFile(ctx context.Context, filename string, dirMode, mode os.FileMode, modeOverride bool, stdout io.Writer) (out io.Writer, err error) {
+	out = iohelpers.NewEmptySkipper(func() (io.Writer, error) {
+		if filename == "-" {
+			return iohelpers.NopCloser(stdout), nil
+		}
+		return createOutFile(ctx, filename, dirMode, mode, modeOverride)
+	})
+	return out, nil
 }
 
 func createOutFile(ctx context.Context, filename string, dirMode, mode os.FileMode, modeOverride bool) (out io.WriteCloser, err error) {

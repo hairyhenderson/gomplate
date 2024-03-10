@@ -447,16 +447,6 @@ Overrides the right template delimiter.
 rightDelim: '))'
 ```
 
-## `suppressEmpty`
-
-See _[Suppressing empty output](../usage/#suppressing-empty-output)_
-
-Suppresses empty output (i.e. output consisting of only whitespace). Can also be set with the `GOMPLATE_SUPPRESS_EMPTY` environment variable.
-
-```yaml
-suppressEmpty: true
-```
-
 ## `templates`
 
 See [`--template`/`-t`](../usage/#template-t).

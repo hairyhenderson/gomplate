@@ -424,16 +424,10 @@ hello world
 See also [`--exec-pipe`](#exec-pipe) for piping output directly into the
 post-exec command.
 
-## Suppressing empty output
+## Empty output
 
-Sometimes it can be desirable to suppress empty output (i.e. output consisting of only whitespace). To do so, set `suppressEmpty: true` in your [config](../config/#suppressempty) file, or `GOMPLATE_SUPPRESS_EMPTY=true` in your environment:
+If the template renders to an empty file (i.e. output consisting of only whitespace), gomplate will not write the output.
 
-```console
-$ export GOMPLATE_SUPPRESS_EMPTY=true
-$ gomplate -i '{{ print "   \n" }}' -o out
-$ cat out
-cat: out: No such file or directory
-```
 
 [default context]: ../syntax/#the-context
 [context]: ../syntax/#the-context

@@ -136,7 +136,7 @@ func (o *Config) toNewConfig() (*config.Config, error) {
 		LDelim:                o.LDelim,
 		RDelim:                o.RDelim,
 		Stdin:                 os.Stdin,
-		Stdout:                &iohelpers.NopCloser{Writer: o.Out},
+		Stdout:                iohelpers.NopCloser(o.Out),
 		Stderr:                os.Stderr,
 	}
 	err := cfg.ParsePluginFlags(o.Plugins)

@@ -69,9 +69,8 @@ type Config struct {
 
 	PluginTimeout time.Duration `yaml:"pluginTimeout,omitempty"`
 
-	ExecPipe      bool `yaml:"execPipe,omitempty"`
-	SuppressEmpty bool `yaml:"suppressEmpty,omitempty"`
-	Experimental  bool `yaml:"experimental,omitempty"`
+	ExecPipe     bool `yaml:"execPipe,omitempty"`
+	Experimental bool `yaml:"experimental,omitempty"`
 }
 
 type experimentalCtxKey struct{}
