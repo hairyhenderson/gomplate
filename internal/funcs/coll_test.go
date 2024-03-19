@@ -33,10 +33,10 @@ func TestFlatten(t *testing.T) {
 	c := CollFuncs{}
 
 	_, err := c.Flatten()
-	assert.Error(t, err)
+	require.Error(t, err)
 
 	_, err = c.Flatten(42)
-	assert.Error(t, err)
+	require.Error(t, err)
 
 	out, err := c.Flatten([]interface{}{1, []interface{}{[]int{2}, 3}})
 	require.NoError(t, err)
@@ -53,19 +53,19 @@ func TestPick(t *testing.T) {
 	c := &CollFuncs{}
 
 	_, err := c.Pick()
-	assert.Error(t, err)
+	require.Error(t, err)
 
 	_, err = c.Pick("")
-	assert.Error(t, err)
+	require.Error(t, err)
 
 	_, err = c.Pick("foo", nil)
-	assert.Error(t, err)
+	require.Error(t, err)
 
 	_, err = c.Pick("foo", "bar")
-	assert.Error(t, err)
+	require.Error(t, err)
 
 	_, err = c.Pick(map[string]interface{}{}, "foo", "bar", map[string]interface{}{})
-	assert.Error(t, err)
+	require.Error(t, err)
 
 	in := map[string]interface{}{
 		"foo": "bar",
@@ -102,19 +102,19 @@ func TestOmit(t *testing.T) {
 	c := &CollFuncs{}
 
 	_, err := c.Omit()
-	assert.Error(t, err)
+	require.Error(t, err)
 
 	_, err = c.Omit("")
-	assert.Error(t, err)
+	require.Error(t, err)
 
 	_, err = c.Omit("foo", nil)
-	assert.Error(t, err)
+	require.Error(t, err)
 
 	_, err = c.Omit("foo", "bar")
-	assert.Error(t, err)
+	require.Error(t, err)
 
 	_, err = c.Omit(map[string]interface{}{}, "foo", "bar", map[string]interface{}{})
-	assert.Error(t, err)
+	require.Error(t, err)
 
 	in := map[string]interface{}{
 		"foo": "bar",
@@ -152,16 +152,16 @@ func TestGoSlice(t *testing.T) {
 
 	in := reflect.ValueOf(nil)
 	_, err := c.GoSlice(in)
-	assert.Error(t, err)
+	require.Error(t, err)
 
 	in = reflect.ValueOf(42)
 	_, err = c.GoSlice(in)
-	assert.Error(t, err)
+	require.Error(t, err)
 
 	// invalid index type
 	in = reflect.ValueOf([]interface{}{1})
 	_, err = c.GoSlice(in, reflect.ValueOf([]interface{}{[]int{2}}))
-	assert.Error(t, err)
+	require.Error(t, err)
 
 	// valid slice, no slicing
 	in = reflect.ValueOf([]int{1})

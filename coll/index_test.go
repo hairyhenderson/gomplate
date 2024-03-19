@@ -30,22 +30,22 @@ func TestIndex(t *testing.T) {
 
 	// error cases
 	out, err = Index([]interface{}{"foo", "bar", "baz"}, 0, 1, 2)
-	assert.Error(t, err)
+	require.Error(t, err)
 	assert.Nil(t, out)
 
 	out, err = Index(nil, 0)
-	assert.Error(t, err)
+	require.Error(t, err)
 	assert.Nil(t, out)
 
 	out, err = Index("foo", nil)
-	assert.Error(t, err)
+	require.Error(t, err)
 	assert.Nil(t, out)
 
 	out, err = Index(map[interface{}]string{nil: "foo", 2: "bar"}, "baz")
-	assert.Error(t, err)
+	require.Error(t, err)
 	assert.Nil(t, out)
 
 	out, err = Index([]int{}, 0)
-	assert.Error(t, err)
+	require.Error(t, err)
 	assert.Nil(t, out)
 }

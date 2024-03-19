@@ -43,8 +43,8 @@ func TestLazyReadCloser(t *testing.T) {
 
 	p = make([]byte, 5)
 	_, err = l.Read(p)
-	assert.Error(t, err)
+	require.Error(t, err)
 
 	err = l.Close()
-	assert.Error(t, err)
+	require.Error(t, err)
 }

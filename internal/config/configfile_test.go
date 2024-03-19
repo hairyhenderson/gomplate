@@ -96,50 +96,50 @@ func TestValidate(t *testing.T) {
 	t.Parallel()
 	require.NoError(t, validateConfig(""))
 
-	assert.Error(t, validateConfig(`in: foo
+	require.Error(t, validateConfig(`in: foo
 inputFiles: [bar]
 `))
-	assert.Error(t, validateConfig(`inputDir: foo
+	require.Error(t, validateConfig(`inputDir: foo
 inputFiles: [bar]
 `))
-	assert.Error(t, validateConfig(`inputDir: foo
+	require.Error(t, validateConfig(`inputDir: foo
 in: bar
 `))
 
-	assert.Error(t, validateConfig(`outputDir: foo
+	require.Error(t, validateConfig(`outputDir: foo
 outputFiles: [bar]
 `))
 
-	assert.Error(t, validateConfig(`in: foo
+	require.Error(t, validateConfig(`in: foo
 outputFiles: [bar, baz]
 `))
 
-	assert.Error(t, validateConfig(`inputFiles: [foo]
+	require.Error(t, validateConfig(`inputFiles: [foo]
 outputFiles: [bar, baz]
 `))
 
-	assert.Error(t, validateConfig(`outputDir: foo
+	require.Error(t, validateConfig(`outputDir: foo
 outputFiles: [bar]
 `))
 
-	assert.Error(t, validateConfig(`outputDir: foo
+	require.Error(t, validateConfig(`outputDir: foo
 `))
 
-	assert.Error(t, validateConfig(`outputMap: foo
+	require.Error(t, validateConfig(`outputMap: foo
 `))
 
-	assert.Error(t, validateConfig(`outputMap: foo
+	require.Error(t, validateConfig(`outputMap: foo
 outputFiles: [bar]
 `))
 
-	assert.Error(t, validateConfig(`inputDir: foo
+	require.Error(t, validateConfig(`inputDir: foo
 outputDir: bar
 outputMap: bar
 `))
 
-	assert.Error(t, validateConfig(`execPipe: true
+	require.Error(t, validateConfig(`execPipe: true
 `))
-	assert.Error(t, validateConfig(`execPipe: true
+	require.Error(t, validateConfig(`execPipe: true
 postExec: ""
 `))
 
@@ -147,7 +147,7 @@ postExec: ""
 postExec: [echo, foo]
 `))
 
-	assert.Error(t, validateConfig(`execPipe: true
+	require.Error(t, validateConfig(`execPipe: true
 outputFiles: [foo]
 postExec: [echo]
 `))
@@ -157,13 +157,13 @@ inputFiles: ['-']
 postExec: [echo]
 `))
 
-	assert.Error(t, validateConfig(`inputDir: foo
+	require.Error(t, validateConfig(`inputDir: foo
 execPipe: true
 outputDir: foo
 postExec: [echo]
 `))
 
-	assert.Error(t, validateConfig(`inputDir: foo
+	require.Error(t, validateConfig(`inputDir: foo
 execPipe: true
 outputMap: foo
 postExec: [echo]
@@ -436,7 +436,7 @@ func TestParseDataSourceFlags(t *testing.T) {
 
 	cfg = &Config{}
 	err = cfg.ParseDataSourceFlags([]string{"foo/bar/baz.json"}, nil, nil, nil)
-	assert.Error(t, err)
+	require.Error(t, err)
 
 	cfg = &Config{}
 	err = cfg.ParseDataSourceFlags([]string{"baz=foo/bar/baz.json"}, nil, nil, nil)
@@ -734,7 +734,7 @@ func TestGetMode(t *testing.T) {
 
 	c = &Config{OutMode: "foo"}
 	_, _, err = c.GetMode()
-	assert.Error(t, err)
+	require.Error(t, err)
 }
 
 func TestParseHeaderArgs(t *testing.T) {
@@ -755,10 +755,10 @@ func TestParseHeaderArgs(t *testing.T) {
 	assert.Equal(t, expected, parsed)
 
 	_, err = parseHeaderArgs([]string{"foo"})
-	assert.Error(t, err)
+	require.Error(t, err)
 
 	_, err = parseHeaderArgs([]string{"foo=bar"})
-	assert.Error(t, err)
+	require.Error(t, err)
 
 	args = []string{
 		"foo=Accept: application/json",
@@ -788,10 +788,10 @@ func TestParseDatasourceArgNoAlias(t *testing.T) {
 	assert.Empty(t, ds.URL.Scheme)
 
 	_, _, err = parseDatasourceArg("../foo.json")
-	assert.Error(t, err)
+	require.Error(t, err)
 
 	_, _, err = parseDatasourceArg("ftp://example.com/foo.yml")
-	assert.Error(t, err)
+	require.Error(t, err)
 }
 
 func TestParseDatasourceArgWithAlias(t *testing.T) {
@@ -850,7 +850,7 @@ func TestPluginConfig_UnmarshalYAML(t *testing.T) {
 	in = `[foo, bar]`
 	out = PluginConfig{}
 	err = yaml.Unmarshal([]byte(in), &out)
-	assert.Error(t, err)
+	require.Error(t, err)
 
 	in = `cmd: foo`
 	out = PluginConfig{}

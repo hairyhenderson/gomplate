@@ -139,7 +139,7 @@ func TestWDFS_WriteOps(t *testing.T) {
 
 	// and check that it's gone
 	_, err = fsys.Stat("/tmp/foo")
-	assert.ErrorIs(t, err, fs.ErrNotExist)
+	require.ErrorIs(t, err, fs.ErrNotExist)
 
 	// make sure we can write to a subfs
 	subfs, err := fs.Sub(fsys, "tmp")

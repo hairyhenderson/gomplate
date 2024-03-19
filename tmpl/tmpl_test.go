@@ -38,16 +38,16 @@ func TestParseArgs(t *testing.T) {
 	assert.Equal(t, defaultCtx, ctx)
 
 	_, _, _, err = tmpl.parseArgs(42)
-	assert.Error(t, err)
+	require.Error(t, err)
 
 	_, _, _, err = tmpl.parseArgs()
-	assert.Error(t, err)
+	require.Error(t, err)
 
 	_, _, _, err = tmpl.parseArgs("", "", 42, "")
-	assert.Error(t, err)
+	require.Error(t, err)
 
 	_, _, _, err = tmpl.parseArgs("", 42, 42)
-	assert.Error(t, err)
+	require.Error(t, err)
 
 	name, in, ctx, err = tmpl.parseArgs("foo", "bar")
 	require.NoError(t, err)
@@ -87,7 +87,7 @@ func TestExec(t *testing.T) {
 	assert.Equal(t, "hello, world", out)
 
 	_, err = tmpl.Exec("bogus")
-	assert.Error(t, err)
+	require.Error(t, err)
 }
 
 func TestPath(t *testing.T) {

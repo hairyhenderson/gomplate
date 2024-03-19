@@ -64,16 +64,16 @@ func TestParseNum(t *testing.T) {
 	assert.Equal(t, int64(789000000), f)
 
 	_, _, err := parseNum("bogus.9223372036854775807")
-	assert.Error(t, err)
+	require.Error(t, err)
 
 	_, _, err = parseNum("bogus")
-	assert.Error(t, err)
+	require.Error(t, err)
 
 	_, _, err = parseNum("1.2.3")
-	assert.Error(t, err)
+	require.Error(t, err)
 
 	_, _, err = parseNum(1.1)
-	assert.Error(t, err)
+	require.Error(t, err)
 
 	i, f, err = parseNum(nil)
 	assert.Zero(t, i)

@@ -49,7 +49,7 @@ func TestFind(t *testing.T) {
 	assert.Equal(t, "foo", f)
 
 	_, err = re.Find(`[a-`, "")
-	assert.Error(t, err)
+	require.Error(t, err)
 
 	f, err = re.Find("4", 42)
 	require.NoError(t, err)
@@ -73,13 +73,13 @@ func TestFindAll(t *testing.T) {
 	assert.EqualValues(t, []string{"foo", "bar", "baz"}, f)
 
 	_, err = re.FindAll(`[a-`, "")
-	assert.Error(t, err)
+	require.Error(t, err)
 
 	_, err = re.FindAll("")
-	assert.Error(t, err)
+	require.Error(t, err)
 
 	_, err = re.FindAll("", "", "", "")
-	assert.Error(t, err)
+	require.Error(t, err)
 
 	f, err = re.FindAll(`[a-z]+`, 0, `foo bar baz`)
 	require.NoError(t, err)
@@ -111,13 +111,13 @@ func TestSplit(t *testing.T) {
 	assert.EqualValues(t, []string{"foo", "bar", "baz"}, f)
 
 	_, err = re.Split(`[a-`, "")
-	assert.Error(t, err)
+	require.Error(t, err)
 
 	_, err = re.Split("")
-	assert.Error(t, err)
+	require.Error(t, err)
 
 	_, err = re.Split("", "", "", "")
-	assert.Error(t, err)
+	require.Error(t, err)
 
 	f, err = re.Split(` `, 0, `foo bar baz`)
 	require.NoError(t, err)

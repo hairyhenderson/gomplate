@@ -46,18 +46,18 @@ func TestStringRE(t *testing.T) {
 	assert.Equal(t, 15, utf8.RuneCountInString(r))
 
 	_, err = StringRE(1, "[bogus")
-	assert.Error(t, err)
+	require.Error(t, err)
 }
 
 func TestStringBounds(t *testing.T) {
 	t.Parallel()
 
 	_, err := StringBounds(15, 0, 19)
-	assert.Error(t, err)
+	require.Error(t, err)
 
 	// surrogate range isn't valid, should error
 	_, err = StringBounds(15, 0xd800, 0xdfff)
-	assert.Error(t, err)
+	require.Error(t, err)
 
 	r, err := StringBounds(1, 'a', 'a')
 	require.NoError(t, err)
@@ -81,7 +81,7 @@ func TestItem(t *testing.T) {
 	t.Parallel()
 
 	_, err := Item(nil)
-	assert.Error(t, err)
+	require.Error(t, err)
 
 	i, err := Item([]interface{}{"foo"})
 	require.NoError(t, err)
@@ -102,11 +102,11 @@ func TestNumber(t *testing.T) {
 	t.Parallel()
 
 	_, err := Number(0, -1)
-	assert.Error(t, err)
+	require.Error(t, err)
 	_, err = Number(0, math.MaxInt64)
-	assert.Error(t, err)
+	require.Error(t, err)
 	_, err = Number(math.MinInt64, 0)
-	assert.Error(t, err)
+	require.Error(t, err)
 
 	testdata := []struct {
 		min, max, expected int64

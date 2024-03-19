@@ -55,13 +55,13 @@ func TestJSONPath(t *testing.T) {
 
 	out, err = JSONPath(".store.bicycle.price", in)
 	require.NoError(t, err)
-	assert.Equal(t, 19.95, out)
+	assert.InEpsilon(t, 19.95, out, 1e-12)
 
 	_, err = JSONPath(".store.bogus", in)
-	assert.Error(t, err)
+	require.Error(t, err)
 
 	_, err = JSONPath("{.store.unclosed", in)
-	assert.Error(t, err)
+	require.Error(t, err)
 
 	out, err = JSONPath(".store", in)
 	require.NoError(t, err)
@@ -142,8 +142,8 @@ func TestJSONPath(t *testing.T) {
 	assert.Equal(t, "red", out)
 
 	_, err = JSONPath(".safe", structIn)
-	assert.Error(t, err)
+	require.Error(t, err)
 
 	_, err = JSONPath(".*", structIn)
-	assert.Error(t, err)
+	require.Error(t, err)
 }

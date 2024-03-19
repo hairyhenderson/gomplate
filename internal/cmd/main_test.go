@@ -24,7 +24,7 @@ func TestOptionalExecArgs(t *testing.T) {
 	cmd.ParseFlags(nil)
 
 	err = optionalExecArgs(cmd, []string{"bogus"})
-	assert.Error(t, err)
+	require.Error(t, err)
 
 	cmd = &cobra.Command{}
 	cmd.SetArgs(nil)
@@ -49,7 +49,7 @@ func TestRunMain(t *testing.T) {
 	require.NoError(t, err)
 
 	err = Main(ctx, []string{"--bogus"}, nil, nil, nil)
-	assert.Error(t, err)
+	require.Error(t, err)
 
 	stdin := &bytes.Buffer{}
 	stdout := &bytes.Buffer{}

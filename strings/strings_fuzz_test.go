@@ -33,9 +33,9 @@ func FuzzTrunc(f *testing.F) {
 	f.Fuzz(func(t *testing.T, length int, s string) {
 		out := Trunc(length, s)
 
-		assert.True(t, len(out) <= len(s))
+		assert.LessOrEqual(t, len(out), len(s))
 		if length >= 0 {
-			assert.True(t, len(out) <= length)
+			assert.LessOrEqual(t, len(out), length)
 		}
 
 		assert.Equal(t, s[0:len(out)], out)

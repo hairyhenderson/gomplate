@@ -11,14 +11,14 @@ import (
 func TestEncryptDecryptAESCBC(t *testing.T) {
 	// empty key is invalid
 	_, err := EncryptAESCBC([]byte{}, []byte("foo"))
-	assert.Error(t, err)
+	require.Error(t, err)
 
 	// wrong-length keys are invalid
 	_, err = EncryptAESCBC(bytes.Repeat([]byte{'a'}, 1), []byte("foo"))
-	assert.Error(t, err)
+	require.Error(t, err)
 
 	_, err = EncryptAESCBC(bytes.Repeat([]byte{'a'}, 15), []byte("foo"))
-	assert.Error(t, err)
+	require.Error(t, err)
 
 	key := make([]byte, 32)
 	copy(key, []byte("password"))

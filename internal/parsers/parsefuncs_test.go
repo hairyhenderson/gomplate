@@ -155,7 +155,7 @@ func TestMarshalObj(t *testing.T) {
 	_, err = marshalObj(nil, func(_ interface{}) ([]byte, error) {
 		return nil, fmt.Errorf("fail")
 	})
-	assert.Error(t, err)
+	require.Error(t, err)
 }
 
 func TestToJSONBytes(t *testing.T) {
@@ -165,7 +165,7 @@ func TestToJSONBytes(t *testing.T) {
 	assert.Equal(t, expected, actual)
 
 	_, err = toJSONBytes(&badObject{})
-	assert.Error(t, err)
+	require.Error(t, err)
 }
 
 type badObject struct{}
@@ -196,7 +196,7 @@ func TestToJSON(t *testing.T) {
 	assert.Equal(t, expected, out)
 
 	_, err = ToJSON(&badObject{})
-	assert.Error(t, err)
+	require.Error(t, err)
 }
 
 func TestToJSONPretty(t *testing.T) {
@@ -229,7 +229,7 @@ func TestToJSONPretty(t *testing.T) {
 	assert.Equal(t, expected, out)
 
 	_, err = ToJSONPretty("  ", &badObject{})
-	assert.Error(t, err)
+	require.Error(t, err)
 }
 
 func TestToYAML(t *testing.T) {
@@ -378,10 +378,10 @@ func TestToCSV(t *testing.T) {
 	assert.Equal(t, expected, out)
 
 	_, err = ToCSV(42, [][]int{{1, 2}})
-	assert.Error(t, err)
+	require.Error(t, err)
 
 	_, err = ToCSV([][]int{{1, 2}})
-	assert.Error(t, err)
+	require.Error(t, err)
 
 	expected = "first,second,third\r\n1,2,3\r\n4,5,6\r\n"
 	out, err = ToCSV([][]interface{}{
@@ -708,11 +708,12 @@ list: [ 1, 2, 3 ]
 
 	out, err = CUE(`42.0`)
 	require.NoError(t, err)
-	assert.EqualValues(t, 42.0, out)
+	// assert.EqualValues(t, 42.0, out)
+	assert.InEpsilon(t, 42.0, out, 1e-12)
 
 	out, err = CUE(`null`)
 	require.NoError(t, err)
-	assert.EqualValues(t, nil, out)
+	assert.Nil(t, out)
 
 	_, err = CUE(`>=0 & <=7 & >=3 & <=10`)
 	require.Error(t, err)

@@ -155,10 +155,10 @@ func TestLazyWriteCloser(t *testing.T) {
 
 	p = []byte("hello world")
 	_, err = l.Write(p)
-	assert.Error(t, err)
+	require.Error(t, err)
 
 	err = l.Close()
-	assert.Error(t, err)
+	require.Error(t, err)
 }
 
 // TODO: uncomment this and fix the import cycle!
@@ -184,12 +184,12 @@ func TestLazyWriteCloser(t *testing.T) {
 // 	require.NoError(t, err)
 
 // 	err = WriteFile(fsys, "/foo", []byte("Hello world"))
-// 	assert.Error(t, err)
+// 	require.Error(t, err)
 
 // 	rel, err := filepath.Rel(newwd, badwd)
 // 	require.NoError(t, err)
 // 	err = WriteFile(fsys, rel, []byte("Hello world"))
-// 	assert.Error(t, err)
+// 	require.Error(t, err)
 
 // 	foopath := filepath.Join(newwd, "foo")
 // 	err = WriteFile(fsys, foopath, []byte("Hello world"))
@@ -220,7 +220,7 @@ func TestAssertPathInWD(t *testing.T) {
 	defer os.Chdir(oldwd)
 
 	err := assertPathInWD("/tmp")
-	assert.Error(t, err)
+	require.Error(t, err)
 
 	err = assertPathInWD(filepath.Join(oldwd, "subpath"))
 	require.NoError(t, err)
@@ -232,10 +232,10 @@ func TestAssertPathInWD(t *testing.T) {
 	require.NoError(t, err)
 
 	err = assertPathInWD(filepath.Join("..", "bogus"))
-	assert.Error(t, err)
+	require.Error(t, err)
 
 	err = assertPathInWD(filepath.Join("..", "..", "bogus"))
-	assert.Error(t, err)
+	require.Error(t, err)
 
 	base := filepath.Base(oldwd)
 	err = assertPathInWD(filepath.Join("..", base))

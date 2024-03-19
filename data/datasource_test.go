@@ -29,7 +29,7 @@ func mustParseURL(in string) *url.URL {
 func TestNewData(t *testing.T) {
 	d, err := NewData(nil, nil)
 	require.NoError(t, err)
-	assert.Len(t, d.Sources, 0)
+	assert.Empty(t, d.Sources)
 
 	d, err = NewData([]string{"foo=http:///foo.json"}, nil)
 	require.NoError(t, err)
@@ -102,7 +102,7 @@ func TestDatasource(t *testing.T) {
 	assert.Equal(t, "", actual)
 
 	_, err = d.Datasource("bar")
-	assert.Error(t, err)
+	require.Error(t, err)
 }
 
 func TestDatasourceReachable(t *testing.T) {
@@ -173,15 +173,15 @@ func TestInclude(t *testing.T) {
 func TestDefineDatasource(t *testing.T) {
 	d := &Data{}
 	_, err := d.DefineDatasource("", "foo.json")
-	assert.Error(t, err)
+	require.Error(t, err)
 
 	d = &Data{}
 	_, err = d.DefineDatasource("", "../foo.json")
-	assert.Error(t, err)
+	require.Error(t, err)
 
 	d = &Data{}
 	_, err = d.DefineDatasource("", "ftp://example.com/foo.yml")
-	assert.Error(t, err)
+	require.Error(t, err)
 
 	d = &Data{}
 	_, err = d.DefineDatasource("data", "foo.json")
@@ -307,44 +307,44 @@ func TestListDatasources(t *testing.T) {
 
 func TestResolveURL(t *testing.T) {
 	out, err := resolveURL(mustParseURL("http://example.com/foo.json"), "bar.json")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, "http://example.com/bar.json", out.String())
 
 	out, err = resolveURL(mustParseURL("http://example.com/a/b/?n=2"), "bar.json?q=1")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, "http://example.com/a/b/bar.json?n=2&q=1", out.String())
 
 	out, err = resolveURL(mustParseURL("git+file:///tmp/myrepo"), "//myfile?type=application/json")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, "git+file:///tmp/myrepo//myfile?type=application/json", out.String())
 
 	out, err = resolveURL(mustParseURL("git+file:///tmp/foo/bar/"), "//myfile?type=application/json")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, "git+file:///tmp/foo/bar//myfile?type=application/json", out.String())
 
 	out, err = resolveURL(mustParseURL("git+file:///tmp/myrepo/"), ".//myfile?type=application/json")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, "git+file:///tmp/myrepo//myfile?type=application/json", out.String())
 
 	out, err = resolveURL(mustParseURL("git+file:///tmp/repo//foo.txt"), "")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, "git+file:///tmp/repo//foo.txt", out.String())
 
 	out, err = resolveURL(mustParseURL("git+file:///tmp/myrepo"), ".//myfile?type=application/json")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, "git+file:///tmp/myrepo//myfile?type=application/json", out.String())
 
 	out, err = resolveURL(mustParseURL("git+file:///tmp/myrepo//foo/?type=application/json"), "bar/myfile")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	// note that the '/' in the query string is encoded to %2F - that's OK
 	assert.Equal(t, "git+file:///tmp/myrepo//foo/bar/myfile?type=application%2Fjson", out.String())
 
 	// both base and relative may not contain "//"
 	_, err = resolveURL(mustParseURL("git+ssh://git@example.com/foo//bar"), ".//myfile")
-	assert.Error(t, err)
+	require.Error(t, err)
 
 	_, err = resolveURL(mustParseURL("git+ssh://git@example.com/foo//bar"), "baz//myfile")
-	assert.Error(t, err)
+	require.Error(t, err)
 
 	// relative urls must remain relative
 	out, err = resolveURL(mustParseURL("tmp/foo.json"), "")

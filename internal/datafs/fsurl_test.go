@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestSplitFSMuxURL(t *testing.T) {
@@ -98,7 +99,7 @@ func TestSplitFSMuxURL(t *testing.T) {
 
 	for _, d := range testdata {
 		u, err := url.Parse(d.in)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		url, file := SplitFSMuxURL(u)
 		assert.Equal(t, d.url, url.String())
 		assert.Equal(t, d.file, file)

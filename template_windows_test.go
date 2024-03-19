@@ -33,7 +33,7 @@ func TestWalkDir_Windows(t *testing.T) {
 	cfg := &config.Config{}
 
 	_, err := walkDir(ctx, cfg, `C:\indir`, simpleNamer(`C:/outdir`), nil, nil, 0, false)
-	assert.Error(t, err)
+	require.Error(t, err)
 
 	err = hackpadfs.MkdirAll(fsys, `C:\indir\one`, 0o777)
 	require.NoError(t, err)
