@@ -120,7 +120,7 @@ func (p fsp) New(u *url.URL) (fs.FS, error) {
 // WrappedFSProvider is an FSProvider that returns the given fs.FS
 func WrappedFSProvider(fsys fs.FS, schemes ...string) fsimpl.FSProvider {
 	return fsp{
-		newFunc: func(u *url.URL) (fs.FS, error) { return fsys, nil },
+		newFunc: func(_ *url.URL) (fs.FS, error) { return fsys, nil },
 		schemes: schemes,
 	}
 }

@@ -86,7 +86,7 @@ func TestSubnetBig(t *testing.T) {
 
 			subnet, err := SubnetBig(base, testCase.bits, testCase.num)
 			if testCase.err {
-				assert.Error(t, err)
+				require.Error(t, err)
 			} else {
 				require.NoError(t, err)
 				assert.Equal(t, testCase.out, subnet.String())
@@ -155,7 +155,7 @@ func TestHostBig(t *testing.T) {
 
 			gotIP, err := HostBig(network, testCase.num)
 			if testCase.err {
-				assert.Error(t, err)
+				require.Error(t, err)
 			} else {
 				require.NoError(t, err)
 				assert.Equal(t, testCase.out, gotIP.String())

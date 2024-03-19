@@ -67,7 +67,7 @@ func TestDict(t *testing.T) {
 
 func TestKeys(t *testing.T) {
 	_, err := Keys()
-	assert.Error(t, err)
+	require.Error(t, err)
 
 	in := map[string]interface{}{
 		"foo": 1,
@@ -101,7 +101,7 @@ func TestKeys(t *testing.T) {
 
 func TestValues(t *testing.T) {
 	_, err := Values()
-	assert.Error(t, err)
+	require.Error(t, err)
 
 	in := map[string]interface{}{
 		"foo": 1,
@@ -136,11 +136,11 @@ func TestValues(t *testing.T) {
 func TestAppend(t *testing.T) {
 	out, err := Append(42, []interface{}{})
 	require.NoError(t, err)
-	assert.EqualValues(t, out, []interface{}{42})
+	assert.EqualValues(t, []interface{}{42}, out)
 
 	out, err = Append(42, []interface{}{4.9, false, "foo"})
 	require.NoError(t, err)
-	assert.EqualValues(t, out, []interface{}{4.9, false, "foo", 42})
+	assert.EqualValues(t, []interface{}{4.9, false, "foo", 42}, out)
 
 	// a strange but valid use-cases, since we're converting to an []interface{}
 	out, err = Append(42, []string{"foo"})
@@ -149,17 +149,17 @@ func TestAppend(t *testing.T) {
 
 	out, err = Append("baz", []string{"foo", "bar"})
 	require.NoError(t, err)
-	assert.EqualValues(t, out, []interface{}{"foo", "bar", "baz"})
+	assert.EqualValues(t, []interface{}{"foo", "bar", "baz"}, out)
 }
 
 func TestPrepend(t *testing.T) {
 	out, err := Prepend(42, []interface{}{})
 	require.NoError(t, err)
-	assert.EqualValues(t, out, []interface{}{42})
+	assert.EqualValues(t, []interface{}{42}, out)
 
 	out, err = Prepend(42, []interface{}{4.9, false, "foo"})
 	require.NoError(t, err)
-	assert.EqualValues(t, out, []interface{}{42, 4.9, false, "foo"})
+	assert.EqualValues(t, []interface{}{42, 4.9, false, "foo"}, out)
 
 	// a strange but valid use-cases, since we're converting to an []interface{}
 	out, err = Prepend(42, []string{"foo"})
@@ -168,7 +168,7 @@ func TestPrepend(t *testing.T) {
 
 	out, err = Prepend("foo", []string{"bar", "baz"})
 	require.NoError(t, err)
-	assert.EqualValues(t, out, []interface{}{"foo", "bar", "baz"})
+	assert.EqualValues(t, []interface{}{"foo", "bar", "baz"}, out)
 }
 
 func TestUniq(t *testing.T) {
@@ -352,7 +352,7 @@ func TestLessThan(t *testing.T) {
 
 func TestSort(t *testing.T) {
 	out, err := Sort("", 42)
-	assert.Error(t, err)
+	require.Error(t, err)
 	assert.Nil(t, out)
 
 	data := []struct {
@@ -547,7 +547,7 @@ func TestFlatten(t *testing.T) {
 	}
 
 	_, err := Flatten(42, -1)
-	assert.Error(t, err)
+	require.Error(t, err)
 }
 
 func BenchmarkFlatten(b *testing.B) {

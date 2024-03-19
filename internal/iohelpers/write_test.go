@@ -39,12 +39,12 @@ func TestWrite(t *testing.T) {
 	require.NoError(t, err)
 
 	err = iohelpers.WriteFile(fsys, "/foo", []byte("Hello world"))
-	assert.Error(t, err)
+	require.Error(t, err)
 
 	rel, err := filepath.Rel(newwd, badwd)
 	require.NoError(t, err)
 	err = iohelpers.WriteFile(fsys, rel, []byte("Hello world"))
-	assert.Error(t, err)
+	require.Error(t, err)
 
 	foopath := filepath.Join(newwd, "foo")
 	err = iohelpers.WriteFile(fsys, foopath, []byte("Hello world"))

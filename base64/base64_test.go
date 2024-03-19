@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func must(r interface{}, err error) interface{} {
@@ -36,5 +37,5 @@ func TestDecode(t *testing.T) {
 	assert.Equal(t, []byte{0x03, 0xe0, 0x7f}, must(Decode("A-B_")))
 
 	_, err := Decode("b.o.g.u.s")
-	assert.Error(t, err)
+	require.Error(t, err)
 }

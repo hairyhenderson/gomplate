@@ -96,7 +96,7 @@ func TestGatherTemplates(t *testing.T) {
 
 	// out file is created only on demand
 	_, err = hackpadfs.Stat(fsys, "out")
-	assert.ErrorIs(t, err, fs.ErrNotExist)
+	require.ErrorIs(t, err, fs.ErrNotExist)
 
 	_, err = templates[0].Writer.Write([]byte("hello world"))
 	require.NoError(t, err)
@@ -164,7 +164,7 @@ func TestCreateOutFile(t *testing.T) {
 	ctx := datafs.ContextWithFSProvider(context.Background(), datafs.WrappedFSProvider(fsys, "file"))
 
 	_, err := createOutFile(ctx, "in", 0o755, 0o644, false)
-	assert.Error(t, err)
+	require.Error(t, err)
 	assert.IsType(t, &fs.PathError{}, err)
 }
 

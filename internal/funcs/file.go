@@ -75,7 +75,7 @@ func (f *FileFuncs) ReadDir(path interface{}) ([]string, error) {
 // Walk -
 func (f *FileFuncs) Walk(path interface{}) ([]string, error) {
 	files := make([]string, 0)
-	err := fs.WalkDir(f.fs, conv.ToString(path), func(subpath string, d fs.DirEntry, err error) error {
+	err := fs.WalkDir(f.fs, conv.ToString(path), func(subpath string, _ fs.DirEntry, err error) error {
 		if err != nil {
 			return err
 		}

@@ -38,7 +38,7 @@ func TestReadConfigFile(t *testing.T) {
 	cmd.ParseFlags([]string{"--config", "config.file"})
 
 	_, err = readConfigFile(ctx, cmd)
-	assert.Error(t, err)
+	require.Error(t, err)
 
 	cmd = &cobra.Command{}
 	cmd.Flags().String("config", defaultConfigFile, "foo")
@@ -60,7 +60,7 @@ func TestReadConfigFile(t *testing.T) {
 	fsys["config.yaml"] = &fstest.MapFile{Data: []byte("in: hello world\nin: \n")}
 
 	_, err = readConfigFile(ctx, cmd)
-	assert.Error(t, err)
+	require.Error(t, err)
 }
 
 func TestLoadConfig(t *testing.T) {
@@ -196,7 +196,7 @@ func TestApplyEnvVars(t *testing.T) {
 	t.Run("invalid GOMPLATE_PLUGIN_TIMEOUT", func(t *testing.T) {
 		t.Setenv("GOMPLATE_PLUGIN_TIMEOUT", "bogus")
 		_, err := applyEnvVars(context.Background(), &config.Config{})
-		assert.Error(t, err)
+		require.Error(t, err)
 	})
 
 	data := []struct {

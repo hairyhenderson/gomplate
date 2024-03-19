@@ -13,7 +13,7 @@ func TestPBKDF2(t *testing.T) {
 
 	dk, err := PBKDF2([]byte{}, []byte{}, 0, 0, 0)
 	assert.Nil(t, dk)
-	assert.Error(t, err)
+	require.Error(t, err)
 
 	// IEEE 802.11i-2004 test vectors
 	dk, err = PBKDF2([]byte("password"), []byte("IEEE"), 4096, 32, crypto.SHA1)
@@ -63,7 +63,7 @@ func TestStrToHash(t *testing.T) {
 
 	h, err := StrToHash("foo")
 	assert.Zero(t, h)
-	assert.Error(t, err)
+	require.Error(t, err)
 	h, err = StrToHash("SHA-1")
 	assert.Equal(t, crypto.SHA1, h)
 	require.NoError(t, err)

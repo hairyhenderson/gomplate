@@ -70,7 +70,7 @@ func certificateGenerate() (priv *rsa.PrivateKey, derBytes []byte, err error) {
 }
 
 func pkcsHandler(priv *rsa.PrivateKey, derBytes []byte) func(http.ResponseWriter, *http.Request) {
-	return func(w http.ResponseWriter, r *http.Request) {
+	return func(w http.ResponseWriter, _ *http.Request) {
 		cert, err := x509.ParseCertificate(derBytes)
 		if err != nil {
 			log.Fatalf("Cannot decode certificate: %s", err)

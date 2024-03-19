@@ -108,7 +108,7 @@ func TestReadDir(t *testing.T) {
 	assert.Equal(t, []string{"bar", "baz", "foo", "qux"}, actual)
 
 	_, err = ff.ReadDir("/tmp/foo")
-	assert.Error(t, err)
+	require.Error(t, err)
 }
 
 func TestWrite(t *testing.T) {
@@ -138,12 +138,12 @@ func TestWrite(t *testing.T) {
 	require.NoError(t, err)
 
 	_, err = f.Write("/foo", []byte("Hello world"))
-	assert.Error(t, err)
+	require.Error(t, err)
 
 	rel, err := filepath.Rel(newwd, badwd)
 	require.NoError(t, err)
 	_, err = f.Write(rel, []byte("Hello world"))
-	assert.Error(t, err)
+	require.Error(t, err)
 
 	foopath := filepath.Join(newwd, "foo")
 	_, err = f.Write(foopath, []byte("Hello world"))

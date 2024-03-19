@@ -118,10 +118,10 @@ func TestMustParseUint(t *testing.T) {
 
 func TestMustParseFloat(t *testing.T) {
 	for _, i := range []string{"0", "-0", "foo", "", "*&^%"} {
-		assert.Equal(t, 0.0, MustParseFloat(i, 64))
+		assert.Zero(t, MustParseFloat(i, 64))
 	}
-	assert.Equal(t, 1.0, MustParseFloat("1", 64))
-	assert.Equal(t, -1.0, MustParseFloat("-1", 64))
+	assert.InEpsilon(t, 1.0, MustParseFloat("1", 64), 1e-12)
+	assert.InEpsilon(t, -1.0, MustParseFloat("-1", 64), 1e-12)
 }
 
 func TestToInt64(t *testing.T) {
@@ -191,16 +191,16 @@ func TestToInts(t *testing.T) {
 func TestToFloat64(t *testing.T) {
 	z := []interface{}{0, 0.0, nil, false, float32(0), "", "0", "foo", int64(0), uint(0), "0x0", "00", "0,000"}
 	for _, n := range z {
-		assert.Equal(t, 0.0, ToFloat64(n))
+		assert.Zero(t, ToFloat64(n))
 	}
-	assert.Equal(t, 1.0, ToFloat64(true))
+	assert.InEpsilon(t, 1.0, ToFloat64(true), 1e-12)
 	z = []interface{}{42, 42.0, float32(42), "42", "42.0", uint8(42), "0x2A", "052"}
 	for _, n := range z {
-		assert.Equal(t, 42.0, ToFloat64(n))
+		assert.InEpsilon(t, 42.0, ToFloat64(n), 1e-12)
 	}
 	z = []interface{}{1000.34, "1000.34", "1,000.34"}
 	for _, n := range z {
-		assert.Equal(t, 1000.34, ToFloat64(n))
+		assert.InEpsilon(t, 1000.34, ToFloat64(n), 1e-12)
 	}
 }
 

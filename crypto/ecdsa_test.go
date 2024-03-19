@@ -65,11 +65,11 @@ func TestECDSAGenerateKey(t *testing.T) {
 
 func TestECDSADerivePublicKey(t *testing.T) {
 	_, err := ECDSADerivePublicKey(nil)
-	assert.Error(t, err)
+	require.Error(t, err)
 
 	_, err = ECDSADerivePublicKey([]byte(`-----BEGIN FOO-----
 	-----END FOO-----`))
-	assert.Error(t, err)
+	require.Error(t, err)
 
 	priv, privKey := genECDSAPrivKey()
 	expected := deriveECPubkey(priv)

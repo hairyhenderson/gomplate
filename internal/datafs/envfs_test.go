@@ -13,11 +13,11 @@ import (
 
 func TestEnvFS_Open(t *testing.T) {
 	fsys, err := NewEnvFS(nil)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.IsType(t, &envFS{}, fsys)
 
 	f, err := fsys.Open("foo")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.IsType(t, &envFile{}, f)
 }
 
@@ -28,7 +28,7 @@ func TestEnvFile_Read(t *testing.T) {
 	f := &envFile{name: "HELLO_WORLD"}
 	b := make([]byte, len(content))
 	n, err := f.Read(b)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, len(content), n)
 	assert.Equal(t, content, string(b))
 
@@ -43,7 +43,7 @@ func TestEnvFile_Read(t *testing.T) {
 	t.Logf("b len is %d", len(b))
 	n, err = f.Read(b)
 	t.Logf("b len is %d", len(b))
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, len(content), n)
 	assert.Equal(t, content, string(b))
 }
@@ -55,7 +55,7 @@ func TestEnvFile_Stat(t *testing.T) {
 	f := &envFile{name: "HELLO_WORLD"}
 
 	fi, err := f.Stat()
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, int64(len(content)), fi.Size())
 
 	fsys := fstest.MapFS{}
@@ -66,7 +66,7 @@ func TestEnvFile_Stat(t *testing.T) {
 	f = &envFile{name: "FOO", locfs: fsys}
 
 	fi, err = f.Stat()
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, int64(len(content)), fi.Size())
 }
 
@@ -79,7 +79,7 @@ func TestEnvFS(t *testing.T) {
 	lfsys["foo/bar/baz.txt"] = &fstest.MapFile{Data: []byte("\nhello file\n")}
 
 	fsys, err := NewEnvFS(u)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.IsType(t, &envFS{}, fsys)
 
 	envfs, ok := fsys.(*envFS)
@@ -89,16 +89,16 @@ func TestEnvFS(t *testing.T) {
 	t.Setenv("FOO_FILE", "/foo/bar/baz.txt")
 
 	b, err := fs.ReadFile(fsys, "FOO")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, "hello file", string(b))
 
 	t.Setenv("FOO", "hello world")
 
 	b, err = fs.ReadFile(fsys, "FOO")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, "hello world", string(b))
 
-	assert.NoError(t, fstest.TestFS(fsys, "FOO", "FOO_FILE"))
+	require.NoError(t, fstest.TestFS(fsys, "FOO", "FOO_FILE"))
 }
 
 func TestEnvFile_ReadDir(t *testing.T) {

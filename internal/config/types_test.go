@@ -57,13 +57,13 @@ remote:
 	in = `"neither an array nor a map"`
 	out = Templates{}
 	err = yaml.Unmarshal([]byte(in), &out)
-	assert.Error(t, err)
+	require.Error(t, err)
 
 	// invalid URL
 	in = `- t="not a:valid url"`
 	out = Templates{}
 	err = yaml.Unmarshal([]byte(in), &out)
-	assert.Error(t, err)
+	require.Error(t, err)
 }
 
 func TestParseTemplateArg(t *testing.T) {

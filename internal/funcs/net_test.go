@@ -42,7 +42,7 @@ func TestParseIP(t *testing.T) {
 
 	n := testNetNS()
 	_, err := n.ParseIP("not an IP")
-	assert.Error(t, err)
+	require.Error(t, err)
 
 	ip, err := n.ParseIP("2001:470:20::2")
 	require.NoError(t, err)
@@ -59,10 +59,10 @@ func TestParseIPPrefix(t *testing.T) {
 
 	n := testNetNS()
 	_, err := n.ParseIPPrefix("not an IP")
-	assert.Error(t, err)
+	require.Error(t, err)
 
 	_, err = n.ParseIPPrefix("1.1.1.1")
-	assert.Error(t, err)
+	require.Error(t, err)
 
 	ipprefix, err := n.ParseIPPrefix("192.168.0.2/28")
 	require.NoError(t, err)
@@ -74,10 +74,10 @@ func TestParseIPRange(t *testing.T) {
 
 	n := testNetNS()
 	_, err := n.ParseIPRange("not an IP")
-	assert.Error(t, err)
+	require.Error(t, err)
 
 	_, err = n.ParseIPRange("1.1.1.1")
-	assert.Error(t, err)
+	require.Error(t, err)
 
 	iprange, err := n.ParseIPRange("192.168.0.2-192.168.23.255")
 	require.NoError(t, err)
@@ -89,7 +89,7 @@ func TestParseAddr(t *testing.T) {
 
 	n := testNetNS()
 	_, err := n.ParseAddr("not an IP")
-	assert.Error(t, err)
+	require.Error(t, err)
 
 	ip, err := n.ParseAddr("2001:470:20::2")
 	require.NoError(t, err)
@@ -106,10 +106,10 @@ func TestParsePrefix(t *testing.T) {
 
 	n := testNetNS()
 	_, err := n.ParsePrefix("not an IP")
-	assert.Error(t, err)
+	require.Error(t, err)
 
 	_, err = n.ParsePrefix("1.1.1.1")
-	assert.Error(t, err)
+	require.Error(t, err)
 
 	ipprefix, err := n.ParsePrefix("192.168.0.2/28")
 	require.NoError(t, err)
@@ -121,10 +121,10 @@ func TestParseRange(t *testing.T) {
 
 	n := testNetNS()
 	_, err := n.ParseRange("not an IP")
-	assert.Error(t, err)
+	require.Error(t, err)
 
 	_, err = n.ParseRange("1.1.1.1")
-	assert.Error(t, err)
+	require.Error(t, err)
 
 	iprange, err := n.ParseRange("192.168.0.2-192.168.23.255")
 	require.NoError(t, err)
@@ -204,7 +204,7 @@ func TestCIDRSubnets(t *testing.T) {
 	network := netip.MustParsePrefix("10.0.0.0/16")
 
 	subnets, err := n.CIDRSubnets(-1, network)
-	assert.Error(t, err)
+	require.Error(t, err)
 	assert.Nil(t, subnets)
 
 	subnets, err = n.CIDRSubnets(2, network)
@@ -220,19 +220,19 @@ func TestCIDRSubnetSizes(t *testing.T) {
 	n := testNetNS()
 
 	subnets, err := n.CIDRSubnetSizes(netip.MustParsePrefix("10.1.0.0/16"))
-	assert.Error(t, err)
+	require.Error(t, err)
 	assert.Nil(t, subnets)
 
 	subnets, err = n.CIDRSubnetSizes(32, netip.MustParsePrefix("10.1.0.0/16"))
-	assert.Error(t, err)
+	require.Error(t, err)
 	assert.Nil(t, subnets)
 
 	subnets, err = n.CIDRSubnetSizes(127, netip.MustParsePrefix("ffff::/48"))
-	assert.Error(t, err)
+	require.Error(t, err)
 	assert.Nil(t, subnets)
 
 	subnets, err = n.CIDRSubnetSizes(-1, netip.MustParsePrefix("10.1.0.0/16"))
-	assert.Error(t, err)
+	require.Error(t, err)
 	assert.Nil(t, subnets)
 
 	network := netip.MustParsePrefix("8000::/1")

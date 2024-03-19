@@ -158,7 +158,7 @@ func TestSkipLines(t *testing.T) {
 	assert.Equal(t, "foo\nbar\n\nbaz", out)
 
 	_, err := SkipLines(-1, "foo\nbar\n\nbaz")
-	assert.Error(t, err)
+	require.Error(t, err)
 
 	out, err = SkipLines(4, "foo\nbar\n\nbaz")
 	require.NoError(t, err)

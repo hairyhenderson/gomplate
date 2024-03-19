@@ -105,10 +105,10 @@ func TestAbbrev(t *testing.T) {
 
 	sf := &StringFuncs{}
 	_, err := sf.Abbrev()
-	assert.Error(t, err)
+	require.Error(t, err)
 
 	_, err = sf.Abbrev("foo")
-	assert.Error(t, err)
+	require.Error(t, err)
 
 	s, err := sf.Abbrev(3, "foo")
 	require.NoError(t, err)

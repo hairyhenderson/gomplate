@@ -24,7 +24,7 @@ func TestWalkDir_UNIX(t *testing.T) {
 	cfg := &config.Config{}
 
 	_, err := walkDir(ctx, cfg, "/indir", simpleNamer("/outdir"), nil, nil, 0, false)
-	assert.Error(t, err)
+	require.Error(t, err)
 
 	err = hackpadfs.MkdirAll(fsys, "/indir/one", 0o777)
 	require.NoError(t, err)

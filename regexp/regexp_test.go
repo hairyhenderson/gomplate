@@ -13,12 +13,12 @@ func TestFind(t *testing.T) {
 	assert.Equal(t, "foo", f)
 
 	_, err = Find(`[a-`, "")
-	assert.Error(t, err)
+	require.Error(t, err)
 }
 
 func TestFindAll(t *testing.T) {
 	_, err := FindAll(`[a-`, 42, "")
-	assert.Error(t, err)
+	require.Error(t, err)
 
 	testdata := []struct {
 		re       string
@@ -66,7 +66,7 @@ func TestReplace(t *testing.T) {
 
 func TestReplaceLiteral(t *testing.T) {
 	_, err := ReplaceLiteral(`[a-`, "", "")
-	assert.Error(t, err)
+	require.Error(t, err)
 
 	testdata := []struct {
 		expected    string
@@ -89,7 +89,7 @@ func TestReplaceLiteral(t *testing.T) {
 
 func TestSplit(t *testing.T) {
 	_, err := Split(`[a-`, 42, "")
-	assert.Error(t, err)
+	require.Error(t, err)
 
 	testdata := []struct {
 		re       string

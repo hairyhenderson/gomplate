@@ -63,6 +63,7 @@ linters:
     - sqlclosecheck
     - staticcheck
     - stylecheck
+    - testifylint
     - typecheck
     - unconvert
     - unparam

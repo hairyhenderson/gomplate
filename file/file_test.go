@@ -23,7 +23,7 @@ func TestRead(t *testing.T) {
 	assert.Equal(t, "foo", actual)
 
 	_, err = Read("/tmp/bar")
-	assert.Error(t, err)
+	require.Error(t, err)
 }
 
 func TestReadDir(t *testing.T) {
@@ -43,5 +43,5 @@ func TestReadDir(t *testing.T) {
 	assert.Equal(t, []string{"bar", "baz", "foo", "qux"}, actual)
 
 	_, err = ReadDir("/tmp/foo")
-	assert.Error(t, err)
+	require.Error(t, err)
 }

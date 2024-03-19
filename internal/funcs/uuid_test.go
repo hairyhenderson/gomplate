@@ -93,11 +93,11 @@ func TestParse(t *testing.T) {
 	u := UUIDFuncs{ctx: context.Background()}
 	in := interface{}(false)
 	_, err := u.Parse(in)
-	assert.Error(t, err)
+	require.Error(t, err)
 
 	in = 12345
 	_, err = u.Parse(in)
-	assert.Error(t, err)
+	require.Error(t, err)
 
 	in = "12345678-1234-1234-1234-1234567890ab"
 	testdata := []interface{}{

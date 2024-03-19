@@ -86,10 +86,10 @@ func TestToCodePoints(t *testing.T) {
 	assert.Equal(t, 'b', u)
 
 	_, _, err = toCodePoints("foo", "bar")
-	assert.Error(t, err)
+	require.Error(t, err)
 
 	_, _, err = toCodePoints("0755", "bar")
-	assert.Error(t, err)
+	require.Error(t, err)
 
 	l, u, err = toCodePoints("0xD700", "0x0001FFFF")
 	require.NoError(t, err)
@@ -124,7 +124,7 @@ func TestString(t *testing.T) {
 	assert.Len(t, out, 42)
 
 	_, err = f.String(0)
-	assert.Error(t, err)
+	require.Error(t, err)
 
 	out, err = f.String(8, "[a-z]")
 	require.NoError(t, err)
@@ -157,10 +157,10 @@ func TestItem(t *testing.T) {
 
 	f := RandomFuncs{}
 	_, err := f.Item(nil)
-	assert.Error(t, err)
+	require.Error(t, err)
 
 	_, err = f.Item("foo")
-	assert.Error(t, err)
+	require.Error(t, err)
 
 	i, err := f.Item([]string{"foo"})
 	require.NoError(t, err)
@@ -186,7 +186,7 @@ func TestNumber(t *testing.T) {
 	assert.True(t, 0 <= n && n <= 100, n)
 
 	_, err = f.Number(-1)
-	assert.Error(t, err)
+	require.Error(t, err)
 
 	n, err = f.Number(0)
 	require.NoError(t, err)
