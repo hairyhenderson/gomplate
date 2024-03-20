@@ -60,9 +60,9 @@ func inOutContains(t *testing.T, i, o string) {
 func assertSuccess(t *testing.T, o, e string, err error, expected string) {
 	t.Helper()
 
+	require.NoError(t, err)
 	assert.Equal(t, "", e)
 	assert.Equal(t, expected, o)
-	require.NoError(t, err)
 }
 
 func assertFailed(t *testing.T, o, e string, err error, expected string) {

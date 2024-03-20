@@ -45,12 +45,14 @@ func setupDatasourcesBlobTest(t *testing.T) *httptest.Server {
 
 func TestDatasources_Blob_S3Datasource(t *testing.T) {
 	o, e, err := cmd(t,
-		"-c", "data=s3://ryft-public-sample-data/integration_test_dataset.json?region=us-east-1&type=application/array+json",
-		"-i", "{{ $d := index .data 0 }}{{ $d.firstName }} {{ $d.lastName }}").
+		"-c", "data=s3://noaa-bathymetry-pds/csv/2022/03/02/20220302_056e577c7cd8323fdd8a04d3812cf78e_pointData.csv?region=us-east-1&type=text/csv",
+		"-i", `{{ index (index .data 0) 6 }}: {{ index (index .data 1) 6 }}
+{{ index (index .data 0) 5 }}: {{ index (index .data 1) 5 }}`).
 		withEnv("AWS_ANON", "true").
 		withEnv("AWS_TIMEOUT", "5000").
 		run()
-	assertSuccess(t, o, e, err, "Petra Mcintyre")
+	assertSuccess(t, o, e, err, `PLATFORM_NAME: Ramform Hyperion
+TIME: 2022-03-01T22:00:04.000Z`)
 
 	srv := setupDatasourcesBlobTest(t)
 
@@ -79,12 +81,16 @@ func TestDatasources_Blob_S3Datasource(t *testing.T) {
 }
 
 func TestDatasources_Blob_S3Directory(t *testing.T) {
-	o, e, err := cmd(t, "-c", "data=s3://ryft-public-sample-data/?region=us-east-1",
+	// This recently replaced ryft-public-sample-data after access was disabled.
+	// This bucket came from https://registry.opendata.aws, and is public. The
+	// content isn't important, just that it's something we can read and parse
+	// on a _real_ S3 bucket.
+	o, e, err := cmd(t, "-c", "data=s3://noaa-bathymetry-pds/csv/2022/03/02/?region=us-east-1",
 		"-i", "{{ index .data 0 }}").
 		withEnv("AWS_ANON", "true").
 		withEnv("AWS_TIMEOUT", "15000").
 		run()
-	assertSuccess(t, o, e, err, "AWS-x86-AMI-queries.json")
+	assertSuccess(t, o, e, err, "20220302_056e577c7cd8323fdd8a04d3812cf78e_pointData.csv")
 
 	srv := setupDatasourcesBlobTest(t)
 
