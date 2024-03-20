@@ -3,7 +3,7 @@ module github.com/hairyhenderson/gomplate/v4
 go 1.22.1
 
 require (
-	cuelang.org/go v0.7.1
+	cuelang.org/go v0.8.0
 	github.com/Masterminds/goutils v1.1.1
 	github.com/Masterminds/semver/v3 v3.2.1
 	github.com/Shopify/ejson v1.5.0
@@ -134,7 +134,6 @@ require (
 	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/mitchellh/go-homedir v1.1.0 // indirect
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
-	github.com/mpvl/unique v0.0.0-20150818121801-cbe035fff7de // indirect
 	github.com/pjbgf/sha1cd v0.3.0 // indirect
 	github.com/pkg/browser v0.0.0-20210911075715-681adbf594b8 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
@@ -157,7 +156,7 @@ require (
 	gocloud.dev v0.36.0 // indirect
 	golang.org/x/mod v0.16.0 // indirect
 	golang.org/x/net v0.22.0 // indirect
-	golang.org/x/oauth2 v0.15.0 // indirect
+	golang.org/x/oauth2 v0.18.0 // indirect
 	golang.org/x/sync v0.6.0 // indirect
 	golang.org/x/time v0.5.0 // indirect
 	golang.org/x/tools v0.19.0 // indirect
