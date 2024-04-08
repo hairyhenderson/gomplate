@@ -435,9 +435,9 @@ func TestCelSliceReturn(t *testing.T) {
 
 func TestCelK8sResources(t *testing.T) {
 	runTests(t, []Test{
-		{map[string]interface{}{"healthySvc": kubernetes.GetUnstructuredMap(kubernetes.TestHealthy)}, "k8s.isHealthy(healthySvc)", "true"},
+		{map[string]interface{}{"healthySvc": kubernetes.GetUnstructuredMap(kubernetes.TestHealthySvc)}, "k8s.isHealthy(healthySvc)", "true"},
 		{map[string]interface{}{"healthySvc": kubernetes.GetUnstructuredMap(kubernetes.TestLuaStatus)}, "k8s.getStatus(healthySvc)", "Degraded: found less than two generators, Merge requires two or more"},
-		{map[string]interface{}{"healthySvc": kubernetes.GetUnstructuredMap(kubernetes.TestHealthy)}, "k8s.getHealth(healthySvc).status", "Healthy"},
+		{map[string]interface{}{"healthySvc": kubernetes.GetUnstructuredMap(kubernetes.TestHealthySvc)}, "k8s.getHealth(healthySvc).status", "Healthy"},
 	})
 }
 
@@ -469,9 +469,9 @@ func TestCelK8s(t *testing.T) {
 	}
 
 	environment := map[string]any{
-		"healthy_obj":       kubernetes.TestHealthy,
+		"healthy_obj":       kubernetes.TestHealthySvc,
 		"unhealthy_obj":     kubernetes.TestUnhealthy,
-		"obj_list":          []string{kubernetes.TestHealthy, kubernetes.TestUnhealthy},
+		"obj_list":          []string{kubernetes.TestHealthySvc, kubernetes.TestUnhealthy},
 		"unstructured_list": kubernetes.TestUnstructuredList,
 		"service_raw":       kubernetes.TestServiceRaw,
 		"pod_raw":           kubernetes.TestPodRaw,

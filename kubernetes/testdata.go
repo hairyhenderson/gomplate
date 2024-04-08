@@ -285,7 +285,91 @@ var TestServiceNeat = `{
 }
 `
 
-var TestHealthy = `
+var TestHealthyCertificate = `
+apiVersion: cert-manager.io/v1alpha2
+kind: Certificate
+metadata:
+  creationTimestamp: "2019-02-15T18:17:06Z"
+  generation: 1
+  name: test-cert
+  namespace: argocd
+  resourceVersion: "68337322"
+  selfLink: /apis/cert-manager.io/v1alpha2/namespaces/argocd/certificates/test-cert
+  uid: e6cfba50-314d-11e9-be3f-42010a800011
+spec:
+  acme:
+    config:
+    - domains:
+      - cd.apps.argoproj.io
+      http01:
+        ingress: http01
+  commonName: cd.apps.argoproj.io
+  dnsNames:
+  - cd.apps.argoproj.io
+  issuerRef:
+    kind: Issuer
+    name: argo-cd-issuer
+  secretName: test-secret
+status:
+  acme:
+    order:
+      url: https://acme-v02.api.letsencrypt.org/acme/order/45250083/316944902
+  conditions:
+  - lastTransitionTime: "2019-02-15T18:21:10Z"
+    message: Order validated
+    reason: OrderValidated
+    status: "False"
+    type: ValidateFailed
+  - lastTransitionTime: null
+    message: Certificate issued successfully
+    reason: CertIssued
+    status: "True"
+    type: Ready
+`
+
+var TestDegradedCertificate = `
+apiVersion: cert-manager.io/v1alpha2
+kind: Certificate
+metadata:
+  creationTimestamp: "2019-02-15T18:17:06Z"
+  generation: 1
+  name: test-cert
+  namespace: argocd
+  resourceVersion: "68337322"
+  selfLink: /apis/cert-manager.io/v1alpha2/namespaces/argocd/certificates/test-cert
+  uid: e6cfba50-314d-11e9-be3f-42010a800011
+spec:
+  acme:
+    config:
+      - domains:
+          - cd.apps.argoproj.io
+        http01:
+          ingress: http01
+    commonName: cd.apps.argoproj.io
+    dnsNames:
+      - cd.apps.argoproj.io
+    issuerRef:
+      kind: Issuer
+      name: argo-cd-issuer
+    secretName: test-secret
+status:
+  acme:
+    order:
+      url: https://acme-v02.api.letsencrypt.org/acme/order/45250083/316944902
+  conditions:
+    - lastTransitionTime: "2019-02-15T18:21:10Z"
+      message: Order validated
+      reason: OrderValidated
+      status: "False"
+      type: ValidateFailed
+    - lastTransitionTime: null
+      message: Certificate issuance failed
+      reason: Failed
+      status: "False"
+      type: Ready
+`
+
+var TestHealthySvc = `
 apiVersion: v1
 kind: Service
 metadata:
@@ -314,7 +398,7 @@ status:
     - hostname: abc123.us-west-2.elb.amazonaws.com
 `
 
-var TesthealthyUnstructured = GetUnstructured(TestHealthy)
+var TesthealthyUnstructured = GetUnstructured(TestHealthySvc)
 var TestProgressing = `
 apiVersion: v1
 kind: Service
