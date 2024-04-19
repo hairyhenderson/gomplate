@@ -436,8 +436,8 @@ func TestCelSliceReturn(t *testing.T) {
 func TestCelK8sResources(t *testing.T) {
 	runTests(t, []Test{
 		{map[string]interface{}{"healthySvc": kubernetes.GetUnstructuredMap(kubernetes.TestHealthySvc)}, "k8s.isHealthy(healthySvc)", "true"},
-		{map[string]interface{}{"healthySvc": kubernetes.GetUnstructuredMap(kubernetes.TestLuaStatus)}, "k8s.getStatus(healthySvc)", "Degraded: found less than two generators, Merge requires two or more"},
-		{map[string]interface{}{"healthySvc": kubernetes.GetUnstructuredMap(kubernetes.TestHealthySvc)}, "k8s.getHealth(healthySvc).status", "Healthy"},
+		{map[string]interface{}{"healthySvc": kubernetes.GetUnstructuredMap(kubernetes.TestLuaStatus)}, "k8s.getStatus(healthySvc)", ": found less than two generators, Merge requires two or more"},
+		{map[string]interface{}{"healthySvc": kubernetes.GetUnstructuredMap(kubernetes.TestHealthySvc)}, "k8s.getHealth(healthySvc).health", "healthy"},
 	})
 }
 
@@ -447,9 +447,10 @@ func TestCelK8s(t *testing.T) {
 		Output      any
 		jsonCompare bool
 	}{
+		{Input: `k8s.getHealth(healthy_obj).health`, Output: "healthy"},
 		{Input: `k8s.isHealthy(healthy_obj)`, Output: true},
 		{Input: `k8s.isHealthy(unhealthy_obj)`, Output: false},
-		{Input: `k8s.getHealth(healthy_obj).status`, Output: "Healthy"},
+		{Input: `k8s.getHealth(healthy_obj).status`, Output: "Running"},
 		{Input: `k8s.getHealth(unhealthy_obj).message`, Output: "Back-off 40s restarting failed container=main pod=my-pod_argocd(63674389-f613-11e8-a057-fe5f49266390)"},
 		{Input: `k8s.getHealth(unhealthy_obj).ok`, Output: false},
 		{Input: `k8s.getHealth(healthy_obj).message`, Output: ""},

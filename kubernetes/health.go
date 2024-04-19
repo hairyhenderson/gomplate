@@ -17,7 +17,11 @@ import (
 type HealthStatus struct {
 	Status  string `json:"status"`
 	Message string `json:"message"`
-	OK      bool   `json:"ok"`
+	Health  string `json:"health"`
+	Ready   bool   `json:"ready"`
+
+	// Deprecated: Use Health.
+	OK bool `json:"ok"`
 }
 
 func GetUnstructuredMap(in interface{}) []byte {
@@ -60,7 +64,7 @@ func GetUnstructured(in interface{}) *unstructured.Unstructured {
 }
 
 func IsHealthy(in interface{}) bool {
-	return GetHealth(in).OK
+	return GetHealth(in).Health == string(health.HealthHealthy)
 }
 
 func GetStatus(in interface{}) string {
@@ -98,7 +102,9 @@ func GetHealth(in interface{}) HealthStatus {
 	}
 
 	return HealthStatus{
-		OK:      _health.Status == health.HealthStatusHealthy || _health.Status == health.HealthStatusProgressing,
+		OK:      _health.Health == health.HealthHealthy,
+		Health:  string(_health.Health),
+		Ready:   _health.Ready,
 		Status:  string(_health.Status),
 		Message: _health.Message,
 	}
