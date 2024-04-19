@@ -10,6 +10,7 @@ type Test struct {
 	Template   string `template:"true"`
 	NoTemplate string
 	Inner      Inner
+	JSONMap    map[string]any    `template:"true"`
 	Labels     map[string]string `template:"true"`
 	LabelsRaw  map[string]string
 }
@@ -31,7 +32,7 @@ var tests = []test{
 		name: "template and no template",
 		StructTemplater: StructTemplater{
 			RequiredTag: "template",
-			Values: map[string]interface{}{
+			Values: map[string]any{
 				"msg": "world",
 			},
 		},
@@ -51,7 +52,7 @@ var tests = []test{
 				{Left: "{{", Right: "}}"},
 				{Left: "$(", Right: ")"},
 			},
-			Values: map[string]interface{}{
+			Values: map[string]any{
 				"msg": "world",
 			},
 			ValueFunctions: true,
@@ -71,7 +72,7 @@ var tests = []test{
 				{Left: "{{", Right: "}}"},
 				{Left: "$(", Right: ")"},
 			},
-			Values: map[string]interface{}{
+			Values: map[string]any{
 				"name":    "James Bond",
 				"colorOf": "eye",
 				"color":   "blue",
@@ -108,9 +109,113 @@ var tests = []test{
 			},
 		},
 	},
+	{
+		name: "deeply nested map",
+		StructTemplater: StructTemplater{
+			RequiredTag:    "template",
+			ValueFunctions: true,
+			Values: map[string]any{
+				"msg": "world",
+			},
+		},
+		Input: &Test{
+			Template: "{{msg}}",
+			JSONMap: map[string]any{
+				"a": map[string]any{
+					"b": map[string]any{
+						"c": "{{msg}}",
+					},
+					"j": []map[string]any{
+						{
+							"l": "{{msg}}",
+						},
+					},
+				},
+				"e": "hello {{msg}}",
+			},
+		},
+		Output: &Test{
+			Template: "world",
+			JSONMap: map[string]any{
+				"a": map[string]any{
+					"b": map[any]any{
+						"c": "world",
+					},
+					"j": []any{
+						map[any]any{
+							"l": "world",
+						},
+					},
+				},
+				"e": "hello world",
+			},
+		},
+	},
+	{
+		name: "pod manifest",
+		StructTemplater: StructTemplater{
+			RequiredTag:    "template",
+			ValueFunctions: true,
+			Values: map[string]any{
+				"msg": "world",
+			},
+		},
+		Input: &Test{
+			JSONMap: map[string]any{
+				"apiVersion": "v1",
+				"kind":       "Pod",
+				"metadata": map[string]any{
+					"name":      "httpbin-{{msg}}",
+					"namespace": "development",
+					"labels": map[string]any{
+						"app": "httpbin",
+					},
+				},
+				"spec": map[string]any{
+					"containers": []any{
+						map[string]any{
+							"name":  "httpbin",
+							"image": "kennethreitz/httpbin:latest",
+							"ports": []any{
+								map[string]any{
+									"containerPort": 4,
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		Output: &Test{
+			JSONMap: map[string]any{
+				"apiVersion": "v1",
+				"kind":       "Pod",
+				"metadata": map[string]any{
+					"name":      "httpbin-world",
+					"namespace": "development",
+					"labels": map[any]any{
+						"app": "httpbin",
+					},
+				},
+				"spec": map[string]any{
+					"containers": []any{
+						map[any]any{
+							"name":  "httpbin",
+							"image": "kennethreitz/httpbin:latest",
+							"ports": []any{
+								map[any]any{
+									"containerPort": 4,
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	},
 }
 
-func TestMain(t *testing.T) {
+func TestStructTemplater(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			i := test.Input
