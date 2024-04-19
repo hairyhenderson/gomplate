@@ -5,7 +5,7 @@ import (
 	"strings"
 
 	"github.com/mitchellh/reflectwalk"
-	"gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v3"
 )
 
 type StructTemplater struct {

@@ -138,11 +138,11 @@ var tests = []test{
 			Template: "world",
 			JSONMap: map[string]any{
 				"a": map[string]any{
-					"b": map[any]any{
+					"b": map[string]any{
 						"c": "world",
 					},
 					"j": []any{
-						map[any]any{
+						map[string]any{
 							"l": "world",
 						},
 					},
@@ -178,7 +178,7 @@ var tests = []test{
 							"image": "kennethreitz/httpbin:latest",
 							"ports": []any{
 								map[string]any{
-									"containerPort": 4,
+									"containerPort": 80,
 								},
 							},
 						},
@@ -193,18 +193,18 @@ var tests = []test{
 				"metadata": map[string]any{
 					"name":      "httpbin-world",
 					"namespace": "development",
-					"labels": map[any]any{
+					"labels": map[string]any{
 						"app": "httpbin",
 					},
 				},
 				"spec": map[string]any{
 					"containers": []any{
-						map[any]any{
+						map[string]any{
 							"name":  "httpbin",
 							"image": "kennethreitz/httpbin:latest",
 							"ports": []any{
-								map[any]any{
-									"containerPort": 4,
+								map[string]any{
+									"containerPort": 80,
 								},
 							},
 						},
