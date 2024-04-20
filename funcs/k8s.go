@@ -16,6 +16,7 @@ func CreateKubernetesFuncs(ctx context.Context) map[string]interface{} {
 	ns := &KubernetesFuncs{}
 	f["k8s"] = func() interface{} { return ns }
 	f["isHealthy"] = ns.IsHealthy
+	f["isReady"] = ns.IsReady
 	f["getStatus"] = ns.GetStatus
 	f["getHealth"] = ns.GetHealth
 	f["neat"] = ns.Neat
@@ -24,6 +25,10 @@ func CreateKubernetesFuncs(ctx context.Context) map[string]interface{} {
 
 func (ns KubernetesFuncs) IsHealthy(in interface{}) bool {
 	return kubernetes.IsHealthy(in)
+}
+
+func (ns KubernetesFuncs) IsReady(in interface{}) bool {
+	return kubernetes.IsReady(in)
 }
 
 func (ns KubernetesFuncs) GetStatus(in interface{}) string {

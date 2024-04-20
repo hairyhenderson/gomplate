@@ -11,6 +11,7 @@ func Library() []cel.EnvOption {
 		k8sGetHealth("k8s.getHealth"), k8sGetHealth("GetHealth"),
 		k8sGetStatus("k8s.getStatus"), k8sGetStatus("GetStatus"),
 		k8sIsHealthy("k8s.isHealthy"), k8sIsHealthy("IsHealthy"), k8sIsHealthy("k8s.is_healthy"),
+		k8sIsReady("k8s.isReady"), k8sIsReady("IsReady"),
 		k8sCPUAsMillicores(),
 		k8sMemoryAsBytes(),
 		celPodProperties(),

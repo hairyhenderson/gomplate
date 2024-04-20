@@ -63,6 +63,10 @@ func GetUnstructured(in interface{}) *unstructured.Unstructured {
 	return &unstructured.Unstructured{Object: obj}
 }
 
+func IsReady(in any) bool {
+	return GetHealth(in).Ready
+}
+
 func IsHealthy(in interface{}) bool {
 	return GetHealth(in).Health == string(health.HealthHealthy)
 }
@@ -142,6 +146,18 @@ func k8sIsHealthy(fnName string) cel.EnvOption {
 			cel.BoolType,
 			cel.UnaryBinding(func(obj ref.Val) ref.Val {
 				return types.Bool(GetHealth(obj.Value()).OK)
+			}),
+		),
+	)
+}
+
+func k8sIsReady(fnName string) cel.EnvOption {
+	return cel.Function(fnName,
+		cel.Overload(fnName+"_overload",
+			[]*cel.Type{cel.AnyType},
+			cel.BoolType,
+			cel.UnaryBinding(func(obj ref.Val) ref.Val {
+				return types.Bool(GetHealth(obj.Value()).Ready)
 			}),
 		),
 	)

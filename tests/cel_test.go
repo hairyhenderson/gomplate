@@ -436,6 +436,7 @@ func TestCelSliceReturn(t *testing.T) {
 func TestCelK8sResources(t *testing.T) {
 	runTests(t, []Test{
 		{map[string]interface{}{"healthySvc": kubernetes.GetUnstructuredMap(kubernetes.TestHealthySvc)}, "k8s.isHealthy(healthySvc)", "true"},
+		{map[string]interface{}{"healthySvc": kubernetes.GetUnstructuredMap(kubernetes.TestHealthySvc)}, "k8s.isReady(healthySvc)", "true"},
 		{map[string]interface{}{"healthySvc": kubernetes.GetUnstructuredMap(kubernetes.TestLuaStatus)}, "k8s.getStatus(healthySvc)", ": found less than two generators, Merge requires two or more"},
 		{map[string]interface{}{"healthySvc": kubernetes.GetUnstructuredMap(kubernetes.TestHealthySvc)}, "k8s.getHealth(healthySvc).health", "healthy"},
 	})

@@ -46,6 +46,7 @@ func TestGomplate(t *testing.T) {
 		{map[string]interface{}{"hello": "hello+world+%3F"}, "{{ .hello | urldecode }}", `hello world ?`},
 		{map[string]interface{}{"age": 75 * time.Second}, "{{ .age | humanDuration  }}", "1m15s"},
 		{map[string]interface{}{"healthySvc": kubernetes.GetUnstructured(kubernetes.TestHealthyCertificate)}, "{{(.healthySvc | isHealthy)}}", "true"},
+		{map[string]interface{}{"healthySvc": kubernetes.GetUnstructured(kubernetes.TestHealthyCertificate)}, "{{(.healthySvc | isReady)}}", "true"},
 		{map[string]interface{}{"healthySvc": kubernetes.GetUnstructured(kubernetes.TestDegradedCertificate)}, "{{(.healthySvc | isHealthy)}}", "false"},
 		{map[string]interface{}{"healthySvc": kubernetes.GetUnstructured(kubernetes.TestHealthySvc)}, "{{ (.healthySvc | isHealthy) }}", "true"},
 		{map[string]interface{}{"healthySvc": kubernetes.GetUnstructured(kubernetes.TestLuaStatus)}, "{{ (.healthySvc | getStatus) }}", ": found less than two generators, Merge requires two or more"},
