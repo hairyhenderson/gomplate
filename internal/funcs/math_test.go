@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestCreateMathFuncs(t *testing.T) {
@@ -35,7 +36,7 @@ func TestAdd(t *testing.T) {
 	assert.Equal(t, int64(2), m.Add(1, 1))
 	assert.Equal(t, int64(1), m.Add(1))
 	assert.Equal(t, int64(0), m.Add(-5, 5))
-	assert.InDelta(t, float64(5.1), m.Add(4.9, "0.2"), 0.000000001)
+	assert.InEpsilon(t, float64(5.1), m.Add(4.9, "0.2"), 1e-12)
 }
 
 func TestMul(t *testing.T) {
@@ -47,7 +48,7 @@ func TestMul(t *testing.T) {
 	assert.Equal(t, int64(1), m.Mul(1))
 	assert.Equal(t, int64(-25), m.Mul("-5", 5))
 	assert.Equal(t, int64(28), m.Mul(14, "2"))
-	assert.Equal(t, float64(0.5), m.Mul("-1", -0.5))
+	assert.InEpsilon(t, float64(0.5), m.Mul("-1", -0.5), 1e-12)
 }
 
 func TestSub(t *testing.T) {
@@ -57,7 +58,7 @@ func TestSub(t *testing.T) {
 	assert.Equal(t, int64(0), m.Sub(1, 1))
 	assert.Equal(t, int64(-10), m.Sub(-5, 5))
 	assert.Equal(t, int64(-41), m.Sub(true, "42"))
-	assert.InDelta(t, -5.3, m.Sub(10, 15.3), 0.000000000000001)
+	assert.InEpsilon(t, -5.3, m.Sub(10, 15.3), 1e-12)
 }
 
 func mustDiv(a, b interface{}) interface{} {
@@ -74,11 +75,11 @@ func TestDiv(t *testing.T) {
 
 	m := MathFuncs{}
 	_, err := m.Div(1, 0)
-	assert.Error(t, err)
-	assert.Equal(t, 1., mustDiv(1, 1))
-	assert.Equal(t, -1., mustDiv(-5, 5))
-	assert.Equal(t, 1./42, mustDiv(true, "42"))
-	assert.InDelta(t, 0.5, mustDiv(1, 2), 1e-12)
+	require.Error(t, err)
+	assert.InEpsilon(t, 1., mustDiv(1, 1), 1e-12)
+	assert.InEpsilon(t, -1., mustDiv(-5, 5), 1e-12)
+	assert.InEpsilon(t, 1./42, mustDiv(true, "42"), 1e-12)
+	assert.InEpsilon(t, 0.5, mustDiv(1, 2), 1e-12)
 }
 
 func TestRem(t *testing.T) {
@@ -94,7 +95,7 @@ func TestPow(t *testing.T) {
 
 	m := MathFuncs{}
 	assert.Equal(t, int64(4), m.Pow(2, "2"))
-	assert.Equal(t, 2.25, m.Pow(1.5, 2))
+	assert.InEpsilon(t, 2.25, m.Pow(1.5, 2), 1e-12)
 }
 
 func mustSeq(t *testing.T, n ...interface{}) []int64 {
@@ -116,7 +117,7 @@ func TestSeq(t *testing.T) {
 	assert.EqualValues(t, []int64{0, 2, 4}, mustSeq(t, 0, 5, 2))
 	assert.EqualValues(t, []int64{0}, mustSeq(t, 0, 5, 8))
 	_, err := m.Seq()
-	assert.Error(t, err)
+	require.Error(t, err)
 }
 
 func TestIsIntFloatNum(t *testing.T) {

@@ -16,12 +16,12 @@ func must(r interface{}, err error) interface{} {
 
 func TestLookupIP(t *testing.T) {
 	assert.Equal(t, "127.0.0.1", must(LookupIP("localhost")))
-	assert.Equal(t, "93.184.216.34", must(LookupIP("example.com")))
+	assert.Equal(t, "198.41.0.4", must(LookupIP("a.root-servers.net")))
 }
 
 func TestLookupIPs(t *testing.T) {
 	assert.Equal(t, []string{"127.0.0.1"}, must(LookupIPs("localhost")))
-	assert.Equal(t, []string{"93.184.216.34"}, must(LookupIPs("example.com")))
+	assert.ElementsMatch(t, []string{"1.1.1.1", "1.0.0.1"}, must(LookupIPs("one.one.one.one")))
 }
 
 func BenchmarkLookupIPs(b *testing.B) {

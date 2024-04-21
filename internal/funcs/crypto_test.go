@@ -44,7 +44,7 @@ func TestPBKDF2(t *testing.T) {
 	require.NoError(t, err)
 
 	_, err = c.PBKDF2(nil, nil, nil, nil, "bogus")
-	assert.Error(t, err)
+	require.Error(t, err)
 }
 
 func TestWPAPSK(t *testing.T) {
@@ -115,7 +115,7 @@ func TestBcrypt(t *testing.T) {
 		t.Parallel()
 
 		_, err := c.Bcrypt()
-		assert.Error(t, err)
+		require.Error(t, err)
 	})
 }
 
@@ -124,10 +124,10 @@ func TestRSAGenerateKey(t *testing.T) {
 
 	c := testCryptoNS()
 	_, err := c.RSAGenerateKey(0)
-	assert.Error(t, err)
+	require.Error(t, err)
 
 	_, err = c.RSAGenerateKey(0, "foo", true)
-	assert.Error(t, err)
+	require.Error(t, err)
 
 	key, err := c.RSAGenerateKey(2048)
 	require.NoError(t, err)
@@ -140,10 +140,10 @@ func TestRSAGenerateKey(t *testing.T) {
 func TestECDSAGenerateKey(t *testing.T) {
 	c := testCryptoNS()
 	_, err := c.ECDSAGenerateKey("")
-	assert.Error(t, err)
+	require.Error(t, err)
 
 	_, err = c.ECDSAGenerateKey(0, "P-999", true)
-	assert.Error(t, err)
+	require.Error(t, err)
 
 	key, err := c.ECDSAGenerateKey("P-256")
 	require.NoError(t, err)
@@ -157,7 +157,7 @@ func TestECDSADerivePublicKey(t *testing.T) {
 	c := testCryptoNS()
 
 	_, err := c.ECDSADerivePublicKey("")
-	assert.Error(t, err)
+	require.Error(t, err)
 
 	key, _ := c.ECDSAGenerateKey("P-256")
 	pub, err := c.ECDSADerivePublicKey(key)
@@ -184,12 +184,12 @@ func TestEd25519GenerateKeyFromSeed(t *testing.T) {
 	enc := ""
 	seed := ""
 	_, err := c.Ed25519GenerateKeyFromSeed(enc, seed)
-	assert.Error(t, err)
+	require.Error(t, err)
 
 	enc = "base64"
 	seed = "0000000000000000000000000000000" // 31 bytes, instead of wanted 32.
 	_, err = c.Ed25519GenerateKeyFromSeed(enc, seed)
-	assert.Error(t, err)
+	require.Error(t, err)
 
 	seed += "0" // 32 bytes.
 	b64seed := base64.StdEncoding.EncodeToString([]byte(seed))
@@ -206,7 +206,7 @@ func TestEd25519DerivePublicKey(t *testing.T) {
 	c := testCryptoNS()
 
 	_, err := c.Ed25519DerivePublicKey("")
-	assert.Error(t, err)
+	require.Error(t, err)
 
 	key, _ := c.Ed25519GenerateKey()
 	pub, err := c.Ed25519DerivePublicKey(key)
@@ -249,10 +249,10 @@ func TestAESCrypt(t *testing.T) {
 	in := "hello world"
 
 	_, err := c.EncryptAES(key, 1, 2, 3, 4)
-	assert.Error(t, err)
+	require.Error(t, err)
 
 	_, err = c.DecryptAES(key, 1, 2, 3, 4)
-	assert.Error(t, err)
+	require.Error(t, err)
 
 	enc, err := c.EncryptAES(key, in)
 	require.NoError(t, err)

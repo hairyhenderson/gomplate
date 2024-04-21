@@ -81,11 +81,11 @@ func TestGetCallerIDErrors(t *testing.T) {
 	}
 
 	_, err = s.Account()
-	assert.EqualError(t, err, "ERRORED")
+	require.EqualError(t, err, "ERRORED")
 	_, err = s.UserID()
-	assert.EqualError(t, err, "ERRORED")
+	require.EqualError(t, err, "ERRORED")
 	_, err = s.Arn()
-	assert.EqualError(t, err, "ERRORED")
+	require.EqualError(t, err, "ERRORED")
 }
 
 type DummyCallerIdentifier struct {

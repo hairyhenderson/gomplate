@@ -31,7 +31,7 @@ func TestAssert(t *testing.T) {
 
 	f := TestFuncs{ctx: context.Background()}
 	_, err := f.Assert(false)
-	assert.Error(t, err)
+	require.Error(t, err)
 
 	_, err = f.Assert(true)
 	require.NoError(t, err)
@@ -40,7 +40,7 @@ func TestAssert(t *testing.T) {
 	require.NoError(t, err)
 
 	_, err = f.Assert("foo", "false")
-	assert.EqualError(t, err, "assertion failed: foo")
+	require.EqualError(t, err, "assertion failed: foo")
 }
 
 func TestRequired(t *testing.T) {
@@ -49,43 +49,43 @@ func TestRequired(t *testing.T) {
 	f := TestFuncs{ctx: context.Background()}
 	errMsg := "can not render template: a required value was not set"
 	v, err := f.Required("")
-	assert.Error(t, err)
-	assert.EqualError(t, err, errMsg)
+	require.Error(t, err)
+	require.EqualError(t, err, errMsg)
 	assert.Nil(t, v)
 
 	v, err = f.Required(nil)
-	assert.Error(t, err)
-	assert.EqualError(t, err, errMsg)
+	require.Error(t, err)
+	require.EqualError(t, err, errMsg)
 	assert.Nil(t, v)
 
 	errMsg = "hello world"
 	v, err = f.Required(errMsg, nil)
-	assert.Error(t, err)
-	assert.EqualError(t, err, errMsg)
+	require.Error(t, err)
+	require.EqualError(t, err, errMsg)
 	assert.Nil(t, v)
 
 	v, err = f.Required(42, nil)
-	assert.Error(t, err)
-	assert.EqualError(t, err, "at <1>: expected string; found int")
+	require.Error(t, err)
+	require.EqualError(t, err, "at <1>: expected string; found int")
 	assert.Nil(t, v)
 
 	v, err = f.Required()
-	assert.Error(t, err)
-	assert.EqualError(t, err, "wrong number of args: want 1 or 2, got 0")
+	require.Error(t, err)
+	require.EqualError(t, err, "wrong number of args: want 1 or 2, got 0")
 	assert.Nil(t, v)
 
 	v, err = f.Required("", 2, 3)
-	assert.Error(t, err)
-	assert.EqualError(t, err, "wrong number of args: want 1 or 2, got 3")
+	require.Error(t, err)
+	require.EqualError(t, err, "wrong number of args: want 1 or 2, got 3")
 	assert.Nil(t, v)
 
 	v, err = f.Required(0)
 	require.NoError(t, err)
-	assert.Equal(t, v, 0)
+	assert.Zero(t, v)
 
 	v, err = f.Required("foo")
 	require.NoError(t, err)
-	assert.Equal(t, v, "foo")
+	assert.Equal(t, "foo", v)
 }
 
 func TestTernary(t *testing.T) {

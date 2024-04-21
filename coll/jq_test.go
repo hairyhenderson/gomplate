@@ -53,14 +53,14 @@ func TestJQ(t *testing.T) {
 
 	out, err = JQ(ctx, ".store.bicycle.price", in)
 	require.NoError(t, err)
-	assert.Equal(t, 19.95, out)
+	assert.InEpsilon(t, 19.95, out, 1e-12)
 
 	out, err = JQ(ctx, ".store.bogus", in)
 	require.NoError(t, err)
 	assert.Nil(t, out)
 
 	_, err = JQ(ctx, "{.store.unclosed", in)
-	assert.Error(t, err)
+	require.Error(t, err)
 
 	out, err = JQ(ctx, ".store", in)
 	require.NoError(t, err)
@@ -149,7 +149,7 @@ func TestJQ_typeConversions(t *testing.T) {
 	assert.Nil(t, out)
 
 	_, err = JQ(ctx, ".*", structIn)
-	assert.Error(t, err)
+	require.Error(t, err)
 
 	// a type with an underlying type of map[string]interface{}, just like
 	// gomplate.tmplctx
@@ -214,7 +214,7 @@ func TestJQConvertType_passthroughTypes(t *testing.T) {
 	v := &recursive{}
 	v.Self = v
 	_, err := jqConvertType(v)
-	assert.Error(t, err)
+	require.Error(t, err)
 
 	testdata := []interface{}{
 		map[string]interface{}{"foo": 1234},

@@ -236,7 +236,7 @@ suppressEmpty: true
 	require.NoError(t, err)
 
 	_, err = os.Stat(tmpDir.Join("missing"))
-	assert.ErrorIs(t, err, fs.ErrNotExist)
+	require.ErrorIs(t, err, fs.ErrNotExist)
 }
 
 func TestConfig_ConfigParseErrorSpecifiesFilename(t *testing.T) {

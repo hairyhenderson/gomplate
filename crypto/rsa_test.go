@@ -84,10 +84,10 @@ func TestRSACrypt(t *testing.T) {
 		in := []byte("hello world")
 		key := "bad key"
 		_, err := RSAEncrypt(key, in)
-		assert.Error(t, err)
+		require.Error(t, err)
 
 		_, err = RSADecrypt(key, in)
-		assert.Error(t, err)
+		require.Error(t, err)
 	})
 
 	t.Run("empty key", func(t *testing.T) {
@@ -96,10 +96,10 @@ func TestRSACrypt(t *testing.T) {
 		in := []byte("hello world")
 		key := ""
 		_, err := RSAEncrypt(key, in)
-		assert.Error(t, err)
+		require.Error(t, err)
 
 		_, err = RSADecrypt(key, in)
-		assert.Error(t, err)
+		require.Error(t, err)
 	})
 }
 
@@ -107,10 +107,10 @@ func TestRSAGenerateKey(t *testing.T) {
 	t.Parallel()
 
 	_, err := RSAGenerateKey(0)
-	assert.Error(t, err)
+	require.Error(t, err)
 
 	_, err = RSAGenerateKey(12)
-	assert.Error(t, err)
+	require.Error(t, err)
 
 	key, err := RSAGenerateKey(2048)
 	require.NoError(t, err)
@@ -124,11 +124,11 @@ func TestRSADerivePublicKey(t *testing.T) {
 	t.Parallel()
 
 	_, err := RSADerivePublicKey(nil)
-	assert.Error(t, err)
+	require.Error(t, err)
 
 	_, err = RSADerivePublicKey([]byte(`-----BEGIN FOO-----
 -----END FOO-----`))
-	assert.Error(t, err)
+	require.Error(t, err)
 
 	priv, privKey := genPKCS1PrivKey()
 	expected := derivePKIXPubKey(priv)

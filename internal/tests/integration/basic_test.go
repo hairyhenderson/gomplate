@@ -183,7 +183,7 @@ func TestBasic_EmptyOutputSuppression(t *testing.T) {
 	assertSuccess(t, o, e, err, "")
 
 	_, err = os.Stat(out)
-	assert.ErrorIs(t, err, fs.ErrNotExist)
+	require.ErrorIs(t, err, fs.ErrNotExist)
 }
 
 func TestBasic_RoutesInputsToProperOutputsWithChmod(t *testing.T) {

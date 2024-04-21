@@ -25,7 +25,7 @@ func TestEnvGetsUpdatedEnvironment(t *testing.T) {
 	c := &tmplctx{}
 	assert.Empty(t, c.Env()["FOO"])
 	t.Setenv("FOO", "foo")
-	assert.Equal(t, c.Env()["FOO"], "foo")
+	assert.Equal(t, "foo", c.Env()["FOO"])
 }
 
 func TestCreateContext(t *testing.T) {
