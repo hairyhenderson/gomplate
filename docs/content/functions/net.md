@@ -12,7 +12,7 @@ calculations.
 
 [RFC 4632]: http://tools.ietf.org/html/rfc4632
 [RFC 4291]: http://tools.ietf.org/html/rfc4291
-[`inet.af/netaddr`]: https://pkg.go.dev/inet.af/netaddr
+[`github.com/inetaf/netaddr`]: https://pkg.go.dev/github.com/inetaf/netaddr
 [`net`]: https://pkg.go.dev/net
 
 ## `net.LookupIP`
@@ -257,10 +257,10 @@ $ gomplate -i '{{ $ip := net.ParseAddr (net.LookupIP "example.com") -}}
 **Deprecation Notice:** Use [`net.ParseAddr`](#net-parseaddr) instead.
 
 Parse the given string as an IP address (a `netaddr.IP` from the
-[`inet.af/netaddr`](https://pkg.go.dev/inet.af/netaddr) package).
+[`github.com/inetaf/netaddr`](https://pkg.go.dev/github.com/inetaf/netaddr) package).
 
 Any of `netaddr.IP`'s methods may be called on the resulting value. See
-[the docs](https://pkg.go.dev/inet.af/netaddr) for details.
+[the docs](https://pkg.go.dev/github.com/inetaf/netaddr) for details.
 
 _Added in gomplate [v3.10.0](https://github.com/hairyhenderson/gomplate/releases/tag/v3.10.0)_
 ### Usage
@@ -331,13 +331,13 @@ true
 
 Parse the given string as an IP address prefix (CIDR) representing an IP
 network (a `netaddr.IPPrefix` from the
-[`inet.af/netaddr`][] package).
+[`github.com/inetaf/netaddr`][] package).
 
 The string can be in the form `"192.168.1.0/24"` or `"2001::db8::/32"`,
 the CIDR notations defined in [RFC 4632][] and [RFC 4291][].
 
 Any of `netaddr.IPPrefix`'s methods may be called on the resulting value.
-See [the docs][`inet.af/netaddr`] for details.
+See [the docs][`github.com/inetaf/netaddr`] for details.
 
 _Added in gomplate [v3.10.0](https://github.com/hairyhenderson/gomplate/releases/tag/v3.10.0)_
 ### Usage
@@ -418,12 +418,12 @@ $ gomplate -i '{{ $range := net.ParseRange "1.2.3.0-1.2.3.233" -}}
 **Deprecation Notice:** Use [`net.ParseRange`](#net-parserange) instead.
 
 Parse the given string as an inclusive range of IP addresses from the same
-address family (a `netaddr.IPRange` from the [`inet.af/netaddr`][] package).
+address family (a `netaddr.IPRange` from the [`github.com/inetaf/netaddr`][] package).
 
 The string must contain a hyphen (`-`).
 
 Any of `netaddr.IPRange`'s methods may be called on the resulting value.
-See [the docs][`inet.af/netaddr`] for details.
+See [the docs][`github.com/inetaf/netaddr`] for details.
 
 _Added in gomplate [v3.10.0](https://github.com/hairyhenderson/gomplate/releases/tag/v3.10.0)_
 ### Usage

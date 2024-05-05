@@ -8,9 +8,9 @@ import (
 	"testing"
 
 	"github.com/hairyhenderson/gomplate/v4/internal/config"
+	"github.com/inetaf/netaddr"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"inet.af/netaddr"
 )
 
 func TestCreateNetFuncs(t *testing.T) {
@@ -154,7 +154,7 @@ func TestCIDRHost(t *testing.T) {
 	require.NoError(t, err)
 	assert.Equal(t, "fd00:fd12:3456:7890::22", ip.String())
 
-	// inet.af/netaddr.IPPrefix
+	// github.com/inetaf/netaddr.IPPrefix
 	ipPrefix, _ := n.ParseIPPrefix("10.12.127.0/20")
 
 	ip, err = n.CIDRHost(16, ipPrefix)

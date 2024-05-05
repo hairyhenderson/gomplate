@@ -11,8 +11,8 @@ import (
 	"github.com/hairyhenderson/gomplate/v4/internal/cidr"
 	"github.com/hairyhenderson/gomplate/v4/internal/deprecated"
 	"github.com/hairyhenderson/gomplate/v4/net"
+	"github.com/inetaf/netaddr"
 	"go4.org/netipx"
-	"inet.af/netaddr"
 )
 
 // CreateNetFuncs -
