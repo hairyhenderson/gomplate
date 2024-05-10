@@ -34,10 +34,15 @@ jobs:
         image-ref: gomplate
         format: sarif
         output: trivy-results.sarif
-        exit-code: 1
+        # exit-code: 1
         ignore-unfixed: true
         vuln-type: os,library
-        severity: CRITICAL,HIGH
+        # The SARIF format ignores severity and uploads all vulnerabilities for
+        # later triage. The table-format step above is used to fail the build if
+        # there are any critical or high vulnerabilities.
+        # See https://github.com/aquasecurity/trivy-action/issues/95
+        # severity: 'CRITICAL,HIGH'
+        trivyignores: .trivyignore
     - name: Upload Trivy scan results to GitHub Security tab
       uses: github/codeql-action/upload-sarif@v3
       with:
