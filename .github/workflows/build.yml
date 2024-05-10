@@ -25,19 +25,7 @@ jobs:
         with:
           name: gomplate
           path: bin/gomplate
-      - name: make test
-        run: |
-          [ -n "$CC_TEST_REPORTER_ID" ] && cc-test-reporter before-build
-          make test
-          EXIT_CODE=$?
-
-          if [ -n "$CC_TEST_REPORTER_ID" ]; then
-            # workaround from https://github.com/codeclimate/test-reporter/issues/378
-            export PREFIX=$(go list -m)
-            cc-test-reporter after-build -t gocov -p $PREFIX --exit-code $EXIT_CODE
-          fi
-        env:
-          CC_TEST_REPORTER_ID: ${{ secrets.CC_TEST_REPORTER_ID }}
+      - run: make test
       - run: make integration
   windows-build:
     runs-on: windows-latest
