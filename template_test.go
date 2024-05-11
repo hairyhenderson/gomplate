@@ -29,8 +29,10 @@ func TestOpenOutFile(t *testing.T) {
 
 	ctx := datafs.ContextWithFSProvider(context.Background(), datafs.WrappedFSProvider(fsys, "file"))
 
-	cfg := &config.Config{Stdout: &bytes.Buffer{}}
-	f, err := openOutFile(ctx, "/tmp/foo", 0o755, 0o644, false, nil, false)
+	f, err := openOutFile(ctx, "/tmp/foo", 0o755, 0o644, false, nil)
+	require.NoError(t, err)
+
+	_, err = f.Write([]byte("hello world"))
 	require.NoError(t, err)
 
 	wc, ok := f.(io.WriteCloser)
@@ -44,9 +46,12 @@ func TestOpenOutFile(t *testing.T) {
 
 	out := &bytes.Buffer{}
 
-	f, err = openOutFile(ctx, "-", 0o755, 0o644, false, out, false)
+	f, err = openOutFile(ctx, "-", 0o755, 0o644, false, out)
 	require.NoError(t, err)
-	assert.Equal(t, cfg.Stdout, f)
+
+	_, err = f.Write([]byte("hello world"))
+	require.NoError(t, err)
+	assert.Equal(t, "hello world", out.String())
 }
 
 func TestGatherTemplates(t *testing.T) {
@@ -76,16 +81,20 @@ func TestGatherTemplates(t *testing.T) {
 	require.NoError(t, err)
 	assert.Len(t, templates, 1)
 
+	buf := &bytes.Buffer{}
 	cfg = &config.Config{
 		Input:  "foo",
-		Stdout: &bytes.Buffer{},
+		Stdout: buf,
 	}
 	cfg.ApplyDefaults()
 	templates, err = gatherTemplates(ctx, cfg, nil)
 	require.NoError(t, err)
 	assert.Len(t, templates, 1)
 	assert.Equal(t, "foo", templates[0].Text)
-	assert.Equal(t, cfg.Stdout, templates[0].Writer)
+
+	_, err = templates[0].Writer.Write([]byte("hello world"))
+	require.NoError(t, err)
+	assert.Equal(t, "hello world", buf.String())
 
 	templates, err = gatherTemplates(ctx, &config.Config{
 		Input:       "foo",
@@ -106,41 +115,43 @@ func TestGatherTemplates(t *testing.T) {
 	assert.Equal(t, iohelpers.NormalizeFileMode(0o644), info.Mode())
 	_ = hackpadfs.Remove(fsys, "out")
 
+	buf = &bytes.Buffer{}
 	cfg = &config.Config{
 		InputFiles:  []string{"foo"},
 		OutputFiles: []string{"out"},
-		Stdout:      &bytes.Buffer{},
+		Stdout:      buf,
 	}
 	templates, err = gatherTemplates(ctx, cfg, nil)
 	require.NoError(t, err)
 	assert.Len(t, templates, 1)
 	assert.Equal(t, "bar", templates[0].Text)
-	assert.NotEqual(t, cfg.Stdout, templates[0].Writer)
-	// assert.Equal(t, os.FileMode(0o600), templates[0].mode)
 
 	_, err = templates[0].Writer.Write([]byte("hello world"))
 	require.NoError(t, err)
+	// negative test - we should not be writing to stdout
+	assert.NotEqual(t, "hello world", buf.String())
 
 	info, err = hackpadfs.Stat(fsys, "out")
 	require.NoError(t, err)
 	assert.Equal(t, iohelpers.NormalizeFileMode(0o600), info.Mode())
 	hackpadfs.Remove(fsys, "out")
 
+	buf = &bytes.Buffer{}
 	cfg = &config.Config{
 		InputFiles:  []string{"foo"},
 		OutputFiles: []string{"out"},
 		OutMode:     "755",
-		Stdout:      &bytes.Buffer{},
+		Stdout:      buf,
 	}
 	templates, err = gatherTemplates(ctx, cfg, nil)
 	require.NoError(t, err)
 	assert.Len(t, templates, 1)
 	assert.Equal(t, "bar", templates[0].Text)
-	assert.NotEqual(t, cfg.Stdout, templates[0].Writer)
-	// assert.Equal(t, iohelpers.NormalizeFileMode(0o755), templates[0].mode)
 
 	_, err = templates[0].Writer.Write([]byte("hello world"))
 	require.NoError(t, err)
+	// negative test - we should not be writing to stdout
+	assert.NotEqual(t, "hello world", buf.String())
 
 	info, err = hackpadfs.Stat(fsys, "out")
 	require.NoError(t, err)

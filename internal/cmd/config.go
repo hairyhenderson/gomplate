@@ -250,10 +250,6 @@ func applyEnvVars(_ context.Context, cfg *config.Config) (*config.Config, error)
 		cfg.PluginTimeout = t
 	}
 
-	if !cfg.SuppressEmpty && conv.ToBool(env.Getenv("GOMPLATE_SUPPRESS_EMPTY", "false")) {
-		cfg.SuppressEmpty = true
-	}
-
 	if !cfg.Experimental && conv.ToBool(env.Getenv("GOMPLATE_EXPERIMENTAL", "false")) {
 		cfg.Experimental = true
 	}

@@ -70,8 +70,8 @@ func TestGomplateignore_Simple(t *testing.T) {
 	files, err := execute(t, `# all dot files
 .*
 *.log`,
-		tfs.WithFile("empty.log", ""),
-		tfs.WithFile("rain.txt", ""))
+		tfs.WithFile("foo.log", "..."),
+		tfs.WithFile("rain.txt", "..."))
 
 	require.NoError(t, err)
 	assert.Equal(t, []string{"rain.txt"}, files)
@@ -91,12 +91,12 @@ f[o]o/bar
 		tfs.WithDir("foo",
 			tfs.WithDir("bar",
 				tfs.WithDir("tool",
-					tfs.WithFile("lex.txt", ""),
+					tfs.WithFile("lex.txt", "..."),
 				),
-				tfs.WithFile("1.txt", ""),
+				tfs.WithFile("1.txt", "..."),
 			),
 			tfs.WithDir("tar",
-				tfs.WithFile("2.txt", ""),
+				tfs.WithFile("2.txt", "..."),
 			),
 		),
 	)
@@ -110,10 +110,10 @@ func TestGomplateignore_Root(t *testing.T) {
 	files, err := execute(t, `.gomplateignore
 /1.txt`,
 		tfs.WithDir("sub",
-			tfs.WithFile("1.txt", ""),
-			tfs.WithFile("2.txt", ""),
+			tfs.WithFile("1.txt", "..."),
+			tfs.WithFile("2.txt", "..."),
 		),
-		tfs.WithFile("1.txt", ""),
+		tfs.WithFile("1.txt", "..."),
 	)
 
 	require.NoError(t, err)
@@ -127,14 +127,14 @@ func TestGomplateignore_Exclusion(t *testing.T) {
 !/e2.txt
 en/e3.txt
 !`,
-		tfs.WithFile("!", ""),
-		tfs.WithFile("e1.txt", ""),
-		tfs.WithFile("e2.txt", ""),
-		tfs.WithFile("e3.txt", ""),
+		tfs.WithFile("!", "xxx"),
+		tfs.WithFile("e1.txt", "xxx"),
+		tfs.WithFile("e2.txt", "xxx"),
+		tfs.WithFile("e3.txt", "xxx"),
 		tfs.WithDir("en",
-			tfs.WithFile("e1.txt", ""),
-			tfs.WithFile("e2.txt", ""),
-			tfs.WithFile("e3.txt", ""),
+			tfs.WithFile("e1.txt", "xxx"),
+			tfs.WithFile("e2.txt", "xxx"),
+			tfs.WithFile("e3.txt", "xxx"),
 		),
 	)
 
@@ -148,13 +148,13 @@ func TestGomplateignore_Nested(t *testing.T) {
 		tfs.WithDir("inner",
 			tfs.WithDir("inner2",
 				tfs.WithFile(".gomplateignore", "moss.ini\n!/jess.ini"),
-				tfs.WithFile("jess.ini", ""),
-				tfs.WithFile("moss.ini", "")),
+				tfs.WithFile("jess.ini", "xxx"),
+				tfs.WithFile("moss.ini", "xxx")),
 			tfs.WithFile(".gomplateignore", "*.lst\njess.ini"),
-			tfs.WithFile("2.lst", ""),
-			tfs.WithFile("foo.md", ""),
+			tfs.WithFile("2.lst", "xxx"),
+			tfs.WithFile("foo.md", "xxx"),
 		),
-		tfs.WithFile("1.txt", ""),
+		tfs.WithFile("1.txt", "xxx"),
 	)
 
 	require.NoError(t, err)
@@ -170,17 +170,17 @@ world.txt`,
 		tfs.WithDir("aa",
 			tfs.WithDir("a1",
 				tfs.WithDir("a2",
-					tfs.WithFile("hello.txt", ""),
-					tfs.WithFile("world.txt", "")),
-				tfs.WithFile("hello.txt", ""),
-				tfs.WithFile("world.txt", "")),
-			tfs.WithFile("hello.txt", ""),
-			tfs.WithFile("world.txt", "")),
+					tfs.WithFile("hello.txt", "..."),
+					tfs.WithFile("world.txt", "...")),
+				tfs.WithFile("hello.txt", "..."),
+				tfs.WithFile("world.txt", "...")),
+			tfs.WithFile("hello.txt", "..."),
+			tfs.WithFile("world.txt", "...")),
 		tfs.WithDir("bb",
-			tfs.WithFile("hello.txt", ""),
-			tfs.WithFile("world.txt", "")),
-		tfs.WithFile("hello.txt", ""),
-		tfs.WithFile("world.txt", ""),
+			tfs.WithFile("hello.txt", "..."),
+			tfs.WithFile("world.txt", "...")),
+		tfs.WithFile("hello.txt", "..."),
+		tfs.WithFile("world.txt", "..."),
 	)
 
 	require.NoError(t, err)
@@ -195,11 +195,11 @@ loss.txt
 !2.log
 `,
 		tfs.WithDir("loss.txt",
-			tfs.WithFile("1.log", ""),
-			tfs.WithFile("2.log", "")),
+			tfs.WithFile("1.log", "xxx"),
+			tfs.WithFile("2.log", "xxx")),
 		tfs.WithDir("foo",
-			tfs.WithFile("loss.txt", ""),
-			tfs.WithFile("bare.txt", "")),
+			tfs.WithFile("loss.txt", "xxx"),
+			tfs.WithFile("bare.txt", "xxx")),
 	)
 
 	require.NoError(t, err)
@@ -215,11 +215,11 @@ func TestGomplateignore_LeadingSpace(t *testing.T) {
 !  dart.log
 `,
 		tfs.WithDir("inner",
-			tfs.WithFile("  what.txt", ""),
-			tfs.WithFile("  dart.log", "")),
+			tfs.WithFile("  what.txt", "xxx"),
+			tfs.WithFile("  dart.log", "xxx")),
 		tfs.WithDir("inner2",
-			tfs.WithFile("  what.txt", "")),
-		tfs.WithFile("  what.txt", ""),
+			tfs.WithFile("  what.txt", "xxx")),
+		tfs.WithFile("  what.txt", "xxx"),
 	)
 
 	require.NoError(t, err)
@@ -236,19 +236,19 @@ func TestGomplateignore_WithExcludes(t *testing.T) {
 		"--exclude", "sprites/*.ini",
 	},
 		tfs.WithDir("logs",
-			tfs.WithFile("archive.zip", ""),
-			tfs.WithFile("engine.log", ""),
-			tfs.WithFile("skills.log", "")),
+			tfs.WithFile("archive.zip", "x"),
+			tfs.WithFile("engine.log", "x"),
+			tfs.WithFile("skills.log", "x")),
 		tfs.WithDir("rules",
-			tfs.WithFile("index.csv", ""),
-			tfs.WithFile("fire.txt", ""),
-			tfs.WithFile("earth.txt", "")),
+			tfs.WithFile("index.csv", "x"),
+			tfs.WithFile("fire.txt", "x"),
+			tfs.WithFile("earth.txt", "x")),
 		tfs.WithDir("sprites",
-			tfs.WithFile("human.csv", ""),
-			tfs.WithFile("demon.xml", ""),
-			tfs.WithFile("alien.ini", "")),
-		tfs.WithFile("manifest.json", ""),
-		tfs.WithFile("crash.bin", ""),
+			tfs.WithFile("human.csv", "x"),
+			tfs.WithFile("demon.xml", "x"),
+			tfs.WithFile("alien.ini", "x")),
+		tfs.WithFile("manifest.json", "x"),
+		tfs.WithFile("crash.bin", "x"),
 	)
 
 	require.NoError(t, err)
@@ -265,15 +265,15 @@ func TestGomplateignore_WithIncludes(t *testing.T) {
 		"--exclude", "rules/*.txt",
 	},
 		tfs.WithDir("logs",
-			tfs.WithFile("archive.zip", ""),
-			tfs.WithFile("engine.log", ""),
-			tfs.WithFile("skills.log", "")),
+			tfs.WithFile("archive.zip", "x"),
+			tfs.WithFile("engine.log", "x"),
+			tfs.WithFile("skills.log", "x")),
 		tfs.WithDir("rules",
-			tfs.WithFile("index.csv", ""),
-			tfs.WithFile("fire.txt", ""),
-			tfs.WithFile("earth.txt", "")),
-		tfs.WithFile("manifest.json", ""),
-		tfs.WithFile("crash.bin", ""),
+			tfs.WithFile("index.csv", "x"),
+			tfs.WithFile("fire.txt", "x"),
+			tfs.WithFile("earth.txt", "x")),
+		tfs.WithFile("manifest.json", "x"),
+		tfs.WithFile("crash.bin", "x"),
 	)
 
 	require.NoError(t, err)
@@ -290,19 +290,19 @@ func TestGomplateignore_WithExcludeProcessing(t *testing.T) {
 		"--exclude", "sprites/*.ini",
 	},
 		tfs.WithDir("logs",
-			tfs.WithFile("archive.zip", ""),
-			tfs.WithFile("engine.log", ""),
-			tfs.WithFile("skills.log", "")),
+			tfs.WithFile("archive.zip", "xxx"),
+			tfs.WithFile("engine.log", "xxx"),
+			tfs.WithFile("skills.log", "xxx")),
 		tfs.WithDir("rules",
-			tfs.WithFile("index.csv", ""),
-			tfs.WithFile("fire.txt", ""),
-			tfs.WithFile("earth.txt", "")),
+			tfs.WithFile("index.csv", "xxx"),
+			tfs.WithFile("fire.txt", "xxx"),
+			tfs.WithFile("earth.txt", "xxx")),
 		tfs.WithDir("sprites",
-			tfs.WithFile("human.csv", ""),
-			tfs.WithFile("demon.xml", ""),
-			tfs.WithFile("alien.ini", "")),
-		tfs.WithFile("manifest.json", ""),
-		tfs.WithFile("crash.bin", ""),
+			tfs.WithFile("human.csv", "xxx"),
+			tfs.WithFile("demon.xml", "xxx"),
+			tfs.WithFile("alien.ini", "xxx")),
+		tfs.WithFile("manifest.json", "xxx"),
+		tfs.WithFile("crash.bin", "xxx"),
 	)
 
 	require.NoError(t, err)

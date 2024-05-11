@@ -82,17 +82,21 @@ func allWhitespace(p []byte) bool {
 
 // NopCloser returns a WriteCloser with a no-op Close method wrapping
 // the provided io.Writer.
-type NopCloser struct {
+func NopCloser(w io.Writer) io.WriteCloser {
+	return &nopCloser{Writer: w}
+}
+
+type nopCloser struct {
 	io.Writer
 }
 
 // Close - implements io.Closer
-func (n *NopCloser) Close() error {
+func (n *nopCloser) Close() error {
 	return nil
 }
 
 var (
-	_ io.WriteCloser = (*NopCloser)(nil)
+	_ io.WriteCloser = (*nopCloser)(nil)
 	_ io.WriteCloser = (*emptySkipper)(nil)
 	_ io.WriteCloser = (*sameSkipper)(nil)
 )

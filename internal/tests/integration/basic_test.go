@@ -178,8 +178,7 @@ func TestBasic_EmptyOutputSuppression(t *testing.T) {
 	tmpDir := setupBasicTest(t)
 	out := tmpDir.Join("out")
 	o, e, err := cmd(t, "-i", `{{print "\t  \n\n\r\n\t\t     \v\n"}}`,
-		"-o", out).
-		withEnv("GOMPLATE_SUPPRESS_EMPTY", "true").run()
+		"-o", out).run()
 	assertSuccess(t, o, e, err, "")
 
 	_, err = os.Stat(out)
