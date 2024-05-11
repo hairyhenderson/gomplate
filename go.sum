@@ -772,5 +772,5 @@ honnef.co/go/tools v0.0.0-20190102054323-c2f93a96b099/go.mod h1:rf3lG4BRIbNafJWh
 honnef.co/go/tools v0.0.0-20190523083050-ea95bdfd59fc/go.mod h1:rf3lG4BRIbNafJWhAfAdb/ePZxsR/4RtNHQocxwk9r4=
 inet.af/netaddr v0.0.0-20230525184311-b8eac61e914a h1:1XCVEdxrvL6c0TGOhecLuB7U9zYNdxZEjvOqJreKZiM=
 inet.af/netaddr v0.0.0-20230525184311-b8eac61e914a/go.mod h1:e83i32mAQOW1LAqEIweALsuK2Uw4mhQadA5r7b0Wobo=
-k8s.io/client-go v0.29.3 h1:R/zaZbEAxqComZ9FHeQwOh3Y1ZUs7FaHKZdQtIc2WZg=
-k8s.io/client-go v0.29.3/go.mod h1:tkDisCvgPfiRpxGnOORfkljmS+UrW+WtXAy2fTvXJB0=
+k8s.io/client-go v0.30.0 h1:sB1AGGlhY/o7KCyCEQ0bPWzYDL0pwOZO4vAtTSh/gJQ=
+k8s.io/client-go v0.30.0/go.mod h1:g7li5O5256qe6TYdAMyX/otJqMhIiGgTapdLchhmOaY=
