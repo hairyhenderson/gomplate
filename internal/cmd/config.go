@@ -3,14 +3,13 @@ package cmd
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"time"
 
 	"github.com/hairyhenderson/gomplate/v4/conv"
 	"github.com/hairyhenderson/gomplate/v4/env"
 	"github.com/hairyhenderson/gomplate/v4/internal/config"
 	"github.com/hairyhenderson/gomplate/v4/internal/datafs"
-
-	"github.com/rs/zerolog"
 
 	"github.com/spf13/cobra"
 )
@@ -66,8 +65,6 @@ func pickConfigFile(cmd *cobra.Command) (cfgFile string, required bool) {
 }
 
 func readConfigFile(ctx context.Context, cmd *cobra.Command) (cfg *config.Config, err error) {
-	log := zerolog.Ctx(ctx)
-
 	cfgFile, configRequired := pickConfigFile(cmd)
 
 	// we only support loading configs from the local filesystem for now
@@ -89,7 +86,7 @@ func readConfigFile(ctx context.Context, cmd *cobra.Command) (cfg *config.Config
 		return cfg, fmt.Errorf("parsing config file %q: %w", cfgFile, err)
 	}
 
-	log.Debug().Str("cfgFile", cfgFile).Msg("using config file")
+	slog.DebugContext(ctx, "using config file", "cfgFile", cfgFile)
 
 	return cfg, nil
 }

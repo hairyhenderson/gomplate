@@ -367,7 +367,7 @@ The `GOMPLATE_LOG_FORMAT` environment variable can be used to control the format
 of the log messages that gomplate may output, whether error messages or debug
 messages when the [`--verbose`](#verbose) option is in use.
 
-The value can be set to `json`, `logfmt`, `console`, or `simple`.
+The value can be set to `json` or `logfmt`.
 
 #### `json` format
 

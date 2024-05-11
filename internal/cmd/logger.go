@@ -1,17 +1,13 @@
 package cmd
 
 import (
-	"context"
-	"fmt"
 	"io"
-	stdlog "log"
+	"log/slog"
 	"os"
 	"runtime"
-	"time"
 
 	"github.com/hairyhenderson/gomplate/v4/env"
-	"github.com/rs/zerolog"
-	zlog "github.com/rs/zerolog/log"
+	"github.com/lmittmann/tint"
 	"golang.org/x/term"
 )
 
@@ -23,78 +19,53 @@ func logFormat(out io.Writer) string {
 	return env.Getenv("GOMPLATE_LOG_FORMAT", defaultFormat)
 }
 
-func fmtField(fname string) func(i interface{}) string {
-	return func(i interface{}) string {
-		if i == nil || i == "" {
-			return ""
-		}
+func createLogHandler(format string, out io.Writer, level slog.Level) slog.Handler {
+	opts := &slog.HandlerOptions{Level: level}
 
-		if s, ok := i.(string); ok {
-			for _, c := range s {
-				if c <= 0x20 || c == '\\' || c == '"' {
-					return fmt.Sprintf("%s=%q", fname, i)
-				}
-			}
-		}
-		return fmt.Sprintf("%s=%s", fname, i)
-	}
-}
-
-func createLogger(format string, out io.Writer) zerolog.Logger {
-	zerolog.MessageFieldName = "msg"
-
-	l := zlog.Logger.Output(out)
-
-	stdlogger := l.With().Bool("stdlog", true).Logger()
-	stdlog.SetFlags(0)
-
+	var handler slog.Handler
 	switch format {
 	case "console":
+		// logFormat() already checks if this is a terminal, but we need to
+		// check again because the format may be overridden with `GOMPLATE_LOG_FORMAT`
 		useColour := false
 		if f, ok := out.(*os.File); ok && term.IsTerminal(int(f.Fd())) && runtime.GOOS != "windows" {
 			useColour = true
 		}
-		l = l.Output(zerolog.ConsoleWriter{
-			Out:        out,
-			NoColor:    !useColour,
+		handler = tint.NewHandler(out, &tint.Options{
+			Level:      level,
 			TimeFormat: "15:04:05",
+			NoColor:    !useColour,
 		})
-		stdlogger = stdlogger.Output(zerolog.ConsoleWriter{
-			Out:         out,
-			NoColor:     !useColour,
-			FormatLevel: func(_ interface{}) string { return "" },
+	case "simple":
+		handler = tint.NewHandler(out, &tint.Options{
+			Level:   level,
+			NoColor: true,
+			ReplaceAttr: func(_ []string, attr slog.Attr) slog.Attr {
+				if attr.Key == "level" {
+					attr.Value = slog.StringValue("")
+				}
+				if attr.Key == "time" {
+					attr.Value = slog.StringValue("")
+				}
+				return attr
+			},
 		})
 	case "logfmt":
-		w := zerolog.ConsoleWriter{
-			Out:             out,
-			NoColor:         true,
-			FormatMessage:   fmtField(zerolog.MessageFieldName),
-			FormatLevel:     fmtField(zerolog.LevelFieldName),
-			FormatTimestamp: fmtField(zerolog.TimestampFieldName),
-		}
-		l = l.Output(w)
-		stdlogger = stdlogger.Output(w)
-	case "simple":
-		w := zerolog.ConsoleWriter{
-			Out:             out,
-			NoColor:         true,
-			FormatLevel:     func(_ interface{}) string { return "" },
-			FormatTimestamp: func(_ interface{}) string { return "" },
-		}
-		l = l.Output(w)
-		stdlogger = stdlogger.Output(w)
+		handler = slog.NewTextHandler(out, opts)
+	default:
+		// json is still default
+		handler = slog.NewJSONHandler(out, opts)
 	}
-	stdlog.SetOutput(stdlogger)
 
-	return l
+	return handler
 }
 
-func initLogger(ctx context.Context, out io.Writer) context.Context {
+func initLogger(out io.Writer, level slog.Level) {
 	// default to warn level
-	zerolog.SetGlobalLevel(zerolog.WarnLevel)
-	zerolog.DurationFieldUnit = time.Second
+	if level == 0 {
+		level = slog.LevelWarn
+	}
 
-	l := createLogger(logFormat(out), out)
-
-	return l.WithContext(ctx)
+	handler := createLogHandler(logFormat(out), out, level)
+	slog.SetDefault(slog.New(handler))
 }
