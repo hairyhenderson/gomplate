@@ -30,7 +30,7 @@ require (
 	golang.org/x/exp v0.0.0-20240222234643-814bf88cf225
 	golang.org/x/sys v0.19.0
 	golang.org/x/term v0.19.0
-	golang.org/x/text v0.14.0
+	golang.org/x/text v0.15.0
 	gotest.tools/v3 v3.5.1
 	inet.af/netaddr v0.0.0-20230525184311-b8eac61e914a
 	k8s.io/client-go v0.29.3
