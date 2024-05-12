@@ -1,5 +1,5 @@
 .DEFAULT_GOAL = build
-GO ?= go
+GO := go
 extension = $(patsubst windows,.exe,$(filter windows,$(1)))
 PKG_NAME := gomplate
 DOCKER_REPO ?= hairyhenderson/$(PKG_NAME)
@@ -20,9 +20,9 @@ endif
 COMMIT ?= `git rev-parse --short HEAD 2>/dev/null`
 VERSION ?= $(shell $(GO) run ./version/gen/vgen.go)
 
-VERSION_PATH := `$(GO) list ./version`
-COMMIT_FLAG := -X $(VERSION_PATH).GitCommit=$(COMMIT)
-VERSION_FLAG := -X $(VERSION_PATH).Version=$(VERSION)
+VERSION_PATH ?= `$(GO) list ./version`
+COMMIT_FLAG ?= -X $(VERSION_PATH).GitCommit=$(COMMIT)
+VERSION_FLAG ?= -X $(VERSION_PATH).Version=$(VERSION)
 GO_LDFLAGS ?= $(COMMIT_FLAG) $(VERSION_FLAG)
 
 GOOS ?= $(shell $(GO) version | sed 's/^.*\ \([a-z0-9]*\)\/\([a-z0-9]*\)/\1/')
@@ -105,35 +105,37 @@ build-release: artifacts.cid
 
 docker-images: gomplate.iid
 
-$(PREFIX)/bin/$(PKG_NAME)_%v5$(call extension,$(GOOS)): $(shell find $(PREFIX) -type f -name "*.go")
+GO_FILES := $(shell find . -type f -name "*.go")
+
+$(PREFIX)/bin/$(PKG_NAME)_%v5$(call extension,$(GOOS)): $(GO_FILES)
 	GOOS=$(shell echo $* | cut -f1 -d-) GOARCH=$(shell echo $* | cut -f2 -d- ) GOARM=5 CGO_ENABLED=$(CGO_ENABLED) \
 		$(GO) build \
 			-ldflags "-w -s $(GO_LDFLAGS)" \
 			-o $@ \
 			./cmd/$(PKG_NAME)
 
-$(PREFIX)/bin/$(PKG_NAME)_%v6$(call extension,$(GOOS)): $(shell find $(PREFIX) -type f -name "*.go")
+$(PREFIX)/bin/$(PKG_NAME)_%v6$(call extension,$(GOOS)): $(GO_FILES)
 	GOOS=$(shell echo $* | cut -f1 -d-) GOARCH=$(shell echo $* | cut -f2 -d- ) GOARM=6 CGO_ENABLED=$(CGO_ENABLED) \
 		$(GO) build \
 			-ldflags "-w -s $(GO_LDFLAGS)" \
 			-o $@ \
 			./cmd/$(PKG_NAME)
 
-$(PREFIX)/bin/$(PKG_NAME)_%v7$(call extension,$(GOOS)): $(shell find $(PREFIX) -type f -name "*.go")
+$(PREFIX)/bin/$(PKG_NAME)_%v7$(call extension,$(GOOS)): $(GO_FILES)
 	GOOS=$(shell echo $* | cut -f1 -d-) GOARCH=$(shell echo $* | cut -f2 -d- ) GOARM=7 CGO_ENABLED=$(CGO_ENABLED) \
 		$(GO) build \
 			-ldflags "-w -s $(GO_LDFLAGS)" \
 			-o $@ \
 			./cmd/$(PKG_NAME)
 
-$(PREFIX)/bin/$(PKG_NAME)_windows-%.exe: $(shell find $(PREFIX) -type f -name "*.go")
+$(PREFIX)/bin/$(PKG_NAME)_windows-%.exe: $(GO_FILES)
 	GOOS=windows GOARCH=$* GOARM= CGO_ENABLED=$(CGO_ENABLED) \
 		$(GO) build \
 			-ldflags "-w -s $(GO_LDFLAGS)" \
 			-o $@ \
 			./cmd/$(PKG_NAME)
 
-$(PREFIX)/bin/$(PKG_NAME)_%$(TARGETVARIANT)$(call extension,$(GOOS)): $(shell find $(PREFIX) -type f -name "*.go")
+$(PREFIX)/bin/$(PKG_NAME)_%$(TARGETVARIANT)$(call extension,$(GOOS)): $(GO_FILES)
 	GOOS=$(shell echo $* | cut -f1 -d-) GOARCH=$(shell echo $* | cut -f2 -d- ) GOARM=$(GOARM) CGO_ENABLED=$(CGO_ENABLED) \
 		$(GO) build \
 			-ldflags "-w -s $(GO_LDFLAGS)" \
@@ -154,11 +156,11 @@ test:
 endif
 
 .SECONDEXPANSION:
-$(shell go list -f '{{ if not (eq "" (join .TestGoFiles "")) }}testbin/{{.ImportPath}}.test.exe{{end}}' ./...): $$(shell go list -f '{{.Dir}}' $$(subst testbin/,,$$(subst .test.exe,,$$@)))
+testbin/%.test.exe: $$(shell $$(GO) list -f '{{.Dir}}' $$(subst testbin/,,$$(subst .test.exe,,$$@)))
 	@GOOS=windows GOARCH=amd64 $(GO) test -c -o $@ $<
 
 .SECONDEXPANSION:
-$(shell go list -f '{{ if not (eq "" (join .TestGoFiles "")) }}testbin/{{.ImportPath}}.test{{end}}' ./...): $$(shell go list -f '{{.Dir}}' $$(subst testbin/,,$$(subst .test,,$$@)))
+testbin/%.test: $$(shell $$(GO) list -f '{{.Dir}}' $$(subst testbin/,,$$(subst .test,,$$@)))
 	@$(GO) test -c -o $@ $<
 
 # this is a special target for testing a package on Windows from a non-Windows
@@ -173,14 +175,15 @@ $(shell go list -f '{{ if not (eq "" (join .TestGoFiles "")) }}testbin/{{.Import
 # An F: drive is expected to be available, with a tmp directory. This is used
 # to make sure gomplate can deal with files on a different volume.
 .SECONDEXPANSION:
-$(shell go list -f '{{ if not (eq "" (join .TestGoFiles "")) }}testbin/{{.ImportPath}}.test.exe.remote{{end}}' ./...): $$(shell go list -f '{{.Dir}}' $$(subst testbin/,,$$(subst .test.exe.remote,,$$@)))
+testbin/%.test.exe.remote: $$(shell $$(GO) list -f '{{.Dir}}' $$(subst testbin/,,$$(subst .test.exe.remote,,$$@)))
 	@echo $<
 	@GOOS=windows GOARCH=amd64 $(GO) test -tags timetzdata -c -o $(PREFIX)/testbin/remote-test.exe $<
 	@scp -q $(PREFIX)/testbin/remote-test.exe $(GO_REMOTE_WINDOWS):/$(shell ssh $(GO_REMOTE_WINDOWS) 'echo %TEMP%' | cut -f2 -d= | sed -e 's#\\#/#g')/
 	@ssh -o 'SetEnv TMP=F:\tmp' $(GO_REMOTE_WINDOWS) '%TEMP%\remote-test.exe'
 
 # test-remote-windows runs the above target for all packages that have tests
-test-remote-windows: $(shell go list -f '{{ if not (eq "" (join .TestGoFiles "")) }}testbin/{{.ImportPath}}.test.exe.remote{{end}}' ./...)
+.SECONDEXPANSION:
+test-remote-windows: $$(shell $$(GO) list -f '{{ if not (eq "" (join .TestGoFiles "")) }}testbin/{{.ImportPath}}.test.exe.remote{{end}}' ./...)
 
 ifeq ($(OS),Windows_NT)
 integration: $(PREFIX)/bin/$(PKG_NAME)$(call extension,$(GOOS))
@@ -227,6 +230,6 @@ lint:
 ci-lint:
 	@golangci-lint run --verbose --max-same-issues=0 --max-issues-per-linter=0 --out-format=github-actions
 
-.PHONY: gen-changelog clean test build-x build-release build test-integration-docker gen-docs lint clean-images clean-containers docker-images test-remote-windows integration testbins-windows gen-func-docs
+.PHONY: gen-changelog clean test build-x build-release build test-integration-docker gen-docs lint clean-images clean-containers docker-images integration gen-func-docs
 .DELETE_ON_ERROR:
 .SECONDARY:
