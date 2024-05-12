@@ -629,7 +629,7 @@ map[foo:1 bar:5 baz:4]
 
 Given a map, returns a new map with any entries that have the given keys.
 
-All keys are converted to strings.
+The keys can either be separate arguments, or a slice (since v4.0.0).
 
 This is the inverse of [`coll.Omit`](#coll-omit).
 
@@ -649,7 +649,7 @@ map | coll.Pick keys...
 
 | name | description |
 |------|-------------|
-| `keys...` | _(required)_ the keys to match |
+| `keys...` | _(required)_ the keys (strings) to match |
 | `map` | _(required)_ the map to pick from |
 
 ### Examples
@@ -659,12 +659,18 @@ $ gomplate -i '{{ $data := dict "foo" 1 "bar" 2 "baz" 3 }}
 {{ coll.Pick "foo" "baz" $data }}'
 map[baz:3 foo:1]
 ```
+```console
+$ gomplate -i '{{ $data := dict "foo" 1 "bar" 2 "baz" 3 }}
+{{ $keys := coll.Slice "foo" "baz" }}
+{{ coll.Pick $keys $data }}'
+map[baz:3 foo:1]
+```
 
 ## `coll.Omit`
 
 Given a map, returns a new map without any entries that have the given keys.
 
-All keys are converted to strings.
+The keys can either be separate arguments, or a slice (since v4.0.0).
 
 This is the inverse of [`coll.Pick`](#coll-pick).
 
@@ -684,7 +690,7 @@ map | coll.Omit keys...
 
 | name | description |
 |------|-------------|
-| `keys...` | _(required)_ the keys to match |
+| `keys...` | _(required)_ the keys (strings) to match |
 | `map` | _(required)_ the map to omit from |
 
 ### Examples
@@ -692,5 +698,11 @@ map | coll.Omit keys...
 ```console
 $ gomplate -i '{{ $data := dict "foo" 1 "bar" 2 "baz" 3 }}
 {{ coll.Omit "foo" "baz" $data }}'
+map[bar:2]
+```
+```console
+$ gomplate -i '{{ $data := dict "foo" 1 "bar" 2 "baz" 3 }}
+{{ $keys := coll.Slice "foo" "baz" }}
+{{ coll.Omit $keys $data }}'
 map[bar:2]
 ```
