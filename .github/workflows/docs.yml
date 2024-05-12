@@ -15,7 +15,7 @@ jobs:
           sudo mv gomplate /usr/local/bin
       - name: Make sure function docs are up-to-date
         run: |
-          make --always-make gen-func-docs
+          make --always-make gen-func-docs GOOS= GOARCH= GO=echo
           git diff --exit-code
           if [ $? -ne 0 ]; then
             echo "Function docs are out of date. Please run 'make gen-func-docs' locally and commit the changes."
