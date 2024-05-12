@@ -1,0 +1,23 @@
+name: Docs Checks
+on:
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  check-func-docs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install gomplate
+        run: |
+          docker create --name gomplate hairyhenderson/gomplate
+          docker cp gomplate:/gomplate .
+          sudo mv gomplate /usr/local/bin
+      - name: Make sure function docs are up-to-date
+        run: |
+          make --always-make gen-func-docs
+          git diff --exit-code
+          if [ $? -ne 0 ]; then
+            echo "Function docs are out of date. Please run 'make gen-func-docs' locally and commit the changes."
+            exit 1
+          fi

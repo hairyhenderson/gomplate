@@ -213,6 +213,9 @@ gen-docs: docs/themes/hugo-theme-relearn
 docs/content/functions/%.md: docs-src/content/functions/%.yml docs-src/content/functions/func_doc.md.tmpl
 	gomplate -d data=$< -f docs-src/content/functions/func_doc.md.tmpl -o $@
 
+# run the above target for all files found in docs-src/content/functions/*.yml
+gen-func-docs: $(shell find docs-src/content/functions -name "*.yml" | sed -e 's#docs-src#docs#' -e 's#\.yml#\.md#')
+
 # this target doesn't usually get used - it's mostly here as a reminder to myself
 # hint: make sure CLOUDCONVERT_API_KEY is set ;)
 gomplate.png: gomplate.svg
@@ -224,6 +227,6 @@ lint:
 ci-lint:
 	@golangci-lint run --verbose --max-same-issues=0 --max-issues-per-linter=0 --out-format=github-actions
 
-.PHONY: gen-changelog clean test build-x build-release build test-integration-docker gen-docs lint clean-images clean-containers docker-images test-remote-windows integration testbins-windows
+.PHONY: gen-changelog clean test build-x build-release build test-integration-docker gen-docs lint clean-images clean-containers docker-images test-remote-windows integration testbins-windows gen-func-docs
 .DELETE_ON_ERROR:
 .SECONDARY:
