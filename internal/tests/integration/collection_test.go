@@ -93,10 +93,12 @@ func TestColl_Flatten(t *testing.T) {
 
 func TestColl_Pick(t *testing.T) {
 	inOutTest(t, `{{ $data := dict "foo" 1 "bar" 2 "baz" 3 }}{{ coll.Pick "foo" "baz" $data }}`, "map[baz:3 foo:1]")
+	inOutTest(t, `{{ $data := dict "foo" 1 "bar" 2 "baz" 3 }}{{ coll.Pick (coll.Slice "foo" "baz") $data }}`, "map[baz:3 foo:1]")
 }
 
 func TestColl_Omit(t *testing.T) {
 	inOutTest(t, `{{ $data := dict "foo" 1 "bar" 2 "baz" 3 }}{{ coll.Omit "foo" "baz" $data }}`, "map[bar:2]")
+	inOutTest(t, `{{ $data := dict "foo" 1 "bar" 2 "baz" 3 }}{{ coll.Omit (coll.Slice "foo" "baz") $data }}`, "map[bar:2]")
 }
 
 func TestColl_JQ(t *testing.T) {
