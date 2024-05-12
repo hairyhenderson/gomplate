@@ -536,6 +536,43 @@ Go
 COBOL
 ```
 
+## `data.CUE`_(unreleased)_
+**Unreleased:** _This function is in development, and not yet available in released builds of gomplate._
+
+**Alias:** `cue`
+
+Converts a [CUE](https://cuelang.org/) document into an object. Any type
+of CUE document is supported. This can be used to access properties of CUE
+documents.
+
+Note that the `import` statement is not yet supported, and will result in
+an error (except for importing builtin packages).
+
+### Usage
+
+```
+data.CUE input
+```
+```
+input | data.CUE
+```
+
+### Arguments
+
+| name | description |
+|------|-------------|
+| `input` | _(required)_ the CUE document to parse |
+
+### Examples
+
+```console
+$ gomplate -i '{{ $t := `data: {
+    hello: "world"
+  }` -}}
+  Hello {{ (cue $t).data.hello }}'
+Hello world
+```
+
 ## `data.ToJSON`
 
 **Alias:** `toJSON`
@@ -725,4 +762,47 @@ $ gomplate -f input.tmpl
 first,second
 1,2
 3,4
+```
+
+## `data.ToCUE`_(unreleased)_
+**Unreleased:** _This function is in development, and not yet available in released builds of gomplate._
+
+**Alias:** `toCUE`
+
+Converts an object to a [CUE](https://cuelang.org/) document in canonical
+format. The input object can be of any type.
+
+This is roughly equivalent to using the `cue export --out=cue <file>`
+command to convert from other formats to CUE.
+
+### Usage
+
+```
+data.ToCUE input
+```
+```
+input | data.ToCUE
+```
+
+### Arguments
+
+| name | description |
+|------|-------------|
+| `input` | _(required)_ the object to marshal as a CUE document |
+
+### Examples
+
+```console
+$ gomplate -i '{{ `{"foo":"bar"}` | data.JSON | data.ToCUE }}'
+{
+	foo: "bar"
+}
+```
+```console
+$ gomplate -i '{{ toCUE "hello world" }}'
+"hello world"
+```
+```console
+$ gomplate -i '{{ coll.Slice 1 "two" true | data.ToCUE }}'
+[1, "two", true]
 ```
