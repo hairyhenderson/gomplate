@@ -172,6 +172,19 @@ func pickOmitArgs(args ...interface{}) (map[string]interface{}, []string, error)
 		return nil, nil, fmt.Errorf("wrong map type: must be map[string]interface{}, got %T", args[len(args)-1])
 	}
 
+	// special-case - if there's only one key and it's a slice, expand it
+	if len(args) == 2 {
+		if reflect.TypeOf(args[0]).Kind() == reflect.Slice {
+			sl := reflect.ValueOf(args[0])
+			expandedArgs := make([]interface{}, sl.Len()+1)
+			for i := 0; i < sl.Len(); i++ {
+				expandedArgs[i] = sl.Index(i).Interface()
+			}
+			expandedArgs[len(expandedArgs)-1] = m
+			args = expandedArgs
+		}
+	}
+
 	keys := make([]string, len(args)-1)
 	for i, v := range args[0 : len(args)-1] {
 		k, ok := v.(string)

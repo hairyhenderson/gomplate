@@ -94,6 +94,19 @@ func TestPick(t *testing.T) {
 	out, err = c.Pick("foo", "bar", "", in)
 	require.NoError(t, err)
 	assert.EqualValues(t, in, out)
+
+	t.Run("supports slice key", func(t *testing.T) {
+		t.Parallel()
+
+		in := map[string]interface{}{
+			"foo": "bar",
+			"bar": true,
+			"":    "baz",
+		}
+		out, err := c.Pick([]string{"foo", "bar"}, in)
+		require.NoError(t, err)
+		assert.EqualValues(t, map[string]interface{}{"foo": "bar", "bar": true}, out)
+	})
 }
 
 func TestOmit(t *testing.T) {
@@ -143,6 +156,32 @@ func TestOmit(t *testing.T) {
 	out, err = c.Omit("foo", "bar", "", in)
 	require.NoError(t, err)
 	assert.EqualValues(t, map[string]interface{}{}, out)
+
+	t.Run("supports slice of strings", func(t *testing.T) {
+		t.Parallel()
+
+		in := map[string]interface{}{
+			"foo": "bar",
+			"bar": true,
+			"":    "baz",
+		}
+		out, err := c.Omit([]string{"foo", "bar"}, in)
+		require.NoError(t, err)
+		assert.EqualValues(t, map[string]interface{}{"": "baz"}, out)
+	})
+
+	t.Run("supports slice of interface{}", func(t *testing.T) {
+		t.Parallel()
+
+		in := map[string]interface{}{
+			"foo": "bar",
+			"bar": true,
+			"":    "baz",
+		}
+		out, err := c.Omit([]interface{}{"foo", "bar"}, in)
+		require.NoError(t, err)
+		assert.EqualValues(t, map[string]interface{}{"": "baz"}, out)
+	})
 }
 
 func TestGoSlice(t *testing.T) {
