@@ -33,7 +33,7 @@ require (
 	golang.org/x/text v0.15.0
 	gotest.tools/v3 v3.5.1
 	inet.af/netaddr v0.0.0-20230525184311-b8eac61e914a
-	k8s.io/client-go v0.30.0
+	k8s.io/client-go v0.30.1
 )
 
 // TODO: once https://github.com/go-git/go-git/pull/416 is merged, this can be
