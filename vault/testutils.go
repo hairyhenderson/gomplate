@@ -11,13 +11,13 @@ import (
 
 // MockServer -
 func MockServer(code int, body string) (*httptest.Server, *Vault) {
-	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		w.WriteHeader(code)
 		fmt.Fprintln(w, body)
 	}))
 
 	tr := &http.Transport{
-		Proxy: func(req *http.Request) (*url.URL, error) {
+		Proxy: func(_ *http.Request) (*url.URL, error) {
 			return url.Parse(server.URL)
 		},
 	}

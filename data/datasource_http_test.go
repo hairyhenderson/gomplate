@@ -33,7 +33,7 @@ func setupHTTP(code int, mimetype string, body string) (*httptest.Server, *http.
 
 	client := &http.Client{
 		Transport: &http.Transport{
-			Proxy: func(req *http.Request) (*url.URL, error) {
+			Proxy: func(_ *http.Request) (*url.URL, error) {
 				return url.Parse(server.URL)
 			},
 		},
