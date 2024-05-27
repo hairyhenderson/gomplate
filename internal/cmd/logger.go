@@ -62,7 +62,7 @@ func createLogger(format string, out io.Writer) zerolog.Logger {
 		stdlogger = stdlogger.Output(zerolog.ConsoleWriter{
 			Out:         out,
 			NoColor:     !useColour,
-			FormatLevel: func(i interface{}) string { return "" },
+			FormatLevel: func(_ interface{}) string { return "" },
 		})
 	case "logfmt":
 		w := zerolog.ConsoleWriter{
@@ -78,8 +78,8 @@ func createLogger(format string, out io.Writer) zerolog.Logger {
 		w := zerolog.ConsoleWriter{
 			Out:             out,
 			NoColor:         true,
-			FormatLevel:     func(i interface{}) string { return "" },
-			FormatTimestamp: func(i interface{}) string { return "" },
+			FormatLevel:     func(_ interface{}) string { return "" },
+			FormatTimestamp: func(_ interface{}) string { return "" },
 		}
 		l = l.Output(w)
 		stdlogger = stdlogger.Output(w)

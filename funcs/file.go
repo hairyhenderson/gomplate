@@ -70,7 +70,7 @@ func (f *FileFuncs) ReadDir(path interface{}) ([]string, error) {
 // Walk -
 func (f *FileFuncs) Walk(path interface{}) ([]string, error) {
 	files := make([]string, 0)
-	err := afero.Walk(f.fs, conv.ToString(path), func(subpath string, finfo os.FileInfo, err error) error {
+	err := afero.Walk(f.fs, conv.ToString(path), func(subpath string, _ os.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
