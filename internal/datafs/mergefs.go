@@ -26,8 +26,8 @@ import (
 // paths. Only a URL like "merge:" or "merge:///" makes sense here - the
 // piped-separated lists of sub-sources to merge must be given to Open.
 //
-// Usually you'll want to use WithDataSourcesFS to provide the map of
-// datasources that can be referenced. Otherwise, only URLs will be supported.
+// You can use WithDataSourceRegistryFS to provide the datasource registry,
+// otherwise, an empty registry will be used.
 //
 // An FSProvider will also be needed, which can be provided with a context
 // using ContextWithFSProvider. Provide that context with fsimpl.WithContextFS.
@@ -37,24 +37,24 @@ func NewMergeFS(u *url.URL) (fs.FS, error) {
 	}
 
 	return &mergeFS{
-		ctx:     context.Background(),
-		sources: map[string]config.DataSource{},
+		ctx:      context.Background(),
+		registry: NewRegistry(),
 	}, nil
 }
 
 type mergeFS struct {
 	ctx        context.Context
 	httpClient *http.Client
-	sources    map[string]config.DataSource
+	registry   Registry
 }
 
 //nolint:gochecknoglobals
 var MergeFS = fsimpl.FSProviderFunc(NewMergeFS, "merge")
 
 var (
-	_ fs.FS             = (*mergeFS)(nil)
-	_ withContexter     = (*mergeFS)(nil)
-	_ withDataSourceser = (*mergeFS)(nil)
+	_ fs.FS                    = (*mergeFS)(nil)
+	_ withContexter            = (*mergeFS)(nil)
+	_ withDataSourceRegistryer = (*mergeFS)(nil)
 )
 
 func (f *mergeFS) WithContext(ctx context.Context) fs.FS {
@@ -79,13 +79,13 @@ func (f *mergeFS) WithHTTPClient(client *http.Client) fs.FS {
 	return &fsys
 }
 
-func (f *mergeFS) WithDataSources(sources map[string]config.DataSource) fs.FS {
-	if sources == nil {
+func (f *mergeFS) WithDataSourceRegistry(registry Registry) fs.FS {
+	if registry == nil {
 		return f
 	}
 
 	fsys := *f
-	fsys.sources = sources
+	fsys.registry = registry
 
 	return &fsys
 }
@@ -106,7 +106,7 @@ func (f *mergeFS) Open(name string) (fs.File, error) {
 
 	for i, part := range parts {
 		// if this is a datasource, look it up
-		subSource, ok := f.sources[part]
+		subSource, ok := f.registry.Lookup(part)
 		if !ok {
 			// maybe it's a relative filename?
 			u, uerr := urlhelpers.ParseSourceURL(part)

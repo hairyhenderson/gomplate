@@ -5,8 +5,6 @@ import (
 	"io"
 	"io/fs"
 	"os"
-
-	"github.com/hairyhenderson/gomplate/v4/internal/config"
 )
 
 // withContexter is an fs.FS that can be configured with a custom context
@@ -15,16 +13,16 @@ type withContexter interface {
 	WithContext(ctx context.Context) fs.FS
 }
 
-type withDataSourceser interface {
-	WithDataSources(sources map[string]config.DataSource) fs.FS
+type withDataSourceRegistryer interface {
+	WithDataSourceRegistry(registry Registry) fs.FS
 }
 
-// WithDataSourcesFS injects a datasource map into the filesystem fs, if the
-// filesystem supports it (i.e. has a WithDataSources method). This is used for
+// WithDataSourceRegistryFS injects a datasource registry into the filesystem fs, if the
+// filesystem supports it (i.e. has a WithDataSourceRegistry method). This is used for
 // the mergefs filesystem.
-func WithDataSourcesFS(sources map[string]config.DataSource, fsys fs.FS) fs.FS {
-	if fsys, ok := fsys.(withDataSourceser); ok {
-		return fsys.WithDataSources(sources)
+func WithDataSourceRegistryFS(registry Registry, fsys fs.FS) fs.FS {
+	if fsys, ok := fsys.(withDataSourceRegistryer); ok {
+		return fsys.WithDataSourceRegistry(registry)
 	}
 
 	return fsys

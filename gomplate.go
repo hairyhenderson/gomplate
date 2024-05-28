@@ -86,7 +86,7 @@ func simpleNamer(outDir string) func(ctx context.Context, inPath string) (string
 
 func mappingNamer(outMap string, tr *Renderer) func(context.Context, string) (string, error) {
 	return func(ctx context.Context, inPath string) (string, error) {
-		tcontext, err := createTmplContext(ctx, tr.tctxAliases, tr.data)
+		tcontext, err := createTmplContext(ctx, tr.tctxAliases, tr.sr)
 		if err != nil {
 			return "", err
 		}

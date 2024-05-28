@@ -12,9 +12,9 @@ import (
 
 	"github.com/hairyhenderson/go-fsimpl"
 	"github.com/hairyhenderson/go-fsimpl/autofs"
-	"github.com/hairyhenderson/gomplate/v4/data"
 	"github.com/hairyhenderson/gomplate/v4/internal/config"
 	"github.com/hairyhenderson/gomplate/v4/internal/datafs"
+	"github.com/hairyhenderson/gomplate/v4/internal/funcs"
 )
 
 // Options for template rendering.
@@ -108,8 +108,7 @@ type Datasource struct {
 //
 // Experimental: subject to breaking changes before the next major release
 type Renderer struct {
-	//nolint:staticcheck
-	data        *data.Data
+	sr          datafs.DataSourceReader
 	fsp         fsimpl.FSProvider
 	nested      config.Templates
 	funcs       template.FuncMap
@@ -129,21 +128,23 @@ func NewRenderer(opts Options) *Renderer {
 		Metrics = newMetrics()
 	}
 
+	// this should be the only place where this registry is created
+	reg := datafs.NewRegistry()
+
 	tctxAliases := []string{}
-	sources := map[string]config.DataSource{}
 
 	for alias, ds := range opts.Context {
 		tctxAliases = append(tctxAliases, alias)
-		sources[alias] = config.DataSource{
+		reg.Register(alias, config.DataSource{
 			URL:    ds.URL,
 			Header: ds.Header,
-		}
+		})
 	}
 	for alias, ds := range opts.Datasources {
-		sources[alias] = config.DataSource{
+		reg.Register(alias, config.DataSource{
 			URL:    ds.URL,
 			Header: ds.Header,
-		}
+		})
 	}
 
 	// convert the internal config.Templates to a map[string]Datasource
@@ -156,10 +157,8 @@ func NewRenderer(opts Options) *Renderer {
 		}
 	}
 
-	//nolint:staticcheck
-	d := &data.Data{
-		ExtraHeaders: opts.ExtraHeaders,
-		Sources:      sources,
+	for k := range opts.ExtraHeaders {
+		reg.AddExtraHeader(k, opts.ExtraHeaders[k])
 	}
 
 	if opts.Funcs == nil {
@@ -175,9 +174,12 @@ func NewRenderer(opts Options) *Renderer {
 		opts.FSProvider = DefaultFSProvider
 	}
 
+	// TODO: move this in?
+	sr := datafs.NewSourceReader(reg)
+
 	return &Renderer{
 		nested:      nested,
-		data:        d,
+		sr:          sr,
 		funcs:       opts.Funcs,
 		tctxAliases: tctxAliases,
 		lDelim:      opts.LDelim,
@@ -213,7 +215,7 @@ func (t *Renderer) RenderTemplates(ctx context.Context, templates []Template) er
 
 	// configure the template context with the refreshed Data value
 	// only done here because the data context may have changed
-	tmplctx, err := createTmplContext(ctx, t.tctxAliases, t.data)
+	tmplctx, err := createTmplContext(ctx, t.tctxAliases, t.sr)
 	if err != nil {
 		return err
 	}
@@ -224,7 +226,10 @@ func (t *Renderer) RenderTemplates(ctx context.Context, templates []Template) er
 func (t *Renderer) renderTemplatesWithData(ctx context.Context, templates []Template, tmplctx interface{}) error {
 	// update funcs with the current context
 	// only done here to ensure the context is properly set in func namespaces
-	f := CreateFuncs(ctx, t.data)
+	f := CreateFuncs(ctx)
+
+	// add datasource funcs here because they need to share the source reader
+	addToMap(f, funcs.CreateDataSourceFuncs(ctx, t.sr))
 
 	// add user-defined funcs last so they override the built-in funcs
 	addToMap(f, t.funcs)
@@ -252,7 +257,7 @@ func (t *Renderer) renderTemplate(ctx context.Context, template Template, f temp
 	tmpl, err := parseTemplate(ctx, template.Name, template.Text,
 		f, tmplctx, t.nested, t.lDelim, t.rDelim, t.missingKey)
 	if err != nil {
-		return err
+		return fmt.Errorf("parse template %s: %w", template.Name, err)
 	}
 
 	err = tmpl.Execute(template.Writer, tmplctx)

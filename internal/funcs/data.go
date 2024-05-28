@@ -4,22 +4,12 @@ import (
 	"context"
 
 	"github.com/hairyhenderson/gomplate/v4/conv"
-	"github.com/hairyhenderson/gomplate/v4/data"
 	"github.com/hairyhenderson/gomplate/v4/internal/parsers"
 )
 
 // CreateDataFuncs -
-//
-//nolint:staticcheck
-func CreateDataFuncs(ctx context.Context, d *data.Data) map[string]interface{} {
+func CreateDataFuncs(ctx context.Context) map[string]interface{} {
 	f := map[string]interface{}{}
-	f["datasource"] = d.Datasource
-	f["ds"] = d.Datasource
-	f["datasourceExists"] = d.DatasourceExists
-	f["datasourceReachable"] = d.DatasourceReachable
-	f["defineDatasource"] = d.DefineDatasource
-	f["include"] = d.Include
-	f["listDatasources"] = d.ListDatasources
 
 	ns := &DataFuncs{ctx}
 
