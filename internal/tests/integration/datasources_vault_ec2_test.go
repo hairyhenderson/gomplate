@@ -10,6 +10,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"gotest.tools/v3/fs"
 )
@@ -28,7 +29,10 @@ func setupDatasourcesVaultEc2Test(t *testing.T) (*fs.Dir, *vaultClient, *httptes
 		if r.Body != nil {
 			var err error
 			b, err = io.ReadAll(r.Body)
-			require.NoError(t, err)
+			if !assert.NoError(t, err) {
+				w.WriteHeader(http.StatusInternalServerError)
+				return
+			}
 			defer r.Body.Close()
 		}
 		t.Logf("IMDS Token request: %s %s: %s", r.Method, r.URL, b)
