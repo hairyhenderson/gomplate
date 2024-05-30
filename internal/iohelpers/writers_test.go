@@ -161,60 +161,6 @@ func TestLazyWriteCloser(t *testing.T) {
 	require.Error(t, err)
 }
 
-// TODO: uncomment this and fix the import cycle!
-// func TestWrite(t *testing.T) {
-// 	oldwd, _ := os.Getwd()
-// 	defer os.Chdir(oldwd)
-
-// 	rootDir := tfs.NewDir(t, "gomplate-test")
-// 	t.Cleanup(rootDir.Remove)
-
-// 	// we want to use a real filesystem here, so we can test interactions with
-// 	// the current working directory
-// 	fsys := datafs.WrapWdFS(osfs.NewFS())
-
-// 	newwd := rootDir.Join("the", "path", "we", "want")
-// 	badwd := rootDir.Join("some", "other", "dir")
-// 	hackpadfs.MkdirAll(fsys, newwd, 0o755)
-// 	hackpadfs.MkdirAll(fsys, badwd, 0o755)
-// 	newwd, _ = filepath.EvalSymlinks(newwd)
-// 	badwd, _ = filepath.EvalSymlinks(badwd)
-
-// 	err := os.Chdir(newwd)
-// 	require.NoError(t, err)
-
-// 	err = WriteFile(fsys, "/foo", []byte("Hello world"))
-// 	require.Error(t, err)
-
-// 	rel, err := filepath.Rel(newwd, badwd)
-// 	require.NoError(t, err)
-// 	err = WriteFile(fsys, rel, []byte("Hello world"))
-// 	require.Error(t, err)
-
-// 	foopath := filepath.Join(newwd, "foo")
-// 	err = WriteFile(fsys, foopath, []byte("Hello world"))
-// 	require.NoError(t, err)
-
-// 	out, err := fs.ReadFile(fsys, foopath)
-// 	require.NoError(t, err)
-// 	assert.Equal(t, "Hello world", string(out))
-
-// 	err = WriteFile(fsys, foopath, []byte("truncate"))
-// 	require.NoError(t, err)
-
-// 	out, err = fs.ReadFile(fsys, foopath)
-// 	require.NoError(t, err)
-// 	assert.Equal(t, "truncate", string(out))
-
-// 	foopath = filepath.Join(newwd, "nonexistant", "subdir", "foo")
-// 	err = WriteFile(fsys, foopath, []byte("Hello subdirranean world!"))
-// 	require.NoError(t, err)
-
-// 	out, err = fs.ReadFile(fsys, foopath)
-// 	require.NoError(t, err)
-// 	assert.Equal(t, "Hello subdirranean world!", string(out))
-// }
-
 func TestAssertPathInWD(t *testing.T) {
 	oldwd, _ := os.Getwd()
 	defer os.Chdir(oldwd)
