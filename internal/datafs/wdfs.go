@@ -68,8 +68,7 @@ func resolveLocalPath(wvol, name string) (root, resolved string, err error) {
 	// name (e.g. "/foo/bar"). UNC paths (beginning with "//") are ignored.
 	if name[0] == '/' && (len(name) == 1 || (name[1] != '/' && name[1] != '?')) {
 		name = filepath.Join(wvol, name)
-		// TODO: maybe this can be reduced to just '!filepath.IsAbs(name)'?
-	} else if name[0] != '/' && !filepath.IsAbs(name) {
+	} else if !filepath.IsAbs(name) {
 		wd, _ := os.Getwd()
 		name = filepath.Join(wd, name)
 	}
