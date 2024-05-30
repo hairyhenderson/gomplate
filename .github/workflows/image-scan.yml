@@ -14,7 +14,7 @@ jobs:
       DOCKER_BUILDKIT: 1
       DOCKER_CLI_EXPERIMENTAL: enabled
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Quick build (linux/alpine only)
       run: |
         docker build --target gomplate-alpine -t gomplate .
@@ -33,12 +33,17 @@ jobs:
         image-ref: gomplate
         format: sarif
         output: trivy-results.sarif
-        exit-code: 1
+        # exit-code: 1
         ignore-unfixed: true
         vuln-type: os,library
-        severity: CRITICAL,HIGH
+        # The SARIF format ignores severity and uploads all vulnerabilities for
+        # later triage. The table-format step above is used to fail the build if
+        # there are any critical or high vulnerabilities.
+        # See https://github.com/aquasecurity/trivy-action/issues/95
+        # severity: 'CRITICAL,HIGH'
+        trivyignores: .trivyignore
     - name: Upload Trivy scan results to GitHub Security tab
-      uses: github/codeql-action/upload-sarif@v2
+      uses: github/codeql-action/upload-sarif@v3
       with:
         sarif_file: 'trivy-results.sarif'
       if: always() && github.repository == 'hairyhenderson/gomplate'
