@@ -18,6 +18,7 @@ import (
 	gcmd "github.com/hairyhenderson/gomplate/v3/internal/cmd"
 	vaultapi "github.com/hashicorp/vault/api"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"gotest.tools/v3/icmd"
 )
 
@@ -54,7 +55,7 @@ func inOutContains(t *testing.T, i, o string) {
 func assertSuccess(t *testing.T, o, e string, err error, expected string) {
 	t.Helper()
 
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, "", e)
 	assert.Equal(t, expected, o)
 }
