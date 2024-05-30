@@ -7,7 +7,6 @@ import (
 	"testing"
 
 	"github.com/hairyhenderson/go-fsimpl"
-	"github.com/hairyhenderson/gomplate/v4/data"
 	"github.com/hairyhenderson/gomplate/v4/internal/config"
 	"github.com/hairyhenderson/gomplate/v4/internal/datafs"
 
@@ -30,7 +29,10 @@ func TestEnvGetsUpdatedEnvironment(t *testing.T) {
 
 func TestCreateContext(t *testing.T) {
 	ctx := context.Background()
-	c, err := createTmplContext(ctx, nil, nil)
+	reg := datafs.NewRegistry()
+	sr := datafs.NewSourceReader(reg)
+
+	c, err := createTmplContext(ctx, nil, sr)
 	require.NoError(t, err)
 	assert.Empty(t, c)
 
@@ -43,15 +45,12 @@ func TestCreateContext(t *testing.T) {
 	barURL := "env:///bar?type=application/yaml"
 	uf, _ := url.Parse(fooURL)
 	ub, _ := url.Parse(barURL)
-	//nolint:staticcheck
-	d := &data.Data{
-		Sources: map[string]config.DataSource{
-			"foo": {URL: uf},
-			".":   {URL: ub},
-		},
-	}
+
+	reg.Register("foo", config.DataSource{URL: uf})
+	reg.Register(".", config.DataSource{URL: ub})
+
 	t.Setenv("foo", "foo: bar")
-	c, err = createTmplContext(ctx, []string{"foo"}, d)
+	c, err = createTmplContext(ctx, []string{"foo"}, sr)
 	require.NoError(t, err)
 	assert.IsType(t, &tmplctx{}, c)
 	tctx := c.(*tmplctx)
@@ -59,7 +58,7 @@ func TestCreateContext(t *testing.T) {
 	assert.Equal(t, "bar", ds["foo"])
 
 	t.Setenv("bar", "bar: baz")
-	c, err = createTmplContext(ctx, []string{"."}, d)
+	c, err = createTmplContext(ctx, []string{"."}, sr)
 	require.NoError(t, err)
 	assert.IsType(t, map[string]interface{}{}, c)
 	ds = c.(map[string]interface{})

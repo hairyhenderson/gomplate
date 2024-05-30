@@ -1,4 +1,4 @@
-package data
+package iohelpers
 
 import (
 	"testing"
@@ -11,12 +11,12 @@ func TestMimeAlias(t *testing.T) {
 	data := []struct {
 		in, out string
 	}{
-		{csvMimetype, csvMimetype},
-		{yamlMimetype, yamlMimetype},
-		{"application/x-yaml", yamlMimetype},
+		{CSVMimetype, CSVMimetype},
+		{YAMLMimetype, YAMLMimetype},
+		{"application/x-yaml", YAMLMimetype},
 	}
 
 	for _, d := range data {
-		assert.Equal(t, d.out, mimeAlias(d.in))
+		assert.Equal(t, d.out, MimeAlias(d.in))
 	}
 }

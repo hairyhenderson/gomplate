@@ -1,0 +1,226 @@
+package datafs
+
+import (
+	"context"
+	"encoding/json"
+	"fmt"
+	"io"
+	"io/fs"
+	"net/http"
+	"net/url"
+	"runtime"
+	"strings"
+
+	"github.com/hairyhenderson/go-fsimpl"
+	"github.com/hairyhenderson/gomplate/v4/internal/config"
+	"github.com/hairyhenderson/gomplate/v4/internal/iohelpers"
+)
+
+// DataSourceReader reads content from a datasource
+type DataSourceReader interface {
+	// ReadSource reads the content of a datasource, given an alias and optional
+	// arguments. If the datasource is not found, the alias is interpreted as a
+	// URL. If the alias is not a valid URL, an error is returned.
+	//
+	// Returned content is cached, so subsequent calls with the same alias and
+	// arguments will return the same content.
+	ReadSource(ctx context.Context, alias string, args ...string) (string, []byte, error)
+
+	// contains registry
+	Registry
+}
+
+type dsReader struct {
+	cache map[string]*content
+
+	Registry
+}
+
+// content type mainly for caching
+type content struct {
+	contentType string
+	b           []byte
+}
+
+func NewSourceReader(reg Registry) DataSourceReader {
+	return &dsReader{Registry: reg}
+}
+
+func (d *dsReader) ReadSource(ctx context.Context, alias string, args ...string) (string, []byte, error) {
+	source, ok := d.Lookup(alias)
+	if !ok {
+		srcURL, err := url.Parse(alias)
+		if err != nil || !srcURL.IsAbs() {
+			return "", nil, fmt.Errorf("undefined datasource '%s': %w", alias, err)
+		}
+
+		d.Register(alias, config.DataSource{URL: srcURL})
+
+		// repeat the lookup now that it's registered - we shouldn't just use
+		// it directly because registration may include extra headers
+		source, _ = d.Lookup(alias)
+	}
+
+	if d.cache == nil {
+		d.cache = make(map[string]*content)
+	}
+	cacheKey := alias
+	for _, v := range args {
+		cacheKey += v
+	}
+	cached, ok := d.cache[cacheKey]
+	if ok {
+		return cached.contentType, cached.b, nil
+	}
+
+	arg := ""
+	if len(args) > 0 {
+		arg = args[0]
+	}
+	u, err := resolveURL(source.URL, arg)
+	if err != nil {
+		return "", nil, err
+	}
+
+	fc, err := d.readFileContent(ctx, u, source.Header)
+	if err != nil {
+		return "", nil, fmt.Errorf("couldn't read datasource '%s' (%s): %w", alias, u, err)
+	}
+	d.cache[cacheKey] = fc
+
+	return fc.contentType, fc.b, nil
+}
+
+func (d *dsReader) readFileContent(ctx context.Context, u *url.URL, hdr http.Header) (*content, error) {
+	fsys, err := FSysForPath(ctx, u.String())
+	if err != nil {
+		return nil, fmt.Errorf("fsys for path %v: %w", u, err)
+	}
+
+	u, fname := SplitFSMuxURL(u)
+
+	// need to support absolute paths on local filesystem too
+	// TODO: this is a hack, probably fix this?
+	if u.Scheme == "file" && runtime.GOOS != "windows" {
+		fname = u.Path + fname
+	}
+
+	fsys = fsimpl.WithContextFS(ctx, fsys)
+	fsys = fsimpl.WithHeaderFS(hdr, fsys)
+	fsys = WithDataSourceRegistryFS(d.Registry, fsys)
+
+	f, err := fsys.Open(fname)
+	if err != nil {
+		return nil, fmt.Errorf("open (url: %q, name: %q): %w", u, fname, err)
+	}
+	defer f.Close()
+
+	fi, err := f.Stat()
+	if err != nil {
+		return nil, fmt.Errorf("stat (url: %q, name: %q): %w", u, fname, err)
+	}
+
+	// possible type hint in the type query param. Contrary to spec, we allow
+	// unescaped '+' characters to make it simpler to provide types like
+	// "application/array+json"
+	mimeType := u.Query().Get("type")
+	mimeType = strings.ReplaceAll(mimeType, " ", "+")
+
+	if mimeType == "" {
+		mimeType = fsimpl.ContentType(fi)
+	}
+
+	var data []byte
+
+	if fi.IsDir() {
+		var dirents []fs.DirEntry
+		dirents, err = fs.ReadDir(fsys, fname)
+		if err != nil {
+			return nil, fmt.Errorf("readDir (url: %q, name: %s): %w", u, fname, err)
+		}
+
+		entries := make([]string, len(dirents))
+		for i, e := range dirents {
+			entries[i] = e.Name()
+		}
+		data, err = json.Marshal(entries)
+		if err != nil {
+			return nil, fmt.Errorf("json.Marshal: %w", err)
+		}
+
+		mimeType = iohelpers.JSONArrayMimetype
+	} else {
+		data, err = io.ReadAll(f)
+		if err != nil {
+			return nil, fmt.Errorf("read (url: %q, name: %s): %w", u, fname, err)
+		}
+	}
+
+	if mimeType == "" {
+		// default to text/plain
+		mimeType = iohelpers.TextMimetype
+	}
+
+	return &content{contentType: mimeType, b: data}, nil
+}
+
+// COPIED FROM /data/datasource.go
+//
+// resolveURL parses the relative URL rel against base, and returns the
+// resolved URL. Differs from url.ResolveReference in that query parameters are
+// added. In case of duplicates, params from rel are used.
+func resolveURL(base *url.URL, rel string) (*url.URL, error) {
+	// if there's an opaque part, there's no resolving to do - just return the
+	// base URL
+	if base.Opaque != "" {
+		return base, nil
+	}
+
+	// git URLs are special - they have double-slashes that separate a repo
+	// from a path in the repo. A missing double-slash means the path is the
+	// root.
+	switch base.Scheme {
+	case "git", "git+file", "git+http", "git+https", "git+ssh":
+		if strings.Contains(base.Path, "//") && strings.Contains(rel, "//") {
+			return nil, fmt.Errorf("both base URL and subpath contain '//', which is not allowed in git URLs")
+		}
+
+		// If there's a subpath, the base path must end with '/'. This behaviour
+		// is unique to git URLs - other schemes would instead drop the last
+		// path element and replace with the subpath.
+		if rel != "" && !strings.HasSuffix(base.Path, "/") {
+			base.Path += "/"
+		}
+
+		// If subpath starts with '//', make it relative by prefixing a '.',
+		// otherwise it'll be treated as a schemeless URI and the first part
+		// will be interpreted as a hostname.
+		if strings.HasPrefix(rel, "//") {
+			rel = "." + rel
+		}
+	}
+
+	relURL, err := url.Parse(rel)
+	if err != nil {
+		return nil, err
+	}
+
+	// URL.ResolveReference requires (or assumes, at least) that the base is
+	// absolute. We want to support relative URLs too though, so we need to
+	// correct for that.
+	out := base.ResolveReference(relURL)
+	if out.Scheme == "" && out.Path[0] == '/' {
+		out.Path = out.Path[1:]
+	}
+
+	if base.RawQuery != "" {
+		bq := base.Query()
+		rq := relURL.Query()
+		for k := range rq {
+			bq.Set(k, rq.Get(k))
+		}
+		out.RawQuery = bq.Encode()
+	}
+
+	return out, nil
+}

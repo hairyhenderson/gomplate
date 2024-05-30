@@ -10,8 +10,8 @@ import (
 
 	"github.com/hairyhenderson/gomplate/v4/aws"
 	"github.com/hairyhenderson/gomplate/v4/conv"
-	"github.com/hairyhenderson/gomplate/v4/data"
 	"github.com/hairyhenderson/gomplate/v4/env"
+	"github.com/hairyhenderson/gomplate/v4/internal/datafs"
 	"github.com/hairyhenderson/gomplate/v4/internal/parsers"
 
 	"github.com/stretchr/testify/assert"
@@ -179,9 +179,9 @@ func TestSimpleNamer(t *testing.T) {
 
 func TestMappingNamer(t *testing.T) {
 	ctx := context.Background()
+	reg := datafs.NewRegistry()
 	tr := &Renderer{
-		//nolint:staticcheck
-		data: &data.Data{},
+		sr: datafs.NewSourceReader(reg),
 		funcs: map[string]interface{}{
 			"foo": func() string { return "foo" },
 		},

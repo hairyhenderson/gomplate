@@ -5,7 +5,8 @@ import (
 	"os"
 	"strings"
 
-	"github.com/hairyhenderson/gomplate/v4/data"
+	"github.com/hairyhenderson/gomplate/v4/internal/datafs"
+	"github.com/hairyhenderson/gomplate/v4/internal/parsers"
 )
 
 // context for templates
@@ -24,26 +25,25 @@ func (c *tmplctx) Env() map[string]string {
 // createTmplContext reads the datasources for the given aliases
 func createTmplContext(
 	ctx context.Context, aliases []string,
-	//nolint:staticcheck
-	d *data.Data,
+	sr datafs.DataSourceReader,
 ) (interface{}, error) {
-	// we need to inject the current context into the Data value, because
-	// the Datasource method may need it
-	// TODO: remove this before v4
-	if d != nil {
-		d.Ctx = ctx
-	}
-
-	var err error
 	tctx := &tmplctx{}
 	for _, a := range aliases {
-		if a == "." {
-			return d.Datasource(a)
-		}
-		(*tctx)[a], err = d.Datasource(a)
+		ct, b, err := sr.ReadSource(ctx, a)
 		if err != nil {
 			return nil, err
 		}
+
+		content, err := parsers.ParseData(ct, string(b))
+		if err != nil {
+			return nil, err
+		}
+
+		if a == "." {
+			return content, nil
+		}
+
+		(*tctx)[a] = content
 	}
 	return tctx, nil
 }

@@ -61,21 +61,19 @@ func setupMergeFsys(ctx context.Context, t *testing.T) fs.FS {
 		path.Join(wd, "tmp/textfile.txt"):  {Data: []byte(`plain text...`)},
 	})
 
-	source := config.DataSource{
+	reg := NewRegistry()
+	reg.Register("foo", config.DataSource{
 		URL: mustParseURL("merge:file:///tmp/jsonfile.json|file:///tmp/yamlfile.yaml"),
-	}
-	sources := map[string]config.DataSource{
-		"foo":       source,
-		"bar":       {URL: mustParseURL("file:///tmp/jsonfile.json")},
-		"baz":       {URL: mustParseURL("file:///tmp/yamlfile.yaml")},
-		"text":      {URL: mustParseURL("file:///tmp/textfile.txt")},
-		"badscheme": {URL: mustParseURL("bad:///scheme.json")},
-		// mime type overridden by URL query, should fail to parse
-		"badtype": {URL: mustParseURL("file:///tmp/jsonfile.json?type=foo/bar")},
-		"array": {
-			URL: mustParseURL("file:///tmp/array.json?type=" + url.QueryEscape(iohelpers.JSONArrayMimetype)),
-		},
-	}
+	})
+	reg.Register("bar", config.DataSource{URL: mustParseURL("file:///tmp/jsonfile.json")})
+	reg.Register("baz", config.DataSource{URL: mustParseURL("file:///tmp/yamlfile.yaml")})
+	reg.Register("text", config.DataSource{URL: mustParseURL("file:///tmp/textfile.txt")})
+	reg.Register("badscheme", config.DataSource{URL: mustParseURL("bad:///scheme.json")})
+	// mime type overridden by URL query, should fail to parse
+	reg.Register("badtype", config.DataSource{URL: mustParseURL("file:///tmp/textfile.txt?type=foo/bar")})
+	reg.Register("array", config.DataSource{
+		URL: mustParseURL("file:///tmp/array.json?type=" + url.QueryEscape(iohelpers.JSONArrayMimetype)),
+	})
 
 	mux := fsimpl.NewMux()
 	mux.Add(MergeFS)
@@ -86,7 +84,7 @@ func setupMergeFsys(ctx context.Context, t *testing.T) fs.FS {
 	fsys, err := NewMergeFS(mustParseURL("merge:///"))
 	require.NoError(t, err)
 
-	fsys = WithDataSourcesFS(sources, fsys)
+	fsys = WithDataSourceRegistryFS(reg, fsys)
 	fsys = fsimpl.WithContextFS(ctx, fsys)
 
 	return fsys
