@@ -6,6 +6,7 @@ import (
 	"unicode"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func FuzzIndent(f *testing.F) {
@@ -16,7 +17,19 @@ func FuzzIndent(f *testing.F) {
 	f.Add(15, "\n0", "\n0")
 
 	f.Fuzz(func(t *testing.T, width int, indent, s string) {
-		out := Indent(width, indent, s)
+		out, err := Indent(width, indent, s)
+
+		if width <= 0 {
+			require.Error(t, err)
+			return
+		}
+
+		if strings.Contains(indent, "\n") {
+			require.Error(t, err)
+			return
+		}
+
+		require.NoError(t, err)
 
 		// out should be equal to s when both have the indent character
 		// completely removed.

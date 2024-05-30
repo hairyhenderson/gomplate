@@ -244,31 +244,39 @@ func (StringFuncs) Trunc(length int, s interface{}) string {
 
 // Indent -
 func (StringFuncs) Indent(args ...interface{}) (string, error) {
-	input := conv.ToString(args[len(args)-1])
 	indent := " "
 	width := 1
+
 	var ok bool
+
 	switch len(args) {
+	case 0:
+		return "", fmt.Errorf("expected at least 1 argument")
 	case 2:
 		indent, ok = args[0].(string)
 		if !ok {
 			width, ok = args[0].(int)
 			if !ok {
-				return "", fmt.Errorf("indent: invalid arguments")
+				return "", fmt.Errorf("invalid arguments")
 			}
+
 			indent = " "
 		}
 	case 3:
 		width, ok = args[0].(int)
 		if !ok {
-			return "", fmt.Errorf("indent: invalid arguments")
+			return "", fmt.Errorf("invalid arguments")
 		}
+
 		indent, ok = args[1].(string)
 		if !ok {
-			return "", fmt.Errorf("indent: invalid arguments")
+			return "", fmt.Errorf("invalid arguments")
 		}
 	}
-	return gompstrings.Indent(width, indent, input), nil
+
+	input := conv.ToString(args[len(args)-1])
+
+	return gompstrings.Indent(width, indent, input)
 }
 
 // Slug -

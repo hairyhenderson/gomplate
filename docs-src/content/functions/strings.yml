@@ -95,17 +95,19 @@ funcs:
     alias: indent
     description: |
       Indents a string. If the input string has multiple lines, each line will be indented.
+
+      As of v4.0.0, this function will error if the `width` or `indent` arguments are invalid.
     pipeline: true
     arguments:
       - name: width
         required: false
-        description: 'number of times to repeat the `indent` string. Default: `1`'
+        description: 'Number of times to repeat the `indent` string. Must be greater than 0. Default: `1`'
       - name: indent
         required: false
-        description: 'the string to indent with. Default: `" "`'
+        description: 'The string to indent with. Must not contain a newline character ("\n"). Default: `" "`'
       - name: input
         required: true
-        description: the string to indent
+        description: The string to indent
     rawExamples:
       - |
         This function can be especially useful when adding YAML snippets into other YAML documents, where indentation is important:
