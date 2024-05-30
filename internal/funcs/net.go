@@ -99,27 +99,6 @@ func (f NetFuncs) ParseRange(iprange interface{}) (netipx.IPRange, error) {
 	return netipx.ParseIPRange(conv.ToString(iprange))
 }
 
-// func (f *NetFuncs) parseStdnetIPNet(prefix interface{}) (*stdnet.IPNet, error) {
-// 	switch p := prefix.(type) {
-// 	case *stdnet.IPNet:
-// 		return p, nil
-// 	case netaddr.IPPrefix:
-// 		deprecated.WarnDeprecated(f.ctx,
-// 			"support for netaddr.IPPrefix is deprecated - use net.ParsePrefix to produce a netip.Prefix instead")
-// 		return p.Masked().IPNet(), nil
-// 	case netip.Prefix:
-// 		net := &stdnet.IPNet{
-// 			IP:   p.Masked().Addr().AsSlice(),
-// 			Mask: stdnet.CIDRMask(p.Bits(), p.Addr().BitLen()),
-// 		}
-// 		return net, nil
-// 	default:
-// 		_, network, err := stdnet.ParseCIDR(conv.ToString(prefix))
-// 		return network, err
-// 	}
-// }
-
-// TODO: look at using this instead of parseStdnetIPNet
 func (f *NetFuncs) parseNetipPrefix(prefix interface{}) (netip.Prefix, error) {
 	switch p := prefix.(type) {
 	case *stdnet.IPNet:
@@ -134,11 +113,6 @@ func (f *NetFuncs) parseNetipPrefix(prefix interface{}) (netip.Prefix, error) {
 		return netip.ParsePrefix(conv.ToString(prefix))
 	}
 }
-
-// func (f NetFuncs) ipFromNetIP(n stdnet.IP) netip.Addr {
-// 	ip, _ := netip.AddrFromSlice(n)
-// 	return ip
-// }
 
 func (f NetFuncs) ipPrefixFromIPNet(n *stdnet.IPNet) netip.Prefix {
 	ip, _ := netip.AddrFromSlice(n.IP)
