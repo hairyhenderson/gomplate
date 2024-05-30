@@ -7,14 +7,10 @@ import (
 	"io"
 	"io/fs"
 	"os"
-	"path"
 	"path/filepath"
-	"slices"
-	"strings"
 	"text/template"
 
 	"github.com/hack-pad/hackpadfs"
-	"github.com/hairyhenderson/go-fsimpl"
 	"github.com/hairyhenderson/gomplate/v4/internal/config"
 	"github.com/hairyhenderson/gomplate/v4/internal/datafs"
 	"github.com/hairyhenderson/gomplate/v4/internal/iohelpers"
@@ -46,134 +42,6 @@ func copyFuncMap(funcMap template.FuncMap) template.FuncMap {
 		newFuncMap[k] = v
 	}
 	return newFuncMap
-}
-
-// parseTemplate - parses text as a Go template with the given name and options
-func parseTemplate(ctx context.Context, name, text string, funcs template.FuncMap, tmplctx interface{}, nested config.Templates, leftDelim, rightDelim string, missingKey string) (tmpl *template.Template, err error) {
-	tmpl = template.New(name)
-	if missingKey == "" {
-		missingKey = "error"
-	}
-
-	missingKeyValues := []string{"error", "zero", "default", "invalid"}
-	if !slices.Contains(missingKeyValues, missingKey) {
-		return nil, fmt.Errorf("not allowed value for the 'missing-key' flag: %s. Allowed values: %s", missingKey, strings.Join(missingKeyValues, ","))
-	}
-
-	tmpl.Option("missingkey=" + missingKey)
-
-	funcMap := copyFuncMap(funcs)
-
-	// the "tmpl" funcs get added here because they need access to the root template and context
-	addTmplFuncs(funcMap, tmpl, tmplctx, name)
-	tmpl.Funcs(funcMap)
-	tmpl.Delims(leftDelim, rightDelim)
-	_, err = tmpl.Parse(text)
-	if err != nil {
-		return nil, err
-	}
-
-	err = parseNestedTemplates(ctx, nested, tmpl)
-	if err != nil {
-		return nil, fmt.Errorf("parse nested templates: %w", err)
-	}
-
-	return tmpl, nil
-}
-
-func parseNestedTemplates(ctx context.Context, nested config.Templates, tmpl *template.Template) error {
-	fsp := datafs.FSProviderFromContext(ctx)
-
-	for alias, n := range nested {
-		u := *n.URL
-
-		fname := path.Base(u.Path)
-		if strings.HasSuffix(u.Path, "/") {
-			fname = "."
-		}
-
-		u.Path = path.Dir(u.Path)
-
-		fsys, err := fsp.New(&u)
-		if err != nil {
-			return fmt.Errorf("filesystem provider for %q unavailable: %w", &u, err)
-		}
-
-		// TODO: maybe need to do something with root here?
-		_, reldir, err := datafs.ResolveLocalPath(fsys, u.Path)
-		if err != nil {
-			return fmt.Errorf("resolveLocalPath: %w", err)
-		}
-
-		if reldir != "" && reldir != "." {
-			fsys, err = fs.Sub(fsys, reldir)
-			if err != nil {
-				return fmt.Errorf("sub filesystem for %q unavailable: %w", &u, err)
-			}
-		}
-
-		// inject context & header in case they're useful...
-		fsys = fsimpl.WithContextFS(ctx, fsys)
-		fsys = fsimpl.WithHeaderFS(n.Header, fsys)
-
-		// valid fs.FS paths have no trailing slash
-		fname = strings.TrimRight(fname, "/")
-
-		// first determine if the template path is a directory, in which case we
-		// need to load all the files in the directory (but not recursively)
-		fi, err := fs.Stat(fsys, fname)
-		if err != nil {
-			return fmt.Errorf("stat %q: %w", fname, err)
-		}
-
-		if fi.IsDir() {
-			err = parseNestedTemplateDir(ctx, fsys, alias, fname, tmpl)
-		} else {
-			err = parseNestedTemplate(ctx, fsys, alias, fname, tmpl)
-		}
-
-		if err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-func parseNestedTemplateDir(ctx context.Context, fsys fs.FS, alias, fname string, tmpl *template.Template) error {
-	files, err := fs.ReadDir(fsys, fname)
-	if err != nil {
-		return fmt.Errorf("readDir %q: %w", fname, err)
-	}
-
-	for _, f := range files {
-		if !f.IsDir() {
-			err = parseNestedTemplate(ctx, fsys,
-				path.Join(alias, f.Name()),
-				path.Join(fname, f.Name()),
-				tmpl,
-			)
-			if err != nil {
-				return err
-			}
-		}
-	}
-
-	return nil
-}
-
-func parseNestedTemplate(_ context.Context, fsys fs.FS, alias, fname string, tmpl *template.Template) error {
-	b, err := fs.ReadFile(fsys, fname)
-	if err != nil {
-		return fmt.Errorf("readFile %q: %w", fname, err)
-	}
-
-	_, err = tmpl.New(alias).Parse(string(b))
-	if err != nil {
-		return fmt.Errorf("parse nested template %q: %w", fname, err)
-	}
-
-	return nil
 }
 
 // gatherTemplates - gather and prepare templates for rendering

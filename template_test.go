@@ -199,7 +199,9 @@ func TestParseNestedTemplates(t *testing.T) {
 
 	tmpl, _ := template.New("root").Parse(`{{ template "foo" }}`)
 
-	err := parseNestedTemplates(ctx, nested, tmpl)
+	r := &renderer{nested: nested}
+
+	err := r.parseNestedTemplates(ctx, tmpl)
 	require.NoError(t, err)
 
 	out := bytes.Buffer{}
@@ -217,7 +219,8 @@ func TestParseNestedTemplates(t *testing.T) {
 
 	tmpl, _ = template.New("root").Parse(`{{ template "dir/foo.t" }} {{ template "dir/bar.t" }}`)
 
-	err = parseNestedTemplates(ctx, nested, tmpl)
+	r = &renderer{nested: nested}
+	err = r.parseNestedTemplates(ctx, tmpl)
 	require.NoError(t, err)
 
 	out = bytes.Buffer{}
