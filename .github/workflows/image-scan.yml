@@ -7,7 +7,7 @@ on:
     branches: [ main ]
 
 jobs:
-  docker-build:
+  image-scan:
     permissions:
       security-events: write
     runs-on: ubuntu-latest
