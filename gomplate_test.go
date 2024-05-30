@@ -18,7 +18,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func testTemplate(t *testing.T, tr *Renderer, tmpl string) string {
+func testTemplate(t *testing.T, tr *renderer, tmpl string) string {
 	t.Helper()
 
 	var out bytes.Buffer
@@ -29,7 +29,7 @@ func testTemplate(t *testing.T, tr *Renderer, tmpl string) string {
 }
 
 func TestGetenvTemplates(t *testing.T) {
-	tr := NewRenderer(Options{
+	tr := newRenderer(Options{
 		Funcs: template.FuncMap{
 			"getenv": env.Getenv,
 			"bool":   conv.ToBool,
@@ -41,7 +41,7 @@ func TestGetenvTemplates(t *testing.T) {
 }
 
 func TestBoolTemplates(t *testing.T) {
-	g := NewRenderer(Options{
+	g := newRenderer(Options{
 		Funcs: template.FuncMap{
 			"bool": conv.ToBool,
 		},
@@ -53,9 +53,9 @@ func TestBoolTemplates(t *testing.T) {
 }
 
 func TestEc2MetaTemplates(t *testing.T) {
-	createGomplate := func(data map[string]string, region string) *Renderer {
+	createGomplate := func(data map[string]string, region string) *renderer {
 		ec2meta := aws.MockEC2Meta(data, nil, region)
-		return NewRenderer(Options{Funcs: template.FuncMap{"ec2meta": ec2meta.Meta}})
+		return newRenderer(Options{Funcs: template.FuncMap{"ec2meta": ec2meta.Meta}})
 	}
 
 	g := createGomplate(nil, "")
@@ -70,7 +70,7 @@ func TestEc2MetaTemplates(t *testing.T) {
 func TestEc2MetaTemplates_WithJSON(t *testing.T) {
 	ec2meta := aws.MockEC2Meta(map[string]string{"obj": `"foo": "bar"`}, map[string]string{"obj": `"foo": "baz"`}, "")
 
-	g := NewRenderer(Options{
+	g := newRenderer(Options{
 		Funcs: template.FuncMap{
 			"ec2meta":    ec2meta.Meta,
 			"ec2dynamic": ec2meta.Dynamic,
@@ -83,7 +83,7 @@ func TestEc2MetaTemplates_WithJSON(t *testing.T) {
 }
 
 func TestJSONArrayTemplates(t *testing.T) {
-	g := NewRenderer(Options{
+	g := newRenderer(Options{
 		Funcs: template.FuncMap{
 			"jsonArray": parsers.JSONArray,
 		},
@@ -94,7 +94,7 @@ func TestJSONArrayTemplates(t *testing.T) {
 }
 
 func TestYAMLTemplates(t *testing.T) {
-	g := NewRenderer(Options{
+	g := newRenderer(Options{
 		Funcs: template.FuncMap{
 			"yaml":      parsers.YAML,
 			"yamlArray": parsers.YAMLArray,
@@ -107,7 +107,7 @@ func TestYAMLTemplates(t *testing.T) {
 }
 
 func TestHasTemplate(t *testing.T) {
-	g := NewRenderer(Options{
+	g := newRenderer(Options{
 		Funcs: template.FuncMap{
 			"yaml": parsers.YAML,
 			"has":  conv.Has,
@@ -141,7 +141,7 @@ func TestMissingKey(t *testing.T) {
 	}
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
-			g := NewRenderer(Options{
+			g := newRenderer(Options{
 				MissingKey: tt.MissingKey,
 			})
 			tmpl := `{{ .name }}`
@@ -151,7 +151,7 @@ func TestMissingKey(t *testing.T) {
 }
 
 func TestCustomDelim(t *testing.T) {
-	g := NewRenderer(Options{
+	g := newRenderer(Options{
 		LDelim: "[",
 		RDelim: "]",
 	})
@@ -180,7 +180,7 @@ func TestSimpleNamer(t *testing.T) {
 func TestMappingNamer(t *testing.T) {
 	ctx := context.Background()
 	reg := datafs.NewRegistry()
-	tr := &Renderer{
+	tr := &renderer{
 		sr: datafs.NewSourceReader(reg),
 		funcs: map[string]interface{}{
 			"foo": func() string { return "foo" },

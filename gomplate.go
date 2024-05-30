@@ -49,7 +49,7 @@ func Run(ctx context.Context, cfg *config.Config) error {
 
 	opts := optionsFromConfig(cfg)
 	opts.Funcs = funcMap
-	tr := NewRenderer(opts)
+	tr := newRenderer(opts)
 
 	start := time.Now()
 
@@ -70,7 +70,7 @@ func Run(ctx context.Context, cfg *config.Config) error {
 	return nil
 }
 
-func chooseNamer(cfg *config.Config, tr *Renderer) func(context.Context, string) (string, error) {
+func chooseNamer(cfg *config.Config, tr *renderer) func(context.Context, string) (string, error) {
 	if cfg.OutputMap == "" {
 		return simpleNamer(cfg.OutputDir)
 	}
@@ -84,7 +84,7 @@ func simpleNamer(outDir string) func(ctx context.Context, inPath string) (string
 	}
 }
 
-func mappingNamer(outMap string, tr *Renderer) func(context.Context, string) (string, error) {
+func mappingNamer(outMap string, tr *renderer) func(context.Context, string) (string, error) {
 	return func(ctx context.Context, inPath string) (string, error) {
 		tcontext, err := createTmplContext(ctx, tr.tctxAliases, tr.sr)
 		if err != nil {

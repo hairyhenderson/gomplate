@@ -4,8 +4,12 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"io/fs"
 	"net/http"
 	"net/url"
+	"path"
+	"slices"
+	"strings"
 	"sync"
 	"text/template"
 	"time"
@@ -103,11 +107,7 @@ type Datasource struct {
 	Header http.Header
 }
 
-// Renderer provides gomplate's core template rendering functionality.
-// It should be initialized with NewRenderer.
-//
-// Experimental: subject to breaking changes before the next major release
-type Renderer struct {
+type renderer struct {
 	sr          datafs.DataSourceReader
 	fsp         fsimpl.FSProvider
 	nested      config.Templates
@@ -118,12 +118,33 @@ type Renderer struct {
 	tctxAliases []string
 }
 
+// Renderer provides gomplate's core template rendering functionality.
+// See [NewRenderer].
+//
+// Experimental: subject to breaking changes before the next major release
+type Renderer interface {
+	// RenderTemplates renders a list of templates, parsing each template's
+	// Text and executing it, outputting to its Writer. If a template's Writer
+	// is a non-[os.Stdout] [io.Closer], it will be closed after the template is
+	// rendered.
+	RenderTemplates(ctx context.Context, templates []Template) error
+
+	// Render is a convenience method for rendering a single template. For more
+	// than one template, use [Renderer.RenderTemplates]. If wr is a non-[os.Stdout]
+	// [io.Closer], it will be closed after the template is rendered.
+	Render(ctx context.Context, name, text string, wr io.Writer) error
+}
+
 // NewRenderer creates a new template renderer with the specified options.
 // The returned renderer can be reused, but it is not (yet) safe for concurrent
 // use.
 //
 // Experimental: subject to breaking changes before the next major release
-func NewRenderer(opts Options) *Renderer {
+func NewRenderer(opts Options) Renderer {
+	return newRenderer(opts)
+}
+
+func newRenderer(opts Options) *renderer {
 	if Metrics == nil {
 		Metrics = newMetrics()
 	}
@@ -177,7 +198,7 @@ func NewRenderer(opts Options) *Renderer {
 	// TODO: move this in?
 	sr := datafs.NewSourceReader(reg)
 
-	return &Renderer{
+	return &renderer{
 		nested:      nested,
 		sr:          sr,
 		funcs:       opts.Funcs,
@@ -203,12 +224,7 @@ type Template struct {
 	Text string
 }
 
-// RenderTemplates renders a list of templates, parsing each template's Text
-// and executing it, outputting to its Writer. If a template's Writer is a
-// non-os.Stdout io.Closer, it will be closed after the template is rendered.
-//
-// Experimental: subject to breaking changes before the next major release
-func (t *Renderer) RenderTemplates(ctx context.Context, templates []Template) error {
+func (t *renderer) RenderTemplates(ctx context.Context, templates []Template) error {
 	if datafs.FSProviderFromContext(ctx) == nil {
 		ctx = datafs.ContextWithFSProvider(ctx, t.fsp)
 	}
@@ -223,7 +239,7 @@ func (t *Renderer) RenderTemplates(ctx context.Context, templates []Template) er
 	return t.renderTemplatesWithData(ctx, templates, tmplctx)
 }
 
-func (t *Renderer) renderTemplatesWithData(ctx context.Context, templates []Template, tmplctx interface{}) error {
+func (t *renderer) renderTemplatesWithData(ctx context.Context, templates []Template, tmplctx interface{}) error {
 	// update funcs with the current context
 	// only done here to ensure the context is properly set in func namespaces
 	f := CreateFuncs(ctx)
@@ -246,7 +262,7 @@ func (t *Renderer) renderTemplatesWithData(ctx context.Context, templates []Temp
 	return nil
 }
 
-func (t *Renderer) renderTemplate(ctx context.Context, template Template, f template.FuncMap, tmplctx interface{}) error {
+func (t *renderer) renderTemplate(ctx context.Context, template Template, f template.FuncMap, tmplctx interface{}) error {
 	if template.Writer != nil {
 		if wr, ok := template.Writer.(io.Closer); ok {
 			defer wr.Close()
@@ -254,8 +270,7 @@ func (t *Renderer) renderTemplate(ctx context.Context, template Template, f temp
 	}
 
 	tstart := time.Now()
-	tmpl, err := parseTemplate(ctx, template.Name, template.Text,
-		f, tmplctx, t.nested, t.lDelim, t.rDelim, t.missingKey)
+	tmpl, err := t.parseTemplate(ctx, template.Name, template.Text, f, tmplctx)
 	if err != nil {
 		return fmt.Errorf("parse template %s: %w", template.Name, err)
 	}
@@ -271,19 +286,145 @@ func (t *Renderer) renderTemplate(ctx context.Context, template Template, f temp
 	return nil
 }
 
-// Render is a convenience method for rendering a single template. For more
-// than one template, use RenderTemplates. If wr is a non-os.Stdout
-// io.Closer, it will be closed after the template is rendered.
-//
-// Experimental: subject to breaking changes before the next major release
-func (t *Renderer) Render(ctx context.Context, name, text string, wr io.Writer) error {
+func (t *renderer) Render(ctx context.Context, name, text string, wr io.Writer) error {
 	return t.RenderTemplates(ctx, []Template{
 		{Name: name, Text: text, Writer: wr},
 	})
 }
 
+// parseTemplate - parses text as a Go template with the given name and options
+func (t *renderer) parseTemplate(ctx context.Context, name, text string, funcs template.FuncMap, tmplctx interface{}) (tmpl *template.Template, err error) {
+	tmpl = template.New(name)
+
+	missingKey := t.missingKey
+	if missingKey == "" {
+		missingKey = "error"
+	}
+
+	missingKeyValues := []string{"error", "zero", "default", "invalid"}
+	if !slices.Contains(missingKeyValues, missingKey) {
+		return nil, fmt.Errorf("not allowed value for the 'missing-key' flag: %s. Allowed values: %s", missingKey, strings.Join(missingKeyValues, ","))
+	}
+
+	tmpl.Option("missingkey=" + missingKey)
+
+	funcMap := copyFuncMap(funcs)
+
+	// the "tmpl" funcs get added here because they need access to the root template and context
+	addTmplFuncs(funcMap, tmpl, tmplctx, name)
+	tmpl.Funcs(funcMap)
+	tmpl.Delims(t.lDelim, t.rDelim)
+	_, err = tmpl.Parse(text)
+	if err != nil {
+		return nil, err
+	}
+
+	err = t.parseNestedTemplates(ctx, tmpl)
+	if err != nil {
+		return nil, fmt.Errorf("parse nested templates: %w", err)
+	}
+
+	return tmpl, nil
+}
+
+func (t *renderer) parseNestedTemplates(ctx context.Context, tmpl *template.Template) error {
+	fsp := datafs.FSProviderFromContext(ctx)
+
+	for alias, n := range t.nested {
+		u := *n.URL
+
+		fname := path.Base(u.Path)
+		if strings.HasSuffix(u.Path, "/") {
+			fname = "."
+		}
+
+		u.Path = path.Dir(u.Path)
+
+		fsys, err := fsp.New(&u)
+		if err != nil {
+			return fmt.Errorf("filesystem provider for %q unavailable: %w", &u, err)
+		}
+
+		// TODO: maybe need to do something with root here?
+		_, reldir, err := datafs.ResolveLocalPath(fsys, u.Path)
+		if err != nil {
+			return fmt.Errorf("resolveLocalPath: %w", err)
+		}
+
+		if reldir != "" && reldir != "." {
+			fsys, err = fs.Sub(fsys, reldir)
+			if err != nil {
+				return fmt.Errorf("sub filesystem for %q unavailable: %w", &u, err)
+			}
+		}
+
+		// inject context & header in case they're useful...
+		fsys = fsimpl.WithContextFS(ctx, fsys)
+		fsys = fsimpl.WithHeaderFS(n.Header, fsys)
+		fsys = datafs.WithDataSourceRegistryFS(t.sr, fsys)
+
+		// valid fs.FS paths have no trailing slash
+		fname = strings.TrimRight(fname, "/")
+
+		// first determine if the template path is a directory, in which case we
+		// need to load all the files in the directory (but not recursively)
+		fi, err := fs.Stat(fsys, fname)
+		if err != nil {
+			return fmt.Errorf("stat %q: %w", fname, err)
+		}
+
+		if fi.IsDir() {
+			err = parseNestedTemplateDir(ctx, fsys, alias, fname, tmpl)
+		} else {
+			err = parseNestedTemplate(ctx, fsys, alias, fname, tmpl)
+		}
+
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func parseNestedTemplateDir(ctx context.Context, fsys fs.FS, alias, fname string, tmpl *template.Template) error {
+	files, err := fs.ReadDir(fsys, fname)
+	if err != nil {
+		return fmt.Errorf("readDir %q: %w", fname, err)
+	}
+
+	for _, f := range files {
+		if !f.IsDir() {
+			err = parseNestedTemplate(ctx, fsys,
+				path.Join(alias, f.Name()),
+				path.Join(fname, f.Name()),
+				tmpl,
+			)
+			if err != nil {
+				return err
+			}
+		}
+	}
+
+	return nil
+}
+
+func parseNestedTemplate(_ context.Context, fsys fs.FS, alias, fname string, tmpl *template.Template) error {
+	b, err := fs.ReadFile(fsys, fname)
+	if err != nil {
+		return fmt.Errorf("readFile %q: %w", fname, err)
+	}
+
+	_, err = tmpl.New(alias).Parse(string(b))
+	if err != nil {
+		return fmt.Errorf("parse nested template %q: %w", fname, err)
+	}
+
+	return nil
+}
+
 // DefaultFSProvider is the default filesystem provider used by gomplate
-var DefaultFSProvider = sync.OnceValue[fsimpl.FSProvider](
+var DefaultFSProvider = sync.OnceValue(
 	func() fsimpl.FSProvider {
 		fsp := fsimpl.NewMux()
 
