@@ -15,12 +15,13 @@ import (
 
 // Indent - indent each line of the string with the given indent string.
 // Any indent characters are permitted, except for '\n'.
-//
-// TODO: return an error if the indent string contains '\n' instead of
-// succeeding
-func Indent(width int, indent, s string) string {
-	if width <= 0 || strings.Contains(indent, "\n") {
-		return s
+func Indent(width int, indent, s string) (string, error) {
+	if width <= 0 {
+		return "", fmt.Errorf("width must be > 0")
+	}
+
+	if strings.Contains(indent, "\n") {
+		return "", fmt.Errorf("indent must not contain '\\n'")
 	}
 
 	if width > 1 {
@@ -39,7 +40,8 @@ func Indent(width int, indent, s string) string {
 		res = append(res, c)
 		bol = c == '\n'
 	}
-	return string(res)
+
+	return string(res), nil
 }
 
 // ShellQuote - generate a POSIX shell literal evaluating to a string

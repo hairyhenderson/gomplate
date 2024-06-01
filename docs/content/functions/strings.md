@@ -143,6 +143,8 @@ http://example.com:80
 
 Indents a string. If the input string has multiple lines, each line will be indented.
 
+As of v4.0.0, this function will error if the `width` or `indent` arguments are invalid.
+
 _Added in gomplate [v1.9.0](https://github.com/hairyhenderson/gomplate/releases/tag/v1.9.0)_
 ### Usage
 
@@ -157,9 +159,9 @@ input | strings.Indent [width] [indent]
 
 | name | description |
 |------|-------------|
-| `width` | _(optional)_ number of times to repeat the `indent` string. Default: `1` |
-| `indent` | _(optional)_ the string to indent with. Default: `" "` |
-| `input` | _(required)_ the string to indent |
+| `width` | _(optional)_ Number of times to repeat the `indent` string. Must be greater than 0. Default: `1` |
+| `indent` | _(optional)_ The string to indent with. Must not contain a newline character ("\n"). Default: `" "` |
+| `input` | _(required)_ The string to indent |
 
 ### Examples
 

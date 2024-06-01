@@ -9,18 +9,32 @@ import (
 )
 
 func TestIndent(t *testing.T) {
-	actual := "hello\nworld\n!"
+	in := "hello\nworld\n!"
 	expected := "  hello\n  world\n  !"
-	require.Equal(t, actual, Indent(0, "  ", actual))
-	require.Equal(t, actual, Indent(-1, "  ", actual))
-	require.Equal(t, expected, Indent(1, "  ", actual))
-	require.Equal(t, "\n", Indent(1, "  ", "\n"))
-	require.Equal(t, "  foo\n", Indent(1, "  ", "foo\n"))
-	require.Equal(t, "   foo", Indent(1, "   ", "foo"))
-	require.Equal(t, "   foo", Indent(3, " ", "foo"))
 
-	// indenting with newline is not permitted
-	require.Equal(t, "foo", Indent(3, "\n", "foo"))
+	actual, err := Indent(1, "  ", in)
+	require.NoError(t, err)
+	require.Equal(t, expected, actual)
+	actual, err = Indent(1, "  ", "\n")
+	require.NoError(t, err)
+	require.Equal(t, "\n", actual)
+	actual, err = Indent(1, "  ", "foo\n")
+	require.NoError(t, err)
+	require.Equal(t, "  foo\n", actual)
+	actual, err = Indent(1, "   ", "foo")
+	require.NoError(t, err)
+	require.Equal(t, "   foo", actual)
+	actual, err = Indent(3, " ", "foo")
+	require.NoError(t, err)
+	require.Equal(t, "   foo", actual)
+
+	// error cases
+	_, err = Indent(3, "\n", "foo")
+	require.Error(t, err)
+	_, err = Indent(-1, "  ", in)
+	require.Error(t, err)
+	_, err = Indent(0, "  ", in)
+	require.Error(t, err)
 }
 
 func BenchmarkIndent(b *testing.B) {
@@ -29,14 +43,14 @@ func BenchmarkIndent(b *testing.B) {
 	outs := make([]string, b.N*8)
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		outs[0+i*8] = Indent(20, " ", longString)
-		outs[1+i*8] = Indent(-1, "  ", actual)
-		outs[2+i*8] = Indent(1, "  ", actual)
-		outs[3+i*8] = Indent(1, "  ", "\n")
-		outs[4+i*8] = Indent(1, "  ", "foo\n")
-		outs[5+i*8] = Indent(1, "   ", "foo")
-		outs[6+i*8] = Indent(3, " ", "foo")
-		outs[7+i*8] = Indent(3, "\n", "foo")
+		outs[0+i*8], _ = Indent(20, " ", longString)
+		outs[1+i*8], _ = Indent(-1, "  ", actual)
+		outs[2+i*8], _ = Indent(1, "  ", actual)
+		outs[3+i*8], _ = Indent(1, "  ", "\n")
+		outs[4+i*8], _ = Indent(1, "  ", "foo\n")
+		outs[5+i*8], _ = Indent(1, "   ", "foo")
+		outs[6+i*8], _ = Indent(3, " ", "foo")
+		outs[7+i*8], _ = Indent(3, "\n", "foo")
 	}
 	b.StopTimer()
 
