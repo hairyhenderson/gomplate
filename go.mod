@@ -1,6 +1,6 @@
 module github.com/hairyhenderson/gomplate/v4
 
-go 1.22.3
+go 1.22.4
 
 require (
 	cuelang.org/go v0.9.1
@@ -12,7 +12,7 @@ require (
 	github.com/google/uuid v1.6.0
 	github.com/gosimple/slug v1.14.0
 	github.com/hack-pad/hackpadfs v0.2.1
-	github.com/hairyhenderson/go-fsimpl v0.1.2
+	github.com/hairyhenderson/go-fsimpl v0.1.3
 	github.com/hairyhenderson/toml v0.4.2-0.20210923231440-40456b8e66cf
 	github.com/hairyhenderson/xignore v0.3.3-0.20230403012150-95fe86932830 // iofs-port branch
 	github.com/hashicorp/go-sockaddr v1.0.6
@@ -36,18 +36,13 @@ require (
 	k8s.io/client-go v0.30.2
 )
 
-// TODO: once https://github.com/go-git/go-git/pull/416 is merged, this can be
-// removed and we can use the upstream module. This commit on my fork is a
-// cherry-pick from the PR on top of v5.11.0
-replace github.com/go-git/go-git/v5 => github.com/hairyhenderson/go-git/v5 v5.0.0-20240112193603-9068a607f23a
-
 // TODO: replace with gopkg.in/yaml.v3 after https://github.com/go-yaml/yaml/pull/862
 // is merged
 require github.com/hairyhenderson/yaml v0.0.0-20220618171115-2d35fca545ce
 
 require (
 	cloud.google.com/go v0.114.0 // indirect
-	cloud.google.com/go/auth v0.4.2 // indirect
+	cloud.google.com/go/auth v0.5.1 // indirect
 	cloud.google.com/go/auth/oauth2adapt v0.2.2 // indirect
 	cloud.google.com/go/compute/metadata v0.3.0 // indirect
 	cloud.google.com/go/iam v1.1.8 // indirect
@@ -78,7 +73,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/internal/presigned-url v1.11.11 // indirect
 	github.com/aws/aws-sdk-go-v2/service/internal/s3shared v1.17.3 // indirect
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.51.4 // indirect
-	github.com/aws/aws-sdk-go-v2/service/secretsmanager v1.29.3 // indirect
+	github.com/aws/aws-sdk-go-v2/service/secretsmanager v1.30.0 // indirect
 	github.com/aws/aws-sdk-go-v2/service/ssm v1.50.6 // indirect
 	github.com/aws/aws-sdk-go-v2/service/sso v1.20.11 // indirect
 	github.com/aws/aws-sdk-go-v2/service/ssooidc v1.24.5 // indirect
@@ -95,7 +90,6 @@ require (
 	github.com/felixge/httpsnoop v1.0.4 // indirect
 	github.com/go-git/gcfg v1.5.1-0.20230307220236-3a3c6141e376 // indirect
 	github.com/go-git/go-billy/v5 v5.5.0 // indirect
-	github.com/go-git/go-git/v5 v5.11.0 // indirect
 	github.com/go-jose/go-jose/v4 v4.0.1 // indirect
 	github.com/go-logr/logr v1.4.1 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
@@ -108,6 +102,7 @@ require (
 	github.com/googleapis/enterprise-certificate-proxy v0.3.2 // indirect
 	github.com/googleapis/gax-go/v2 v2.12.4 // indirect
 	github.com/gosimple/unidecode v1.0.1 // indirect
+	github.com/hairyhenderson/go-git/v5 v5.12.1-0.20240530140403-1b868a7b8a3c // indirect
 	github.com/hashicorp/consul/api v1.29.1 // indirect
 	github.com/hashicorp/errwrap v1.1.0 // indirect
 	github.com/hashicorp/go-cleanhttp v0.5.2 // indirect
@@ -141,9 +136,9 @@ require (
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
 	github.com/ryanuber/go-glob v1.0.0 // indirect
 	github.com/ryszard/goskiplist v0.0.0-20150312221310-2dfbae5fcf46 // indirect
-	github.com/sergi/go-diff v1.3.1 // indirect
+	github.com/sergi/go-diff v1.3.2-0.20230802210424-5b0b94c5c0d3 // indirect
 	github.com/shabbyrobe/gocovmerge v0.0.0-20230507112040-c3350d9342df // indirect
-	github.com/skeema/knownhosts v1.2.1 // indirect
+	github.com/skeema/knownhosts v1.2.2 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/xanzy/ssh-agent v0.3.3 // indirect
 	go.opencensus.io v0.24.0 // indirect
@@ -157,15 +152,15 @@ require (
 	gocloud.dev v0.37.0 // indirect
 	golang.org/x/mod v0.17.0 // indirect
 	golang.org/x/net v0.26.0 // indirect
-	golang.org/x/oauth2 v0.20.0 // indirect
+	golang.org/x/oauth2 v0.21.0 // indirect
 	golang.org/x/sync v0.7.0 // indirect
 	golang.org/x/time v0.5.0 // indirect
 	golang.org/x/tools v0.21.1-0.20240508182429-e35e4ccd0d2d // indirect
 	golang.org/x/xerrors v0.0.0-20231012003039-104605ab7028 // indirect
-	google.golang.org/api v0.182.0 // indirect
-	google.golang.org/genproto v0.0.0-20240401170217-c3f982113cda // indirect
-	google.golang.org/genproto/googleapis/api v0.0.0-20240520151616-dc85e6b867a5 // indirect
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20240521202816-d264139d666e // indirect
+	google.golang.org/api v0.183.0 // indirect
+	google.golang.org/genproto v0.0.0-20240528184218-531527333157 // indirect
+	google.golang.org/genproto/googleapis/api v0.0.0-20240521202816-d264139d666e // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20240528184218-531527333157 // indirect
 	google.golang.org/grpc v1.64.0 // indirect
 	google.golang.org/protobuf v1.34.1 // indirect
 	gopkg.in/warnings.v0 v0.1.2 // indirect
