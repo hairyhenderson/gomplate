@@ -6,7 +6,7 @@ require (
 	cuelang.org/go v0.8.2
 	github.com/Masterminds/goutils v1.1.1
 	github.com/Masterminds/semver/v3 v3.2.1
-	github.com/Shopify/ejson v1.5.1
+	github.com/Shopify/ejson v1.5.2
 	github.com/aws/aws-sdk-go v1.53.12
 	github.com/fullsailor/pkcs7 v0.0.0-20190404230743-d7302db945fa
 	github.com/google/uuid v1.6.0
