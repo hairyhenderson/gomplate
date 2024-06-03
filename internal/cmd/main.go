@@ -88,12 +88,8 @@ func NewGomplateCmd(stderr io.Writer) *cobra.Command {
 				return err
 			}
 
-			if cfg.Experimental {
-				slog.SetDefault(slog.With("experimental", true))
-				slog.InfoContext(ctx, "experimental functions and features enabled!")
-
-				ctx = gomplate.SetExperimental(ctx)
-			}
+			// get the post-exec reader now as this may modify cfg
+			postExecReader := postExecInput(cfg)
 
 			slog.DebugContext(ctx, fmt.Sprintf("starting %s", cmd.Name()))
 			slog.DebugContext(ctx, fmt.Sprintf("config is:\n%v", cfg),
@@ -101,6 +97,7 @@ func NewGomplateCmd(stderr io.Writer) *cobra.Command {
 				slog.String("build", version.GitCommit),
 			)
 
+			// run the main command
 			err = gomplate.Run(ctx, cfg)
 			cmd.SilenceErrors = true
 			cmd.SilenceUsage = true
@@ -113,7 +110,8 @@ func NewGomplateCmd(stderr io.Writer) *cobra.Command {
 			if err != nil {
 				return err
 			}
-			return postRunExec(ctx, cfg.PostExec, cfg.PostExecInput, cmd.OutOrStdout(), cmd.ErrOrStderr())
+
+			return postRunExec(ctx, cfg.PostExec, postExecReader, cmd.OutOrStdout(), cmd.ErrOrStderr())
 		},
 		Args: optionalExecArgs,
 	}

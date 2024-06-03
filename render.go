@@ -6,7 +6,6 @@ import (
 	"io"
 	"io/fs"
 	"net/http"
-	"net/url"
 	"path"
 	"slices"
 	"strings"
@@ -16,27 +15,21 @@ import (
 
 	"github.com/hairyhenderson/go-fsimpl"
 	"github.com/hairyhenderson/go-fsimpl/autofs"
-	"github.com/hairyhenderson/gomplate/v4/internal/config"
 	"github.com/hairyhenderson/gomplate/v4/internal/datafs"
 	"github.com/hairyhenderson/gomplate/v4/internal/funcs"
 )
 
-// Options for template rendering.
-//
-// Experimental: subject to breaking changes before the next major release
-type Options struct {
-	// FSProvider - allows lookups of data source filesystems. Defaults to
-	// [DefaultFSProvider].
-	FSProvider fsimpl.FSProvider
-
+// RenderOptions - options for controlling how templates are rendered, and
+// what data are available.
+type RenderOptions struct {
 	// Datasources - map of datasources to be read on demand when the
 	// 'datasource'/'ds'/'include' functions are used.
-	Datasources map[string]Datasource
+	Datasources map[string]DataSource
 	// Context - map of datasources to be read immediately and added to the
 	// template's context
-	Context map[string]Datasource
+	Context map[string]DataSource
 	// Templates - map of templates that can be referenced as nested templates
-	Templates map[string]Datasource
+	Templates map[string]DataSource
 
 	// Extra HTTP headers not attached to pre-defined datsources. Potentially
 	// used by datasources defined in the template.
@@ -55,62 +48,27 @@ type Options struct {
 
 	// MissingKey controls the behavior during execution if a map is indexed with a key that is not present in the map
 	MissingKey string
-
-	// Experimental - enable experimental features
-	Experimental bool
 }
 
-// optionsFromConfig - create a set of options from the internal config struct.
+// optionsFromConfig - translate the internal config struct to a RenderOptions.
 // Does not set the Funcs field.
-func optionsFromConfig(cfg *config.Config) Options {
-	ds := make(map[string]Datasource, len(cfg.DataSources))
-	for k, v := range cfg.DataSources {
-		ds[k] = Datasource{
-			URL:    v.URL,
-			Header: v.Header,
-		}
-	}
-	cs := make(map[string]Datasource, len(cfg.Context))
-	for k, v := range cfg.Context {
-		cs[k] = Datasource{
-			URL:    v.URL,
-			Header: v.Header,
-		}
-	}
-	ts := make(map[string]Datasource, len(cfg.Templates))
-	for k, v := range cfg.Templates {
-		ts[k] = Datasource{
-			URL:    v.URL,
-			Header: v.Header,
-		}
-	}
-
-	opts := Options{
-		Datasources:  ds,
-		Context:      cs,
-		Templates:    ts,
+func optionsFromConfig(cfg *Config) RenderOptions {
+	opts := RenderOptions{
+		Datasources:  cfg.DataSources,
+		Context:      cfg.Context,
+		Templates:    cfg.Templates,
 		ExtraHeaders: cfg.ExtraHeaders,
 		LDelim:       cfg.LDelim,
 		RDelim:       cfg.RDelim,
 		MissingKey:   cfg.MissingKey,
-		Experimental: cfg.Experimental,
 	}
 
 	return opts
 }
 
-// Datasource - a datasource URL with optional headers
-//
-// Experimental: subject to breaking changes before the next major release
-type Datasource struct {
-	URL    *url.URL
-	Header http.Header
-}
-
 type renderer struct {
 	sr          datafs.DataSourceReader
-	fsp         fsimpl.FSProvider
-	nested      config.Templates
+	nested      map[string]DataSource
 	funcs       template.FuncMap
 	lDelim      string
 	rDelim      string
@@ -120,8 +78,6 @@ type renderer struct {
 
 // Renderer provides gomplate's core template rendering functionality.
 // See [NewRenderer].
-//
-// Experimental: subject to breaking changes before the next major release
 type Renderer interface {
 	// RenderTemplates renders a list of templates, parsing each template's
 	// Text and executing it, outputting to its Writer. If a template's Writer
@@ -140,11 +96,11 @@ type Renderer interface {
 // use.
 //
 // Experimental: subject to breaking changes before the next major release
-func NewRenderer(opts Options) Renderer {
+func NewRenderer(opts RenderOptions) Renderer {
 	return newRenderer(opts)
 }
 
-func newRenderer(opts Options) *renderer {
+func newRenderer(opts RenderOptions) *renderer {
 	if Metrics == nil {
 		Metrics = newMetrics()
 	}
@@ -156,23 +112,23 @@ func newRenderer(opts Options) *renderer {
 
 	for alias, ds := range opts.Context {
 		tctxAliases = append(tctxAliases, alias)
-		reg.Register(alias, config.DataSource{
+		reg.Register(alias, DataSource{
 			URL:    ds.URL,
 			Header: ds.Header,
 		})
 	}
 	for alias, ds := range opts.Datasources {
-		reg.Register(alias, config.DataSource{
+		reg.Register(alias, DataSource{
 			URL:    ds.URL,
 			Header: ds.Header,
 		})
 	}
 
-	// convert the internal config.Templates to a map[string]Datasource
-	// TODO: simplify when config.Templates is removed
-	nested := config.Templates{}
+	// convert the internal Templates to a map[string]Datasource
+	// TODO: simplify when Templates is removed
+	nested := map[string]DataSource{}
 	for alias, ds := range opts.Templates {
-		nested[alias] = config.DataSource{
+		nested[alias] = DataSource{
 			URL:    ds.URL,
 			Header: ds.Header,
 		}
@@ -191,28 +147,20 @@ func newRenderer(opts Options) *renderer {
 		missingKey = "error"
 	}
 
-	if opts.FSProvider == nil {
-		opts.FSProvider = DefaultFSProvider
-	}
-
-	// TODO: move this in?
 	sr := datafs.NewSourceReader(reg)
 
 	return &renderer{
-		nested:      nested,
+		nested:      opts.Templates,
 		sr:          sr,
 		funcs:       opts.Funcs,
 		tctxAliases: tctxAliases,
 		lDelim:      opts.LDelim,
 		rDelim:      opts.RDelim,
 		missingKey:  missingKey,
-		fsp:         opts.FSProvider,
 	}
 }
 
 // Template contains the basic data needed to render a template with a Renderer
-//
-// Experimental: subject to breaking changes before the next major release
 type Template struct {
 	// Writer is the writer to output the rendered template to. If this writer
 	// is a non-os.Stdout io.Closer, it will be closed after the template is
@@ -224,37 +172,37 @@ type Template struct {
 	Text string
 }
 
-func (t *renderer) RenderTemplates(ctx context.Context, templates []Template) error {
+func (r *renderer) RenderTemplates(ctx context.Context, templates []Template) error {
 	if datafs.FSProviderFromContext(ctx) == nil {
-		ctx = datafs.ContextWithFSProvider(ctx, t.fsp)
+		ctx = datafs.ContextWithFSProvider(ctx, DefaultFSProvider)
 	}
 
 	// configure the template context with the refreshed Data value
 	// only done here because the data context may have changed
-	tmplctx, err := createTmplContext(ctx, t.tctxAliases, t.sr)
+	tmplctx, err := createTmplContext(ctx, r.tctxAliases, r.sr)
 	if err != nil {
 		return err
 	}
 
-	return t.renderTemplatesWithData(ctx, templates, tmplctx)
+	return r.renderTemplatesWithData(ctx, templates, tmplctx)
 }
 
-func (t *renderer) renderTemplatesWithData(ctx context.Context, templates []Template, tmplctx interface{}) error {
+func (r *renderer) renderTemplatesWithData(ctx context.Context, templates []Template, tmplctx interface{}) error {
 	// update funcs with the current context
 	// only done here to ensure the context is properly set in func namespaces
 	f := CreateFuncs(ctx)
 
 	// add datasource funcs here because they need to share the source reader
-	addToMap(f, funcs.CreateDataSourceFuncs(ctx, t.sr))
+	addToMap(f, funcs.CreateDataSourceFuncs(ctx, r.sr))
 
 	// add user-defined funcs last so they override the built-in funcs
-	addToMap(f, t.funcs)
+	addToMap(f, r.funcs)
 
 	// track some metrics for debug output
 	start := time.Now()
 	defer func() { Metrics.TotalRenderDuration = time.Since(start) }()
 	for _, template := range templates {
-		err := t.renderTemplate(ctx, template, f, tmplctx)
+		err := r.renderTemplate(ctx, template, f, tmplctx)
 		if err != nil {
 			return fmt.Errorf("renderTemplate: %w", err)
 		}
@@ -262,7 +210,7 @@ func (t *renderer) renderTemplatesWithData(ctx context.Context, templates []Temp
 	return nil
 }
 
-func (t *renderer) renderTemplate(ctx context.Context, template Template, f template.FuncMap, tmplctx interface{}) error {
+func (r *renderer) renderTemplate(ctx context.Context, template Template, f template.FuncMap, tmplctx interface{}) error {
 	if template.Writer != nil {
 		if wr, ok := template.Writer.(io.Closer); ok {
 			defer wr.Close()
@@ -270,7 +218,7 @@ func (t *renderer) renderTemplate(ctx context.Context, template Template, f temp
 	}
 
 	tstart := time.Now()
-	tmpl, err := t.parseTemplate(ctx, template.Name, template.Text, f, tmplctx)
+	tmpl, err := r.parseTemplate(ctx, template.Name, template.Text, f, tmplctx)
 	if err != nil {
 		return fmt.Errorf("parse template %s: %w", template.Name, err)
 	}
@@ -286,17 +234,17 @@ func (t *renderer) renderTemplate(ctx context.Context, template Template, f temp
 	return nil
 }
 
-func (t *renderer) Render(ctx context.Context, name, text string, wr io.Writer) error {
-	return t.RenderTemplates(ctx, []Template{
+func (r *renderer) Render(ctx context.Context, name, text string, wr io.Writer) error {
+	return r.RenderTemplates(ctx, []Template{
 		{Name: name, Text: text, Writer: wr},
 	})
 }
 
 // parseTemplate - parses text as a Go template with the given name and options
-func (t *renderer) parseTemplate(ctx context.Context, name, text string, funcs template.FuncMap, tmplctx interface{}) (tmpl *template.Template, err error) {
+func (r *renderer) parseTemplate(ctx context.Context, name, text string, funcs template.FuncMap, tmplctx interface{}) (tmpl *template.Template, err error) {
 	tmpl = template.New(name)
 
-	missingKey := t.missingKey
+	missingKey := r.missingKey
 	if missingKey == "" {
 		missingKey = "error"
 	}
@@ -313,13 +261,13 @@ func (t *renderer) parseTemplate(ctx context.Context, name, text string, funcs t
 	// the "tmpl" funcs get added here because they need access to the root template and context
 	addTmplFuncs(funcMap, tmpl, tmplctx, name)
 	tmpl.Funcs(funcMap)
-	tmpl.Delims(t.lDelim, t.rDelim)
+	tmpl.Delims(r.lDelim, r.rDelim)
 	_, err = tmpl.Parse(text)
 	if err != nil {
 		return nil, err
 	}
 
-	err = t.parseNestedTemplates(ctx, tmpl)
+	err = r.parseNestedTemplates(ctx, tmpl)
 	if err != nil {
 		return nil, fmt.Errorf("parse nested templates: %w", err)
 	}
@@ -327,10 +275,10 @@ func (t *renderer) parseTemplate(ctx context.Context, name, text string, funcs t
 	return tmpl, nil
 }
 
-func (t *renderer) parseNestedTemplates(ctx context.Context, tmpl *template.Template) error {
+func (r *renderer) parseNestedTemplates(ctx context.Context, tmpl *template.Template) error {
 	fsp := datafs.FSProviderFromContext(ctx)
 
-	for alias, n := range t.nested {
+	for alias, n := range r.nested {
 		u := *n.URL
 
 		fname := path.Base(u.Path)
@@ -361,7 +309,7 @@ func (t *renderer) parseNestedTemplates(ctx context.Context, tmpl *template.Temp
 		// inject context & header in case they're useful...
 		fsys = fsimpl.WithContextFS(ctx, fsys)
 		fsys = fsimpl.WithHeaderFS(n.Header, fsys)
-		fsys = datafs.WithDataSourceRegistryFS(t.sr, fsys)
+		fsys = datafs.WithDataSourceRegistryFS(r.sr, fsys)
 
 		// valid fs.FS paths have no trailing slash
 		fname = strings.TrimRight(fname, "/")

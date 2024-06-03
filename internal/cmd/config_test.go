@@ -6,12 +6,13 @@ import (
 	"fmt"
 	"io/fs"
 	"net/url"
+	"os"
 	"testing"
 	"testing/fstest"
 	"time"
 
 	"github.com/hairyhenderson/go-fsimpl"
-	"github.com/hairyhenderson/gomplate/v4/internal/config"
+	"github.com/hairyhenderson/gomplate/v4"
 	"github.com/hairyhenderson/gomplate/v4/internal/datafs"
 
 	"github.com/spf13/cobra"
@@ -47,7 +48,7 @@ func TestReadConfigFile(t *testing.T) {
 
 	cfg, err := readConfigFile(ctx, cmd)
 	require.NoError(t, err)
-	assert.EqualValues(t, &config.Config{}, cfg)
+	assert.EqualValues(t, &gomplate.Config{}, cfg)
 
 	cmd.ParseFlags([]string{"--config", "config.yaml"})
 
@@ -55,7 +56,7 @@ func TestReadConfigFile(t *testing.T) {
 
 	cfg, err = readConfigFile(ctx, cmd)
 	require.NoError(t, err)
-	assert.EqualValues(t, &config.Config{Input: "hello world"}, cfg)
+	assert.EqualValues(t, &gomplate.Config{Input: "hello world"}, cfg)
 
 	fsys["config.yaml"] = &fstest.MapFile{Data: []byte("in: hello world\nin: \n")}
 
@@ -87,7 +88,7 @@ func TestLoadConfig(t *testing.T) {
 	cmd.ParseFlags(nil)
 
 	out, err := loadConfig(ctx, cmd, cmd.Flags().Args())
-	expected := &config.Config{
+	expected := &gomplate.Config{
 		Stdin:  stdin,
 		Stdout: stdout,
 		Stderr: stderr,
@@ -97,7 +98,7 @@ func TestLoadConfig(t *testing.T) {
 
 	cmd.ParseFlags([]string{"--in", "foo"})
 	out, err = loadConfig(ctx, cmd, cmd.Flags().Args())
-	expected = &config.Config{
+	expected = &gomplate.Config{
 		Input:  "foo",
 		Stdin:  stdin,
 		Stdout: out.Stdout,
@@ -108,17 +109,35 @@ func TestLoadConfig(t *testing.T) {
 
 	cmd.ParseFlags([]string{"--in", "foo", "--exec-pipe", "--", "tr", "[a-z]", "[A-Z]"})
 	out, err = loadConfig(ctx, cmd, cmd.Flags().Args())
-	expected = &config.Config{
-		Input:         "foo",
-		ExecPipe:      true,
-		PostExec:      []string{"tr", "[a-z]", "[A-Z]"},
-		PostExecInput: out.PostExecInput,
-		Stdin:         stdin,
-		Stdout:        out.Stdout,
-		Stderr:        stderr,
+	expected = &gomplate.Config{
+		Input:    "foo",
+		ExecPipe: true,
+		PostExec: []string{"tr", "[a-z]", "[A-Z]"},
+		Stdin:    stdin,
+		Stdout:   out.Stdout,
+		Stderr:   stderr,
 	}
 	require.NoError(t, err)
 	assert.EqualValues(t, expected, out)
+}
+
+func TestPostExecInput(t *testing.T) {
+	t.Parallel()
+
+	cfg := &gomplate.Config{ExecPipe: false}
+	assert.Equal(t, os.Stdin, postExecInput(cfg))
+
+	cfg = &gomplate.Config{ExecPipe: true}
+
+	pipe := postExecInput(cfg)
+	assert.IsType(t, &bytes.Buffer{}, pipe)
+	assert.Equal(t, []string{"-"}, cfg.OutputFiles)
+	assert.Equal(t, pipe, cfg.Stdout)
+
+	stdin := &bytes.Buffer{}
+	cfg = &gomplate.Config{ExecPipe: false, Stdin: stdin}
+	pipe = postExecInput(cfg)
+	assert.Equal(t, stdin, pipe)
 }
 
 func TestCobraConfig(t *testing.T) {
@@ -133,13 +152,13 @@ func TestCobraConfig(t *testing.T) {
 
 	cfg, err := cobraConfig(cmd, cmd.Flags().Args())
 	require.NoError(t, err)
-	assert.EqualValues(t, &config.Config{}, cfg)
+	assert.EqualValues(t, &gomplate.Config{}, cfg)
 
 	cmd.ParseFlags([]string{"--file", "in", "--", "echo", "foo"})
 
 	cfg, err = cobraConfig(cmd, cmd.Flags().Args())
 	require.NoError(t, err)
-	assert.EqualValues(t, &config.Config{
+	assert.EqualValues(t, &gomplate.Config{
 		InputFiles: []string{"in"},
 		PostExec:   []string{"echo", "foo"},
 	}, cfg)
@@ -195,68 +214,68 @@ func TestPickConfigFile(t *testing.T) {
 func TestApplyEnvVars(t *testing.T) {
 	t.Run("invalid GOMPLATE_PLUGIN_TIMEOUT", func(t *testing.T) {
 		t.Setenv("GOMPLATE_PLUGIN_TIMEOUT", "bogus")
-		_, err := applyEnvVars(context.Background(), &config.Config{})
+		_, err := applyEnvVars(context.Background(), &gomplate.Config{})
 		require.Error(t, err)
 	})
 
 	data := []struct {
-		input, expected *config.Config
+		input, expected *gomplate.Config
 		env             string
 		value           string
 	}{
 		{
-			&config.Config{PluginTimeout: 2 * time.Second},
-			&config.Config{PluginTimeout: 2 * time.Second},
+			&gomplate.Config{PluginTimeout: 2 * time.Second},
+			&gomplate.Config{PluginTimeout: 2 * time.Second},
 			"GOMPLATE_PLUGIN_TIMEOUT", "bogus",
 		},
 		{
-			&config.Config{},
-			&config.Config{PluginTimeout: 2 * time.Second},
+			&gomplate.Config{},
+			&gomplate.Config{PluginTimeout: 2 * time.Second},
 			"GOMPLATE_PLUGIN_TIMEOUT", "2s",
 		},
 		{
-			&config.Config{PluginTimeout: 100 * time.Millisecond},
-			&config.Config{PluginTimeout: 100 * time.Millisecond},
+			&gomplate.Config{PluginTimeout: 100 * time.Millisecond},
+			&gomplate.Config{PluginTimeout: 100 * time.Millisecond},
 			"GOMPLATE_PLUGIN_TIMEOUT", "2s",
 		},
 		{
-			&config.Config{},
-			&config.Config{Experimental: false},
+			&gomplate.Config{},
+			&gomplate.Config{Experimental: false},
 			"GOMPLATE_EXPERIMENTAL", "bogus",
 		},
 		{
-			&config.Config{},
-			&config.Config{Experimental: true},
+			&gomplate.Config{},
+			&gomplate.Config{Experimental: true},
 			"GOMPLATE_EXPERIMENTAL", "true",
 		},
 		{
-			&config.Config{Experimental: true},
-			&config.Config{Experimental: true},
+			&gomplate.Config{Experimental: true},
+			&gomplate.Config{Experimental: true},
 			"GOMPLATE_EXPERIMENTAL", "false",
 		},
 		{
-			&config.Config{},
-			&config.Config{LDelim: "--"},
+			&gomplate.Config{},
+			&gomplate.Config{LDelim: "--"},
 			"GOMPLATE_LEFT_DELIM", "--",
 		},
 		{
-			&config.Config{LDelim: "{{"},
-			&config.Config{LDelim: "{{"},
+			&gomplate.Config{LDelim: "{{"},
+			&gomplate.Config{LDelim: "{{"},
 			"GOMPLATE_LEFT_DELIM", "--",
 		},
 		{
-			&config.Config{},
-			&config.Config{RDelim: ")>"},
+			&gomplate.Config{},
+			&gomplate.Config{RDelim: ")>"},
 			"GOMPLATE_RIGHT_DELIM", ")>",
 		},
 		{
-			&config.Config{RDelim: "}}"},
-			&config.Config{RDelim: "}}"},
+			&gomplate.Config{RDelim: "}}"},
+			&gomplate.Config{RDelim: "}}"},
 			"GOMPLATE_RIGHT_DELIM", ")>",
 		},
 		{
-			&config.Config{RDelim: "}}"},
-			&config.Config{RDelim: "}}"},
+			&gomplate.Config{RDelim: "}}"},
+			&gomplate.Config{RDelim: "}}"},
 			"GOMPLATE_RIGHT_DELIM", "",
 		},
 	}

@@ -1,20 +1,17 @@
-package config
+package gomplate
 
 import (
-	"bytes"
-	"context"
 	"fmt"
 	"io"
 	"net/http"
-	"net/url"
 	"os"
 	"path"
+	"slices"
 	"strconv"
 	"strings"
 	"time"
 
-	"golang.org/x/exp/slices"
-
+	"github.com/hairyhenderson/gomplate/v4/internal/config"
 	"github.com/hairyhenderson/gomplate/v4/internal/iohelpers"
 	"github.com/hairyhenderson/gomplate/v4/internal/urlhelpers"
 	"github.com/hairyhenderson/yaml"
@@ -31,23 +28,33 @@ func Parse(in io.Reader) (*Config, error) {
 	return out, nil
 }
 
-// Config - configures the gomplate execution
+// Config models gomplate's configuration file and command-line options. It
+// also contains some fields that can't be set in the config file.
 type Config struct {
-	Stdin  io.Reader `yaml:"-"`
+	// Stdin - override for stdin:// URLs or the '-' input file. Can't be set in
+	// the config file.
+	// Usually this should be left as default - this will be set at runtime.
+	Stdin io.Reader `yaml:"-"`
+
+	// Stdout - override for the '-' output file. Can't be set in the config
+	// file.
+	// Usually this should be left as default - this will be set at runtime.
 	Stdout io.Writer `yaml:"-"`
+
+	// Stderr - override for plugins to write to stderr. Can't be set in the
+	// config file.
+	// Usually this should be left as default - this will be set at runtime.
 	Stderr io.Writer `yaml:"-"`
+
+	// ExtraHeaders - Extra HTTP headers not attached to pre-defined datsources.
+	// Potentially used by datasources defined in the template at runtime. Can't
+	// currently be set in the config file.
+	ExtraHeaders map[string]http.Header `yaml:"-"`
 
 	DataSources map[string]DataSource   `yaml:"datasources,omitempty"`
 	Context     map[string]DataSource   `yaml:"context,omitempty"`
+	Templates   map[string]DataSource   `yaml:"templates,omitempty"`
 	Plugins     map[string]PluginConfig `yaml:"plugins,omitempty"`
-	Templates   Templates               `yaml:"templates,omitempty"`
-
-	// Extra HTTP headers not attached to pre-defined datsources. Potentially
-	// used by datasources defined in the template.
-	ExtraHeaders map[string]http.Header `yaml:"-"`
-
-	// internal use only, can't be injected in YAML
-	PostExecInput io.Reader `yaml:"-"`
 
 	Input                 string   `yaml:"in,omitempty"`
 	InputDir              string   `yaml:"inputDir,omitempty"`
@@ -73,23 +80,109 @@ type Config struct {
 	Experimental bool `yaml:"experimental,omitempty"`
 }
 
-type experimentalCtxKey struct{}
+// TODO: remove when we remove the deprecated array format for templates
+type rawConfig struct {
+	DataSources map[string]DataSource   `yaml:"datasources,omitempty"`
+	Context     map[string]DataSource   `yaml:"context,omitempty"`
+	Templates   config.Templates        `yaml:"templates,omitempty"`
+	Plugins     map[string]PluginConfig `yaml:"plugins,omitempty"`
 
-func SetExperimental(ctx context.Context) context.Context {
-	return context.WithValue(ctx, experimentalCtxKey{}, true)
+	Input                 string   `yaml:"in,omitempty"`
+	InputDir              string   `yaml:"inputDir,omitempty"`
+	InputFiles            []string `yaml:"inputFiles,omitempty,flow"`
+	ExcludeGlob           []string `yaml:"excludes,omitempty"`
+	ExcludeProcessingGlob []string `yaml:"excludeProcessing,omitempty"`
+
+	OutputDir   string   `yaml:"outputDir,omitempty"`
+	OutputMap   string   `yaml:"outputMap,omitempty"`
+	OutputFiles []string `yaml:"outputFiles,omitempty,flow"`
+	OutMode     string   `yaml:"chmod,omitempty"`
+
+	LDelim string `yaml:"leftDelim,omitempty"`
+	RDelim string `yaml:"rightDelim,omitempty"`
+
+	MissingKey string `yaml:"missingKey,omitempty"`
+
+	PostExec []string `yaml:"postExec,omitempty,flow"`
+
+	PluginTimeout time.Duration `yaml:"pluginTimeout,omitempty"`
+
+	ExecPipe     bool `yaml:"execPipe,omitempty"`
+	Experimental bool `yaml:"experimental,omitempty"`
 }
 
-func ExperimentalEnabled(ctx context.Context) bool {
-	v, ok := ctx.Value(experimentalCtxKey{}).(bool)
-	return ok && v
+// TODO: remove when we remove the deprecated array format for templates
+//
+// Deprecated: custom unmarshaling will be removed in the next version
+func (c *Config) UnmarshalYAML(value *yaml.Node) error {
+	r := rawConfig{}
+	err := value.Decode(&r)
+	if err != nil {
+		return err
+	}
+
+	*c = Config{
+		DataSources:           r.DataSources,
+		Context:               r.Context,
+		Templates:             r.Templates,
+		Plugins:               r.Plugins,
+		Input:                 r.Input,
+		InputDir:              r.InputDir,
+		InputFiles:            r.InputFiles,
+		ExcludeGlob:           r.ExcludeGlob,
+		ExcludeProcessingGlob: r.ExcludeProcessingGlob,
+		OutputDir:             r.OutputDir,
+		OutputMap:             r.OutputMap,
+		OutputFiles:           r.OutputFiles,
+		OutMode:               r.OutMode,
+		LDelim:                r.LDelim,
+		RDelim:                r.RDelim,
+		MissingKey:            r.MissingKey,
+		PostExec:              r.PostExec,
+		PluginTimeout:         r.PluginTimeout,
+		ExecPipe:              r.ExecPipe,
+		Experimental:          r.Experimental,
+	}
+
+	return nil
 }
 
-// mergeDataSources - use d as defaults, and override with values from o
-func mergeDataSources(d, o map[string]DataSource) map[string]DataSource {
+// TODO: remove when we remove the deprecated array format for templates
+//
+// Deprecated: custom unmarshaling will be removed in the next version
+func (c Config) MarshalYAML() (interface{}, error) {
+	aux := rawConfig{
+		DataSources:           c.DataSources,
+		Context:               c.Context,
+		Templates:             c.Templates,
+		Plugins:               c.Plugins,
+		Input:                 c.Input,
+		InputDir:              c.InputDir,
+		InputFiles:            c.InputFiles,
+		ExcludeGlob:           c.ExcludeGlob,
+		ExcludeProcessingGlob: c.ExcludeProcessingGlob,
+		OutputDir:             c.OutputDir,
+		OutputMap:             c.OutputMap,
+		OutputFiles:           c.OutputFiles,
+		OutMode:               c.OutMode,
+		LDelim:                c.LDelim,
+		RDelim:                c.RDelim,
+		MissingKey:            c.MissingKey,
+		PostExec:              c.PostExec,
+		PluginTimeout:         c.PluginTimeout,
+		ExecPipe:              c.ExecPipe,
+		Experimental:          c.Experimental,
+	}
+
+	return aux, nil
+}
+
+// mergeDataSourceMaps - use d as defaults, and override with values from o
+func mergeDataSourceMaps(d, o map[string]DataSource) map[string]DataSource {
 	for k, v := range o {
 		c, ok := d[k]
 		if ok {
-			d[k] = c.mergeFrom(v)
+			d[k] = mergeDataSources(c, v)
 		} else {
 			d[k] = v
 		}
@@ -97,63 +190,23 @@ func mergeDataSources(d, o map[string]DataSource) map[string]DataSource {
 	return d
 }
 
-// DataSource - datasource configuration
-type DataSource struct {
-	URL    *url.URL    `yaml:"-"`
-	Header http.Header `yaml:"header,omitempty,flow"`
-}
-
-// UnmarshalYAML - satisfy the yaml.Umarshaler interface - URLs aren't
-// well supported, and anyway we need to do some extra parsing
-func (d *DataSource) UnmarshalYAML(value *yaml.Node) error {
-	type raw struct {
-		Header http.Header
-		URL    string
+// mergeDataSources - use left as default, and override with values from right
+func mergeDataSources(left, right DataSource) DataSource {
+	if right.URL != nil {
+		left.URL = right.URL
 	}
-	r := raw{}
-	err := value.Decode(&r)
-	if err != nil {
-		return err
-	}
-	u, err := urlhelpers.ParseSourceURL(r.URL)
-	if err != nil {
-		return fmt.Errorf("could not parse datasource URL %q: %w", r.URL, err)
-	}
-	*d = DataSource{
-		URL:    u,
-		Header: r.Header,
-	}
-	return nil
-}
-
-// MarshalYAML - satisfy the yaml.Marshaler interface - URLs aren't
-// well supported, and anyway we need to do some extra parsing
-func (d DataSource) MarshalYAML() (interface{}, error) {
-	type raw struct {
-		Header http.Header
-		URL    string
-	}
-	r := raw{
-		URL:    d.URL.String(),
-		Header: d.Header,
-	}
-	return r, nil
-}
-
-// mergeFrom - use this as default, and override with values from o
-func (d DataSource) mergeFrom(o DataSource) DataSource {
-	if o.URL != nil {
-		d.URL = o.URL
-	}
-	if d.Header == nil {
-		d.Header = o.Header
+	if left.Header == nil {
+		left.Header = right.Header
 	} else {
-		for k, v := range o.Header {
-			d.Header[k] = v
+		for k, v := range right.Header {
+			left.Header[k] = v
 		}
 	}
-	return d
+	return left
 }
+
+// DataSource - datasource configuration
+type DataSource = config.DataSource
 
 type PluginConfig struct {
 	Cmd     string
@@ -261,17 +314,17 @@ func (c *Config) MergeFrom(o *Config) *Config {
 	if c.Templates == nil {
 		c.Templates = o.Templates
 	} else {
-		c.Templates = mergeDataSources(c.Templates, o.Templates)
+		c.Templates = mergeDataSourceMaps(c.Templates, o.Templates)
 	}
 	if c.DataSources == nil {
 		c.DataSources = o.DataSources
 	} else {
-		c.DataSources = mergeDataSources(c.DataSources, o.DataSources)
+		c.DataSources = mergeDataSourceMaps(c.DataSources, o.DataSources)
 	}
 	if c.Context == nil {
 		c.Context = o.Context
 	} else {
-		c.Context = mergeDataSources(c.Context, o.Context)
+		c.Context = mergeDataSourceMaps(c.Context, o.Context)
 	}
 	if len(o.Plugins) > 0 {
 		for k, v := range o.Plugins {
@@ -538,7 +591,7 @@ func (c *Config) ApplyDefaults() {
 	if c.Input == "" && c.InputDir == "" && len(c.InputFiles) == 0 {
 		c.InputFiles = []string{"-"}
 	}
-	if c.OutputDir == "" && c.OutputMap == "" && len(c.OutputFiles) == 0 && !c.ExecPipe {
+	if c.OutputDir == "" && c.OutputMap == "" && len(c.OutputFiles) == 0 {
 		c.OutputFiles = []string{"-"}
 	}
 	if c.LDelim == "" {
@@ -549,17 +602,6 @@ func (c *Config) ApplyDefaults() {
 	}
 	if c.MissingKey == "" {
 		c.MissingKey = "error"
-	}
-
-	if c.ExecPipe {
-		pipe := &bytes.Buffer{}
-		c.PostExecInput = pipe
-		c.OutputFiles = []string{"-"}
-
-		// --exec-pipe redirects standard out to the out pipe
-		c.Stdout = pipe
-	} else {
-		c.PostExecInput = c.Stdin
 	}
 
 	if c.PluginTimeout == 0 {
@@ -599,4 +641,17 @@ func (c *Config) String() string {
 		return err.Error()
 	}
 	return out.String()
+}
+
+// --
+
+func parseTemplateArg(value string) (alias string, ds DataSource, err error) {
+	alias, u, _ := strings.Cut(value, "=")
+	if u == "" {
+		u = alias
+	}
+
+	ds.URL, err = urlhelpers.ParseSourceURL(u)
+
+	return alias, ds, err
 }

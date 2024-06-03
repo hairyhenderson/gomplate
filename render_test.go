@@ -31,7 +31,7 @@ func TestRenderTemplate(t *testing.T) {
 	ctx := datafs.ContextWithFSProvider(context.Background(), fsp)
 
 	// no options - built-in function
-	tr := NewRenderer(Options{})
+	tr := NewRenderer(RenderOptions{})
 	out := &bytes.Buffer{}
 	err := tr.Render(ctx, "test", "{{ `hello world` | toUpper }}", out)
 	require.NoError(t, err)
@@ -43,11 +43,11 @@ func TestRenderTemplate(t *testing.T) {
 
 	t.Setenv("WORLD", "world")
 
-	tr = NewRenderer(Options{
-		Context: map[string]Datasource{
+	tr = NewRenderer(RenderOptions{
+		Context: map[string]DataSource{
 			"hi": {URL: hu},
 		},
-		Datasources: map[string]Datasource{
+		Datasources: map[string]DataSource{
 			"world": {URL: wu},
 		},
 	})
@@ -62,8 +62,8 @@ func TestRenderTemplate(t *testing.T) {
 	fsys["nested.tmpl"] = &fstest.MapFile{Data: []byte(
 		`<< . | toUpper >>`)}
 
-	tr = NewRenderer(Options{
-		Templates: map[string]Datasource{
+	tr = NewRenderer(RenderOptions{
+		Templates: map[string]DataSource{
 			"nested": {URL: nu},
 		},
 		LDelim: "<<",
@@ -75,7 +75,7 @@ func TestRenderTemplate(t *testing.T) {
 	assert.Equal(t, "HELLO", out.String())
 
 	// errors contain the template name
-	tr = NewRenderer(Options{})
+	tr = NewRenderer(RenderOptions{})
 	err = tr.Render(ctx, "foo", `{{ bogus }}`, &bytes.Buffer{})
 	assert.ErrorContains(t, err, "template: foo:")
 }
@@ -86,7 +86,7 @@ func ExampleRenderer() {
 	ctx := context.Background()
 
 	// create a new template renderer
-	tr := NewRenderer(Options{})
+	tr := NewRenderer(RenderOptions{})
 
 	// render a template to stdout
 	err := tr.Render(ctx, "mytemplate",
@@ -104,7 +104,7 @@ func ExampleRenderer_manyTemplates() {
 	ctx := context.Background()
 
 	// create a new template renderer
-	tr := NewRenderer(Options{})
+	tr := NewRenderer(RenderOptions{})
 
 	templates := []Template{
 		{
@@ -145,8 +145,8 @@ func ExampleRenderer_datasources() {
 
 	// a datasource that retrieves JSON from a public API
 	u, _ := url.Parse("https://ipinfo.io/1.1.1.1")
-	tr := NewRenderer(Options{
-		Context: map[string]Datasource{
+	tr := NewRenderer(RenderOptions{
+		Context: map[string]DataSource{
 			"info": {URL: u},
 		},
 	})

@@ -7,7 +7,6 @@ import (
 	"testing"
 
 	"github.com/hairyhenderson/go-fsimpl"
-	"github.com/hairyhenderson/gomplate/v4/internal/config"
 	"github.com/hairyhenderson/gomplate/v4/internal/datafs"
 
 	"github.com/stretchr/testify/assert"
@@ -46,8 +45,8 @@ func TestCreateContext(t *testing.T) {
 	uf, _ := url.Parse(fooURL)
 	ub, _ := url.Parse(barURL)
 
-	reg.Register("foo", config.DataSource{URL: uf})
-	reg.Register(".", config.DataSource{URL: ub})
+	reg.Register("foo", DataSource{URL: uf})
+	reg.Register(".", DataSource{URL: ub})
 
 	t.Setenv("foo", "foo: bar")
 	c, err = createTmplContext(ctx, []string{"foo"}, sr)
