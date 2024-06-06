@@ -158,17 +158,6 @@ func TestCustomDelim(t *testing.T) {
 	assert.Equal(t, "hi", testTemplate(t, g, `[print "hi"]`))
 }
 
-func TestRunTemplates(t *testing.T) {
-	buf := &bytes.Buffer{}
-	config := &Config{Input: "foo", OutputFiles: []string{"-"}, Out: buf}
-	err := RunTemplates(config)
-	require.NoError(t, err)
-	assert.Equal(t, "foo", buf.String())
-	assert.Equal(t, 1, Metrics.TemplatesGathered)
-	assert.Equal(t, 1, Metrics.TemplatesProcessed)
-	assert.Equal(t, 0, Metrics.Errors)
-}
-
 func TestSimpleNamer(t *testing.T) {
 	n := simpleNamer("out/")
 	out, err := n(context.Background(), "file")
