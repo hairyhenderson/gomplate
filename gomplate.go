@@ -15,17 +15,6 @@ import (
 	"github.com/hairyhenderson/gomplate/v4/internal/datafs"
 )
 
-// RunTemplates - run all gomplate templates specified by the given configuration
-//
-// Deprecated: use the Renderer interface instead
-func RunTemplates(o *Config) error {
-	cfg, err := o.toNewConfig()
-	if err != nil {
-		return err
-	}
-	return Run(context.Background(), cfg)
-}
-
 // Run all gomplate templates specified by the given configuration
 func Run(ctx context.Context, cfg *config.Config) error {
 	Metrics = newMetrics()
