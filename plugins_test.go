@@ -10,7 +10,6 @@ import (
 	"text/template"
 	"time"
 
-	"github.com/hairyhenderson/gomplate/v4/internal/config"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -18,14 +17,14 @@ import (
 func TestBindPlugins(t *testing.T) {
 	ctx := context.Background()
 	fm := template.FuncMap{}
-	cfg := &config.Config{
-		Plugins: map[string]config.PluginConfig{},
+	cfg := &Config{
+		Plugins: map[string]PluginConfig{},
 	}
 	err := bindPlugins(ctx, cfg, fm)
 	require.NoError(t, err)
 	assert.EqualValues(t, template.FuncMap{}, fm)
 
-	cfg.Plugins = map[string]config.PluginConfig{"foo": {Cmd: "bar"}}
+	cfg.Plugins = map[string]PluginConfig{"foo": {Cmd: "bar"}}
 	err = bindPlugins(ctx, cfg, fm)
 	require.NoError(t, err)
 	assert.Contains(t, fm, "foo")

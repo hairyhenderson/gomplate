@@ -14,14 +14,13 @@ import (
 	"time"
 
 	"github.com/hairyhenderson/gomplate/v4/conv"
-	"github.com/hairyhenderson/gomplate/v4/internal/config"
 )
 
 // bindPlugins creates custom plugin functions for each plugin specified by
 // the config, and adds them to the given funcMap. Uses the configuration's
 // PluginTimeout as the default plugin Timeout. Errors if a function name is
 // duplicated.
-func bindPlugins(ctx context.Context, cfg *config.Config, funcMap template.FuncMap) error {
+func bindPlugins(ctx context.Context, cfg *Config, funcMap template.FuncMap) error {
 	for k, v := range cfg.Plugins {
 		if _, ok := funcMap[k]; ok {
 			return fmt.Errorf("function %q is already bound, and can not be overridden", k)

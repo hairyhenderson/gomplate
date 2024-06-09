@@ -1,4 +1,4 @@
-package config
+package gomplate
 
 import (
 	"net/http"
@@ -21,6 +21,24 @@ func TestParseConfigFile(t *testing.T) {
 		Input: "hello world",
 	}
 	cf, err := Parse(strings.NewReader(in))
+	require.NoError(t, err)
+	assert.Equal(t, expected, cf)
+
+	// legacy array form for templates (will be removed in v4.1.0 or so)
+	in = `in: hello world
+templates:
+  - foo=bar
+  - baz=https://example.com/baz.yaml
+`
+
+	expected = &Config{
+		Input: "hello world",
+		Templates: map[string]DataSource{
+			"foo": {URL: mustURL("bar")},
+			"baz": {URL: mustURL("https://example.com/baz.yaml")},
+		},
+	}
+	cf, err = Parse(strings.NewReader(in))
 	require.NoError(t, err)
 	assert.Equal(t, expected, cf)
 
@@ -74,7 +92,7 @@ pluginTimeout: 2s
 		Plugins: map[string]PluginConfig{
 			"foo": {Cmd: "echo", Pipe: true},
 		},
-		Templates:     Templates{"foo": DataSource{URL: mustURL("file:///tmp/foo.t")}},
+		Templates:     map[string]DataSource{"foo": {URL: mustURL("file:///tmp/foo.t")}},
 		PluginTimeout: 2 * time.Second,
 	}
 
@@ -386,7 +404,7 @@ func TestMergeFrom(t *testing.T) {
 	cfg = &Config{
 		InputDir:    "indir/",
 		ExcludeGlob: []string{"*.txt"},
-		Templates: Templates{
+		Templates: map[string]DataSource{
 			"foo": {
 				URL: mustURL("file:///foo.yaml"),
 			},
@@ -402,7 +420,7 @@ func TestMergeFrom(t *testing.T) {
 		OutMode:     "600",
 		LDelim:      "${",
 		RDelim:      "}",
-		Templates: Templates{
+		Templates: map[string]DataSource{
 			"foo": {URL: mustURL("https://example.com/foo.yaml")},
 			"baz": {URL: mustURL("vault:///baz")},
 		},
@@ -414,7 +432,7 @@ func TestMergeFrom(t *testing.T) {
 		OutMode:     "600",
 		LDelim:      "${",
 		RDelim:      "}",
-		Templates: Templates{
+		Templates: map[string]DataSource{
 			"foo": {URL: mustURL("https://example.com/foo.yaml")},
 			"bar": {
 				URL:    mustURL("stdin:///"),
@@ -503,7 +521,7 @@ func TestParseDataSourceFlags(t *testing.T) {
 	)
 	require.NoError(t, err)
 	assert.EqualValues(t, &Config{
-		Templates: Templates{
+		Templates: map[string]DataSource{
 			"foo": {
 				URL:    mustURL("http://example.com"),
 				Header: http.Header{"Accept": {"application/json"}},
@@ -551,7 +569,7 @@ pluginTimeout: 5s
 			RDelim:      "R",
 			Input:       "foo",
 			OutputFiles: []string{"-"},
-			Templates: Templates{
+			Templates: map[string]DataSource{
 				"foo": {URL: mustURL("https://www.example.com/foo.tmpl")},
 				"bar": {URL: mustURL("file:///tmp/bar.t")},
 			},
@@ -576,7 +594,7 @@ templates:
 			RDelim:      "R",
 			Input:       "long input that should be truncated",
 			OutputFiles: []string{"-"},
-			Templates: Templates{
+			Templates: map[string]DataSource{
 				"foo": {URL: mustURL("https://www.example.com/foo.tmpl")},
 				"bar": {URL: mustURL("file:///tmp/bar.t")},
 			},

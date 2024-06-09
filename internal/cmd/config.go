@@ -1,14 +1,17 @@
 package cmd
 
 import (
+	"bytes"
 	"context"
 	"fmt"
+	"io"
 	"log/slog"
+	"os"
 	"time"
 
+	"github.com/hairyhenderson/gomplate/v4"
 	"github.com/hairyhenderson/gomplate/v4/conv"
 	"github.com/hairyhenderson/gomplate/v4/env"
-	"github.com/hairyhenderson/gomplate/v4/internal/config"
 	"github.com/hairyhenderson/gomplate/v4/internal/datafs"
 
 	"github.com/spf13/cobra"
@@ -19,10 +22,10 @@ const (
 )
 
 // loadConfig is intended to be called before command execution. It:
-// - creates a config.Config from the cobra flags
-// - creates a config.Config from the config file (if present)
+// - creates a gomplate.Config from the cobra flags
+// - creates a gomplate.Config from the config file (if present)
 // - merges the two (flags take precedence)
-func loadConfig(ctx context.Context, cmd *cobra.Command, args []string) (*config.Config, error) {
+func loadConfig(ctx context.Context, cmd *cobra.Command, args []string) (*gomplate.Config, error) {
 	flagConfig, err := cobraConfig(cmd, args)
 	if err != nil {
 		return nil, err
@@ -64,7 +67,7 @@ func pickConfigFile(cmd *cobra.Command) (cfgFile string, required bool) {
 	return cfgFile, required
 }
 
-func readConfigFile(ctx context.Context, cmd *cobra.Command) (cfg *config.Config, err error) {
+func readConfigFile(ctx context.Context, cmd *cobra.Command) (*gomplate.Config, error) {
 	cfgFile, configRequired := pickConfigFile(cmd)
 
 	// we only support loading configs from the local filesystem for now
@@ -76,14 +79,14 @@ func readConfigFile(ctx context.Context, cmd *cobra.Command) (cfg *config.Config
 	f, err := fsys.Open(cfgFile)
 	if err != nil {
 		if configRequired {
-			return cfg, fmt.Errorf("config file requested, but couldn't be opened: %w", err)
+			return nil, fmt.Errorf("config file requested, but couldn't be opened: %w", err)
 		}
 		return nil, nil
 	}
 
-	cfg, err = config.Parse(f)
+	cfg, err := gomplate.Parse(f)
 	if err != nil {
-		return cfg, fmt.Errorf("parsing config file %q: %w", cfgFile, err)
+		return nil, fmt.Errorf("parsing config file %q: %w", cfgFile, err)
 	}
 
 	slog.DebugContext(ctx, "using config file", "cfgFile", cfgFile)
@@ -92,8 +95,8 @@ func readConfigFile(ctx context.Context, cmd *cobra.Command) (cfg *config.Config
 }
 
 // cobraConfig - initialize a config from the commandline options
-func cobraConfig(cmd *cobra.Command, args []string) (cfg *config.Config, err error) {
-	cfg = &config.Config{}
+func cobraConfig(cmd *cobra.Command, args []string) (cfg *gomplate.Config, err error) {
+	cfg = &gomplate.Config{}
 	cfg.InputFiles, err = getStringSlice(cmd, "file")
 	if err != nil {
 		return nil, err
@@ -241,7 +244,7 @@ func processIncludes(includes, excludes []string) []string {
 	return out
 }
 
-func applyEnvVars(_ context.Context, cfg *config.Config) (*config.Config, error) {
+func applyEnvVars(_ context.Context, cfg *gomplate.Config) (*gomplate.Config, error) {
 	if to := env.Getenv("GOMPLATE_PLUGIN_TIMEOUT"); cfg.PluginTimeout == 0 && to != "" {
 		t, err := time.ParseDuration(to)
 		if err != nil {
@@ -262,4 +265,25 @@ func applyEnvVars(_ context.Context, cfg *config.Config) (*config.Config, error)
 	}
 
 	return cfg, nil
+}
+
+// postExecInput - return the input to be used after the post-exec command. The
+// input config may be modified if ExecPipe is set (OutputFiles is set to "-"),
+// and Stdout is redirected to a pipe.
+func postExecInput(cfg *gomplate.Config) io.Reader {
+	if cfg.ExecPipe {
+		pipe := &bytes.Buffer{}
+		cfg.OutputFiles = []string{"-"}
+
+		// --exec-pipe redirects standard out to the out pipe
+		cfg.Stdout = pipe
+
+		return pipe
+	}
+
+	if cfg.Stdin != nil {
+		return cfg.Stdin
+	}
+
+	return os.Stdin
 }

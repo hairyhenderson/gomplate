@@ -11,7 +11,6 @@ import (
 
 	"github.com/hack-pad/hackpadfs"
 	"github.com/hack-pad/hackpadfs/mem"
-	"github.com/hairyhenderson/gomplate/v4/internal/config"
 	"github.com/hairyhenderson/gomplate/v4/internal/datafs"
 
 	"github.com/stretchr/testify/assert"
@@ -30,7 +29,7 @@ func TestWalkDir_Windows(t *testing.T) {
 
 	ctx := datafs.ContextWithFSProvider(context.Background(), datafs.WrappedFSProvider(fsys, "file"))
 
-	cfg := &config.Config{}
+	cfg := &Config{}
 
 	_, err := walkDir(ctx, cfg, `C:\indir`, simpleNamer(`C:/outdir`), nil, nil, 0, false)
 	require.Error(t, err)

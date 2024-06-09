@@ -13,7 +13,6 @@ import (
 
 	"github.com/hack-pad/hackpadfs"
 	"github.com/hack-pad/hackpadfs/mem"
-	"github.com/hairyhenderson/gomplate/v4/internal/config"
 	"github.com/hairyhenderson/gomplate/v4/internal/datafs"
 	"github.com/hairyhenderson/gomplate/v4/internal/iohelpers"
 
@@ -72,7 +71,7 @@ func TestGatherTemplates(t *testing.T) {
 
 	ctx := datafs.ContextWithFSProvider(context.Background(), datafs.WrappedFSProvider(fsys, "file"))
 
-	cfg := &config.Config{
+	cfg := &Config{
 		Stdin:  &bytes.Buffer{},
 		Stdout: &bytes.Buffer{},
 	}
@@ -82,7 +81,7 @@ func TestGatherTemplates(t *testing.T) {
 	assert.Len(t, templates, 1)
 
 	buf := &bytes.Buffer{}
-	cfg = &config.Config{
+	cfg = &Config{
 		Input:  "foo",
 		Stdout: buf,
 	}
@@ -96,7 +95,7 @@ func TestGatherTemplates(t *testing.T) {
 	require.NoError(t, err)
 	assert.Equal(t, "hello world", buf.String())
 
-	templates, err = gatherTemplates(ctx, &config.Config{
+	templates, err = gatherTemplates(ctx, &Config{
 		Input:       "foo",
 		OutputFiles: []string{"out"},
 	}, nil)
@@ -116,7 +115,7 @@ func TestGatherTemplates(t *testing.T) {
 	_ = hackpadfs.Remove(fsys, "out")
 
 	buf = &bytes.Buffer{}
-	cfg = &config.Config{
+	cfg = &Config{
 		InputFiles:  []string{"foo"},
 		OutputFiles: []string{"out"},
 		Stdout:      buf,
@@ -137,7 +136,7 @@ func TestGatherTemplates(t *testing.T) {
 	hackpadfs.Remove(fsys, "out")
 
 	buf = &bytes.Buffer{}
-	cfg = &config.Config{
+	cfg = &Config{
 		InputFiles:  []string{"foo"},
 		OutputFiles: []string{"out"},
 		OutMode:     "755",
@@ -158,7 +157,7 @@ func TestGatherTemplates(t *testing.T) {
 	assert.Equal(t, iohelpers.NormalizeFileMode(0o755), info.Mode())
 	hackpadfs.Remove(fsys, "out")
 
-	templates, err = gatherTemplates(ctx, &config.Config{
+	templates, err = gatherTemplates(ctx, &Config{
 		InputDir:  "in",
 		OutputDir: "out",
 	}, simpleNamer("out"))
@@ -195,7 +194,7 @@ func TestParseNestedTemplates(t *testing.T) {
 
 	// simple test with single template
 	u, _ := url.Parse("foo.t")
-	nested := config.Templates{"foo": {URL: u}}
+	nested := map[string]DataSource{"foo": {URL: u}}
 
 	tmpl, _ := template.New("root").Parse(`{{ template "foo" }}`)
 
@@ -215,7 +214,7 @@ func TestParseNestedTemplates(t *testing.T) {
 	fsys["dir/bar.t"] = &fstest.MapFile{Data: []byte("bar"), Mode: 0o600}
 
 	u, _ = url.Parse("dir/")
-	nested["dir"] = config.DataSource{URL: u}
+	nested["dir"] = DataSource{URL: u}
 
 	tmpl, _ = template.New("root").Parse(`{{ template "dir/foo.t" }} {{ template "dir/bar.t" }}`)
 

@@ -11,7 +11,6 @@ import (
 	"text/template"
 
 	"github.com/hack-pad/hackpadfs"
-	"github.com/hairyhenderson/gomplate/v4/internal/config"
 	"github.com/hairyhenderson/gomplate/v4/internal/datafs"
 	"github.com/hairyhenderson/gomplate/v4/internal/iohelpers"
 	"github.com/hairyhenderson/gomplate/v4/tmpl"
@@ -45,9 +44,7 @@ func copyFuncMap(funcMap template.FuncMap) template.FuncMap {
 }
 
 // gatherTemplates - gather and prepare templates for rendering
-//
-//nolint:gocyclo
-func gatherTemplates(ctx context.Context, cfg *config.Config, outFileNamer func(context.Context, string) (string, error)) ([]Template, error) {
+func gatherTemplates(ctx context.Context, cfg *Config, outFileNamer outputNamer) ([]Template, error) {
 	mode, modeOverride, err := cfg.GetMode()
 	if err != nil {
 		return nil, err
@@ -56,7 +53,6 @@ func gatherTemplates(ctx context.Context, cfg *config.Config, outFileNamer func(
 	var templates []Template
 
 	switch {
-	// the arg-provided input string gets a special name
 	case cfg.Input != "":
 		// open the output file - no need to close it, as it will be closed by the
 		// caller later
@@ -66,6 +62,7 @@ func gatherTemplates(ctx context.Context, cfg *config.Config, outFileNamer func(
 		}
 
 		templates = []Template{{
+			// the arg-provided input string gets a special name
 			Name:   "<arg>",
 			Text:   cfg.Input,
 			Writer: target,
@@ -76,7 +73,7 @@ func gatherTemplates(ctx context.Context, cfg *config.Config, outFileNamer func(
 		if err != nil {
 			return nil, fmt.Errorf("walkDir: %w", err)
 		}
-	case cfg.Input == "":
+	case len(cfg.InputFiles) > 0:
 		templates = make([]Template, len(cfg.InputFiles))
 		for i, f := range cfg.InputFiles {
 			templates[i], err = fileToTemplate(ctx, cfg, f, cfg.OutputFiles[i], mode, modeOverride)
@@ -92,7 +89,7 @@ func gatherTemplates(ctx context.Context, cfg *config.Config, outFileNamer func(
 // walkDir - given an input dir `dir` and an output dir `outDir`, and a list
 // of .gomplateignore and exclude globs (if any), walk the input directory and create a list of
 // tplate objects, and an error, if any.
-func walkDir(ctx context.Context, cfg *config.Config, dir string, outFileNamer func(context.Context, string) (string, error), excludeGlob []string, excludeProcessingGlob []string, mode os.FileMode, modeOverride bool) ([]Template, error) {
+func walkDir(ctx context.Context, cfg *Config, dir string, outFileNamer outputNamer, excludeGlob []string, excludeProcessingGlob []string, mode os.FileMode, modeOverride bool) ([]Template, error) {
 	dir = filepath.ToSlash(filepath.Clean(dir))
 
 	// get a filesystem rooted in the same volume as dir (or / on non-Windows)
@@ -157,7 +154,7 @@ func walkDir(ctx context.Context, cfg *config.Config, dir string, outFileNamer f
 		inPath = filepath.ToSlash(inPath)
 
 		// but outFileNamer expects only the filename itself
-		outFile, err := outFileNamer(ctx, file)
+		outFile, err := outFileNamer.Name(ctx, file)
 		if err != nil {
 			return nil, fmt.Errorf("outFileNamer: %w", err)
 		}
@@ -192,13 +189,14 @@ func walkDir(ctx context.Context, cfg *config.Config, dir string, outFileNamer f
 	return templates, nil
 }
 
-func readInFile(ctx context.Context, cfg *config.Config, inFile string, mode os.FileMode) (source string, newmode os.FileMode, err error) {
+func readInFile(ctx context.Context, inFile string, mode os.FileMode) (source string, newmode os.FileMode, err error) {
 	newmode = mode
 	var b []byte
 
 	//nolint:nestif
 	if inFile == "-" {
-		b, err = io.ReadAll(cfg.Stdin)
+		stdin := datafs.StdinFromContext(ctx)
+		b, err = io.ReadAll(stdin)
 		if err != nil {
 			return source, newmode, fmt.Errorf("read from stdin: %w", err)
 		}
@@ -232,7 +230,7 @@ func readInFile(ctx context.Context, cfg *config.Config, inFile string, mode os.
 	return source, newmode, err
 }
 
-func getOutfileHandler(ctx context.Context, cfg *config.Config, outFile string, mode os.FileMode, modeOverride bool) (io.Writer, error) {
+func getOutfileHandler(ctx context.Context, cfg *Config, outFile string, mode os.FileMode, modeOverride bool) (io.Writer, error) {
 	// open the output file - no need to close it, as it will be closed by the
 	// caller later
 	target, err := openOutFile(ctx, outFile, 0o755, mode, modeOverride, cfg.Stdout)
@@ -243,8 +241,8 @@ func getOutfileHandler(ctx context.Context, cfg *config.Config, outFile string, 
 	return target, nil
 }
 
-func copyFileToOutDir(ctx context.Context, cfg *config.Config, inFile, outFile string, mode os.FileMode, modeOverride bool) error {
-	sourceStr, newmode, err := readInFile(ctx, cfg, inFile, mode)
+func copyFileToOutDir(ctx context.Context, cfg *Config, inFile, outFile string, mode os.FileMode, modeOverride bool) error {
+	sourceStr, newmode, err := readInFile(ctx, inFile, mode)
 	if err != nil {
 		return err
 	}
@@ -263,8 +261,8 @@ func copyFileToOutDir(ctx context.Context, cfg *config.Config, inFile, outFile s
 	return err
 }
 
-func fileToTemplate(ctx context.Context, cfg *config.Config, inFile, outFile string, mode os.FileMode, modeOverride bool) (Template, error) {
-	source, newmode, err := readInFile(ctx, cfg, inFile, mode)
+func fileToTemplate(ctx context.Context, cfg *Config, inFile, outFile string, mode os.FileMode, modeOverride bool) (Template, error) {
+	source, newmode, err := readInFile(ctx, inFile, mode)
 	if err != nil {
 		return Template{}, err
 	}

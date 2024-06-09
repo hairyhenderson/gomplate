@@ -30,10 +30,15 @@ func WithDataSourceRegistryFS(registry Registry, fsys fs.FS) fs.FS {
 
 type stdinCtxKey struct{}
 
+// ContextWithStdin injects an [io.Reader] into the context, which can be used
+// to override the default stdin.
 func ContextWithStdin(ctx context.Context, r io.Reader) context.Context {
 	return context.WithValue(ctx, stdinCtxKey{}, r)
 }
 
+// StdinFromContext returns the io.Reader that should be used for stdin as
+// injected by [ContextWithStdin]. If no reader has been injected, [os.Stdin] is
+// returned.
 func StdinFromContext(ctx context.Context) io.Reader {
 	if r, ok := ctx.Value(stdinCtxKey{}).(io.Reader); ok {
 		return r

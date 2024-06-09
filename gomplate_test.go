@@ -29,7 +29,7 @@ func testTemplate(t *testing.T, tr *renderer, tmpl string) string {
 }
 
 func TestGetenvTemplates(t *testing.T) {
-	tr := newRenderer(Options{
+	tr := newRenderer(RenderOptions{
 		Funcs: template.FuncMap{
 			"getenv": env.Getenv,
 			"bool":   conv.ToBool,
@@ -41,7 +41,7 @@ func TestGetenvTemplates(t *testing.T) {
 }
 
 func TestBoolTemplates(t *testing.T) {
-	g := newRenderer(Options{
+	g := newRenderer(RenderOptions{
 		Funcs: template.FuncMap{
 			"bool": conv.ToBool,
 		},
@@ -55,7 +55,7 @@ func TestBoolTemplates(t *testing.T) {
 func TestEc2MetaTemplates(t *testing.T) {
 	createGomplate := func(data map[string]string, region string) *renderer {
 		ec2meta := aws.MockEC2Meta(data, nil, region)
-		return newRenderer(Options{Funcs: template.FuncMap{"ec2meta": ec2meta.Meta}})
+		return newRenderer(RenderOptions{Funcs: template.FuncMap{"ec2meta": ec2meta.Meta}})
 	}
 
 	g := createGomplate(nil, "")
@@ -70,7 +70,7 @@ func TestEc2MetaTemplates(t *testing.T) {
 func TestEc2MetaTemplates_WithJSON(t *testing.T) {
 	ec2meta := aws.MockEC2Meta(map[string]string{"obj": `"foo": "bar"`}, map[string]string{"obj": `"foo": "baz"`}, "")
 
-	g := newRenderer(Options{
+	g := newRenderer(RenderOptions{
 		Funcs: template.FuncMap{
 			"ec2meta":    ec2meta.Meta,
 			"ec2dynamic": ec2meta.Dynamic,
@@ -83,7 +83,7 @@ func TestEc2MetaTemplates_WithJSON(t *testing.T) {
 }
 
 func TestJSONArrayTemplates(t *testing.T) {
-	g := newRenderer(Options{
+	g := newRenderer(RenderOptions{
 		Funcs: template.FuncMap{
 			"jsonArray": parsers.JSONArray,
 		},
@@ -94,7 +94,7 @@ func TestJSONArrayTemplates(t *testing.T) {
 }
 
 func TestYAMLTemplates(t *testing.T) {
-	g := newRenderer(Options{
+	g := newRenderer(RenderOptions{
 		Funcs: template.FuncMap{
 			"yaml":      parsers.YAML,
 			"yamlArray": parsers.YAMLArray,
@@ -107,7 +107,7 @@ func TestYAMLTemplates(t *testing.T) {
 }
 
 func TestHasTemplate(t *testing.T) {
-	g := newRenderer(Options{
+	g := newRenderer(RenderOptions{
 		Funcs: template.FuncMap{
 			"yaml": parsers.YAML,
 			"has":  conv.Has,
@@ -141,7 +141,7 @@ func TestMissingKey(t *testing.T) {
 	}
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
-			g := newRenderer(Options{
+			g := newRenderer(RenderOptions{
 				MissingKey: tt.MissingKey,
 			})
 			tmpl := `{{ .name }}`
@@ -151,7 +151,7 @@ func TestMissingKey(t *testing.T) {
 }
 
 func TestCustomDelim(t *testing.T) {
-	g := newRenderer(Options{
+	g := newRenderer(RenderOptions{
 		LDelim: "[",
 		RDelim: "]",
 	})
@@ -160,7 +160,7 @@ func TestCustomDelim(t *testing.T) {
 
 func TestSimpleNamer(t *testing.T) {
 	n := simpleNamer("out/")
-	out, err := n(context.Background(), "file")
+	out, err := n.Name(context.Background(), "file")
 	require.NoError(t, err)
 	expected := filepath.FromSlash("out/file")
 	assert.Equal(t, expected, out)
@@ -176,13 +176,13 @@ func TestMappingNamer(t *testing.T) {
 		},
 	}
 	n := mappingNamer("out/{{ .in }}", tr)
-	out, err := n(ctx, "file")
+	out, err := n.Name(ctx, "file")
 	require.NoError(t, err)
 	expected := filepath.FromSlash("out/file")
 	assert.Equal(t, expected, out)
 
 	n = mappingNamer("out/{{ foo }}{{ .in }}", tr)
-	out, err = n(ctx, "file")
+	out, err = n.Name(ctx, "file")
 	require.NoError(t, err)
 	expected = filepath.FromSlash("out/foofile")
 	assert.Equal(t, expected, out)
