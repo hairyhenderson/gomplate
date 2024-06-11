@@ -30,14 +30,20 @@ func TestReplace(t *testing.T) {
 	t.Parallel()
 
 	re := &ReFuncs{}
-	assert.Equal(t, "hello world", re.Replace("i", "ello", "hi world"))
+
+	actual, err := re.Replace("i", "ello", "hi world")
+	require.NoError(t, err)
+	assert.Equal(t, "hello world", actual)
 }
 
 func TestMatch(t *testing.T) {
 	t.Parallel()
 
 	re := &ReFuncs{}
-	assert.True(t, re.Match(`i\ `, "hi world"))
+
+	actual, err := re.Match(`i\ `, "hi world")
+	require.NoError(t, err)
+	assert.True(t, actual)
 }
 
 func TestFind(t *testing.T) {

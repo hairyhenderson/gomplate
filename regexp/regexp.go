@@ -1,7 +1,10 @@
 // Package regexp contains functions for dealing with regular expressions
 package regexp
 
-import stdre "regexp"
+import (
+	"fmt"
+	stdre "regexp"
+)
 
 // Find -
 func Find(expression, input string) (string, error) {
@@ -22,9 +25,13 @@ func FindAll(expression string, n int, input string) ([]string, error) {
 }
 
 // Match -
-func Match(expression, input string) bool {
-	re := stdre.MustCompile(expression)
-	return re.MatchString(input)
+func Match(expression, input string) (bool, error) {
+	re, err := stdre.Compile(expression)
+	if err != nil {
+		return false, fmt.Errorf("error compiling expression: %w", err)
+	}
+
+	return re.MatchString(input), nil
 }
 
 // QuoteMeta -
@@ -33,16 +40,20 @@ func QuoteMeta(input string) string {
 }
 
 // Replace -
-func Replace(expression, replacement, input string) string {
-	re := stdre.MustCompile(expression)
-	return re.ReplaceAllString(input, replacement)
+func Replace(expression, replacement, input string) (string, error) {
+	re, err := stdre.Compile(expression)
+	if err != nil {
+		return "", fmt.Errorf("error compiling expression: %w", err)
+	}
+
+	return re.ReplaceAllString(input, replacement), nil
 }
 
 // ReplaceLiteral -
 func ReplaceLiteral(expression, replacement, input string) (string, error) {
 	re, err := stdre.Compile(expression)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("error compiling expression: %w", err)
 	}
 	return re.ReplaceAllLiteralString(input, replacement), nil
 }
@@ -51,7 +62,8 @@ func ReplaceLiteral(expression, replacement, input string) (string, error) {
 func Split(expression string, n int, input string) ([]string, error) {
 	re, err := stdre.Compile(expression)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error compiling expression: %w", err)
 	}
+
 	return re.Split(input, n), nil
 }

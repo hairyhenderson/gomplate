@@ -47,7 +47,7 @@ func (ReFuncs) FindAll(args ...interface{}) ([]string, error) {
 }
 
 // Match -
-func (ReFuncs) Match(re, input interface{}) bool {
+func (ReFuncs) Match(re, input interface{}) (bool, error) {
 	return regexp.Match(conv.ToString(re), conv.ToString(input))
 }
 
@@ -57,7 +57,7 @@ func (ReFuncs) QuoteMeta(in interface{}) string {
 }
 
 // Replace -
-func (ReFuncs) Replace(re, replacement, input interface{}) string {
+func (ReFuncs) Replace(re, replacement, input interface{}) (string, error) {
 	return regexp.Replace(conv.ToString(re),
 		conv.ToString(replacement),
 		conv.ToString(input))
