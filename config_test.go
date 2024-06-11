@@ -3,7 +3,6 @@ package gomplate
 import (
 	"net/http"
 	"net/url"
-	"runtime"
 	"strings"
 	"testing"
 	"time"
@@ -194,7 +193,7 @@ func validateConfig(c string) error {
 	if err != nil {
 		return err
 	}
-	err = cfg.Validate()
+	err = cfg.validate()
 	return err
 }
 
@@ -445,112 +444,10 @@ func TestMergeFrom(t *testing.T) {
 	assert.EqualValues(t, expected, cfg.MergeFrom(other))
 }
 
-func TestParseDataSourceFlags(t *testing.T) {
-	t.Parallel()
-	cfg := &Config{}
-	err := cfg.ParseDataSourceFlags(nil, nil, nil, nil)
-	require.NoError(t, err)
-	assert.EqualValues(t, &Config{}, cfg)
-
-	cfg = &Config{}
-	err = cfg.ParseDataSourceFlags([]string{"foo/bar/baz.json"}, nil, nil, nil)
-	require.Error(t, err)
-
-	cfg = &Config{}
-	err = cfg.ParseDataSourceFlags([]string{"baz=foo/bar/baz.json"}, nil, nil, nil)
-	require.NoError(t, err)
-	expected := &Config{
-		DataSources: map[string]DataSource{
-			"baz": {URL: mustURL("foo/bar/baz.json")},
-		},
-	}
-	assert.EqualValues(t, expected, cfg, "expected: %+v\nactual: %+v\n", expected, cfg)
-
-	cfg = &Config{}
-	err = cfg.ParseDataSourceFlags(
-		[]string{"baz=foo/bar/baz.json"},
-		nil,
-		nil,
-		[]string{"baz=Accept: application/json"})
-	require.NoError(t, err)
-	assert.EqualValues(t, &Config{
-		DataSources: map[string]DataSource{
-			"baz": {
-				URL: mustURL("foo/bar/baz.json"),
-				Header: http.Header{
-					"Accept": {"application/json"},
-				},
-			},
-		},
-	}, cfg)
-
-	cfg = &Config{}
-	err = cfg.ParseDataSourceFlags(
-		[]string{"baz=foo/bar/baz.json"},
-		[]string{"foo=http://example.com"},
-		nil,
-		[]string{
-			"foo=Accept: application/json",
-			"bar=Authorization: Basic xxxxx",
-		},
-	)
-	require.NoError(t, err)
-	assert.EqualValues(t, &Config{
-		DataSources: map[string]DataSource{
-			"baz": {URL: mustURL("foo/bar/baz.json")},
-		},
-		Context: map[string]DataSource{
-			"foo": {
-				URL: mustURL("http://example.com"),
-				Header: http.Header{
-					"Accept": {"application/json"},
-				},
-			},
-		},
-		ExtraHeaders: map[string]http.Header{
-			"bar": {"Authorization": {"Basic xxxxx"}},
-		},
-	}, cfg)
-
-	cfg = &Config{}
-	err = cfg.ParseDataSourceFlags(
-		nil,
-		nil,
-		[]string{"foo=http://example.com", "file.tmpl", "tmpldir/"},
-		[]string{"foo=Accept: application/json", "bar=Authorization: Basic xxxxx"},
-	)
-	require.NoError(t, err)
-	assert.EqualValues(t, &Config{
-		Templates: map[string]DataSource{
-			"foo": {
-				URL:    mustURL("http://example.com"),
-				Header: http.Header{"Accept": {"application/json"}},
-			},
-			"file.tmpl": {URL: mustURL("file.tmpl")},
-			"tmpldir/":  {URL: mustURL("tmpldir/")},
-		},
-		ExtraHeaders: map[string]http.Header{
-			"bar": {"Authorization": {"Basic xxxxx"}},
-		},
-	}, cfg)
-}
-
-func TestParsePluginFlags(t *testing.T) {
-	t.Parallel()
-	cfg := &Config{}
-	err := cfg.ParsePluginFlags(nil)
-	require.NoError(t, err)
-
-	cfg = &Config{}
-	err = cfg.ParsePluginFlags([]string{"foo=bar"})
-	require.NoError(t, err)
-	assert.EqualValues(t, &Config{Plugins: map[string]PluginConfig{"foo": {Cmd: "bar"}}}, cfg)
-}
-
 func TestConfig_String(t *testing.T) {
 	t.Run("defaults", func(t *testing.T) {
 		c := &Config{}
-		c.ApplyDefaults()
+		c.applyDefaults()
 
 		expected := `---
 inputFiles: ['-']
@@ -675,7 +572,7 @@ func TestApplyDefaults(t *testing.T) {
 	t.Parallel()
 	cfg := &Config{}
 
-	cfg.ApplyDefaults()
+	cfg.applyDefaults()
 	assert.EqualValues(t, []string{"-"}, cfg.InputFiles)
 	assert.EqualValues(t, []string{"-"}, cfg.OutputFiles)
 	assert.Empty(t, cfg.OutputDir)
@@ -686,7 +583,7 @@ func TestApplyDefaults(t *testing.T) {
 		InputDir: "in",
 	}
 
-	cfg.ApplyDefaults()
+	cfg.applyDefaults()
 	assert.Empty(t, cfg.InputFiles)
 	assert.Empty(t, cfg.OutputFiles)
 	assert.Equal(t, ".", cfg.OutputDir)
@@ -699,7 +596,7 @@ func TestApplyDefaults(t *testing.T) {
 		RDelim: ">",
 	}
 
-	cfg.ApplyDefaults()
+	cfg.applyDefaults()
 	assert.Empty(t, cfg.InputFiles)
 	assert.EqualValues(t, []string{"-"}, cfg.OutputFiles)
 	assert.Empty(t, cfg.OutputDir)
@@ -711,7 +608,7 @@ func TestApplyDefaults(t *testing.T) {
 		ExecPipe: true,
 	}
 
-	cfg.ApplyDefaults()
+	cfg.applyDefaults()
 	assert.Empty(t, cfg.InputFiles)
 	assert.EqualValues(t, []string{"-"}, cfg.OutputFiles)
 	assert.Empty(t, cfg.OutputDir)
@@ -722,7 +619,7 @@ func TestApplyDefaults(t *testing.T) {
 		OutputMap: "bar",
 	}
 
-	cfg.ApplyDefaults()
+	cfg.applyDefaults()
 	assert.Empty(t, cfg.InputFiles)
 	assert.Empty(t, cfg.Input)
 	assert.Empty(t, cfg.OutputFiles)
@@ -733,129 +630,26 @@ func TestApplyDefaults(t *testing.T) {
 
 func TestGetMode(t *testing.T) {
 	c := &Config{}
-	m, o, err := c.GetMode()
+	m, o, err := c.getMode()
 	require.NoError(t, err)
 	assert.Equal(t, iohelpers.NormalizeFileMode(0), m)
 	assert.False(t, o)
 
 	c = &Config{OutMode: "755"}
-	m, o, err = c.GetMode()
+	m, o, err = c.getMode()
 	require.NoError(t, err)
 	assert.Equal(t, iohelpers.NormalizeFileMode(0o755), m)
 	assert.True(t, o)
 
 	c = &Config{OutMode: "0755"}
-	m, o, err = c.GetMode()
+	m, o, err = c.getMode()
 	require.NoError(t, err)
 	assert.Equal(t, iohelpers.NormalizeFileMode(0o755), m)
 	assert.True(t, o)
 
 	c = &Config{OutMode: "foo"}
-	_, _, err = c.GetMode()
+	_, _, err = c.getMode()
 	require.Error(t, err)
-}
-
-func TestParseHeaderArgs(t *testing.T) {
-	args := []string{
-		"foo=Accept: application/json",
-		"bar=Authorization: Bearer supersecret",
-	}
-	expected := map[string]http.Header{
-		"foo": {
-			"Accept": {"application/json"},
-		},
-		"bar": {
-			"Authorization": {"Bearer supersecret"},
-		},
-	}
-	parsed, err := parseHeaderArgs(args)
-	require.NoError(t, err)
-	assert.Equal(t, expected, parsed)
-
-	_, err = parseHeaderArgs([]string{"foo"})
-	require.Error(t, err)
-
-	_, err = parseHeaderArgs([]string{"foo=bar"})
-	require.Error(t, err)
-
-	args = []string{
-		"foo=Accept: application/json",
-		"foo=Foo: bar",
-		"foo=foo: baz",
-		"foo=fOO: qux",
-		"bar=Authorization: Bearer  supersecret",
-	}
-	expected = map[string]http.Header{
-		"foo": {
-			"Accept": {"application/json"},
-			"Foo":    {"bar", "baz", "qux"},
-		},
-		"bar": {
-			"Authorization": {"Bearer  supersecret"},
-		},
-	}
-	parsed, err = parseHeaderArgs(args)
-	require.NoError(t, err)
-	assert.Equal(t, expected, parsed)
-}
-
-func TestParseDatasourceArgNoAlias(t *testing.T) {
-	alias, ds, err := parseDatasourceArg("foo.json")
-	require.NoError(t, err)
-	assert.Equal(t, "foo", alias)
-	assert.Empty(t, ds.URL.Scheme)
-
-	_, _, err = parseDatasourceArg("../foo.json")
-	require.Error(t, err)
-
-	_, _, err = parseDatasourceArg("ftp://example.com/foo.yml")
-	require.Error(t, err)
-}
-
-func TestParseDatasourceArgWithAlias(t *testing.T) {
-	alias, ds, err := parseDatasourceArg("data=foo.json")
-	require.NoError(t, err)
-	assert.Equal(t, "data", alias)
-	assert.EqualValues(t, &url.URL{Path: "foo.json"}, ds.URL)
-
-	alias, ds, err = parseDatasourceArg("data=/otherdir/foo.json")
-	require.NoError(t, err)
-	assert.Equal(t, "data", alias)
-	assert.Equal(t, "file", ds.URL.Scheme)
-	assert.True(t, ds.URL.IsAbs())
-	assert.Equal(t, "/otherdir/foo.json", ds.URL.Path)
-
-	if runtime.GOOS == "windows" {
-		alias, ds, err = parseDatasourceArg("data=foo.json")
-		require.NoError(t, err)
-		assert.Equal(t, "data", alias)
-		assert.EqualValues(t, &url.URL{Path: "foo.json"}, ds.URL)
-
-		alias, ds, err = parseDatasourceArg(`data=\otherdir\foo.json`)
-		require.NoError(t, err)
-		assert.Equal(t, "data", alias)
-		assert.EqualValues(t, &url.URL{Scheme: "file", Path: "/otherdir/foo.json"}, ds.URL)
-
-		alias, ds, err = parseDatasourceArg("data=C:\\windowsdir\\foo.json")
-		require.NoError(t, err)
-		assert.Equal(t, "data", alias)
-		assert.EqualValues(t, &url.URL{Scheme: "file", Path: "C:/windowsdir/foo.json"}, ds.URL)
-
-		alias, ds, err = parseDatasourceArg("data=\\\\somehost\\share\\foo.json")
-		require.NoError(t, err)
-		assert.Equal(t, "data", alias)
-		assert.EqualValues(t, &url.URL{Scheme: "file", Host: "somehost", Path: "/share/foo.json"}, ds.URL)
-	}
-
-	alias, ds, err = parseDatasourceArg("data=sftp://example.com/blahblah/foo.json")
-	require.NoError(t, err)
-	assert.Equal(t, "data", alias)
-	assert.EqualValues(t, &url.URL{Scheme: "sftp", Host: "example.com", Path: "/blahblah/foo.json"}, ds.URL)
-
-	alias, ds, err = parseDatasourceArg("merged=merge:./foo.yaml|http://example.com/bar.json%3Ffoo=bar")
-	require.NoError(t, err)
-	assert.Equal(t, "merged", alias)
-	assert.EqualValues(t, &url.URL{Scheme: "merge", Opaque: "./foo.yaml|http://example.com/bar.json%3Ffoo=bar"}, ds.URL)
 }
 
 func TestPluginConfig_UnmarshalYAML(t *testing.T) {

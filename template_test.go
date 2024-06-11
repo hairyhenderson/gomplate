@@ -75,7 +75,7 @@ func TestGatherTemplates(t *testing.T) {
 		Stdin:  &bytes.Buffer{},
 		Stdout: &bytes.Buffer{},
 	}
-	cfg.ApplyDefaults()
+	cfg.applyDefaults()
 	templates, err := gatherTemplates(ctx, cfg, nil)
 	require.NoError(t, err)
 	assert.Len(t, templates, 1)
@@ -85,7 +85,7 @@ func TestGatherTemplates(t *testing.T) {
 		Input:  "foo",
 		Stdout: buf,
 	}
-	cfg.ApplyDefaults()
+	cfg.applyDefaults()
 	templates, err = gatherTemplates(ctx, cfg, nil)
 	require.NoError(t, err)
 	assert.Len(t, templates, 1)

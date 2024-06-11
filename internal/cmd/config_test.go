@@ -5,8 +5,10 @@ import (
 	"context"
 	"fmt"
 	"io/fs"
+	"net/http"
 	"net/url"
 	"os"
+	"runtime"
 	"testing"
 	"testing/fstest"
 	"time"
@@ -290,4 +292,218 @@ func TestApplyEnvVars(t *testing.T) {
 			assert.EqualValues(t, d.expected, actual)
 		})
 	}
+}
+
+func mustURL(s string) *url.URL {
+	u, err := url.Parse(s)
+	if err != nil {
+		panic(err)
+	}
+
+	return u
+}
+
+func TestParseDataSourceFlags(t *testing.T) {
+	t.Parallel()
+	cfg := &gomplate.Config{}
+	err := ParseDataSourceFlags(cfg, nil, nil, nil, nil)
+	require.NoError(t, err)
+	assert.EqualValues(t, &gomplate.Config{}, cfg)
+
+	cfg = &gomplate.Config{}
+	err = ParseDataSourceFlags(cfg, []string{"foo/bar/baz.json"}, nil, nil, nil)
+	require.Error(t, err)
+
+	cfg = &gomplate.Config{}
+	err = ParseDataSourceFlags(cfg, []string{"baz=foo/bar/baz.json"}, nil, nil, nil)
+	require.NoError(t, err)
+	expected := &gomplate.Config{
+		DataSources: map[string]gomplate.DataSource{
+			"baz": {URL: mustURL("foo/bar/baz.json")},
+		},
+	}
+	assert.EqualValues(t, expected, cfg, "expected: %+v\nactual: %+v\n", expected, cfg)
+
+	cfg = &gomplate.Config{}
+	err = ParseDataSourceFlags(cfg,
+		[]string{"baz=foo/bar/baz.json"},
+		nil,
+		nil,
+		[]string{"baz=Accept: application/json"})
+	require.NoError(t, err)
+	assert.EqualValues(t, &gomplate.Config{
+		DataSources: map[string]gomplate.DataSource{
+			"baz": {
+				URL: mustURL("foo/bar/baz.json"),
+				Header: http.Header{
+					"Accept": {"application/json"},
+				},
+			},
+		},
+	}, cfg)
+
+	cfg = &gomplate.Config{}
+	err = ParseDataSourceFlags(cfg,
+		[]string{"baz=foo/bar/baz.json"},
+		[]string{"foo=http://example.com"},
+		nil,
+		[]string{
+			"foo=Accept: application/json",
+			"bar=Authorization: Basic xxxxx",
+		},
+	)
+	require.NoError(t, err)
+	assert.EqualValues(t, &gomplate.Config{
+		DataSources: map[string]gomplate.DataSource{
+			"baz": {URL: mustURL("foo/bar/baz.json")},
+		},
+		Context: map[string]gomplate.DataSource{
+			"foo": {
+				URL: mustURL("http://example.com"),
+				Header: http.Header{
+					"Accept": {"application/json"},
+				},
+			},
+		},
+		ExtraHeaders: map[string]http.Header{
+			"bar": {"Authorization": {"Basic xxxxx"}},
+		},
+	}, cfg)
+
+	cfg = &gomplate.Config{}
+	err = ParseDataSourceFlags(cfg,
+		nil,
+		nil,
+		[]string{"foo=http://example.com", "file.tmpl", "tmpldir/"},
+		[]string{"foo=Accept: application/json", "bar=Authorization: Basic xxxxx"},
+	)
+	require.NoError(t, err)
+	assert.EqualValues(t, &gomplate.Config{
+		Templates: map[string]gomplate.DataSource{
+			"foo": {
+				URL:    mustURL("http://example.com"),
+				Header: http.Header{"Accept": {"application/json"}},
+			},
+			"file.tmpl": {URL: mustURL("file.tmpl")},
+			"tmpldir/":  {URL: mustURL("tmpldir/")},
+		},
+		ExtraHeaders: map[string]http.Header{
+			"bar": {"Authorization": {"Basic xxxxx"}},
+		},
+	}, cfg)
+}
+
+func TestParsePluginFlags(t *testing.T) {
+	t.Parallel()
+	cfg := &gomplate.Config{}
+	err := ParsePluginFlags(cfg, nil)
+	require.NoError(t, err)
+
+	cfg = &gomplate.Config{}
+	err = ParsePluginFlags(cfg, []string{"foo=bar"})
+	require.NoError(t, err)
+	assert.EqualValues(t, &gomplate.Config{Plugins: map[string]gomplate.PluginConfig{"foo": {Cmd: "bar"}}}, cfg)
+}
+
+func TestParseDatasourceArgNoAlias(t *testing.T) {
+	alias, ds, err := parseDatasourceArg("foo.json")
+	require.NoError(t, err)
+	assert.Equal(t, "foo", alias)
+	assert.Empty(t, ds.URL.Scheme)
+
+	_, _, err = parseDatasourceArg("../foo.json")
+	require.Error(t, err)
+
+	_, _, err = parseDatasourceArg("ftp://example.com/foo.yml")
+	require.Error(t, err)
+}
+
+func TestParseDatasourceArgWithAlias(t *testing.T) {
+	alias, ds, err := parseDatasourceArg("data=foo.json")
+	require.NoError(t, err)
+	assert.Equal(t, "data", alias)
+	assert.EqualValues(t, &url.URL{Path: "foo.json"}, ds.URL)
+
+	alias, ds, err = parseDatasourceArg("data=/otherdir/foo.json")
+	require.NoError(t, err)
+	assert.Equal(t, "data", alias)
+	assert.Equal(t, "file", ds.URL.Scheme)
+	assert.True(t, ds.URL.IsAbs())
+	assert.Equal(t, "/otherdir/foo.json", ds.URL.Path)
+
+	if runtime.GOOS == "windows" {
+		alias, ds, err = parseDatasourceArg("data=foo.json")
+		require.NoError(t, err)
+		assert.Equal(t, "data", alias)
+		assert.EqualValues(t, &url.URL{Path: "foo.json"}, ds.URL)
+
+		alias, ds, err = parseDatasourceArg(`data=\otherdir\foo.json`)
+		require.NoError(t, err)
+		assert.Equal(t, "data", alias)
+		assert.EqualValues(t, &url.URL{Scheme: "file", Path: "/otherdir/foo.json"}, ds.URL)
+
+		alias, ds, err = parseDatasourceArg("data=C:\\windowsdir\\foo.json")
+		require.NoError(t, err)
+		assert.Equal(t, "data", alias)
+		assert.EqualValues(t, &url.URL{Scheme: "file", Path: "C:/windowsdir/foo.json"}, ds.URL)
+
+		alias, ds, err = parseDatasourceArg("data=\\\\somehost\\share\\foo.json")
+		require.NoError(t, err)
+		assert.Equal(t, "data", alias)
+		assert.EqualValues(t, &url.URL{Scheme: "file", Host: "somehost", Path: "/share/foo.json"}, ds.URL)
+	}
+
+	alias, ds, err = parseDatasourceArg("data=sftp://example.com/blahblah/foo.json")
+	require.NoError(t, err)
+	assert.Equal(t, "data", alias)
+	assert.EqualValues(t, &url.URL{Scheme: "sftp", Host: "example.com", Path: "/blahblah/foo.json"}, ds.URL)
+
+	alias, ds, err = parseDatasourceArg("merged=merge:./foo.yaml|http://example.com/bar.json%3Ffoo=bar")
+	require.NoError(t, err)
+	assert.Equal(t, "merged", alias)
+	assert.EqualValues(t, &url.URL{Scheme: "merge", Opaque: "./foo.yaml|http://example.com/bar.json%3Ffoo=bar"}, ds.URL)
+}
+
+func TestParseHeaderArgs(t *testing.T) {
+	args := []string{
+		"foo=Accept: application/json",
+		"bar=Authorization: Bearer supersecret",
+	}
+	expected := map[string]http.Header{
+		"foo": {
+			"Accept": {"application/json"},
+		},
+		"bar": {
+			"Authorization": {"Bearer supersecret"},
+		},
+	}
+	parsed, err := parseHeaderArgs(args)
+	require.NoError(t, err)
+	assert.Equal(t, expected, parsed)
+
+	_, err = parseHeaderArgs([]string{"foo"})
+	require.Error(t, err)
+
+	_, err = parseHeaderArgs([]string{"foo=bar"})
+	require.Error(t, err)
+
+	args = []string{
+		"foo=Accept: application/json",
+		"foo=Foo: bar",
+		"foo=foo: baz",
+		"foo=fOO: qux",
+		"bar=Authorization: Bearer  supersecret",
+	}
+	expected = map[string]http.Header{
+		"foo": {
+			"Accept": {"application/json"},
+			"Foo":    {"bar", "baz", "qux"},
+		},
+		"bar": {
+			"Authorization": {"Bearer  supersecret"},
+		},
+	}
+	parsed, err = parseHeaderArgs(args)
+	require.NoError(t, err)
+	assert.Equal(t, expected, parsed)
 }

@@ -5,7 +5,6 @@ import (
 	"io"
 	"net/http"
 	"os"
-	"path"
 	"slices"
 	"strconv"
 	"strings"
@@ -13,7 +12,6 @@ import (
 
 	"github.com/hairyhenderson/gomplate/v4/internal/config"
 	"github.com/hairyhenderson/gomplate/v4/internal/iohelpers"
-	"github.com/hairyhenderson/gomplate/v4/internal/urlhelpers"
 	"github.com/hairyhenderson/yaml"
 )
 
@@ -335,149 +333,8 @@ func (c *Config) MergeFrom(o *Config) *Config {
 	return c
 }
 
-// ParseDataSourceFlags - sets DataSources, Context, and Templates fields from
-// the key=value format flags as provided at the command-line
-// Unreferenced headers will be set in c.ExtraHeaders
-func (c *Config) ParseDataSourceFlags(datasources, contexts, templates, headers []string) error {
-	err := c.parseResources(datasources, contexts, templates)
-	if err != nil {
-		return err
-	}
-
-	hdrs, err := parseHeaderArgs(headers)
-	if err != nil {
-		return err
-	}
-
-	for k, v := range hdrs {
-		if d, ok := c.Context[k]; ok {
-			d.Header = v
-			c.Context[k] = d
-			delete(hdrs, k)
-		}
-		if d, ok := c.DataSources[k]; ok {
-			d.Header = v
-			c.DataSources[k] = d
-			delete(hdrs, k)
-		}
-		if t, ok := c.Templates[k]; ok {
-			t.Header = v
-			c.Templates[k] = t
-			delete(hdrs, k)
-		}
-	}
-	if len(hdrs) > 0 {
-		c.ExtraHeaders = hdrs
-	}
-	return nil
-}
-
-func (c *Config) parseResources(datasources, contexts, templates []string) error {
-	for _, d := range datasources {
-		k, ds, err := parseDatasourceArg(d)
-		if err != nil {
-			return err
-		}
-		if c.DataSources == nil {
-			c.DataSources = map[string]DataSource{}
-		}
-		c.DataSources[k] = ds
-	}
-	for _, d := range contexts {
-		k, ds, err := parseDatasourceArg(d)
-		if err != nil {
-			return err
-		}
-		if c.Context == nil {
-			c.Context = map[string]DataSource{}
-		}
-		c.Context[k] = ds
-	}
-	for _, t := range templates {
-		k, ds, err := parseTemplateArg(t)
-		if err != nil {
-			return err
-		}
-		if c.Templates == nil {
-			c.Templates = map[string]DataSource{}
-		}
-		c.Templates[k] = ds
-	}
-
-	return nil
-}
-
-// ParsePluginFlags - sets the Plugins field from the
-// key=value format flags as provided at the command-line
-func (c *Config) ParsePluginFlags(plugins []string) error {
-	for _, plugin := range plugins {
-		parts := strings.SplitN(plugin, "=", 2)
-		if len(parts) < 2 {
-			return fmt.Errorf("plugin requires both name and path")
-		}
-		if c.Plugins == nil {
-			c.Plugins = map[string]PluginConfig{}
-		}
-		c.Plugins[parts[0]] = PluginConfig{Cmd: parts[1]}
-	}
-	return nil
-}
-
-func parseDatasourceArg(value string) (alias string, ds DataSource, err error) {
-	alias, u, _ := strings.Cut(value, "=")
-	if u == "" {
-		u = alias
-		alias, _, _ = strings.Cut(value, ".")
-		if path.Base(u) != u {
-			err = fmt.Errorf("invalid argument (%s): must provide an alias with files not in working directory", value)
-			return alias, ds, err
-		}
-	}
-
-	ds.URL, err = urlhelpers.ParseSourceURL(u)
-
-	return alias, ds, err
-}
-
-func parseHeaderArgs(headerArgs []string) (map[string]http.Header, error) {
-	headers := make(map[string]http.Header)
-	for _, v := range headerArgs {
-		ds, name, value, err := splitHeaderArg(v)
-		if err != nil {
-			return nil, err
-		}
-		if _, ok := headers[ds]; !ok {
-			headers[ds] = make(http.Header)
-		}
-		headers[ds][name] = append(headers[ds][name], strings.TrimSpace(value))
-	}
-	return headers, nil
-}
-
-func splitHeaderArg(arg string) (datasourceAlias, name, value string, err error) {
-	parts := strings.SplitN(arg, "=", 2)
-	if len(parts) != 2 {
-		err = fmt.Errorf("invalid datasource-header option '%s'", arg)
-		return "", "", "", err
-	}
-	datasourceAlias = parts[0]
-	name, value, err = splitHeader(parts[1])
-	return datasourceAlias, name, value, err
-}
-
-func splitHeader(header string) (name, value string, err error) {
-	parts := strings.SplitN(header, ":", 2)
-	if len(parts) != 2 {
-		err = fmt.Errorf("invalid HTTP Header format '%s'", header)
-		return "", "", err
-	}
-	name = http.CanonicalHeaderKey(parts[0])
-	value = parts[1]
-	return name, value, nil
-}
-
-// Validate the Config
-func (c Config) Validate() (err error) {
+// validate the Config
+func (c Config) validate() (err error) {
 	err = notTogether(
 		[]string{"in", "inputFiles", "inputDir"},
 		c.Input, c.InputFiles, c.InputDir)
@@ -486,6 +343,7 @@ func (c Config) Validate() (err error) {
 			[]string{"outputFiles", "outputDir", "outputMap"},
 			c.OutputFiles, c.OutputDir, c.OutputMap)
 	}
+
 	if err == nil {
 		err = notTogether(
 			[]string{"outputDir", "outputMap", "execPipe"},
@@ -572,9 +430,9 @@ func isZero(value interface{}) bool {
 	}
 }
 
-// ApplyDefaults - any defaults changed here should be added to cmd.InitFlags as
+// applyDefaults - any defaults changed here should be added to cmd.InitFlags as
 // well for proper help/usage display.
-func (c *Config) ApplyDefaults() {
+func (c *Config) applyDefaults() {
 	if c.Stdout == nil {
 		c.Stdout = os.Stdout
 	}
@@ -609,8 +467,8 @@ func (c *Config) ApplyDefaults() {
 	}
 }
 
-// GetMode - parse an os.FileMode out of the string, and let us know if it's an override or not...
-func (c *Config) GetMode() (os.FileMode, bool, error) {
+// getMode - parse an os.FileMode out of the string, and let us know if it's an override or not...
+func (c *Config) getMode() (os.FileMode, bool, error) {
 	modeOverride := c.OutMode != ""
 	m, err := strconv.ParseUint("0"+c.OutMode, 8, 32)
 	if err != nil {
@@ -641,17 +499,4 @@ func (c *Config) String() string {
 		return err.Error()
 	}
 	return out.String()
-}
-
-// --
-
-func parseTemplateArg(value string) (alias string, ds DataSource, err error) {
-	alias, u, _ := strings.Cut(value, "=")
-	if u == "" {
-		u = alias
-	}
-
-	ds.URL, err = urlhelpers.ParseSourceURL(u)
-
-	return alias, ds, err
 }
