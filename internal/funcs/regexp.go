@@ -31,6 +31,7 @@ func (ReFuncs) FindAll(args ...interface{}) ([]string, error) {
 	re := ""
 	n := 0
 	input := ""
+
 	switch len(args) {
 	case 2:
 		n = -1
@@ -38,11 +39,18 @@ func (ReFuncs) FindAll(args ...interface{}) ([]string, error) {
 		input = conv.ToString(args[1])
 	case 3:
 		re = conv.ToString(args[0])
-		n = conv.ToInt(args[1])
+
+		var err error
+		n, err = conv.ToInt(args[1])
+		if err != nil {
+			return nil, fmt.Errorf("n must be an integer: %w", err)
+		}
+
 		input = conv.ToString(args[2])
 	default:
 		return nil, fmt.Errorf("wrong number of args: want 2 or 3, got %d", len(args))
 	}
+
 	return regexp.FindAll(re, n, input)
 }
 
@@ -75,16 +83,23 @@ func (ReFuncs) Split(args ...interface{}) ([]string, error) {
 	re := ""
 	n := -1
 	input := ""
+
 	switch len(args) {
 	case 2:
 		re = conv.ToString(args[0])
 		input = conv.ToString(args[1])
 	case 3:
 		re = conv.ToString(args[0])
-		n = conv.ToInt(args[1])
+		var err error
+		n, err = conv.ToInt(args[1])
+		if err != nil {
+			return nil, fmt.Errorf("n must be an integer: %w", err)
+		}
+
 		input = conv.ToString(args[2])
 	default:
 		return nil, fmt.Errorf("wrong number of args: want 2 or 3, got %d", len(args))
 	}
+
 	return regexp.Split(re, n, input)
 }

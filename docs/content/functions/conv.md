@@ -453,8 +453,9 @@ Converts the input to an `int64` (64-bit signed integer).
 
 This function attempts to convert most types of input (strings, numbers,
 and booleans), but behaviour when the input can not be converted is
-undefined and subject to change. Unconvertable inputs may result in
-errors, or `0` or `-1`.
+undefined and subject to change.
+
+Unconvertable inputs will result in errors.
 
 Floating-point numbers (with decimal points) are truncated.
 
@@ -492,6 +493,8 @@ Converts the input to an `int` (signed integer, 32- or 64-bit depending
 on platform). This is similar to [`conv.ToInt64`](#conv-toint64) on 64-bit
 platforms, but is useful when input to another function must be provided
 as an `int`.
+
+Unconvertable inputs will result in errors.
 
 On 32-bit systems, given a number that is too large to fit in an `int`,
 the result is `-1`. This is done to protect against
@@ -532,6 +535,8 @@ $ gomplate -i '{{conv.ToInt true }}'
 
 Converts the inputs to an array of `int64`s.
 
+Unconvertable inputs will result in errors.
+
 This delegates to [`conv.ToInt64`](#conv-toint64) for each input argument.
 
 _Added in gomplate [v2.2.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.2.0)_
@@ -557,6 +562,8 @@ gomplate -i '{{ conv.ToInt64s true 0x42 "123,456.99" "1.2345e+3"}}'
 ## `conv.ToInts`
 
 Converts the inputs to an array of `int`s.
+
+Unconvertable inputs will result in errors.
 
 This delegates to [`conv.ToInt`](#conv-toint) for each input argument.
 
@@ -586,8 +593,9 @@ Converts the input to a `float64`.
 
 This function attempts to convert most types of input (strings, numbers,
 and booleans), but behaviour when the input can not be converted is
-undefined and subject to change. Unconvertable inputs may result in
-errors, or `0` or `-1`.
+undefined and subject to change.
+
+Unconvertable inputs will result in errors.
 
 _Added in gomplate [v2.2.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.2.0)_
 ### Usage
@@ -614,6 +622,8 @@ $ gomplate -i '{{ conv.ToFloat64 "9,000.09"}}'
 ## `conv.ToFloat64s`
 
 Converts the inputs to an array of `float64`s.
+
+Unconvertable inputs will result in errors.
 
 This delegates to [`conv.ToFloat64`](#conv-tofloat64) for each input argument.
 

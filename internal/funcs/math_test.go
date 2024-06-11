@@ -32,33 +32,78 @@ func TestAdd(t *testing.T) {
 	t.Parallel()
 
 	m := MathFuncs{}
-	assert.Equal(t, int64(12), m.Add(1, 1, 2, 3, 5))
-	assert.Equal(t, int64(2), m.Add(1, 1))
-	assert.Equal(t, int64(1), m.Add(1))
-	assert.Equal(t, int64(0), m.Add(-5, 5))
-	assert.InEpsilon(t, float64(5.1), m.Add(4.9, "0.2"), 1e-12)
+
+	actual, err := m.Add(1, 1, 2, 3, 5)
+	require.NoError(t, err)
+	assert.Equal(t, int64(12), actual)
+
+	actual, err = m.Add(1, 1)
+	require.NoError(t, err)
+	assert.Equal(t, int64(2), actual)
+
+	actual, err = m.Add(1)
+	require.NoError(t, err)
+	assert.Equal(t, int64(1), actual)
+
+	actual, err = m.Add(-5, 5)
+	require.NoError(t, err)
+	assert.Equal(t, int64(0), actual)
+
+	actual, err = m.Add(4.9, "0.2")
+	require.NoError(t, err)
+	assert.InEpsilon(t, float64(5.1), actual, 1e-12)
 }
 
 func TestMul(t *testing.T) {
 	t.Parallel()
 
 	m := MathFuncs{}
-	assert.Equal(t, int64(30), m.Mul(1, 1, 2, 3, 5))
-	assert.Equal(t, int64(1), m.Mul(1, 1))
-	assert.Equal(t, int64(1), m.Mul(1))
-	assert.Equal(t, int64(-25), m.Mul("-5", 5))
-	assert.Equal(t, int64(28), m.Mul(14, "2"))
-	assert.InEpsilon(t, float64(0.5), m.Mul("-1", -0.5), 1e-12)
+
+	actual, err := m.Mul(1, 1, 2, 3, 5)
+	require.NoError(t, err)
+	assert.Equal(t, int64(30), actual)
+
+	actual, err = m.Mul(1, 1)
+	require.NoError(t, err)
+	assert.Equal(t, int64(1), actual)
+
+	actual, err = m.Mul(1)
+	require.NoError(t, err)
+	assert.Equal(t, int64(1), actual)
+
+	actual, err = m.Mul("-5", 5)
+	require.NoError(t, err)
+	assert.Equal(t, int64(-25), actual)
+
+	actual, err = m.Mul(14, "2")
+	require.NoError(t, err)
+	assert.Equal(t, int64(28), actual)
+
+	actual, err = m.Mul("-1", -0.5)
+	require.NoError(t, err)
+	assert.InEpsilon(t, float64(0.5), actual, 1e-12)
 }
 
 func TestSub(t *testing.T) {
 	t.Parallel()
 
 	m := MathFuncs{}
-	assert.Equal(t, int64(0), m.Sub(1, 1))
-	assert.Equal(t, int64(-10), m.Sub(-5, 5))
-	assert.Equal(t, int64(-41), m.Sub(true, "42"))
-	assert.InEpsilon(t, -5.3, m.Sub(10, 15.3), 1e-12)
+
+	actual, err := m.Sub(1, 1)
+	require.NoError(t, err)
+	assert.Equal(t, int64(0), actual)
+
+	actual, err = m.Sub(-5, 5)
+	require.NoError(t, err)
+	assert.Equal(t, int64(-10), actual)
+
+	actual, err = m.Sub(true, "42")
+	require.NoError(t, err)
+	assert.Equal(t, int64(-41), actual)
+
+	actual, err = m.Sub(10, 15.3)
+	require.NoError(t, err)
+	assert.InEpsilon(t, -5.3, actual, 1e-12)
 }
 
 func mustDiv(a, b interface{}) interface{} {
@@ -86,16 +131,28 @@ func TestRem(t *testing.T) {
 	t.Parallel()
 
 	m := MathFuncs{}
-	assert.Equal(t, int64(0), m.Rem(1, 1))
-	assert.Equal(t, int64(2), m.Rem(5, 3.0))
+
+	actual, err := m.Rem(1, 1)
+	require.NoError(t, err)
+	assert.Equal(t, int64(0), actual)
+
+	actual, err = m.Rem(5, 3.0)
+	require.NoError(t, err)
+	assert.Equal(t, int64(2), actual)
 }
 
 func TestPow(t *testing.T) {
 	t.Parallel()
 
 	m := MathFuncs{}
-	assert.Equal(t, int64(4), m.Pow(2, "2"))
-	assert.InEpsilon(t, 2.25, m.Pow(1.5, 2), 1e-12)
+
+	actual, err := m.Pow(2, "2")
+	require.NoError(t, err)
+	assert.Equal(t, int64(4), actual)
+
+	actual, err = m.Pow(1.5, 2)
+	require.NoError(t, err)
+	assert.InEpsilon(t, 2.25, actual, 1e-12)
 }
 
 func mustSeq(t *testing.T, n ...interface{}) []int64 {
@@ -161,6 +218,7 @@ func TestIsIntFloatNum(t *testing.T) {
 		{nil, false, false},
 		{true, false, false},
 	}
+
 	m := MathFuncs{}
 	for _, tt := range tests {
 		tt := tt
@@ -178,6 +236,7 @@ func BenchmarkIsFloat(b *testing.B) {
 	data := []interface{}{
 		0, 1, -1, uint(42), uint8(255), uint16(42), uint32(42), uint64(42), int(42), int8(127), int16(42), int32(42), int64(42), float32(18.3), float64(18.3), 1.5, -18.6, "42", "052", "0xff", "-42", "-0", "3.14", "-3.14", "0.00", "NaN", "-Inf", "+Inf", "", "foo", nil, true,
 	}
+
 	m := MathFuncs{}
 	for _, n := range data {
 		n := n
@@ -197,9 +256,7 @@ func TestMax(t *testing.T) {
 		expected interface{}
 		n        []interface{}
 	}{
-		{int64(0), []interface{}{nil}},
 		{int64(0), []interface{}{0}},
-		{int64(0), []interface{}{"not a number"}},
 		{int64(1), []interface{}{1}},
 		{int64(-1), []interface{}{-1}},
 		{int64(1), []interface{}{-1, 0, 1}},
@@ -220,6 +277,19 @@ func TestMax(t *testing.T) {
 			assert.Equal(t, d.expected, actual)
 		})
 	}
+
+	t.Run("error cases", func(t *testing.T) {
+		t.Parallel()
+
+		_, err := m.Max("foo")
+		require.Error(t, err)
+
+		_, err = m.Max(nil)
+		require.Error(t, err)
+
+		_, err = m.Max("")
+		require.Error(t, err)
+	})
 }
 
 func TestMin(t *testing.T) {
@@ -230,9 +300,7 @@ func TestMin(t *testing.T) {
 		expected interface{}
 		n        []interface{}
 	}{
-		{int64(0), []interface{}{nil}},
 		{int64(0), []interface{}{0}},
-		{int64(0), []interface{}{"not a number"}},
 		{int64(1), []interface{}{1}},
 		{int64(-1), []interface{}{-1}},
 		{int64(-1), []interface{}{-1, 0, 1}},
@@ -250,9 +318,23 @@ func TestMin(t *testing.T) {
 			} else {
 				actual, _ = m.Min(d.n[0], d.n[1:]...)
 			}
+
 			assert.Equal(t, d.expected, actual)
 		})
 	}
+
+	t.Run("error cases", func(t *testing.T) {
+		t.Parallel()
+
+		_, err := m.Min("foo")
+		require.Error(t, err)
+
+		_, err = m.Min(nil)
+		require.Error(t, err)
+
+		_, err = m.Min("")
+		require.Error(t, err)
+	})
 }
 
 func TestContainsFloat(t *testing.T) {
@@ -297,8 +379,6 @@ func TestCeil(t *testing.T) {
 		n interface{}
 		a float64
 	}{
-		{"", 0.},
-		{nil, 0.},
 		{"Inf", gmath.Inf(1)},
 		{0, 0.},
 		{4.99, 5.},
@@ -310,9 +390,24 @@ func TestCeil(t *testing.T) {
 		t.Run(fmt.Sprintf("%v==%v", d.n, d.a), func(t *testing.T) {
 			t.Parallel()
 
-			assert.InDelta(t, d.a, m.Ceil(d.n), 1e-12)
+			actual, err := m.Ceil(d.n)
+			require.NoError(t, err)
+			assert.InDelta(t, d.a, actual, 1e-12)
 		})
 	}
+
+	t.Run("error cases", func(t *testing.T) {
+		t.Parallel()
+
+		_, err := m.Ceil("foo")
+		require.Error(t, err)
+
+		_, err = m.Ceil(nil)
+		require.Error(t, err)
+
+		_, err = m.Ceil("")
+		require.Error(t, err)
+	})
 }
 
 func TestFloor(t *testing.T) {
@@ -323,8 +418,6 @@ func TestFloor(t *testing.T) {
 		n interface{}
 		a float64
 	}{
-		{"", 0.},
-		{nil, 0.},
 		{"Inf", gmath.Inf(1)},
 		{0, 0.},
 		{4.99, 4.},
@@ -336,9 +429,24 @@ func TestFloor(t *testing.T) {
 		t.Run(fmt.Sprintf("%v==%v", d.n, d.a), func(t *testing.T) {
 			t.Parallel()
 
-			assert.InDelta(t, d.a, m.Floor(d.n), 1e-12)
+			actual, err := m.Floor(d.n)
+			require.NoError(t, err)
+			assert.InDelta(t, d.a, actual, 1e-12)
 		})
 	}
+
+	t.Run("error cases", func(t *testing.T) {
+		t.Parallel()
+
+		_, err := m.Floor("foo")
+		require.Error(t, err)
+
+		_, err = m.Floor(nil)
+		require.Error(t, err)
+
+		_, err = m.Floor("")
+		require.Error(t, err)
+	})
 }
 
 func TestRound(t *testing.T) {
@@ -349,8 +457,6 @@ func TestRound(t *testing.T) {
 		n interface{}
 		a float64
 	}{
-		{"", 0.},
-		{nil, 0.},
 		{"Inf", gmath.Inf(1)},
 		{0, 0.},
 		{4.99, 5},
@@ -366,9 +472,24 @@ func TestRound(t *testing.T) {
 		t.Run(fmt.Sprintf("%v==%v", d.n, d.a), func(t *testing.T) {
 			t.Parallel()
 
-			assert.InDelta(t, d.a, m.Round(d.n), 1e-12)
+			actual, err := m.Round(d.n)
+			require.NoError(t, err)
+			assert.InDelta(t, d.a, actual, 1e-12)
 		})
 	}
+
+	t.Run("error cases", func(t *testing.T) {
+		t.Parallel()
+
+		_, err := m.Round("foo")
+		require.Error(t, err)
+
+		_, err = m.Round(nil)
+		require.Error(t, err)
+
+		_, err = m.Round("")
+		require.Error(t, err)
+	})
 }
 
 func TestAbs(t *testing.T) {
@@ -379,8 +500,6 @@ func TestAbs(t *testing.T) {
 		n interface{}
 		a interface{}
 	}{
-		{"", 0.},
-		{nil, 0.},
 		{"-Inf", gmath.Inf(1)},
 		{0, int64(0)},
 		{0., 0.},
@@ -395,7 +514,22 @@ func TestAbs(t *testing.T) {
 		t.Run(fmt.Sprintf("%#v==%v", d.n, d.a), func(t *testing.T) {
 			t.Parallel()
 
-			assert.Equal(t, d.a, m.Abs(d.n))
+			actual, err := m.Abs(d.n)
+			require.NoError(t, err)
+			assert.Equal(t, d.a, actual)
 		})
 	}
+
+	t.Run("error cases", func(t *testing.T) {
+		t.Parallel()
+
+		_, err := m.Abs("foo")
+		require.Error(t, err)
+
+		_, err = m.Abs(nil)
+		require.Error(t, err)
+
+		_, err = m.Abs("")
+		require.Error(t, err)
+	})
 }

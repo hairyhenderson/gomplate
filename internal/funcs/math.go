@@ -79,79 +79,158 @@ func (f MathFuncs) IsNum(n interface{}) bool {
 }
 
 // Abs -
-func (f MathFuncs) Abs(n interface{}) interface{} {
-	m := gmath.Abs(conv.ToFloat64(n))
+func (f MathFuncs) Abs(n interface{}) (interface{}, error) {
+	fn, err := conv.ToFloat64(n)
+	if err != nil {
+		return nil, fmt.Errorf("expected a number: %w", err)
+	}
+
+	m := gmath.Abs(fn)
 	if f.IsInt(n) {
 		return conv.ToInt64(m)
 	}
-	return m
+
+	return m, nil
 }
 
 // Add -
-func (f MathFuncs) Add(n ...interface{}) interface{} {
+func (f MathFuncs) Add(n ...interface{}) (interface{}, error) {
 	if f.containsFloat(n...) {
-		nums := conv.ToFloat64s(n...)
+		nums, err := conv.ToFloat64s(n...)
+		if err != nil {
+			return nil, fmt.Errorf("expected number inputs: %w", err)
+		}
+
 		var x float64
 		for _, v := range nums {
 			x += v
 		}
-		return x
+
+		return x, nil
 	}
-	nums := conv.ToInt64s(n...)
+
+	nums, err := conv.ToInt64s(n...)
+	if err != nil {
+		return nil, fmt.Errorf("expected number inputs: %w", err)
+	}
+
 	var x int64
 	for _, v := range nums {
 		x += v
 	}
-	return x
+
+	return x, nil
 }
 
 // Mul -
-func (f MathFuncs) Mul(n ...interface{}) interface{} {
+func (f MathFuncs) Mul(n ...interface{}) (interface{}, error) {
 	if f.containsFloat(n...) {
-		nums := conv.ToFloat64s(n...)
+		nums, err := conv.ToFloat64s(n...)
+		if err != nil {
+			return nil, fmt.Errorf("expected number inputs: %w", err)
+		}
+
 		x := 1.
 		for _, v := range nums {
 			x *= v
 		}
-		return x
+
+		return x, nil
 	}
-	nums := conv.ToInt64s(n...)
+
+	nums, err := conv.ToInt64s(n...)
+	if err != nil {
+		return nil, fmt.Errorf("expected number inputs: %w", err)
+	}
+
 	x := int64(1)
 	for _, v := range nums {
 		x *= v
 	}
-	return x
+
+	return x, nil
 }
 
 // Sub -
-func (f MathFuncs) Sub(a, b interface{}) interface{} {
+func (f MathFuncs) Sub(a, b interface{}) (interface{}, error) {
 	if f.containsFloat(a, b) {
-		return conv.ToFloat64(a) - conv.ToFloat64(b)
+		fa, err := conv.ToFloat64(a)
+		if err != nil {
+			return nil, fmt.Errorf("expected a number: %w", err)
+		}
+
+		fb, err := conv.ToFloat64(b)
+		if err != nil {
+			return nil, fmt.Errorf("expected a number: %w", err)
+		}
+
+		return fa - fb, nil
 	}
-	return conv.ToInt64(a) - conv.ToInt64(b)
+
+	ia, err := conv.ToInt64(a)
+	if err != nil {
+		return nil, fmt.Errorf("expected a number: %w", err)
+	}
+
+	ib, err := conv.ToInt64(b)
+	if err != nil {
+		return nil, fmt.Errorf("expected a number: %w", err)
+	}
+
+	return ia - ib, nil
 }
 
 // Div -
 func (f MathFuncs) Div(a, b interface{}) (interface{}, error) {
-	divisor := conv.ToFloat64(a)
-	dividend := conv.ToFloat64(b)
+	divisor, err := conv.ToFloat64(a)
+	if err != nil {
+		return nil, fmt.Errorf("expected a number: %w", err)
+	}
+
+	dividend, err := conv.ToFloat64(b)
+	if err != nil {
+		return nil, fmt.Errorf("expected a number: %w", err)
+	}
+
 	if dividend == 0 {
 		return 0, fmt.Errorf("error: division by 0")
 	}
+
 	return divisor / dividend, nil
 }
 
 // Rem -
-func (f MathFuncs) Rem(a, b interface{}) interface{} {
-	return conv.ToInt64(a) % conv.ToInt64(b)
+func (f MathFuncs) Rem(a, b interface{}) (interface{}, error) {
+	ia, err := conv.ToInt64(a)
+	if err != nil {
+		return nil, fmt.Errorf("expected a number: %w", err)
+	}
+
+	ib, err := conv.ToInt64(b)
+	if err != nil {
+		return nil, fmt.Errorf("expected a number: %w", err)
+	}
+
+	return ia % ib, nil
 }
 
 // Pow -
-func (f MathFuncs) Pow(a, b interface{}) interface{} {
-	r := gmath.Pow(conv.ToFloat64(a), conv.ToFloat64(b))
-	if f.IsFloat(a) {
-		return r
+func (f MathFuncs) Pow(a, b interface{}) (interface{}, error) {
+	fa, err := conv.ToFloat64(a)
+	if err != nil {
+		return nil, fmt.Errorf("expected a number: %w", err)
 	}
+
+	fb, err := conv.ToFloat64(b)
+	if err != nil {
+		return nil, fmt.Errorf("expected a number: %w", err)
+	}
+
+	r := gmath.Pow(fa, fb)
+	if f.IsFloat(a) {
+		return r, nil
+	}
+
 	return conv.ToInt64(r)
 }
 
@@ -161,53 +240,116 @@ func (f MathFuncs) Seq(n ...interface{}) ([]int64, error) {
 	start := int64(1)
 	end := int64(0)
 	step := int64(1)
-	if len(n) == 0 {
-		return nil, fmt.Errorf("math.Seq must be given at least an 'end' value")
+
+	var err error
+
+	switch len(n) {
+	case 1:
+		end, err = conv.ToInt64(n[0])
+		if err != nil {
+			return nil, fmt.Errorf("expected a number: %w", err)
+		}
+	case 2:
+		start, err = conv.ToInt64(n[0])
+		if err != nil {
+			return nil, fmt.Errorf("expected a number: %w", err)
+		}
+
+		end, err = conv.ToInt64(n[1])
+		if err != nil {
+			return nil, fmt.Errorf("expected a number: %w", err)
+		}
+	case 3:
+		start, err = conv.ToInt64(n[0])
+		if err != nil {
+			return nil, fmt.Errorf("expected a number: %w", err)
+		}
+
+		end, err = conv.ToInt64(n[1])
+		if err != nil {
+			return nil, fmt.Errorf("expected a number: %w", err)
+		}
+
+		step, err = conv.ToInt64(n[2])
+		if err != nil {
+			return nil, fmt.Errorf("expected a number: %w", err)
+		}
+	default:
+		return nil, fmt.Errorf("expected 1, 2, or 3 arguments, got %d", len(n))
 	}
-	if len(n) == 1 {
-		end = conv.ToInt64(n[0])
-	}
-	if len(n) == 2 {
-		start = conv.ToInt64(n[0])
-		end = conv.ToInt64(n[1])
-	}
-	if len(n) == 3 {
-		start = conv.ToInt64(n[0])
-		end = conv.ToInt64(n[1])
-		step = conv.ToInt64(n[2])
-	}
-	return math.Seq(conv.ToInt64(start), conv.ToInt64(end), conv.ToInt64(step)), nil
+
+	return math.Seq(start, end, step), nil
 }
 
 // Max -
 func (f MathFuncs) Max(a interface{}, b ...interface{}) (interface{}, error) {
 	if f.IsFloat(a) || f.containsFloat(b...) {
-		m := conv.ToFloat64(a)
-		for _, n := range conv.ToFloat64s(b...) {
+		m, err := conv.ToFloat64(a)
+		if err != nil {
+			return nil, fmt.Errorf("expected a number: %w", err)
+		}
+
+		floats, err := conv.ToFloat64s(b...)
+		if err != nil {
+			return nil, fmt.Errorf("expected a number: %w", err)
+		}
+
+		for _, n := range floats {
 			m = gmath.Max(m, n)
 		}
+
 		return m, nil
 	}
-	m := conv.ToInt64(a)
-	for _, n := range conv.ToInt64s(b...) {
+
+	m, err := conv.ToInt64(a)
+	if err != nil {
+		return nil, fmt.Errorf("expected a number: %w", err)
+	}
+
+	nums, err := conv.ToInt64s(b...)
+	if err != nil {
+		return nil, fmt.Errorf("expected a number: %w", err)
+	}
+
+	for _, n := range nums {
 		if n > m {
 			m = n
 		}
 	}
+
 	return m, nil
 }
 
 // Min -
 func (f MathFuncs) Min(a interface{}, b ...interface{}) (interface{}, error) {
 	if f.IsFloat(a) || f.containsFloat(b...) {
-		m := conv.ToFloat64(a)
-		for _, n := range conv.ToFloat64s(b...) {
+		m, err := conv.ToFloat64(a)
+		if err != nil {
+			return nil, fmt.Errorf("expected a number: %w", err)
+		}
+
+		floats, err := conv.ToFloat64s(b...)
+		if err != nil {
+			return nil, fmt.Errorf("expected a number: %w", err)
+		}
+
+		for _, n := range floats {
 			m = gmath.Min(m, n)
 		}
 		return m, nil
 	}
-	m := conv.ToInt64(a)
-	for _, n := range conv.ToInt64s(b...) {
+
+	m, err := conv.ToInt64(a)
+	if err != nil {
+		return nil, fmt.Errorf("expected a number: %w", err)
+	}
+
+	nums, err := conv.ToInt64s(b...)
+	if err != nil {
+		return nil, fmt.Errorf("expected a number: %w", err)
+	}
+
+	for _, n := range nums {
 		if n < m {
 			m = n
 		}
@@ -216,16 +358,31 @@ func (f MathFuncs) Min(a interface{}, b ...interface{}) (interface{}, error) {
 }
 
 // Ceil -
-func (f MathFuncs) Ceil(n interface{}) interface{} {
-	return gmath.Ceil(conv.ToFloat64(n))
+func (f MathFuncs) Ceil(n interface{}) (interface{}, error) {
+	in, err := conv.ToFloat64(n)
+	if err != nil {
+		return nil, fmt.Errorf("n must be a number: %w", err)
+	}
+
+	return gmath.Ceil(in), nil
 }
 
 // Floor -
-func (f MathFuncs) Floor(n interface{}) interface{} {
-	return gmath.Floor(conv.ToFloat64(n))
+func (f MathFuncs) Floor(n interface{}) (interface{}, error) {
+	in, err := conv.ToFloat64(n)
+	if err != nil {
+		return nil, fmt.Errorf("n must be a number: %w", err)
+	}
+
+	return gmath.Floor(in), nil
 }
 
 // Round -
-func (f MathFuncs) Round(n interface{}) interface{} {
-	return gmath.Round(conv.ToFloat64(n))
+func (f MathFuncs) Round(n interface{}) (interface{}, error) {
+	in, err := conv.ToFloat64(n)
+	if err != nil {
+		return nil, fmt.Errorf("n must be a number: %w", err)
+	}
+
+	return gmath.Round(in), nil
 }

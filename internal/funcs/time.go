@@ -104,33 +104,63 @@ func (TimeFuncs) Unix(in interface{}) (gotime.Time, error) {
 }
 
 // Nanosecond -
-func (TimeFuncs) Nanosecond(n interface{}) gotime.Duration {
-	return gotime.Nanosecond * gotime.Duration(conv.ToInt64(n))
+func (TimeFuncs) Nanosecond(n interface{}) (gotime.Duration, error) {
+	in, err := conv.ToInt64(n)
+	if err != nil {
+		return 0, fmt.Errorf("expected a number: %w", err)
+	}
+
+	return gotime.Nanosecond * gotime.Duration(in), nil
 }
 
 // Microsecond -
-func (TimeFuncs) Microsecond(n interface{}) gotime.Duration {
-	return gotime.Microsecond * gotime.Duration(conv.ToInt64(n))
+func (TimeFuncs) Microsecond(n interface{}) (gotime.Duration, error) {
+	in, err := conv.ToInt64(n)
+	if err != nil {
+		return 0, fmt.Errorf("expected a number: %w", err)
+	}
+
+	return gotime.Microsecond * gotime.Duration(in), nil
 }
 
 // Millisecond -
-func (TimeFuncs) Millisecond(n interface{}) gotime.Duration {
-	return gotime.Millisecond * gotime.Duration(conv.ToInt64(n))
+func (TimeFuncs) Millisecond(n interface{}) (gotime.Duration, error) {
+	in, err := conv.ToInt64(n)
+	if err != nil {
+		return 0, fmt.Errorf("expected a number: %w", err)
+	}
+
+	return gotime.Millisecond * gotime.Duration(in), nil
 }
 
 // Second -
-func (TimeFuncs) Second(n interface{}) gotime.Duration {
-	return gotime.Second * gotime.Duration(conv.ToInt64(n))
+func (TimeFuncs) Second(n interface{}) (gotime.Duration, error) {
+	in, err := conv.ToInt64(n)
+	if err != nil {
+		return 0, fmt.Errorf("expected a number: %w", err)
+	}
+
+	return gotime.Second * gotime.Duration(in), nil
 }
 
 // Minute -
-func (TimeFuncs) Minute(n interface{}) gotime.Duration {
-	return gotime.Minute * gotime.Duration(conv.ToInt64(n))
+func (TimeFuncs) Minute(n interface{}) (gotime.Duration, error) {
+	in, err := conv.ToInt64(n)
+	if err != nil {
+		return 0, fmt.Errorf("expected a number: %w", err)
+	}
+
+	return gotime.Minute * gotime.Duration(in), nil
 }
 
 // Hour -
-func (TimeFuncs) Hour(n interface{}) gotime.Duration {
-	return gotime.Hour * gotime.Duration(conv.ToInt64(n))
+func (TimeFuncs) Hour(n interface{}) (gotime.Duration, error) {
+	in, err := conv.ToInt64(n)
+	if err != nil {
+		return 0, fmt.Errorf("expected a number: %w", err)
+	}
+
+	return gotime.Hour * gotime.Duration(in), nil
 }
 
 // ParseDuration -

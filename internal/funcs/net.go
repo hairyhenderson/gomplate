@@ -132,7 +132,12 @@ func (f *NetFuncs) CIDRHost(hostnum interface{}, prefix interface{}) (netip.Addr
 		return netip.Addr{}, err
 	}
 
-	ip, err := cidr.HostBig(network, big.NewInt(conv.ToInt64(hostnum)))
+	n, err := conv.ToInt64(hostnum)
+	if err != nil {
+		return netip.Addr{}, fmt.Errorf("expected a number: %w", err)
+	}
+
+	ip, err := cidr.HostBig(network, big.NewInt(n))
 
 	return ip, err
 }
@@ -175,7 +180,11 @@ func (f *NetFuncs) CIDRSubnets(newbits interface{}, prefix interface{}) ([]netip
 		return nil, err
 	}
 
-	nBits := conv.ToInt(newbits)
+	nBits, err := conv.ToInt(newbits)
+	if err != nil {
+		return nil, fmt.Errorf("newbits must be a number: %w", err)
+	}
+
 	if nBits < 1 {
 		return nil, fmt.Errorf("must extend prefix by at least one bit")
 	}
@@ -208,7 +217,11 @@ func (f *NetFuncs) CIDRSubnetSizes(args ...interface{}) ([]netip.Prefix, error) 
 	if err != nil {
 		return nil, err
 	}
-	newbits := conv.ToInts(args[:len(args)-1]...)
+
+	newbits, err := conv.ToInts(args[:len(args)-1]...)
+	if err != nil {
+		return nil, fmt.Errorf("newbits must be numbers: %w", err)
+	}
 
 	startPrefixLen := network.Bits()
 	firstLength := newbits[0]

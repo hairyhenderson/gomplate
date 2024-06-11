@@ -13,8 +13,9 @@ func TestMath(t *testing.T) {
 	inOutTest(t, `{{ math.Pow 8 4 }} {{ pow 2 2 }}`, "4096 4")
 	inOutTest(t, `{{ math.Seq 0 }}, {{ seq 0 3 }}, {{ seq -5 -10 2 }}`,
 		`[1 0], [0 1 2 3], [-5 -7 -9]`)
-	inOutTest(t, `{{ math.Round 0.99 }}, {{ math.Round "foo" }}, {{math.Round 3.5}}`,
-		`1, 0, 4`)
+	inOutTest(t, `{{ math.Round 0.99 }}, {{math.Round 3.5}}`, `1, 4`)
 	inOutTest(t, `{{ math.Max -0 "+Inf" "NaN" }}, {{ math.Max 3.4 3.401 3.399 }}`,
 		`+Inf, 3.401`)
+
+	inOutContainsError(t, `{{ math.Round "foo" }}`, `could not convert \"foo\"`)
 }
