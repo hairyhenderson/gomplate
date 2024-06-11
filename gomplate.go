@@ -20,9 +20,9 @@ func Run(ctx context.Context, cfg *Config) error {
 	Metrics = newMetrics()
 
 	// apply defaults before validation
-	cfg.ApplyDefaults()
+	cfg.applyDefaults()
 
-	err := cfg.Validate()
+	err := cfg.validate()
 	if err != nil {
 		return fmt.Errorf("failed to validate config: %w\n%+v", err, cfg)
 	}

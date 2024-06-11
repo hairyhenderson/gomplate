@@ -6,13 +6,17 @@ import (
 	"fmt"
 	"io"
 	"log/slog"
+	"net/http"
 	"os"
+	"path"
+	"strings"
 	"time"
 
 	"github.com/hairyhenderson/gomplate/v4"
 	"github.com/hairyhenderson/gomplate/v4/conv"
 	"github.com/hairyhenderson/gomplate/v4/env"
 	"github.com/hairyhenderson/gomplate/v4/internal/datafs"
+	"github.com/hairyhenderson/gomplate/v4/internal/urlhelpers"
 
 	"github.com/spf13/cobra"
 )
@@ -186,7 +190,7 @@ func cobraConfig(cmd *cobra.Command, args []string) (cfg *gomplate.Config, err e
 	if err != nil {
 		return nil, err
 	}
-	err = cfg.ParseDataSourceFlags(ds, cx, ts, hdr)
+	err = ParseDataSourceFlags(cfg, ds, cx, ts, hdr)
 	if err != nil {
 		return nil, err
 	}
@@ -195,7 +199,7 @@ func cobraConfig(cmd *cobra.Command, args []string) (cfg *gomplate.Config, err e
 	if err != nil {
 		return nil, err
 	}
-	err = cfg.ParsePluginFlags(pl)
+	err = ParsePluginFlags(cfg, pl)
 	if err != nil {
 		return nil, err
 	}
@@ -286,4 +290,156 @@ func postExecInput(cfg *gomplate.Config) io.Reader {
 	}
 
 	return os.Stdin
+}
+
+// ParsePluginFlags - sets the Plugins field from the
+// key=value format flags as provided at the command-line
+func ParsePluginFlags(c *gomplate.Config, plugins []string) error {
+	for _, plugin := range plugins {
+		parts := strings.SplitN(plugin, "=", 2)
+		if len(parts) < 2 {
+			return fmt.Errorf("plugin requires both name and path")
+		}
+		if c.Plugins == nil {
+			c.Plugins = map[string]gomplate.PluginConfig{}
+		}
+		c.Plugins[parts[0]] = gomplate.PluginConfig{Cmd: parts[1]}
+	}
+	return nil
+}
+
+// ParseDataSourceFlags - sets DataSources, Context, and Templates fields from
+// the key=value format flags as provided at the command-line
+// Unreferenced headers will be set in c.ExtraHeaders
+func ParseDataSourceFlags(c *gomplate.Config, datasources, contexts, templates, headers []string) error {
+	err := parseResources(c, datasources, contexts, templates)
+	if err != nil {
+		return err
+	}
+
+	hdrs, err := parseHeaderArgs(headers)
+	if err != nil {
+		return err
+	}
+
+	for k, v := range hdrs {
+		if d, ok := c.Context[k]; ok {
+			d.Header = v
+			c.Context[k] = d
+			delete(hdrs, k)
+		}
+		if d, ok := c.DataSources[k]; ok {
+			d.Header = v
+			c.DataSources[k] = d
+			delete(hdrs, k)
+		}
+		if t, ok := c.Templates[k]; ok {
+			t.Header = v
+			c.Templates[k] = t
+			delete(hdrs, k)
+		}
+	}
+	if len(hdrs) > 0 {
+		c.ExtraHeaders = hdrs
+	}
+	return nil
+}
+
+func parseResources(c *gomplate.Config, datasources, contexts, templates []string) error {
+	for _, d := range datasources {
+		k, ds, err := parseDatasourceArg(d)
+		if err != nil {
+			return err
+		}
+		if c.DataSources == nil {
+			c.DataSources = map[string]gomplate.DataSource{}
+		}
+		c.DataSources[k] = ds
+	}
+	for _, d := range contexts {
+		k, ds, err := parseDatasourceArg(d)
+		if err != nil {
+			return err
+		}
+		if c.Context == nil {
+			c.Context = map[string]gomplate.DataSource{}
+		}
+		c.Context[k] = ds
+	}
+	for _, t := range templates {
+		k, ds, err := parseTemplateArg(t)
+		if err != nil {
+			return err
+		}
+		if c.Templates == nil {
+			c.Templates = map[string]gomplate.DataSource{}
+		}
+		c.Templates[k] = ds
+	}
+
+	return nil
+}
+
+func parseDatasourceArg(value string) (alias string, ds gomplate.DataSource, err error) {
+	alias, u, _ := strings.Cut(value, "=")
+	if u == "" {
+		u = alias
+		alias, _, _ = strings.Cut(value, ".")
+		if path.Base(u) != u {
+			err = fmt.Errorf("invalid argument (%s): must provide an alias with files not in working directory", value)
+			return alias, ds, err
+		}
+	}
+
+	ds.URL, err = urlhelpers.ParseSourceURL(u)
+
+	return alias, ds, err
+}
+
+func parseHeaderArgs(headerArgs []string) (map[string]http.Header, error) {
+	headers := make(map[string]http.Header)
+	for _, v := range headerArgs {
+		ds, name, value, err := splitHeaderArg(v)
+		if err != nil {
+			return nil, err
+		}
+		if _, ok := headers[ds]; !ok {
+			headers[ds] = make(http.Header)
+		}
+		headers[ds][name] = append(headers[ds][name], strings.TrimSpace(value))
+	}
+	return headers, nil
+}
+
+func splitHeaderArg(arg string) (datasourceAlias, name, value string, err error) {
+	parts := strings.SplitN(arg, "=", 2)
+	if len(parts) != 2 {
+		err = fmt.Errorf("invalid datasource-header option '%s'", arg)
+		return "", "", "", err
+	}
+	datasourceAlias = parts[0]
+	name, value, err = splitHeader(parts[1])
+	return datasourceAlias, name, value, err
+}
+
+func splitHeader(header string) (name, value string, err error) {
+	parts := strings.SplitN(header, ":", 2)
+	if len(parts) != 2 {
+		err = fmt.Errorf("invalid HTTP Header format '%s'", header)
+		return "", "", err
+	}
+	name = http.CanonicalHeaderKey(parts[0])
+	value = parts[1]
+	return name, value, nil
+}
+
+func parseTemplateArg(value string) (alias string, ds gomplate.DataSource, err error) {
+	alias, u, _ := strings.Cut(value, "=")
+	if u == "" {
+		u = alias
+	}
+
+	ds.URL, err = urlhelpers.ParseSourceURL(u)
+
+	return alias, ds, err
 }

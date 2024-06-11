@@ -45,7 +45,7 @@ func copyFuncMap(funcMap template.FuncMap) template.FuncMap {
 
 // gatherTemplates - gather and prepare templates for rendering
 func gatherTemplates(ctx context.Context, cfg *Config, outFileNamer outputNamer) ([]Template, error) {
-	mode, modeOverride, err := cfg.GetMode()
+	mode, modeOverride, err := cfg.getMode()
 	if err != nil {
 		return nil, err
 	}
