@@ -40,10 +40,21 @@ func TestFindAll(t *testing.T) {
 }
 
 func TestMatch(t *testing.T) {
-	assert.True(t, Match(`^[a-z]+\[[0-9]+\]$`, "adam[23]"))
-	assert.True(t, Match(`^[a-z]+\[[0-9]+\]$`, "eve[7]"))
-	assert.False(t, Match(`^[a-z]+\[[0-9]+\]$`, "Job[48]"))
-	assert.False(t, Match(`^[a-z]+\[[0-9]+\]$`, "snakey"))
+	actual, err := Match(`^[a-z]+\[[0-9]+\]$`, "adam[23]")
+	require.NoError(t, err)
+	assert.True(t, actual)
+
+	actual, err = Match(`^[a-z]+\[[0-9]+\]$`, "eve[7]")
+	require.NoError(t, err)
+	assert.True(t, actual)
+
+	actual, err = Match(`^[a-z]+\[[0-9]+\]$`, "Job[48]")
+	require.NoError(t, err)
+	assert.False(t, actual)
+
+	actual, err = Match(`^[a-z]+\[[0-9]+\]$`, "snakey")
+	require.NoError(t, err)
+	assert.False(t, actual)
 }
 
 func TestReplace(t *testing.T) {
@@ -60,7 +71,9 @@ func TestReplace(t *testing.T) {
 		{"Turing, Alan", "(?P<first>[a-zA-Z]+) (?P<last>[a-zA-Z]+)", "${last}, ${first}", "Alan Turing"},
 	}
 	for _, d := range testdata {
-		assert.Equal(t, d.expected, Replace(d.expression, d.replacement, d.input))
+		actual, err := Replace(d.expression, d.replacement, d.input)
+		require.NoError(t, err)
+		assert.Equal(t, d.expected, actual)
 	}
 }
 
