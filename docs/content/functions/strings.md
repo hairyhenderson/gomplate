@@ -665,7 +665,7 @@ input | strings.Trim cutset
 ### Examples
 
 ```console
-$ gomplate -i '{{ "_-foo-_" | strings.Trim "_-" }}
+$ gomplate -i '{{ "_-foo-_" | strings.Trim "_-" }}'
 foo
 ```
 
