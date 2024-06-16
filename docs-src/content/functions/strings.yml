@@ -419,7 +419,7 @@ funcs:
         description: the input
     examples:
       - |
-        $ gomplate -i '{{ "_-foo-_" | strings.Trim "_-" }}
+        $ gomplate -i '{{ "_-foo-_" | strings.Trim "_-" }}'
         foo
   - name: strings.TrimPrefix
     released: v2.5.0
