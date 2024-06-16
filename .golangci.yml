@@ -3,6 +3,11 @@ linters-settings:
     enable-all: true
   gocyclo:
     min-complexity: 10
+  gomoddirectives:
+    replace-local: false
+    replace-allow-list: []
+    retract-allow-no-explanation: false
+    exclude-forbidden: true
   dupl:
     threshold: 100
   goconst:
@@ -40,6 +45,7 @@ linters:
     - goheader
     - goimports
     # - gomnd
+    - gomoddirectives
     - gomodguard
     - goprintffuncname
     - gosec
