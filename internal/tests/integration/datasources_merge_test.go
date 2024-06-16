@@ -21,6 +21,10 @@ func setupDatasourcesMergeTest(t *testing.T) (*fs.Dir, *httptest.Server) {
 	mux.HandleFunc("/foo.json", typeHandler("application/json", `{"foo": "bar"}`))
 	mux.HandleFunc("/1.env", typeHandler("application/x-env", "FOO=1\nBAR=2\n"))
 	mux.HandleFunc("/2.env", typeHandler("application/x-env", "FOO=3\n"))
+	// this file is served with a misleading content type and extension, for
+	// testing overriding the type
+	mux.HandleFunc("/wrongtype.txt", typeHandler("text/html", `{"foo": "bar"}`))
+	mux.HandleFunc("/params", paramHandler(t))
 
 	srv := httptest.NewServer(mux)
 	t.Cleanup(srv.Close)
@@ -65,4 +69,28 @@ func TestDatasources_Merge(t *testing.T) {
 {{ ds "merged" | toJSON }}`,
 	).run()
 	assertSuccess(t, o, e, err, `{"foo":"bar","isDefault":true,"isOverride":false,"other":true}`)
+
+	o, e, err = cmd(t,
+		"-d", "default="+tmpDir.Join("default.yml"),
+		"-d", "wrongtype="+srv.URL+"/wrongtype.txt?type=application/json",
+		"-d", "config=merge:wrongtype|default",
+		"-i", `{{ ds "config" | toJSON }}`,
+	).run()
+	assertSuccess(t, o, e, err, `{"foo":"bar","isDefault":true,"isOverride":false,"other":true}`)
+
+	o, e, err = cmd(t,
+		"-d", "default="+tmpDir.Join("default.yml"),
+		"-d", "wrongtype="+srv.URL+"/wrongtype.txt?_=application/json",
+		"-d", "config=merge:wrongtype|default",
+		"-i", `{{ ds "config" | toJSON }}`,
+	).withEnv("GOMPLATE_TYPE_PARAM", "_").run()
+	assertSuccess(t, o, e, err, `{"foo":"bar","isDefault":true,"isOverride":false,"other":true}`)
+
+	o, e, err = cmd(t,
+		"-c", "default="+tmpDir.Join("default.yml"),
+		"-c", "params="+srv.URL+"/params?foo=bar&type=http&_type=application/json",
+		"-c", "merged=merge:params|default",
+		"-i", `{{ .merged | toJSON }}`,
+	).withEnv("GOMPLATE_TYPE_PARAM", "_type").run()
+	assertSuccess(t, o, e, err, `{"foo":["bar"],"isDefault":true,"isOverride":false,"other":true,"type":["http"]}`)
 }

@@ -95,6 +95,18 @@ func typeHandler(t, body string) func(http.ResponseWriter, *http.Request) {
 	}
 }
 
+func paramHandler(t *testing.T) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		// just returns params as JSON
+		w.Header().Set("Content-Type", "application/json")
+
+		enc := json.NewEncoder(w)
+		if err := enc.Encode(r.URL.Query()); err != nil {
+			t.Fatalf("error encoding: %v", err)
+		}
+	}
+}
+
 // freeport - find a free TCP port for immediate use. No guarantees!
 func freeport(t *testing.T) (port int, addr string) {
 	l, err := net.ListenTCP("tcp", &net.TCPAddr{IP: net.ParseIP("127.0.0.1")})

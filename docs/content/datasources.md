@@ -127,6 +127,13 @@ $ gomplate -d data=file:///tmp/data.txt?type=application/json -i '{{ (ds "data")
 bar
 ```
 
+If you need to provide a query parameter named `type` to the data source, set the `GOMPLATE_TYPE_PARAM` environment variable to another value:
+
+```console
+$ GOMPLATE_TYPE_PARAM=content-type gomplate -d data=https://example.com/mydata?content-type=application/json -i '{{ (ds "data").foo }}'
+bar
+```
+
 ### The `.env` file format
 
 Many applications and frameworks support the use of a ".env" file for providing environment variables. It can also be considerd a simple key/value file format, and as such can be used as a datasource in gomplate.
