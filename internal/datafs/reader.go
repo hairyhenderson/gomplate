@@ -8,6 +8,7 @@ import (
 	"io/fs"
 	"net/http"
 	"net/url"
+	"os"
 	"runtime"
 	"strings"
 
@@ -15,6 +16,17 @@ import (
 	"github.com/hairyhenderson/gomplate/v4/internal/config"
 	"github.com/hairyhenderson/gomplate/v4/internal/iohelpers"
 )
+
+// typeOverrideParam gets the query parameter used to override the content type
+// used to parse a given datasource - use GOMPLATE_TYPE_PARAM to use a different
+// parameter name.
+func typeOverrideParam() string {
+	if v := os.Getenv("GOMPLATE_TYPE_PARAM"); v != "" {
+		return v
+	}
+
+	return "type"
+}
 
 // DataSourceReader reads content from a datasource
 type DataSourceReader interface {
@@ -91,7 +103,25 @@ func (d *dsReader) ReadSource(ctx context.Context, alias string, args ...string)
 	return fc.contentType, fc.b, nil
 }
 
+func removeQueryParam(u *url.URL, key string) *url.URL {
+	q := u.Query()
+	q.Del(key)
+	u.RawQuery = q.Encode()
+	return u
+}
+
 func (d *dsReader) readFileContent(ctx context.Context, u *url.URL, hdr http.Header) (*content, error) {
+	// possible type hint in the type query param. Contrary to spec, we allow
+	// unescaped '+' characters to make it simpler to provide types like
+	// "application/array+json"
+	overrideType := typeOverrideParam()
+	mimeType := u.Query().Get(overrideType)
+	mimeType = strings.ReplaceAll(mimeType, " ", "+")
+
+	// now that we have the hint, remove it from the URL - we can't have it
+	// leaking into the filesystem layer
+	u = removeQueryParam(u, overrideType)
+
 	fsys, err := FSysForPath(ctx, u.String())
 	if err != nil {
 		return nil, fmt.Errorf("fsys for path %v: %w", u, err)
@@ -119,12 +149,6 @@ func (d *dsReader) readFileContent(ctx context.Context, u *url.URL, hdr http.Hea
 	if err != nil {
 		return nil, fmt.Errorf("stat (url: %q, name: %q): %w", u, fname, err)
 	}
-
-	// possible type hint in the type query param. Contrary to spec, we allow
-	// unescaped '+' characters to make it simpler to provide types like
-	// "application/array+json"
-	mimeType := u.Query().Get("type")
-	mimeType = strings.ReplaceAll(mimeType, " ", "+")
 
 	if mimeType == "" {
 		mimeType = fsimpl.ContentType(fi)

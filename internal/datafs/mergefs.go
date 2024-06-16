@@ -118,6 +118,17 @@ func (f *mergeFS) Open(name string) (fs.File, error) {
 
 		u := subSource.URL
 
+		// possible type hint in the type query param. Contrary to spec, we allow
+		// unescaped '+' characters to make it simpler to provide types like
+		// "application/array+json"
+		overrideType := typeOverrideParam()
+		mimeType := u.Query().Get(overrideType)
+		mimeType = strings.ReplaceAll(mimeType, " ", "+")
+
+		// now that we have the hint, remove it from the URL - we can't have it
+		// leaking into the filesystem layer
+		u = removeQueryParam(u, overrideType)
+
 		fsURL, base := SplitFSMuxURL(u)
 
 		// need to support absolute paths on local filesystem too
@@ -152,12 +163,6 @@ func (f *mergeFS) Open(name string) (fs.File, error) {
 		if fi.ModTime().After(modTime) {
 			modTime = fi.ModTime()
 		}
-
-		// possible type hint in the type query param. Contrary to spec, we allow
-		// unescaped '+' characters to make it simpler to provide types like
-		// "application/array+json"
-		mimeType := u.Query().Get("type")
-		mimeType = strings.ReplaceAll(mimeType, " ", "+")
 
 		if mimeType == "" {
 			mimeType = fsimpl.ContentType(fi)

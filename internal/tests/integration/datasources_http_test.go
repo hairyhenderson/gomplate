@@ -15,6 +15,7 @@ func setupDatasourcesHTTPTest(t *testing.T) *httptest.Server {
 	mux.HandleFunc("/actually.json", typeHandler("", `{"value": "json"}`))
 	mux.HandleFunc("/bogus.csv", typeHandler("text/plain", `{"value": "json"}`))
 	mux.HandleFunc("/list", typeHandler("application/array+json", `[1, 2, 3, 4, 5]`))
+	mux.HandleFunc("/params", paramHandler(t))
 
 	srv := httptest.NewServer(mux)
 	t.Cleanup(srv.Close)
@@ -68,6 +69,12 @@ func TestDatasources_HTTP_TypeOverridePrecedence(t *testing.T) {
 		"-c", ".="+srv.URL+"/list?type=application/array+json",
 		"-i", "{{ range . }}{{ . }}{{ end }}").run()
 	assertSuccess(t, o, e, err, "12345")
+
+	o, e, err = cmd(t,
+		"-c", ".="+srv.URL+"/params?foo=bar&type=http&_type=application/json",
+		"-i", "{{ . | toJSON }}").
+		withEnv("GOMPLATE_TYPE_PARAM", "_type").run()
+	assertSuccess(t, o, e, err, `{"foo":["bar"],"type":["http"]}`)
 }
 
 func TestDatasources_HTTP_AppendQueryAfterSubPaths(t *testing.T) {
