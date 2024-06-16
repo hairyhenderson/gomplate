@@ -115,23 +115,39 @@ func (f *StringFuncs) oldTrim(s, cutset string) string {
 func (StringFuncs) Abbrev(args ...interface{}) (string, error) {
 	str := ""
 	offset := 0
-	maxWidth := 0
-	if len(args) < 2 {
-		return "", fmt.Errorf("abbrev requires a 'maxWidth' and 'input' argument")
-	}
-	if len(args) == 2 {
-		maxWidth = conv.ToInt(args[0])
+	width := 0
+
+	var err error
+
+	switch len(args) {
+	case 2:
+		width, err = conv.ToInt(args[0])
+		if err != nil {
+			return "", fmt.Errorf("width must be an integer: %w", err)
+		}
+
 		str = conv.ToString(args[1])
-	}
-	if len(args) == 3 {
-		offset = conv.ToInt(args[0])
-		maxWidth = conv.ToInt(args[1])
+	case 3:
+		offset, err = conv.ToInt(args[0])
+		if err != nil {
+			return "", fmt.Errorf("offset must be an integer: %w", err)
+		}
+
+		width, err = conv.ToInt(args[1])
+		if err != nil {
+			return "", fmt.Errorf("width must be an integer: %w", err)
+		}
+
 		str = conv.ToString(args[2])
+	default:
+		return "", fmt.Errorf("abbrev requires a 'width' and 'input' argument")
 	}
-	if len(str) <= maxWidth {
+
+	if len(str) <= width {
 		return str, nil
 	}
-	return goutils.AbbreviateFull(str, offset, maxWidth)
+
+	return goutils.AbbreviateFull(str, offset, width)
 }
 
 // ReplaceAll -
@@ -342,13 +358,25 @@ func (StringFuncs) WordWrap(args ...interface{}) (string, error) {
 		case string:
 			opts.LBSeq = a
 		default:
-			opts.Width = uint(conv.ToInt(a))
+			n, err := conv.ToInt(args[0])
+			if err != nil {
+				return "", fmt.Errorf("expected width to be a number: %w", err)
+			}
+
+			opts.Width = uint(n)
 		}
 	}
+
 	if len(args) == 3 {
-		opts.Width = uint(conv.ToInt(args[0]))
+		n, err := conv.ToInt(args[0])
+		if err != nil {
+			return "", fmt.Errorf("expected width to be a number: %w", err)
+		}
+
+		opts.Width = uint(n)
 		opts.LBSeq = conv.ToString(args[1])
 	}
+
 	return gompstrings.WordWrap(in, opts), nil
 }
 

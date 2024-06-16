@@ -49,8 +49,16 @@ func (CryptoFuncs) PBKDF2(password, salt, iter, keylen interface{}, hashFunc ...
 	}
 	pw := toBytes(password)
 	s := toBytes(salt)
-	i := conv.ToInt(iter)
-	kl := conv.ToInt(keylen)
+
+	i, err := conv.ToInt(iter)
+	if err != nil {
+		return "", fmt.Errorf("iter must be an integer: %w", err)
+	}
+
+	kl, err := conv.ToInt(keylen)
+	if err != nil {
+		return "", fmt.Errorf("keylen must be an integer: %w", err)
+	}
 
 	dk, err := crypto.PBKDF2(pw, s, i, kl, h)
 	return fmt.Sprintf("%02x", dk), err
@@ -167,17 +175,24 @@ func (CryptoFuncs) SHA512_256Bytes(input interface{}) ([]byte, error) {
 // Bcrypt -
 func (CryptoFuncs) Bcrypt(args ...interface{}) (string, error) {
 	input := ""
+
+	var err error
 	cost := bcrypt.DefaultCost
-	if len(args) == 0 {
-		return "", fmt.Errorf("bcrypt requires at least an 'input' value")
-	}
-	if len(args) == 1 {
+
+	switch len(args) {
+	case 1:
 		input = conv.ToString(args[0])
-	}
-	if len(args) == 2 {
-		cost = conv.ToInt(args[0])
+	case 2:
+		cost, err = conv.ToInt(args[0])
+		if err != nil {
+			return "", fmt.Errorf("bcrypt cost must be an integer: %w", err)
+		}
+
 		input = conv.ToString(args[1])
+	default:
+		return "", fmt.Errorf("wrong number of args: want 1 or 2, got %d", len(args))
 	}
+
 	hash, err := bcrypt.GenerateFromPassword([]byte(input), cost)
 	return string(hash), err
 }
@@ -215,15 +230,21 @@ func (f *CryptoFuncs) RSADecryptBytes(key string, in []byte) ([]byte, error) {
 // RSAGenerateKey -
 // Experimental!
 func (f *CryptoFuncs) RSAGenerateKey(args ...interface{}) (string, error) {
-	if err := checkExperimental(f.ctx); err != nil {
+	err := checkExperimental(f.ctx)
+	if err != nil {
 		return "", err
 	}
+
 	bits := 4096
 	if len(args) == 1 {
-		bits = conv.ToInt(args[0])
+		bits, err = conv.ToInt(args[0])
+		if err != nil {
+			return "", fmt.Errorf("bits must be an integer: %w", err)
+		}
 	} else if len(args) > 1 {
 		return "", fmt.Errorf("wrong number of args: want 0 or 1, got %d", len(args))
 	}
+
 	out, err := crypto.RSAGenerateKey(bits)
 	return string(out), err
 }
@@ -370,7 +391,11 @@ func parseAESArgs(key string, args ...interface{}) ([]byte, []byte, error) {
 	case 1:
 		msg = toBytes(args[0])
 	case 2:
-		keyBits = conv.ToInt(args[0])
+		var err error
+		keyBits, err = conv.ToInt(args[0])
+		if err != nil {
+			return nil, nil, fmt.Errorf("keyBits must be an integer: %w", err)
+		}
 		msg = toBytes(args[1])
 	default:
 		return nil, nil, fmt.Errorf("wrong number of args: want 2 or 3, got %d", len(args))

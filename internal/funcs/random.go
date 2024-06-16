@@ -26,25 +26,45 @@ type RandomFuncs struct {
 
 // ASCII -
 func (RandomFuncs) ASCII(count interface{}) (string, error) {
-	return random.StringBounds(conv.ToInt(count), ' ', '~')
+	n, err := conv.ToInt(count)
+	if err != nil {
+		return "", fmt.Errorf("count must be an integer: %w", err)
+	}
+
+	return random.StringBounds(n, ' ', '~')
 }
 
 // Alpha -
 func (RandomFuncs) Alpha(count interface{}) (string, error) {
-	return random.StringRE(conv.ToInt(count), "[[:alpha:]]")
+	n, err := conv.ToInt(count)
+	if err != nil {
+		return "", fmt.Errorf("count must be an integer: %w", err)
+	}
+
+	return random.StringRE(n, "[[:alpha:]]")
 }
 
 // AlphaNum -
 func (RandomFuncs) AlphaNum(count interface{}) (string, error) {
-	return random.StringRE(conv.ToInt(count), "[[:alnum:]]")
+	n, err := conv.ToInt(count)
+	if err != nil {
+		return "", fmt.Errorf("count must be an integer: %w", err)
+	}
+
+	return random.StringRE(n, "[[:alnum:]]")
 }
 
 // String -
-func (RandomFuncs) String(count interface{}, args ...interface{}) (s string, err error) {
-	c := conv.ToInt(count)
+func (RandomFuncs) String(count interface{}, args ...interface{}) (string, error) {
+	c, err := conv.ToInt(count)
+	if err != nil {
+		return "", fmt.Errorf("count must be an integer: %w", err)
+	}
+
 	if c == 0 {
 		return "", fmt.Errorf("count must be greater than 0")
 	}
+
 	m := ""
 	switch len(args) {
 	case 0:
@@ -59,8 +79,17 @@ func (RandomFuncs) String(count interface{}, args ...interface{}) (s string, err
 				return "", err
 			}
 		} else {
-			l = rune(conv.ToInt(args[0]))
-			u = rune(conv.ToInt(args[1]))
+			nl, err := conv.ToInt(args[0])
+			if err != nil {
+				return "", fmt.Errorf("lower must be an integer: %w", err)
+			}
+
+			nu, err := conv.ToInt(args[1])
+			if err != nil {
+				return "", fmt.Errorf("upper must be an integer: %w", err)
+			}
+
+			l, u = rune(nl), rune(nu)
 		}
 
 		return random.StringBounds(c, l, u)
@@ -114,14 +143,28 @@ func (RandomFuncs) Item(items interface{}) (interface{}, error) {
 func (RandomFuncs) Number(args ...interface{}) (int64, error) {
 	var min, max int64
 	min, max = 0, 100
+
+	var err error
+
 	switch len(args) {
 	case 0:
 	case 1:
-		max = conv.ToInt64(args[0])
+		max, err = conv.ToInt64(args[0])
+		if err != nil {
+			return 0, fmt.Errorf("max must be a number: %w", err)
+		}
 	case 2:
-		min = conv.ToInt64(args[0])
-		max = conv.ToInt64(args[1])
+		min, err = conv.ToInt64(args[0])
+		if err != nil {
+			return 0, fmt.Errorf("min must be a number: %w", err)
+		}
+
+		max, err = conv.ToInt64(args[1])
+		if err != nil {
+			return 0, fmt.Errorf("max must be a number: %w", err)
+		}
 	}
+
 	return random.Number(min, max)
 }
 
@@ -129,13 +172,27 @@ func (RandomFuncs) Number(args ...interface{}) (int64, error) {
 func (RandomFuncs) Float(args ...interface{}) (float64, error) {
 	var min, max float64
 	min, max = 0, 1.0
+
+	var err error
+
 	switch len(args) {
 	case 0:
 	case 1:
-		max = conv.ToFloat64(args[0])
+		max, err = conv.ToFloat64(args[0])
+		if err != nil {
+			return 0, fmt.Errorf("max must be a number: %w", err)
+		}
 	case 2:
-		min = conv.ToFloat64(args[0])
-		max = conv.ToFloat64(args[1])
+		min, err = conv.ToFloat64(args[0])
+		if err != nil {
+			return 0, fmt.Errorf("min must be a number: %w", err)
+		}
+
+		max, err = conv.ToFloat64(args[1])
+		if err != nil {
+			return 0, fmt.Errorf("max must be a number: %w", err)
+		}
 	}
+
 	return random.Float(min, max)
 }

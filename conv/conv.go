@@ -40,7 +40,9 @@ func ToBool(in interface{}) bool {
 		case "1", "t", "true", "yes":
 			return true
 		default:
-			return strToFloat64(str) == 1
+			// ignore error here, as we'll just return false
+			f, _ := strToFloat64(str)
+			return f == 1
 		}
 	}
 
@@ -144,6 +146,7 @@ func ToString(in interface{}) string {
 	if ok {
 		in = v
 	}
+
 	return fmt.Sprint(in)
 }
 
@@ -181,7 +184,7 @@ func MustAtoi(s string) int {
 }
 
 // ToInt64 - convert input to an int64, if convertible. Otherwise, returns 0.
-func ToInt64(v interface{}) int64 {
+func ToInt64(v interface{}) (int64, error) {
 	if str, ok := v.(string); ok {
 		return strToInt64(str)
 	}
@@ -189,59 +192,78 @@ func ToInt64(v interface{}) int64 {
 	val := reflect.Indirect(reflect.ValueOf(v))
 	switch val.Kind() {
 	case reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64, reflect.Int:
-		return val.Int()
+		return val.Int(), nil
 	case reflect.Uint8, reflect.Uint16, reflect.Uint32:
-		return int64(val.Uint())
+		return int64(val.Uint()), nil
 	case reflect.Uint, reflect.Uint64:
 		tv := val.Uint()
+
 		// this can overflow and give -1, but IMO this is better than
 		// returning maxint64
-		return int64(tv)
+		return int64(tv), nil
 	case reflect.Float32, reflect.Float64:
-		return int64(val.Float())
+		return int64(val.Float()), nil
 	case reflect.Bool:
 		if val.Bool() {
-			return 1
+			return 1, nil
 		}
-		return 0
+
+		return 0, nil
 	default:
-		return 0
+		return 0, fmt.Errorf("could not convert %v to int64", v)
 	}
 }
 
 // ToInt -
-func ToInt(in interface{}) int {
-	// Protect against CWE-190 and CWE-681
-	// https://cwe.mitre.org/data/definitions/190.html
-	// https://cwe.mitre.org/data/definitions/681.html
-	if i := ToInt64(in); i <= math.MaxInt || i >= math.MinInt {
-		return int(i)
+func ToInt(in interface{}) (int, error) {
+	i, err := ToInt64(in)
+	if err != nil {
+		return 0, err
 	}
 
-	// we're probably on a 32-bit system, so we can't represent this number
-	return -1
+	// Bounds-checking to protect against CWE-190 and CWE-681
+	// https://cwe.mitre.org/data/definitions/190.html
+	// https://cwe.mitre.org/data/definitions/681.html
+	if i >= math.MinInt && i <= math.MaxInt {
+		return int(i), nil
+	}
+
+	// maybe we're on a 32-bit system, so we can't represent this number
+	return 0, fmt.Errorf("could not convert %v to int", in)
 }
 
 // ToInt64s -
-func ToInt64s(in ...interface{}) []int64 {
+func ToInt64s(in ...interface{}) ([]int64, error) {
 	out := make([]int64, len(in))
 	for i, v := range in {
-		out[i] = ToInt64(v)
+		n, err := ToInt64(v)
+		if err != nil {
+			return nil, err
+		}
+
+		out[i] = n
 	}
-	return out
+
+	return out, nil
 }
 
 // ToInts -
-func ToInts(in ...interface{}) []int {
+func ToInts(in ...interface{}) ([]int, error) {
 	out := make([]int, len(in))
 	for i, v := range in {
-		out[i] = ToInt(v)
+		n, err := ToInt(v)
+		if err != nil {
+			return nil, err
+		}
+
+		out[i] = n
 	}
-	return out
+
+	return out, nil
 }
 
-// ToFloat64 - convert input to a float64, if convertible. Otherwise, returns 0.
-func ToFloat64(v interface{}) float64 {
+// ToFloat64 - convert input to a float64, if convertible. Otherwise, errors.
+func ToFloat64(v interface{}) (float64, error) {
 	if str, ok := v.(string); ok {
 		return strToFloat64(str)
 	}
@@ -249,44 +271,48 @@ func ToFloat64(v interface{}) float64 {
 	val := reflect.Indirect(reflect.ValueOf(v))
 	switch val.Kind() {
 	case reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64, reflect.Int:
-		return float64(val.Int())
+		return float64(val.Int()), nil
 	case reflect.Uint8, reflect.Uint16, reflect.Uint32:
-		return float64(val.Uint())
+		return float64(val.Uint()), nil
 	case reflect.Uint, reflect.Uint64:
-		return float64(val.Uint())
+		return float64(val.Uint()), nil
 	case reflect.Float32, reflect.Float64:
-		return val.Float()
+		return val.Float(), nil
 	case reflect.Bool:
 		if val.Bool() {
-			return 1
+			return 1, nil
 		}
-		return 0
+		return 0, nil
 	default:
-		return 0
+		return 0, fmt.Errorf("could not convert %v to float64", v)
 	}
 }
 
-func strToInt64(str string) int64 {
+func strToInt64(str string) (int64, error) {
 	if strings.Contains(str, ",") {
 		str = strings.ReplaceAll(str, ",", "")
 	}
+
 	iv, err := strconv.ParseInt(str, 0, 64)
 	if err != nil {
 		// maybe it's a float?
 		var fv float64
 		fv, err = strconv.ParseFloat(str, 64)
 		if err != nil {
-			return 0
+			return 0, fmt.Errorf("could not convert %q to int64: %w", str, err)
 		}
+
 		return ToInt64(fv)
 	}
-	return iv
+
+	return iv, nil
 }
 
-func strToFloat64(str string) float64 {
+func strToFloat64(str string) (float64, error) {
 	if strings.Contains(str, ",") {
 		str = strings.ReplaceAll(str, ",", "")
 	}
+
 	// this is inefficient, but it's the only way I can think of to
 	// properly convert octal integers to floats
 	iv, err := strconv.ParseInt(str, 0, 64)
@@ -295,20 +321,27 @@ func strToFloat64(str string) float64 {
 		var fv float64
 		fv, err = strconv.ParseFloat(str, 64)
 		if err != nil {
-			return 0
+			return 0, fmt.Errorf("could not convert %q to float64: %w", str, err)
 		}
-		return fv
+
+		return fv, nil
 	}
-	return float64(iv)
+
+	return float64(iv), nil
 }
 
 // ToFloat64s -
-func ToFloat64s(in ...interface{}) []float64 {
+func ToFloat64s(in ...interface{}) ([]float64, error) {
 	out := make([]float64, len(in))
 	for i, v := range in {
-		out[i] = ToFloat64(v)
+		f, err := ToFloat64(v)
+		if err != nil {
+			return nil, err
+		}
+		out[i] = f
 	}
-	return out
+
+	return out, nil
 }
 
 // Dict is a convenience function that creates a map with string keys.
@@ -325,7 +358,9 @@ func Dict(v ...interface{}) (map[string]interface{}, error) {
 			dict[key] = ""
 			continue
 		}
+
 		dict[key] = v[i+1]
 	}
+
 	return dict, nil
 }

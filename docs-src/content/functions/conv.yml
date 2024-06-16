@@ -301,8 +301,9 @@ funcs:
 
       This function attempts to convert most types of input (strings, numbers,
       and booleans), but behaviour when the input can not be converted is
-      undefined and subject to change. Unconvertable inputs may result in
-      errors, or `0` or `-1`.
+      undefined and subject to change.
+
+      Unconvertable inputs will result in errors.
 
       Floating-point numbers (with decimal points) are truncated.
     arguments:
@@ -326,6 +327,8 @@ funcs:
       on platform). This is similar to [`conv.ToInt64`](#conv-toint64) on 64-bit
       platforms, but is useful when input to another function must be provided
       as an `int`.
+
+      Unconvertable inputs will result in errors.
 
       On 32-bit systems, given a number that is too large to fit in an `int`,
       the result is `-1`. This is done to protect against
@@ -352,6 +355,8 @@ funcs:
     description: |
       Converts the inputs to an array of `int64`s.
 
+      Unconvertable inputs will result in errors.
+
       This delegates to [`conv.ToInt64`](#conv-toint64) for each input argument.
     arguments:
       - name: in...
@@ -365,6 +370,8 @@ funcs:
     released: v2.2.0
     description: |
       Converts the inputs to an array of `int`s.
+
+      Unconvertable inputs will result in errors.
 
       This delegates to [`conv.ToInt`](#conv-toint) for each input argument.
     arguments:
@@ -382,8 +389,9 @@ funcs:
 
       This function attempts to convert most types of input (strings, numbers,
       and booleans), but behaviour when the input can not be converted is
-      undefined and subject to change. Unconvertable inputs may result in
-      errors, or `0` or `-1`.
+      undefined and subject to change.
+      
+      Unconvertable inputs will result in errors.
     arguments:
       - name: in
         required: true
@@ -398,6 +406,8 @@ funcs:
     released: v2.2.0
     description: |
       Converts the inputs to an array of `float64`s.
+
+      Unconvertable inputs will result in errors.
 
       This delegates to [`conv.ToFloat64`](#conv-tofloat64) for each input argument.
     arguments:

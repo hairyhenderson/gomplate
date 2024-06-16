@@ -153,12 +153,20 @@ func (CollFuncs) Flatten(args ...interface{}) ([]interface{}, error) {
 	if len(args) == 0 || len(args) > 2 {
 		return nil, fmt.Errorf("wrong number of args: wanted 1 or 2, got %d", len(args))
 	}
+
 	list := args[0]
+
+	var err error
 	depth := -1
 	if len(args) == 2 {
-		depth = conv.ToInt(args[0])
+		depth, err = conv.ToInt(list)
+		if err != nil {
+			return nil, fmt.Errorf("wrong depth type: must be int, got %T (%+v)", list, list)
+		}
+
 		list = args[1]
 	}
+
 	return coll.Flatten(list, depth)
 }
 

@@ -125,88 +125,247 @@ func TestMustParseFloat(t *testing.T) {
 }
 
 func TestToInt64(t *testing.T) {
-	assert.Equal(t, int64(1), ToInt64(1))
-	assert.Equal(t, int64(1), ToInt64(int32(1)))
-	assert.Equal(t, int64(1), ToInt64(int64(1)))
-	assert.Equal(t, int64(1), ToInt64(float32(1)))
-	assert.Equal(t, int64(1), ToInt64(float64(1)))
-	assert.Equal(t, int64(42), ToInt64(42))
-	assert.Equal(t, int64(42), ToInt64("42.0"))
-	assert.Equal(t, int64(3), ToInt64("3.5"))
-	assert.Equal(t, int64(-1), ToInt64(uint64(math.MaxUint64)))
-	assert.Equal(t, int64(0xFF), ToInt64(uint8(math.MaxUint8)))
+	actual, err := ToInt64(1)
+	require.NoError(t, err)
+	assert.Equal(t, int64(1), actual)
 
-	assert.Equal(t, int64(0), ToInt64(nil))
-	assert.Equal(t, int64(0), ToInt64(false))
-	assert.Equal(t, int64(1), ToInt64(true))
-	assert.Equal(t, int64(0), ToInt64(""))
-	assert.Equal(t, int64(0), ToInt64("foo"))
-	assert.Equal(t, int64(0xFFFF), ToInt64("0xFFFF"))
-	assert.Equal(t, int64(8), ToInt64("010"))
-	assert.Equal(t, int64(4096), ToInt64("4,096"))
-	assert.Equal(t, int64(-4096), ToInt64("-4,096.00"))
+	actual, err = ToInt64(int32(1))
+	require.NoError(t, err)
+	assert.Equal(t, int64(1), actual)
+
+	actual, err = ToInt64(int64(1))
+	require.NoError(t, err)
+	assert.Equal(t, int64(1), actual)
+
+	actual, err = ToInt64(float32(1))
+	require.NoError(t, err)
+	assert.Equal(t, int64(1), actual)
+
+	actual, err = ToInt64(float64(1))
+	require.NoError(t, err)
+	assert.Equal(t, int64(1), actual)
+
+	actual, err = ToInt64(42)
+	require.NoError(t, err)
+	assert.Equal(t, int64(42), actual)
+
+	actual, err = ToInt64("42.0")
+	require.NoError(t, err)
+	assert.Equal(t, int64(42), actual)
+
+	actual, err = ToInt64("3.5")
+	require.NoError(t, err)
+	assert.Equal(t, int64(3), actual)
+
+	actual, err = ToInt64(uint64(math.MaxUint64))
+	require.NoError(t, err)
+	assert.Equal(t, int64(-1), actual)
+
+	actual, err = ToInt64(uint8(math.MaxUint8))
+	require.NoError(t, err)
+	assert.Equal(t, int64(0xFF), actual)
+
+	actual, err = ToInt64(false)
+	require.NoError(t, err)
+	assert.Equal(t, int64(0), actual)
+
+	actual, err = ToInt64(true)
+	require.NoError(t, err)
+	assert.Equal(t, int64(1), actual)
+
+	actual, err = ToInt64("0xFFFF")
+	require.NoError(t, err)
+	assert.Equal(t, int64(0xFFFF), actual)
+
+	actual, err = ToInt64("010")
+	require.NoError(t, err)
+	assert.Equal(t, int64(8), actual)
+
+	actual, err = ToInt64("4,096")
+	require.NoError(t, err)
+	assert.Equal(t, int64(4096), actual)
+
+	actual, err = ToInt64("-4,096.00")
+	require.NoError(t, err)
+	assert.Equal(t, int64(-4096), actual)
+
+	t.Run("error cases", func(t *testing.T) {
+		_, err = ToInt64(nil)
+		require.Error(t, err)
+
+		_, err = ToInt64("")
+		require.Error(t, err)
+
+		_, err = ToInt64("foo")
+		require.Error(t, err)
+	})
 }
 
 func TestToInt(t *testing.T) {
-	assert.Equal(t, 1, ToInt(1))
-	assert.Equal(t, 1, ToInt(int32(1)))
-	assert.Equal(t, 1, ToInt(int64(1)))
-	assert.Equal(t, 1, ToInt(float32(1)))
-	assert.Equal(t, 1, ToInt(float64(1)))
-	assert.Equal(t, 42, ToInt(42))
-	assert.Equal(t, -1, ToInt(uint64(math.MaxUint64)))
-	assert.Equal(t, 0xFF, ToInt(uint8(math.MaxUint8)))
+	actual, err := ToInt(1)
+	require.NoError(t, err)
+	assert.Equal(t, 1, actual)
 
-	assert.Equal(t, 0, ToInt(nil))
-	assert.Equal(t, 0, ToInt(false))
-	assert.Equal(t, 1, ToInt(true))
-	assert.Equal(t, 0, ToInt(""))
-	assert.Equal(t, 0, ToInt("foo"))
-	assert.Equal(t, 0xFFFF, ToInt("0xFFFF"))
-	assert.Equal(t, 8, ToInt("010"))
-	assert.Equal(t, 4096, ToInt("4,096"))
-	assert.Equal(t, -4096, ToInt("-4,096.00"))
+	actual, err = ToInt(int32(1))
+	require.NoError(t, err)
+	assert.Equal(t, 1, actual)
+
+	actual, err = ToInt(int64(1))
+	require.NoError(t, err)
+	assert.Equal(t, 1, actual)
+
+	actual, err = ToInt(float32(1))
+	require.NoError(t, err)
+	assert.Equal(t, 1, actual)
+
+	actual, err = ToInt(float64(1))
+	require.NoError(t, err)
+	assert.Equal(t, 1, actual)
+
+	actual, err = ToInt(42)
+	require.NoError(t, err)
+	assert.Equal(t, 42, actual)
+
+	actual, err = ToInt(uint64(math.MaxUint64))
+	require.NoError(t, err)
+	assert.Equal(t, -1, actual)
+
+	actual, err = ToInt(uint8(math.MaxUint8))
+	require.NoError(t, err)
+	assert.Equal(t, 0xFF, actual)
+
+	actual, err = ToInt(false)
+	require.NoError(t, err)
+	assert.Equal(t, 0, actual)
+
+	actual, err = ToInt(true)
+	require.NoError(t, err)
+	assert.Equal(t, 1, actual)
+
+	actual, err = ToInt("0xFFFF")
+	require.NoError(t, err)
+	assert.Equal(t, 0xFFFF, actual)
+
+	actual, err = ToInt("010")
+	require.NoError(t, err)
+	assert.Equal(t, 8, actual)
+
+	actual, err = ToInt("4,096")
+	require.NoError(t, err)
+	assert.Equal(t, 4096, actual)
+
+	actual, err = ToInt("-4,096.00")
+	require.NoError(t, err)
+	assert.Equal(t, -4096, actual)
+
+	t.Run("error cases", func(t *testing.T) {
+		_, err = ToInt(nil)
+		require.Error(t, err)
+
+		_, err = ToInt("")
+		require.Error(t, err)
+
+		_, err = ToInt("foo")
+		require.Error(t, err)
+	})
 }
 
 func TestToInt64s(t *testing.T) {
-	assert.Equal(t, []int64{}, ToInt64s())
+	actual, err := ToInt64s()
+	require.NoError(t, err)
+	assert.Equal(t, []int64{}, actual)
 
-	assert.Equal(t, []int64{0}, ToInt64s(""))
-	assert.Equal(t, []int64{0}, ToInt64s("0"))
-	assert.Equal(t, []int64{42, 15}, ToInt64s("42", "15"))
-	assert.Equal(t, []int64{0, 0, 0, 1, 1, 2, 3, 5, 8, 13, -1000},
-		ToInt64s(nil, false, "", true, 1, 2.0, uint8(3), int64(5), float32(8), "13", "-1,000"))
+	actual, err = ToInt64s("0")
+	require.NoError(t, err)
+	assert.Equal(t, []int64{0}, actual)
+
+	actual, err = ToInt64s("42", "15")
+	require.NoError(t, err)
+	assert.Equal(t, []int64{42, 15}, actual)
+
+	actual, err = ToInt64s(false, true, 1, 2.0, uint8(3), int64(5), float32(8), "13", "-1,000")
+	require.NoError(t, err)
+	assert.Equal(t, []int64{0, 1, 1, 2, 3, 5, 8, 13, -1000}, actual)
+
+	t.Run("error cases", func(t *testing.T) {
+		_, err = ToInt64s("")
+		require.Error(t, err)
+
+		_, err = ToInt64s(nil, false, "", true, 1, 2.0, uint8(3), int64(5), float32(8), "13", "-1,000")
+		require.Error(t, err)
+	})
 }
 
 func TestToInts(t *testing.T) {
-	assert.Equal(t, []int{}, ToInts())
+	actual, err := ToInts()
+	require.NoError(t, err)
+	assert.Equal(t, []int{}, actual)
 
-	assert.Equal(t, []int{0}, ToInts(""))
-	assert.Equal(t, []int{0}, ToInts("0"))
-	assert.Equal(t, []int{42, 15}, ToInts("42", "15"))
-	assert.Equal(t, []int{0, 0, 0, 1, 1, 2, 3, 5, 8, 13, 42000},
-		ToInts(nil, false, "", true, 1, 2.0, uint8(3), int64(5), float32(8), "13", "42,000"))
+	actual, err = ToInts("0")
+	require.NoError(t, err)
+	assert.Equal(t, []int{0}, actual)
+
+	actual, err = ToInts("42", "15")
+	require.NoError(t, err)
+	assert.Equal(t, []int{42, 15}, actual)
+
+	actual, err = ToInts(false, true, 1, 2.0, uint8(3), int64(5), float32(8), "13", "42,000")
+	require.NoError(t, err)
+	assert.Equal(t, []int{0, 1, 1, 2, 3, 5, 8, 13, 42000}, actual)
+
+	t.Run("error cases", func(t *testing.T) {
+		_, err = ToInts("")
+		require.Error(t, err)
+
+		_, err = ToInts(nil, false, "", true, 1, 2.0, uint8(3), int64(5), float32(8), "13", "42,000")
+		require.Error(t, err)
+	})
 }
 
 func TestToFloat64(t *testing.T) {
-	z := []interface{}{0, 0.0, nil, false, float32(0), "", "0", "foo", int64(0), uint(0), "0x0", "00", "0,000"}
+	z := []interface{}{nil, "", "foo"}
 	for _, n := range z {
-		assert.Zero(t, ToFloat64(n))
+		_, err := ToFloat64(n)
+		require.Error(t, err)
 	}
-	assert.InEpsilon(t, 1.0, ToFloat64(true), 1e-12)
+
+	z = []interface{}{0, 0.0, false, float32(0), "0", int64(0), uint(0), "0x0", "00", "0,000"}
+	for _, n := range z {
+		actual, err := ToFloat64(n)
+		require.NoError(t, err)
+		assert.Zero(t, actual)
+	}
+
+	actual, err := ToFloat64(true)
+	require.NoError(t, err)
+	assert.InEpsilon(t, 1.0, actual, 1e-12)
+
 	z = []interface{}{42, 42.0, float32(42), "42", "42.0", uint8(42), "0x2A", "052"}
 	for _, n := range z {
-		assert.InEpsilon(t, 42.0, ToFloat64(n), 1e-12)
+		actual, err = ToFloat64(n)
+		require.NoError(t, err)
+		assert.InEpsilon(t, 42.0, actual, 1e-12)
 	}
+
 	z = []interface{}{1000.34, "1000.34", "1,000.34"}
 	for _, n := range z {
-		assert.InEpsilon(t, 1000.34, ToFloat64(n), 1e-12)
+		actual, err = ToFloat64(n)
+		require.NoError(t, err)
+		assert.InEpsilon(t, 1000.34, actual, 1e-12)
 	}
 }
 
 func TestToFloat64s(t *testing.T) {
-	assert.Equal(t, []float64{}, ToFloat64s())
-	assert.Equal(t, []float64{0, 1.0, 2.0, math.Pi, 4.0}, ToFloat64s(nil, true, "2", math.Pi, uint8(4)))
+	actual, err := ToFloat64s()
+	require.NoError(t, err)
+	assert.Equal(t, []float64{}, actual)
+
+	actual, err = ToFloat64s(true, "2", math.Pi, uint8(4))
+	require.NoError(t, err)
+	assert.Equal(t, []float64{1.0, 2.0, math.Pi, 4.0}, actual)
+
+	_, err = ToFloat64s(nil, true, "2", math.Pi, uint8(4))
+	require.Error(t, err)
 }
 
 type foo struct {
