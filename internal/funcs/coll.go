@@ -33,6 +33,8 @@ func CreateCollFuncs(ctx context.Context) map[string]interface{} {
 	f["jsonpath"] = ns.JSONPath
 	f["jq"] = ns.JQ
 	f["flatten"] = ns.Flatten
+	f["set"] = ns.Set
+	f["unset"] = ns.Unset
 	return f
 }
 
@@ -220,4 +222,18 @@ func (CollFuncs) Omit(args ...interface{}) (map[string]interface{}, error) {
 		return nil, err
 	}
 	return coll.Omit(m, keys...), nil
+}
+
+// Set -
+func (CollFuncs) Set(key string, value interface{}, m map[string]interface{}) (map[string]interface{}, error) {
+	m[key] = value
+
+	return m, nil
+}
+
+// Unset -
+func (CollFuncs) Unset(key string, m map[string]interface{}) (map[string]interface{}, error) {
+	delete(m, key)
+
+	return m, nil
 }
