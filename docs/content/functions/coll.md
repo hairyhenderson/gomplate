@@ -706,3 +706,78 @@ $ gomplate -i '{{ $data := dict "foo" 1 "bar" 2 "baz" 3 }}
 {{ coll.Omit $keys $data }}'
 map[bar:2]
 ```
+
+## `coll.Set`_(unreleased)_
+**Unreleased:** _This function is in development, and not yet available in released builds of gomplate._
+
+**Alias:** `set`
+
+Sets the given key to the given value in the given map.
+
+The map is modified in place, and the modified map is returned.
+
+### Usage
+
+```
+coll.Set key value map
+```
+```
+map | coll.Set key value
+```
+
+### Arguments
+
+| name | description |
+|------|-------------|
+| `key` | _(required)_ the key (string) to set |
+| `value` | _(required)_ the value to set |
+| `map` | _(required)_ the map to modify |
+
+### Examples
+
+```console
+$ gomplate -i '{{ $data := dict "foo" 1 "bar" 2 }}
+{{ coll.Set "baz" 3 $data }}'
+map[bar:2 baz:3 foo:1]
+```
+```console
+$ gomplate -i '{{ dict "foo" 1 | coll.Set "bar" 2 }}'
+map[bar:2 foo:1]
+```
+
+## `coll.Unset`_(unreleased)_
+**Unreleased:** _This function is in development, and not yet available in released builds of gomplate._
+
+**Alias:** `unset`
+
+Deletes the element with the specified key in the given map. If there is no such element, the map is returned unchanged.
+
+The map is modified in place, and the modified map is returned.
+
+### Usage
+
+```
+coll.Unset key map
+```
+```
+map | coll.Unset key
+```
+
+### Arguments
+
+| name | description |
+|------|-------------|
+| `key` | _(required)_ the key (string) to unset |
+| `map` | _(required)_ the map to modify |
+
+### Examples
+
+```console
+$ gomplate -i '{{ $data := dict "foo" 1 "bar" 2 "baz" 3 }}
+{{ coll.Unset "bar" $data }}'
+map[baz:3 foo:1]
+```
+```console
+$ gomplate -i '{{ dict "foo" 1 "bar" 2 | coll.Unset "bar" }}'
+map[foo:1]
+```

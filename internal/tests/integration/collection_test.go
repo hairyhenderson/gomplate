@@ -105,3 +105,13 @@ func TestColl_JQ(t *testing.T) {
 	inOutTest(t, `{{ coll.JQ ".foo" (dict "foo" 1 "bar" 2 "baz" 3) }}`, "1")
 	inOutTest(t, `{{ coll.Slice "one" 2 "three" 4.0 | jq ".[2]" }}`, `three`)
 }
+
+func TestColl_Set(t *testing.T) {
+	inOutTest(t, `{{ $dict := dict "foo" 1 }}{{ coll.Set "bar" 2 $dict }}`, "map[bar:2 foo:1]")
+	inOutTest(t, `{{ dict "foo" 1 | coll.Set "foo" 2 }}`, "map[foo:2]")
+}
+
+func TestColl_Unset(t *testing.T) {
+	inOutTest(t, `{{ $dict := dict "foo" 1 "bar" 2 }}{{ coll.Unset "bar" $dict }}`, "map[foo:1]")
+	inOutTest(t, `{{ dict "foo" 1 "bar" 2 | coll.Unset "foo" }}`, "map[bar:2]")
+}

@@ -216,3 +216,35 @@ func TestGoSlice(t *testing.T) {
 	assert.Equal(t, reflect.TypeOf([]string{}), out.Type())
 	assert.EqualValues(t, []string{"bar", "baz"}, out.Interface())
 }
+
+func TestCollFuncs_Set(t *testing.T) {
+	t.Parallel()
+
+	c := &CollFuncs{}
+
+	m := map[string]interface{}{"foo": "bar"}
+	out, err := c.Set("foo", "baz", m)
+	require.NoError(t, err)
+	assert.EqualValues(t, map[string]interface{}{"foo": "baz"}, out)
+
+	// m was modified so foo is now baz
+	out, err = c.Set("bar", "baz", m)
+	require.NoError(t, err)
+	assert.EqualValues(t, map[string]interface{}{"foo": "baz", "bar": "baz"}, out)
+}
+
+func TestCollFuncs_Unset(t *testing.T) {
+	t.Parallel()
+
+	c := &CollFuncs{}
+
+	m := map[string]interface{}{"foo": "bar"}
+	out, err := c.Unset("foo", m)
+	require.NoError(t, err)
+	assert.Empty(t, out)
+
+	// no-op
+	out, err = c.Unset("bar", m)
+	require.NoError(t, err)
+	assert.Empty(t, out)
+}

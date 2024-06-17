@@ -461,3 +461,52 @@ funcs:
         {{ $keys := coll.Slice "foo" "baz" }}
         {{ coll.Omit $keys $data }}'
         map[bar:2]
+  - name: coll.Set
+    # released: v4.0.0
+    alias: set
+    description: |
+      Sets the given key to the given value in the given map.
+
+      The map is modified in place, and the modified map is returned.
+    pipeline: true
+    arguments:
+      - name: key
+        required: true
+        description: the key (string) to set
+      - name: value
+        required: true
+        description: the value to set
+      - name: map
+        required: true
+        description: the map to modify
+    examples:
+      - |
+        $ gomplate -i '{{ $data := dict "foo" 1 "bar" 2 }}
+        {{ coll.Set "baz" 3 $data }}'
+        map[bar:2 baz:3 foo:1]
+      - |
+        $ gomplate -i '{{ dict "foo" 1 | coll.Set "bar" 2 }}'
+        map[bar:2 foo:1]
+  - name: coll.Unset
+    # released: v4.0.0
+    alias: unset
+    description: |
+      Deletes the element with the specified key in the given map. If there is no such element, the map is returned unchanged.
+
+      The map is modified in place, and the modified map is returned.
+    pipeline: true
+    arguments:
+      - name: key
+        required: true
+        description: the key (string) to unset
+      - name: map
+        required: true
+        description: the map to modify
+    examples:
+      - |
+        $ gomplate -i '{{ $data := dict "foo" 1 "bar" 2 "baz" 3 }}
+        {{ coll.Unset "bar" $data }}'
+        map[baz:3 foo:1]
+      - |
+        $ gomplate -i '{{ dict "foo" 1 "bar" 2 | coll.Unset "bar" }}'
+        map[foo:1]
