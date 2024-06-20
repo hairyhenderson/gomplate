@@ -11,6 +11,9 @@ var CelEnvOption = []cel.EnvOption{
 	arnToMap("aws.arnToMap"), arnToMap("arnToMap"),
 
 	// collSliceGen,
+	collListFirst,
+	collListLast,
+	
 	collHasGen,
 	collDictGen,
 	collKeysGen,

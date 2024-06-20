@@ -80,6 +80,24 @@ func unstructure(o any) interface{} {
 	return out
 }
 
+func TestCelCollection(t *testing.T) {
+	runTests(t, []Test{
+		{nil, "[1,2,3].first()", "1"},
+		{nil, "['a', 'b', 'c'].first()", "a"},
+		{nil, "[].first()", ""},
+		{map[string]any{"my_list": []int{5, 6, 7}}, "my_list.first()", "5"},
+		{map[string]any{"my_list": []Person{{Name: "John"}, {Name: "Bob"}}}, "my_list.first().name", "John"},
+	})
+
+	runTests(t, []Test{
+		{nil, "[1,2,3].last()", "3"},
+		{nil, "['a', 'b', 'c'].last()", "c"},
+		{nil, "[].last()", ""},
+		{map[string]any{"my_list": []int{5, 6, 7}}, "my_list.last()", "7"},
+		{map[string]any{"my_list": []Person{{Name: "John"}, {Name: "Bob"}}}, "my_list.last().name", "Bob"},
+	})
+}
+
 func TestCelAws(t *testing.T) {
 	runTests(t, []Test{
 		{nil, "aws.arnToMap('arn:aws:sns:eu-west-1:123:MMS-Topic').account", "123"},
