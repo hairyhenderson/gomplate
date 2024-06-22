@@ -40,6 +40,10 @@ require (
 // is merged
 require github.com/hairyhenderson/yaml v0.0.0-20220618171115-2d35fca545ce
 
+// TODO: remove and upgrade after https://github.com/hack-pad/hackpadfs/pulls/44
+// is merged
+replace github.com/hack-pad/hackpadfs => github.com/hairyhenderson/hackpadfs v0.0.0-20240622195900-eb3757876ab3
+
 require (
 	cloud.google.com/go v0.115.0 // indirect
 	cloud.google.com/go/auth v0.5.1 // indirect
