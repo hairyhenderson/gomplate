@@ -133,7 +133,7 @@ funcs:
           "v=spf1 -all"
         ]
   - name: net.ParseAddr
-    # released: v4.0.0
+    released: v4.0.0
     description: |
       Parse the given string as an IP address (a
       [`netip.Addr`](https://pkg.go.dev/net/netip#Addr)).
@@ -174,7 +174,7 @@ funcs:
           {{ $ip.Prefix 12 }}'
         93.176.0.0/12
   - name: net.ParsePrefix
-    # released: v4.0.0
+    released: v4.0.0
     description: |
       Parse the given string as an IP address prefix (CIDR) representing an IP
       network (a [`netip.Prefix`](https://pkg.go.dev/net/netip#Prefix)).
@@ -228,7 +228,7 @@ funcs:
         93.176.0.0-93.191.255.255
   - name: net.ParseRange
     experimental: true
-    # released: v4.0.0
+    released: v4.0.0
     description: |
       Parse the given string as an inclusive range of IP addresses from the same
       address family (a [`netipx.IPRange`](https://pkg.go.dev/go4.org/netipx#IPRange)

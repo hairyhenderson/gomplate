@@ -245,8 +245,7 @@ aztsmrD79OXXnhUlURI=
 -----END PUBLIC KEY-----
 ```
 
-## `crypto.Ed25519GenerateKey`_(unreleased)_ _(experimental)_
-**Unreleased:** _This function is in development, and not yet available in released builds of gomplate._
+## `crypto.Ed25519GenerateKey` _(experimental)_
 **Experimental:** This function is [_experimental_][experimental] and may be enabled with the [`--experimental`][experimental] flag.
 
 [experimental]: ../config/#experimental
@@ -254,6 +253,7 @@ aztsmrD79OXXnhUlURI=
 Generate a new Ed25519 Private Key and output in
 PEM-encoded PKCS#8 ASN.1 DER form.
 
+_Added in gomplate [v4.0.0](https://github.com/hairyhenderson/gomplate/releases/tag/v4.0.0)_
 ### Usage
 
 ```
@@ -269,8 +269,7 @@ $ gomplate -i '{{ crypto.Ed25519GenerateKey }}'
 ...
 ```
 
-## `crypto.Ed25519GenerateKeyFromSeed`_(unreleased)_ _(experimental)_
-**Unreleased:** _This function is in development, and not yet available in released builds of gomplate._
+## `crypto.Ed25519GenerateKeyFromSeed` _(experimental)_
 **Experimental:** This function is [_experimental_][experimental] and may be enabled with the [`--experimental`][experimental] flag.
 
 [experimental]: ../config/#experimental
@@ -278,6 +277,7 @@ $ gomplate -i '{{ crypto.Ed25519GenerateKey }}'
 Generate a new Ed25519 Private Key from a random seed and output in
 PEM-encoded PKCS#8 ASN.1 DER form.
 
+_Added in gomplate [v4.0.0](https://github.com/hairyhenderson/gomplate/releases/tag/v4.0.0)_
 ### Usage
 
 ```
@@ -302,8 +302,7 @@ $ gomplate -i '{{ crypto.Ed25519GenerateKeyFromSeed "base64" "MDAwMDAwMDAwMDAwMD
 ...
 ```
 
-## `crypto.Ed25519DerivePublicKey`_(unreleased)_ _(experimental)_
-**Unreleased:** _This function is in development, and not yet available in released builds of gomplate._
+## `crypto.Ed25519DerivePublicKey` _(experimental)_
 **Experimental:** This function is [_experimental_][experimental] and may be enabled with the [`--experimental`][experimental] flag.
 
 [experimental]: ../config/#experimental
@@ -311,6 +310,7 @@ $ gomplate -i '{{ crypto.Ed25519GenerateKeyFromSeed "base64" "MDAwMDAwMDAwMDAwMD
 Derive a public key from an Ed25519 private key and output in PKIX
 ASN.1 DER form.
 
+_Added in gomplate [v4.0.0](https://github.com/hairyhenderson/gomplate/releases/tag/v4.0.0)_
 ### Usage
 
 ```

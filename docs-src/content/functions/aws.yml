@@ -117,7 +117,7 @@ funcs:
         Name=bar
         svc:name=foobar
   - name: aws.KMSEncrypt
-    # released: v4.0.0
+    released: v4.0.0
     description: |
       Encrypt an input string with the AWS Key Management Service (KMS).
 

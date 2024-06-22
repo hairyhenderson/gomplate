@@ -61,7 +61,7 @@ funcs:
         Hello, Lisa
         Hello, Maggie
   - name: coll.GoSlice
-    # released: v4.0.0
+    released: v4.0.0
     description: |
       This exposes the `slice` function from Go's [`text/template`](https://golang.org/pkg/text/template/#hdr-Functions)
       package. Note that using `slice` will use the `coll.Slice` function instead,
@@ -119,7 +119,7 @@ funcs:
         {{ if (has $o "foo") }}{{ $o.foo }}{{ else }}THERE IS NO FOO{{ end }}'
         THERE IS NO FOO
   - name: coll.Index
-    # released: v4.0.0
+    released: v4.0.0
     description: |
       Returns the result of indexing the given map, slice, or array by the given
       key or index. This is similar to the built-in `index` function, but the
@@ -172,7 +172,7 @@ funcs:
         [Alice's Adventures in Wonderland Gulliver's Travels]
   - name: coll.JQ
     alias: jq
-    # released: v4.0.0
+    released: v4.0.0
     description: |
       Filters an input object or list using the [jq](https://stedolan.github.io/jq/) language, as implemented by [gojq](https://github.com/itchyny/gojq).
 
@@ -462,7 +462,7 @@ funcs:
         {{ coll.Omit $keys $data }}'
         map[bar:2]
   - name: coll.Set
-    # released: v4.0.0
+    released: v4.0.0
     alias: set
     description: |
       Sets the given key to the given value in the given map.
@@ -488,7 +488,7 @@ funcs:
         $ gomplate -i '{{ dict "foo" 1 | coll.Set "bar" 2 }}'
         map[bar:2 foo:1]
   - name: coll.Unset
-    # released: v4.0.0
+    released: v4.0.0
     alias: unset
     description: |
       Deletes the element with the specified key in the given map. If there is no such element, the map is returned unchanged.
