@@ -219,8 +219,7 @@ $ gomplate -i '{{net.LookupTXT "example.com" | data.ToJSONPretty "  " }}'
 ]
 ```
 
-## `net.ParseAddr`_(unreleased)_
-**Unreleased:** _This function is in development, and not yet available in released builds of gomplate._
+## `net.ParseAddr`
 
 Parse the given string as an IP address (a
 [`netip.Addr`](https://pkg.go.dev/net/netip#Addr)).
@@ -228,6 +227,7 @@ Parse the given string as an IP address (a
 Any of `netip.Addr`'s methods may be called on the resulting value. See
 [the docs](https://pkg.go.dev/net/netip#Addr) for details.
 
+_Added in gomplate [v4.0.0](https://github.com/hairyhenderson/gomplate/releases/tag/v4.0.0)_
 ### Usage
 
 ```
@@ -288,8 +288,7 @@ $ gomplate -i '{{ $ip := net.ParseIP (net.LookupIP "example.com") -}}
 93.176.0.0/12
 ```
 
-## `net.ParsePrefix`_(unreleased)_
-**Unreleased:** _This function is in development, and not yet available in released builds of gomplate._
+## `net.ParsePrefix`
 
 Parse the given string as an IP address prefix (CIDR) representing an IP
 network (a [`netip.Prefix`](https://pkg.go.dev/net/netip#Prefix)).
@@ -300,6 +299,7 @@ the CIDR notations defined in [RFC 4632][] and [RFC 4291][].
 Any of `netip.Prefix`'s methods may be called on the resulting value. See
 [the docs](https://pkg.go.dev/net/netip#Prefix) for details.
 
+_Added in gomplate [v4.0.0](https://github.com/hairyhenderson/gomplate/releases/tag/v4.0.0)_
 ### Usage
 
 ```
@@ -369,8 +369,7 @@ $ gomplate -i '{{ $net := net.ParseIPPrefix "93.184.0.0/12" -}}
 93.176.0.0-93.191.255.255
 ```
 
-## `net.ParseRange`_(unreleased)_ _(experimental)_
-**Unreleased:** _This function is in development, and not yet available in released builds of gomplate._
+## `net.ParseRange` _(experimental)_
 **Experimental:** This function is [_experimental_][experimental] and may be enabled with the [`--experimental`][experimental] flag.
 
 [experimental]: ../config/#experimental
@@ -389,6 +388,7 @@ Note that this function is experimental for now, because it uses a
 brought into the standard library in the future, which may require
 breaking changes to this function.
 
+_Added in gomplate [v4.0.0](https://github.com/hairyhenderson/gomplate/releases/tag/v4.0.0)_
 ### Usage
 
 ```

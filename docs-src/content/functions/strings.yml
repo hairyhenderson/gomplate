@@ -146,7 +146,7 @@ funcs:
         $ gomplate -i '{{ (coll.Slice "foo" "bar" "baz") | strings.Sort }}'
         [bar baz foo]
   - name: strings.SkipLines
-    # released: v4.0.0
+    released: v4.0.0
     description: |
       Skips the given number of lines (each ending in a `\n`), returning the
       remainder.

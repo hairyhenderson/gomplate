@@ -215,8 +215,7 @@ $ gomplate -i '{{ (coll.Slice "foo" "bar" "baz") | strings.Sort }}'
 [bar baz foo]
 ```
 
-## `strings.SkipLines`_(unreleased)_
-**Unreleased:** _This function is in development, and not yet available in released builds of gomplate._
+## `strings.SkipLines`
 
 Skips the given number of lines (each ending in a `\n`), returning the
 remainder.
@@ -224,6 +223,7 @@ remainder.
 If `skip` is greater than the number of lines in `in`, an empty string is
 returned.
 
+_Added in gomplate [v4.0.0](https://github.com/hairyhenderson/gomplate/releases/tag/v4.0.0)_
 ### Usage
 
 ```

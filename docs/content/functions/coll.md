@@ -90,8 +90,7 @@ Hello, Lisa
 Hello, Maggie
 ```
 
-## `coll.GoSlice`_(unreleased)_
-**Unreleased:** _This function is in development, and not yet available in released builds of gomplate._
+## `coll.GoSlice`
 
 This exposes the `slice` function from Go's [`text/template`](https://golang.org/pkg/text/template/#hdr-Functions)
 package. Note that using `slice` will use the `coll.Slice` function instead,
@@ -110,6 +109,7 @@ is x[1:2:3]. The first argument must be a string, slice, or array.
 See the [Go language spec](https://go.dev/ref/spec#Slice_expressions) for
 more details.
 
+_Added in gomplate [v4.0.0](https://github.com/hairyhenderson/gomplate/releases/tag/v4.0.0)_
 ### Usage
 
 ```
@@ -169,8 +169,7 @@ $ gomplate -i '{{ $o := data.JSON (getenv "DATA") -}}
 THERE IS NO FOO
 ```
 
-## `coll.Index`_(unreleased)_
-**Unreleased:** _This function is in development, and not yet available in released builds of gomplate._
+## `coll.Index`
 
 Returns the result of indexing the given map, slice, or array by the given
 key or index. This is similar to the built-in `index` function, but the
@@ -180,6 +179,7 @@ non-existent map key.
 
 Multiple indexes may be given, for nested indexing.
 
+_Added in gomplate [v4.0.0](https://github.com/hairyhenderson/gomplate/releases/tag/v4.0.0)_
 ### Usage
 
 ```
@@ -248,8 +248,7 @@ $ gomplate -i '{{ .books | jsonpath `$..works[?( @.edition_count > 400 )].title`
 [Alice's Adventures in Wonderland Gulliver's Travels]
 ```
 
-## `coll.JQ`_(unreleased)_
-**Unreleased:** _This function is in development, and not yet available in released builds of gomplate._
+## `coll.JQ`
 
 **Alias:** `jq`
 
@@ -266,6 +265,7 @@ See also:
 - [jq manual](https://stedolan.github.io/jq/manual/)
 - [gojq differences to jq](https://github.com/itchyny/gojq#difference-to-jq)
 
+_Added in gomplate [v4.0.0](https://github.com/hairyhenderson/gomplate/releases/tag/v4.0.0)_
 ### Usage
 
 ```
@@ -707,8 +707,7 @@ $ gomplate -i '{{ $data := dict "foo" 1 "bar" 2 "baz" 3 }}
 map[bar:2]
 ```
 
-## `coll.Set`_(unreleased)_
-**Unreleased:** _This function is in development, and not yet available in released builds of gomplate._
+## `coll.Set`
 
 **Alias:** `set`
 
@@ -716,6 +715,7 @@ Sets the given key to the given value in the given map.
 
 The map is modified in place, and the modified map is returned.
 
+_Added in gomplate [v4.0.0](https://github.com/hairyhenderson/gomplate/releases/tag/v4.0.0)_
 ### Usage
 
 ```
@@ -745,8 +745,7 @@ $ gomplate -i '{{ dict "foo" 1 | coll.Set "bar" 2 }}'
 map[bar:2 foo:1]
 ```
 
-## `coll.Unset`_(unreleased)_
-**Unreleased:** _This function is in development, and not yet available in released builds of gomplate._
+## `coll.Unset`
 
 **Alias:** `unset`
 
@@ -754,6 +753,7 @@ Deletes the element with the specified key in the given map. If there is no such
 
 The map is modified in place, and the modified map is returned.
 
+_Added in gomplate [v4.0.0](https://github.com/hairyhenderson/gomplate/releases/tag/v4.0.0)_
 ### Usage
 
 ```

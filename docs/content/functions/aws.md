@@ -176,8 +176,7 @@ Name=bar
 svc:name=foobar
 ```
 
-## `aws.KMSEncrypt`_(unreleased)_
-**Unreleased:** _This function is in development, and not yet available in released builds of gomplate._
+## `aws.KMSEncrypt`
 
 Encrypt an input string with the AWS Key Management Service (KMS).
 
@@ -200,6 +199,7 @@ for more details.
 
 See also [`aws.KMSDecrypt`](#aws-kmsdecrypt).
 
+_Added in gomplate [v4.0.0](https://github.com/hairyhenderson/gomplate/releases/tag/v4.0.0)_
 ### Usage
 
 ```
