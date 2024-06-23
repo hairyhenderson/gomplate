@@ -11,7 +11,16 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/hairyhenderson/gomplate-ci-build
+    strategy:
+      fail-fast: false
+      matrix:
+        goarch: [ '386', 'amd64', 'arm', 'arm64' ]
+        include:
+          - goarch: 'arm'
+            goarm: '7'
     steps:
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3.0.0
       - run: |
           git config --global user.email "bogus@example.com"
           git config --global user.name "Someone"
@@ -19,14 +28,9 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - run: make build
-      - name: Save binary
-        uses: actions/upload-artifact@v4
-        with:
-          name: gomplate
-          path: bin/gomplate
-      - run: make test
-      - run: make integration
+      - run: make build GOARCH=${{ matrix.goarch }} GOARM=${{ matrix.goarm }}
+      - run: make test GOARCH=${{ matrix.goarch }} GOARM=${{ matrix.goarm }}
+      - run: make integration GOARCH=${{ matrix.goarch }} GOARM=${{ matrix.goarm }}
   windows-build:
     runs-on: windows-latest
     env:
@@ -45,10 +49,5 @@ jobs:
           git config --global user.email "bogus@example.com"
           git config --global user.name "Someone"
       - run: make build
-      - name: Save binary
-        uses: actions/upload-artifact@v4
-        with:
-          name: gomplate.exe
-          path: bin/gomplate.exe
       - run: make test
       - run: make integration

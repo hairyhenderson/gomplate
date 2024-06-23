@@ -147,7 +147,11 @@ $(PREFIX)/bin/$(PKG_NAME)$(call extension,$(GOOS)): $(PREFIX)/bin/$(PKG_NAME)_$(
 
 build: $(PREFIX)/bin/$(PKG_NAME)_$(GOOS)-$(GOARCH)$(TARGETVARIANT)$(call extension,$(GOOS)) $(PREFIX)/bin/$(PKG_NAME)$(call extension,$(GOOS))
 
-ifeq ($(OS),Windows_NT)
+# test with race detector on supported platforms
+# windows/amd64 is supported in theory, but in practice it requires a C compiler
+race_platforms := 'linux/amd64' 'darwin/amd64' 'darwin/arm64'
+ifeq (,$(findstring '$(GOOS)/$(GOARCH)',$(race_platforms)))
+export CGO_ENABLED=0
 test:
 	$(GO) test -coverprofile=c.out ./...
 else
