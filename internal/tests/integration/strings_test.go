@@ -1,6 +1,8 @@
 package integration
 
 import (
+	"fmt"
+	"math"
 	"strings"
 	"testing"
 
@@ -26,7 +28,10 @@ func TestStrings_Indent(t *testing.T) {
 func TestStrings_Repeat(t *testing.T) {
 	inOutTest(t, `ba{{ strings.Repeat 2 "na" }}`, `banana`)
 
-	_, _, err := cmd(t, "-i", `ba{{ strings.Repeat 9223372036854775807 "na" }}`).run()
+	// use MaxInt so we avoid a negative count on 32-bit systems
+	input := fmt.Sprintf(`ba{{ strings.Repeat %d "na" }}`, math.MaxInt)
+
+	_, _, err := cmd(t, "-i", input).run()
 	assert.ErrorContains(t, err, `too long: causes overflow`)
 
 	_, _, err = cmd(t, "-i", `ba{{ strings.Repeat -1 "na" }}`).run()
