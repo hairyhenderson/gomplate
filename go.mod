@@ -11,7 +11,7 @@ require (
 	github.com/fullsailor/pkcs7 v0.0.0-20190404230743-d7302db945fa
 	github.com/google/uuid v1.6.0
 	github.com/gosimple/slug v1.14.0
-	github.com/hack-pad/hackpadfs v0.2.3
+	github.com/hack-pad/hackpadfs v0.2.4
 	github.com/hairyhenderson/go-fsimpl v0.1.4
 	github.com/hairyhenderson/toml v0.4.2-0.20210923231440-40456b8e66cf
 	github.com/hairyhenderson/xignore v0.3.3-0.20230403012150-95fe86932830 // iofs-port branch
