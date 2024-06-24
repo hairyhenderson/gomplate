@@ -1,0 +1,161 @@
+name: release-please
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  release-please:
+    runs-on: ubuntu-latest
+    outputs:
+      release_created: ${{ steps.release.outputs.release_created }}
+      tag_name: ${{ steps.release.outputs.tag_name }}
+    steps:
+      - uses: actions/create-github-app-token@v1
+        id: app-token
+        with:
+          app-id: ${{ vars.APP_ID }}
+          private-key: ${{ secrets.PRIVATE_KEY }}
+      # I can't use the action because it doesn't support the --draft flag,
+      # and it doesn't support uploading assets.
+      #
+      # - uses: googleapis/release-please-action@v4
+      #   with:
+      #     token: ${{ steps.app-token.outputs.token }}
+      #     config-file: release-please-config.json
+      - name: Install release-please
+        run: npm -g install release-please
+      - name: release-please github-release
+        id: release
+        run: |
+          release-please \
+            --token ${{ steps.app-token.outputs.token }} \
+            --repo-url ${{ github.repository }} \
+              github-release \
+              --draft | tee rp-out.log
+
+          # parse the js object and store it - this is brittle!
+          cat rp-out.log | sed -n '/^\[/,$p' > rp-out.js
+
+          # if it's just "[]" assume no-op
+          if [ "$(cat rp-out.js)" = "[]" ]; then
+            exit 0
+          fi
+
+          # convert js object to json - assumes there's only one release
+          # this'll have to be refactored if there are multiple releases
+          node -e "console.log(JSON.stringify($(cat rp-out.js)))" | jq '.[0]' > rp-out.json
+        
+          echo "json output: $(cat rp-out.json)"
+
+          # now set outputs
+          echo "release_created=true"                      >> "$GITHUB_OUTPUT"
+          echo "id=$(        jq '.id'        rp-out.json)" >> "$GITHUB_OUTPUT"
+          echo "name=$(      jq '.name'      rp-out.json)" >> "$GITHUB_OUTPUT"
+          echo "tag_name=$(  jq '.tagName'   rp-out.json)" >> "$GITHUB_OUTPUT"
+          echo "sha=$(       jq '.sha'       rp-out.json)" >> "$GITHUB_OUTPUT"
+          echo "notes=$(     jq '.notes'     rp-out.json)" >> "$GITHUB_OUTPUT"
+          echo "html_url=$(  jq '.url'       rp-out.json)" >> "$GITHUB_OUTPUT"
+          echo "draft=$(     jq '.draft'     rp-out.json)" >> "$GITHUB_OUTPUT"
+          echo "upload_url=$(jq '.uploadUrl' rp-out.json)" >> "$GITHUB_OUTPUT"
+          echo "path=$(      jq '.path'      rp-out.json)" >> "$GITHUB_OUTPUT"
+          echo "version=$(   jq '.version'   rp-out.json)" >> "$GITHUB_OUTPUT"
+          echo "major=$(     jq '.major'     rp-out.json)" >> "$GITHUB_OUTPUT"
+          echo "minor=$(     jq '.minor'     rp-out.json)" >> "$GITHUB_OUTPUT"
+          echo "patch=$(     jq '.patch'     rp-out.json)" >> "$GITHUB_OUTPUT"
+      - name: release-please release-pr
+        id: release-pr
+        if: ${{ ! steps.release.outputs.release_created }}
+        run: |
+          release-please \
+            --token ${{ steps.app-token.outputs.token }} \
+            --repo-url ${{ github.repository }} \
+              release-pr | tee rp-out.log
+
+          # parse the js object and store it - this is brittle!
+          cat rp-out.log | sed -n '/^\[/,$p' > rp-out.js
+
+          # if it's just "[]" assume no-op
+          if [ "$(cat rp-out.js)" = "[]" ]; then
+            exit 0
+          fi
+
+          # set outputs
+          echo "prs_created=true"                      >> "$GITHUB_OUTPUT"
+          node -e "console.log('pr=' +JSON.stringify($(cat rp-out.js)[0]))" >> "$GITHUB_OUTPUT"
+          node -e "console.log('prs='+JSON.stringify($(cat rp-out.js)   ))" >> "$GITHUB_OUTPUT"
+  create-release:
+    runs-on: ubuntu-latest
+    needs: release-please
+    if: ${{ needs.release-please.outputs.release_created }}
+    env:
+      VERSION: ${{ needs.release-please.outputs.tag_name }}
+    steps:
+      - uses: actions/create-github-app-token@v1
+        id: app-token
+        with:
+          app-id: ${{ vars.APP_ID }}
+          private-key: ${{ secrets.PRIVATE_KEY }}
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - name: Build release assets
+        run: |
+          export COMMIT=${{ github.sha }}
+          make bin/checksums_sha256.txt VERSION=${VERSION}
+          make bin/checksums_sha512.txt VERSION=${VERSION}
+
+          # clean up a bit to make the next steps easier
+          rm bin/*_checksum*
+
+          mv bin/checksums_sha256.txt bin/checksums-v${VERSION}_sha256.txt
+          mv bin/checksums_sha512.txt bin/checksums-v${VERSION}_sha512.txt
+
+          # zip file for choco package
+          make bin/gomplate_windows-amd64.zip VERSION=${VERSION}
+      - name: Upload release assets
+        run: |
+          assets="checksums-v${VERSION}_sha256.txt checksums-v${VERSION}_sha512.txt"
+          cd bin
+          for f in gomplate_*; do
+            assets="$assets ${f}"
+          done
+
+          for f in $assets; do
+            echo "uploading $f"
+            gh release upload ${VERSION} $f
+          done
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+      - name: Get archive checksums
+        run: |
+          archive=${repo}/archive/refs/tags/v${VERSION}.tar.gz
+          archiveFile=archive.tar.gz
+          curl -f -sSL -o $archiveFile $archive
+
+          sha256sum $archiveFile | cut -f1 -d\  > ${VERSION}.sha256
+          sha512sum $archiveFile | cut -f1 -d\  > ${VERSION}.sha512
+          
+          echo "sha256sum=$(cat ${VERSION}.sha256)" >> $GITHUB_OUTPUT
+          echo "sha512sum=$(cat ${VERSION}.sha512)" >> $GITHUB_OUTPUT
+      - name: Upload archive checksums
+        run: |
+          gh release upload ${VERSION} ${VERSION}.sha256
+          gh release upload ${VERSION} ${VERSION}.sha512
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+      - name: Publish GitHub Release
+        run: |
+          # link to the release discussion
+          gh release edit ${VERSION} --discussion-category "General"
+
+          # now publish the release
+          gh release edit ${VERSION} --draft=false
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}

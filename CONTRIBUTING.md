@@ -7,8 +7,9 @@ bug reports, bug fixes, new features or even just questions.
 
 For PRs, please:
 - Consider filing an [issue](https://github.com/hairyhenderson/gomplate/issues/new) first, especially if you're not sure if your idea will be accepted.
+- Commit messages should follow the repo's [conventional commit](https://www.conventionalcommits.org/en/v1.0.0/) style. See [`release-please-config.json`](./release-please-config.json) for valid commit types.
 - [Link to any relevant issues](https://help.github.com/articles/autolinked-references-and-urls/) in the PR
-- Add new tests to cover the new code, and make sure all of the tests pass (`make lint test integration`)
+- Add new tests to cover the new code, and make sure all tests pass (`make lint test integration`)
 - Please try to conform to the existing code style, and see [Style Guide](#style-guide) for more details
 
 ## Bugs
