@@ -669,6 +669,35 @@ $ gomplate -i '{{ "_-foo-_" | strings.Trim "_-" }}'
 foo
 ```
 
+## `strings.TrimLeft`
+
+Trims a string by removing the given characters from the beginning of the string.
+
+This wraps Go's [`strings.TrimLeft`](https://pkg.go.dev/strings#TrimLeft).
+
+### Usage
+
+```
+strings.TrimLeft cutset input
+```
+```
+input | strings.TrimLeft cutset
+```
+
+### Arguments
+
+| name | description |
+|------|-------------|
+| `cutset` | _(required)_ the set of characters to cut |
+| `input` | _(required)_ the input |
+
+### Examples
+
+```console
+$ gomplate -i '{{ "  - hello, world!" | strings.TrimLeft " " }}'
+- hello, world!
+```
+
 ## `strings.TrimPrefix`
 
 Returns a string without the provided leading prefix string, if the prefix is present.
@@ -697,6 +726,35 @@ input | strings.TrimPrefix prefix
 ```console
 $ gomplate -i '{{ "hello, world" | strings.TrimPrefix "hello, " }}'
 world
+```
+
+## `strings.TrimRight`
+
+Trims a string by removing the given characters from the end of the string.
+
+This wraps Go's [`strings.TrimRight`](https://pkg.go.dev/strings#TrimRight).
+
+### Usage
+
+```
+strings.TrimRight cutset input
+```
+```
+input | strings.TrimRight cutset
+```
+
+### Arguments
+
+| name | description |
+|------|-------------|
+| `cutset` | _(required)_ the set of characters to cut |
+| `input` | _(required)_ the input |
+
+### Examples
+
+```console
+$ gomplate -i '{{ "hello, world!  " | strings.TrimRight " " }}'
+hello, world!
 ```
 
 ## `strings.TrimSpace`
