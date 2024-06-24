@@ -31,14 +31,26 @@ jobs:
       - run: make build GOARCH=${{ matrix.goarch }} GOARM=${{ matrix.goarm }}
       - run: make test GOARCH=${{ matrix.goarch }} GOARM=${{ matrix.goarm }}
       - run: make integration GOARCH=${{ matrix.goarch }} GOARM=${{ matrix.goarm }}
-  windows-build:
-    runs-on: windows-latest
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ 'windows-latest', 'macos-latest' ]
+        include:
+          - os: 'windows-latest'
+            # note: the tmp dir is set to C: so that it's not on the same drive as the
+            # repo, which is on D: - this will expose bugs with path handling!
+            TMP: 'C:\tmp'
+    runs-on: ${{ matrix.os }}
     env:
-      # note: the tmp dir is set to C: so that it's not on the same drive as the
-      # repo, which is on D: - this will expose bugs with path handling!
-      TMP: C:\tmp
+      TMP: ${{ matrix.TMP }}
     steps:
-      - run: pwd
+      - name: Set up macOS test dependencies
+        run: |
+          brew tap hashicorp/tap
+          brew install hashicorp/tap/consul
+          brew install hashicorp/tap/vault
+        if: matrix.os == 'macos-latest'
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
