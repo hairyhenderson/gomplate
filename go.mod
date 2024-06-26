@@ -3,7 +3,7 @@ module github.com/hairyhenderson/gomplate/v4
 go 1.22.4
 
 require (
-	cuelang.org/go v0.9.1
+	cuelang.org/go v0.9.2
 	github.com/Masterminds/goutils v1.1.1
 	github.com/Masterminds/semver/v3 v3.2.1
 	github.com/Shopify/ejson v1.5.2
