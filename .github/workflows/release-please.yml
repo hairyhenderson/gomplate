@@ -152,10 +152,6 @@ jobs:
           GH_TOKEN: ${{ steps.app-token.outputs.token }}
       - name: Publish GitHub Release
         run: |
-          # link to the release discussion
-          gh release edit ${VERSION} --discussion-category "General"
-
-          # now publish the release
-          gh release edit ${VERSION} --draft=false
+          gh release edit ${VERSION} --discussion-category "General" --draft=false
         env:
           GH_TOKEN: ${{ steps.app-token.outputs.token }}
