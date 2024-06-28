@@ -1,5 +1,31 @@
 # Change Log
 
+## [4.0.1](https://github.com/hairyhenderson/gomplate/compare/v4.0.0...v4.0.1) (2024-06-28)
+
+
+### Bug Fixes
+
+* **test:** Fix strings.Repeat test that failed in the wrong way on 32bit ([#2129](https://github.com/hairyhenderson/gomplate/issues/2129)) ([6290186](https://github.com/hairyhenderson/gomplate/commit/62901868f10e887f602e85b37eac70c77f864cc4))
+
+
+### Documentation
+
+* **chore:** Uncomment 'released' tags for functions in v4.0.0 ([#2125](https://github.com/hairyhenderson/gomplate/issues/2125)) ([e3b86e8](https://github.com/hairyhenderson/gomplate/commit/e3b86e89fca0aad9f5a4f9856f0b57d9cc693470))
+
+
+### Dependencies
+
+* **go:** Bump cuelang.org/go from 0.9.1 to 0.9.2 ([#2142](https://github.com/hairyhenderson/gomplate/issues/2142)) ([720960e](https://github.com/hairyhenderson/gomplate/commit/720960eb9f25d4d63a037a17648891b8fcf07275))
+* **go:** Bump github.com/aws/aws-sdk-go from 1.54.2 to 1.54.6 ([699a2ed](https://github.com/hairyhenderson/gomplate/commit/699a2ed2e202ada74b5c1150a1f6939dff509c86))
+* **go:** Bump github.com/aws/aws-sdk-go from 1.54.6 to 1.54.8 ([#2139](https://github.com/hairyhenderson/gomplate/issues/2139)) ([a3475c0](https://github.com/hairyhenderson/gomplate/commit/a3475c01e7afe9b5361dd455434244d6c24f7875))
+* **go:** Bump github.com/aws/aws-sdk-go from 1.54.8 to 1.54.9 ([#2143](https://github.com/hairyhenderson/gomplate/issues/2143)) ([715f2c2](https://github.com/hairyhenderson/gomplate/commit/715f2c263f1f6a2c3cb46e4bd5e7996d3587a2e2))
+* **go:** Bump github.com/aws/aws-sdk-go from 1.54.9 to 1.54.10 ([#2145](https://github.com/hairyhenderson/gomplate/issues/2145)) ([227b65d](https://github.com/hairyhenderson/gomplate/commit/227b65df1c23504c52428ad49dd42496b353f573))
+* **go:** bump github.com/hack-pad/hackpadfs ([#2127](https://github.com/hairyhenderson/gomplate/issues/2127)) ([e6c032b](https://github.com/hairyhenderson/gomplate/commit/e6c032bf458473ff07f0591bef7021e99a851757))
+* **go:** Bump github.com/hack-pad/hackpadfs from 0.2.2 to 0.2.3 ([#2131](https://github.com/hairyhenderson/gomplate/issues/2131)) ([4805247](https://github.com/hairyhenderson/gomplate/commit/48052470edcdd5cb3dc8b6ab4ec5bea3048f23a6))
+* **go:** Bump github.com/hack-pad/hackpadfs from 0.2.3 to 0.2.4 ([#2137](https://github.com/hairyhenderson/gomplate/issues/2137)) ([eddceaa](https://github.com/hairyhenderson/gomplate/commit/eddceaaf98f0ebd427b154a4bd777c3116112dd6))
+* **go:** Bump github.com/hairyhenderson/go-fsimpl from 0.1.4 to 0.1.5 ([#2146](https://github.com/hairyhenderson/gomplate/issues/2146)) ([7e425e1](https://github.com/hairyhenderson/gomplate/commit/7e425e17dbdf561244fa97404f2739bce31b7369))
+* **go:** bump github.com/hairyhenderson/go-fsimpl to fix 32-bit panic ([#2128](https://github.com/hairyhenderson/gomplate/issues/2128)) ([5104b19](https://github.com/hairyhenderson/gomplate/commit/5104b19ded072d8ed286cbb41168fb55edb63064))
+
 ## [v2.7.0](https://github.com/hairyhenderson/gomplate/tree/v2.7.0) (2018-07-27)
 [Full Changelog](https://github.com/hairyhenderson/gomplate/compare/v2.6.0...v2.7.0)
 
