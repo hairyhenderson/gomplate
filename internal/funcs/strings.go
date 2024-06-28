@@ -223,9 +223,19 @@ func (StringFuncs) Trim(cutset string, s interface{}) string {
 	return strings.Trim(conv.ToString(s), cutset)
 }
 
+// TrimLeft -
+func (StringFuncs) TrimLeft(cutset string, s interface{}) string {
+	return strings.TrimLeft(conv.ToString(s), cutset)
+}
+
 // TrimPrefix -
 func (StringFuncs) TrimPrefix(cutset string, s interface{}) string {
 	return strings.TrimPrefix(conv.ToString(s), cutset)
+}
+
+// TrimRight -
+func (StringFuncs) TrimRight(cutset string, s interface{}) string {
+	return strings.TrimRight(conv.ToString(s), cutset)
 }
 
 // TrimSuffix -
