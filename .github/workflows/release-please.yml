@@ -15,6 +15,8 @@ jobs:
     outputs:
       release_created: ${{ steps.release.outputs.release_created }}
       tag_name: ${{ steps.release.outputs.tag_name }}
+      version: ${{ steps.release.outputs.version }}
+      html_url: ${{ steps.release.outputs.html_url }}
     steps:
       - uses: actions/create-github-app-token@v1
         id: app-token
@@ -55,19 +57,19 @@ jobs:
 
           # now set outputs
           echo "release_created=true"                      >> "$GITHUB_OUTPUT"
-          echo "id=$(        jq '.id'        rp-out.json)" >> "$GITHUB_OUTPUT"
-          echo "name=$(      jq '.name'      rp-out.json)" >> "$GITHUB_OUTPUT"
-          echo "tag_name=$(  jq '.tagName'   rp-out.json)" >> "$GITHUB_OUTPUT"
-          echo "sha=$(       jq '.sha'       rp-out.json)" >> "$GITHUB_OUTPUT"
-          echo "notes=$(     jq '.notes'     rp-out.json)" >> "$GITHUB_OUTPUT"
-          echo "html_url=$(  jq '.url'       rp-out.json)" >> "$GITHUB_OUTPUT"
-          echo "draft=$(     jq '.draft'     rp-out.json)" >> "$GITHUB_OUTPUT"
-          echo "upload_url=$(jq '.uploadUrl' rp-out.json)" >> "$GITHUB_OUTPUT"
-          echo "path=$(      jq '.path'      rp-out.json)" >> "$GITHUB_OUTPUT"
-          echo "version=$(   jq '.version'   rp-out.json)" >> "$GITHUB_OUTPUT"
-          echo "major=$(     jq '.major'     rp-out.json)" >> "$GITHUB_OUTPUT"
-          echo "minor=$(     jq '.minor'     rp-out.json)" >> "$GITHUB_OUTPUT"
-          echo "patch=$(     jq '.patch'     rp-out.json)" >> "$GITHUB_OUTPUT"
+          echo "id=$(        jq -r '.id'        rp-out.json)" >> "$GITHUB_OUTPUT"
+          echo "name=$(      jq -r '.name'      rp-out.json)" >> "$GITHUB_OUTPUT"
+          echo "tag_name=$(  jq -r '.tagName'   rp-out.json)" >> "$GITHUB_OUTPUT"
+          echo "sha=$(       jq -r '.sha'       rp-out.json)" >> "$GITHUB_OUTPUT"
+          echo "notes=$(     jq   '.notes'     rp-out.json)" >> "$GITHUB_OUTPUT"
+          echo "html_url=$(  jq -r '.url'       rp-out.json)" >> "$GITHUB_OUTPUT"
+          echo "draft=$(     jq -r '.draft'     rp-out.json)" >> "$GITHUB_OUTPUT"
+          echo "upload_url=$(jq -r '.uploadUrl' rp-out.json)" >> "$GITHUB_OUTPUT"
+          echo "path=$(      jq -r '.path'      rp-out.json)" >> "$GITHUB_OUTPUT"
+          echo "version=$(   jq -r '.version'   rp-out.json)" >> "$GITHUB_OUTPUT"
+          echo "major=$(     jq -r '.major'     rp-out.json)" >> "$GITHUB_OUTPUT"
+          echo "minor=$(     jq -r '.minor'     rp-out.json)" >> "$GITHUB_OUTPUT"
+          echo "patch=$(     jq -r '.patch'     rp-out.json)" >> "$GITHUB_OUTPUT"
       - name: release-please release-pr
         id: release-pr
         if: ${{ ! steps.release.outputs.release_created }}
@@ -94,7 +96,8 @@ jobs:
     needs: release-please
     if: ${{ needs.release-please.outputs.release_created }}
     env:
-      VERSION: ${{ needs.release-please.outputs.tag_name }}
+      VERSION: ${{ needs.release-please.outputs.version }}
+      TAG_NAME: ${{ needs.release-please.outputs.tag_name }}
     steps:
       - uses: actions/create-github-app-token@v1
         id: app-token
@@ -114,44 +117,45 @@ jobs:
           # clean up a bit to make the next steps easier
           rm bin/*_checksum*
 
-          mv bin/checksums_sha256.txt bin/checksums-v${VERSION}_sha256.txt
-          mv bin/checksums_sha512.txt bin/checksums-v${VERSION}_sha512.txt
+          mv bin/checksums_sha256.txt bin/checksums-${TAG_NAME}_sha256.txt
+          mv bin/checksums_sha512.txt bin/checksums-${TAG_NAME}_sha512.txt
 
           # zip file for choco package
           make bin/gomplate_windows-amd64.zip VERSION=${VERSION}
       - name: Upload release assets
         run: |
-          assets="checksums-v${VERSION}_sha256.txt checksums-v${VERSION}_sha512.txt"
           cd bin
+          assets=(checksums-${TAG_NAME}_sha256.txt checksums-${TAG_NAME}_sha512.txt)
           for f in gomplate_*; do
-            assets="$assets ${f}"
+            assets=($assets ${f})
           done
 
-          for f in $assets; do
+          for f in ${assets[@]}; do
             echo "uploading $f"
-            gh release upload ${VERSION} $f
+            gh release upload ${TAG_NAME} $f
           done
-        env:
-          GH_TOKEN: ${{ steps.app-token.outputs.token }}
-      - name: Get archive checksums
-        run: |
-          archive=${repo}/archive/refs/tags/v${VERSION}.tar.gz
-          archiveFile=archive.tar.gz
-          curl -f -sSL -o $archiveFile $archive
-
-          sha256sum $archiveFile | cut -f1 -d\  > ${VERSION}.sha256
-          sha512sum $archiveFile | cut -f1 -d\  > ${VERSION}.sha512
-          
-          echo "sha256sum=$(cat ${VERSION}.sha256)" >> $GITHUB_OUTPUT
-          echo "sha512sum=$(cat ${VERSION}.sha512)" >> $GITHUB_OUTPUT
-      - name: Upload archive checksums
-        run: |
-          gh release upload ${VERSION} ${VERSION}.sha256
-          gh release upload ${VERSION} ${VERSION}.sha512
         env:
           GH_TOKEN: ${{ steps.app-token.outputs.token }}
       - name: Publish GitHub Release
         run: |
-          gh release edit ${VERSION} --discussion-category "General" --draft=false
+          gh release edit ${TAG_NAME} --discussion-category "General" --draft=false
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+      - name: Get archive checksums
+        # has to happen post-publish so the URL works
+        run: |
+          archive=https://github.com/${{ github.repository }}/archive/refs/tags/${TAG_NAME}.tar.gz
+          archiveFile=archive.tar.gz
+          curl -f -sSL -o $archiveFile $archive
+
+          sha256sum $archiveFile | cut -f1 -d\  > ${TAG_NAME}.sha256
+          sha512sum $archiveFile | cut -f1 -d\  > ${TAG_NAME}.sha512
+          
+          echo "sha256sum=$(cat ${TAG_NAME}.sha256)" >> $GITHUB_OUTPUT
+          echo "sha512sum=$(cat ${TAG_NAME}.sha512)" >> $GITHUB_OUTPUT
+      - name: Upload archive checksums
+        run: |
+          gh release upload ${TAG_NAME} ${TAG_NAME}.sha256
+          gh release upload ${TAG_NAME} ${TAG_NAME}.sha512
         env:
           GH_TOKEN: ${{ steps.app-token.outputs.token }}
