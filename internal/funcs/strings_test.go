@@ -256,3 +256,51 @@ func TestRuneCount(t *testing.T) {
 	require.NoError(t, err)
 	assert.Equal(t, 5, n)
 }
+
+func TestTrimLeft(t *testing.T) {
+	t.Parallel()
+
+	sf := &StringFuncs{}
+
+	testdata := []struct {
+		in     interface{}
+		cutset string
+		out    string
+	}{
+		{``, ``, ``},
+		{`foo`, ``, `foo`},
+		{` foo`, ` `, `foo`},
+		{`  foo`, ` `, `foo`},
+		{`fooBAR`, `foo`, `BAR`},
+		{`-_fooBAR`, `-_`, `fooBAR`},
+	}
+
+	for _, d := range testdata {
+		trimmed := sf.TrimLeft(d.cutset, d.in)
+		assert.Equal(t, d.out, trimmed)
+	}
+}
+
+func TestTrimRight(t *testing.T) {
+	t.Parallel()
+
+	sf := &StringFuncs{}
+
+	testdata := []struct {
+		in     interface{}
+		cutset string
+		out    string
+	}{
+		{``, ``, ``},
+		{`foo`, ``, `foo`},
+		{`foo `, ` `, `foo`},
+		{`foo  `, ` `, `foo`},
+		{`fooBAR`, `BAR`, `foo`},
+		{`fooBAR-_`, `-_`, `fooBAR`},
+	}
+
+	for _, d := range testdata {
+		trimmed := sf.TrimRight(d.cutset, d.in)
+		assert.Equal(t, d.out, trimmed)
+	}
+}
