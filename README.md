@@ -51,6 +51,9 @@ $ # datasources are defined by URLs, and gomplate is not limited to just file-ba
 $ gomplate -d ip=https://ipinfo.io -i 'country code: {{ (ds "ip").country }}'
 country code: CA
 
+$ gomplate -d ip=https://api.ip2location.io -i 'country code: {{ (ds "ip").country_code }} | country name: {{ (ds "ip").country_name }} | region name: {{ (ds "ip").region_name }}  | city name: {{ (ds "ip").city_name }}'
+country code: MY | country name: Malaysia | region name: Wilayah Persekutuan Kuala Lumpur | city name: Kuala Lumpur
+
 $ # standard input can be used as a datasource too:
 $ echo '{"cities":["London", "Johannesburg", "Windhoek"]}' | gomplate -d city=stdin:///in.json -i '{{ range (ds "city").cities }}{{.}}, {{end}}'
 London, Johannesburg, Windhoek, 
