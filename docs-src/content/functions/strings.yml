@@ -421,6 +421,23 @@ funcs:
       - |
         $ gomplate -i '{{ "_-foo-_" | strings.Trim "_-" }}'
         foo
+  - name: strings.TrimLeft
+    # released: v4.1.0
+    description: |
+      Trims a string by removing the given characters from the beginning of the string.
+      This wraps Go's [`strings.TrimLeft`](https://pkg.go.dev/strings#TrimLeft).
+    pipeline: true
+    arguments:
+      - name: cutset
+        required: true
+        description: the set of characters to cut
+      - name: input
+        required: true
+        description: the input
+    examples:
+      - |
+        $ gomplate -i '{{ "  - hello, world!" | strings.TrimLeft " " }}'
+        - hello, world!
   - name: strings.TrimPrefix
     released: v2.5.0
     description: |
@@ -439,6 +456,23 @@ funcs:
       - |
         $ gomplate -i '{{ "hello, world" | strings.TrimPrefix "hello, " }}'
         world
+  - name: strings.TrimRight
+    # released: v4.1.0
+    description: |
+      Trims a string by removing the given characters from the end of the string.
+      This wraps Go's [`strings.TrimRight`](https://pkg.go.dev/strings#TrimRight).
+    pipeline: true
+    arguments:
+      - name: cutset
+        required: true
+        description: the set of characters to cut
+      - name: input
+        required: true
+        description: the input
+    examples:
+      - |
+        $ gomplate -i '{{ "hello, world!  " | strings.TrimRight " " }}'
+        hello, world!
   - name: strings.TrimSpace
     alias: trimSpace
     released: v1.9.0
