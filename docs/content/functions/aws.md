@@ -28,7 +28,7 @@ for details.
 
 **Alias:** `ec2meta`
 
-Queries AWS [EC2 Instance Metadata](http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-metadata.html) for information. This only retrieves data in the `meta-data` path -- for data in the `dynamic` path use `aws.EC2Dynamic`.
+Queries AWS [EC2 Instance Metadata](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-metadata.html) for information. This only retrieves data in the `meta-data` path -- for data in the `dynamic` path use `aws.EC2Dynamic`.
 
 For times when running outside EC2, or when the metadata API can't be reached, a `default` value can be provided.
 
@@ -57,7 +57,7 @@ i-12345678
 
 **Alias:** `ec2dynamic`
 
-Queries AWS [EC2 Instance Dynamic Metadata](http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-metadata.html) for information. This only retrieves data in the `dynamic` path -- for data in the `meta-data` path use `aws.EC2Meta`.
+Queries AWS [EC2 Instance Dynamic Metadata](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-metadata.html) for information. This only retrieves data in the `dynamic` path -- for data in the `meta-data` path use `aws.EC2Meta`.
 
 For times when running outside EC2, or when the metadata API can't be reached, a `default` value can be provided.
 
@@ -121,7 +121,7 @@ foo
 
 **Alias:** `ec2tag`
 
-Queries the AWS EC2 API to find the value of the given [user-defined tag](http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/Using_Tags.html). An optional default
+Queries the AWS EC2 API to find the value of the given [user-defined tag](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/Using_Tags.html). An optional default
 can be provided.
 
 _Added in gomplate [v3.8.0](https://github.com/hairyhenderson/gomplate/releases/tag/v3.8.0)_
@@ -153,7 +153,7 @@ I am a meat popsicle.
 
 **Alias:** `ec2tags`
 
-Queries the AWS EC2 API to find all the tags/values [user-defined tag](http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/Using_Tags.html).
+Queries the AWS EC2 API to find all the tags/values [user-defined tag](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/Using_Tags.html).
 
 _Added in gomplate [v3.8.0](https://github.com/hairyhenderson/gomplate/releases/tag/v3.8.0)_
 ### Usage
@@ -197,7 +197,7 @@ For information on creating keys, see [_Creating Keys_](https://docs.aws.amazon.
 See [the AWS documentation](https://docs.aws.amazon.com/kms/latest/developerguide/overview.html)
 for more details.
 
-See also [`aws.KMSDecrypt`](#aws-kmsdecrypt).
+See also [`aws.KMSDecrypt`](#awskmsdecrypt).
 
 _Added in gomplate [v4.0.0](https://github.com/hairyhenderson/gomplate/releases/tag/v4.0.0)_
 ### Usage
@@ -233,7 +233,7 @@ The ciphertext must be base-64 encoded.
 See [the AWS documentation](https://docs.aws.amazon.com/kms/latest/developerguide/overview.html)
 for more details.
 
-See also [`aws.KMSEncrypt`](#aws-kmsencrypt).
+See also [`aws.KMSEncrypt`](#awskmsencrypt).
 
 _Added in gomplate [v3.4.0](https://github.com/hairyhenderson/gomplate/releases/tag/v3.4.0)_
 ### Usage
@@ -264,7 +264,7 @@ Returns the currently-authenticated AWS account ID number.
 
 Wraps the [STS GetCallerIdentity API](https://docs.aws.amazon.com/STS/latest/APIReference/API_GetCallerIdentity.html)
 
-See also [`aws.UserID`](#aws-userid) and [`aws.ARN`](#aws-arn).
+See also [`aws.UserID`](#awsuserid) and [`aws.ARN`](#awsarn).
 
 _Added in gomplate [v3.4.0](https://github.com/hairyhenderson/gomplate/releases/tag/v3.4.0)_
 ### Usage
@@ -287,7 +287,7 @@ Returns the AWS ARN (Amazon Resource Name) associated with the current authentic
 
 Wraps the [STS GetCallerIdentity API](https://docs.aws.amazon.com/STS/latest/APIReference/API_GetCallerIdentity.html)
 
-See also [`aws.UserID`](#aws-userid) and [`aws.Account`](#aws-account).
+See also [`aws.UserID`](#awsuserid) and [`aws.Account`](#awsaccount).
 
 _Added in gomplate [v3.4.0](https://github.com/hairyhenderson/gomplate/releases/tag/v3.4.0)_
 ### Usage
@@ -308,12 +308,12 @@ Calling from arn:aws:iam::123456789012:user/Alice
 
 Returns the unique identifier of the calling entity. The exact value
 depends on the type of entity making the call. The values returned are those
-listed in the `aws:userid` column in the [Principal table](http://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_variables.html#principaltable)
+listed in the `aws:userid` column in the [Principal table](https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_variables.html#principaltable)
 found on the Policy Variables reference page in the IAM User Guide.
 
 Wraps the [STS GetCallerIdentity API](https://docs.aws.amazon.com/STS/latest/APIReference/API_GetCallerIdentity.html)
 
-See also [`aws.ARN`](#aws-arn) and [`aws.Account`](#aws-account).
+See also [`aws.ARN`](#awsarn) and [`aws.Account`](#awsaccount).
 
 _Added in gomplate [v3.4.0](https://github.com/hairyhenderson/gomplate/releases/tag/v3.4.0)_
 ### Usage

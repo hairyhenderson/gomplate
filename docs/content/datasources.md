@@ -35,7 +35,7 @@ For our purposes, the _scheme_ and the _path_ components are especially importan
 
 ### Opaque URIs
 
-For some datasources, such as the [`merge`](#using-merge-datasources), [`aws+sm`](#using-aws-sm-datasources), and [`aws+smp`](#using-aws-smp-datasources) schemes, opaque URIs can be used (rather than a hierarchical URL):
+For some datasources, such as the [`merge`](#using-merge-datasources), [`aws+sm`](#using-awssm-datasources), and [`aws+smp`](#using-awssmp-datasources) schemes, opaque URIs can be used (rather than a hierarchical URL):
 
 ```pre
 scheme                   path        query   fragment
@@ -55,8 +55,8 @@ Gomplate supports a number of datasources, each specified with a particular URL 
 
 | Type | URL Scheme(s) | Description |
 |------|---------------|-------------|
-| [AWS Systems Manager Parameter Store](#using-aws-smp-datasources) | `aws+smp` | [AWS Systems Manager Parameter Store][AWS SMP] is a hierarchically-organized key/value store which allows storage of text, lists, or encrypted secrets for retrieval by AWS resources |
-| [AWS Secrets Manager](#using-aws-sm-datasource) | `aws+sm` | [AWS Secrets Manager][] helps you protect secrets needed to access your applications, services, and IT resources. |
+| [AWS Systems Manager Parameter Store](#using-awssmp-datasources) | `aws+smp` | [AWS Systems Manager Parameter Store][AWS SMP] is a hierarchically-organized key/value store which allows storage of text, lists, or encrypted secrets for retrieval by AWS resources |
+| [AWS Secrets Manager](#using-awssm-datasources) | `aws+sm` | [AWS Secrets Manager][] helps you protect secrets needed to access your applications, services, and IT resources. |
 | [Amazon S3](#using-s3-datasources) | `s3` | [Amazon S3][] is a popular object storage service. |
 | [Consul](#using-consul-datasources) | `consul`, `consul+http`, `consul+https` | [HashiCorp Consul][] provides (among many other features) a key/value store |
 | [Environment](#using-env-datasources) | `env` | Environment variables can be used as datasources - useful for testing |
@@ -75,13 +75,13 @@ When the _path_ component of the URL ends with a `/` character, the datasource i
 Currently the following datasources support directory semantics:
 
 - [File](#using-file-datasources)
-- [Vault](#using-vault-datasources) - translates to Vault's [LIST](https://www.vaultproject.io/api/index.html#reading-writing-and-listing-secrets) method
+- [Vault](#using-vault-datasources) - translates to Vault's `LIST` method
 - [Consul](#using-consul-datasources)
 When accessing a directory datasource, an array of key names is returned, and can be iterated through to access each individual value contained within.
 - [AWS S3](#using-s3-datasources)
 - [Google Cloud Storage](#using-google-cloud-storage-gs-datasources)
 - [Git](#using-git-datasources) 
-- [AWS Systems Manager Parameter Store](#using-aws-smp-datasources)
+- [AWS Systems Manager Parameter Store](#using-awssmp-datasources)
 
 For example, a group of configuration key/value pairs (named `one`, `two`, and `three`, with values `v1`, `v2`, and `v3` respectively) could be rendered like this: 
 
@@ -158,7 +158,7 @@ The [`github.com/joho/godotenv`](https://github.com/joho/godotenv) package is us
 
 ## Using `aws+smp` datasources
 
-The `aws+smp://` scheme can be used to retrieve data from the [AWS Systems Manager](https://aws.amazon.com/systems-manager/) (née AWS EC2 Simple Systems Manager) [Parameter Store](https://aws.amazon.com/systems-manager/features/#Parameter_Store). This hierarchically organized key/value store allows you to store text, lists or encrypted secrets for easy retrieval by AWS resources. See [the AWS Systems Manager documentation](https://docs.aws.amazon.com/systems-manager/latest/userguide/sysman-paramstore-su-create.html#sysman-paramstore-su-create-about) for details on creating these parameters.
+The `aws+smp://` scheme can be used to retrieve data from the [AWS Systems Manager](https://aws.amazon.com/systems-manager/) (née AWS EC2 Simple Systems Manager) [Parameter Store][AWS SMP]. This hierarchically organized key/value store allows you to store text, lists or encrypted secrets for easy retrieval by AWS resources. See [the AWS Systems Manager documentation](https://docs.aws.amazon.com/systems-manager/latest/userguide/sysman-paramstore-su-create.html#sysman-paramstore-su-create-about) for details on creating these parameters.
 
 You must grant `gomplate` permission via IAM credentials for the [`ssm:GetParameter` action](https://docs.aws.amazon.com/systems-manager/latest/userguide/auth-and-access-control-permissions-reference.html). <!-- List support further requires `ssm.GetParameters` permissions. -->
 
@@ -187,7 +187,7 @@ If the Parameter key specified is not found (or not allowed to be read due to mi
 
 ### Examples
 
-Given your [AWS account's Parameter Store](https://eu-west-1.console.aws.amazon.com/ec2/v2/home#Parameters:sort=Name) has the following data:
+Given your AWS account's Parameter Store has the following data:
 
 - `/foo/first/others` - `Bill,Ben` (a StringList)
 - `/foo/first/password` - `super-secret` (a SecureString)
@@ -217,7 +217,7 @@ $ gomplate -d foo=aws+smp:myparameter -i '{{ (ds "foo").Value }}
 bar
 ```
 
-## Using `aws+sm` datasource
+## Using `aws+sm` datasources
 
 ### URL Considerations
 
@@ -228,11 +228,11 @@ For `aws+sm`, only the _scheme_ and _path_ components are necessary to be define
 
 ### Output
 
-The output will be the content of either the `SecretString` or `SecretBinary` field of the AWS SDK's `GetSecretValueOutput` object from the [AWS SDK for Go](https://docs.aws.amazon.com/sdk-for-go/api/service/secretsmanager/#GetSecretValueOutput)
+The output will be the content of either the `SecretString` or `SecretBinary` field of the AWS SDK's `GetSecretValueOutput` object from the [AWS SDK for Go](https://pkg.go.dev/github.com/aws/aws-sdk-go-v2/service/secretsmanager#GetSecretValueOutput)
 
 ### Examples
 
-Given your [AWS account's Secret Manager](https://eu-central-1.console.aws.amazon.com/secretsmanager/home?region=eu-central-1#/listSecrets) has the following data:
+Given your AWS account's Secret Manager has the following data:
 
 - `/foo/bar/password` - `super-secret`
 - `mysecret` - `bar`
@@ -317,7 +317,7 @@ Hello world
 
 ## Using `consul` datasources
 
-Gomplate supports retrieving data from [HashiCorp Consul][]'s [KV Store](https://www.consul.io/api/kv.html).
+Gomplate supports retrieving data from [HashiCorp Consul][]'s [KV Store](https://developer.hashicorp.com/consul/api-docs/kv).
 
 ### URL Considerations
 
@@ -337,23 +337,23 @@ The following optional environment variables are understood by the Consul dataso
 | `CONSUL_TIMEOUT` | Timeout (in seconds) when communicating to Consul. Defaults to 10 seconds. |
 | `CONSUL_HTTP_TOKEN` | The Consul token to use when connecting to the server. |
 | `CONSUL_HTTP_AUTH` | Should be specified as `<username>:<password>`. Used to authenticate to the server. |
-| `CONSUL_HTTP_SSL` | Force HTTPS if set to `true` value. Disables if set to `false`. Any value acceptable to [`strconv.ParseBool`](https://golang.org/pkg/strconv/#ParseBool) can be provided. |
+| `CONSUL_HTTP_SSL` | Force HTTPS if set to `true` value. Disables if set to `false`. Any value acceptable to [`strconv.ParseBool`](https://pkg.go.dev/strconv/#ParseBool) can be provided. |
 | `CONSUL_TLS_SERVER_NAME` | The server name to use as the SNI host when connecting to Consul via TLS. |
 | `CONSUL_CACERT` | Path to CA file for verifying Consul server using TLS. |
 | `CONSUL_CAPATH` | Path to directory of CA files for verifying Consul server using TLS. |
 | `CONSUL_CLIENT_CERT` | Client certificate file for certificate authentication. If this is set, `$CONSUL_CLIENT_KEY` must also be set. |
 | `CONSUL_CLIENT_KEY` | Client key file for certificate authentication. If this is set, `$CONSUL_CLIENT_CERT` must also be set. |
-| `CONSUL_HTTP_SSL_VERIFY` | Set to `false` to disable Consul TLS certificate checking. Any value acceptable to [`strconv.ParseBool`](https://golang.org/pkg/strconv/#ParseBool) can be provided. <br/> _Recommended only for testing and development scenarios!_ |
-| `CONSUL_VAULT_ROLE` | Set to the name of the role to use for authenticating to Consul with [Vault's Consul secret backend](https://www.vaultproject.io/docs/secrets/consul/index.html). |
+| `CONSUL_HTTP_SSL_VERIFY` | Set to `false` to disable Consul TLS certificate checking. Any value acceptable to [`strconv.ParseBool`](https://pkg.go.dev/strconv/#ParseBool) can be provided. <br/> _Recommended only for testing and development scenarios!_ |
+| `CONSUL_VAULT_ROLE` | Set to the name of the role to use for authenticating to Consul with [Vault's Consul secret backend](https://developer.hashicorp.com/vault/docs/secrets/consul). |
 | `CONSUL_VAULT_MOUNT` | Used to override the mount-point when using Vault's Consul secret back-end for authentication. Defaults to `consul`. |
 
 ### Authentication
 
 Instead of using a non-authenticated Consul connection, you can authenticate with these methods:
 
-- provide an [ACL Token](https://www.consul.io/docs/guides/acl.html#acl-tokens) in the `CONSUL_HTTP_TOKEN` environment variable
+- provide an [ACL Token](https://developer.hashicorp.com/consul/docs/security/acl#tokens) in the `CONSUL_HTTP_TOKEN` environment variable
 - use HTTP Basic Auth by setting the `CONSUL_HTTP_AUTH` environment variable
-- dynamically generate an ACL token with Vault. This requires Vault to be configured to use the [Consul secret backend](https://www.vaultproject.io/docs/secrets/consul/index.html) and is enabled by passing the name of the role to use in the `CONSUL_VAULT_ROLE` environment variable.
+- dynamically generate an ACL token with Vault. This requires Vault to be configured to use the [Consul secret backend](https://developer.hashicorp.com/vault/docs/secrets/consul) and is enabled by passing the name of the role to use in the `CONSUL_VAULT_ROLE` environment variable.
 
 ### Examples
 
@@ -654,7 +654,7 @@ Gomplate can retrieve secrets and other data from [HashiCorp Vault][].
 
 The _scheme_, _authority_, _path_, and _query_ URL components are used by this datasource.
 
-- the _scheme_ must be one of `vault`, `vault+https` (same as `vault`), or `vault+http`. The latter can be used to access [dev mode](https://www.vaultproject.io/docs/concepts/dev-server.html) Vault servers, for test purposes. Otherwise, all connections to Vault are encrypted with TLS.
+- the _scheme_ must be one of `vault`, `vault+https` (same as `vault`), or `vault+http`. The latter can be used to access [dev mode](https://developer.hashicorp.com/vault/docs/concepts/dev-server) Vault servers, for test purposes. Otherwise, all connections to Vault are encrypted with TLS.
 - the _authority_ component can optionally be used to specify the Vault server's hostname and port. This overrides the value of `$VAULT_ADDR`.
 - the _path_ component can optionally be used to specify a full or partial path to a secret. The second argument to the [`datasource`][] function is appended to provide the full secret path. [Directory](#directory-datasources) semantics are available when the path ends with a `/` character.
 - the _query_ component is used to provide parameters to dynamic secret back-ends that require these. The values are included in the JSON body of the `POST` request. The `version` parameter in particular can be used to specify the version of a secret when using the KV v2 secrets engine.
@@ -676,17 +676,17 @@ This table describes the currently-supported authentication mechanisms and how t
 
 | auth back-end | configuration |
 |-------------:|---------------|
-| [`approle`](https://www.vaultproject.io/docs/auth/approle.html) | Environment variables `$VAULT_ROLE_ID` and `$VAULT_SECRET_ID` must be set to the appropriate values.<br/> If the back-end is mounted to a different location, set `$VAULT_AUTH_APPROLE_MOUNT`. |
-| [`github`](https://www.vaultproject.io/docs/auth/github.html) | Environment variable `$VAULT_AUTH_GITHUB_TOKEN` must be set to an appropriate value.<br/> If the back-end is mounted to a different location, set `$VAULT_AUTH_GITHUB_MOUNT`. |
-| [`userpass`](https://www.vaultproject.io/docs/auth/userpass.html) | Environment variables `$VAULT_AUTH_USERNAME` and `$VAULT_AUTH_PASSWORD` must be set to the appropriate values.<br/> If the back-end is mounted to a different location, set `$VAULT_AUTH_USERPASS_MOUNT`. |
-| [`token`](https://www.vaultproject.io/docs/auth/token.html) | Determined from either the `$VAULT_TOKEN` environment variable, or read from the file `~/.vault-token` |
-| [`aws`](https://www.vaultproject.io/docs/auth/aws.html) | The env var  `$VAULT_AUTH_AWS_ROLE` defines the [role](https://www.vaultproject.io/api/auth/aws/index.html#role-4) to log in with - defaults to the AMI ID of the EC2 instance. Usually a [Client Nonce](https://www.vaultproject.io/docs/auth/aws.html#client-nonce) should be used as well. Set `$VAULT_AUTH_AWS_NONCE` to the nonce value. The nonce can be generated and stored by setting `$VAULT_AUTH_AWS_NONCE_OUTPUT` to a path on the local filesystem.<br/>If the back-end is mounted to a different location, set `$VAULT_AUTH_AWS_MOUNT`.|
+| [`approle`](https://developer.hashicorp.com/vault/docs/auth/approle) | Environment variables `$VAULT_ROLE_ID` and `$VAULT_SECRET_ID` must be set to the appropriate values.<br/> If the back-end is mounted to a different location, set `$VAULT_AUTH_APPROLE_MOUNT`. |
+| [`github`](https://developer.hashicorp.com/vault/docs/auth/github) | Environment variable `$VAULT_AUTH_GITHUB_TOKEN` must be set to an appropriate value.<br/> If the back-end is mounted to a different location, set `$VAULT_AUTH_GITHUB_MOUNT`. |
+| [`userpass`](https://developer.hashicorp.com/vault/docs/auth/userpass) | Environment variables `$VAULT_AUTH_USERNAME` and `$VAULT_AUTH_PASSWORD` must be set to the appropriate values.<br/> If the back-end is mounted to a different location, set `$VAULT_AUTH_USERPASS_MOUNT`. |
+| [`token`](https://developer.hashicorp.com/vault/docs/auth/token) | Determined from either the `$VAULT_TOKEN` environment variable, or read from the file `~/.vault-token` |
+| [`aws`](https://developer.hashicorp.com/vault/docs/auth/aws) | The env var  `$VAULT_AUTH_AWS_ROLE` defines the [role](https://developer.hashicorp.com/vault/api-docs/auth/aws#role-4) to log in with - defaults to the AMI ID of the EC2 instance. Usually a [Client Nonce](https://developer.hashicorp.com/vault/docs/auth/aws#client-nonce) should be used as well. Set `$VAULT_AUTH_AWS_NONCE` to the nonce value. The nonce can be generated and stored by setting `$VAULT_AUTH_AWS_NONCE_OUTPUT` to a path on the local filesystem.<br/>If the back-end is mounted to a different location, set `$VAULT_AUTH_AWS_MOUNT`.|
 
 _**Note:**_ The secret values listed in the above table can either be set in environment variables or provided in files. This can increase security when using [Docker Swarm Secrets](https://docs.docker.com/engine/swarm/secrets/), for example. To use files, specify the filename by appending `_FILE` to the environment variable, (i.e. `VAULT_USER_ID_FILE`). If the non-file variable is set, this will override any `_FILE` variable and the secret file will be ignored.
 
 ### Vault Permissions
 
-The correct capabilities must be allowed for the [authenticated](#vault-authentication) credentials. See the [Vault documentation](https://www.vaultproject.io/docs/concepts/policies.html#capabilities) for full details.
+The correct capabilities must be allowed for the [authenticated](#vault-authentication) credentials. See the [Vault documentation](https://developer.hashicorp.com/vault/docs/concepts/policies#capabilities) for full details.
 
 - regular secret read operations require the `read` capability
 - dynamic secret generation requires the `create` and `update` capabilities
@@ -694,7 +694,7 @@ The correct capabilities must be allowed for the [authenticated](#vault-authenti
 
 ### Vault Environment variables
 
-In addition to the variables documented [above](#vault-authentication), a number of environment variables are interpreted by the Vault client, and are documented in the [official Vault documentation](https://www.vaultproject.io/docs/commands/index.html#environment-variables).
+In addition to the variables documented [above](#vault-authentication), a number of environment variables are interpreted by the Vault client, and are documented in the [official Vault documentation](https://developer.hashicorp.com/vault/docs/commands#environment-variables).
 
 ### Examples
 
@@ -751,22 +751,22 @@ $ gomplate -d vault=vault:///secret/foo -i '{{ (ds "vault").value }}'
 
 The file `/tmp/vault-aws-nonce` will be created if it didn't already exist, and further executions of `gomplate` can re-authenticate securely.
 
-[`--datasource`/`-d`]: ../usage/#datasource-d
-[`--context`/`-c`]: ../usage/#context-c
+[`--datasource`/`-d`]: ../usage/#--datasource-d
+[`--context`/`-c`]: ../usage/#--context-c
 [context]: ../syntax/#the-context
-[`--datasource-header`/`-H`]: ../usage/#datasource-header-h
+[`--datasource-header`/`-H`]: ../usage/#--datasource-header-h
 [`defineDatasource`]: ../functions/data/#definedatasource
 [`datasource`]: ../functions/data/#datasource
 [`include`]: ../functions/data/#include
-[`data.CSV`]: ../functions/data/#data-csv
-[`data.JSON`]: ../functions/data/#data-json
+[`data.CSV`]: ../functions/data/#datacsv
+[`data.JSON`]: ../functions/data/#datajson
 [EJSON]: ../functions/data/#encrypted-json-support-ejson
-[`data.JSONArray`]: ../functions/data/#data-jsonarray
-[`data.TOML`]: ../functions/data/#data-toml
-[`data.YAML`]: ../functions/data/#data-yaml
-[`coll.Merge`]: ../functions/coll/#coll-merge
+[`data.JSONArray`]: ../functions/data/#datajsonarray
+[`data.TOML`]: ../functions/data/#datatoml
+[`data.YAML`]: ../functions/data/#datayaml
+[`coll.Merge`]: ../functions/coll/#collmerge
 
-[AWS SMP]: https://aws.amazon.com/systems-manager/features#Parameter_Store
+[AWS SMP]: https://docs.aws.amazon.com/systems-manager/latest/userguide/systems-manager-parameter-store.html
 [AWS Secrets Manager]: https://aws.amazon.com/secrets-manager
 [HashiCorp Consul]: https://consul.io
 [HashiCorp Vault]: https://vaultproject.io

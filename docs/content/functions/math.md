@@ -81,7 +81,7 @@ $ gomplate -i '{{ math.Add 1 2 3 4 }} {{ math.Add 1.5 2 3 }}'
 
 ## `math.Ceil`
 
-Returns the least integer value greater than or equal to a given floating-point number. This wraps Go's [`math.Ceil`](https://golang.org/pkg/math/#Ceil).
+Returns the least integer value greater than or equal to a given floating-point number. This wraps Go's [`math.Ceil`](https://pkg.go.dev/math/#Ceil).
 
 **Note:** the return value of this function is a `float64` so that the special-cases `NaN` and `Inf` can be returned appropriately.
 
@@ -143,7 +143,7 @@ $ gomplate -i '{{ math.Div 8 2 }} {{ math.Div 3 2 }}'
 
 ## `math.Floor`
 
-Returns the greatest integer value less than or equal to a given floating-point number. This wraps Go's [`math.Floor`](https://golang.org/pkg/math/#Floor).
+Returns the greatest integer value less than or equal to a given floating-point number. This wraps Go's [`math.Floor`](https://pkg.go.dev/math/#Floor).
 
 **Note:** the return value of this function is a `float64` so that the special-cases `NaN` and `Inf` can be returned appropriately.
 
@@ -256,7 +256,7 @@ false true
 
 ## `math.Max`
 
-Returns the largest number provided. If any values are floating-point numbers, a `float64` is returned, otherwise an `int64` is returned. The same special-cases as Go's [`math.Max`](https://golang.org/pkg/math/#Max) are followed.
+Returns the largest number provided. If any values are floating-point numbers, a `float64` is returned, otherwise an `int64` is returned. The same special-cases as Go's [`math.Max`](https://pkg.go.dev/math/#Max) are followed.
 
 _Added in gomplate [v2.6.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.6.0)_
 ### Usage
@@ -280,7 +280,7 @@ $ gomplate -i '{{ math.Max 0 8.0 4.5 "-1.5e-11" }}'
 
 ## `math.Min`
 
-Returns the smallest number provided. If any values are floating-point numbers, a `float64` is returned, otherwise an `int64` is returned. The same special-cases as Go's [`math.Min`](https://golang.org/pkg/math/#Min) are followed.
+Returns the smallest number provided. If any values are floating-point numbers, a `float64` is returned, otherwise an `int64` is returned. The same special-cases as Go's [`math.Min`](https://pkg.go.dev/math/#Min) are followed.
 
 _Added in gomplate [v2.6.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.6.0)_
 ### Usage
@@ -332,7 +332,7 @@ $ gomplate -i '{{ math.Mul 8 8 2 }}'
 
 **Alias:** `pow`
 
-Calculate an exponent - _b<sup>n</sup>_. This wraps Go's [`math.Pow`](https://golang.org/pkg/math/#Pow). If any values are floating-point numbers, a `float64` is returned, otherwise an `int64` is returned.
+Calculate an exponent - _b<sup>n</sup>_. This wraps Go's [`math.Pow`](https://pkg.go.dev/math/#Pow). If any values are floating-point numbers, a `float64` is returned, otherwise an `int64` is returned.
 
 _Added in gomplate [v2.2.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.2.0)_
 ### Usage

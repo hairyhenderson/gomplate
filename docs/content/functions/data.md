@@ -11,7 +11,7 @@ A collection of functions that retrieve, parse, and convert structured data.
 
 **Alias:** `ds`
 
-Parses a given datasource (provided by the [`--datasource/-d`](../../usage/#datasource-d) argument or [`defineDatasource`](#definedatasource)).
+Parses a given datasource (provided by the [`--datasource/-d`](../../usage/#--datasource-d) argument or [`defineDatasource`](#definedatasource)).
 
 If the `alias` is undefined, but is a valid URL, `datasource` will dynamically read from that URL.
 
@@ -46,7 +46,7 @@ Hello Dave
 ## `datasourceExists`
 
 Tests whether or not a given datasource was defined on the commandline (with the
-[`--datasource/-d`](../../usage/#datasource-d) argument). This is intended mainly to allow
+[`--datasource/-d`](../../usage/#--datasource-d) argument). This is intended mainly to allow
 a template to be rendered differently whether or not a given datasource was
 defined.
 
@@ -122,7 +122,7 @@ Datasource-person
 
 ## `defineDatasource`
 
-Define a datasource alias with target URL inside the template. Overridden by the [`--datasource/-d`](../../usage/#datasource-d) flag.
+Define a datasource alias with target URL inside the template. Overridden by the [`--datasource/-d`](../../usage/#--datasource-d) flag.
 
 Note: once a datasource is defined, it can not be redefined (i.e. if this function is called twice with the same alias, only the first applies).
 
@@ -160,7 +160,7 @@ Hello Daisy
 
 ## `include`
 
-Includes the content of a given datasource (provided by the [`--datasource/-d`](../../usage/#datasource-d) argument).
+Includes the content of a given datasource (provided by the [`--datasource/-d`](../../usage/#--datasource-d) argument).
 
 This is similar to [`datasource`](#datasource), except that the data is not parsed. There is no restriction on the type of data included, except that it should be textual.
 
@@ -175,7 +175,7 @@ include alias [subpath]
 
 | name | description |
 |------|-------------|
-| `alias` | _(required)_ the datasource alias, as provided by [`--datasource/-d`](../../usage/#datasource-d) |
+| `alias` | _(required)_ the datasource alias, as provided by [`--datasource/-d`](../../usage/#--datasource-d) |
 | `subpath` | _(optional)_ the subpath to use, if supported by the datasource |
 
 ### Examples
@@ -210,7 +210,7 @@ $ gomplate -d person.json -f input.tmpl
 Converts a JSON string into an object. Works for JSON Objects, but will
 also parse JSON Arrays. Will not parse other valid JSON types.
 
-For more explict JSON Array support, see [`data.JSONArray`](#data-jsonarray).
+For more explict JSON Array support, see [`data.JSONArray`](#datajsonarray).
 
 #### Encrypted JSON support (EJSON)
 
@@ -291,7 +291,7 @@ Hello world
 Converts a YAML string into an object. Works for YAML Objects but will
 also parse YAML Arrays. This can be used to access properties of YAML objects.
 
-For more explict YAML Array support, see [`data.JSONArray`](#data-yamlarray).
+For more explict YAML Array support, see [`data.JSONArray`](#datayamlarray).
 
 _Added in gomplate [v2.0.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.0.0)_
 ### Usage
@@ -496,7 +496,7 @@ COBOL has 357 keywords.
 
 **Alias:** `csvByColumn`
 
-Like [`csvByRow`](#csvByRow), except that the data is presented as a columnar
+Like [`csvByRow`](#datacsvbyrow), except that the data is presented as a columnar
 (column-oriented) map.
 
 _Added in gomplate [v2.0.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.0.0)_
@@ -616,7 +616,7 @@ $ gomplate < input.tmpl
 Converts an object to a pretty-printed (or _indented_) JSON document.
 Input objects may be the result of functions like `data.JSON`, `data.YAML`,
 `data.JSONArray`, or `data.YAMLArray` functions, or they could be provided
-by a [`datasource`](../general/datasource).
+by a [`datasource`](../datasources).
 
 The indent string must be provided as an argument.
 
@@ -657,7 +657,7 @@ $ gomplate < input.tmpl
 
 Converts an object to a YAML document. Input objects may be the result of
 `data.JSON`, `data.YAML`, `data.JSONArray`, or `data.YAMLArray` functions,
-or they could be provided by a [`datasource`](../general/datasource).
+or they could be provided by a [`datasource`](../datasources).
 
 _Added in gomplate [v2.0.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.0.0)_
 ### Usage
@@ -723,14 +723,14 @@ foo = "bar"
 **Alias:** `toCSV`
 
 Converts an object to a CSV document. The input object must be a 2-dimensional
-array of strings (a `[][]string`). Objects produced by [`data.CSVByRow`](#conv-csvbyrow)
-and [`data.CSVByColumn`](#conv-csvbycolumn) cannot yet be converted back to CSV documents.
+array of strings (a `[][]string`). Objects produced by [`data.CSVByRow`](#datacsvbyrow)
+and [`data.CSVByColumn`](#datacsvbycolumn) cannot yet be converted back to CSV documents.
 
 **Note:** With the exception that a custom delimiter can be used, `data.ToCSV`
 outputs according to the [RFC 4180](https://tools.ietf.org/html/rfc4180) format,
 which means that line terminators are `CRLF` (Windows format, or `\r\n`). If
 you require `LF` (UNIX format, or `\n`), the output can be piped through
-[`strings.ReplaceAll`](../strings/#strings-replaceall) to replace `"\r\n"` with `"\n"`.
+[`strings.ReplaceAll`](../strings/#stringsreplaceall) to replace `"\r\n"` with `"\n"`.
 
 _Added in gomplate [v2.0.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.0.0)_
 ### Usage

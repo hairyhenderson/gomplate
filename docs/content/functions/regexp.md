@@ -7,7 +7,7 @@ menu:
 
 These functions allow user you to search and modify text with regular expressions.
 
-The syntax of the regular expressions accepted is [Go's `regexp` syntax](https://golang.org/pkg/regexp/syntax/#hdr-Syntax),
+The syntax of the regular expressions accepted is [Go's `regexp` syntax](https://pkg.go.dev/regexp/syntax/#hdr-Syntax),
 and is the same general syntax used by Perl, Python, and other languages.
 
 ## `regexp.Find`
@@ -16,7 +16,7 @@ Returns a string holding the text of the leftmost match in `input`
 of the regular expression `expression`.
 
 This function provides the same behaviour as Go's
-[`regexp.FindString`](https://golang.org/pkg/regexp/#Regexp.FindString) function.
+[`regexp.FindString`](https://pkg.go.dev/regexp/#Regexp.FindString) function.
 
 _Added in gomplate [v3.1.0](https://github.com/hairyhenderson/gomplate/releases/tag/v3.1.0)_
 ### Usage
@@ -55,7 +55,7 @@ This can be called with 2 or 3 arguments. When called with 2 arguments, the
 to be returned.
 
 This function provides the same behaviour as Go's
-[`regexp.FindAllString`](https://golang.org/pkg/regexp/#Regexp.FindAllString) function.
+[`regexp.FindAllString`](https://pkg.go.dev/regexp#Regexp.FindAllString) function.
 
 _Added in gomplate [v3.1.0](https://github.com/hairyhenderson/gomplate/releases/tag/v3.1.0)_
 ### Usage
@@ -121,7 +121,7 @@ username (hairyhenderson) starts with h!
 Escapes all regular expression metacharacters in the input. The returned string is a regular expression matching the literal text.
 
 This function provides the same behaviour as Go's
-[`regexp.QuoteMeta`](https://golang.org/pkg/regexp/#Regexp.QuoteMeta) function.
+[`regexp.QuoteMeta`](https://pkg.go.dev/regexp#QuoteMeta) function.
 
 _Added in gomplate [v3.7.0](https://github.com/hairyhenderson/gomplate/releases/tag/v3.7.0)_
 ### Usage
@@ -153,7 +153,7 @@ Replaces matches of a regular expression with the replacement string.
 The replacement is substituted after expanding variables beginning with `$`.
 
 This function provides the same behaviour as Go's
-[`regexp.ReplaceAllString`](https://golang.org/pkg/regexp/#Regexp.ReplaceAllString) function.
+[`regexp.ReplaceAllString`](https://pkg.go.dev/regexp/#Regexp.ReplaceAllString) function.
 
 _Added in gomplate [v1.9.0](https://github.com/hairyhenderson/gomplate/releases/tag/v1.9.0)_
 ### Usage
@@ -192,7 +192,7 @@ The replacement is substituted directly, without expanding variables
 beginning with `$`.
 
 This function provides the same behaviour as Go's
-[`regexp.ReplaceAllLiteralString`](https://golang.org/pkg/regexp/#Regexp.ReplaceAllLiteralString) function.
+[`regexp.ReplaceAllLiteralString`](https://pkg.go.dev/regexp/#Regexp.ReplaceAllLiteralString) function.
 
 _Added in gomplate [v3.1.0](https://github.com/hairyhenderson/gomplate/releases/tag/v3.1.0)_
 ### Usage
@@ -231,11 +231,11 @@ This can be called with 2 or 3 arguments. When called with 2 arguments, the
 `n` argument (number of matches) will be set to `-1`, causing all sub-strings
 to be returned.
 
-This is equivalent to [`strings.SplitN`](../strings/#strings-splitn),
+This is equivalent to [`strings.SplitN`](../strings/#stringssplitn),
 except that regular expressions are supported.
 
 This function provides the same behaviour as Go's
-[`regexp.Split`](https://golang.org/pkg/regexp/#Regexp.Split) function.
+[`regexp.Split`](https://pkg.go.dev/regexp/#Regexp.Split) function.
 
 _Added in gomplate [v3.1.0](https://github.com/hairyhenderson/gomplate/releases/tag/v3.1.0)_
 ### Usage

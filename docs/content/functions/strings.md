@@ -10,7 +10,7 @@ menu:
 
 Abbreviates a string using `...` (ellipses). Takes an optional offset from the beginning of the string, and a maximum final width (including added ellipses).
 
-_Also see [`strings.Trunc`](#strings-trunc)._
+_Also see [`strings.Trunc`](#stringstrunc)._
 
 _Added in gomplate [v2.6.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.6.0)_
 ### Usage
@@ -188,7 +188,7 @@ foo:
 ```
 
 ## `strings.Sort` _(deprecated)_
-**Deprecation Notice:** Use [`coll.Sort`](../coll/#coll-sort) instead
+**Deprecation Notice:** Use [`coll.Sort`](../coll/#collsort) instead
 
 Returns an alphanumerically-sorted copy of a given string list.
 
@@ -254,7 +254,7 @@ baz
 
 ## `strings.Split`
 
-_Not to be confused with [`split`](#split), which is deprecated._
+_Not to be confused with [`split`](#split-_deprecated_), which is deprecated._
 
 Slices `input` into the substrings separated by `separator`, returning a
 slice of the substrings between those separators. If `input` does not
@@ -265,7 +265,7 @@ If `separator` is empty, it will split after each UTF-8 sequence. If
 both inputs are empty (i.e. `strings.Split "" ""`), it will return an
 empty slice.
 
-This is equivalent to [`strings.SplitN`](#strings-splitn) with a `count`
+This is equivalent to [`strings.SplitN`](#stringssplitn) with a `count`
 of `-1`.
 
 Note that the delimiter is not included in the resulting elements.
@@ -305,7 +305,7 @@ Three
 
 ## `strings.SplitN`
 
-_Not to be confused with [`splitN`](#splitn), which is deprecated._
+_Not to be confused with [`splitN`](#splitn-_deprecated_), which is deprecated._
 
 Slices `input` into the substrings separated by `separator`, returning a
 slice of the substrings between those separators. If `input` does not
@@ -319,7 +319,7 @@ The `count` determines the number of substrings to return:
 * `count == 0`: the result is nil (zero substrings)
 * `count < 0`: all substrings
 
-See [`strings.Split`](#strings-split) for more details.
+See [`strings.Split`](#stringssplit) for more details.
 
 _Added in gomplate [v1.9.0](https://github.com/hairyhenderson/gomplate/releases/tag/v1.9.0)_
 ### Usage
@@ -393,7 +393,7 @@ Returns a new string consisting of `count` copies of the input string.
 
 It errors if `count` is negative or if the length of `input` multiplied by `count` overflows.
 
-This wraps Go's [`strings.Repeat`](https://golang.org/pkg/strings/#Repeat).
+This wraps Go's [`strings.Repeat`](https://pkg.go.dev/strings/#Repeat).
 
 _Added in gomplate [v2.6.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.6.0)_
 ### Usage
@@ -673,7 +673,7 @@ foo
 
 Returns a string without the provided leading prefix string, if the prefix is present.
 
-This wraps Go's [`strings.TrimPrefix`](https://golang.org/pkg/strings/#TrimPrefix).
+This wraps Go's [`strings.TrimPrefix`](https://pkg.go.dev/strings/#TrimPrefix).
 
 _Added in gomplate [v2.5.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.5.0)_
 ### Usage
@@ -733,7 +733,7 @@ foo
 
 Returns a string without the provided trailing suffix string, if the suffix is present.
 
-This wraps Go's [`strings.TrimSuffix`](https://golang.org/pkg/strings/#TrimSuffix).
+This wraps Go's [`strings.TrimSuffix`](https://pkg.go.dev/strings/#TrimSuffix).
 
 _Added in gomplate [v2.6.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.6.0)_
 ### Usage
@@ -763,7 +763,7 @@ hello, jello
 
 Returns a string truncated to the given length.
 
-_Also see [`strings.Abbrev`](#strings-abbrev)._
+_Also see [`strings.Abbrev`](#stringsabbrev)._
 
 _Added in gomplate [v2.6.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.6.0)_
 ### Usage
@@ -948,7 +948,7 @@ code-points should therefore be measured with `strings.RuneCount`.
 Inputs will first be converted to strings, and multiple inputs are
 concatenated.
 
-This wraps Go's [`utf8.RuneCountInString`](https://golang.org/pkg/unicode/utf8/#RuneCountInString)
+This wraps Go's [`utf8.RuneCountInString`](https://pkg.go.dev/unicode/utf8/#RuneCountInString)
 function.
 
 _Added in gomplate [v3.4.0](https://github.com/hairyhenderson/gomplate/releases/tag/v3.4.0)_
@@ -977,12 +977,12 @@ $ gomplate -i '{{ range (coll.Slice "\u03a9" "\u0030" "\u1430") }}{{ printf "%s 
 ```
 
 ## `contains` _(deprecated)_
-**Deprecation Notice:** Use [`strings.Contains`](#strings-contains) instead
+**Deprecation Notice:** Use [`strings.Contains`](#stringscontains) instead
 
-**See [`strings.Contains`](#strings-contains) for a pipeline-compatible version**
+**See [`strings.Contains`](#stringscontains) for a pipeline-compatible version**
 
 Contains reports whether the second string is contained within the first. Equivalent to
-[strings.Contains](https://golang.org/pkg/strings#Contains)
+[strings.Contains](https://pkg.go.dev/strings#Contains)
 
 _Added in gomplate [v1.4.0](https://github.com/hairyhenderson/gomplate/releases/tag/v1.4.0)_
 ### Usage
@@ -1013,12 +1013,12 @@ no
 ```
 
 ## `hasPrefix` _(deprecated)_
-**Deprecation Notice:** Use [`strings.HasPrefix`](#strings-hasprefix) instead
+**Deprecation Notice:** Use [`strings.HasPrefix`](#stringshasprefix) instead
 
-**See [`strings.HasPrefix`](#strings-hasprefix) for a pipeline-compatible version**
+**See [`strings.HasPrefix`](#stringshasprefix) for a pipeline-compatible version**
 
 Tests whether the string begins with a certain substring. Equivalent to
-[strings.HasPrefix](https://golang.org/pkg/strings#HasPrefix)
+[strings.HasPrefix](https://pkg.go.dev/strings#HasPrefix)
 
 _Added in gomplate [v1.4.0](https://github.com/hairyhenderson/gomplate/releases/tag/v1.4.0)_
 ### Usage
@@ -1049,12 +1049,12 @@ foo
 ```
 
 ## `hasSuffix` _(deprecated)_
-**Deprecation Notice:** Use [`strings.HasSuffix`](#strings-hassuffix) instead
+**Deprecation Notice:** Use [`strings.HasSuffix`](#stringshassuffix) instead
 
-**See [`strings.HasSuffix`](#strings-hassuffix) for a pipeline-compatible version**
+**See [`strings.HasSuffix`](#stringshassuffix) for a pipeline-compatible version**
 
 Tests whether the string ends with a certain substring. Equivalent to
-[strings.HasSuffix](https://golang.org/pkg/strings#HasSuffix)
+[strings.HasSuffix](https://pkg.go.dev/strings#HasSuffix)
 
 _Added in gomplate [v1.4.0](https://github.com/hairyhenderson/gomplate/releases/tag/v1.4.0)_
 ### Usage
@@ -1083,12 +1083,12 @@ http://example.com:80
 ```
 
 ## `split` _(deprecated)_
-**Deprecation Notice:** Use [`strings.Split`](#strings-split) instead
+**Deprecation Notice:** Use [`strings.Split`](#stringssplit) instead
 
-**See [`strings.Split`](#strings-split) for a pipeline-compatible version**
+**See [`strings.Split`](#stringssplit) for a pipeline-compatible version**
 
 Creates a slice by splitting a string on a given delimiter. Equivalent to
-[strings.Split](https://golang.org/pkg/strings#Split)
+[strings.Split](https://pkg.go.dev/strings#Split)
 
 _Added in gomplate [v1.4.0](https://github.com/hairyhenderson/gomplate/releases/tag/v1.4.0)_
 ### Usage
@@ -1115,12 +1115,12 @@ Hello, Maggie
 ```
 
 ## `splitN` _(deprecated)_
-**Deprecation Notice:** Use [`strings.SplitN`](#strings-splitn) instead
+**Deprecation Notice:** Use [`strings.SplitN`](#stringssplitn) instead
 
-**See [`strings.SplitN`](#strings-splitn) for a pipeline-compatible version**
+**See [`strings.SplitN`](#stringssplitn) for a pipeline-compatible version**
 
 Creates a slice by splitting a string on a given delimiter. The count determines
-the number of substrings to return. Equivalent to [strings.SplitN](https://golang.org/pkg/strings#SplitN)
+the number of substrings to return. Equivalent to [strings.SplitN](https://pkg.go.dev/strings#SplitN)
 
 _Added in gomplate [v1.7.0](https://github.com/hairyhenderson/gomplate/releases/tag/v1.7.0)_
 ### Usage
@@ -1147,12 +1147,12 @@ bar:baz
 ```
 
 ## `trim` _(deprecated)_
-**Deprecation Notice:** Use [`strings.Trim`](#strings-trim) instead
+**Deprecation Notice:** Use [`strings.Trim`](#stringstrim) instead
 
-**See [`strings.Trim`](#strings-trim) for a pipeline-compatible version**
+**See [`strings.Trim`](#stringstrim) for a pipeline-compatible version**
 
 Trims a string by removing the given characters from the beginning and end of
-the string. Equivalent to [strings.Trim](https://golang.org/pkg/strings/#Trim)
+the string. Equivalent to [strings.Trim](https://pkg.go.dev/strings/#Trim)
 
 _Added in gomplate [v1.4.0](https://github.com/hairyhenderson/gomplate/releases/tag/v1.4.0)_
 ### Usage

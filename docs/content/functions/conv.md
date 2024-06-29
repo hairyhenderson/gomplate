@@ -12,7 +12,7 @@ to another - generally from a `string` to something else, and vice-versa.
 
 **Alias:** `bool`
 
-**Note:** See also [`conv.ToBool`](#conv-tobool) for a more flexible variant.
+**Note:** See also [`conv.ToBool`](#convtobool) for a more flexible variant.
 
 Converts a true-ish string to a boolean. Can be used to simplify conditional statements based on environment variables or other text input.
 
@@ -55,7 +55,7 @@ types, `""` for strings, `false` for booleans, empty arrays/maps, and `nil`.
 
 Note that this will not provide a default for the case where the input is undefined
 (i.e. referencing things like `.foo` where there is no `foo` field of `.`), but
-[`conv.Has`](#conv-has) can be used for that.
+[`coll.Has`](../coll/#collhas) can be used for that.
 
 _Added in gomplate [v2.5.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.5.0)_
 ### Usage
@@ -82,7 +82,7 @@ foo bar
 ```
 
 ## `conv.Dict` _(deprecated)_
-**Deprecation Notice:** Renamed to [`coll.Dict`](#coll-dict)
+**Deprecation Notice:** Renamed to [`coll.Dict`](../coll/#colldict)
 
 **Alias:** `dict`
 
@@ -94,11 +94,11 @@ set as the value.
 All keys are converted to strings.
 
 This function is equivalent to [Sprig's `dict`](http://masterminds.github.io/sprig/dicts.html#dict)
-function, as used in [Helm templates](https://docs.helm.sh/chart_template_guide#template-functions-and-pipelines).
+function, as used in [Helm templates](https://helm.sh/docs/chart_template_guide/functions_and_pipelines/).
 
-For creating more complex maps, see [`data.JSON`](../data/#data-json) or [`data.YAML`](../data/#data-yaml).
+For creating more complex maps, see [`data.JSON`](../data/#datajson) or [`data.YAML`](../data/#datayaml).
 
-For creating arrays, see [`coll.Slice`](#coll-slice).
+For creating arrays, see [`coll.Slice`](../coll/#collslice-_deprecated_).
 
 _Added in gomplate [v3.0.0](https://github.com/hairyhenderson/gomplate/releases/tag/v3.0.0)_
 ### Usage
@@ -133,7 +133,7 @@ Hello everybody!
 ```
 
 ## `conv.Slice` _(deprecated)_
-**Deprecation Notice:** Renamed to [`coll.Slice`](#coll-slice)
+**Deprecation Notice:** Renamed to [`coll.Slice`](../coll/#collslice-_deprecated_)
 
 **Alias:** `slice`
 
@@ -162,7 +162,7 @@ Hello, Maggie
 ```
 
 ## `conv.Has` _(deprecated)_
-**Deprecation Notice:** Renamed to [`coll.Has`](#coll-has)
+**Deprecation Notice:** Renamed to [`coll.Has`](../coll/#collhas)
 
 **Alias:** `has`
 
@@ -232,7 +232,7 @@ $ gomplate -i '{{ $a := coll.Slice 1 2 3 }}{{ join $a "-" }}'
 
 **Alias:** `urlParse`
 
-Parses a string as a URL for later use. Equivalent to [url.Parse](https://golang.org/pkg/net/url/#Parse)
+Parses a string as a URL for later use. Equivalent to [url.Parse](https://pkg.go.dev/net/url/#Parse)
 
 Any of `url.URL`'s methods can be called on the result.
 
@@ -273,9 +273,9 @@ https://user:xxxxx@example.com
 
 ## `conv.ParseInt`
 
-_**Note:**_ See [`conv.ToInt64`](#conv-toint64) instead for a simpler and more flexible variant of this function.
+_**Note:**_ See [`conv.ToInt64`](#convtoint64) instead for a simpler and more flexible variant of this function.
 
-Parses a string as an int64. Equivalent to [strconv.ParseInt](https://golang.org/pkg/strconv/#ParseInt)
+Parses a string as an int64. Equivalent to [strconv.ParseInt](https://pkg.go.dev/strconv/#ParseInt)
 
 _Added in gomplate [v1.4.0](https://github.com/hairyhenderson/gomplate/releases/tag/v1.4.0)_
 ### Usage
@@ -301,9 +301,9 @@ The value in decimal is 1984
 
 ## `conv.ParseFloat`
 
-_**Note:**_ See [`conv.ToFloat`](#conv-tofloat) instead for a simpler and more flexible variant of this function.
+_**Note:**_ See [`conv.ToFloat64`](#convtofloat64) instead for a simpler and more flexible variant of this function.
 
-Parses a string as an float64 for later use. Equivalent to [strconv.ParseFloat](https://golang.org/pkg/strconv/#ParseFloat)
+Parses a string as an float64 for later use. Equivalent to [strconv.ParseFloat](https://pkg.go.dev/strconv/#ParseFloat)
 
 _Added in gomplate [v1.4.0](https://github.com/hairyhenderson/gomplate/releases/tag/v1.4.0)_
 ### Usage
@@ -330,7 +330,7 @@ pi is greater than 3
 
 ## `conv.ParseUint`
 
-Parses a string as an uint64 for later use. Equivalent to [strconv.ParseUint](https://golang.org/pkg/strconv/#ParseUint)
+Parses a string as an uint64 for later use. Equivalent to [strconv.ParseUint](https://pkg.go.dev/strconv/#ParseUint)
 
 _Added in gomplate [v1.4.0](https://github.com/hairyhenderson/gomplate/releases/tag/v1.4.0)_
 ### Usage
@@ -356,9 +356,9 @@ $ BIG=FFFFFFFFFFFFFFFF gomplate < input.tmpl
 
 ## `conv.Atoi`
 
-_**Note:**_ See [`conv.ToInt`](#conv-toint) and [`conv.ToInt64`](#conv-toint64) instead for simpler and more flexible variants of this function.
+_**Note:**_ See [`conv.ToInt`](#convtoint) and [`conv.ToInt64`](#convtoint64) instead for simpler and more flexible variants of this function.
 
-Parses a string as an int for later use. Equivalent to [strconv.Atoi](https://golang.org/pkg/strconv/#Atoi)
+Parses a string as an int for later use. Equivalent to [strconv.Atoi](https://pkg.go.dev/strconv/#Atoi)
 
 _Added in gomplate [v1.4.0](https://github.com/hairyhenderson/gomplate/releases/tag/v1.4.0)_
 ### Usage
@@ -490,7 +490,7 @@ $ gomplate -i '{{conv.ToInt64 true }}'
 ## `conv.ToInt`
 
 Converts the input to an `int` (signed integer, 32- or 64-bit depending
-on platform). This is similar to [`conv.ToInt64`](#conv-toint64) on 64-bit
+on platform). This is similar to [`conv.ToInt64`](#convtoint64) on 64-bit
 platforms, but is useful when input to another function must be provided
 as an `int`.
 
@@ -501,7 +501,7 @@ the result is `-1`. This is done to protect against
 [CWE-190](https://cwe.mitre.org/data/definitions/190.html) and
 [CWE-681](https://cwe.mitre.org/data/definitions/681.html).
 
-See also [`conv.ToInt64`](#conv-toint64).
+See also [`conv.ToInt64`](#convtoint64).
 
 _Added in gomplate [v2.2.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.2.0)_
 ### Usage
@@ -537,7 +537,7 @@ Converts the inputs to an array of `int64`s.
 
 Unconvertable inputs will result in errors.
 
-This delegates to [`conv.ToInt64`](#conv-toint64) for each input argument.
+This delegates to [`conv.ToInt64`](#convtoint64) for each input argument.
 
 _Added in gomplate [v2.2.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.2.0)_
 ### Usage
@@ -565,7 +565,7 @@ Converts the inputs to an array of `int`s.
 
 Unconvertable inputs will result in errors.
 
-This delegates to [`conv.ToInt`](#conv-toint) for each input argument.
+This delegates to [`conv.ToInt`](#convtoint) for each input argument.
 
 _Added in gomplate [v2.2.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.2.0)_
 ### Usage
@@ -625,7 +625,7 @@ Converts the inputs to an array of `float64`s.
 
 Unconvertable inputs will result in errors.
 
-This delegates to [`conv.ToFloat64`](#conv-tofloat64) for each input argument.
+This delegates to [`conv.ToFloat64`](#convtofloat64) for each input argument.
 
 _Added in gomplate [v2.2.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.2.0)_
 ### Usage
@@ -681,7 +681,7 @@ nil
 
 Converts the inputs (of any type) to an array of `string`s
 
-This delegates to [`conv.ToString`](#conv-tostring) for each input argument.
+This delegates to [`conv.ToString`](#convtostring) for each input argument.
 
 _Added in gomplate [v2.5.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.5.0)_
 ### Usage

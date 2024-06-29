@@ -209,7 +209,7 @@ $ gomplate -i '{{ sockaddr.GetAllInterfaces | sockaddr.Exclude "type" "ipv6" }}'
 Returns an array of `IfAddr`s filtered by interfaces that match the given
 selector's value.
 
-This is the inverse of `sockaddr.Exclude`. See [`sockaddr.Exclude`](#sockaddr.Exclude) for details.
+This is the inverse of `sockaddr.Exclude`. See [`sockaddr.Exclude`](#sockaddrexclude) for details.
 
 _Added in gomplate [v2.4.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.4.0)_
 ### Usage

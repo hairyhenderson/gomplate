@@ -143,9 +143,9 @@ d
 
 ## `file.Stat`
 
-Returns a [`os.FileInfo`](https://golang.org/pkg/os/#FileInfo) describing the named path.
+Returns a [`os.FileInfo`](https://pkg.go.dev/os/#FileInfo) describing the named path.
 
-Essentially a wrapper for Go's [`os.Stat`](https://golang.org/pkg/os/#Stat) function.
+Essentially a wrapper for Go's [`os.Stat`](https://pkg.go.dev/os/#Stat) function.
 
 _Added in gomplate [v2.4.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.4.0)_
 ### Usage
@@ -173,13 +173,13 @@ $ gomplate -i '{{ $s := file.Stat "/tmp/foo" }}{{ $s.Mode }} {{ $s.Size }} {{ $s
 
 ## `file.Walk`
 
-Like a recursive [`file.ReadDir`](#file-readdir), recursively walks the file tree rooted at `path`, and returns an array of all files and directories contained within.
+Like a recursive [`file.ReadDir`](#filereaddir), recursively walks the file tree rooted at `path`, and returns an array of all files and directories contained within.
 
 The files are walked in lexical order, which makes the output deterministic but means that for very large directories can be inefficient.
 
 Walk does not follow symbolic links.
 
-Similar to Go's [`filepath.Walk`](https://golang.org/pkg/path/filepath/#Walk) function.
+Similar to Go's [`filepath.Walk`](https://pkg.go.dev/path/filepath/#Walk) function.
 
 _Added in gomplate [v2.6.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.6.0)_
 ### Usage

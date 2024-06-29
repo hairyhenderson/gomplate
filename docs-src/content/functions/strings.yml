@@ -6,7 +6,7 @@ funcs:
     description: |
       Abbreviates a string using `...` (ellipses). Takes an optional offset from the beginning of the string, and a maximum final width (including added ellipses).
 
-      _Also see [`strings.Trunc`](#strings-trunc)._
+      _Also see [`strings.Trunc`](#stringstrunc)._
     pipeline: true
     arguments:
       - name: offset
@@ -133,7 +133,7 @@ funcs:
         ```
   - name: strings.Sort
     released: v2.7.0
-    deprecated: Use [`coll.Sort`](../coll/#coll-sort) instead
+    deprecated: Use [`coll.Sort`](../coll/#collsort) instead
     description: |
       Returns an alphanumerically-sorted copy of a given string list.
     pipeline: true
@@ -172,7 +172,7 @@ funcs:
   - name: strings.Split
     released: v1.9.0
     description: |
-      _Not to be confused with [`split`](#split), which is deprecated._
+      _Not to be confused with [`split`](#split-_deprecated_), which is deprecated._
 
       Slices `input` into the substrings separated by `separator`, returning a
       slice of the substrings between those separators. If `input` does not
@@ -183,7 +183,7 @@ funcs:
       both inputs are empty (i.e. `strings.Split "" ""`), it will return an
       empty slice.
 
-      This is equivalent to [`strings.SplitN`](#strings-splitn) with a `count`
+      This is equivalent to [`strings.SplitN`](#stringssplitn) with a `count`
       of `-1`.
 
       Note that the delimiter is not included in the resulting elements.
@@ -210,7 +210,7 @@ funcs:
   - name: strings.SplitN
     released: v1.9.0
     description: |
-      _Not to be confused with [`splitN`](#splitn), which is deprecated._
+      _Not to be confused with [`splitN`](#splitn-_deprecated_), which is deprecated._
 
       Slices `input` into the substrings separated by `separator`, returning a
       slice of the substrings between those separators. If `input` does not
@@ -224,7 +224,7 @@ funcs:
       * `count == 0`: the result is nil (zero substrings)
       * `count < 0`: all substrings
 
-      See [`strings.Split`](#strings-split) for more details.
+      See [`strings.Split`](#stringssplit) for more details.
     pipeline: true
     arguments:
       - name: separator
@@ -273,7 +273,7 @@ funcs:
 
       It errors if `count` is negative or if the length of `input` multiplied by `count` overflows.
 
-      This wraps Go's [`strings.Repeat`](https://golang.org/pkg/strings/#Repeat).
+      This wraps Go's [`strings.Repeat`](https://pkg.go.dev/strings/#Repeat).
     pipeline: true
     arguments:
       - name: count
@@ -426,7 +426,7 @@ funcs:
     description: |
       Returns a string without the provided leading prefix string, if the prefix is present.
 
-      This wraps Go's [`strings.TrimPrefix`](https://golang.org/pkg/strings/#TrimPrefix).
+      This wraps Go's [`strings.TrimPrefix`](https://pkg.go.dev/strings/#TrimPrefix).
     pipeline: true
     arguments:
       - name: prefix
@@ -459,7 +459,7 @@ funcs:
     description: |
       Returns a string without the provided trailing suffix string, if the suffix is present.
 
-      This wraps Go's [`strings.TrimSuffix`](https://golang.org/pkg/strings/#TrimSuffix).
+      This wraps Go's [`strings.TrimSuffix`](https://pkg.go.dev/strings/#TrimSuffix).
     pipeline: true
     arguments:
       - name: suffix
@@ -477,7 +477,7 @@ funcs:
     description: |
       Returns a string truncated to the given length.
 
-      _Also see [`strings.Abbrev`](#strings-abbrev)._
+      _Also see [`strings.Abbrev`](#stringsabbrev)._
     pipeline: true
     arguments:
       - name: length
@@ -594,7 +594,7 @@ funcs:
       Inputs will first be converted to strings, and multiple inputs are
       concatenated.
 
-      This wraps Go's [`utf8.RuneCountInString`](https://golang.org/pkg/unicode/utf8/#RuneCountInString)
+      This wraps Go's [`utf8.RuneCountInString`](https://pkg.go.dev/unicode/utf8/#RuneCountInString)
       function.
     pipeline: true
     arguments:
@@ -608,13 +608,13 @@ funcs:
         0 is 1 bytes and 1 runes
         ᐰ is 3 bytes and 1 runes
   - name: contains
-    deprecated: Use [`strings.Contains`](#strings-contains) instead
+    deprecated: Use [`strings.Contains`](#stringscontains) instead
     released: v1.4.0
     description: |
-      **See [`strings.Contains`](#strings-contains) for a pipeline-compatible version**
+      **See [`strings.Contains`](#stringscontains) for a pipeline-compatible version**
 
       Contains reports whether the second string is contained within the first. Equivalent to
-      [strings.Contains](https://golang.org/pkg/strings#Contains)
+      [strings.Contains](https://pkg.go.dev/strings#Contains)
     pipeline: false
     arguments:
       - name: input
@@ -637,13 +637,13 @@ funcs:
         no
         ```
   - name: hasPrefix
-    deprecated: Use [`strings.HasPrefix`](#strings-hasprefix) instead
+    deprecated: Use [`strings.HasPrefix`](#stringshasprefix) instead
     released: v1.4.0
     description: |
-      **See [`strings.HasPrefix`](#strings-hasprefix) for a pipeline-compatible version**
+      **See [`strings.HasPrefix`](#stringshasprefix) for a pipeline-compatible version**
 
       Tests whether the string begins with a certain substring. Equivalent to
-      [strings.HasPrefix](https://golang.org/pkg/strings#HasPrefix)
+      [strings.HasPrefix](https://pkg.go.dev/strings#HasPrefix)
     pipeline: false
     arguments:
       - name: input
@@ -666,13 +666,13 @@ funcs:
         foo
         ```
   - name: hasSuffix
-    deprecated: Use [`strings.HasSuffix`](#strings-hassuffix) instead
+    deprecated: Use [`strings.HasSuffix`](#stringshassuffix) instead
     released: v1.4.0
     description: |
-      **See [`strings.HasSuffix`](#strings-hassuffix) for a pipeline-compatible version**
+      **See [`strings.HasSuffix`](#stringshassuffix) for a pipeline-compatible version**
 
       Tests whether the string ends with a certain substring. Equivalent to
-      [strings.HasSuffix](https://golang.org/pkg/strings#HasSuffix)
+      [strings.HasSuffix](https://pkg.go.dev/strings#HasSuffix)
     pipeline: false
     arguments:
       - name: input
@@ -693,13 +693,13 @@ funcs:
         http://example.com:80
         ```
   - name: split
-    deprecated: Use [`strings.Split`](#strings-split) instead
+    deprecated: Use [`strings.Split`](#stringssplit) instead
     released: v1.4.0
     description: |
-      **See [`strings.Split`](#strings-split) for a pipeline-compatible version**
+      **See [`strings.Split`](#stringssplit) for a pipeline-compatible version**
 
       Creates a slice by splitting a string on a given delimiter. Equivalent to
-      [strings.Split](https://golang.org/pkg/strings#Split)
+      [strings.Split](https://pkg.go.dev/strings#Split)
     pipeline: false
     arguments:
       - name: input
@@ -716,13 +716,13 @@ funcs:
         Hello, Lisa
         Hello, Maggie
   - name: splitN
-    deprecated: Use [`strings.SplitN`](#strings-splitn) instead
+    deprecated: Use [`strings.SplitN`](#stringssplitn) instead
     released: v1.7.0
     description: |
-      **See [`strings.SplitN`](#strings-splitn) for a pipeline-compatible version**
+      **See [`strings.SplitN`](#stringssplitn) for a pipeline-compatible version**
 
       Creates a slice by splitting a string on a given delimiter. The count determines
-      the number of substrings to return. Equivalent to [strings.SplitN](https://golang.org/pkg/strings#SplitN)
+      the number of substrings to return. Equivalent to [strings.SplitN](https://pkg.go.dev/strings#SplitN)
     pipeline: false
     arguments:
       - name: input
@@ -741,13 +741,13 @@ funcs:
         foo
         bar:baz
   - name: trim
-    deprecated: Use [`strings.Trim`](#strings-trim) instead
+    deprecated: Use [`strings.Trim`](#stringstrim) instead
     released: v1.4.0
     description: |
-      **See [`strings.Trim`](#strings-trim) for a pipeline-compatible version**
+      **See [`strings.Trim`](#stringstrim) for a pipeline-compatible version**
 
       Trims a string by removing the given characters from the beginning and end of
-      the string. Equivalent to [strings.Trim](https://golang.org/pkg/strings/#Trim)
+      the string. Equivalent to [strings.Trim](https://pkg.go.dev/strings/#Trim)
     pipeline: false
     arguments:
       - name: input

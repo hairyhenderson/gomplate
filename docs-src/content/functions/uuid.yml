@@ -18,7 +18,7 @@ funcs:
     description: |
       Create a version 1 UUID (based on the current MAC address and the current date/time).
 
-      Use [`uuid.V4`](#uuid-v4) instead in most cases.
+      Use [`uuid.V4`](#uuidv4) instead in most cases.
     pipeline: false
     examples:
       - |

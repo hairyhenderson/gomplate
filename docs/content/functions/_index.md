@@ -29,7 +29,7 @@ for full details:
 - `and`, `or`, `not`: Returns boolean AND/OR/NOT of the argument(s).
 - `call`: Returns the result of calling a function argument.
 - `html`, `js`, `urlquery`: Safely escapes input for inclusion in HTML, JavaScript, and URL query strings.
-- `index`: Returns the referenced element of an array/slice, string, or map. See also [Arrays](#arrays) and [Maps](#maps).
+- `index`: Returns the referenced element of an array/slice, string, or map. See also [Arrays](../syntax/#arrays) and [Maps](../syntax/#maps).
 - `len`: Returns the length of the argument.
 - `print`, `printf`, `println`: Aliases for Go's [`fmt.Print`](https://golang.org/pkg/fmt/#Print),
 [`fmt.Printf`](https://golang.org/pkg/fmt/#Printf), and [`fmt.Println`](https://golang.org/pkg/fmt/#Println)
@@ -53,7 +53,7 @@ There are also a few _actions_, which are used for control flow and other purpos
 
 - `if`/`else`/`else if`: Conditional control flow.
 - `with`/`else`: Conditional execution with assignment.
-- `range`: Looping control flow. See discussion in the [Arrays](#arrays) and [Maps](#maps) sections.
+- `range`: Looping control flow. See discussion in the [Arrays](../syntax/#arrays) and [Maps](../syntax/#maps) sections.
   - `break`: The innermost `range` loop is ended early, stopping the current iteration and bypassing all remaining iterations.
   - `continue`: The current iteration of the innermost `range` loop is stopped, and the loop starts the next iteration.
 - `template`: Include the output of a named template. See the [Nested templates](/syntax/#nested-templates) section for more details, and the [`tmpl`](../functions/tmpl) namespace for more flexible versions of `template`.
@@ -68,5 +68,5 @@ are grouped into namespaces, and documented on the following pages:
 {{% children depth="3" description="false" %}}
 
 [`text/template`]: https://golang.org/pkg/text/template/
-[`base64.Encode`]: ../functions/base64#base64-encode
+[`base64.Encode`]: ../functions/base64#base64encode
 [data sources]: ../datasources/

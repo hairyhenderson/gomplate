@@ -155,7 +155,7 @@ funcs:
       Returns an array of `IfAddr`s filtered by interfaces that match the given
       selector's value.
 
-      This is the inverse of `sockaddr.Exclude`. See [`sockaddr.Exclude`](#sockaddr.Exclude) for details.
+      This is the inverse of `sockaddr.Exclude`. See [`sockaddr.Exclude`](#sockaddrexclude) for details.
     pipeline: true
     arguments:
       - name: selector
