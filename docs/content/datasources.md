@@ -657,7 +657,7 @@ The _scheme_, _authority_, _path_, and _query_ URL components are used by this d
 - the _scheme_ must be one of `vault`, `vault+https` (same as `vault`), or `vault+http`. The latter can be used to access [dev mode](https://www.vaultproject.io/docs/concepts/dev-server.html) Vault servers, for test purposes. Otherwise, all connections to Vault are encrypted with TLS.
 - the _authority_ component can optionally be used to specify the Vault server's hostname and port. This overrides the value of `$VAULT_ADDR`.
 - the _path_ component can optionally be used to specify a full or partial path to a secret. The second argument to the [`datasource`][] function is appended to provide the full secret path. [Directory](#directory-datasources) semantics are available when the path ends with a `/` character.
-- the _query_ component is used to provide parameters to dynamic secret back-ends that require these. The values are included in the JSON body of the `PUT` request.
+- the _query_ component is used to provide parameters to dynamic secret back-ends that require these. The values are included in the JSON body of the `POST` request. The `version` parameter in particular can be used to specify the version of a secret when using the KV v2 secrets engine.
 
 These are all valid `vault` URLs:
 
@@ -668,7 +668,7 @@ These are all valid `vault` URLs:
 
 ### KV secrets engine - version 2 support
 
-A proper support of KV secrets engine - version 2 is coming. In the meanwhile there are workarounds to make it work even now: you need to include an extra `data` segment in the vault URL right after the secret engine mount point, e.g. `vault:///kv2/data/configs/`. Currently it is not possible to retreive a specific secret version.
+Vault's KV secrets engine version 2 is supported automatically. In order to access specific versions of secrets, you may provide the `version` query parameter.
 
 ### Vault Authentication
 
@@ -702,10 +702,11 @@ In addition to the variables documented [above](#vault-authentication), a number
 $ gomplate -d vault=vault:///secret/sneakers -i 'My voice is my passport. {{(datasource "vault").value}}' 
 My voice is my passport. Verify me.
 ```
-Same for KV secrets engine - version 2 (note the second extra `data` when retreiving the value):
+
+For KV v2 secrets engine, specifying a version:
 
 ```console
-$ gomplate -d vault=vault:///kv2/data/sneakers -i 'My voice is my passport. {{(datasource "vault").data.value}}' 
+$ gomplate -d vault=vault:///kv2/sneakers?version=2 -i 'My voice is my passport. {{(datasource "vault").data.value}}'
 My voice is my passport. Verify me.
 ```
 
