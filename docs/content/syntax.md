@@ -51,7 +51,7 @@ Hello,  baz!
 
 This might not be desirable.
 
-You can use [Golang template syntax](https://golang.org/pkg/text/template/#hdr-Text_and_spaces) to fix this. Leading newlines (i.e. newlines that come before the action) can be suppressed by placing a minus sign in front of the first set of delimiters (`{{`). Putting the minus sign behind the trailing set of delimiters (`}}`) will suppress the newline _after_ the action. You can do both to suppress newlines entirely on that line.
+You can use [Golang template syntax](https://pkg.go.dev/text/template/#hdr-Text_and_spaces) to fix this. Leading newlines (i.e. newlines that come before the action) can be suppressed by placing a minus sign in front of the first set of delimiters (`{{`). Putting the minus sign behind the trailing set of delimiters (`}}`) will suppress the newline _after_ the action. You can do both to suppress newlines entirely on that line.
 
 Placing the minus sign within the context (i.e. inside of `{{.}}`) has no effect.
 
@@ -264,7 +264,7 @@ The context is foo
 ```
 
 Templates rendered by gomplate always have a _default_ context. You can populate
-the default context from data sources with the [`--context`/`c`](../usage/#context-c)
+the default context from data sources with the [`--context`/`c`](../usage/#--context-c)
 flag. The special context item [`.Env`](#env) is available for referencing the
 system's environment variables.
 
@@ -286,7 +286,7 @@ but the original context is still map[bar:baz]
 
 Gomplate supports nested templates, using Go's `template` action. These can be
 defined in-line with the `define` action, or external data can be used with the
-[`--template`/`-t`](../usage/#template-t) flag.
+[`--template`/`-t`](../usage/#--template-t) flag.
 
 Note that nested templates do _not_ have access to gomplate's default
 [context](#the-context) (though it can be explicitly provided to the `template`
@@ -317,7 +317,7 @@ Hello everybody!
 ### External templates
 
 To define a nested template from an external source such as a file, use the
-[`--template`/`-t`](../usage/#template-t) flag.
+[`--template`/`-t`](../usage/#--template-t) flag.
 
 _hello.t:_
 ```
@@ -347,8 +347,8 @@ this will fail: template: <arg>:1:23: executing "<arg>" at <.Env.BOGUS>: map has
 Sometimes, this behaviour is desired; if the output is unusable without certain
 strings, this is a sure way to know that variables are missing!
 
-If you want different behaviour, try [`getenv`](../functions/env/#env-getenv).
+If you want different behaviour, try [`getenv`](../functions/env/#envgetenv).
 
-[`text/template`]: https://golang.org/pkg/text/template/
+[`text/template`]: https://pkg.go.dev/text/template/
 [`base64.Encode`]: ../functions/base64#base64-encode
 [data sources]: ../datasources/

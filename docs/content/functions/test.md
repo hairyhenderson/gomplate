@@ -94,7 +94,7 @@ In addition, the special kind `number` is accepted by this function, to
 represent _any_ numeric kind (whether `float32`, `uint8`, or whatever).
 This is useful when the specific numeric type is unknown.
 
-See also [`test.Kind`](test-kind).
+See also [`test.Kind`](#testkind).
 
 _Added in gomplate [v3.8.0](https://github.com/hairyhenderson/gomplate/releases/tag/v3.8.0)_
 ### Usage
@@ -146,7 +146,7 @@ have a type of `[]string`, the _kind_ of that slice will simply be `slice`.
 
 If you need to know the precise type of a value, use `printf "%T" $value`.
 
-See also [`test.IsKind`](test-iskind).
+See also [`test.IsKind`](#testiskind).
 
 _Added in gomplate [v3.8.0](https://github.com/hairyhenderson/gomplate/releases/tag/v3.8.0)_
 ### Usage
@@ -233,7 +233,7 @@ template: <arg>:1:7: executing "<arg>" at <"config">: map has no entry for key "
 
 **Alias:** `ternary`
 
-Returns one of two values depending on whether the third is true. Note that the third value does not have to be a boolean - it is converted first by the [`conv.ToBool`](../conv/#conv-tobool) function (values like `true`, `1`, `"true"`, `"Yes"`, etc... are considered true).
+Returns one of two values depending on whether the third is true. Note that the third value does not have to be a boolean - it is converted first by the [`conv.ToBool`](../conv/#convtobool) function (values like `true`, `1`, `"true"`, `"Yes"`, etc... are considered true).
 
 This is effectively a short-form of the following template:
 

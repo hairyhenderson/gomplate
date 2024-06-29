@@ -9,7 +9,7 @@ Functions for defining or executing templates.
 
 ## `tmpl.Exec`
 
-Execute (render) the named template. This is equivalent to using the [`template`](https://golang.org/pkg/text/template/#hdr-Actions) action, except the result is returned as a string.
+Execute (render) the named template. This is equivalent to using the [`template`](https://pkg.go.dev/text/template/#hdr-Actions) action, except the result is returned as a string.
 
 This allows for post-processing of templates.
 

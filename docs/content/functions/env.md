@@ -12,7 +12,7 @@ menu:
 
 **Alias:** `getenv`
 
-Exposes the [os.Getenv](https://golang.org/pkg/os/#Getenv) function.
+Exposes the [os.Getenv](https://pkg.go.dev/os/#Getenv) function.
 
 Retrieves the value of the environment variable named by the key. If the
 variable is unset, but the same variable ending in `_FILE` is set, the contents
@@ -57,12 +57,12 @@ Your secret is safe
 
 ## `env.ExpandEnv`
 
-Exposes the [os.ExpandEnv](https://golang.org/pkg/os/#ExpandEnv) function.
+Exposes the [os.ExpandEnv](https://pkg.go.dev/os/#ExpandEnv) function.
 
 Replaces `${var}` or `$var` in the input string according to the values of the
 current environment variables. References to undefined variables are replaced by the empty string.
 
-Like [`env.Getenv`](#env-getenv), the `_FILE` variant of a variable is used.
+Like [`env.Getenv`](#envgetenv), the `_FILE` variant of a variable is used.
 
 _Added in gomplate [v2.5.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.5.0)_
 ### Usage

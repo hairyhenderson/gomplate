@@ -42,7 +42,7 @@ aGVsbG8gd29ybGQ=
 Decode a Base64 string. This supports both standard ([RFC4648 &sect;4](https://tools.ietf.org/html/rfc4648#section-4)) and URL-safe ([RFC4648 &sect;5](https://tools.ietf.org/html/rfc4648#section-5)) encodings.
 
 This function outputs the data as a string, so it may not be appropriate
-for decoding binary data. Use [`base64.DecodeBytes`](#base64.DecodeBytes)
+for decoding binary data. Use [`base64.DecodeBytes`](#base64decodebytes)
 for binary data.
 
 _Added in gomplate [v1.8.0](https://github.com/hairyhenderson/gomplate/releases/tag/v1.8.0)_
@@ -78,7 +78,7 @@ Decode a Base64 string. This supports both standard ([RFC4648 &sect;4](https://t
 
 This function outputs the data as a byte array, so it's most useful for
 outputting binary data that will be processed further.
-Use [`base64.Decode`](#base64.Decode) to output a plain string.
+Use [`base64.Decode`](#base64decode) to output a plain string.
 
 _Added in gomplate [v3.8.0](https://github.com/hairyhenderson/gomplate/releases/tag/v3.8.0)_
 ### Usage

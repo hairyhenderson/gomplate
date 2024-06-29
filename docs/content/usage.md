@@ -6,7 +6,7 @@ menu: main
 
 The simplest usage of `gomplate` is to just replace environment
 variables. All environment variables are available by referencing [`.Env`](../syntax/#env)
-(or [`getenv`](../functions/env/#getenv)) in the template.
+(or [`getenv`](../functions/env/#envgetenv)) in the template.
 
 The template is read from standard in, and written to standard out.
 
@@ -52,7 +52,7 @@ You can specify multiple `--file` and `--out` arguments. The same number of each
 
 For processing multiple templates in a directory you can use `--input-dir` and `--output-dir` together. In this case all files in input directory will be processed recursively as templates and the resulting files stored in `--output-dir`. The output directory will be created if it does not exist and the directory structure of the input directory will be preserved.
 
-You can use the [`--exclude`](#exclude) argument and/or a [`.gomplateignore`](#ignorefile) file to exclude some of the files in the input directory.
+You can use the [`--exclude`](#--exclude-and---include) argument and/or a [`.gomplateignore`](#gomplateignore-files) file to exclude some of the files in the input directory.
 
 Example:
 
@@ -110,7 +110,7 @@ The value must be an octal integer in the standard UNIX `chmod` format, i.e. `64
 
 ### `--exclude` and `--include`
 
-When using the [`--input-dir`](#input-dir-and-output-dir) argument, it can be useful to filter which files are processed. You can use `--exclude` and `--include` to achieve this. The `--exclude` flag takes a [`.gitignore`][]-style pattern, and any files matching the pattern will be excluded. The `--include` flag is effectively the opposite of `--exclude`. You can also repeat the arguments to provide a series of patterns to be excluded/included.
+When using the [`--input-dir`](#--input-dir-and---output-dir) argument, it can be useful to filter which files are processed. You can use `--exclude` and `--include` to achieve this. The `--exclude` flag takes a [`.gitignore`][]-style pattern, and any files matching the pattern will be excluded. The `--include` flag is effectively the opposite of `--exclude`. You can also repeat the arguments to provide a series of patterns to be excluded/included.
 
 Patterns provided with `--exclude`/`--include` are matched relative to the input directory.
 
@@ -132,7 +132,7 @@ This will cause only files ending in `.tmpl` to be processed, except for files w
 
 ### `--exclude-processing`
 
-When using the [`--input-dir`](#input-dir-and-output-dir) argument, it can be useful to skip some files from processing and copy them directly to the output directory. Like the `--exclude` flag, it takes a [`.gitignore`][]-style pattern, and any files match the pattern will be copied.
+When using the [`--input-dir`](#--input-dir-and---output-dir) argument, it can be useful to skip some files from processing and copy them directly to the output directory. Like the `--exclude` flag, it takes a [`.gitignore`][]-style pattern, and any files match the pattern will be copied.
 
 _Note:_ These patterns are _not_ treated as filesystem globs, and so a pattern like `/foo/bar.json` will match relative to the input directory, not the root of the filesystem as they may appear!
 
@@ -182,7 +182,7 @@ Add a data source in `name=URL` form, and make it available in the [default cont
 
 Data sources referenced with `--context` will be immediately loaded before gomplate processes the template. This is in contrast to the `--datasource` behaviour, which lazy-loads data while processing the template.
 
-All other rules for the [`--datasource`/`-d`](#datasource-d) flag apply.
+All other rules for the [`--datasource`/`-d`](#--datasource-d) flag apply.
 
 Examples:
 
@@ -236,7 +236,7 @@ Use `--left-delim`/`--right-delim` or set `$GOMPLATE_LEFT_DELIM`/`$GOMPLATE_RIGH
 ### `--template`/`-t`
 
 Add a nested template or directory of templates that can be referenced by the
-main input template(s) with the [`template`](https://golang.org/pkg/text/template/#hdr-Actions)
+main input template(s) with the [`template`](https://pkg.go.dev/text/template/#hdr-Actions)
 built-in or the functions in the [`tmpl`](../functions/tmpl/) namespace. Specify
 multiple times to add multiple template references.
 
@@ -327,8 +327,8 @@ Plugins can also be written as PowerShell or CMD scripts (`.ps1`, `.bat`, or `.c
 extensions) on Windows.
 
 By default, plugins will time out after 5 seconds. To adjust this, set the
-`GOMPLATE_PLUGIN_TIMEOUT` environment variable to a valid [duration](../functions/time/#time-parseduration)
-such as `10s` or `3m`, or use the [`pluginTimeout`](../config/#pluginTimeout)
+`GOMPLATE_PLUGIN_TIMEOUT` environment variable to a valid [duration](../functions/time/#timeparseduration)
+such as `10s` or `3m`, or use the [`pluginTimeout`](../config/#plugintimeout)
 configuration option.
 
 ### `--exec-pipe`
@@ -365,7 +365,7 @@ command will work as expected, without the log output interfering.
 
 The `GOMPLATE_LOG_FORMAT` environment variable can be used to control the format
 of the log messages that gomplate may output, whether error messages or debug
-messages when the [`--verbose`](#verbose) option is in use.
+messages when the [`--verbose`](#--verbose) option is in use.
 
 The value can be set to `json` or `logfmt`.
 
@@ -421,7 +421,7 @@ $ gomplate -i 'hello world' -o out.txt -- cat out.txt
 hello world
 ```
 
-See also [`--exec-pipe`](#exec-pipe) for piping output directly into the
+See also [`--exec-pipe`](#--exec-pipe) for piping output directly into the
 post-exec command.
 
 ## Empty output

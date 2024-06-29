@@ -21,7 +21,7 @@ this is required for your use-case.
 
 Create a version 1 UUID (based on the current MAC address and the current date/time).
 
-Use [`uuid.V4`](#uuid-v4) instead in most cases.
+Use [`uuid.V4`](#uuidv4) instead in most cases.
 
 _Added in gomplate [v3.4.0](https://github.com/hairyhenderson/gomplate/releases/tag/v3.4.0)_
 ### Usage

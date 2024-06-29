@@ -23,11 +23,11 @@ set as the value.
 All keys are converted to strings.
 
 This function is equivalent to [Sprig's `dict`](http://masterminds.github.io/sprig/dicts.html#dict)
-function, as used in [Helm templates](https://docs.helm.sh/chart_template_guide#template-functions-and-pipelines).
+function, as used in [Helm templates](https://helm.sh/docs/chart_template_guide/functions_and_pipelines/).
 
-For creating more complex maps, see [`data.JSON`](../data/#data-json) or [`data.YAML`](../data/#data-yaml).
+For creating more complex maps, see [`data.JSON`](../data/#datajson) or [`data.YAML`](../data/#datayaml).
 
-For creating arrays, see [`coll.Slice`](#coll-slice).
+For creating arrays, see [`coll.Slice`](#collslice-_deprecated_).
 
 _Added in gomplate [v3.2.0](https://github.com/hairyhenderson/gomplate/releases/tag/v3.2.0)_
 ### Usage
@@ -92,7 +92,7 @@ Hello, Maggie
 
 ## `coll.GoSlice`
 
-This exposes the `slice` function from Go's [`text/template`](https://golang.org/pkg/text/template/#hdr-Functions)
+This exposes the `slice` function from Go's [`text/template`](https://pkg.go.dev/text/template/#hdr-Functions)
 package. Note that using `slice` will use the `coll.Slice` function instead,
 which may not be desired.
 For some background on this, see [this issue](https://github.com/hairyhenderson/gomplate/issues/1461).
@@ -300,7 +300,7 @@ Return a list of keys in one or more maps.
 The keys will be ordered first by map position (if multiple maps are given),
 then alphabetically.
 
-See also [`coll.Values`](#coll-values).
+See also [`coll.Values`](#collvalues).
 
 _Added in gomplate [v3.2.0](https://github.com/hairyhenderson/gomplate/releases/tag/v3.2.0)_
 ### Usage
@@ -336,7 +336,7 @@ Return a list of values in one or more maps.
 The values will be ordered first by map position (if multiple maps are given),
 then alphabetically by key.
 
-See also [`coll.Keys`](#coll-keys).
+See also [`coll.Keys`](#collkeys).
 
 _Added in gomplate [v3.2.0](https://github.com/hairyhenderson/gomplate/releases/tag/v3.2.0)_
 ### Usage
@@ -371,7 +371,7 @@ Append a value to the end of a list.
 
 _Note that this function does not change the given list; it always produces a new one._
 
-See also [`coll.Prepend`](#coll-prepend).
+See also [`coll.Prepend`](#collprepend).
 
 _Added in gomplate [v3.2.0](https://github.com/hairyhenderson/gomplate/releases/tag/v3.2.0)_
 ### Usage
@@ -405,7 +405,7 @@ Prepend a value to the beginning of a list.
 
 _Note that this function does not change the given list; it always produces a new one._
 
-See also [`coll.Append`](#coll-append).
+See also [`coll.Append`](#collappend).
 
 _Added in gomplate [v3.2.0](https://github.com/hairyhenderson/gomplate/releases/tag/v3.2.0)_
 ### Usage
@@ -631,7 +631,7 @@ Given a map, returns a new map with any entries that have the given keys.
 
 The keys can either be separate arguments, or a slice (since v4.0.0).
 
-This is the inverse of [`coll.Omit`](#coll-omit).
+This is the inverse of [`coll.Omit`](#collomit).
 
 _Note that this function does not modify the input._
 
@@ -672,7 +672,7 @@ Given a map, returns a new map without any entries that have the given keys.
 
 The keys can either be separate arguments, or a slice (since v4.0.0).
 
-This is the inverse of [`coll.Pick`](#coll-pick).
+This is the inverse of [`coll.Pick`](#collpick).
 
 _Note that this function does not modify the input._
 

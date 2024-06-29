@@ -56,7 +56,7 @@ uses AES-256-CBC, but supports 128- and 192-bit keys as well.
 
 This function prints the output as a string. Note that this may result in
 unreadable text if the decrypted payload is binary. See
-[`crypto.DecryptAESBytes`](#crypto.DecryptAESBytes) for another method.
+[`crypto.DecryptAESBytes`](#cryptodecryptaesbytes-_experimental_) for another method.
 
 This function is suitable for decrypting data that was encrypted by
 Helm's `encryptAES` function, when the input is base64-decoded, and when
@@ -377,14 +377,14 @@ $ gomplate -i '{{ crypto.PBKDF2 "foo" "bar" 1024 8 }}'
 
 Decrypt an RSA-encrypted input and print the output as a string. Note that
 this may result in unreadable text if the decrypted payload is binary. See
-[`crypto.RSADecryptBytes`](#crypto.RSADecryptBytes) for a safer method.
+[`crypto.RSADecryptBytes`](#cryptorsadecryptbytes-_experimental_) for a safer method.
 
 The private key must be a PEM-encoded RSA private key in PKCS#1, ASN.1 DER
 form, which typically begins with `-----BEGIN RSA PRIVATE KEY-----`.
 
 The input text must be plain ciphertext, as a byte array, or safely
 convertible to a byte array. To decrypt base64-encoded input, you must
-first decode with the [`base64.DecodeBytes`](../base64/#base64.DecodeBytes)
+first decode with the [`base64.DecodeBytes`](../base64/#base64decodebytes)
 function.
 
 _Added in gomplate [v3.8.0](https://github.com/hairyhenderson/gomplate/releases/tag/v3.8.0)_
@@ -431,10 +431,10 @@ form, which typically begins with `-----BEGIN RSA PRIVATE KEY-----`.
 
 The input text must be plain ciphertext, as a byte array, or safely
 convertible to a byte array. To decrypt base64-encoded input, you must
-first decode with the [`base64.DecodeBytes`](../base64/#base64.DecodeBytes)
+first decode with the [`base64.DecodeBytes`](../base64/#base64decodebytes)
 function.
 
-See [`crypto.RSADecrypt`](#crypto.RSADecrypt) for a function that outputs
+See [`crypto.RSADecrypt`](#cryptorsadecrypt-_experimental_) for a function that outputs
 a string.
 
 _Added in gomplate [v3.8.0](https://github.com/hairyhenderson/gomplate/releases/tag/v3.8.0)_
@@ -484,13 +484,13 @@ which typically begins with `BEGIN PUBLIC KEY`. RSA public keys in PKCS#1
 ASN.1 DER form are also supported (beginning with `RSA PUBLIC KEY`).
 
 The output will not be encoded, so consider
-[base64-encoding](../base64/#base64.Encode) it for display.
+[base64-encoding](../base64/#base64encode) it for display.
 
 _Note:_ Output encrypted with this function will _not_ be deterministic,
 so encrypting the same input twice will not result in the same ciphertext.
 
 _Warning:_ Using this function may not be safe. See the warning on Go's
-[`rsa.EncryptPKCS1v15`](https://golang.org/pkg/crypto/rsa/#EncryptPKCS1v15)
+[`rsa.EncryptPKCS1v15`](https://pkg.go.dev/crypto/rsa/#EncryptPKCS1v15)
 documentation.
 
 _Added in gomplate [v3.8.0](https://github.com/hairyhenderson/gomplate/releases/tag/v3.8.0)_
@@ -686,7 +686,7 @@ LCa0a2j/xo/5m0U8HTBBNBNCLXBkg7+g+YpeiGJm564=
 
 ## `crypto.WPAPSK`
 
-This is really an alias to [`crypto.PBKDF2`](#crypto.PBKDF2) with the
+This is really an alias to [`crypto.PBKDF2`](#cryptopbkdf2) with the
 values necessary to convert ASCII passphrases to the WPA pre-shared keys for use with WiFi networks.
 
 This can be used, for example, to help generate a configuration for [wpa_supplicant](http://w1.fi/wpa_supplicant/).

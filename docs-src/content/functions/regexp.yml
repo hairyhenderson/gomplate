@@ -2,7 +2,7 @@ ns: regexp
 preamble: |
   These functions allow user you to search and modify text with regular expressions.
 
-  The syntax of the regular expressions accepted is [Go's `regexp` syntax](https://golang.org/pkg/regexp/syntax/#hdr-Syntax),
+  The syntax of the regular expressions accepted is [Go's `regexp` syntax](https://pkg.go.dev/regexp/syntax/#hdr-Syntax),
   and is the same general syntax used by Perl, Python, and other languages.
 funcs:
   - name: regexp.Find
@@ -12,7 +12,7 @@ funcs:
       of the regular expression `expression`.
 
       This function provides the same behaviour as Go's
-      [`regexp.FindString`](https://golang.org/pkg/regexp/#Regexp.FindString) function.
+      [`regexp.FindString`](https://pkg.go.dev/regexp/#Regexp.FindString) function.
     pipeline: true
     arguments:
       - name: expression
@@ -38,7 +38,7 @@ funcs:
       to be returned.
 
       This function provides the same behaviour as Go's
-      [`regexp.FindAllString`](https://golang.org/pkg/regexp/#Regexp.FindAllString) function.
+      [`regexp.FindAllString`](https://pkg.go.dev/regexp#Regexp.FindAllString) function.
     pipeline: true
     arguments:
       - name: expression
@@ -81,7 +81,7 @@ funcs:
       Escapes all regular expression metacharacters in the input. The returned string is a regular expression matching the literal text.
 
       This function provides the same behaviour as Go's
-      [`regexp.QuoteMeta`](https://golang.org/pkg/regexp/#Regexp.QuoteMeta) function.
+      [`regexp.QuoteMeta`](https://pkg.go.dev/regexp#QuoteMeta) function.
     pipeline: true
     arguments:
       - name: input
@@ -99,7 +99,7 @@ funcs:
       The replacement is substituted after expanding variables beginning with `$`.
 
       This function provides the same behaviour as Go's
-      [`regexp.ReplaceAllString`](https://golang.org/pkg/regexp/#Regexp.ReplaceAllString) function.
+      [`regexp.ReplaceAllString`](https://pkg.go.dev/regexp/#Regexp.ReplaceAllString) function.
     pipeline: true
     arguments:
       - name: expression
@@ -127,7 +127,7 @@ funcs:
       beginning with `$`.
 
       This function provides the same behaviour as Go's
-      [`regexp.ReplaceAllLiteralString`](https://golang.org/pkg/regexp/#Regexp.ReplaceAllLiteralString) function.
+      [`regexp.ReplaceAllLiteralString`](https://pkg.go.dev/regexp/#Regexp.ReplaceAllLiteralString) function.
     pipeline: true
     arguments:
       - name: expression
@@ -155,11 +155,11 @@ funcs:
       `n` argument (number of matches) will be set to `-1`, causing all sub-strings
       to be returned.
 
-      This is equivalent to [`strings.SplitN`](../strings/#strings-splitn),
+      This is equivalent to [`strings.SplitN`](../strings/#stringssplitn),
       except that regular expressions are supported.
 
       This function provides the same behaviour as Go's
-      [`regexp.Split`](https://golang.org/pkg/regexp/#Regexp.Split) function.
+      [`regexp.Split`](https://pkg.go.dev/regexp/#Regexp.Split) function.
     pipeline: true
     arguments:
       - name: expression

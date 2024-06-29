@@ -85,7 +85,7 @@ COPY --from=hairyhenderson/gomplate:stable /gomplate /bin/gomplate
 
 Now, `gomplate` will be available in the `/bin` directory inside the container image.
 
-Note that when using `gomplate` with HTTPS-based datasources, you will likely need to install the `ca-certificates` package for your base distribution. Here's an example when using the [`alpine`](https://hub.docker.com/_alpine) base image:
+Note that when using `gomplate` with HTTPS-based datasources, you will likely need to install the `ca-certificates` package for your base distribution. Here's an example when using the [`alpine`](https://hub.docker.com/_/alpine) base image:
 
 ```Dockerfile
 FROM alpine

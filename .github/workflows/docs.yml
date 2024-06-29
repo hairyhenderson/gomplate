@@ -21,3 +21,36 @@ jobs:
             echo "Function docs are out of date. Please run 'make gen-func-docs' locally and commit the changes."
             exit 1
           fi
+  muffet:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Hugo setup
+        uses: peaceiris/actions-hugo@v3.0.0
+        with:
+          # keep this in sync with netlify.toml
+          hugo-version: '0.128.0'
+      - uses: actions/checkout@v4
+      - name: Install muffet
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release --repo raviqqe/muffet download -p muffet_linux_amd64.tar.gz
+          tar xvf muffet_linux_amd64.tar.gz muffet
+          sudo mv muffet /usr/local/bin
+      - name: Serve the site and check links
+        run: |
+          set -ex
+
+          cd docs
+          hugo --renderToMemory
+          hugo serve --watch=false --renderToMemory &
+          sleep 2
+
+          muffet http://localhost:1313 \
+            -r8 --max-connections-per-host=4 --buffer-size=8192 \
+            --exclude="https://github\.com.*" \
+            --exclude="https://docs\.aws.*" \
+            --exclude="https://linux.die\.net.*" \
+            --exclude="https://jqplay\.org.*" \
+
+          kill %1

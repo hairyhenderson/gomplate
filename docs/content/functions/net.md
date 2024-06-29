@@ -104,11 +104,11 @@ d3ag4hukkh62yn.cloudfront.net.
 Resolve a DNS [`SRV` service record](https://en.wikipedia.org/wiki/SRV_record).
 This implementation supports the canonical [RFC2782](https://tools.ietf.org/html/rfc2782)
 form (i.e. `_Service._Proto.Name`), but other forms are also supported, such as
-those served by [Consul's DNS interface](https://www.consul.io/docs/agent/dns.html#standard-lookup).
+those served by [Consul's DNS interface](https://developer.hashicorp.com/consul/docs/services/discovery/dns-dynamic-lookups#standard-lookup).
 
 When multiple records are returned, this function returns the first.
 
-A [`net.SRV`](https://golang.org/pkg/net/#SRV) data structure is returned. The
+A [`net.SRV`](https://pkg.go.dev/net/#SRV) data structure is returned. The
 following properties are available:
 - `Target` - _(string)_ the hostname where the service can be reached
 - `Port` - _(uint16)_ the service's port
@@ -147,11 +147,11 @@ $ gomplate -i '{{ net.LookupSRV "_sip._udp.sip.voice.google.com" | toJSONPretty 
 Resolve a DNS [`SRV` service record](https://en.wikipedia.org/wiki/SRV_record).
 This implementation supports the canonical [RFC2782](https://tools.ietf.org/html/rfc2782)
 form (i.e. `_Service._Proto.Name`), but other forms are also supported, such as
-those served by [Consul's DNS interface](https://www.consul.io/docs/agent/dns.html#standard-lookup).
+those served by [Consul's DNS interface](https://developer.hashicorp.com/consul/docs/services/discovery/dns-dynamic-lookups#standard-lookup).
 
 This function returns all available SRV records.
 
-An array of [`net.SRV`](https://golang.org/pkg/net/#SRV) data structures is
+An array of [`net.SRV`](https://pkg.go.dev/net/#SRV) data structures is
 returned. For each element, the following properties are available:
 - `Target` - _(string)_ the hostname where the service can be reached
 - `Port` - _(uint16)_ the service's port
@@ -254,7 +254,7 @@ $ gomplate -i '{{ $ip := net.ParseAddr (net.LookupIP "example.com") -}}
 ```
 
 ## `net.ParseIP` _(deprecated)_
-**Deprecation Notice:** Use [`net.ParseAddr`](#net-parseaddr) instead.
+**Deprecation Notice:** Use [`net.ParseAddr`](#netparseaddr) instead.
 
 Parse the given string as an IP address (a `netaddr.IP` from the
 [`inet.af/netaddr`](https://pkg.go.dev/inet.af/netaddr) package).
@@ -327,7 +327,7 @@ true
 ```
 
 ## `net.ParseIPPrefix` _(deprecated)_
-**Deprecation Notice:** Use [`net.ParsePrefix`](#net-parseprefix) instead.
+**Deprecation Notice:** Use [`net.ParsePrefix`](#netparseprefix) instead.
 
 Parse the given string as an IP address prefix (CIDR) representing an IP
 network (a `netaddr.IPPrefix` from the
@@ -415,7 +415,7 @@ $ gomplate -i '{{ $range := net.ParseRange "1.2.3.0-1.2.3.233" -}}
 ```
 
 ## `net.ParseIPRange` _(deprecated)_
-**Deprecation Notice:** Use [`net.ParseRange`](#net-parserange) instead.
+**Deprecation Notice:** Use [`net.ParseRange`](#netparserange-_experimental_) instead.
 
 Parse the given string as an inclusive range of IP addresses from the same
 address family (a `netaddr.IPRange` from the [`inet.af/netaddr`][] package).

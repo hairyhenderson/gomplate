@@ -5,9 +5,9 @@ menu:
     parent: functions
 ---
 
-This namespace wraps Go's [`time` package](https://golang.org/pkg/time/), and a
+This namespace wraps Go's [`time` package](https://pkg.go.dev/time/), and a
 few of the functions return a `time.Time` value. All of the
-[`time.Time` functions](https://golang.org/pkg/time/#Time) can then be used to
+[`time.Time` functions](https://pkg.go.dev/time/#Time) can then be used to
 convert, adjust, or format the time in your template.
 
 ### Reference time
@@ -51,9 +51,9 @@ See below for examples of how these layouts can be used.
 
 #### durations
 
-Some operations (such as [`Time.Add`](https://golang.org/pkg/time/#Time.Add) and
-[`Time.Round`](https://golang.org/pkg/time/#Time.Round)) require a
-[`Duration`](https://golang.org/pkg/time/#Duration) value. These can be created
+Some operations (such as [`Time.Add`](https://pkg.go.dev/time/#Time.Add) and
+[`Time.Round`](https://pkg.go.dev/time/#Time.Round)) require a
+[`Duration`](https://pkg.go.dev/time/#Duration) value. These can be created
 conveniently with the following functions:
 
 - `time.Nanosecond`
@@ -72,11 +72,11 @@ $ gomplate -i '{{ (time.Now).Format time.Kitchen }}
 11:05AM
 ```
 
-For other durations, such as `2h10m`, [`time.ParseDuration`](#time-parseduration) can be used.
+For other durations, such as `2h10m`, [`time.ParseDuration`](#timeparseduration) can be used.
 
 ## `time.Now`
 
-Returns the current local time, as a `time.Time`. This wraps [`time.Now`](https://golang.org/pkg/time/#Now).
+Returns the current local time, as a `time.Time`. This wraps [`time.Now`](https://pkg.go.dev/time/#Now).
 
 Usually, further functions are called using the value returned by `Now`.
 
@@ -90,12 +90,12 @@ time.Now
 
 ### Examples
 
-Usage with [`UTC`](https://golang.org/pkg/time/#Time.UTC) and [`Format`](https://golang.org/pkg/time/#Time.Format):
+Usage with [`UTC`](https://pkg.go.dev/time/#Time.UTC) and [`Format`](https://pkg.go.dev/time/#Time.Format):
 ```console
 $ gomplate -i '{{ (time.Now).UTC.Format "Day 2 of month 1 in year 2006 (timezone MST)" }}'
 Day 14 of month 10 in year 2017 (timezone UTC)
 ```
-Usage with [`AddDate`](https://golang.org/pkg/time/#Time.AddDate):
+Usage with [`AddDate`](https://pkg.go.dev/time/#Time.AddDate):
 ```console
 $ date
 Sat Oct 14 09:57:02 EDT 2017
@@ -104,7 +104,7 @@ Tue Nov 14 09:57:02 EST 2017
 ```
 
 _(notice how the TZ adjusted for daylight savings!)_
-Usage with [`IsDST`](https://golang.org/pkg/time/#Time.IsDST):
+Usage with [`IsDST`](https://pkg.go.dev/time/#Time.IsDST):
 ```console
 $ gomplate -i '{{ $t := time.Now }}At the tone, the time will be {{ ($t.Round (time.Minute 1)).Add (time.Minute 1) }}.
   It is{{ if not $t.IsDST }} not{{ end }} daylight savings time.
@@ -116,12 +116,12 @@ It is not daylight savings time.
 
 ## `time.Parse`
 
-Parses a timestamp defined by the given layout. This wraps [`time.Parse`](https://golang.org/pkg/time/#Parse).
+Parses a timestamp defined by the given layout. This wraps [`time.Parse`](https://pkg.go.dev/time/#Parse).
 
 A number of pre-defined layouts are provided as constants, defined
-[here](https://golang.org/pkg/time/#pkg-constants).
+[here](https://pkg.go.dev/time/#pkg-constants).
 
-Just like [`time.Now`](#time-now), this is usually used in conjunction with
+Just like [`time.Now`](#timenow), this is usually used in conjunction with
 other functions.
 
 _Note: In the absence of a time zone indicator, `time.Parse` returns a time in UTC._
@@ -145,7 +145,7 @@ timestamp | time.Parse layout
 
 ### Examples
 
-Usage with [`Format`](https://golang.org/pkg/time/#Time.Format):
+Usage with [`Format`](https://pkg.go.dev/time/#Time.Format):
 ```console
 $ gomplate -i '{{ (time.Parse "2006-01-02" "1993-10-23").Format "Monday January 2, 2006 MST" }}'
 Saturday October 23, 1993 UTC
@@ -153,7 +153,7 @@ Saturday October 23, 1993 UTC
 
 ## `time.ParseDuration`
 
-Parses a duration string. This wraps [`time.ParseDuration`](https://golang.org/pkg/time/#ParseDuration).
+Parses a duration string. This wraps [`time.ParseDuration`](https://pkg.go.dev/time/#ParseDuration).
 
 A duration string is a possibly signed sequence of decimal numbers, each with
 optional fraction and a unit suffix, such as `300ms`, `-1.5h` or `2h45m`. Valid
@@ -186,7 +186,7 @@ $ gomplate -i '{{ (time.Now).Format time.Kitchen }}
 
 ## `time.ParseLocal`
 
-Same as [`time.Parse`](#time-parse), except that in the absence of a time zone
+Same as [`time.Parse`](#timeparse), except that in the absence of a time zone
 indicator, the timestamp wil be parsed in the local timezone.
 
 _Added in gomplate [v2.2.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.2.0)_
@@ -208,7 +208,7 @@ timestamp | time.ParseLocal layout
 
 ### Examples
 
-Usage with [`Format`](https://golang.org/pkg/time/#Time.Format):
+Usage with [`Format`](https://pkg.go.dev/time/#Time.Format):
 ```console
 $ bin/gomplate -i '{{ (time.ParseLocal time.Kitchen "6:00AM").Format "15:04 MST" }}'
 06:00 EST
@@ -216,9 +216,9 @@ $ bin/gomplate -i '{{ (time.ParseLocal time.Kitchen "6:00AM").Format "15:04 MST"
 
 ## `time.ParseInLocation`
 
-Same as [`time.Parse`](#time-parse), except that the time is parsed in the given location's time zone.
+Same as [`time.Parse`](#timeparse), except that the time is parsed in the given location's time zone.
 
-This wraps [`time.ParseInLocation`](https://golang.org/pkg/time/#ParseInLocation).
+This wraps [`time.ParseInLocation`](https://pkg.go.dev/time/#ParseInLocation).
 
 _Added in gomplate [v2.2.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.2.0)_
 ### Usage
@@ -240,7 +240,7 @@ timestamp | time.ParseInLocation layout location
 
 ### Examples
 
-Usage with [`Format`](https://golang.org/pkg/time/#Time.Format):
+Usage with [`Format`](https://pkg.go.dev/time/#Time.Format):
 ```console
 $ gomplate -i '{{ (time.ParseInLocation time.Kitchen "Africa/Luanda" "6:00AM").Format "15:04 MST" }}'
 06:00 LMT
@@ -248,7 +248,7 @@ $ gomplate -i '{{ (time.ParseInLocation time.Kitchen "Africa/Luanda" "6:00AM").F
 
 ## `time.Since`
 
-Returns the time elapsed since a given time. This wraps [`time.Since`](https://golang.org/pkg/time/#Since).
+Returns the time elapsed since a given time. This wraps [`time.Since`](https://pkg.go.dev/time/#Since).
 
 It is shorthand for `time.Now.Sub t`.
 
@@ -313,7 +313,7 @@ Jan  2 10:17:36.789
 
 ## `time.Until`
 
-Returns the duration until a given time. This wraps [`time.Until`](https://golang.org/pkg/time/#Until).
+Returns the duration until a given time. This wraps [`time.Until`](https://pkg.go.dev/time/#Until).
 
 It is shorthand for `$t.Sub time.Now`.
 
