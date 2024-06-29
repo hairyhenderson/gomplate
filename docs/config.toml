@@ -1,14 +1,11 @@
 baseURL = "/"
 languageCode = "en-us"
 title = "gomplate documentation"
-theme = "hugo-theme-relearn"
-googleAnalytics = "UA-82637990-3"
+# theme = "hugo-theme-relearn"
 
 [params]
   alwaysopen = false
   editURL = "https://github.com/hairyhenderson/gomplate/edit/main/docs/content/"
-  author = "hairyhenderson"
-  description = "gomplate documentation"
   showVisitedLinks = false
   disableSearch = false
   disableSearchHiddenPages = false
@@ -35,6 +32,9 @@ googleAnalytics = "UA-82637990-3"
   disableExplicitIndexURLs = true
   externalLinkTarget = "_blank"
 
+[params.author]
+  name = "hairyhenderson"
+
 [markup]
   [markup.highlight]
     guessSyntax = false
@@ -43,9 +43,6 @@ googleAnalytics = "UA-82637990-3"
 [outputs]
   home = [ "HTML", "RSS", "SEARCH", "SEARCHPAGE"]
 
-[privacy]
-  [privacy.googleAnalytics]
-    disable = false
-    anonymizeIP = true
-    respectDoNotTrack = true
-    useSessionStorage = false
+[module]
+  [[module.imports]]
+    path = 'github.com/McShelby/hugo-theme-relearn'

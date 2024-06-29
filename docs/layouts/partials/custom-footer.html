@@ -1,8 +1,8 @@
-{{ template "_internal/google_analytics.html" . }}
 <script>
 (function () {
   var webSdkScript = document.createElement("script");
-  webSdkScript.src = "https://unpkg.com/@grafana/faro-web-sdk@^1.0.0/dist/bundle/faro-web-sdk.iife.js";
+  webSdkScript.src = "https://unpkg.com/@grafana/faro-web-sdk@^1.4.0/dist/bundle/faro-web-sdk.iife.js";
+
   webSdkScript.onload = () => {
     window.GrafanaFaroWebSdk.initializeFaro({
       url: "https://faro-collector-prod-us-central-0.grafana.net/collect/d8b5652f5dd57fb1cfec9a1c32970fe0",
@@ -17,7 +17,7 @@
     // This is important because we need to ensure that the Web-SDK has been loaded and initialized before we add further instruments!
     var webTracingScript = document.createElement("script");
 
-    webTracingScript.src = "https://unpkg.com/@grafana/faro-web-tracing@^1.0.0/dist/bundle/faro-web-tracing.iife.js";
+    webTracingScript.src = "https://unpkg.com/@grafana/faro-web-tracing@^1.4.0/dist/bundle/faro-web-tracing.iife.js";
 
     // Initialize, configure (if necessary) and add the the new instrumentation to the already loaded and configured Web-SDK.
     webTracingScript.onload = () => {
