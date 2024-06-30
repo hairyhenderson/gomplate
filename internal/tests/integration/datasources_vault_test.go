@@ -4,10 +4,12 @@
 package integration
 
 import (
+	"context"
 	"os"
 	"os/user"
 	"path"
 	"testing"
+	"time"
 
 	vaultapi "github.com/hashicorp/vault/api"
 	"github.com/stretchr/testify/require"
@@ -66,7 +68,7 @@ func startVault(t *testing.T) (*fs.Dir, *vaultClient) {
 	vault := icmd.Command("vault", "server",
 		"-dev",
 		"-dev-root-token-id="+vaultRootToken,
-		"-dev-leased-kv",
+		"-dev-kv-v1", // default to v1, so we can test v1 and v2
 		"-log-level=err",
 		"-dev-listen-address="+vaultAddr,
 		"-config="+tmpDir.Join("config.json"),
@@ -303,4 +305,130 @@ func TestDatasources_Vault_List(t *testing.T) {
 		withEnv("VAULT_TOKEN", tok).
 		run()
 	assertSuccess(t, o, e, err, "bar foo ")
+}
+
+func setupKV2Test(ctx context.Context, t *testing.T, policy string) (string, string) {
+	v := setupDatasourcesVaultTest(t)
+
+	err := v.vc.Sys().MountWithContext(ctx, "kv2", &vaultapi.MountInput{
+		Type:    "kv",
+		Options: map[string]string{"version": "2"},
+	})
+	require.NoError(t, err)
+
+	err = v.vc.Sys().MountWithContext(ctx, "a/b/c", &vaultapi.MountInput{
+		Type:    "kv",
+		Options: map[string]string{"version": "2"},
+	})
+	require.NoError(t, err)
+
+	s, err := v.vc.KVv2("kv2").Put(ctx, "foo", map[string]interface{}{"first": "one"}, vaultapi.WithCheckAndSet(0))
+	require.NoError(t, err)
+	require.Equal(t, 1, s.VersionMetadata.Version)
+
+	s, err = v.vc.KVv2("kv2").Put(ctx, "foo", map[string]interface{}{"second": "two"}, vaultapi.WithCheckAndSet(1))
+	require.NoError(t, err)
+	require.Equal(t, 2, s.VersionMetadata.Version)
+
+	s, err = v.vc.KVv2("a/b/c").Put(ctx, "d/e/f", map[string]interface{}{"e": "f"})
+	require.NoError(t, err)
+	require.Equal(t, 1, s.VersionMetadata.Version)
+
+	tok, err := v.tokenCreate(policy, 15)
+	require.NoError(t, err)
+	return v.addr, tok
+}
+
+func TestDatasources_Vault_ReadKVv2(t *testing.T) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	addr, tok := setupKV2Test(ctx, t, "readpol")
+
+	t.Run("read latest version", func(t *testing.T) {
+		o, e, err := cmd(t,
+			"-d", "vault=vault+http://"+addr+"/kv2/",
+			"-i", `{{(ds "vault" "foo").second}}`).
+			withEnv("VAULT_TOKEN", tok).
+			run()
+		assertSuccess(t, o, e, err, "two")
+
+		o, e, err = cmd(t,
+			"-c", "data=vault+http://"+addr+"/kv2/foo",
+			"-i", `{{ .data.second}}`).
+			withEnv("VAULT_TOKEN", tok).
+			run()
+		assertSuccess(t, o, e, err, "two")
+	})
+
+	t.Run("read earlier version", func(t *testing.T) {
+		o, e, err := cmd(t,
+			"-d", "vault=vault+http://"+addr+"/kv2/",
+			"-i", `{{(ds "vault" "foo?version=1").first}}`).
+			withEnv("VAULT_TOKEN", tok).
+			run()
+		assertSuccess(t, o, e, err, "one")
+
+		o, e, err = cmd(t,
+			"-d", "vault=vault+http://"+addr+"/kv2/?version=1",
+			"-i", `{{(ds "vault" "foo").first}}`).
+			withEnv("VAULT_TOKEN", tok).
+			run()
+		assertSuccess(t, o, e, err, "one")
+
+		o, e, err = cmd(t,
+			"-c", "data=vault+http://"+addr+"/kv2/foo?version=1",
+			"-i", `{{ .data.first }}`).
+			withEnv("VAULT_TOKEN", tok).
+			run()
+		assertSuccess(t, o, e, err, "one")
+	})
+
+	t.Run("read from mount with slashes", func(t *testing.T) {
+		o, e, err := cmd(t,
+			"-d", "vault=vault+http://"+addr+"/a/b/c/d/",
+			"-i", `{{(ds "vault" "e/f").e}}`).
+			withEnv("VAULT_TOKEN", tok).
+			run()
+		assertSuccess(t, o, e, err, "f")
+
+		o, e, err = cmd(t,
+			"-c", "data=vault+http://"+addr+"/a/b/c/d/e/f",
+			"-i", `{{ .data.e }}`).
+			withEnv("VAULT_TOKEN", tok).
+			run()
+		assertSuccess(t, o, e, err, "f")
+	})
+}
+
+func TestDatasources_Vault_ListKVv2(t *testing.T) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	addr, tok := setupKV2Test(ctx, t, "listpol")
+
+	t.Run("list latest version", func(t *testing.T) {
+		o, e, err := cmd(t,
+			"-c", "data=vault+http://"+addr+"/kv2/",
+			"-i", `{{ range .data }}{{ . }} {{end}}`).
+			withEnv("VAULT_TOKEN", tok).
+			run()
+		assertSuccess(t, o, e, err, "foo ")
+	})
+
+	t.Run("list from mount with slashes", func(t *testing.T) {
+		o, e, err := cmd(t,
+			"-c", "data=vault+http://"+addr+"/a/b/c/d/e",
+			"-i", `{{ range .data }}{{ . }} {{end}}`).
+			withEnv("VAULT_TOKEN", tok).
+			run()
+		assertSuccess(t, o, e, err, "f ")
+
+		o, e, err = cmd(t,
+			"-d", "vault=vault+http://"+addr+"/a/",
+			"-i", `{{ range (ds "vault" "b/c/d/") }}{{ . }} {{end}}`).
+			withEnv("VAULT_TOKEN", tok).
+			run()
+		assertSuccess(t, o, e, err, "e ")
+	})
 }
