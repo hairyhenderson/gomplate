@@ -1,5 +1,24 @@
 # Change Log
 
+## [4.0.2](https://github.com/hairyhenderson/gomplate/compare/v4.0.1...v4.0.2) (2024-06-30)
+
+
+### Bug Fixes
+
+* **vault:** Upgrade go-fsimpl for KVv2 vault bug, and add test coverage ([#2157](https://github.com/hairyhenderson/gomplate/issues/2157)) ([6ffd703](https://github.com/hairyhenderson/gomplate/commit/6ffd7039b439dbdc40c63b19c85d7f1015ed842d))
+
+
+### Documentation
+
+* **datasources:** clarify state of Vault KV v2 support ([#2154](https://github.com/hairyhenderson/gomplate/issues/2154)) ([c9643ca](https://github.com/hairyhenderson/gomplate/commit/c9643cad84f95ac0086f8caa0b868364741aa6e6))
+* **fix:** Fix broken links, add CI to check ([#2156](https://github.com/hairyhenderson/gomplate/issues/2156)) ([bdf4f8c](https://github.com/hairyhenderson/gomplate/commit/bdf4f8c7d802c6f8ce4bbe6418d583a1449fe493))
+* **fix:** Update docs configs to work with the latest hugo theme version ([#2155](https://github.com/hairyhenderson/gomplate/issues/2155)) ([17eb360](https://github.com/hairyhenderson/gomplate/commit/17eb360dfaeaf3186b736971f45f3c418d583845))
+
+
+### Dependencies
+
+* **go:** Bump github.com/aws/aws-sdk-go from 1.54.10 to 1.54.11 ([#2152](https://github.com/hairyhenderson/gomplate/issues/2152)) ([e0a6e4f](https://github.com/hairyhenderson/gomplate/commit/e0a6e4f5d707513ef4c33ae8e019da455a7394b6))
+
 ## [4.0.1](https://github.com/hairyhenderson/gomplate/compare/v4.0.0...v4.0.1) (2024-06-28)
 
 
