@@ -1,5 +1,36 @@
 # Change Log
 
+## [4.1.0](https://github.com/hairyhenderson/gomplate/compare/v4.0.1...v4.1.0) (2024-07-06)
+
+
+### Features
+
+* **strings:** New functions TrimRight and TrimLeft ([#2148](https://github.com/hairyhenderson/gomplate/issues/2148)) ([bdf3a1e](https://github.com/hairyhenderson/gomplate/commit/bdf3a1eb92020a0d1ce202df14b49f2f13445476))
+
+
+### Bug Fixes
+
+* **vault:** Upgrade go-fsimpl for KVv2 vault bug, and add test coverage ([#2157](https://github.com/hairyhenderson/gomplate/issues/2157)) ([6ffd703](https://github.com/hairyhenderson/gomplate/commit/6ffd7039b439dbdc40c63b19c85d7f1015ed842d))
+
+
+### Documentation
+
+* **datasources:** clarify state of Vault KV v2 support ([#2154](https://github.com/hairyhenderson/gomplate/issues/2154)) ([c9643ca](https://github.com/hairyhenderson/gomplate/commit/c9643cad84f95ac0086f8caa0b868364741aa6e6))
+* **fix:** Fix broken links, add CI to check ([#2156](https://github.com/hairyhenderson/gomplate/issues/2156)) ([bdf4f8c](https://github.com/hairyhenderson/gomplate/commit/bdf4f8c7d802c6f8ce4bbe6418d583a1449fe493))
+* **fix:** Update docs configs to work with the latest hugo theme version ([#2155](https://github.com/hairyhenderson/gomplate/issues/2155)) ([17eb360](https://github.com/hairyhenderson/gomplate/commit/17eb360dfaeaf3186b736971f45f3c418d583845))
+
+
+### Dependencies
+
+* **actions:** Bump docker/setup-buildx-action from 3.3.0 to 3.4.0 ([#2163](https://github.com/hairyhenderson/gomplate/issues/2163)) ([129ff6b](https://github.com/hairyhenderson/gomplate/commit/129ff6bde8a1fb46b0c2e52586f94cd1b470720b))
+* **actions:** Bump docker/setup-qemu-action from 3.0.0 to 3.1.0 ([#2160](https://github.com/hairyhenderson/gomplate/issues/2160)) ([16ebbbe](https://github.com/hairyhenderson/gomplate/commit/16ebbbedf9d6b328c8012933242fbb93b6e3613c))
+* **go:** Bump github.com/aws/aws-sdk-go from 1.54.10 to 1.54.11 ([#2152](https://github.com/hairyhenderson/gomplate/issues/2152)) ([e0a6e4f](https://github.com/hairyhenderson/gomplate/commit/e0a6e4f5d707513ef4c33ae8e019da455a7394b6))
+* **go:** Bump github.com/aws/aws-sdk-go from 1.54.11 to 1.54.13 ([#2158](https://github.com/hairyhenderson/gomplate/issues/2158)) ([720c70c](https://github.com/hairyhenderson/gomplate/commit/720c70c26b958be784577a349ec2b3a1160e0e54))
+* **go:** Bump github.com/aws/aws-sdk-go from 1.54.13 to 1.54.14 ([#2159](https://github.com/hairyhenderson/gomplate/issues/2159)) ([114c54d](https://github.com/hairyhenderson/gomplate/commit/114c54df69738156a70079b5de3352a032c755f9))
+* **go:** Bump github.com/aws/aws-sdk-go from 1.54.14 to 1.54.15 ([#2165](https://github.com/hairyhenderson/gomplate/issues/2165)) ([51947a7](https://github.com/hairyhenderson/gomplate/commit/51947a7d5ca7d797ee4998aadfcf856abc8f7a67))
+* **go:** Bump github.com/hairyhenderson/go-fsimpl from 0.1.6 to 0.1.7 ([#2167](https://github.com/hairyhenderson/gomplate/issues/2167)) ([80b7c5a](https://github.com/hairyhenderson/gomplate/commit/80b7c5a1aba49239b336d7eeed2525acc2d361be))
+* **go:** Bump golang.org/x/term from 0.21.0 to 0.22.0 ([#2162](https://github.com/hairyhenderson/gomplate/issues/2162)) ([59192ec](https://github.com/hairyhenderson/gomplate/commit/59192ec7efe1b59fd800fe399ee5fe063f80287b))
+
 ## [4.0.1](https://github.com/hairyhenderson/gomplate/compare/v4.0.0...v4.0.1) (2024-06-28)
 
 
