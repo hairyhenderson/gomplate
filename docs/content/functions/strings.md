@@ -669,12 +669,12 @@ $ gomplate -i '{{ "_-foo-_" | strings.Trim "_-" }}'
 foo
 ```
 
-## `strings.TrimLeft`_(unreleased)_
-**Unreleased:** _This function is in development, and not yet available in released builds of gomplate._
+## `strings.TrimLeft`
 
 Trims a string by removing the given characters from the beginning of the string.
 This wraps Go's [`strings.TrimLeft`](https://pkg.go.dev/strings#TrimLeft).
 
+_Added in gomplate [v4.1.0](https://github.com/hairyhenderson/gomplate/releases/tag/v4.1.0)_
 ### Usage
 
 ```
@@ -728,12 +728,12 @@ $ gomplate -i '{{ "hello, world" | strings.TrimPrefix "hello, " }}'
 world
 ```
 
-## `strings.TrimRight`_(unreleased)_
-**Unreleased:** _This function is in development, and not yet available in released builds of gomplate._
+## `strings.TrimRight`
 
 Trims a string by removing the given characters from the end of the string.
 This wraps Go's [`strings.TrimRight`](https://pkg.go.dev/strings#TrimRight).
 
+_Added in gomplate [v4.1.0](https://github.com/hairyhenderson/gomplate/releases/tag/v4.1.0)_
 ### Usage
 
 ```
