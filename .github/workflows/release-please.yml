@@ -125,15 +125,14 @@ jobs:
       - name: Upload release assets
         run: |
           cd bin
-          assets=(checksums-${TAG_NAME}_sha256.txt checksums-${TAG_NAME}_sha512.txt)
+
+          assets="checksums-${TAG_NAME}_sha256.txt checksums-${TAG_NAME}_sha512.txt"
           for f in gomplate_*; do
-            assets=($assets ${f})
+            assets="$assets ${f}"
           done
 
-          for f in ${assets[@]}; do
-            echo "uploading $f"
-            gh release upload ${TAG_NAME} $f
-          done
+          echo "uploading assets: $assets"
+          gh release upload ${TAG_NAME} $assets --clobber
         env:
           GH_TOKEN: ${{ steps.app-token.outputs.token }}
       - name: Publish GitHub Release
