@@ -1,8 +1,5 @@
 name: Docker Build
 on:
-  push:
-    branches: [ main ]
-    tags: [ 'v*', '!v*-pre*']
   pull_request:
     branches: [ main ]
   workflow_dispatch:
@@ -15,21 +12,14 @@ jobs:
         image: registry:2
         ports:
           - '5000:5000'
-    env:
-      DOCKER_BUILDKIT: 1
-      DOCKER_CLI_EXPERIMENTAL: enabled
     steps:
-    - name: enable experimental mode
-      run: |
-        mkdir -p ~/.docker
-        echo '{"experimental": "enabled"}' > ~/.docker/config.json
     - name: Set up QEMU
       uses: docker/setup-qemu-action@v3.1.0
     - name: Set up Docker Buildx
       id: buildx
       uses: docker/setup-buildx-action@v3.4.0
       with:
-        version: v0.11.2
+        version: v0.14.1
         driver-opts: |
           image=moby/buildkit:buildx-stable-1
           network=host
@@ -39,75 +29,10 @@ jobs:
     - uses: actions/checkout@v4
       with:
         fetch-depth: 0
-    - name: determine if this is a tag
-      run: |
-        if (git describe --abbrev=0 --exact-match &>/dev/null); then
-          tag=$(git describe --abbrev=0 --exact-match)
-          echo "is_tag=true" >> $GITHUB_ENV
-          echo "git_tag=$tag" >> $GITHUB_ENV
-          # splits the major version from $tag - assumes it's a 3-part semver
-          echo "major_version=${tag%%\.*}" >> $GITHUB_ENV
-        fi
-        echo $GITHUB_ENV
-      if: github.repository == 'hairyhenderson/gomplate'
-    - name: Build & Push (non-main)
+    - name: Build & Push (local CI registry)
       run: |
         set -ex
         make docker-multi COMMIT=${{ github.sha }} DOCKER_REPO=localhost:5000/gomplate BUILDX_ACTION=--push
 
         docker buildx imagetools create --dry-run -t localhost:5000/gomplate:dev localhost:5000/gomplate:latest
         docker buildx imagetools create --dry-run -t localhost:5000/gomplate:dev-alpine localhost:5000/gomplate:alpine
-      if: github.repository != 'hairyhenderson/gomplate' || (github.ref != 'refs/heads/main' && env.is_tag != 'true')
-    - name: Login to GHCR
-      uses: docker/login-action@v3.2.0
-      with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-      if: github.repository == 'hairyhenderson/gomplate' && (github.ref == 'refs/heads/main' || env.is_tag == 'true')
-    - name: Login to DockerHub
-      uses: docker/login-action@v3.2.0
-      with:
-          # NOTE: DOCKERHUB_TOKEN and DOCKERHUB_USERNAME must be present in https://github.com/hairyhenderson/gomplate/settings
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-      if: github.repository == 'hairyhenderson/gomplate' && (github.ref == 'refs/heads/main' || env.is_tag == 'true')
-    - name: Build & Push (main)
-      run: |
-        make docker-multi COMMIT=${{ github.sha }} DOCKER_REPO=hairyhenderson/gomplate BUILDX_ACTION=--push
-        make docker-multi COMMIT=${{ github.sha }} DOCKER_REPO=ghcr.io/hairyhenderson/gomplate BUILDX_ACTION=--push
-      if: github.repository == 'hairyhenderson/gomplate' && github.ref == 'refs/heads/main'
-    - name: Build & Push (tagged release)
-      run: |
-        export srcrepo=hairyhenderson/gomplate
-        make docker-multi COMMIT=${{ github.sha }} DOCKER_REPO=hairyhenderson/gomplate BUILDX_ACTION=--push
-
-        set -x
-        export repo=hairyhenderson/gomplate
-        docker buildx imagetools create -t ${repo}:stable ${srcrepo}:latest
-        docker buildx imagetools create -t ${repo}:${git_tag} ${srcrepo}:latest
-        docker buildx imagetools create -t ${repo}:${major_version} ${srcrepo}:latest
-
-        docker buildx imagetools create -t ${repo}:stable-alpine ${srcrepo}:alpine
-        docker buildx imagetools create -t ${repo}:${git_tag}-alpine ${srcrepo}:alpine
-        docker buildx imagetools create -t ${repo}:${major_version}-alpine ${srcrepo}:alpine
-
-        export repo=gomplate/gomplate
-        docker buildx imagetools create -t ${repo}:stable ${srcrepo}:latest
-        docker buildx imagetools create -t ${repo}:${git_tag} ${srcrepo}:latest
-        docker buildx imagetools create -t ${repo}:${major_version} ${srcrepo}:latest
-
-        docker buildx imagetools create -t ${repo}:stable-alpine ${srcrepo}:alpine
-        docker buildx imagetools create -t ${repo}:${git_tag}-alpine ${srcrepo}:alpine
-        docker buildx imagetools create -t ${repo}:${major_version}-alpine ${srcrepo}:alpine
-
-        # and now GHCR
-        export repo=ghcr.io/hairyhenderson/gomplate
-        docker buildx imagetools create -t ${repo}:stable ${srcrepo}:latest
-        docker buildx imagetools create -t ${repo}:${git_tag} ${srcrepo}:latest
-        docker buildx imagetools create -t ${repo}:${major_version} ${srcrepo}:latest
-
-        docker buildx imagetools create -t ${repo}:stable-alpine ${srcrepo}:alpine
-        docker buildx imagetools create -t ${repo}:${git_tag}-alpine ${srcrepo}:alpine
-        docker buildx imagetools create -t ${repo}:${major_version}-alpine ${srcrepo}:alpine
-      if: github.repository == 'hairyhenderson/gomplate' && env.is_tag == 'true'
