@@ -77,7 +77,10 @@ func readConfigFile(ctx context.Context, cmd *cobra.Command) (*gomplate.Config, 
 	// we only support loading configs from the local filesystem for now
 	fsys, err := datafs.FSysForPath(ctx, cfgFile)
 	if err != nil {
-		return nil, fmt.Errorf("fsys for path %v: %w", cfgFile, err)
+		if configRequired {
+			return nil, fmt.Errorf("fsys for path %v: %w", cfgFile, err)
+		}
+		return nil, nil
 	}
 
 	f, err := fsys.Open(cfgFile)
