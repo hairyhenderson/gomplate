@@ -27,13 +27,13 @@ jobs:
       with:
         fetch-depth: 0
     - name: Login to GHCR
-      uses: docker/login-action@v3.2.0
+      uses: docker/login-action@v3.3.0
       with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
     - name: Login to DockerHub
-      uses: docker/login-action@v3.2.0
+      uses: docker/login-action@v3.3.0
       with:
           # NOTE: DOCKERHUB_TOKEN and DOCKERHUB_USERNAME must be present in https://github.com/hairyhenderson/gomplate/settings
           username: ${{ secrets.DOCKERHUB_USERNAME }}
