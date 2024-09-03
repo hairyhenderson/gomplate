@@ -622,7 +622,7 @@ $ gomplate -i '{{ $dst := dict "foo" 1 "bar" 2 }}
 {{ $src1 := dict "foo" 8 "baz" 4 }}
 {{ $src2 := dict "foo" 3 "bar" 5 }}
 {{ coll.Merge $dst $src1 $src2 }}'
-map[foo:1 bar:5 baz:4]
+map[foo:1 bar:2 baz:4]
 ```
 
 ## `coll.Pick`
