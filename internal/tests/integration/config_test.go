@@ -153,6 +153,20 @@ func TestConfig_EnvConfigFile(t *testing.T) {
 	assertSuccess(t, o, e, err, "yet another alternate config")
 }
 
+func TestConfig_SkipConfigFile(t *testing.T) {
+	tmpDir := setupConfigTest(t)
+
+	// first set a poisoned default config to prove that it's not being read
+	writeFile(t, tmpDir, ".gomplate.yaml", `badyaml`)
+
+	o, e, err := cmd(t, "--config", "", "--in", "foo").withDir(tmpDir.Path()).run()
+	assertSuccess(t, o, e, err, "foo")
+
+	o, e, err = cmd(t, "--in", "foo").withDir(tmpDir.Path()).
+		withEnv("GOMPLATE_CONFIG", "").run()
+	assertSuccess(t, o, e, err, "foo")
+}
+
 func TestConfig_ConfigOverridesEnvDelim(t *testing.T) {
 	if isWindows {
 		t.Skip()

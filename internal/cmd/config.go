@@ -57,22 +57,34 @@ func loadConfig(ctx context.Context, cmd *cobra.Command, args []string) (*gompla
 	return cfg, nil
 }
 
-func pickConfigFile(cmd *cobra.Command) (cfgFile string, required bool) {
+func pickConfigFile(cmd *cobra.Command) (cfgFile string, required, skip bool) {
 	cfgFile = defaultConfigFile
-	if c := env.Getenv("GOMPLATE_CONFIG"); c != "" {
+	if c, found := env.LookupEnv("GOMPLATE_CONFIG"); found {
 		cfgFile = c
-		required = true
+		if cfgFile == "" {
+			skip = true
+		} else {
+			required = true
+		}
 	}
-	if cmd.Flags().Changed("config") && cmd.Flag("config").Value.String() != "" {
+	if cmd.Flags().Changed("config") {
 		// Use config file from the flag if specified
 		cfgFile = cmd.Flag("config").Value.String()
-		required = true
+		if cfgFile == "" {
+			skip = true
+		} else {
+			required = true
+		}
 	}
-	return cfgFile, required
+	return cfgFile, required, skip
 }
 
 func readConfigFile(ctx context.Context, cmd *cobra.Command) (*gomplate.Config, error) {
-	cfgFile, configRequired := pickConfigFile(cmd)
+	cfgFile, configRequired, skip := pickConfigFile(cmd)
+	if skip {
+		// --config was specified with an empty value
+		return nil, nil
+	}
 
 	// we only support loading configs from the local filesystem for now
 	fsys, err := datafs.FSysForPath(ctx, cfgFile)

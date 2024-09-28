@@ -42,7 +42,8 @@ func setupDatasourcesConsulTest(t *testing.T) (string, *vaultClient) {
 					"serf_lan": `+strconv.Itoa(serfLanPort)+`,
 					"serf_wan": -1,
 					"dns": -1,
-					"grpc": -1
+					"grpc": -1,
+					"grpc_tls": -1
 				},
 				"connect": { "enabled": false }
 			}`,

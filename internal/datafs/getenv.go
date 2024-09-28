@@ -15,7 +15,7 @@ func ExpandEnvFsys(fsys fs.FS, s string) string {
 
 // GetenvFsys - a convenience function intended for internal use only!
 func GetenvFsys(fsys fs.FS, key string, def ...string) string {
-	val := getenvFile(fsys, key)
+	val, _ := getenvFile(fsys, key)
 	if val == "" && len(def) > 0 {
 		return def[0]
 	}
@@ -23,22 +23,28 @@ func GetenvFsys(fsys fs.FS, key string, def ...string) string {
 	return val
 }
 
-func getenvFile(fsys fs.FS, key string) string {
-	val := os.Getenv(key)
+// LookupEnvFsys - a convenience function intended for internal use only!
+func LookupEnvFsys(fsys fs.FS, key string) (string, bool) {
+	return getenvFile(fsys, key)
+}
+
+func getenvFile(fsys fs.FS, key string) (string, bool) {
+	val, found := os.LookupEnv(key)
 	if val != "" {
-		return val
+		return val, true
 	}
 
 	p := os.Getenv(key + "_FILE")
 	if p != "" {
 		val, err := readFile(fsys, p)
 		if err != nil {
-			return ""
+			return "", false
 		}
-		return strings.TrimSpace(val)
+
+		return strings.TrimSpace(val), true
 	}
 
-	return ""
+	return "", found
 }
 
 func readFile(fsys fs.FS, p string) (string, error) {

@@ -188,28 +188,48 @@ func TestPickConfigFile(t *testing.T) {
 	cmd.Flags().String("config", defaultConfigFile, "foo")
 
 	t.Run("default", func(t *testing.T) {
-		cf, req := pickConfigFile(cmd)
+		cf, req, skip := pickConfigFile(cmd)
 		assert.False(t, req)
+		assert.False(t, skip)
 		assert.Equal(t, defaultConfigFile, cf)
 	})
 
 	t.Run("GOMPLATE_CONFIG env var", func(t *testing.T) {
 		t.Setenv("GOMPLATE_CONFIG", "foo.yaml")
-		cf, req := pickConfigFile(cmd)
+		cf, req, skip := pickConfigFile(cmd)
 		assert.True(t, req)
+		assert.False(t, skip)
 		assert.Equal(t, "foo.yaml", cf)
 	})
 
 	t.Run("--config flag", func(t *testing.T) {
 		cmd.ParseFlags([]string{"--config", "config.file"})
-		cf, req := pickConfigFile(cmd)
+		cf, req, skip := pickConfigFile(cmd)
 		assert.True(t, req)
+		assert.False(t, skip)
 		assert.Equal(t, "config.file", cf)
 
 		t.Setenv("GOMPLATE_CONFIG", "ignored.yaml")
-		cf, req = pickConfigFile(cmd)
+		cf, req, skip = pickConfigFile(cmd)
 		assert.True(t, req)
+		assert.False(t, skip)
 		assert.Equal(t, "config.file", cf)
+	})
+
+	t.Run("--config flag with empty value should skip reading", func(t *testing.T) {
+		cmd.ParseFlags([]string{"--config", ""})
+		cf, req, skip := pickConfigFile(cmd)
+		assert.False(t, req)
+		assert.True(t, skip)
+		assert.Equal(t, "", cf)
+	})
+
+	t.Run("GOMPLATE_CONFIG env var with empty value should skip reading", func(t *testing.T) {
+		t.Setenv("GOMPLATE_CONFIG", "")
+		cf, req, skip := pickConfigFile(cmd)
+		assert.False(t, req)
+		assert.True(t, skip)
+		assert.Equal(t, "", cf)
 	})
 }
 

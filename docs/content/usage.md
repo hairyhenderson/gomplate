@@ -21,7 +21,7 @@ Hello, hairyhenderson
 
 ### `--config`
 
-Specify the path to a [gomplate config file](../config). The default is `.gomplate.yaml`. Can also be set with the `GOMPLATE_CONFIG` environment variable.
+Specify the path to a [gomplate config file](../config). The default is `.gomplate.yaml`. Can also be set with the `GOMPLATE_CONFIG` environment variable. Setting `--config` or `GOMPLATE_CONFIG` to an empty string (`--config=""` or `export GOMPLATE_CONFIG=""`) will disable the use of a config file, skipping the default `.gomplate.yaml` file.
 
 For example:
 
