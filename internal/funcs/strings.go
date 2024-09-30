@@ -8,6 +8,7 @@ package funcs
 import (
 	"context"
 	"fmt"
+	"math"
 	"reflect"
 	"strings"
 	"unicode/utf8"
@@ -368,22 +369,32 @@ func (StringFuncs) WordWrap(args ...interface{}) (string, error) {
 		case string:
 			opts.LBSeq = a
 		default:
-			n, err := conv.ToInt(args[0])
+			n, err := conv.ToInt64(args[0])
 			if err != nil {
 				return "", fmt.Errorf("expected width to be a number: %w", err)
 			}
 
-			opts.Width = uint(n)
+			if n > math.MaxUint32 {
+				return "", fmt.Errorf("width too large: %d", n)
+			}
+
+			//nolint:gosec // G115 isn't applicable, we just checked
+			opts.Width = uint32(n)
 		}
 	}
 
 	if len(args) == 3 {
-		n, err := conv.ToInt(args[0])
+		n, err := conv.ToInt64(args[0])
 		if err != nil {
 			return "", fmt.Errorf("expected width to be a number: %w", err)
 		}
 
-		opts.Width = uint(n)
+		if n > math.MaxUint32 {
+			return "", fmt.Errorf("width too large: %d", n)
+		}
+
+		//nolint:gosec // G115 isn't applicable, we just checked
+		opts.Width = uint32(n)
 		opts.LBSeq = conv.ToString(args[1])
 	}
 

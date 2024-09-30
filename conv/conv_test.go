@@ -157,10 +157,6 @@ func TestToInt64(t *testing.T) {
 	require.NoError(t, err)
 	assert.Equal(t, int64(3), actual)
 
-	actual, err = ToInt64(uint64(math.MaxUint64))
-	require.NoError(t, err)
-	assert.Equal(t, int64(-1), actual)
-
 	actual, err = ToInt64(uint8(math.MaxUint8))
 	require.NoError(t, err)
 	assert.Equal(t, int64(0xFF), actual)
@@ -198,6 +194,9 @@ func TestToInt64(t *testing.T) {
 
 		_, err = ToInt64("foo")
 		require.Error(t, err)
+
+		_, err = ToInt64(uint64(math.MaxUint64))
+		require.Error(t, err)
 	})
 }
 
@@ -225,10 +224,6 @@ func TestToInt(t *testing.T) {
 	actual, err = ToInt(42)
 	require.NoError(t, err)
 	assert.Equal(t, 42, actual)
-
-	actual, err = ToInt(uint64(math.MaxUint64))
-	require.NoError(t, err)
-	assert.Equal(t, -1, actual)
 
 	actual, err = ToInt(uint8(math.MaxUint8))
 	require.NoError(t, err)
@@ -266,6 +261,9 @@ func TestToInt(t *testing.T) {
 		require.Error(t, err)
 
 		_, err = ToInt("foo")
+		require.Error(t, err)
+
+		_, err = ToInt(uint64(math.MaxUint64))
 		require.Error(t, err)
 	})
 }
@@ -408,7 +406,6 @@ func TestToString(t *testing.T) {
 	}
 
 	for _, d := range testdata {
-		d := d
 		t.Run(fmt.Sprintf("%T/%#v == %s", d.in, d.in, d.out), func(t *testing.T) {
 			out := ToString(d.in)
 			assert.Equal(t, d.out, out)

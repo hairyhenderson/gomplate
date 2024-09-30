@@ -240,7 +240,6 @@ func (c *command) runInProcess() (o, e string, err error) {
 
 	// iterate env vars by order of insertion
 	for _, k := range c.envK {
-		k := k
 		// clean up after ourselves
 		if orig, ok := os.LookupEnv(k); ok {
 			defer os.Setenv(k, orig)

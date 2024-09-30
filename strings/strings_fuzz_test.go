@@ -61,11 +61,11 @@ things very badly. To wit:
 https://example.com/a/super-long/url/that-shouldnt-be?wrapped=for+fear+of#the-breaking-of-functionality
 should appear on its own line, regardless of the desired word-wrapping width
 that has been set.`
-	f.Add(out, "", uint(0))
-	f.Add(out, "\n", uint(80))
-	f.Add(out, "\v", uint(10))
+	f.Add(out, "", uint32(0))
+	f.Add(out, "\n", uint32(80))
+	f.Add(out, "\v", uint32(10))
 
-	f.Fuzz(func(t *testing.T, in, lbSeq string, width uint) {
+	f.Fuzz(func(t *testing.T, in, lbSeq string, width uint32) {
 		for _, r := range lbSeq {
 			if !unicode.IsSpace(r) {
 				t.Skip("ignore non-whitespace sequences")

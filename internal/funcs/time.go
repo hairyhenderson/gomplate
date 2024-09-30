@@ -3,6 +3,7 @@ package funcs
 import (
 	"context"
 	"fmt"
+	"math"
 	"strconv"
 	"strings"
 	gotime "time"
@@ -205,6 +206,10 @@ func parseNum(in interface{}) (integral int64, fractional int64, err error) {
 		return int64(i), 0, nil
 	}
 	if u, ok := in.(uint64); ok {
+		if u > math.MaxInt64 {
+			return 0, 0, fmt.Errorf("can not parse %d - would overflow int64", u)
+		}
+
 		return int64(u), 0, nil
 	}
 	if f, ok := in.(float64); ok {

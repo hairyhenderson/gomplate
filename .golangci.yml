@@ -26,11 +26,11 @@ linters:
   enable:
     - asciicheck
     - bodyclose
+    - copyloopvar
     # - dogsled
     # - dupl
     - errcheck
     # - exhaustive
-    - exportloopref
     # - funlen
     # - gci
     # - gochecknoglobals

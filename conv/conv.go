@@ -194,12 +194,15 @@ func ToInt64(v interface{}) (int64, error) {
 	case reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64, reflect.Int:
 		return val.Int(), nil
 	case reflect.Uint8, reflect.Uint16, reflect.Uint32:
+		//nolint:gosec // G115 isn't applicable, this is a Uint32 at most
 		return int64(val.Uint()), nil
 	case reflect.Uint, reflect.Uint64:
 		tv := val.Uint()
 
-		// this can overflow and give -1, but IMO this is better than
-		// returning maxint64
+		if tv > math.MaxInt64 {
+			return 0, fmt.Errorf("could not convert %d to int64, would overflow", tv)
+		}
+
 		return int64(tv), nil
 	case reflect.Float32, reflect.Float64:
 		return int64(val.Float()), nil

@@ -2,6 +2,7 @@ package coll
 
 import (
 	"fmt"
+	"math"
 	"reflect"
 )
 
@@ -69,7 +70,12 @@ func indexArg(index reflect.Value, cap int) (int, error) {
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
 		x = index.Int()
 	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uintptr:
-		x = int64(index.Uint())
+		val := index.Uint()
+		if val > math.MaxInt64 {
+			return -1, fmt.Errorf("cannot index slice/array with %d (too large)", val)
+		}
+
+		x = int64(val)
 	case reflect.Invalid:
 		return 0, fmt.Errorf("cannot index slice/array with nil")
 	default:

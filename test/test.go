@@ -3,6 +3,7 @@
 package test
 
 import (
+	"errors"
 	"fmt"
 )
 
@@ -12,7 +13,7 @@ func Assert(value bool, message string) (string, error) {
 		if message != "" {
 			return "", fmt.Errorf("assertion failed: %s", message)
 		}
-		return "", fmt.Errorf("assertion failed")
+		return "", errors.New("assertion failed")
 	}
 	return "", nil
 }
@@ -22,7 +23,7 @@ func Fail(message string) error {
 	if message != "" {
 		return fmt.Errorf("template generation failed: %s", message)
 	}
-	return fmt.Errorf("template generation failed")
+	return errors.New("template generation failed")
 }
 
 // Required -
@@ -32,7 +33,7 @@ func Required(message string, value interface{}) (interface{}, error) {
 	}
 
 	if s, ok := value.(string); value == nil || (ok && s == "") {
-		return nil, fmt.Errorf(message)
+		return nil, errors.New(message)
 	}
 
 	return value, nil

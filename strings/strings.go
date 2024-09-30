@@ -111,7 +111,7 @@ type WordWrapOpts struct {
 	LBSeq string
 
 	// The desired maximum line length in characters (defaults to 80)
-	Width uint
+	Width uint32
 }
 
 // applies default options

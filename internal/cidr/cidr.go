@@ -28,6 +28,7 @@ func SubnetBig(base netip.Prefix, newBits int, num *big.Int) (netip.Prefix, erro
 		return netip.Prefix{}, fmt.Errorf("insufficient address space to extend prefix of %d by %d", parentLen, newBits)
 	}
 
+	//nolint:gosec // G115 doesn't apply here
 	maxNetNum := uint64(1<<uint64(newBits)) - 1
 	if num.Uint64() > maxNetNum {
 		return netip.Prefix{}, fmt.Errorf("prefix extension of %d does not accommodate a subnet numbered %d", newBits, num)
@@ -50,17 +51,19 @@ func HostBig(base netip.Prefix, num *big.Int) (netip.Addr, error) {
 	hostLen := addrLen - parentLen
 
 	maxHostNum := big.NewInt(int64(1))
+
+	//nolint:gosec // G115 doesn't apply here
 	maxHostNum.Lsh(maxHostNum, uint(hostLen))
 	maxHostNum.Sub(maxHostNum, big.NewInt(1))
 
-	numUint64 := big.NewInt(int64(num.Uint64()))
+	num2 := big.NewInt(num.Int64())
 	if num.Cmp(big.NewInt(0)) == -1 {
-		numUint64.Neg(num)
-		numUint64.Sub(numUint64, big.NewInt(int64(1)))
-		num.Sub(maxHostNum, numUint64)
+		num2.Neg(num)
+		num2.Sub(num2, big.NewInt(int64(1)))
+		num.Sub(maxHostNum, num2)
 	}
 
-	if numUint64.Cmp(maxHostNum) == 1 {
+	if num2.Cmp(maxHostNum) == 1 {
 		return netip.Addr{}, fmt.Errorf("prefix of %d does not accommodate a host numbered %d", parentLen, num)
 	}
 
@@ -93,6 +96,8 @@ func intToIP(ipInt *big.Int, bits int) netip.Addr {
 
 func insertNumIntoIP(ip netip.Addr, bigNum *big.Int, prefixLen int) netip.Addr {
 	ipInt, totalBits := ipToInt(ip)
+
+	//nolint:gosec // G115 isn't relevant here
 	bigNum.Lsh(bigNum, uint(totalBits-prefixLen))
 	ipInt.Or(ipInt, bigNum)
 	return intToIP(ipInt, totalBits)
