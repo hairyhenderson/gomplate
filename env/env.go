@@ -20,3 +20,13 @@ func ExpandEnv(s string) string {
 	fsys := datafs.WrapWdFS(osfs.NewFS())
 	return datafs.ExpandEnvFsys(fsys, s)
 }
+
+// LookupEnv - retrieves the value of the environment variable named by the key.
+// If the variable is unset, but the same variable ending in `_FILE` is set, the
+// referenced file will be read into the value. If the key is not set, the
+// second return value will be false.
+// Otherwise the provided default (or an emptry string) is returned.
+func LookupEnv(key string) (string, bool) {
+	fsys := datafs.WrapWdFS(osfs.NewFS())
+	return datafs.LookupEnvFsys(fsys, key)
+}
