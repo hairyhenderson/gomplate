@@ -21,7 +21,7 @@ require (
 	github.com/itchyny/gojq v0.12.16
 	github.com/johannesboyne/gofakes3 v0.0.0-20240217095638-c55a48f17be6
 	github.com/joho/godotenv v1.5.1
-	github.com/lmittmann/tint v1.0.4
+	github.com/lmittmann/tint v1.0.5
 	github.com/spf13/cobra v1.8.1
 	github.com/stretchr/testify v1.9.0
 	github.com/ugorji/go/codec v1.2.12
