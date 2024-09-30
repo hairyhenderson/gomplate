@@ -3,7 +3,7 @@ module github.com/hairyhenderson/gomplate/v4
 go 1.22.5
 
 require (
-	cuelang.org/go v0.9.2
+	cuelang.org/go v0.10.0
 	github.com/Masterminds/goutils v1.1.1
 	github.com/Masterminds/semver/v3 v3.2.1
 	github.com/Shopify/ejson v1.5.2
@@ -26,10 +26,10 @@ require (
 	github.com/stretchr/testify v1.9.0
 	github.com/ugorji/go/codec v1.2.12
 	go4.org/netipx v0.0.0-20231129151722-fdeea329fbba
-	golang.org/x/crypto v0.25.0
+	golang.org/x/crypto v0.26.0
 	golang.org/x/exp v0.0.0-20240613232115-7f521ea00fb8 // indirect
 	golang.org/x/sys v0.24.0
-	golang.org/x/term v0.22.0
+	golang.org/x/term v0.23.0
 	golang.org/x/text v0.17.0
 	gotest.tools/v3 v3.5.1
 	inet.af/netaddr v0.0.0-20230525184311-b8eac61e914a
@@ -150,11 +150,12 @@ require (
 	go4.org/intern v0.0.0-20230525184215-6c62f75575cb // indirect
 	go4.org/unsafe/assume-no-moving-gc v0.0.0-20231121144256-b99613f794b6 // indirect
 	gocloud.dev v0.37.0 // indirect
-	golang.org/x/net v0.26.0 // indirect
-	golang.org/x/oauth2 v0.21.0 // indirect
+	golang.org/x/mod v0.20.0 // indirect
+	golang.org/x/net v0.28.0 // indirect
+	golang.org/x/oauth2 v0.22.0 // indirect
 	golang.org/x/sync v0.8.0 // indirect
 	golang.org/x/time v0.5.0 // indirect
-	golang.org/x/tools v0.22.0 // indirect
+	golang.org/x/tools v0.24.0 // indirect
 	golang.org/x/xerrors v0.0.0-20231012003039-104605ab7028 // indirect
 	google.golang.org/api v0.184.0 // indirect
 	google.golang.org/genproto v0.0.0-20240610135401-a8a62080eff3 // indirect
