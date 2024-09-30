@@ -190,7 +190,6 @@ func TestResolveLocalPath_NonWindows(t *testing.T) {
 	}
 
 	for _, td := range testdata {
-		td := td
 		t.Run(td.path, func(t *testing.T) {
 			root, path, err := ResolveLocalPath(fsys, td.path)
 			require.NoError(t, err)
@@ -225,7 +224,6 @@ func TestResolveLocalPath_Windows(t *testing.T) {
 	}
 
 	for _, td := range testdata {
-		td := td
 		t.Run(td.path, func(t *testing.T) {
 			root, path, err := ResolveLocalPath(fsys, td.path)
 			require.NoError(t, err)
@@ -286,7 +284,6 @@ func TestWdFS_ResolveLocalPath_Windows(t *testing.T) {
 	}
 
 	for _, td := range testdata {
-		td := td
 		t.Run(td.path, func(t *testing.T) {
 			root, path, err := resolveLocalPath(volname, td.path)
 			require.NoError(t, err)
@@ -324,7 +321,6 @@ func TestWin32PathType(t *testing.T) {
 	}
 
 	for _, td := range testdata {
-		td := td
 		t.Run(td.path, func(t *testing.T) {
 			assert.Equal(t, td.expected, win32PathType(td.path))
 		})

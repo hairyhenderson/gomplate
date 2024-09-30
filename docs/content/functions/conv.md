@@ -452,8 +452,7 @@ $ gomplate -i '{{ conv.ToBools false "blah" 0 }}'
 Converts the input to an `int64` (64-bit signed integer).
 
 This function attempts to convert most types of input (strings, numbers,
-and booleans), but behaviour when the input can not be converted is
-undefined and subject to change.
+and booleans).
 
 Unconvertable inputs will result in errors.
 
@@ -592,8 +591,7 @@ gomplate -i '{{ conv.ToInts true 0x42 "123,456.99" "1.2345e+3"}}'
 Converts the input to a `float64`.
 
 This function attempts to convert most types of input (strings, numbers,
-and booleans), but behaviour when the input can not be converted is
-undefined and subject to change.
+and booleans).
 
 Unconvertable inputs will result in errors.
 

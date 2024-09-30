@@ -65,7 +65,6 @@ func TestRSACrypt(t *testing.T) {
 	}
 
 	for _, d := range testdata {
-		d := d
 		t.Run(d.name, func(t *testing.T) {
 			t.Parallel()
 

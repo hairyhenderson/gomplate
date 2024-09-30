@@ -27,7 +27,6 @@ func TestMatchChars(t *testing.T) {
 	}
 
 	for i, d := range testdata {
-		d := d
 		t.Run(strconv.Itoa(i), func(t *testing.T) {
 			t.Parallel()
 

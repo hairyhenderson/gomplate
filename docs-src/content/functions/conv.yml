@@ -300,8 +300,7 @@ funcs:
       Converts the input to an `int64` (64-bit signed integer).
 
       This function attempts to convert most types of input (strings, numbers,
-      and booleans), but behaviour when the input can not be converted is
-      undefined and subject to change.
+      and booleans).
 
       Unconvertable inputs will result in errors.
 
@@ -388,8 +387,7 @@ funcs:
       Converts the input to a `float64`.
 
       This function attempts to convert most types of input (strings, numbers,
-      and booleans), but behaviour when the input can not be converted is
-      undefined and subject to change.
+      and booleans).
       
       Unconvertable inputs will result in errors.
     arguments:

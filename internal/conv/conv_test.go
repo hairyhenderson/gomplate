@@ -40,7 +40,6 @@ func BenchmarkInterfaceSlice(b *testing.B) {
 	}
 
 	for _, d := range data {
-		d := d
 		b.Run(fmt.Sprintf("%T(%v)", d, d), func(b *testing.B) {
 			for i := 0; i < b.N; i++ {
 				InterfaceSlice(d)

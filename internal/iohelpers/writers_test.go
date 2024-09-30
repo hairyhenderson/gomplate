@@ -94,7 +94,6 @@ func TestSameSkipper(t *testing.T) {
 	}
 
 	for _, d := range testdata {
-		d := d
 		t.Run(fmt.Sprintf("in:%q/out:%q/same:%v", d.in, d.out, d.same), func(t *testing.T) {
 			r := bytes.NewBuffer(d.out)
 			w := newBufferCloser(&bytes.Buffer{})

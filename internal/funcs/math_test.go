@@ -221,7 +221,6 @@ func TestIsIntFloatNum(t *testing.T) {
 
 	m := MathFuncs{}
 	for _, tt := range tests {
-		tt := tt
 		t.Run(fmt.Sprintf("%T(%#v)", tt.in, tt.in), func(t *testing.T) {
 			t.Parallel()
 
@@ -239,7 +238,6 @@ func BenchmarkIsFloat(b *testing.B) {
 
 	m := MathFuncs{}
 	for _, n := range data {
-		n := n
 		b.Run(fmt.Sprintf("%T(%v)", n, n), func(b *testing.B) {
 			for i := 0; i < b.N; i++ {
 				m.IsFloat(n)
@@ -264,7 +262,6 @@ func TestMax(t *testing.T) {
 		{int64(255), []interface{}{"14", "0xff", -5}},
 	}
 	for _, d := range data {
-		d := d
 		t.Run(fmt.Sprintf("%v==%v", d.n, d.expected), func(t *testing.T) {
 			t.Parallel()
 
@@ -308,7 +305,6 @@ func TestMin(t *testing.T) {
 		{int64(-5), []interface{}{"14", "0xff", -5}},
 	}
 	for _, d := range data {
-		d := d
 		t.Run(fmt.Sprintf("%v==%v", d.n, d.expected), func(t *testing.T) {
 			t.Parallel()
 
@@ -358,7 +354,6 @@ func TestContainsFloat(t *testing.T) {
 		{[]interface{}{"NaN"}, true},
 	}
 	for _, d := range data {
-		d := d
 		t.Run(fmt.Sprintf("%v==%v", d.n, d.expected), func(t *testing.T) {
 			t.Parallel()
 
@@ -386,7 +381,6 @@ func TestCeil(t *testing.T) {
 		{-1.9, -1},
 	}
 	for _, d := range data {
-		d := d
 		t.Run(fmt.Sprintf("%v==%v", d.n, d.a), func(t *testing.T) {
 			t.Parallel()
 
@@ -425,7 +419,6 @@ func TestFloor(t *testing.T) {
 		{-1.9, -2.},
 	}
 	for _, d := range data {
-		d := d
 		t.Run(fmt.Sprintf("%v==%v", d.n, d.a), func(t *testing.T) {
 			t.Parallel()
 
@@ -468,7 +461,6 @@ func TestRound(t *testing.T) {
 		{-4.5, -5},
 	}
 	for _, d := range data {
-		d := d
 		t.Run(fmt.Sprintf("%v==%v", d.n, d.a), func(t *testing.T) {
 			t.Parallel()
 
@@ -510,7 +502,6 @@ func TestAbs(t *testing.T) {
 		{-2, int64(2)},
 	}
 	for _, d := range data {
-		d := d
 		t.Run(fmt.Sprintf("%#v==%v", d.n, d.a), func(t *testing.T) {
 			t.Parallel()
 
