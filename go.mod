@@ -17,7 +17,7 @@ require (
 	github.com/hairyhenderson/xignore v0.3.3-0.20230403012150-95fe86932830 // iofs-port branch
 	github.com/hashicorp/go-sockaddr v1.0.6
 	github.com/hashicorp/vault/api v1.15.0
-	github.com/hashicorp/vault/api/auth/aws v0.7.0
+	github.com/hashicorp/vault/api/auth/aws v0.8.0
 	github.com/itchyny/gojq v0.12.16
 	github.com/johannesboyne/gofakes3 v0.0.0-20240217095638-c55a48f17be6
 	github.com/joho/godotenv v1.5.1
