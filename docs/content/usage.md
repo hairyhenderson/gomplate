@@ -139,7 +139,7 @@ _Note:_ These patterns are _not_ treated as filesystem globs, and so a pattern l
 Examples:
 
 ```console
-$ gomplate --exclude-processing `*.png` --input-dir in/ --output-dir out/
+$ gomplate --exclude-processing '*.png' --input-dir in/ --output-dir out/
 ```
 
 This will skip all `*.png` files in the `in/` directory from being processed, and copy them to the `out/` directory.
