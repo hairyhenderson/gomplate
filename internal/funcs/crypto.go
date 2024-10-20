@@ -23,7 +23,11 @@ import (
 func CreateCryptoFuncs(ctx context.Context) map[string]interface{} {
 	f := map[string]interface{}{}
 
-	ns := &CryptoFuncs{ctx}
+	ns := &CryptoFuncs{
+		ctx: ctx,
+		ssh: newSSHFuncs(ctx),
+	}
+	ns.self = ns
 
 	f["crypto"] = func() interface{} { return ns }
 	return f
@@ -31,7 +35,15 @@ func CreateCryptoFuncs(ctx context.Context) map[string]interface{} {
 
 // CryptoFuncs -
 type CryptoFuncs struct {
+	namespace
+
 	ctx context.Context
+	ssh *SSHFuncs
+}
+
+// SSH -
+func (f CryptoFuncs) SSH() *SSHFuncs {
+	return f.ssh
 }
 
 // PBKDF2 - Run the Password-Based Key Derivation Function #2 as defined in
