@@ -19,30 +19,37 @@ jobs:
     - name: Quick build (linux/alpine only)
       run: |
         docker build --target gomplate-alpine -t gomplate .
+    - name: Install Trivy
+      uses: aquasecurity/setup-trivy@v0.2.2
+      with:
+        version: v0.57.0
+        cache: true
+    - name: Download Trivy DB
+      run: |
+        trivy fs --no-progress --download-db-only --db-repository public.ecr.aws/aquasecurity/trivy-db
     - name: Run Trivy vulnerability scanner (table output)
-      uses: aquasecurity/trivy-action@master
-      with:
-        image-ref: gomplate
-        format: table
-        exit-code: 1
-        ignore-unfixed: true
-        vuln-type: os,library
-        severity: CRITICAL,HIGH
+      run: |
+        trivy image \
+          --scanners vuln \
+          --format table \
+          --exit-code 1 \
+          --ignore-unfixed \
+          --pkg-types os,library \
+          --severity CRITICAL,HIGH \
+          --skip-db-update \
+            gomplate
     - name: Run Trivy vulnerability scanner
-      uses: aquasecurity/trivy-action@master
-      with:
-        image-ref: gomplate
-        format: sarif
-        output: trivy-results.sarif
-        # exit-code: 1
-        ignore-unfixed: true
-        vuln-type: os,library
-        # The SARIF format ignores severity and uploads all vulnerabilities for
-        # later triage. The table-format step above is used to fail the build if
-        # there are any critical or high vulnerabilities.
-        # See https://github.com/aquasecurity/trivy-action/issues/95
-        # severity: 'CRITICAL,HIGH'
-        trivyignores: .trivyignore
+      run: |
+        trivy image \
+          --scanners vuln \
+          --format sarif \
+          --output trivy-results.sarif \
+          --ignore-unfixed \
+          --pkg-types os,library \
+          --ignorefile .trivyignore \
+          --skip-db-update \
+            gomplate
+      if: always() && github.repository == 'hairyhenderson/gomplate'
     - name: Upload Trivy scan results to GitHub Security tab
       uses: github/codeql-action/upload-sarif@v3
       with:
