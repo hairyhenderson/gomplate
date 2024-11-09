@@ -20,15 +20,12 @@ func compositeVaultAuthMethod(envFsys fs.FS) api.AuthMethod {
 	return vaultauth.CompositeAuthMethod(
 		vaultauth.EnvAuthMethod(),
 		envEC2AuthAdapter(envFsys),
+		envIAMAuthAdapter(envFsys),
 	)
 }
 
-// func CompositeVaultAuthMethod() api.AuthMethod {
-// 	return compositeVaultAuthMethod(WrapWdFS(osfs.NewFS()))
-// }
-
 // envEC2AuthAdapter builds an AWS EC2 authentication method from environment
-// variables, for use only with [CompositeVaultAuthMethod]
+// variables, for use only with [compositeVaultAuthMethod]
 func envEC2AuthAdapter(envFS fs.FS) api.AuthMethod {
 	mountPath := GetenvFsys(envFS, "VAULT_AUTH_AWS_MOUNT", "aws")
 
@@ -61,8 +58,34 @@ func envEC2AuthAdapter(envFS fs.FS) api.AuthMethod {
 	return &ec2AuthNonceWriter{AWSAuth: awsauth, nonce: nonce, output: output}
 }
 
+// envIAMAuthAdapter builds an AWS IAM authentication method from environment
+// variables, for use only with [compositeVaultAuthMethod]
+func envIAMAuthAdapter(envFS fs.FS) api.AuthMethod {
+	mountPath := GetenvFsys(envFS, "VAULT_AUTH_AWS_MOUNT", "aws")
+	role := GetenvFsys(envFS, "VAULT_AUTH_AWS_ROLE")
+
+	// temporary workaround while we wait to deprecate AWS_META_ENDPOINT
+	if endpoint := os.Getenv("AWS_META_ENDPOINT"); endpoint != "" {
+		deprecated.WarnDeprecated(context.Background(), "Use AWS_EC2_METADATA_SERVICE_ENDPOINT instead of AWS_META_ENDPOINT")
+		if os.Getenv("AWS_EC2_METADATA_SERVICE_ENDPOINT") == "" {
+			os.Setenv("AWS_EC2_METADATA_SERVICE_ENDPOINT", endpoint)
+		}
+	}
+
+	awsauth, err := aws.NewAWSAuth(
+		aws.WithIAMAuth(),
+		aws.WithMountPath(mountPath),
+		aws.WithRole(role),
+	)
+	if err != nil {
+		return nil
+	}
+
+	return awsauth
+}
+
 // ec2AuthNonceWriter - wraps an AWSAuth, and writes the nonce to the nonce
-// output file
+// output file - only for ec2 auth
 type ec2AuthNonceWriter struct {
 	*aws.AWSAuth
 	nonce  string

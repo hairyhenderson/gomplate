@@ -4,71 +4,14 @@
 package integration
 
 import (
-	"encoding/pem"
-	"io"
-	"net/http"
-	"net/http/httptest"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"gotest.tools/v3/fs"
 )
 
-func setupDatasourcesVaultEc2Test(t *testing.T) (*fs.Dir, *vaultClient, *httptest.Server, []byte) {
-	t.Helper()
-
-	priv, der, _ := certificateGenerate()
-	cert := pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE", Bytes: der})
-
-	mux := http.NewServeMux()
-	mux.HandleFunc("/latest/dynamic/instance-identity/pkcs7", pkcsHandler(priv, der))
-	mux.HandleFunc("/latest/dynamic/instance-identity/document", instanceDocumentHandler)
-	mux.HandleFunc("/latest/api/token", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		var b []byte
-		if r.Body != nil {
-			var err error
-			b, err = io.ReadAll(r.Body)
-			if !assert.NoError(t, err) {
-				w.WriteHeader(http.StatusInternalServerError)
-				return
-			}
-			defer r.Body.Close()
-		}
-		t.Logf("IMDS Token request: %s %s: %s", r.Method, r.URL, b)
-
-		w.Write([]byte("testtoken"))
-	}))
-	mux.HandleFunc("/latest/meta-data/instance-id", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		t.Logf("IMDS request: %s %s", r.Method, r.URL)
-		w.Write([]byte("i-00000000"))
-	}))
-	mux.HandleFunc("/sts/", stsHandler)
-	mux.HandleFunc("/ec2/", ec2Handler)
-	mux.HandleFunc("/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		t.Logf("unhandled request: %s %s", r.Method, r.URL)
-		w.WriteHeader(http.StatusNotFound)
-	}))
-
-	srv := httptest.NewServer(mux)
-	t.Cleanup(srv.Close)
-
-	tmpDir, v := startVault(t)
-
-	err := v.vc.Sys().PutPolicy("writepol", `path "*" {
-  policy = "write"
-}`)
-	require.NoError(t, err)
-	err = v.vc.Sys().PutPolicy("readpol", `path "*" {
-  policy = "read"
-}`)
-	require.NoError(t, err)
-
-	return tmpDir, v, srv, cert
-}
-
 func TestDatasources_VaultEc2(t *testing.T) {
-	tmpDir, v, srv, cert := setupDatasourcesVaultEc2Test(t)
+	accountID, user := "1", "Test"
+	tmpDir, v, srv, cert := setupDatasourcesVaultAWSTest(t, accountID, user)
 
 	v.vc.Logical().Write("secret/foo", map[string]interface{}{"value": "bar"})
 	defer v.vc.Logical().Delete("secret/foo")
