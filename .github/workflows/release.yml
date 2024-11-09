@@ -1,0 +1,108 @@
+name: Deploy Released Assets
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  deploy-alpine:
+    runs-on: ubuntu-latest
+    environment:
+      name: aports
+    env:
+      TAG_NAME: ${{ github.event.release.tag_name }}
+    steps:
+      - uses: actions/create-github-app-token@v1
+        id: app-token
+        with:
+          app-id: ${{ vars.APP_ID }}
+          private-key: ${{ secrets.PRIVATE_KEY }}
+      - name: Retrieve release artifacts
+        id: artifacts
+        run: |
+          # need the checksums
+          gh release download ${TAG_NAME} --skip-existing -p "${TAG_NAME}.sha*"
+
+          echo "sha256sum=$(cat ${TAG_NAME}.sha256)" >> $GITHUB_OUTPUT
+          echo "sha512sum=$(cat ${TAG_NAME}.sha512)" >> $GITHUB_OUTPUT
+
+          # need gomplate to template the APKBUILD!
+          gh release download ${TAG_NAME} --skip-existing -p gomplate_linux-amd64
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+      - uses: actions/checkout@v4
+      - name: checkout alpinelinux/aports
+        run: |
+          git config --global user.name "${{ vars.USERNAME }}"
+          git config --global user.email "${{ secrets.EMAIL }}"
+          git clone https://gitlab.alpinelinux.org/hairyhenderson/aports.git
+          git remote add upstream https://gitlab.alpinelinux.org/alpine/aports.git
+          cd aports
+          git checkout master
+      - name: update fork
+        run: |
+          cd aports
+          git fetch upstream
+          git rebase upstream/master
+          git push
+      - name: upgrade gomplate in aports
+        run: |
+          cd aports/community/gomplate
+          git checkout -b upgrade-gomplate-aport-${VERSION}
+
+          export VERSION=${TAG_NAME#v}
+
+          export ENVJSON="{\"version\": \"${VERSION}\", \"sha512\": \"${{ steps.artifacts.outputs.sha512sum }}\" }"
+          gomplate_linux-amd64 -c .=env:///ENVJSON\?type=application/json \
+            -f ../../../packaging/alpine/APKBUILD.tmpl \
+            -o APKBUILD
+
+          git add APKBUILD
+          git commit -S -sm "community/gomplate: upgrade to ${VERSION}"
+          git push -u origin upgrade-gomplate-aport-${VERSION}
+
+          # open a PR
+          lab mr create --allow-collaboration \
+            -m "community/gomplate: upgrade to ${VERSION}" \
+            -m "https://github.com/${{ github.repository }}/releases/tag/${TAG_NAME}"
+      - name:
+        run: |
+          echo "Triggered by release ${{ github.event.release.tag_name }}"
+          
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+  deploy-homebrew:
+    runs-on: ubuntu-latest
+    environment:
+      name: homebrew
+    env:
+      TAG_NAME: ${{ github.event.release.tag_name }}
+    steps:
+      - uses: actions/create-github-app-token@v1
+        id: app-token
+        with:
+          app-id: ${{ vars.APP_ID }}
+          private-key: ${{ secrets.PRIVATE_KEY }}
+      # - name: Retrieve release artifacts
+      #   id: artifacts
+      #   run: |
+      #     # need the checksum and archive
+      #     gh release download ${TAG_NAME} -p "${TAG_NAME}.sha*"
+
+      #     echo "sha256sum=$(cat ${TAG_NAME}.sha256)" >> $GITHUB_OUTPUT
+      #     echo "archive=https://github.com/${{ github.repository }}/archive/refs/tags/${TAG_NAME}.tar.gz" >> $GITHUB_OUTPUT
+      #   env:
+      #     GH_TOKEN: ${{ steps.app-token.outputs.token }}
+      - name: Set up Homebrew
+        id: set-up-homebrew
+        uses: Homebrew/actions/setup-homebrew@master
+      - name: Bump packages
+        uses: Homebrew/actions/bump-packages@master
+        with:
+          token: ${{ steps.app-token.outputs.token }}
+          formulae: gomplate
+          fork: false
