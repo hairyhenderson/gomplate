@@ -53,6 +53,7 @@ jobs:
             --exclude="https://linux.die\.net.*" \
             --exclude="https://jqplay\.org.*" \
             --exclude="https://json\.org.*" \
-            --exclude="https://goessner\.net.*"
+            --exclude="https://goessner\.net.*" \
+            --exclude="http://opensource\.org.*"
 
           kill %1

@@ -694,7 +694,7 @@ The correct capabilities must be allowed for the [authenticated](#vault-authenti
 
 ### Vault Environment variables
 
-In addition to the variables documented [above](#vault-authentication), a number of environment variables are interpreted by the Vault client, and are documented in the [official Vault documentation](https://developer.hashicorp.com/vault/docs/commands#environment-variables).
+In addition to the variables documented [above](#vault-authentication), a number of environment variables are interpreted by the Vault client, and are documented in the [official Vault documentation](https://developer.hashicorp.com/vault/docs/commands#configure-environment-variables).
 
 ### Examples
 
