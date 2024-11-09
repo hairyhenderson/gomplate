@@ -48,8 +48,8 @@ github.com/Microsoft/go-winio v0.6.2 h1:F2VQgta7ecxGYO8k3ZZz3RS8fVIXVxONVUPlNERo
 github.com/Microsoft/go-winio v0.6.2/go.mod h1:yd8OoFMLzJbo9gZq8j5qaps8bJ9aShtEA8Ipt1oGCvU=
 github.com/ProtonMail/go-crypto v1.0.0 h1:LRuvITjQWX+WIfr930YHG2HNfjR1uOfyf5vE0kC2U78=
 github.com/ProtonMail/go-crypto v1.0.0/go.mod h1:EjAoLdwvbIOoOQr3ihjnSoLZRtE8azugULFRteWMNc0=
-github.com/Shopify/ejson v1.5.2 h1:sXUlmNd5MFHfxIvchQqkbksYmKmHb05coSYhMpWpUNs=
-github.com/Shopify/ejson v1.5.2/go.mod h1:bVvQ3MaBCfMOkIp1rWZcot3TruYXCc7qUUbI1tjs/YM=
+github.com/Shopify/ejson v1.5.3 h1:2TfdPKTkHXADrvxQrW+mOpl+btx0kDn4/kjzOQ1gIH8=
+github.com/Shopify/ejson v1.5.3/go.mod h1:bVvQ3MaBCfMOkIp1rWZcot3TruYXCc7qUUbI1tjs/YM=
 github.com/alecthomas/template v0.0.0-20160405071501-a0175ee3bccc/go.mod h1:LOuyumcjzFXgccqObfd/Ljyb9UuFJ6TxHnclSeseNhc=
 github.com/alecthomas/template v0.0.0-20190718012654-fb15b899a751/go.mod h1:LOuyumcjzFXgccqObfd/Ljyb9UuFJ6TxHnclSeseNhc=
 github.com/alecthomas/units v0.0.0-20151022065526-2efee857e7cf/go.mod h1:ybxpYRFXyAe+OPACYpWeL0wqObRcbAqCMya13uyzqw0=
