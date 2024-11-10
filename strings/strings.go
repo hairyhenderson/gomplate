@@ -3,6 +3,7 @@ package strings
 
 import (
 	"fmt"
+	"math"
 	"regexp"
 	"sort"
 	"strings"
@@ -129,7 +130,15 @@ func wwDefaults(opts WordWrapOpts) WordWrapOpts {
 // width.
 func WordWrap(in string, opts WordWrapOpts) string {
 	opts = wwDefaults(opts)
-	return goutils.WrapCustom(in, int(opts.Width), opts.LBSeq, false)
+
+	// if we're on a 32-bit system, we need to check for overflow. If the width
+	// is greater than maxint, we'll just use maxint.
+	width := int(opts.Width)
+	if width == -1 {
+		width = int(math.MaxInt)
+	}
+
+	return goutils.WrapCustom(in, width, opts.LBSeq, false)
 }
 
 // SkipLines - skip the given number of lines (ending with \n) from the string.
