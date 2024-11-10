@@ -189,3 +189,36 @@ func TestDatasources_File_Directory(t *testing.T) {
 		withDir(tmpDir.Path()).run()
 	assertSuccess(t, o, e, err, "core.yaml root key: cloud")
 }
+
+func TestDatsources_File_RelativePath(t *testing.T) {
+	// regression test for #2230
+	tmpDir := fs.NewDir(t, "gomplate-inttests",
+		fs.WithDir("root",
+			fs.WithDir("foo",
+				fs.WithDir("bar",
+					fs.WithFiles(map[string]string{
+						".gomplate.yaml": `
+context:
+  qux:
+    url: "../../baz/qux.yaml"
+`,
+					}),
+				),
+			),
+			fs.WithDir("baz",
+				fs.WithFiles(map[string]string{
+					"qux.yaml": `values:
+- value1
+- value2
+`,
+				}),
+			),
+		),
+	)
+	t.Cleanup(tmpDir.Remove)
+
+	o, e, err := cmd(t, "--config", ".gomplate.yaml", "-i", "{{ .qux.values }}").
+		withDir(tmpDir.Join("root", "foo", "bar")).run()
+
+	assertSuccess(t, o, e, err, "[value1 value2]")
+}

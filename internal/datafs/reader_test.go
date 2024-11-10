@@ -61,10 +61,24 @@ func TestResolveURL(t *testing.T) {
 	_, err = resolveURL(mustParseURL("git+ssh://git@example.com/foo//bar"), "baz//myfile")
 	require.Error(t, err)
 
-	// relative urls must remain relative
+	// relative base URLs must remain relative
 	out, err = resolveURL(mustParseURL("tmp/foo.json"), "")
 	require.NoError(t, err)
 	assert.Equal(t, "tmp/foo.json", out.String())
+
+	// relative implicit file URLs without volume or scheme are OK
+	out, err = resolveURL(mustParseURL("/tmp/"), "foo.json")
+	require.NoError(t, err)
+	assert.Equal(t, "tmp/foo.json", out.String())
+
+	// relative base URLs in parent directories are OK
+	out, err = resolveURL(mustParseURL("../../tmp/foo.json"), "")
+	require.NoError(t, err)
+	assert.Equal(t, "../../tmp/foo.json", out.String())
+
+	out, err = resolveURL(mustParseURL("../../tmp/"), "sub/foo.json")
+	require.NoError(t, err)
+	assert.Equal(t, "../../tmp/sub/foo.json", out.String())
 }
 
 func TestReadFileContent(t *testing.T) {
