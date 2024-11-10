@@ -35,7 +35,7 @@ func TestPathFuncs(t *testing.T) {
 	assert.Equal(t, "/foo/baz", p.Clean("/foo/bar/../baz"))
 	assert.Equal(t, "foo", p.Dir("foo/bar"))
 	assert.Equal(t, ".txt", p.Ext("/foo/bar/baz.txt"))
-	assert.False(t, false, p.IsAbs("foo/bar"))
+	assert.False(t, p.IsAbs("foo/bar"))
 	assert.True(t, p.IsAbs("/foo/bar"))
 	assert.Equal(t, "foo/bar/qux", p.Join("foo", "bar", "baz", "..", "qux"))
 	m, _ := p.Match("*.txt", "foo.json")

@@ -101,7 +101,7 @@ func TestReadFileContent(t *testing.T) {
 
 	fc, err := sr.readFileContent(ctx, mustParseURL("file:///foo.json"), nil)
 	require.NoError(t, err)
-	assert.Equal(t, []byte(`{"foo": "bar"}`), fc.b)
+	assert.JSONEq(t, `{"foo": "bar"}`, string(fc.b))
 
 	fc, err = sr.readFileContent(ctx, mustParseURL("dir/"), nil)
 	require.NoError(t, err)
@@ -109,7 +109,7 @@ func TestReadFileContent(t *testing.T) {
 
 	fc, err = sr.readFileContent(ctx, mustParseURL(srv.URL+"/foo.json"), nil)
 	require.NoError(t, err)
-	assert.Equal(t, []byte(`{"foo": "bar"}`), fc.b)
+	assert.JSONEq(t, `{"foo": "bar"}`, string(fc.b))
 }
 
 func TestDatasource(t *testing.T) {

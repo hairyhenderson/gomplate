@@ -141,58 +141,58 @@ func (RandomFuncs) Item(items interface{}) (interface{}, error) {
 
 // Number -
 func (RandomFuncs) Number(args ...interface{}) (int64, error) {
-	var min, max int64
-	min, max = 0, 100
+	var nMin, nMax int64
+	nMin, nMax = 0, 100
 
 	var err error
 
 	switch len(args) {
 	case 0:
 	case 1:
-		max, err = conv.ToInt64(args[0])
+		nMax, err = conv.ToInt64(args[0])
 		if err != nil {
 			return 0, fmt.Errorf("max must be a number: %w", err)
 		}
 	case 2:
-		min, err = conv.ToInt64(args[0])
+		nMin, err = conv.ToInt64(args[0])
 		if err != nil {
 			return 0, fmt.Errorf("min must be a number: %w", err)
 		}
 
-		max, err = conv.ToInt64(args[1])
+		nMax, err = conv.ToInt64(args[1])
 		if err != nil {
 			return 0, fmt.Errorf("max must be a number: %w", err)
 		}
 	}
 
-	return random.Number(min, max)
+	return random.Number(nMin, nMax)
 }
 
 // Float -
 func (RandomFuncs) Float(args ...interface{}) (float64, error) {
-	var min, max float64
-	min, max = 0, 1.0
+	var nMin, nMax float64
+	nMin, nMax = 0, 1.0
 
 	var err error
 
 	switch len(args) {
 	case 0:
 	case 1:
-		max, err = conv.ToFloat64(args[0])
+		nMax, err = conv.ToFloat64(args[0])
 		if err != nil {
 			return 0, fmt.Errorf("max must be a number: %w", err)
 		}
 	case 2:
-		min, err = conv.ToFloat64(args[0])
+		nMin, err = conv.ToFloat64(args[0])
 		if err != nil {
 			return 0, fmt.Errorf("min must be a number: %w", err)
 		}
 
-		max, err = conv.ToFloat64(args[1])
+		nMax, err = conv.ToFloat64(args[1])
 		if err != nil {
 			return 0, fmt.Errorf("max must be a number: %w", err)
 		}
 	}
 
-	return random.Float(min, max)
+	return random.Float(nMin, nMax)
 }

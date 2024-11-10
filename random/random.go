@@ -4,7 +4,7 @@ package random
 import (
 	"fmt"
 	"math"
-	"math/rand"
+	"math/rand/v2"
 	"regexp"
 	"unicode"
 )
@@ -43,7 +43,7 @@ func rndString(count int, chars []rune) (string, error) {
 	s := make([]rune, count)
 	for i := range s {
 		//nolint:gosec
-		s[i] = chars[rand.Intn(len(chars))]
+		s[i] = chars[rand.IntN(len(chars))]
 	}
 	return string(s), nil
 }
@@ -83,11 +83,13 @@ func Item(items []interface{}) (interface{}, error) {
 	}
 
 	//nolint:gosec
-	n := rand.Intn(len(items))
+	n := rand.IntN(len(items))
 	return items[n], nil
 }
 
 // Number -
+//
+//nolint:revive
 func Number(min, max int64) (int64, error) {
 	if min > max {
 		return 0, fmt.Errorf("min must not be greater than max (was %d, %d)", min, max)
@@ -100,10 +102,12 @@ func Number(min, max int64) (int64, error) {
 	}
 
 	//nolint:gosec
-	return rand.Int63n(max-min+1) + min, nil
+	return rand.Int64N(max-min+1) + min, nil
 }
 
 // Float - For now this is really just a wrapper around `rand.Float64`
+//
+//nolint:revive
 func Float(min, max float64) (float64, error) {
 	//nolint:gosec
 	return min + rand.Float64()*(max-min), nil
