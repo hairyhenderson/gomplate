@@ -188,8 +188,6 @@ func (d *dsReader) readFileContent(ctx context.Context, u *url.URL, hdr http.Hea
 	return &content{contentType: mimeType, b: data}, nil
 }
 
-// COPIED FROM /data/datasource.go
-//
 // resolveURL parses the relative URL rel against base, and returns the
 // resolved URL. Differs from url.ResolveReference in that query parameters are
 // added. In case of duplicates, params from rel are used.
@@ -232,9 +230,18 @@ func resolveURL(base *url.URL, rel string) (*url.URL, error) {
 	// URL.ResolveReference requires (or assumes, at least) that the base is
 	// absolute. We want to support relative URLs too though, so we need to
 	// correct for that.
-	out := base.ResolveReference(relURL)
-	if out.Scheme == "" && out.Path[0] == '/' {
+	var out *url.URL
+	switch {
+	case rel == "":
+		out = base
+	case base.IsAbs():
+		out = base.ResolveReference(relURL)
+	case base.Scheme == "" && base.Path[0] == '/':
+		// absolute path, no scheme or volume
+		out = base.ResolveReference(relURL)
 		out.Path = out.Path[1:]
+	default:
+		out = resolveRelativeURL(base, relURL)
 	}
 
 	if base.RawQuery != "" {
@@ -247,4 +254,23 @@ func resolveURL(base *url.URL, rel string) (*url.URL, error) {
 	}
 
 	return out, nil
+}
+
+// relative path, might even involve .. or . in the path
+func resolveRelativeURL(base, relURL *url.URL) *url.URL {
+	// first find the difference between base and what base would be if it
+	// were absolute
+	emptyURL, _ := url.Parse("")
+	absBase := base.ResolveReference(emptyURL)
+	absBase.Path = strings.TrimPrefix(absBase.Path, "/")
+
+	diff := strings.TrimSuffix(base.Path, absBase.Path)
+	diff = strings.TrimSuffix(diff, "/")
+
+	out := base.ResolveReference(relURL)
+
+	// now correct the path by adding the prefix back in
+	out.Path = diff + out.Path
+
+	return out
 }
