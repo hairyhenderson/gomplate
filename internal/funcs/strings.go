@@ -376,7 +376,7 @@ func (StringFuncs) WordWrap(args ...interface{}) (string, error) {
 				return "", fmt.Errorf("expected width to be a number: %w", err)
 			}
 
-			if n > math.MaxUint32 {
+			if n > math.MaxInt {
 				return "", fmt.Errorf("width too large: %d", n)
 			}
 
@@ -391,7 +391,7 @@ func (StringFuncs) WordWrap(args ...interface{}) (string, error) {
 			return "", fmt.Errorf("expected width to be a number: %w", err)
 		}
 
-		if n > math.MaxUint32 {
+		if n > math.MaxInt {
 			return "", fmt.Errorf("width too large: %d", n)
 		}
 
