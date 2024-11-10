@@ -64,6 +64,8 @@ func Index(v interface{}, keys ...interface{}) (interface{}, error) {
 }
 
 // indexArg checks if a reflect.Value can be used as an index, and converts it to int if possible.
+//
+//nolint:revive
 func indexArg(index reflect.Value, cap int) (int, error) {
 	var x int64
 	switch index.Kind() {

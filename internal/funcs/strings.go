@@ -152,6 +152,8 @@ func (StringFuncs) Abbrev(args ...interface{}) (string, error) {
 }
 
 // ReplaceAll -
+//
+//nolint:revive
 func (StringFuncs) ReplaceAll(old, new string, s interface{}) string {
 	return strings.ReplaceAll(conv.ToString(s), old, new)
 }
@@ -322,10 +324,10 @@ func (StringFuncs) ShellQuote(in interface{}) string {
 	switch val.Kind() {
 	case reflect.Array, reflect.Slice:
 		var sb strings.Builder
-		max := val.Len()
-		for n := 0; n < max; n++ {
+		vLen := val.Len()
+		for n := 0; n < vLen; n++ {
 			sb.WriteString(gompstrings.ShellQuote(conv.ToString(val.Index(n))))
-			if n+1 != max {
+			if n+1 != vLen {
 				sb.WriteRune(' ')
 			}
 		}
