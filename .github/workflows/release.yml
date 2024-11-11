@@ -21,6 +21,7 @@ jobs:
         with:
           app-id: ${{ vars.APP_ID }}
           private-key: ${{ secrets.PRIVATE_KEY }}
+      - uses: actions/checkout@v4
       - name: Retrieve release artifacts
         id: artifacts
         run: |
@@ -34,11 +35,10 @@ jobs:
           gh release download ${TAG_NAME} --skip-existing -p gomplate_linux-amd64
         env:
           GH_TOKEN: ${{ steps.app-token.outputs.token }}
-      - uses: actions/checkout@v4
       - name: checkout alpinelinux/aports
         run: |
-          git config --global user.name "${{ vars.USERNAME }}"
-          git config --global user.email "${{ secrets.EMAIL }}"
+          git config user.name "${{ github.actor }}"
+          git config user.email "${{ github.actor_id }}+${{ github.actor }}@users.noreply.github.com"
           git clone https://gitlab.alpinelinux.org/hairyhenderson/aports.git
           git remote add upstream https://gitlab.alpinelinux.org/alpine/aports.git
           cd aports
@@ -69,12 +69,6 @@ jobs:
           lab mr create --allow-collaboration \
             -m "community/gomplate: upgrade to ${VERSION}" \
             -m "https://github.com/${{ github.repository }}/releases/tag/${TAG_NAME}"
-      - name:
-        run: |
-          echo "Triggered by release ${{ github.event.release.tag_name }}"
-          
-        env:
-          GH_TOKEN: ${{ steps.app-token.outputs.token }}
   deploy-homebrew:
     runs-on: ubuntu-latest
     environment:
