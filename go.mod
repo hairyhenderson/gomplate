@@ -32,7 +32,6 @@ require (
 	golang.org/x/term v0.26.0
 	golang.org/x/text v0.20.0
 	gotest.tools/v3 v3.5.1
-	inet.af/netaddr v0.0.0-20230525184311-b8eac61e914a
 	k8s.io/client-go v0.31.2
 )
 
