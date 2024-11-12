@@ -14,6 +14,75 @@ however, and so can not guarantee correctness of implementation. It is
 recommended to have your resident security experts inspect gomplate's code
 before using gomplate for critical security infrastructure!_
 
+## `crypto.SSH`
+
+Namespace for ssh functions
+
+_Added in gomplate [v4.2.0](https://github.com/hairyhenderson/gomplate/releases/tag/v4.2.0)_
+### Usage
+
+```
+crypto.SSH
+```
+
+
+### Examples
+
+```console
+$ gomplate -i '{{ crypto.ssh }}'
+<namespace SSH [PublicKey]>
+```
+
+## `crypto.SSH.PublicKey`
+
+Loads [Secure Shell](https://en.wikipedia.org/wiki/Secure_Shell) public key
+
+_Added in gomplate [v4.2.0](https://github.com/hairyhenderson/gomplate/releases/tag/v4.2.0)_
+### Usage
+
+```
+crypto.SSH.PublicKey [name]
+```
+```
+name | crypto.SSH.PublicKey
+```
+
+### Arguments
+
+| name | description |
+|------|-------------|
+| `name` | _(optional)_ the name of the key in `~/.ssh` or the absolute path to it. The default value is defined by `IdentityFile` in `~/.ssh/config`. If not specified, `~/.ssh/id_rsa.pub` is used. |
+
+### Examples
+
+```console
+$ cat ~/.ssh/id_rsa.pub
+gxAedO6GSFC7X+feNqKydIqKlq82R9cnjJPuPLbVvWPB+r08PeJobl++6d9m8EQorpokS+ntqnr35QnIBDWLHk139KhWkOjDOvUHJd6pjOOLhSVapmKPOz1dST4QCweET59STvLHHjNVQfJtWI9zVl4X9S4SoiLDkUUyge+9UnqyA9bAr2P4NkVWZYgf3QnrqoWpRGHz1F7JgV+VmGOlh/Kmc6Q== email@example.com
+
+$ gomplate -i '{{ crypto.SSH.PublicKey }}'
+<namespace PublicKey [Blob Comment Format Marshal]>
+```
+```console
+$ gomplate -i '{{ crypto.SSH.PublicKey.Marshal }}'
+ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQCnEosV4dTgI6CL4YgM4Tfzs6CKdvLL/tarxipWrgEcdwn0TqFn3PmvxSOQWXbQci1Rl2I+U6X3Z4qQ3fafEOlF/bDbwfnY/eUpr9dHnVe1FCbX0tVzCR7OMHg7vGnF3Mta5E9MXMBKupiukgH51hH6fosr90Cvuhj0vsmO3jQL+i1yQxgbc14RCMQuIUZqAA/1Y9JWtucYe4X2uRyby/m2qtHA08kjPTREVd1cMSTM6rCdxnjXgJn7I416ybWnNIwwYeU8q2aKNPIhndSnIBMdDQnnxRCQHgWZXGjF8K8dVl1r3lJWbg/XMXKDWwLXbhRXZwR7/6HDamsV9fkY5Sld9VfKesNiCjaWLlnbe3d6NbdveBcBO6DgDFcshvvtOyu4quBly8EJFpyfeo5V8XQTIVMcLxehXMZNlk0C0PGKQx4xHdxTwFw9IFPbuGNRqRIRwC0YEH3TR4+xBp/gxAedO6GSFC7X+feNqKydIqKlq82R9cnjJPuPLbVvWPB+r08PeJobl++6d9m8EQorpokS+ntqnr35QnIBDWLHk139KhWkOjDOvUHJd6pjOOLhSVapmKPOz1dST4QCweET59STvLHHjNVQfJtWI9zVl4X9S4SoiLDkUUyge+9UnqyA9bAr2P4NkVWZYgf3QnrqoWpRGHz1F7JgV+VmGOlh/Kmc6Q== email@example.com
+```
+```console
+$ gomplate -i '{{ crypto.SSH.PublicKey.Blob | base64.Encode }}'
+AAAAB3NzaC1yc2EAAAADAQABAAACAQCnEosV4dTgI6CL4YgM4Tfzs6CKdvLL/tarxipWrgEcdwn0TqFn3PmvxSOQWXbQci1Rl2I+U6X3Z4qQ3fafEOlF/bDbwfnY/eUpr9dHnVe1FCbX0tVzCR7OMHg7vGnF3Mta5E9MXMBKupiukgH51hH6fosr90Cvuhj0vsmO3jQL+i1yQxgbc14RCMQuIUZqAA/1Y9JWtucYe4X2uRyby/m2qtHA08kjPTREVd1cMSTM6rCdxnjXgJn7I416ybWnNIwwYeU8q2aKNPIhndSnIBMdDQnnxRCQHgWZXGjF8K8dVl1r3lJWbg/XMXKDWwLXbhRXZwR7/6HDamsV9fkY5Sld9VfKesNiCjaWLlnbe3d6NbdveBcBO6DgDFcshvvtOyu4quBly8EJFpyfeo5V8XQTIVMcLxehXMZNlk0C0PGKQx4xHdxTwFw9IFPbuGNRqRIRwC0YEH3TR4+xBp/gxAedO6GSFC7X+feNqKydIqKlq82R9cnjJPuPLbVvWPB+r08PeJobl++6d9m8EQorpokS+ntqnr35QnIBDWLHk139KhWkOjDOvUHJd6pjOOLhSVapmKPOz1dST4QCweET59STvLHHjNVQfJtWI9zVl4X9S4SoiLDkUUyge+9UnqyA9bAr2P4NkVWZYgf3QnrqoWpRGHz1F7JgV+VmGOlh/Kmc6Q==
+```
+```console
+$ gomplate -i '{{ crypto.SSH.PublicKey.Comment }}'
+email@example.com
+```
+```console
+$ gomplate -i '{{ crypto.SSH.PublicKey.Format }}'
+  ssh-rsa
+```
+```console
+$ gomplate -i '{{ (crypto.SSH.PublicKey "e2e_id_ed25519").Marshal }}'
+ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIBCLlDopq1aotlRUMw6oJ7Snr+qa+r5X8qxADTuYJumN e2e_key
+```
+
 ## `crypto.Bcrypt`
 
 Uses the [bcrypt](https://en.wikipedia.org/wiki/Bcrypt) password hashing algorithm to generate the hash of a given string. Wraps the [`golang.org/x/crypto/brypt`](https://godoc.org/golang.org/x/crypto/bcrypt) package.

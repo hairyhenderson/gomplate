@@ -9,6 +9,47 @@ preamble: |
   recommended to have your resident security experts inspect gomplate's code
   before using gomplate for critical security infrastructure!_
 funcs:
+  - name: crypto.SSH
+    released: v4.2.0 # I hope so
+    description: |
+      Namespace for ssh functions
+    pipeline: false
+    examples:
+      - |
+        $ gomplate -i '{{ crypto.ssh }}'
+        <namespace SSH [PublicKey]>
+
+  - name: crypto.SSH.PublicKey
+    released: v4.2.0
+    description: |
+      Loads [Secure Shell](https://en.wikipedia.org/wiki/Secure_Shell) public key
+    pipeline: true
+    arguments:
+      - name: name
+        required: false
+        description: the name of the key in `~/.ssh` or the absolute path to it. The default value is defined by `IdentityFile` in `~/.ssh/config`. If not specified, `~/.ssh/id_rsa.pub` is used.
+    examples:
+      - |
+        $ cat ~/.ssh/id_rsa.pub
+        gxAedO6GSFC7X+feNqKydIqKlq82R9cnjJPuPLbVvWPB+r08PeJobl++6d9m8EQorpokS+ntqnr35QnIBDWLHk139KhWkOjDOvUHJd6pjOOLhSVapmKPOz1dST4QCweET59STvLHHjNVQfJtWI9zVl4X9S4SoiLDkUUyge+9UnqyA9bAr2P4NkVWZYgf3QnrqoWpRGHz1F7JgV+VmGOlh/Kmc6Q== email@example.com
+
+        $ gomplate -i '{{ crypto.SSH.PublicKey }}'
+        <namespace PublicKey [Blob Comment Format Marshal]>
+      - |
+        $ gomplate -i '{{ crypto.SSH.PublicKey.Marshal }}'
+        ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQCnEosV4dTgI6CL4YgM4Tfzs6CKdvLL/tarxipWrgEcdwn0TqFn3PmvxSOQWXbQci1Rl2I+U6X3Z4qQ3fafEOlF/bDbwfnY/eUpr9dHnVe1FCbX0tVzCR7OMHg7vGnF3Mta5E9MXMBKupiukgH51hH6fosr90Cvuhj0vsmO3jQL+i1yQxgbc14RCMQuIUZqAA/1Y9JWtucYe4X2uRyby/m2qtHA08kjPTREVd1cMSTM6rCdxnjXgJn7I416ybWnNIwwYeU8q2aKNPIhndSnIBMdDQnnxRCQHgWZXGjF8K8dVl1r3lJWbg/XMXKDWwLXbhRXZwR7/6HDamsV9fkY5Sld9VfKesNiCjaWLlnbe3d6NbdveBcBO6DgDFcshvvtOyu4quBly8EJFpyfeo5V8XQTIVMcLxehXMZNlk0C0PGKQx4xHdxTwFw9IFPbuGNRqRIRwC0YEH3TR4+xBp/gxAedO6GSFC7X+feNqKydIqKlq82R9cnjJPuPLbVvWPB+r08PeJobl++6d9m8EQorpokS+ntqnr35QnIBDWLHk139KhWkOjDOvUHJd6pjOOLhSVapmKPOz1dST4QCweET59STvLHHjNVQfJtWI9zVl4X9S4SoiLDkUUyge+9UnqyA9bAr2P4NkVWZYgf3QnrqoWpRGHz1F7JgV+VmGOlh/Kmc6Q== email@example.com
+      - |
+        $ gomplate -i '{{ crypto.SSH.PublicKey.Blob | base64.Encode }}'
+        AAAAB3NzaC1yc2EAAAADAQABAAACAQCnEosV4dTgI6CL4YgM4Tfzs6CKdvLL/tarxipWrgEcdwn0TqFn3PmvxSOQWXbQci1Rl2I+U6X3Z4qQ3fafEOlF/bDbwfnY/eUpr9dHnVe1FCbX0tVzCR7OMHg7vGnF3Mta5E9MXMBKupiukgH51hH6fosr90Cvuhj0vsmO3jQL+i1yQxgbc14RCMQuIUZqAA/1Y9JWtucYe4X2uRyby/m2qtHA08kjPTREVd1cMSTM6rCdxnjXgJn7I416ybWnNIwwYeU8q2aKNPIhndSnIBMdDQnnxRCQHgWZXGjF8K8dVl1r3lJWbg/XMXKDWwLXbhRXZwR7/6HDamsV9fkY5Sld9VfKesNiCjaWLlnbe3d6NbdveBcBO6DgDFcshvvtOyu4quBly8EJFpyfeo5V8XQTIVMcLxehXMZNlk0C0PGKQx4xHdxTwFw9IFPbuGNRqRIRwC0YEH3TR4+xBp/gxAedO6GSFC7X+feNqKydIqKlq82R9cnjJPuPLbVvWPB+r08PeJobl++6d9m8EQorpokS+ntqnr35QnIBDWLHk139KhWkOjDOvUHJd6pjOOLhSVapmKPOz1dST4QCweET59STvLHHjNVQfJtWI9zVl4X9S4SoiLDkUUyge+9UnqyA9bAr2P4NkVWZYgf3QnrqoWpRGHz1F7JgV+VmGOlh/Kmc6Q==
+      - |
+        $ gomplate -i '{{ crypto.SSH.PublicKey.Comment }}'
+        email@example.com
+      - |
+        $ gomplate -i '{{ crypto.SSH.PublicKey.Format }}'
+          ssh-rsa
+      - |
+        $ gomplate -i '{{ (crypto.SSH.PublicKey "e2e_id_ed25519").Marshal }}'
+        ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIBCLlDopq1aotlRUMw6oJ7Snr+qa+r5X8qxADTuYJumN e2e_key
   - name: crypto.Bcrypt
     released: v2.6.0
     description: |

@@ -4,6 +4,7 @@ import (
 	"context"
 	"io/fs"
 	"path/filepath"
+	"sync"
 
 	osfs "github.com/hack-pad/hackpadfs/os"
 	"github.com/hairyhenderson/gomplate/v4/conv"
@@ -11,21 +12,33 @@ import (
 	"github.com/hairyhenderson/gomplate/v4/internal/iohelpers"
 )
 
+var (
+	fsys     fs.FS
+	fsysOnce sync.Once
+)
+
 // CreateFileFuncs -
 func CreateFileFuncs(ctx context.Context) map[string]interface{} {
-	fsys, err := datafs.FSysForPath(ctx, "/")
-	if err != nil {
-		fsys = datafs.WrapWdFS(osfs.NewFS())
-	}
-
 	ns := &FileFuncs{
 		ctx: ctx,
-		fs:  fsys,
+		fs:  getFS(ctx),
 	}
 
 	return map[string]interface{}{
 		"file": func() interface{} { return ns },
 	}
+}
+
+func getFS(ctx context.Context) fs.FS {
+	fsysOnce.Do(func() {
+		var err error
+		fsys, err = datafs.FSysForPath(ctx, "/")
+		if err != nil {
+			fsys = datafs.WrapWdFS(osfs.NewFS())
+		}
+	})
+
+	return fsys
 }
 
 // FileFuncs -
