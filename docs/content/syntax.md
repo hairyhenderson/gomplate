@@ -325,7 +325,7 @@ Hello {{ . }}!
 ```
 
 ```
-$ gomplate -t hello=hello.t -i '{{ template "hello" "World" }} {{ template "hello" .Env.USER }}"
+$ gomplate -t hello=hello.t -i '{{ template "hello" "World" }} {{ template "hello" .Env.USER }}'
 Hello World! Hello hairyhenderson!
 ```
 
