@@ -110,7 +110,7 @@ value | test.IsKind kind
 
 | name | description |
 |------|-------------|
-| `kind` | _(required)_ the kind to compare with (see desription for possible values) |
+| `kind` | _(required)_ the kind to compare with (see description for possible values) |
 | `value` | _(required)_ the value to check |
 
 ### Examples
