@@ -1,3 +1,6 @@
+//go:build !windows
+// +build !windows
+
 package integration
 
 import (
@@ -7,12 +10,21 @@ import (
 	"crypto/x509"
 	"crypto/x509/pkix"
 	"encoding/pem"
+	"fmt"
+	"io"
 	"log"
 	"math/big"
 	"net/http"
+	"net/http/httptest"
+	"net/url"
+	"strings"
+	"testing"
 	"time"
 
 	"github.com/fullsailor/pkcs7"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+	"gotest.tools/v3/fs"
 )
 
 const instanceDocument = `{
@@ -106,21 +118,34 @@ func pkcsHandler(priv *rsa.PrivateKey, derBytes []byte) func(http.ResponseWriter
 	}
 }
 
-func stsHandler(w http.ResponseWriter, _ *http.Request) {
-	w.Header().Set("Content-Type", "text/xml")
-	_, err := w.Write([]byte(`<GetCallerIdentityResponse xmlns="https://sts.amazonaws.com/doc/2011-06-15/">
-  <GetCallerIdentityResult>
-   <Arn>arn:aws:iam::1:user/Test</Arn>
-    <UserId>AKIAI44QH8DHBEXAMPLE</UserId>
-    <Account>1</Account>
-  </GetCallerIdentityResult>
-  <ResponseMetadata>
-    <RequestId>01234567-89ab-cdef-0123-456789abcdef</RequestId>
-  </ResponseMetadata>
-</GetCallerIdentityResponse>`))
-	if err != nil {
-		w.WriteHeader(500)
-	}
+func stsHandler(t *testing.T, accountID, user string) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		body, _ := io.ReadAll(r.Body)
+		defer r.Body.Close()
+
+		form, _ := url.ParseQuery(string(body))
+
+		// action must be GetCallerIdentity
+		assert.Equal(t, "GetCallerIdentity", form.Get("Action"))
+
+		w.Header().Set("Content-Type", "text/xml")
+		_, err := w.Write([]byte(fmt.Sprintf(`<?xml version='1.0' encoding='utf-8'?>
+        <GetCallerIdentityResponse xmlns="https://sts.amazonaws.com/doc/2011-06-15/">
+            <GetCallerIdentityResult>
+                <Arn>arn:aws:iam::%[1]s:user/%[2]s</Arn>
+                <UserId>AKIAI44QH8DHBEXAMPLE</UserId>
+                <Account>%[1]s</Account>
+            </GetCallerIdentityResult>
+            <ResponseMetadata>
+                <RequestId>01234567-89ab-cdef-0123-456789abcdef</RequestId>
+            </ResponseMetadata>
+        </GetCallerIdentityResponse>`, accountID, user)))
+		if err != nil {
+			t.Errorf("failed to write response: %s", err)
+			w.WriteHeader(http.StatusInternalServerError)
+		}
+		assert.NoError(t, err)
+	})
 }
 
 func ec2Handler(w http.ResponseWriter, _ *http.Request) {
@@ -246,6 +271,100 @@ func ec2Handler(w http.ResponseWriter, _ *http.Request) {
     </reservationSet>
 </DescribeInstancesResponse>`))
 	if err != nil {
-		w.WriteHeader(500)
+		w.WriteHeader(http.StatusInternalServerError)
 	}
+}
+
+func iamGetUserHandler(t *testing.T, accountID string) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		body, _ := io.ReadAll(r.Body)
+		form, _ := url.ParseQuery(string(body))
+
+		// action must be GetUser
+		assert.Equal(t, "GetUser", form.Get("Action"))
+
+		w.Header().Set("Content-Type", "text/xml")
+		_, err := w.Write([]byte(fmt.Sprintf(`<?xml version='1.0' encoding='utf-8'?>
+        <GetUserResponse xmlns="https://iam.amazonaws.com/doc/2010-05-08/">
+            <GetUserResult>
+                <User>
+                    <Path>/</Path>
+                    <UserName>%[1]s</UserName>
+                    <UserId>m3o9qmhhl9dnjlh2fflg</UserId>
+                    <Arn>arn:aws:iam::%[2]s:user/%[1]s</Arn>
+                    <CreateDate>2024-07-21T17:21:27.259000Z</CreateDate>
+                </User>
+            </GetUserResult>
+            <ResponseMetadata>
+                <RequestId>3d0e2445-64ea-4bfb-9244-30d810773f9e</RequestId>
+            </ResponseMetadata>
+        </GetUserResponse>`, form.Get("UserName"), accountID)))
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+		}
+		assert.NoError(t, err)
+	})
+}
+
+func setupDatasourcesVaultAWSTest(t *testing.T, accountID, user string) (*fs.Dir, *vaultClient, *httptest.Server, []byte) {
+	t.Helper()
+
+	priv, der, _ := certificateGenerate()
+	cert := pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE", Bytes: der})
+
+	mux := http.NewServeMux()
+	mux.HandleFunc("/latest/dynamic/instance-identity/pkcs7", pkcsHandler(priv, der))
+	mux.HandleFunc("/latest/dynamic/instance-identity/document", instanceDocumentHandler)
+	mux.HandleFunc("/latest/api/token", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		var b []byte
+		if r.Body != nil {
+			var err error
+			b, err = io.ReadAll(r.Body)
+			if !assert.NoError(t, err) {
+				w.WriteHeader(http.StatusInternalServerError)
+				return
+			}
+			defer r.Body.Close()
+		}
+		t.Logf("IMDS Token request: %s %s: %s", r.Method, r.URL, b)
+
+		w.Write([]byte("testtoken"))
+	}))
+	mux.HandleFunc("/latest/meta-data/instance-id", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		t.Logf("IMDS request: %s %s", r.Method, r.URL)
+		w.Write([]byte("i-00000000"))
+	}))
+	mux.Handle("/sts/", stsHandler(t, accountID, user))
+	mux.Handle("/iam/", iamGetUserHandler(t, accountID))
+	mux.HandleFunc("/ec2/", ec2Handler)
+	mux.HandleFunc("/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		t.Logf("unhandled request: %s %s", r.Method, r.URL)
+		w.WriteHeader(http.StatusNotFound)
+	}))
+
+	// Vault sends requests to "/sts///" for some reason, and the ServeMux
+	// responds by redirecting to "/sts/" which Vault rejects. So we need to
+	// handle the extra slashes in a middleware first.
+	stripSlashes := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		for strings.HasSuffix(r.URL.Path, "//") {
+			r.URL.Path = r.URL.Path[:len(r.URL.Path)-1]
+		}
+		mux.ServeHTTP(w, r)
+	})
+
+	srv := httptest.NewServer(stripSlashes)
+	t.Cleanup(srv.Close)
+
+	tmpDir, v := startVault(t)
+
+	err := v.vc.Sys().PutPolicy("writepol", `path "*" {
+  policy = "write"
+}`)
+	require.NoError(t, err)
+	err = v.vc.Sys().PutPolicy("readpol", `path "*" {
+  policy = "read"
+}`)
+	require.NoError(t, err)
+
+	return tmpDir, v, srv, cert
 }

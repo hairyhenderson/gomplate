@@ -101,6 +101,8 @@ func FSysForPath(ctx context.Context, path string) (fs.FS, error) {
 		fsys = vaultauth.WithAuthMethod(compositeVaultAuthMethod(fileFsys), fsys)
 	}
 
+	fsys = fsimpl.WithContextFS(ctx, fsys)
+
 	return fsys, nil
 }
 

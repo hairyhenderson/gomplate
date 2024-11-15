@@ -69,7 +69,7 @@ func startVault(t *testing.T) (*fs.Dir, *vaultClient) {
 		"-dev",
 		"-dev-root-token-id="+vaultRootToken,
 		"-dev-kv-v1", // default to v1, so we can test v1 and v2
-		"-log-level=err",
+		"-log-level=info",
 		"-dev-listen-address="+vaultAddr,
 		"-config="+tmpDir.Join("config.json"),
 	)
