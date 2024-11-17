@@ -66,7 +66,7 @@ funcs:
     arguments:
       - name: kind
         required: true
-        description: the kind to compare with (see desription for possible values)
+        description: the kind to compare with (see description for possible values)
       - name: value
         required: true
         description: the value to check
