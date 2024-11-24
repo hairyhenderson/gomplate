@@ -733,11 +733,11 @@ func TestToCUE(t *testing.T) {
 	}
 
 	expected := `{
-	"two-and-a-half": 2.5
 	list: [1, 2, 3]
-	two: 2
-	one: 1
 	matches: ["localhost:443", "localhost", "443"]
+	one:              1
+	two:              2
+	"two-and-a-half": 2.5
 }`
 
 	out, err := ToCUE(in)
