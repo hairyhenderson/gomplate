@@ -18,7 +18,7 @@ require (
 	github.com/hashicorp/go-sockaddr v1.0.7
 	github.com/hashicorp/vault/api v1.15.0
 	github.com/hashicorp/vault/api/auth/aws v0.8.0
-	github.com/itchyny/gojq v0.12.16
+	github.com/itchyny/gojq v0.12.17
 	github.com/johannesboyne/gofakes3 v0.0.0-20240217095638-c55a48f17be6
 	github.com/joho/godotenv v1.5.1
 	github.com/lmittmann/tint v1.0.5
