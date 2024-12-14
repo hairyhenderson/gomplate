@@ -1,0 +1,34 @@
+name: go benchmarks
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  benchmark:
+    name: benchmark regression check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: 'go.mod'
+      - name: Run benchmark
+        run: make bench.txt
+      - name: Download previous benchmark data
+        uses: actions/cache@v4
+        with:
+          path: ./cache
+          key: ${{ runner.os }}-benchmark
+      - name: Store benchmark result
+        uses: benchmark-action/github-action-benchmark@v1
+        with:
+          tool: 'go'
+          output-file-path: bench.txt
+          external-data-json-path: ./cache/benchmark-data.json
+          fail-on-alert: true
+          comment-on-alert: true
+          comment-always: true
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          alert-threshold: "200%"
