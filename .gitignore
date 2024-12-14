@@ -8,3 +8,4 @@ report.xml
 *.out
 .netlify
 docs/.hugo_build.lock
+bench.txt

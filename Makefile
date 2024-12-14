@@ -159,6 +159,9 @@ test:
 	$(GO) test -race -coverprofile=c.out ./...
 endif
 
+bench.txt: go.mod go.sum $(GO_FILES)
+	$(GO) test -benchmem -run=xxx -bench . ./... | tee $@
+
 .SECONDEXPANSION:
 testbin/%.test.exe: $$(shell $$(GO) list -f '{{.Dir}}' $$(subst testbin/,,$$(subst .test.exe,,$$@)))
 	@GOOS=windows GOARCH=amd64 $(GO) test -c -o $@ $<
