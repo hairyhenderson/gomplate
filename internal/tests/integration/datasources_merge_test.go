@@ -35,62 +35,86 @@ func setupDatasourcesMergeTest(t *testing.T) (*fs.Dir, *httptest.Server) {
 func TestDatasources_Merge(t *testing.T) {
 	tmpDir, srv := setupDatasourcesMergeTest(t)
 
-	o, e, err := cmd(t,
-		"-d", "user="+tmpDir.Join("config.json"),
-		"-d", "default="+tmpDir.Join("default.yml"),
-		"-d", "config=merge:user|default",
-		"-i", `{{ ds "config" | toJSON }}`,
-	).run()
-	assertSuccess(t, o, e, err, `{"foo":{"bar":"baz"},"isDefault":false,"isOverride":true,"other":true}`)
+	t.Run("from two aliased datasources", func(t *testing.T) {
+		o, e, err := cmd(t,
+			"-d", "user="+tmpDir.Join("config.json"),
+			"-d", "default="+tmpDir.Join("default.yml"),
+			"-d", "config=merge:user|default",
+			"-i", `{{ ds "config" | toJSON }}`,
+		).run()
+		assertSuccess(t, o, e, err, `{"foo":{"bar":"baz"},"isDefault":false,"isOverride":true,"other":true}`)
+	})
 
-	o, e, err = cmd(t,
-		"-d", "default="+tmpDir.Join("default.yml"),
-		"-d", "config=merge:user|default",
-		"-i", `{{ defineDatasource "user" `+"`"+tmpDir.Join("config.json")+"`"+` }}{{ ds "config" | toJSON }}`,
-	).run()
-	assertSuccess(t, o, e, err, `{"foo":{"bar":"baz"},"isDefault":false,"isOverride":true,"other":true}`)
+	t.Run("with dynamic datasource", func(t *testing.T) {
+		o, e, err := cmd(t,
+			"-d", "default="+tmpDir.Join("default.yml"),
+			"-d", "config=merge:user|default",
+			"-i", `{{ defineDatasource "user" `+"`"+tmpDir.Join("config.json")+"`"+` }}{{ ds "config" | toJSON }}`,
+		).run()
+		assertSuccess(t, o, e, err, `{"foo":{"bar":"baz"},"isDefault":false,"isOverride":true,"other":true}`)
+	})
 
-	o, e, err = cmd(t,
-		"-d", "default="+tmpDir.Join("default.yml"),
-		"-d", "config=merge:"+srv.URL+"/foo.json|default",
-		"-i", `{{ ds "config" | toJSON }}`,
-	).run()
-	assertSuccess(t, o, e, err, `{"foo":"bar","isDefault":true,"isOverride":false,"other":true}`)
+	t.Run("with inline datasource", func(t *testing.T) {
+		o, e, err := cmd(t,
+			"-d", "default="+tmpDir.Join("default.yml"),
+			"-d", "config=merge:"+srv.URL+"/foo.json|default",
+			"-i", `{{ ds "config" | toJSON }}`,
+		).run()
+		assertSuccess(t, o, e, err, `{"foo":"bar","isDefault":true,"isOverride":false,"other":true}`)
+	})
 
-	o, e, err = cmd(t,
-		"-c", "merged=merge:"+srv.URL+"/2.env|"+srv.URL+"/1.env",
-		"-i", `FOO is {{ .merged.FOO }}`,
-	).run()
-	assertSuccess(t, o, e, err, `FOO is 3`)
+	t.Run("with two inline env datasources", func(t *testing.T) {
+		o, e, err := cmd(t,
+			"-c", "merged=merge:"+srv.URL+"/2.env|"+srv.URL+"/1.env",
+			"-i", `FOO is {{ .merged.FOO }}`,
+		).run()
+		assertSuccess(t, o, e, err, `FOO is 3`)
+	})
 
-	o, e, err = cmd(t,
-		"-c", "default="+tmpDir.Join("default.yml"),
-		"-i", `{{ defineDatasource "merged" "merge:`+srv.URL+`/foo.json|default" -}}
+	t.Run("inline merge with inline datasource", func(t *testing.T) {
+		o, e, err := cmd(t,
+			"-c", "default="+tmpDir.Join("default.yml"),
+			"-i", `{{ defineDatasource "merged" "merge:`+srv.URL+`/foo.json|default" -}}
 {{ ds "merged" | toJSON }}`,
-	).run()
-	assertSuccess(t, o, e, err, `{"foo":"bar","isDefault":true,"isOverride":false,"other":true}`)
+		).run()
+		assertSuccess(t, o, e, err, `{"foo":"bar","isDefault":true,"isOverride":false,"other":true}`)
+	})
 
-	o, e, err = cmd(t,
-		"-d", "default="+tmpDir.Join("default.yml"),
-		"-d", "wrongtype="+srv.URL+"/wrongtype.txt?type=application/json",
-		"-d", "config=merge:wrongtype|default",
-		"-i", `{{ ds "config" | toJSON }}`,
-	).run()
-	assertSuccess(t, o, e, err, `{"foo":"bar","isDefault":true,"isOverride":false,"other":true}`)
+	t.Run("with overridden type", func(t *testing.T) {
+		o, e, err := cmd(t,
+			"-d", "default="+tmpDir.Join("default.yml"),
+			"-d", "wrongtype="+srv.URL+"/wrongtype.txt?type=application/json",
+			"-d", "config=merge:wrongtype|default",
+			"-i", `{{ ds "config" | toJSON }}`,
+		).run()
+		assertSuccess(t, o, e, err, `{"foo":"bar","isDefault":true,"isOverride":false,"other":true}`)
+	})
 
-	o, e, err = cmd(t,
-		"-d", "default="+tmpDir.Join("default.yml"),
-		"-d", "wrongtype="+srv.URL+"/wrongtype.txt?_=application/json",
-		"-d", "config=merge:wrongtype|default",
-		"-i", `{{ ds "config" | toJSON }}`,
-	).withEnv("GOMPLATE_TYPE_PARAM", "_").run()
-	assertSuccess(t, o, e, err, `{"foo":"bar","isDefault":true,"isOverride":false,"other":true}`)
+	t.Run("type overridden by env var", func(t *testing.T) {
+		o, e, err := cmd(t,
+			"-d", "default="+tmpDir.Join("default.yml"),
+			"-d", "wrongtype="+srv.URL+"/wrongtype.txt?_=application/json",
+			"-d", "config=merge:wrongtype|default",
+			"-i", `{{ ds "config" | toJSON }}`,
+		).withEnv("GOMPLATE_TYPE_PARAM", "_").run()
+		assertSuccess(t, o, e, err, `{"foo":"bar","isDefault":true,"isOverride":false,"other":true}`)
 
-	o, e, err = cmd(t,
-		"-c", "default="+tmpDir.Join("default.yml"),
-		"-c", "params="+srv.URL+"/params?foo=bar&type=http&_type=application/json",
-		"-c", "merged=merge:params|default",
-		"-i", `{{ .merged | toJSON }}`,
-	).withEnv("GOMPLATE_TYPE_PARAM", "_type").run()
-	assertSuccess(t, o, e, err, `{"foo":["bar"],"isDefault":true,"isOverride":false,"other":true,"type":["http"]}`)
+		o, e, err = cmd(t,
+			"-c", "default="+tmpDir.Join("default.yml"),
+			"-c", "params="+srv.URL+"/params?foo=bar&type=http&_type=application/json",
+			"-c", "merged=merge:params|default",
+			"-i", `{{ .merged | toJSON }}`,
+		).withEnv("GOMPLATE_TYPE_PARAM", "_type").run()
+		assertSuccess(t, o, e, err, `{"foo":["bar"],"isDefault":true,"isOverride":false,"other":true,"type":["http"]}`)
+	})
+
+	t.Run("from stdin", func(t *testing.T) {
+		o, e, err := cmd(t,
+			"-d", "stdindata=stdin:///in.json",
+			"-d", "filedata="+srv.URL+"/foo.json",
+			"-d", "merged=merge:stdindata|filedata",
+			"-i", `{{ ds "merged" | toJSON }}`,
+		).withStdin(`{"baz": "qux"}`).run()
+		assertSuccess(t, o, e, err, `{"baz":"qux","foo":"bar"}`)
+	})
 }

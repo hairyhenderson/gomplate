@@ -2,6 +2,7 @@ package datafs
 
 import (
 	"context"
+	"fmt"
 	"io"
 	"io/fs"
 	"mime"
@@ -31,19 +32,7 @@ func setupMergeFsys(ctx context.Context, t *testing.T) fs.FS {
 	yamlContent := "hello: earth\ngoodnight: moon\n"
 	arrayContent := `["hello", "world"]`
 
-	wd, _ := os.Getwd()
-
-	// MapFS doesn't support windows path separators, so we use / exclusively
-	// in this test
-	vol := filepath.VolumeName(wd)
-	if vol != "" && wd != vol {
-		wd = wd[len(vol)+1:]
-	} else if wd[0] == '/' {
-		wd = wd[1:]
-	}
-	wd = filepath.ToSlash(wd)
-
-	t.Logf("wd: %s", wd)
+	wd := wdForTest(t)
 
 	fsys := WrapWdFS(fstest.MapFS{
 		"tmp":                              {Mode: fs.ModeDir | 0o777},
@@ -90,84 +79,22 @@ func setupMergeFsys(ctx context.Context, t *testing.T) fs.FS {
 	return fsys
 }
 
-// func TestReadMerge(t *testing.T) {
-// 	ctx := context.Background()
+func wdForTest(t *testing.T) string {
+	t.Helper()
 
-// 	jsonContent := `{"hello": "world"}`
-// 	yamlContent := "hello: earth\ngoodnight: moon\n"
-// 	arrayContent := `["hello", "world"]`
+	wd, _ := os.Getwd()
 
-// 	mergedContent := "goodnight: moon\nhello: world\n"
+	// MapFS doesn't support windows path separators, so we use / exclusively
+	vol := filepath.VolumeName(wd)
+	if vol != "" && wd != vol {
+		wd = wd[len(vol)+1:]
+	} else if wd[0] == '/' {
+		wd = wd[1:]
+	}
+	wd = filepath.ToSlash(wd)
 
-// 	fsys := fstest.MapFS{}
-// 	fsys["tmp"] = &fstest.MapFile{Mode: fs.ModeDir | 0777}
-// 	fsys["tmp/jsonfile.json"] = &fstest.MapFile{Data: []byte(jsonContent)}
-// 	fsys["tmp/array.json"] = &fstest.MapFile{Data: []byte(arrayContent)}
-// 	fsys["tmp/yamlfile.yaml"] = &fstest.MapFile{Data: []byte(yamlContent)}
-// 	fsys["tmp/textfile.txt"] = &fstest.MapFile{Data: []byte(`plain text...`)}
-
-// 	// workding dir with volume name trimmed
-// 	wd, _ := os.Getwd()
-// 	vol := filepath.VolumeName(wd)
-// 	wd = wd[len(vol)+1:]
-
-// 	fsys[path.Join(wd, "jsonfile.json")] = &fstest.MapFile{Data: []byte(jsonContent)}
-// 	fsys[path.Join(wd, "array.json")] = &fstest.MapFile{Data: []byte(arrayContent)}
-// 	fsys[path.Join(wd, "yamlfile.yaml")] = &fstest.MapFile{Data: []byte(yamlContent)}
-// 	fsys[path.Join(wd, "textfile.txt")] = &fstest.MapFile{Data: []byte(`plain text...`)}
-
-// 	fsmux := fsimpl.NewMux()
-// 	fsmux.Add(fsimpl.WrappedFSProvider(&fsys, "file"))
-// 	ctx = datafs.ContextWithFSProvider(ctx, fsmux)
-
-// 	source := &Source{Alias: "foo", URL: mustParseURL("merge:file:///tmp/jsonfile.json|file:///tmp/yamlfile.yaml")}
-// 	d := &Data{
-// 		Sources: map[string]*Source{
-// 			"foo":       source,
-// 			"bar":       {Alias: "bar", URL: mustParseURL("file:///tmp/jsonfile.json")},
-// 			"baz":       {Alias: "baz", URL: mustParseURL("file:///tmp/yamlfile.yaml")},
-// 			"text":      {Alias: "text", URL: mustParseURL("file:///tmp/textfile.txt")},
-// 			"badscheme": {Alias: "badscheme", URL: mustParseURL("bad:///scheme.json")},
-// 			"badtype":   {Alias: "badtype", URL: mustParseURL("file:///tmp/textfile.txt?type=foo/bar")},
-// 			"array":     {Alias: "array", URL: mustParseURL("file:///tmp/array.json?type=" + url.QueryEscape(jsonArrayMimetype))},
-// 		},
-// 		Ctx: ctx,
-// 	}
-
-// 	actual, err := d.readMerge(ctx, source)
-// 	require.NoError(t, err)
-// 	assert.Equal(t, mergedContent, string(actual))
-
-// 	source.URL = mustParseURL("merge:bar|baz")
-// 	actual, err = d.readMerge(ctx, source)
-// 	require.NoError(t, err)
-// 	assert.Equal(t, mergedContent, string(actual))
-
-// 	source.URL = mustParseURL("merge:./jsonfile.json|baz")
-// 	actual, err = d.readMerge(ctx, source)
-// 	require.NoError(t, err)
-// 	assert.Equal(t, mergedContent, string(actual))
-
-// 	source.URL = mustParseURL("merge:file:///tmp/jsonfile.json")
-// 	_, err = d.readMerge(ctx, source)
-// 	require.Error(t, err)
-
-// 	source.URL = mustParseURL("merge:bogusalias|file:///tmp/jsonfile.json")
-// 	_, err = d.readMerge(ctx, source)
-// 	require.Error(t, err)
-
-// 	source.URL = mustParseURL("merge:file:///tmp/jsonfile.json|badscheme")
-// 	_, err = d.readMerge(ctx, source)
-// 	require.Error(t, err)
-
-// 	source.URL = mustParseURL("merge:file:///tmp/jsonfile.json|badtype")
-// 	_, err = d.readMerge(ctx, source)
-// 	require.Error(t, err)
-
-// 	source.URL = mustParseURL("merge:file:///tmp/jsonfile.json|array")
-// 	_, err = d.readMerge(ctx, source)
-// 	require.Error(t, err)
-// }
+	return wd
+}
 
 func TestMergeData(t *testing.T) {
 	def := map[string]interface{}{
@@ -228,7 +155,6 @@ func TestMergeData(t *testing.T) {
 }
 
 func TestMergeFS_Open(t *testing.T) {
-	// u, _ := url.Parse("merge:")
 	fsys := setupMergeFsys(context.Background(), t)
 	assert.IsType(t, &mergeFS{}, fsys)
 
@@ -353,4 +279,56 @@ func TestMergeFS_ReadFile(t *testing.T) {
 			assert.Contains(t, err.Error(), td.expectedError)
 		})
 	}
+}
+
+func TestMergeFS_ReadsSubFilesOnce(t *testing.T) {
+	mergedContent := "goodnight: moon\nhello: world\n"
+
+	wd := wdForTest(t)
+
+	fsys := WrapWdFS(
+		openOnce(&fstest.MapFS{
+			path.Join(wd, "tmp/jsonfile.json"): {Data: []byte(`{"hello": "world"}`)},
+			path.Join(wd, "tmp/yamlfile.yaml"): {Data: []byte("hello: earth\ngoodnight: moon\n")},
+		}))
+
+	mux := fsimpl.NewMux()
+	mux.Add(MergeFS)
+	mux.Add(WrappedFSProvider(fsys, "file", ""))
+
+	ctx := ContextWithFSProvider(context.Background(), mux)
+
+	reg := NewRegistry()
+	reg.Register("jsonfile", config.DataSource{URL: mustParseURL("tmp/jsonfile.json")})
+	reg.Register("yamlfile", config.DataSource{URL: mustParseURL("tmp/yamlfile.yaml")})
+
+	fsys, err := NewMergeFS(mustParseURL("merge:///"))
+	require.NoError(t, err)
+
+	fsys = WithDataSourceRegistryFS(reg, fsys)
+	fsys = fsimpl.WithContextFS(ctx, fsys)
+
+	b, err := fs.ReadFile(fsys, "jsonfile|yamlfile")
+	require.NoError(t, err)
+	assert.Equal(t, mergedContent, string(b))
+}
+
+type openOnceFS struct {
+	fs     *fstest.MapFS
+	opened map[string]struct{}
+}
+
+// a filesystem that only allows opening or stating a file once
+func openOnce(fsys *fstest.MapFS) fs.FS {
+	return &openOnceFS{fs: fsys, opened: map[string]struct{}{}}
+}
+
+func (f *openOnceFS) Open(name string) (fs.File, error) {
+	if _, ok := f.opened[name]; ok {
+		return nil, fmt.Errorf("open: %q already opened", name)
+	}
+
+	f.opened[name] = struct{}{}
+
+	return f.fs.Open(name)
 }

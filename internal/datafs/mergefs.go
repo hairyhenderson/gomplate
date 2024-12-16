@@ -122,8 +122,8 @@ func (f *mergeFS) Open(name string) (fs.File, error) {
 		// unescaped '+' characters to make it simpler to provide types like
 		// "application/array+json"
 		overrideType := typeOverrideParam()
-		mimeType := u.Query().Get(overrideType)
-		mimeType = strings.ReplaceAll(mimeType, " ", "+")
+		mimeTypeHint := u.Query().Get(overrideType)
+		mimeTypeHint = strings.ReplaceAll(mimeTypeHint, " ", "+")
 
 		// now that we have the hint, remove it from the URL - we can't have it
 		// leaking into the filesystem layer
@@ -151,23 +151,6 @@ func (f *mergeFS) Open(name string) (fs.File, error) {
 
 		fsys = fsimpl.WithHTTPClientFS(f.httpClient, fsys)
 
-		// find the content type
-		fi, err := fs.Stat(fsys, base)
-		if err != nil {
-			return nil, &fs.PathError{
-				Op: "open", Path: name,
-				Err: fmt.Errorf("stat merge part %q: %w", part, err),
-			}
-		}
-
-		if fi.ModTime().After(modTime) {
-			modTime = fi.ModTime()
-		}
-
-		if mimeType == "" {
-			mimeType = fsimpl.ContentType(fi)
-		}
-
 		f, err := fsys.Open(base)
 		if err != nil {
 			return nil, &fs.PathError{
@@ -176,7 +159,7 @@ func (f *mergeFS) Open(name string) (fs.File, error) {
 			}
 		}
 
-		subFiles[i] = subFile{f, mimeType}
+		subFiles[i] = subFile{f, mimeTypeHint}
 	}
 
 	return &mergeFile{
@@ -226,18 +209,16 @@ func (f *mergeFile) Read(p []byte) (int, error) {
 	if f.merged == nil {
 		f.readMux.Lock()
 		defer f.readMux.Unlock()
+
 		// read from all and merge
-		data := make([]map[string]interface{}, len(f.subFiles))
+		data := make([]map[string]any, len(f.subFiles))
 		for i, sf := range f.subFiles {
-			b, err := io.ReadAll(sf)
-			if err != nil && !errors.Is(err, io.EOF) {
-				return 0, fmt.Errorf("readAll: %w", err)
+			d, err := f.readSubFile(sf)
+			if err != nil {
+				return 0, fmt.Errorf("readSubFile: %w", err)
 			}
 
-			data[i], err = parseMap(sf.contentType, string(b))
-			if err != nil {
-				return 0, fmt.Errorf("parsing map with content type %s: %w", sf.contentType, err)
-			}
+			data[i] = d
 		}
 
 		md, err := mergeData(data)
@@ -251,6 +232,36 @@ func (f *mergeFile) Read(p []byte) (int, error) {
 	}
 
 	return f.merged.Read(p)
+}
+
+func (f *mergeFile) readSubFile(sf subFile) (map[string]any, error) {
+	// stat for content type and modTime
+	fi, err := sf.Stat()
+	if err != nil {
+		return nil, fmt.Errorf("stat merge part %q: %w", f.name, err)
+	}
+
+	// the merged file's modTime is the most recent of all the sub-files
+	if fi.ModTime().After(f.modTime) {
+		f.modTime = fi.ModTime()
+	}
+
+	// if we haven't been given a content type hint, guess the normal way
+	if sf.contentType == "" {
+		sf.contentType = fsimpl.ContentType(fi)
+	}
+
+	b, err := io.ReadAll(sf)
+	if err != nil && !errors.Is(err, io.EOF) {
+		return nil, fmt.Errorf("readAll: %w", err)
+	}
+
+	sfData, err := parseMap(sf.contentType, string(b))
+	if err != nil {
+		return nil, fmt.Errorf("parsing map with content type %s: %w", sf.contentType, err)
+	}
+
+	return sfData, nil
 }
 
 func mergeData(data []map[string]interface{}) ([]byte, error) {
@@ -269,17 +280,19 @@ func mergeData(data []map[string]interface{}) ([]byte, error) {
 	return []byte(s), nil
 }
 
-func parseMap(mimeType, data string) (map[string]interface{}, error) {
+func parseMap(mimeType, data string) (map[string]any, error) {
 	datum, err := parsers.ParseData(mimeType, data)
 	if err != nil {
 		return nil, fmt.Errorf("parseData: %w", err)
 	}
-	var m map[string]interface{}
+
+	var m map[string]any
 	switch datum := datum.(type) {
-	case map[string]interface{}:
+	case map[string]any:
 		m = datum
 	default:
 		return nil, fmt.Errorf("unexpected data type '%T' for datasource (type %s); merge: can only merge maps", datum, mimeType)
 	}
+
 	return m, nil
 }
