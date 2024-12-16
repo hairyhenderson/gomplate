@@ -99,6 +99,57 @@ func TestStdinFS(t *testing.T) {
 	_, err = f.Read(p)
 	require.Error(t, err)
 	require.ErrorIs(t, err, io.EOF)
+
+	t.Run("open/read multiple times", func(t *testing.T) {
+		ctx := ContextWithStdin(context.Background(), bytes.NewReader(content))
+		fsys = fsimpl.WithContextFS(ctx, fsys)
+
+		for i := 0; i < 3; i++ {
+			f, err := fsys.Open("foo")
+			require.NoError(t, err)
+
+			b, err := io.ReadAll(f)
+			require.NoError(t, err)
+			require.Equal(t, content, b, "read %d failed", i)
+		}
+	})
+
+	t.Run("readFile multiple times", func(t *testing.T) {
+		ctx := ContextWithStdin(context.Background(), bytes.NewReader(content))
+		fsys = fsimpl.WithContextFS(ctx, fsys)
+
+		for i := 0; i < 3; i++ {
+			b, err := fs.ReadFile(fsys, "foo")
+			require.NoError(t, err)
+			require.Equal(t, content, b, "read %d failed", i)
+		}
+	})
+
+	t.Run("open errors", func(t *testing.T) {
+		ctx := ContextWithStdin(context.Background(), &errorReader{err: fs.ErrPermission})
+
+		fsys, err := NewStdinFS(u)
+		require.NoError(t, err)
+		assert.IsType(t, &stdinFS{}, fsys)
+
+		fsys = fsimpl.WithContextFS(ctx, fsys)
+
+		_, err = fsys.Open("foo")
+		require.ErrorIs(t, err, fs.ErrPermission)
+	})
+
+	t.Run("readFile errors", func(t *testing.T) {
+		ctx := ContextWithStdin(context.Background(), &errorReader{err: fs.ErrPermission})
+
+		fsys, err := NewStdinFS(u)
+		require.NoError(t, err)
+		assert.IsType(t, &stdinFS{}, fsys)
+
+		fsys = fsimpl.WithContextFS(ctx, fsys)
+
+		_, err = fs.ReadFile(fsys, "foo")
+		require.ErrorIs(t, err, fs.ErrPermission)
+	})
 }
 
 type errorReader struct {

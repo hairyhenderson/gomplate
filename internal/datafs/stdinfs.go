@@ -18,7 +18,8 @@ func NewStdinFS(_ *url.URL) (fs.FS, error) {
 }
 
 type stdinFS struct {
-	ctx context.Context
+	ctx  context.Context
+	data []byte
 }
 
 //nolint:gochecknoglobals
@@ -46,9 +47,15 @@ func (f *stdinFS) Open(name string) (fs.File, error) {
 		}
 	}
 
-	stdin := StdinFromContext(f.ctx)
+	if err := f.readData(); err != nil {
+		return nil, &fs.PathError{
+			Op:   "open",
+			Path: name,
+			Err:  err,
+		}
+	}
 
-	return &stdinFile{name: name, body: stdin}, nil
+	return &stdinFile{name: name, body: bytes.NewReader(f.data)}, nil
 }
 
 func (f *stdinFS) ReadFile(name string) ([]byte, error) {
@@ -60,9 +67,32 @@ func (f *stdinFS) ReadFile(name string) ([]byte, error) {
 		}
 	}
 
+	if err := f.readData(); err != nil {
+		return nil, &fs.PathError{
+			Op:   "readFile",
+			Path: name,
+			Err:  err,
+		}
+	}
+
+	return f.data, nil
+}
+
+func (f *stdinFS) readData() error {
+	if f.data != nil {
+		return nil
+	}
+
 	stdin := StdinFromContext(f.ctx)
 
-	return io.ReadAll(stdin)
+	b, err := io.ReadAll(stdin)
+	if err != nil {
+		return err
+	}
+
+	f.data = b
+
+	return nil
 }
 
 type stdinFile struct {
