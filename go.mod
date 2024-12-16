@@ -1,6 +1,6 @@
 module github.com/hairyhenderson/gomplate/v4
 
-go 1.22.5
+go 1.23.4
 
 require (
 	cuelang.org/go v0.11.0
