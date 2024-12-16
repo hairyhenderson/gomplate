@@ -95,6 +95,26 @@ func TestSplitFSMuxURL(t *testing.T) {
 			"merge:///",
 			"vault:///foo/bar|foo|git+ssh://git@github.com/hairyhenderson/go-which.git//a/b/c/d",
 		},
+		{
+			"aws+sm:foo",
+			"aws+sm:",
+			"foo",
+		},
+		{
+			"aws+sm:foo/bar",
+			"aws+sm:",
+			"foo/bar",
+		},
+		{
+			"aws+sm:/foo/bar",
+			"aws+sm:///",
+			"foo/bar",
+		},
+		{
+			"aws+sm:/foo",
+			"aws+sm:///",
+			"foo",
+		},
 	}
 
 	for _, d := range testdata {

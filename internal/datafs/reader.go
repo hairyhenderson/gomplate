@@ -122,12 +122,12 @@ func (d *dsReader) readFileContent(ctx context.Context, u *url.URL, hdr http.Hea
 	// leaking into the filesystem layer
 	u = removeQueryParam(u, overrideType)
 
+	u, fname := SplitFSMuxURL(u)
+
 	fsys, err := FSysForPath(ctx, u.String())
 	if err != nil {
 		return nil, fmt.Errorf("fsys for path %v: %w", u, err)
 	}
-
-	u, fname := SplitFSMuxURL(u)
 
 	// need to support absolute paths on local filesystem too
 	// TODO: this is a hack, probably fix this?
