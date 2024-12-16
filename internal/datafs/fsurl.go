@@ -21,6 +21,15 @@ func SplitFSMuxURL(in *url.URL) (*url.URL, string) {
 		}
 
 		return &u, base
+	case "aws+sm":
+		// An aws+sm URL can either be opaque or have a path with a leading
+		// slash. If it's opaque, the URL must not contain a leading slash. If
+		// it has a path, the URL must begin with a slash.
+		if u.Opaque != "" {
+			return &url.URL{Scheme: u.Scheme}, u.Opaque
+		} else {
+			return &url.URL{Scheme: u.Scheme, Path: "/"}, strings.TrimLeft(u.Path, "/")
+		}
 	}
 
 	// trim leading and trailing slashes - they are not part of a valid path
