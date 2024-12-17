@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"path"
 	"runtime"
 	"strings"
 
@@ -89,7 +90,7 @@ func (d *dsReader) ReadSource(ctx context.Context, alias string, args ...string)
 	if len(args) > 0 {
 		arg = args[0]
 	}
-	u, err := resolveURL(source.URL, arg)
+	u, err := resolveURL(*source.URL, arg)
 	if err != nil {
 		return "", nil, err
 	}
@@ -191,11 +192,9 @@ func (d *dsReader) readFileContent(ctx context.Context, u *url.URL, hdr http.Hea
 // resolveURL parses the relative URL rel against base, and returns the
 // resolved URL. Differs from url.ResolveReference in that query parameters are
 // added. In case of duplicates, params from rel are used.
-func resolveURL(base *url.URL, rel string) (*url.URL, error) {
-	// if there's an opaque part, there's no resolving to do - just return the
-	// base URL
-	if base.Opaque != "" {
-		return base, nil
+func resolveURL(base url.URL, rel string) (*url.URL, error) {
+	if rel == "" {
+		return &base, nil
 	}
 
 	// git URLs are special - they have double-slashes that separate a repo
@@ -220,6 +219,28 @@ func resolveURL(base *url.URL, rel string) (*url.URL, error) {
 		if strings.HasPrefix(rel, "//") {
 			rel = "." + rel
 		}
+	case "aws+sm":
+		// aws+sm URLs may be opaque, so resolution needs to be handled
+		// differently
+		if base.Opaque != "" {
+			// if it's opaque and we have a relative path we'll append it to
+			// the opaque part
+			if rel != "" {
+				base.Opaque = path.Join(base.Opaque, rel)
+			}
+
+			return &base, nil
+		} else if base.Path == "" && !strings.HasPrefix(rel, "/") {
+			// if the base has no path and the relative URL doesn't start with
+			// a slash, we treat it as opaque
+			base.Opaque = rel
+		}
+	}
+
+	// if there's still an opaque part, there's no resolving to do - just return
+	// the base URL
+	if base.Opaque != "" {
+		return &base, nil
 	}
 
 	relURL, err := url.Parse(rel)
@@ -232,8 +253,6 @@ func resolveURL(base *url.URL, rel string) (*url.URL, error) {
 	// correct for that.
 	var out *url.URL
 	switch {
-	case rel == "":
-		out = base
 	case base.IsAbs():
 		out = base.ResolveReference(relURL)
 	case base.Scheme == "" && base.Path[0] == '/':
@@ -241,7 +260,7 @@ func resolveURL(base *url.URL, rel string) (*url.URL, error) {
 		out = base.ResolveReference(relURL)
 		out.Path = out.Path[1:]
 	default:
-		out = resolveRelativeURL(base, relURL)
+		out = resolveRelativeURL(&base, relURL)
 	}
 
 	if base.RawQuery != "" {
