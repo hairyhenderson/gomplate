@@ -7,6 +7,7 @@ on:
 permissions:
   contents: write
   pull-requests: write
+  packages: write
 
 jobs:
   deploy-alpine:
@@ -21,6 +22,13 @@ jobs:
         with:
           app-id: ${{ vars.APP_ID }}
           private-key: ${{ secrets.PRIVATE_KEY }}
+      - name: install lab
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: |
+          gh release download --repo zaquestion/lab v0.25.1 -p lab_0.25.1_linux_amd64.tar.gz
+          tar -xzf lab_0.25.1_linux_amd64.tar.gz
+          ./lab --version
       - uses: actions/checkout@v4
       - name: Retrieve release artifacts
         id: artifacts
@@ -33,44 +41,51 @@ jobs:
 
           # need gomplate to template the APKBUILD!
           gh release download ${TAG_NAME} --skip-existing -p gomplate_linux-amd64
+          chmod 755 gomplate_linux-amd64
         env:
           GH_TOKEN: ${{ steps.app-token.outputs.token }}
       - name: checkout alpinelinux/aports
         run: |
-          git config user.name "${{ github.actor }}"
-          git config user.email "${{ github.actor_id }}+${{ github.actor }}@users.noreply.github.com"
-          git clone https://gitlab.alpinelinux.org/hairyhenderson/aports.git
-          git remote add upstream https://gitlab.alpinelinux.org/alpine/aports.git
+          set -ex
+          git config --global user.name "${{ github.actor }}"
+          git config --global user.email "${{ github.actor_id }}+${{ github.actor }}@users.noreply.github.com"
+          git clone -v https://gitlab.alpinelinux.org/hairyhenderson/aports.git
           cd aports
+          # note: this token expires, so needs to be rotated periodically
+          git remote set-url origin "https://oauth2:${{ secrets.GITLAB_ACCESS_TOKEN }}@gitlab.alpinelinux.org/hairyhenderson/aports.git"
+          git remote add upstream https://gitlab.alpinelinux.org/alpine/aports.git
           git checkout master
       - name: update fork
         run: |
+          set -ex
           cd aports
-          git fetch upstream
+          git fetch -v upstream
           git rebase upstream/master
           git push
       - name: upgrade gomplate in aports
         run: |
+          set -ex
+          export VERSION=${TAG_NAME#v}
+
           cd aports/community/gomplate
           git checkout -b upgrade-gomplate-aport-${VERSION}
 
-          export VERSION=${TAG_NAME#v}
-
           export ENVJSON="{\"version\": \"${VERSION}\", \"sha512\": \"${{ steps.artifacts.outputs.sha512sum }}\" }"
-          gomplate_linux-amd64 -c .=env:///ENVJSON\?type=application/json \
+          ../../../gomplate_linux-amd64 -c .=env:///ENVJSON\?type=application/json \
             -f ../../../packaging/alpine/APKBUILD.tmpl \
             -o APKBUILD
 
           git add APKBUILD
-          git commit -S -sm "community/gomplate: upgrade to ${VERSION}"
+          git commit -sm "community/gomplate: upgrade to ${VERSION}"
           git push -u origin upgrade-gomplate-aport-${VERSION}
 
           # open a PR
-          lab mr create --allow-collaboration \
+          ../../../lab mr create --allow-collaboration \
             -m "community/gomplate: upgrade to ${VERSION}" \
             -m "https://github.com/${{ github.repository }}/releases/tag/${TAG_NAME}"
   deploy-homebrew:
-    runs-on: ubuntu-latest
+    # run on macOS - this doesn't work in Linuxbrew
+    runs-on: macos-latest
     environment:
       name: homebrew
     env:
@@ -81,16 +96,6 @@ jobs:
         with:
           app-id: ${{ vars.APP_ID }}
           private-key: ${{ secrets.PRIVATE_KEY }}
-      # - name: Retrieve release artifacts
-      #   id: artifacts
-      #   run: |
-      #     # need the checksum and archive
-      #     gh release download ${TAG_NAME} -p "${TAG_NAME}.sha*"
-
-      #     echo "sha256sum=$(cat ${TAG_NAME}.sha256)" >> $GITHUB_OUTPUT
-      #     echo "archive=https://github.com/${{ github.repository }}/archive/refs/tags/${TAG_NAME}.tar.gz" >> $GITHUB_OUTPUT
-      #   env:
-      #     GH_TOKEN: ${{ steps.app-token.outputs.token }}
       - name: Set up Homebrew
         id: set-up-homebrew
         uses: Homebrew/actions/setup-homebrew@master
@@ -99,4 +104,85 @@ jobs:
         with:
           token: ${{ steps.app-token.outputs.token }}
           formulae: gomplate
-          fork: false
+          fork: true
+  deploy-docker:
+    runs-on: ubuntu-latest
+    env:
+      TAG_NAME: ${{ github.event.release.tag_name }}
+    steps:
+    - name: Set up QEMU
+      uses: docker/setup-qemu-action@v3.2.0
+    - name: Set up Docker Buildx
+      id: buildx
+      uses: docker/setup-buildx-action@v3.8.0
+      with:
+        version: v0.19.3
+        driver-opts: |
+          image=moby/buildkit:buildx-stable-1
+          network=host
+    - name: Available platforms
+      run: echo {{ `${{ steps.buildx.outputs.platforms }}` }}
+    - run: docker info && docker version
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+    - uses: actions/create-github-app-token@v1
+      id: app-token
+      with:
+        app-id: ${{ vars.APP_ID }}
+        private-key: ${{ secrets.PRIVATE_KEY }}
+    - name: Login to GHCR
+      uses: docker/login-action@v3.3.0
+      with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ steps.app-token.outputs.token }}
+    - name: Login to DockerHub
+      uses: docker/login-action@v3.3.0
+      with:
+          # NOTE: DOCKERHUB_TOKEN and DOCKERHUB_USERNAME must be present in https://github.com/hairyhenderson/gomplate/settings
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+    - name: Build & Push
+      run: |
+        set -ex
+
+        # seed from the last ghcr.io image(s)
+        docker pull ghcr.io/hairyhenderson/gomplate:latest
+        docker pull ghcr.io/hairyhenderson/gomplate:alpine
+
+        export srcrepo=ghcr.io/${{ github.repository}}
+        export COMMIT=${{ github.sha }}
+
+        make docker-multi COMMIT=${COMMIT} DOCKER_REPO=${srcrepo} BUILDX_ACTION=--push
+
+        set -x
+        export repo=${srcrepo}
+        export git_tag=${TAG_NAME}
+        export major_version=${git_tag%\.*}
+        docker buildx imagetools create -t ${repo}:stable ${srcrepo}:latest
+        docker buildx imagetools create -t ${repo}:${git_tag} ${srcrepo}:latest
+        docker buildx imagetools create -t ${repo}:${major_version} ${srcrepo}:latest
+
+        docker buildx imagetools create -t ${repo}:stable-alpine ${srcrepo}:alpine
+        docker buildx imagetools create -t ${repo}:${git_tag}-alpine ${srcrepo}:alpine
+        docker buildx imagetools create -t ${repo}:${major_version}-alpine ${srcrepo}:alpine
+
+        # and now DockerHub (if we don't get rate-limited)
+        export repo=gomplate/gomplate
+        docker buildx imagetools create -t ${repo}:stable ${srcrepo}:latest
+        docker buildx imagetools create -t ${repo}:${git_tag} ${srcrepo}:latest
+        docker buildx imagetools create -t ${repo}:${major_version} ${srcrepo}:latest
+
+        docker buildx imagetools create -t ${repo}:stable-alpine ${srcrepo}:alpine
+        docker buildx imagetools create -t ${repo}:${git_tag}-alpine ${srcrepo}:alpine
+        docker buildx imagetools create -t ${repo}:${major_version}-alpine ${srcrepo}:alpine
+
+        export repo=hairyhenderon/gomplate
+        docker buildx imagetools create -t ${repo}:stable ${srcrepo}:latest
+        docker buildx imagetools create -t ${repo}:${git_tag} ${srcrepo}:latest
+        docker buildx imagetools create -t ${repo}:${major_version} ${srcrepo}:latest
+
+        docker buildx imagetools create -t ${repo}:stable-alpine ${srcrepo}:alpine
+        docker buildx imagetools create -t ${repo}:${git_tag}-alpine ${srcrepo}:alpine
+        docker buildx imagetools create -t ${repo}:${major_version}-alpine ${srcrepo}:alpine
