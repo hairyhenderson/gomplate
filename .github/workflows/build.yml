@@ -20,7 +20,7 @@ jobs:
             goarm: '7'
     steps:
       - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3.2.0
+        uses: docker/setup-qemu-action@v3.3.0
       - run: |
           git config --global user.email "bogus@example.com"
           git config --global user.name "Someone"
