@@ -1,6 +1,7 @@
 package gomplate
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"io"
@@ -173,13 +174,7 @@ type Template struct {
 }
 
 func (r *renderer) RenderTemplates(ctx context.Context, templates []Template) error {
-	if datafs.FSProviderFromContext(ctx) == nil {
-		ctx = datafs.ContextWithFSProvider(ctx, DefaultFSProvider)
-	}
-
-	// configure the template context with the refreshed Data value
-	// only done here because the data context may have changed
-	tmplctx, err := createTmplContext(ctx, r.tctxAliases, r.sr)
+	ctx, tmplctx, err := r.initializeTemplateContext(ctx)
 	if err != nil {
 		return err
 	}
@@ -188,6 +183,21 @@ func (r *renderer) RenderTemplates(ctx context.Context, templates []Template) er
 }
 
 func (r *renderer) renderTemplatesWithData(ctx context.Context, templates []Template, tmplctx interface{}) error {
+	f := r.initializeTemplateFuncs(ctx)
+
+	// track some metrics for debug output
+	start := time.Now()
+	defer func() { Metrics.TotalRenderDuration = time.Since(start) }()
+	for _, t := range templates {
+		err := r.renderTemplate(ctx, t, f, tmplctx)
+		if err != nil {
+			return fmt.Errorf("renderTemplate: %w", err)
+		}
+	}
+	return nil
+}
+
+func (r *renderer) initializeTemplateFuncs(ctx context.Context) template.FuncMap {
 	// update funcs with the current context
 	// only done here to ensure the context is properly set in func namespaces
 	f := CreateFuncs(ctx)
@@ -197,17 +207,7 @@ func (r *renderer) renderTemplatesWithData(ctx context.Context, templates []Temp
 
 	// add user-defined funcs last so they override the built-in funcs
 	addToMap(f, r.funcs)
-
-	// track some metrics for debug output
-	start := time.Now()
-	defer func() { Metrics.TotalRenderDuration = time.Since(start) }()
-	for _, template := range templates {
-		err := r.renderTemplate(ctx, template, f, tmplctx)
-		if err != nil {
-			return fmt.Errorf("renderTemplate: %w", err)
-		}
-	}
-	return nil
+	return f
 }
 
 func (r *renderer) renderTemplate(ctx context.Context, template Template, f template.FuncMap, tmplctx interface{}) error {
@@ -333,6 +333,58 @@ func (r *renderer) parseNestedTemplates(ctx context.Context, tmpl *template.Temp
 	}
 
 	return nil
+}
+
+func (r *renderer) RenderTemplatesToBuffer(ctx context.Context, cfg *Config, namer outputNamer, tmpl []Template) error {
+	ctx, tmplctx, err := r.initializeTemplateContext(ctx)
+	if err != nil {
+		return err
+	}
+
+	f := r.initializeTemplateFuncs(ctx)
+
+	// track some metrics for debug output
+	start := time.Now()
+	defer func() { Metrics.TotalRenderDuration = time.Since(start) }()
+	for _, t := range tmpl {
+		inFile := t.Name
+		if cfg.InputDir != "" {
+			inFile = strings.Replace(inFile, cfg.InputDir, "", 1)
+		}
+
+		outFile, err := namer.Name(ctx, inFile)
+		fmt.Println("---")
+		fmt.Println("##::gomplate::output::file", outFile)
+		fmt.Println("##::gomplate::template::file", t.Name)
+		fmt.Println("---")
+		var buf bytes.Buffer
+		// Set the template's writer to the buffer
+		t.Writer = &buf
+		err = r.renderTemplate(ctx, t, f, tmplctx)
+		if err != nil {
+			return fmt.Errorf("renderTemplate: %w", err)
+		}
+
+		// Print the rendered content to the console
+		fmt.Println(buf.String() + "\n")
+	}
+
+	return nil
+}
+
+func (r *renderer) initializeTemplateContext(ctx context.Context) (context.Context, interface{}, error) {
+	if datafs.FSProviderFromContext(ctx) == nil {
+		ctx = datafs.ContextWithFSProvider(ctx, DefaultFSProvider)
+	}
+
+	// configure the template context with the refreshed Data value
+	// only done here because the data context may have changed
+	tmplctx, err := createTmplContext(ctx, r.tctxAliases, r.sr)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return ctx, tmplctx, nil
 }
 
 func parseNestedTemplateDir(ctx context.Context, fsys fs.FS, alias, fname string, tmpl *template.Template) error {

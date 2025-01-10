@@ -161,6 +161,8 @@ func InitFlags(command *cobra.Command) {
 	command.Flags().BoolP("verbose", "V", false, "output extra information about what gomplate is doing")
 
 	command.Flags().String("config", defaultConfigFile, "config file (overridden by commandline flags)")
+
+	command.Flags().Bool("dry-run", false, "render the templates without writing the output files")
 }
 
 // Main -

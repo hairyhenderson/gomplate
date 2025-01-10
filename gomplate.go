@@ -71,6 +71,17 @@ func Run(ctx context.Context, cfg *Config) error {
 	}
 	Metrics.TemplatesGathered = len(tmpl)
 
+	// Check for dry-run flag
+	slog.InfoContext(ctx, "dry-run", "value", cfg.DryRun)
+	if cfg.DryRun {
+		err = tr.RenderTemplatesToBuffer(ctx, cfg, namer, tmpl)
+		if err != nil {
+			return fmt.Errorf("failed to render templates: %w", err)
+		}
+
+		return nil
+	}
+
 	err = tr.RenderTemplates(ctx, tmpl)
 	if err != nil {
 		return err
@@ -133,6 +144,7 @@ func mappingNamer(outMap string, tr *renderer) outputNamer {
 			return "", fmt.Errorf("failed to render outputMap with ctx %+v and inPath %s: %w", tctx, inPath, err)
 		}
 
+		slog.Info("outputMap rendered", "in", inPath, "out", out.String())
 		return filepath.Clean(strings.TrimSpace(out.String())), nil
 	})
 }
