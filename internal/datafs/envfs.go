@@ -13,9 +13,9 @@ import (
 	"github.com/hairyhenderson/go-fsimpl"
 )
 
-// NewEnvFS returns a filesystem (an fs.FS) that can be used to read data from
+// newEnvFS returns a filesystem (an fs.FS) that can be used to read data from
 // environment variables.
-func NewEnvFS(_ *url.URL) (fs.FS, error) {
+func newEnvFS(_ *url.URL) (fs.FS, error) {
 	return &envFS{locfs: os.DirFS("/")}, nil
 }
 
@@ -24,7 +24,7 @@ type envFS struct {
 }
 
 //nolint:gochecknoglobals
-var EnvFS = fsimpl.FSProviderFunc(NewEnvFS, "env")
+var EnvFS = fsimpl.FSProviderFunc(newEnvFS, "env")
 
 var _ fs.FS = (*envFS)(nil)
 

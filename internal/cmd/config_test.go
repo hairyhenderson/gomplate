@@ -325,16 +325,16 @@ func mustURL(s string) *url.URL {
 func TestParseDataSourceFlags(t *testing.T) {
 	t.Parallel()
 	cfg := &gomplate.Config{}
-	err := ParseDataSourceFlags(cfg, nil, nil, nil, nil)
+	err := parseDataSourceFlags(cfg, nil, nil, nil, nil)
 	require.NoError(t, err)
 	assert.EqualValues(t, &gomplate.Config{}, cfg)
 
 	cfg = &gomplate.Config{}
-	err = ParseDataSourceFlags(cfg, []string{"foo/bar/baz.json"}, nil, nil, nil)
+	err = parseDataSourceFlags(cfg, []string{"foo/bar/baz.json"}, nil, nil, nil)
 	require.Error(t, err)
 
 	cfg = &gomplate.Config{}
-	err = ParseDataSourceFlags(cfg, []string{"baz=foo/bar/baz.json"}, nil, nil, nil)
+	err = parseDataSourceFlags(cfg, []string{"baz=foo/bar/baz.json"}, nil, nil, nil)
 	require.NoError(t, err)
 	expected := &gomplate.Config{
 		DataSources: map[string]gomplate.DataSource{
@@ -344,7 +344,7 @@ func TestParseDataSourceFlags(t *testing.T) {
 	assert.EqualValues(t, expected, cfg, "expected: %+v\nactual: %+v\n", expected, cfg)
 
 	cfg = &gomplate.Config{}
-	err = ParseDataSourceFlags(cfg,
+	err = parseDataSourceFlags(cfg,
 		[]string{"baz=foo/bar/baz.json"},
 		nil,
 		nil,
@@ -362,7 +362,7 @@ func TestParseDataSourceFlags(t *testing.T) {
 	}, cfg)
 
 	cfg = &gomplate.Config{}
-	err = ParseDataSourceFlags(cfg,
+	err = parseDataSourceFlags(cfg,
 		[]string{"baz=foo/bar/baz.json"},
 		[]string{"foo=http://example.com"},
 		nil,
@@ -390,7 +390,7 @@ func TestParseDataSourceFlags(t *testing.T) {
 	}, cfg)
 
 	cfg = &gomplate.Config{}
-	err = ParseDataSourceFlags(cfg,
+	err = parseDataSourceFlags(cfg,
 		nil,
 		nil,
 		[]string{"foo=http://example.com", "file.tmpl", "tmpldir/"},

@@ -27,9 +27,9 @@ func SplitFSMuxURL(in *url.URL) (*url.URL, string) {
 		// it has a path, the URL must begin with a slash.
 		if u.Opaque != "" {
 			return &url.URL{Scheme: u.Scheme}, u.Opaque
-		} else {
-			return &url.URL{Scheme: u.Scheme, Path: "/"}, strings.TrimLeft(u.Path, "/")
 		}
+
+		return &url.URL{Scheme: u.Scheme, Path: "/"}, strings.TrimLeft(u.Path, "/")
 	}
 
 	// trim leading and trailing slashes - they are not part of a valid path

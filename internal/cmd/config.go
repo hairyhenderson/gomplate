@@ -202,7 +202,7 @@ func cobraConfig(cmd *cobra.Command, args []string) (cfg *gomplate.Config, err e
 	if err != nil {
 		return nil, err
 	}
-	err = ParseDataSourceFlags(cfg, ds, cx, ts, hdr)
+	err = parseDataSourceFlags(cfg, ds, cx, ts, hdr)
 	if err != nil {
 		return nil, err
 	}
@@ -320,10 +320,10 @@ func ParsePluginFlags(c *gomplate.Config, plugins []string) error {
 	return nil
 }
 
-// ParseDataSourceFlags - sets DataSources, Context, and Templates fields from
+// parseDataSourceFlags - sets DataSources, Context, and Templates fields from
 // the key=value format flags as provided at the command-line
 // Unreferenced headers will be set in c.ExtraHeaders
-func ParseDataSourceFlags(c *gomplate.Config, datasources, contexts, templates, headers []string) error {
+func parseDataSourceFlags(c *gomplate.Config, datasources, contexts, templates, headers []string) error {
 	err := parseResources(c, datasources, contexts, templates)
 	if err != nil {
 		return err

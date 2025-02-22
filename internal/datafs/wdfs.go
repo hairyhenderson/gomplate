@@ -193,7 +193,7 @@ func isSupportedPath(name string) bool {
 	}
 }
 
-// WdFS is a filesystem provider that creates local filesystems which support
+// wdFSProvider is a filesystem provider that creates local filesystems which support
 // absolute paths beginning with '/', and interpret relative paths as relative
 // to the current working directory (as reported by [os.Getwd]).
 //
@@ -203,7 +203,7 @@ func isSupportedPath(name string) bool {
 // - Root Local - e.g. \\. or \\?
 // - non-drive Local Devices - e.g. \\.\COM1, \\.\pipe\foo
 // - NT Paths - e.g. \??\C:\foo\bar or \??\UNC\foo\bar
-var WdFS = fsimpl.FSProviderFunc(
+var wdFSProvider = fsimpl.FSProviderFunc(
 	func(u *url.URL) (fs.FS, error) {
 		if !isSupportedPath(u.Path) {
 			return nil, fmt.Errorf("unsupported path %q: %w", u.Path, fs.ErrInvalid)

@@ -14,7 +14,7 @@ import (
 )
 
 func TestStdinFS_Open(t *testing.T) {
-	fsys, err := NewStdinFS(nil)
+	fsys, err := newStdinFS(nil)
 	require.NoError(t, err)
 	assert.IsType(t, &stdinFS{}, fsys)
 
@@ -56,7 +56,7 @@ func TestStdinFS(t *testing.T) {
 
 	ctx := ContextWithStdin(context.Background(), bytes.NewReader(content))
 
-	fsys, err := NewStdinFS(u)
+	fsys, err := newStdinFS(u)
 	require.NoError(t, err)
 	assert.IsType(t, &stdinFS{}, fsys)
 
@@ -128,7 +128,7 @@ func TestStdinFS(t *testing.T) {
 	t.Run("open errors", func(t *testing.T) {
 		ctx := ContextWithStdin(context.Background(), &errorReader{err: fs.ErrPermission})
 
-		fsys, err := NewStdinFS(u)
+		fsys, err := newStdinFS(u)
 		require.NoError(t, err)
 		assert.IsType(t, &stdinFS{}, fsys)
 
@@ -141,7 +141,7 @@ func TestStdinFS(t *testing.T) {
 	t.Run("readFile errors", func(t *testing.T) {
 		ctx := ContextWithStdin(context.Background(), &errorReader{err: fs.ErrPermission})
 
-		fsys, err := NewStdinFS(u)
+		fsys, err := newStdinFS(u)
 		require.NoError(t, err)
 		assert.IsType(t, &stdinFS{}, fsys)
 
