@@ -2,7 +2,7 @@ FROM vault:1.13.3 AS vault
 
 FROM consul:1.15.4 AS consul
 
-FROM golang:1.23-alpine
+FROM golang:1.24-alpine
 
 COPY --from=vault /bin/vault /bin/vault
 COPY --from=consul /bin/consul /bin/consul
