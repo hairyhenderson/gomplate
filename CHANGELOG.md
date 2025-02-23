@@ -1,5 +1,27 @@
 # Change Log
 
+## [4.3.1](https://github.com/hairyhenderson/gomplate/compare/v4.3.0...v4.3.1) (2025-02-23)
+
+
+### Bug Fixes
+
+* **lint:** Address new lint warnings ([#2329](https://github.com/hairyhenderson/gomplate/issues/2329)) ([1ebbc31](https://github.com/hairyhenderson/gomplate/commit/1ebbc31fb242f4dd85a8db188f77d838b61d6db8))
+
+
+### Dependencies
+
+* **actions:** Bump docker/setup-buildx-action from 3.8.0 to 3.9.0 ([#2317](https://github.com/hairyhenderson/gomplate/issues/2317)) ([4ec9835](https://github.com/hairyhenderson/gomplate/commit/4ec983511eea83575c7b93180a8b4cb2e90d8439))
+* **actions:** Bump docker/setup-qemu-action from 3.2.0 to 3.4.0 ([#2318](https://github.com/hairyhenderson/gomplate/issues/2318)) ([c8569a3](https://github.com/hairyhenderson/gomplate/commit/c8569a3eee56c12d2f239aaa64a8432648beaa52))
+* **docker:** Bump golang from 1.23-alpine to 1.24-alpine ([#2320](https://github.com/hairyhenderson/gomplate/issues/2320)) ([c3c682c](https://github.com/hairyhenderson/gomplate/commit/c3c682c7b03d3d5393e42964f4b9c45cc59e0a2c))
+* **go:** Bump github.com/hashicorp/vault/api/auth/aws ([#2328](https://github.com/hairyhenderson/gomplate/issues/2328)) ([6767724](https://github.com/hairyhenderson/gomplate/commit/6767724c1996c944471cd891fcaf85030245a44f))
+* **go:** Bump github.com/lmittmann/tint from 1.0.6 to 1.0.7 ([#2308](https://github.com/hairyhenderson/gomplate/issues/2308)) ([80c9a89](https://github.com/hairyhenderson/gomplate/commit/80c9a895e949e27915dd035a8413d5edfb00a87b))
+* **go:** Bump github.com/Shopify/ejson from 1.5.3 to 1.5.4 ([#2312](https://github.com/hairyhenderson/gomplate/issues/2312)) ([315650a](https://github.com/hairyhenderson/gomplate/commit/315650ab6961caeb0d6faa3efa6cec70405aa72a))
+* **go:** Bump github.com/spf13/cobra from 1.8.1 to 1.9.1 ([#2327](https://github.com/hairyhenderson/gomplate/issues/2327)) ([a5fdb3c](https://github.com/hairyhenderson/gomplate/commit/a5fdb3c55a73e7d64d1d74b7ee32903b102729c6))
+* **go:** Bump golang.org/x/net in the go_modules group ([#2326](https://github.com/hairyhenderson/gomplate/issues/2326)) ([3a48256](https://github.com/hairyhenderson/gomplate/commit/3a4825687419639b8aa9b8c6158cdf3d20f22932))
+* **go:** Bump golang.org/x/term from 0.27.0 to 0.29.0 ([#2316](https://github.com/hairyhenderson/gomplate/issues/2316)) ([62316f5](https://github.com/hairyhenderson/gomplate/commit/62316f5073603a52abbc2b03a8f9421d2d9714de))
+* **go:** Bump golang.org/x/text from 0.21.0 to 0.22.0 ([#2314](https://github.com/hairyhenderson/gomplate/issues/2314)) ([72116a2](https://github.com/hairyhenderson/gomplate/commit/72116a241e1185040511e8450b1cafe460d4b78d))
+* **go:** Bump k8s.io/client-go from 0.32.0 to 0.32.2 ([#2321](https://github.com/hairyhenderson/gomplate/issues/2321)) ([3b64fa9](https://github.com/hairyhenderson/gomplate/commit/3b64fa9a316b8843d9711ac22613314297e07312))
+
 ## [4.3.0](https://github.com/hairyhenderson/gomplate/compare/v4.2.0...v4.3.0) (2024-12-17)
 
 
