@@ -12,7 +12,7 @@ import (
 )
 
 func TestEnvFS_Open(t *testing.T) {
-	fsys, err := NewEnvFS(nil)
+	fsys, err := newEnvFS(nil)
 	require.NoError(t, err)
 	assert.IsType(t, &envFS{}, fsys)
 
@@ -78,7 +78,7 @@ func TestEnvFS(t *testing.T) {
 	lfsys := fstest.MapFS{}
 	lfsys["foo/bar/baz.txt"] = &fstest.MapFile{Data: []byte("\nhello file\n")}
 
-	fsys, err := NewEnvFS(u)
+	fsys, err := newEnvFS(u)
 	require.NoError(t, err)
 	assert.IsType(t, &envFS{}, fsys)
 

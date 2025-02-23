@@ -11,9 +11,9 @@ import (
 	"github.com/hairyhenderson/go-fsimpl"
 )
 
-// NewStdinFS returns a filesystem (an fs.FS) that can be used to read data from
+// newStdinFS returns a filesystem (an fs.FS) that can be used to read data from
 // standard input (os.Stdin).
-func NewStdinFS(_ *url.URL) (fs.FS, error) {
+func newStdinFS(_ *url.URL) (fs.FS, error) {
 	return &stdinFS{ctx: context.Background()}, nil
 }
 
@@ -23,7 +23,7 @@ type stdinFS struct {
 }
 
 //nolint:gochecknoglobals
-var StdinFS = fsimpl.FSProviderFunc(NewStdinFS, "stdin")
+var StdinFS = fsimpl.FSProviderFunc(newStdinFS, "stdin")
 
 var (
 	_ fs.FS         = (*stdinFS)(nil)

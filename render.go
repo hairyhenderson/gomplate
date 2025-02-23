@@ -9,12 +9,10 @@ import (
 	"path"
 	"slices"
 	"strings"
-	"sync"
 	"text/template"
 	"time"
 
 	"github.com/hairyhenderson/go-fsimpl"
-	"github.com/hairyhenderson/go-fsimpl/autofs"
 	"github.com/hairyhenderson/gomplate/v4/internal/datafs"
 	"github.com/hairyhenderson/gomplate/v4/internal/funcs"
 )
@@ -372,20 +370,4 @@ func parseNestedTemplate(_ context.Context, fsys fs.FS, alias, fname string, tmp
 }
 
 // DefaultFSProvider is the default filesystem provider used by gomplate
-var DefaultFSProvider = sync.OnceValue(
-	func() fsimpl.FSProvider {
-		fsp := fsimpl.NewMux()
-
-		// start with all go-fsimpl filesystems
-		fsp.Add(autofs.FS)
-
-		// override go-fsimpl's filefs with wdfs to handle working directories
-		fsp.Add(datafs.WdFS)
-
-		// gomplate-only filesystem
-		fsp.Add(datafs.EnvFS)
-		fsp.Add(datafs.StdinFS)
-		fsp.Add(datafs.MergeFS)
-
-		return fsp
-	})()
+var DefaultFSProvider = datafs.DefaultProvider

@@ -65,12 +65,12 @@ func setupMergeFsys(ctx context.Context, t *testing.T) fs.FS {
 	})
 
 	mux := fsimpl.NewMux()
-	mux.Add(MergeFS)
+	mux.Add(mergeFSProvider)
 	mux.Add(WrappedFSProvider(fsys, "file", ""))
 
 	ctx = ContextWithFSProvider(ctx, mux)
 
-	fsys, err := NewMergeFS(mustParseURL("merge:///"))
+	fsys, err := newMergeFS(mustParseURL("merge:///"))
 	require.NoError(t, err)
 
 	fsys = WithDataSourceRegistryFS(reg, fsys)
@@ -293,7 +293,7 @@ func TestMergeFS_ReadsSubFilesOnce(t *testing.T) {
 		}))
 
 	mux := fsimpl.NewMux()
-	mux.Add(MergeFS)
+	mux.Add(mergeFSProvider)
 	mux.Add(WrappedFSProvider(fsys, "file", ""))
 
 	ctx := ContextWithFSProvider(context.Background(), mux)
@@ -302,7 +302,7 @@ func TestMergeFS_ReadsSubFilesOnce(t *testing.T) {
 	reg.Register("jsonfile", config.DataSource{URL: mustParseURL("tmp/jsonfile.json")})
 	reg.Register("yamlfile", config.DataSource{URL: mustParseURL("tmp/yamlfile.yaml")})
 
-	fsys, err := NewMergeFS(mustParseURL("merge:///"))
+	fsys, err := newMergeFS(mustParseURL("merge:///"))
 	require.NoError(t, err)
 
 	fsys = WithDataSourceRegistryFS(reg, fsys)
