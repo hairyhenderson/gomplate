@@ -46,7 +46,7 @@ jobs:
           hugo serve --watch=false --renderToMemory &
           sleep 2
 
-          muffet http://localhost:1313 \
+          muffet http://127.0.0.1:1313 \
             -r8 --max-connections-per-host=4 --buffer-size=8192 \
             --exclude="https://github\.com.*" \
             --exclude="https://docs\.aws.*" \
