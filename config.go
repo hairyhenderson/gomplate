@@ -76,6 +76,7 @@ type Config struct {
 
 	ExecPipe     bool `yaml:"execPipe,omitempty"`
 	Experimental bool `yaml:"experimental,omitempty"`
+	DryRun       bool `yaml:"dryRun,omitempty"`
 }
 
 // TODO: remove when we remove the deprecated array format for templates
@@ -107,6 +108,7 @@ type rawConfig struct {
 
 	ExecPipe     bool `yaml:"execPipe,omitempty"`
 	Experimental bool `yaml:"experimental,omitempty"`
+	DryRun       bool `yaml:"dryRun,omitempty"`
 }
 
 // TODO: remove when we remove the deprecated array format for templates
@@ -140,6 +142,7 @@ func (c *Config) UnmarshalYAML(value *yaml.Node) error {
 		PluginTimeout:         r.PluginTimeout,
 		ExecPipe:              r.ExecPipe,
 		Experimental:          r.Experimental,
+		DryRun:                r.DryRun,
 	}
 
 	return nil
@@ -170,6 +173,7 @@ func (c Config) MarshalYAML() (interface{}, error) {
 		PluginTimeout:         c.PluginTimeout,
 		ExecPipe:              c.ExecPipe,
 		Experimental:          c.Experimental,
+		DryRun:                c.DryRun,
 	}
 
 	return aux, nil
@@ -272,6 +276,10 @@ func (c *Config) MergeFrom(o *Config) *Config {
 			c.InputDir = ""
 			c.OutputDir = ""
 		}
+	}
+
+	if !isZero(o.DryRun) {
+		c.DryRun = true
 	}
 
 	if !isZero(o.OutputMap) {
