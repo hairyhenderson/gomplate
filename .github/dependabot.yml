@@ -7,6 +7,20 @@ updates:
   open-pull-requests-limit: 10
   commit-message:
     prefix: deps(go)
+  groups:
+    aws-sdk:
+      patterns:
+        - "github.com/aws/aws-sdk-go*"
+        - "github.com/aws/aws-sdk-go-v2*"
+    golang-x:
+      patterns:
+        - "golang.org/x/*"
+    otel:
+      patterns:
+        - "go.opentelemetry.io/*"
+    hashicorp:
+      patterns:
+        - "github.com/hashicorp/*"
 - package-ecosystem: docker
   directory: "/"
   schedule:
@@ -21,3 +35,7 @@ updates:
   open-pull-requests-limit: 10
   commit-message:
     prefix: deps(actions)
+  groups:
+    actions:
+      patterns:
+        - "actions/*"
