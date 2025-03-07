@@ -676,35 +676,35 @@ list: [ 1, 2, 3 ]
 			"localhost",
 			"443",
 		},
-		"one":            1,
-		"two":            2,
+		"one":            int64(1),
+		"two":            int64(2),
 		"two-and-a-half": 2.5,
-		"list":           []interface{}{1, 2, 3},
+		"list":           []interface{}{int64(1), int64(2), int64(3)},
 	}
 
 	out, err := CUE(in)
 	require.NoError(t, err)
-	assert.EqualValues(t, expected, out)
+	assert.Equal(t, expected, out)
 
 	out, err = CUE(`[1,2,3]`)
 	require.NoError(t, err)
-	assert.EqualValues(t, []interface{}{1, 2, 3}, out)
+	assert.Equal(t, []interface{}{int64(1), int64(2), int64(3)}, out)
 
 	out, err = CUE(`"hello world"`)
 	require.NoError(t, err)
-	assert.EqualValues(t, "hello world", out)
+	assert.Equal(t, "hello world", out)
 
 	out, err = CUE(`true`)
 	require.NoError(t, err)
-	assert.EqualValues(t, true, out)
+	assert.Equal(t, true, out)
 
 	out, err = CUE(`'\x00\x01\x02\x03\x04'`)
 	require.NoError(t, err)
-	assert.EqualValues(t, []byte{0, 1, 2, 3, 4}, out)
+	assert.Equal(t, []byte{0, 1, 2, 3, 4}, out)
 
 	out, err = CUE(`42`)
 	require.NoError(t, err)
-	assert.EqualValues(t, 42, out)
+	assert.EqualValues(t, int64(42), out)
 
 	out, err = CUE(`42.0`)
 	require.NoError(t, err)
