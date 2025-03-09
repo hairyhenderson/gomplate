@@ -129,7 +129,7 @@ func stsHandler(t *testing.T, accountID, user string) http.Handler {
 		assert.Equal(t, "GetCallerIdentity", form.Get("Action"))
 
 		w.Header().Set("Content-Type", "text/xml")
-		_, err := w.Write([]byte(fmt.Sprintf(`<?xml version='1.0' encoding='utf-8'?>
+		_, err := w.Write(fmt.Appendf(nil, `<?xml version='1.0' encoding='utf-8'?>
         <GetCallerIdentityResponse xmlns="https://sts.amazonaws.com/doc/2011-06-15/">
             <GetCallerIdentityResult>
                 <Arn>arn:aws:iam::%[1]s:user/%[2]s</Arn>
@@ -139,7 +139,7 @@ func stsHandler(t *testing.T, accountID, user string) http.Handler {
             <ResponseMetadata>
                 <RequestId>01234567-89ab-cdef-0123-456789abcdef</RequestId>
             </ResponseMetadata>
-        </GetCallerIdentityResponse>`, accountID, user)))
+        </GetCallerIdentityResponse>`, accountID, user))
 		if err != nil {
 			t.Errorf("failed to write response: %s", err)
 			w.WriteHeader(http.StatusInternalServerError)
@@ -284,7 +284,7 @@ func iamGetUserHandler(t *testing.T, accountID string) http.Handler {
 		assert.Equal(t, "GetUser", form.Get("Action"))
 
 		w.Header().Set("Content-Type", "text/xml")
-		_, err := w.Write([]byte(fmt.Sprintf(`<?xml version='1.0' encoding='utf-8'?>
+		_, err := w.Write(fmt.Appendf(nil, `<?xml version='1.0' encoding='utf-8'?>
         <GetUserResponse xmlns="https://iam.amazonaws.com/doc/2010-05-08/">
             <GetUserResult>
                 <User>
@@ -298,7 +298,7 @@ func iamGetUserHandler(t *testing.T, accountID string) http.Handler {
             <ResponseMetadata>
                 <RequestId>3d0e2445-64ea-4bfb-9244-30d810773f9e</RequestId>
             </ResponseMetadata>
-        </GetUserResponse>`, form.Get("UserName"), accountID)))
+        </GetUserResponse>`, form.Get("UserName"), accountID))
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 		}
