@@ -4,6 +4,10 @@ on:
     types: [ opened ]
     branches: [ main ]
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   label:
     permissions:
