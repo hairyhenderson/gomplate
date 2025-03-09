@@ -215,6 +215,12 @@ func cobraConfig(cmd *cobra.Command, args []string) (cfg *gomplate.Config, err e
 	if err != nil {
 		return nil, err
 	}
+
+	cfg.DryRun, err = getBool(cmd, "dry-run")
+	if err != nil {
+		return nil, err
+	}
+
 	return cfg, nil
 }
 
