@@ -1,7 +1,7 @@
 // Package coll contains functions to help manipulate and query collections of
 // data, like slices/arrays and maps.
 //
-// For the functions that return an array, a []interface{} is returned,
+// For the functions that return an array, a []any is returned,
 // regardless of whether or not the input was a different type.
 package coll
 
@@ -15,12 +15,12 @@ import (
 )
 
 // Slice creates a slice from a bunch of arguments
-func Slice(args ...interface{}) []interface{} {
+func Slice(args ...any) []any {
 	return args
 }
 
 // Has determines whether or not a given object has a property with the given key
-func Has(in interface{}, key interface{}) bool {
+func Has(in any, key any) bool {
 	av := reflect.ValueOf(in)
 
 	switch av.Kind() {
@@ -45,8 +45,8 @@ func Has(in interface{}, key interface{}) bool {
 // is provided, the last is used as the key, and an empty string is
 // set as the value.
 // All keys are converted to strings, regardless of input type.
-func Dict(v ...interface{}) (map[string]interface{}, error) {
-	dict := map[string]interface{}{}
+func Dict(v ...any) (map[string]any, error) {
+	dict := map[string]any{}
 	lenv := len(v)
 	for i := 0; i < lenv; i += 2 {
 		key := conv.ToString(v[i])
@@ -61,7 +61,7 @@ func Dict(v ...interface{}) (map[string]interface{}, error) {
 
 // Keys returns the list of keys in one or more maps. The returned list of keys
 // is ordered by map, each in sorted key order.
-func Keys(in ...map[string]interface{}) ([]string, error) {
+func Keys(in ...map[string]any) ([]string, error) {
 	if len(in) == 0 {
 		return nil, fmt.Errorf("need at least one argument")
 	}
@@ -73,9 +73,9 @@ func Keys(in ...map[string]interface{}) ([]string, error) {
 	return keys, nil
 }
 
-func splitMap(m map[string]interface{}) ([]string, []interface{}) {
+func splitMap(m map[string]any) ([]string, []any) {
 	keys := make([]string, len(m))
-	values := make([]interface{}, len(m))
+	values := make([]any, len(m))
 	i := 0
 	for k := range m {
 		keys[i] = k
@@ -91,11 +91,11 @@ func splitMap(m map[string]interface{}) ([]string, []interface{}) {
 // Values returns the list of values in one or more maps. The returned list of values
 // is ordered by map, each in sorted key order. If the Keys function is called with
 // the same arguments, the key/value mappings will be maintained.
-func Values(in ...map[string]interface{}) ([]interface{}, error) {
+func Values(in ...map[string]any) ([]any, error) {
 	if len(in) == 0 {
 		return nil, fmt.Errorf("need at least one argument")
 	}
-	values := []interface{}{}
+	values := []any{}
 	for _, m := range in {
 		_, v := splitMap(m)
 		values = append(values, v...)
@@ -103,8 +103,8 @@ func Values(in ...map[string]interface{}) ([]interface{}, error) {
 	return values, nil
 }
 
-// Append v to the end of list. No matter what type of input slice or array list is, a new []interface{} is always returned.
-func Append(v interface{}, list interface{}) ([]interface{}, error) {
+// Append v to the end of list. No matter what type of input slice or array list is, a new []any is always returned.
+func Append(v any, list any) ([]any, error) {
 	l, err := iconv.InterfaceSlice(list)
 	if err != nil {
 		return nil, err
@@ -113,24 +113,24 @@ func Append(v interface{}, list interface{}) ([]interface{}, error) {
 	return append(l, v), nil
 }
 
-// Prepend v to the beginning of list. No matter what type of input slice or array list is, a new []interface{} is always returned.
-func Prepend(v interface{}, list interface{}) ([]interface{}, error) {
+// Prepend v to the beginning of list. No matter what type of input slice or array list is, a new []any is always returned.
+func Prepend(v any, list any) ([]any, error) {
 	l, err := iconv.InterfaceSlice(list)
 	if err != nil {
 		return nil, err
 	}
 
-	return append([]interface{}{v}, l...), nil
+	return append([]any{v}, l...), nil
 }
 
-// Uniq finds the unique values within list. No matter what type of input slice or array list is, a new []interface{} is always returned.
-func Uniq(list interface{}) ([]interface{}, error) {
+// Uniq finds the unique values within list. No matter what type of input slice or array list is, a new []any is always returned.
+func Uniq(list any) ([]any, error) {
 	l, err := iconv.InterfaceSlice(list)
 	if err != nil {
 		return nil, err
 	}
 
-	out := []interface{}{}
+	out := []any{}
 	for _, v := range l {
 		if !Has(out, v) {
 			out = append(out, v)
@@ -139,8 +139,8 @@ func Uniq(list interface{}) ([]interface{}, error) {
 	return out, nil
 }
 
-// Reverse the list. No matter what type of input slice or array list is, a new []interface{} is always returned.
-func Reverse(list interface{}) ([]interface{}, error) {
+// Reverse the list. No matter what type of input slice or array list is, a new []any is always returned.
+func Reverse(list any) ([]any, error) {
 	l, err := iconv.InterfaceSlice(list)
 	if err != nil {
 		return nil, err
@@ -155,7 +155,7 @@ func Reverse(list interface{}) ([]interface{}, error) {
 
 // Merge source maps (srcs) into dst. Precedence is in left-to-right order, with
 // the left-most values taking precedence over the right-most.
-func Merge(dst map[string]interface{}, srcs ...map[string]interface{}) (map[string]interface{}, error) {
+func Merge(dst map[string]any, srcs ...map[string]any) (map[string]any, error) {
 	for _, src := range srcs {
 		dst = mergeValues(src, dst)
 	}
@@ -174,8 +174,8 @@ func contains(v string, a []string) bool {
 
 // Omit returns a new map without any entries that have the
 // given keys (inverse of Pick).
-func Omit(in map[string]interface{}, keys ...string) map[string]interface{} {
-	out := map[string]interface{}{}
+func Omit(in map[string]any, keys ...string) map[string]any {
+	out := map[string]any{}
 	for k, v := range in {
 		if !contains(k, keys) {
 			out[k] = v
@@ -186,8 +186,8 @@ func Omit(in map[string]interface{}, keys ...string) map[string]interface{} {
 
 // Pick returns a new map with any entries that have the
 // given keys (inverse of Omit).
-func Pick(in map[string]interface{}, keys ...string) map[string]interface{} {
-	out := map[string]interface{}{}
+func Pick(in map[string]any, keys ...string) map[string]any {
+	out := map[string]any{}
 	for k, v := range in {
 		if contains(k, keys) {
 			out[k] = v
@@ -196,8 +196,8 @@ func Pick(in map[string]interface{}, keys ...string) map[string]interface{} {
 	return out
 }
 
-func copyMap(m map[string]interface{}) map[string]interface{} {
-	n := map[string]interface{}{}
+func copyMap(m map[string]any) map[string]any {
+	n := map[string]any{}
 	for k, v := range m {
 		n[k] = v
 	}
@@ -205,7 +205,7 @@ func copyMap(m map[string]interface{}) map[string]interface{} {
 }
 
 // Merges a default and override map
-func mergeValues(d map[string]interface{}, o map[string]interface{}) map[string]interface{} {
+func mergeValues(d map[string]any, o map[string]any) map[string]any {
 	def := copyMap(d)
 	over := copyMap(o)
 	for k, v := range over {
@@ -214,14 +214,14 @@ func mergeValues(d map[string]interface{}, o map[string]interface{}) map[string]
 			def[k] = v
 			continue
 		}
-		nextMap, ok := v.(map[string]interface{})
+		nextMap, ok := v.(map[string]any)
 		// If it isn't another map, overwrite the value
 		if !ok {
 			def[k] = v
 			continue
 		}
 		// Edge case: If the key exists in the default, but isn't a map
-		defMap, isMap := def[k].(map[string]interface{})
+		defMap, isMap := def[k].(map[string]any)
 		// If the override map has a map for this key, prefer it
 		if !isMap {
 			def[k] = v
@@ -238,7 +238,7 @@ func mergeValues(d map[string]interface{}, o map[string]interface{}) map[string]
 // sort by the values of those entries.
 //
 // Does not modify the input list.
-func Sort(key string, list interface{}) (out []interface{}, err error) {
+func Sort(key string, list any) (out []any, err error) {
 	if list == nil {
 		return nil, nil
 	}
@@ -249,7 +249,7 @@ func Sort(key string, list interface{}) (out []interface{}, err error) {
 	}
 	// if the types are all the same, we can sort the slice
 	if sameTypes(ia) {
-		s := make([]interface{}, len(ia))
+		s := make([]any, len(ia))
 		// make a copy so the original is unmodified
 		copy(s, ia)
 		sort.SliceStable(s, func(i, j int) bool {
@@ -261,8 +261,8 @@ func Sort(key string, list interface{}) (out []interface{}, err error) {
 }
 
 // lessThan - compare two values of the same type
-func lessThan(key string) func(left, right interface{}) bool {
-	return func(left, right interface{}) bool {
+func lessThan(key string) func(left, right any) bool {
+	return func(left, right any) bool {
 		val := reflect.Indirect(reflect.ValueOf(left))
 		rval := reflect.Indirect(reflect.ValueOf(right))
 		switch val.Kind() {
@@ -299,7 +299,7 @@ func lessThan(key string) func(left, right interface{}) bool {
 	}
 }
 
-func sameTypes(a []interface{}) bool {
+func sameTypes(a []any) bool {
 	var t reflect.Type
 	for _, v := range a {
 		if t == nil {
@@ -315,7 +315,7 @@ func sameTypes(a []interface{}) bool {
 // Flatten a nested array or slice to at most 'depth' levels. Use depth of -1
 // to completely flatten the input.
 // Returns a new slice without modifying the input.
-func Flatten(list interface{}, depth int) ([]interface{}, error) {
+func Flatten(list any, depth int) ([]any, error) {
 	l, err := iconv.InterfaceSlice(list)
 	if err != nil {
 		return nil, err
@@ -323,7 +323,7 @@ func Flatten(list interface{}, depth int) ([]interface{}, error) {
 	if depth == 0 {
 		return l, nil
 	}
-	out := make([]interface{}, 0, len(l)*2)
+	out := make([]any, 0, len(l)*2)
 	for _, v := range l {
 		s := reflect.ValueOf(v)
 		kind := s.Kind()

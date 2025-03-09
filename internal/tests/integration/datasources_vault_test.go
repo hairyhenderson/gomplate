@@ -109,7 +109,7 @@ func startVault(t *testing.T) (*fs.Dir, *vaultClient) {
 func TestDatasources_Vault_TokenAuth(t *testing.T) {
 	v := setupDatasourcesVaultTest(t)
 
-	v.vc.Logical().Write("secret/foo", map[string]interface{}{"value": "bar"})
+	v.vc.Logical().Write("secret/foo", map[string]any{"value": "bar"})
 	defer v.vc.Logical().Delete("secret/foo")
 	tok, err := v.tokenCreate("readpol", 5)
 	require.NoError(t, err)
@@ -150,7 +150,7 @@ func TestDatasources_Vault_TokenAuth(t *testing.T) {
 func TestDatasources_Vault_UserPassAuth(t *testing.T) {
 	v := setupDatasourcesVaultTest(t)
 
-	v.vc.Logical().Write("secret/foo", map[string]interface{}{"value": "bar"})
+	v.vc.Logical().Write("secret/foo", map[string]any{"value": "bar"})
 	defer v.vc.Logical().Delete("secret/foo")
 	err := v.vc.Sys().EnableAuth("userpass", "userpass", "")
 	require.NoError(t, err)
@@ -158,11 +158,11 @@ func TestDatasources_Vault_UserPassAuth(t *testing.T) {
 	require.NoError(t, err)
 	defer v.vc.Sys().DisableAuth("userpass")
 	defer v.vc.Sys().DisableAuth("userpass2")
-	_, err = v.vc.Logical().Write("auth/userpass/users/dave", map[string]interface{}{
+	_, err = v.vc.Logical().Write("auth/userpass/users/dave", map[string]any{
 		"password": "foo", "ttl": "10s", "policies": "readpol",
 	})
 	require.NoError(t, err)
-	_, err = v.vc.Logical().Write("auth/userpass2/users/dave", map[string]interface{}{
+	_, err = v.vc.Logical().Write("auth/userpass2/users/dave", map[string]any{
 		"password": "bar", "ttl": "10s", "policies": "readpol",
 	})
 	require.NoError(t, err)
@@ -202,7 +202,7 @@ func TestDatasources_Vault_UserPassAuth(t *testing.T) {
 func TestDatasources_Vault_AppRoleAuth(t *testing.T) {
 	v := setupDatasourcesVaultTest(t)
 
-	v.vc.Logical().Write("secret/foo", map[string]interface{}{"value": "bar"})
+	v.vc.Logical().Write("secret/foo", map[string]any{"value": "bar"})
 	defer v.vc.Logical().Delete("secret/foo")
 	err := v.vc.Sys().EnableAuth("approle", "approle", "")
 	require.NoError(t, err)
@@ -210,12 +210,12 @@ func TestDatasources_Vault_AppRoleAuth(t *testing.T) {
 	require.NoError(t, err)
 	defer v.vc.Sys().DisableAuth("approle")
 	defer v.vc.Sys().DisableAuth("approle2")
-	_, err = v.vc.Logical().Write("auth/approle/role/testrole", map[string]interface{}{
+	_, err = v.vc.Logical().Write("auth/approle/role/testrole", map[string]any{
 		"secret_id_ttl": "10s", "token_ttl": "20s",
 		"secret_id_num_uses": "1", "policies": "readpol",
 	})
 	require.NoError(t, err)
-	_, err = v.vc.Logical().Write("auth/approle2/role/testrole", map[string]interface{}{
+	_, err = v.vc.Logical().Write("auth/approle2/role/testrole", map[string]any{
 		"secret_id_ttl": "10s", "token_ttl": "20s",
 		"secret_id_num_uses": "1", "policies": "readpol",
 	})
@@ -256,7 +256,7 @@ func TestDatasources_Vault_DynamicAuth(t *testing.T) {
 	require.NoError(t, err)
 	defer v.vc.Sys().Unmount("ssh")
 
-	_, err = v.vc.Logical().Write("ssh/roles/test", map[string]interface{}{
+	_, err = v.vc.Logical().Write("ssh/roles/test", map[string]any{
 		"key_type": "otp", "default_user": "user", "cidr_list": "10.0.0.0/8",
 	})
 	require.NoError(t, err)
@@ -284,8 +284,8 @@ func TestDatasources_Vault_DynamicAuth(t *testing.T) {
 func TestDatasources_Vault_List(t *testing.T) {
 	v := setupDatasourcesVaultTest(t)
 
-	v.vc.Logical().Write("secret/dir/foo", map[string]interface{}{"value": "one"})
-	v.vc.Logical().Write("secret/dir/bar", map[string]interface{}{"value": "two"})
+	v.vc.Logical().Write("secret/dir/foo", map[string]any{"value": "one"})
+	v.vc.Logical().Write("secret/dir/bar", map[string]any{"value": "two"})
 	defer v.vc.Logical().Delete("secret/dir/foo")
 	defer v.vc.Logical().Delete("secret/dir/bar")
 	tok, err := v.tokenCreate("listpol", 15)
@@ -322,15 +322,15 @@ func setupKV2Test(ctx context.Context, t *testing.T, policy string) (string, str
 	})
 	require.NoError(t, err)
 
-	s, err := v.vc.KVv2("kv2").Put(ctx, "foo", map[string]interface{}{"first": "one"}, vaultapi.WithCheckAndSet(0))
+	s, err := v.vc.KVv2("kv2").Put(ctx, "foo", map[string]any{"first": "one"}, vaultapi.WithCheckAndSet(0))
 	require.NoError(t, err)
 	require.Equal(t, 1, s.VersionMetadata.Version)
 
-	s, err = v.vc.KVv2("kv2").Put(ctx, "foo", map[string]interface{}{"second": "two"}, vaultapi.WithCheckAndSet(1))
+	s, err = v.vc.KVv2("kv2").Put(ctx, "foo", map[string]any{"second": "two"}, vaultapi.WithCheckAndSet(1))
 	require.NoError(t, err)
 	require.Equal(t, 2, s.VersionMetadata.Version)
 
-	s, err = v.vc.KVv2("a/b/c").Put(ctx, "d/e/f", map[string]interface{}{"e": "f"})
+	s, err = v.vc.KVv2("a/b/c").Put(ctx, "d/e/f", map[string]any{"e": "f"})
 	require.NoError(t, err)
 	require.Equal(t, 1, s.VersionMetadata.Version)
 

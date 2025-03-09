@@ -32,7 +32,7 @@ func TestTag_MissingKey(t *testing.T) {
 			return client, nil
 		},
 		metaClient: ec2meta,
-		cache:      make(map[string]interface{}),
+		cache:      make(map[string]any),
 	}
 
 	assert.Empty(t, must(e.Tag("missing")))
@@ -59,7 +59,7 @@ func TestTag_ValidKey(t *testing.T) {
 			return client, nil
 		},
 		metaClient: ec2meta,
-		cache:      make(map[string]interface{}),
+		cache:      make(map[string]any),
 	}
 
 	assert.Equal(t, "bar", must(e.Tag("foo")))
@@ -85,7 +85,7 @@ func TestTags(t *testing.T) {
 			return client, nil
 		},
 		metaClient: ec2meta,
-		cache:      make(map[string]interface{}),
+		cache:      make(map[string]any),
 	}
 
 	assert.Equal(t, map[string]string{"foo": "bar", "baz": "qux"}, must(e.Tags()))
@@ -101,7 +101,7 @@ func TestTag_NonEC2(t *testing.T) {
 			return client, nil
 		},
 		metaClient: ec2meta,
-		cache:      make(map[string]interface{}),
+		cache:      make(map[string]any),
 	}
 
 	assert.Equal(t, "", must(e.Tag("foo")))

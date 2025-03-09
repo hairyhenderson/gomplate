@@ -19,7 +19,7 @@ func TestCreateReFuncs(t *testing.T) {
 
 			ctx := context.Background()
 			fmap := CreateReFuncs(ctx)
-			actual := fmap["regexp"].(func() interface{})
+			actual := fmap["regexp"].(func() any)
 
 			assert.Equal(t, ctx, actual().(*ReFuncs).ctx)
 		})

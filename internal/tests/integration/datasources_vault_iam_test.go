@@ -15,7 +15,7 @@ func TestDatasources_VaultIAM(t *testing.T) {
 
 	tmpDir, v, srv, _ := setupDatasourcesVaultAWSTest(t, accountID, user)
 
-	v.vc.Logical().Write("secret/foo", map[string]interface{}{"value": "bar"})
+	v.vc.Logical().Write("secret/foo", map[string]any{"value": "bar"})
 	defer v.vc.Logical().Delete("secret/foo")
 
 	err := v.vc.Sys().EnableAuth("aws", "aws", "")
@@ -27,7 +27,7 @@ func TestDatasources_VaultIAM(t *testing.T) {
 	accessKeyID := "secret"
 	secretAccessKey := "access"
 
-	_, err = v.vc.Logical().Write("auth/aws/config/client", map[string]interface{}{
+	_, err = v.vc.Logical().Write("auth/aws/config/client", map[string]any{
 		"access_key":   accessKeyID,
 		"secret_key":   secretAccessKey,
 		"endpoint":     endpoint,
@@ -37,7 +37,7 @@ func TestDatasources_VaultIAM(t *testing.T) {
 	})
 	require.NoError(t, err)
 
-	_, err = v.vc.Logical().Write("auth/aws/role/foo", map[string]interface{}{
+	_, err = v.vc.Logical().Write("auth/aws/role/foo", map[string]any{
 		"auth_type":               "iam",
 		"bound_iam_principal_arn": "arn:aws:iam::" + accountID + ":*",
 		"policies":                "readpol",

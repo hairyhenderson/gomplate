@@ -8,28 +8,28 @@ import (
 )
 
 func TestIndex(t *testing.T) {
-	out, err := Index(map[string]interface{}{
+	out, err := Index(map[string]any{
 		"foo": "bar", "baz": "qux",
 	}, "foo")
 	require.NoError(t, err)
 	assert.Equal(t, "bar", out)
 
-	out, err = Index(map[string]interface{}{
+	out, err = Index(map[string]any{
 		"foo": "bar", "baz": "qux", "quux": "corge",
 	}, "foo", 2)
 	require.NoError(t, err)
 	assert.Equal(t, byte('r'), out)
 
-	out, err = Index([]interface{}{"foo", "bar", "baz"}, 2)
+	out, err = Index([]any{"foo", "bar", "baz"}, 2)
 	require.NoError(t, err)
 	assert.Equal(t, "baz", out)
 
-	out, err = Index([]interface{}{"foo", "bar", "baz"}, 2, 2)
+	out, err = Index([]any{"foo", "bar", "baz"}, 2, 2)
 	require.NoError(t, err)
 	assert.Equal(t, byte('z'), out)
 
 	// error cases
-	out, err = Index([]interface{}{"foo", "bar", "baz"}, 0, 1, 2)
+	out, err = Index([]any{"foo", "bar", "baz"}, 0, 1, 2)
 	require.Error(t, err)
 	assert.Nil(t, out)
 
@@ -41,7 +41,7 @@ func TestIndex(t *testing.T) {
 	require.Error(t, err)
 	assert.Nil(t, out)
 
-	out, err = Index(map[interface{}]string{nil: "foo", 2: "bar"}, "baz")
+	out, err = Index(map[any]string{nil: "foo", 2: "bar"}, "baz")
 	require.Error(t, err)
 	assert.Nil(t, out)
 

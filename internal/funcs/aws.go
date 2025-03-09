@@ -9,15 +9,15 @@ import (
 )
 
 // CreateAWSFuncs -
-func CreateAWSFuncs(ctx context.Context) map[string]interface{} {
-	f := map[string]interface{}{}
+func CreateAWSFuncs(ctx context.Context) map[string]any {
+	f := map[string]any{}
 
 	ns := &Funcs{
 		ctx:     ctx,
 		awsopts: aws.GetClientOptions(),
 	}
 
-	f["aws"] = func() interface{} { return ns }
+	f["aws"] = func() any { return ns }
 
 	// global aliases - for backwards compatibility
 	f["ec2meta"] = ns.EC2Meta
@@ -74,13 +74,13 @@ func (a *Funcs) EC2Tags() (map[string]string, error) {
 }
 
 // KMSEncrypt -
-func (a *Funcs) KMSEncrypt(keyID, plaintext interface{}) (string, error) {
+func (a *Funcs) KMSEncrypt(keyID, plaintext any) (string, error) {
 	a.kmsInit.Do(a.initKMS)
 	return a.kms.Encrypt(conv.ToString(keyID), conv.ToString(plaintext))
 }
 
 // KMSDecrypt -
-func (a *Funcs) KMSDecrypt(ciphertext interface{}) (string, error) {
+func (a *Funcs) KMSDecrypt(ciphertext any) (string, error) {
 	a.kmsInit.Do(a.initKMS)
 	return a.kms.Decrypt(conv.ToString(ciphertext))
 }

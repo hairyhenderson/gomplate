@@ -20,7 +20,7 @@ func TestCreateCollFuncs(t *testing.T) {
 
 			ctx := context.Background()
 			fmap := CreateCollFuncs(ctx)
-			actual := fmap["coll"].(func() interface{})
+			actual := fmap["coll"].(func() any)
 
 			assert.Equal(t, ctx, actual().(*CollFuncs).ctx)
 		})
@@ -38,13 +38,13 @@ func TestFlatten(t *testing.T) {
 	_, err = c.Flatten(42)
 	require.Error(t, err)
 
-	out, err := c.Flatten([]interface{}{1, []interface{}{[]int{2}, 3}})
+	out, err := c.Flatten([]any{1, []any{[]int{2}, 3}})
 	require.NoError(t, err)
-	assert.EqualValues(t, []interface{}{1, 2, 3}, out)
+	assert.EqualValues(t, []any{1, 2, 3}, out)
 
-	out, err = c.Flatten(1, []interface{}{1, []interface{}{[]int{2}, 3}})
+	out, err = c.Flatten(1, []any{1, []any{[]int{2}, 3}})
 	require.NoError(t, err)
-	assert.EqualValues(t, []interface{}{1, []int{2}, 3}, out)
+	assert.EqualValues(t, []any{1, []int{2}, 3}, out)
 }
 
 func TestPick(t *testing.T) {
@@ -64,19 +64,19 @@ func TestPick(t *testing.T) {
 	_, err = c.Pick("foo", "bar")
 	require.Error(t, err)
 
-	_, err = c.Pick(map[string]interface{}{}, "foo", "bar", map[string]interface{}{})
+	_, err = c.Pick(map[string]any{}, "foo", "bar", map[string]any{})
 	require.Error(t, err)
 
-	in := map[string]interface{}{
+	in := map[string]any{
 		"foo": "bar",
 		"bar": true,
 		"":    "baz",
 	}
 	out, err := c.Pick("baz", in)
 	require.NoError(t, err)
-	assert.EqualValues(t, map[string]interface{}{}, out)
+	assert.EqualValues(t, map[string]any{}, out)
 
-	expected := map[string]interface{}{
+	expected := map[string]any{
 		"foo": "bar",
 		"bar": true,
 	}
@@ -84,7 +84,7 @@ func TestPick(t *testing.T) {
 	require.NoError(t, err)
 	assert.EqualValues(t, expected, out)
 
-	expected = map[string]interface{}{
+	expected = map[string]any{
 		"": "baz",
 	}
 	out, err = c.Pick("", in)
@@ -98,14 +98,14 @@ func TestPick(t *testing.T) {
 	t.Run("supports slice key", func(t *testing.T) {
 		t.Parallel()
 
-		in := map[string]interface{}{
+		in := map[string]any{
 			"foo": "bar",
 			"bar": true,
 			"":    "baz",
 		}
 		out, err := c.Pick([]string{"foo", "bar"}, in)
 		require.NoError(t, err)
-		assert.EqualValues(t, map[string]interface{}{"foo": "bar", "bar": true}, out)
+		assert.EqualValues(t, map[string]any{"foo": "bar", "bar": true}, out)
 	})
 }
 
@@ -126,10 +126,10 @@ func TestOmit(t *testing.T) {
 	_, err = c.Omit("foo", "bar")
 	require.Error(t, err)
 
-	_, err = c.Omit(map[string]interface{}{}, "foo", "bar", map[string]interface{}{})
+	_, err = c.Omit(map[string]any{}, "foo", "bar", map[string]any{})
 	require.Error(t, err)
 
-	in := map[string]interface{}{
+	in := map[string]any{
 		"foo": "bar",
 		"bar": true,
 		"":    "baz",
@@ -138,7 +138,7 @@ func TestOmit(t *testing.T) {
 	require.NoError(t, err)
 	assert.EqualValues(t, in, out)
 
-	expected := map[string]interface{}{
+	expected := map[string]any{
 		"foo": "bar",
 		"bar": true,
 	}
@@ -146,7 +146,7 @@ func TestOmit(t *testing.T) {
 	require.NoError(t, err)
 	assert.EqualValues(t, expected, out)
 
-	expected = map[string]interface{}{
+	expected = map[string]any{
 		"": "baz",
 	}
 	out, err = c.Omit("foo", "bar", in)
@@ -155,32 +155,32 @@ func TestOmit(t *testing.T) {
 
 	out, err = c.Omit("foo", "bar", "", in)
 	require.NoError(t, err)
-	assert.EqualValues(t, map[string]interface{}{}, out)
+	assert.EqualValues(t, map[string]any{}, out)
 
 	t.Run("supports slice of strings", func(t *testing.T) {
 		t.Parallel()
 
-		in := map[string]interface{}{
+		in := map[string]any{
 			"foo": "bar",
 			"bar": true,
 			"":    "baz",
 		}
 		out, err := c.Omit([]string{"foo", "bar"}, in)
 		require.NoError(t, err)
-		assert.EqualValues(t, map[string]interface{}{"": "baz"}, out)
+		assert.EqualValues(t, map[string]any{"": "baz"}, out)
 	})
 
-	t.Run("supports slice of interface{}", func(t *testing.T) {
+	t.Run("supports slice of any", func(t *testing.T) {
 		t.Parallel()
 
-		in := map[string]interface{}{
+		in := map[string]any{
 			"foo": "bar",
 			"bar": true,
 			"":    "baz",
 		}
-		out, err := c.Omit([]interface{}{"foo", "bar"}, in)
+		out, err := c.Omit([]any{"foo", "bar"}, in)
 		require.NoError(t, err)
-		assert.EqualValues(t, map[string]interface{}{"": "baz"}, out)
+		assert.EqualValues(t, map[string]any{"": "baz"}, out)
 	})
 }
 
@@ -198,8 +198,8 @@ func TestGoSlice(t *testing.T) {
 	require.Error(t, err)
 
 	// invalid index type
-	in = reflect.ValueOf([]interface{}{1})
-	_, err = c.GoSlice(in, reflect.ValueOf([]interface{}{[]int{2}}))
+	in = reflect.ValueOf([]any{1})
+	_, err = c.GoSlice(in, reflect.ValueOf([]any{[]int{2}}))
 	require.Error(t, err)
 
 	// valid slice, no slicing
@@ -222,15 +222,15 @@ func TestCollFuncs_Set(t *testing.T) {
 
 	c := &CollFuncs{}
 
-	m := map[string]interface{}{"foo": "bar"}
+	m := map[string]any{"foo": "bar"}
 	out, err := c.Set("foo", "baz", m)
 	require.NoError(t, err)
-	assert.EqualValues(t, map[string]interface{}{"foo": "baz"}, out)
+	assert.EqualValues(t, map[string]any{"foo": "baz"}, out)
 
 	// m was modified so foo is now baz
 	out, err = c.Set("bar", "baz", m)
 	require.NoError(t, err)
-	assert.EqualValues(t, map[string]interface{}{"foo": "baz", "bar": "baz"}, out)
+	assert.EqualValues(t, map[string]any{"foo": "baz", "bar": "baz"}, out)
 }
 
 func TestCollFuncs_Unset(t *testing.T) {
@@ -238,7 +238,7 @@ func TestCollFuncs_Unset(t *testing.T) {
 
 	c := &CollFuncs{}
 
-	m := map[string]interface{}{"foo": "bar"}
+	m := map[string]any{"foo": "bar"}
 	out, err := c.Unset("foo", m)
 	require.NoError(t, err)
 	assert.Empty(t, out)

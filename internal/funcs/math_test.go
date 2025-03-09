@@ -21,7 +21,7 @@ func TestCreateMathFuncs(t *testing.T) {
 
 			ctx := context.Background()
 			fmap := CreateMathFuncs(ctx)
-			actual := fmap["math"].(func() interface{})
+			actual := fmap["math"].(func() any)
 
 			assert.Equal(t, ctx, actual().(*MathFuncs).ctx)
 		})
@@ -106,7 +106,7 @@ func TestSub(t *testing.T) {
 	assert.InEpsilon(t, -5.3, actual, 1e-12)
 }
 
-func mustDiv(a, b interface{}) interface{} {
+func mustDiv(a, b any) any {
 	m := MathFuncs{}
 	r, err := m.Div(a, b)
 	if err != nil {
@@ -155,7 +155,7 @@ func TestPow(t *testing.T) {
 	assert.InEpsilon(t, 2.25, actual, 1e-12)
 }
 
-func mustSeq(t *testing.T, n ...interface{}) []int64 {
+func mustSeq(t *testing.T, n ...any) []int64 {
 	m := MathFuncs{}
 	s, err := m.Seq(n...)
 	if err != nil {
@@ -181,7 +181,7 @@ func TestIsIntFloatNum(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
-		in      interface{}
+		in      any
 		isInt   bool
 		isFloat bool
 	}{
@@ -232,7 +232,7 @@ func TestIsIntFloatNum(t *testing.T) {
 }
 
 func BenchmarkIsFloat(b *testing.B) {
-	data := []interface{}{
+	data := []any{
 		0, 1, -1, uint(42), uint8(255), uint16(42), uint32(42), uint64(42), int(42), int8(127), int16(42), int32(42), int64(42), float32(18.3), float64(18.3), 1.5, -18.6, "42", "052", "0xff", "-42", "-0", "3.14", "-3.14", "0.00", "NaN", "-Inf", "+Inf", "", "foo", nil, true,
 	}
 
@@ -251,21 +251,21 @@ func TestMax(t *testing.T) {
 
 	m := MathFuncs{}
 	data := []struct {
-		expected interface{}
-		n        []interface{}
+		expected any
+		n        []any
 	}{
-		{int64(0), []interface{}{0}},
-		{int64(1), []interface{}{1}},
-		{int64(-1), []interface{}{-1}},
-		{int64(1), []interface{}{-1, 0, 1}},
-		{3.9, []interface{}{3.14, 3, 3.9}},
-		{int64(255), []interface{}{"14", "0xff", -5}},
+		{int64(0), []any{0}},
+		{int64(1), []any{1}},
+		{int64(-1), []any{-1}},
+		{int64(1), []any{-1, 0, 1}},
+		{3.9, []any{3.14, 3, 3.9}},
+		{int64(255), []any{"14", "0xff", -5}},
 	}
 	for _, d := range data {
 		t.Run(fmt.Sprintf("%v==%v", d.n, d.expected), func(t *testing.T) {
 			t.Parallel()
 
-			var actual interface{}
+			var actual any
 			if len(d.n) == 1 {
 				actual, _ = m.Max(d.n[0])
 			} else {
@@ -294,21 +294,21 @@ func TestMin(t *testing.T) {
 
 	m := MathFuncs{}
 	data := []struct {
-		expected interface{}
-		n        []interface{}
+		expected any
+		n        []any
 	}{
-		{int64(0), []interface{}{0}},
-		{int64(1), []interface{}{1}},
-		{int64(-1), []interface{}{-1}},
-		{int64(-1), []interface{}{-1, 0, 1}},
-		{3., []interface{}{3.14, 3, 3.9}},
-		{int64(-5), []interface{}{"14", "0xff", -5}},
+		{int64(0), []any{0}},
+		{int64(1), []any{1}},
+		{int64(-1), []any{-1}},
+		{int64(-1), []any{-1, 0, 1}},
+		{3., []any{3.14, 3, 3.9}},
+		{int64(-5), []any{"14", "0xff", -5}},
 	}
 	for _, d := range data {
 		t.Run(fmt.Sprintf("%v==%v", d.n, d.expected), func(t *testing.T) {
 			t.Parallel()
 
-			var actual interface{}
+			var actual any
 			if len(d.n) == 1 {
 				actual, _ = m.Min(d.n[0])
 			} else {
@@ -338,20 +338,20 @@ func TestContainsFloat(t *testing.T) {
 
 	m := MathFuncs{}
 	data := []struct {
-		n        []interface{}
+		n        []any
 		expected bool
 	}{
-		{[]interface{}{nil}, false},
-		{[]interface{}{0}, false},
-		{[]interface{}{"not a number"}, false},
-		{[]interface{}{1}, false},
-		{[]interface{}{-1}, false},
-		{[]interface{}{-1, 0, 1}, false},
-		{[]interface{}{3.14, 3, 3.9}, true},
-		{[]interface{}{"14", "0xff", -5}, false},
-		{[]interface{}{"14.8", "0xff", -5}, true},
-		{[]interface{}{"-Inf", 2}, true},
-		{[]interface{}{"NaN"}, true},
+		{[]any{nil}, false},
+		{[]any{0}, false},
+		{[]any{"not a number"}, false},
+		{[]any{1}, false},
+		{[]any{-1}, false},
+		{[]any{-1, 0, 1}, false},
+		{[]any{3.14, 3, 3.9}, true},
+		{[]any{"14", "0xff", -5}, false},
+		{[]any{"14.8", "0xff", -5}, true},
+		{[]any{"-Inf", 2}, true},
+		{[]any{"NaN"}, true},
 	}
 	for _, d := range data {
 		t.Run(fmt.Sprintf("%v==%v", d.n, d.expected), func(t *testing.T) {
@@ -371,7 +371,7 @@ func TestCeil(t *testing.T) {
 
 	m := MathFuncs{}
 	data := []struct {
-		n interface{}
+		n any
 		a float64
 	}{
 		{"Inf", gmath.Inf(1)},
@@ -409,7 +409,7 @@ func TestFloor(t *testing.T) {
 
 	m := MathFuncs{}
 	data := []struct {
-		n interface{}
+		n any
 		a float64
 	}{
 		{"Inf", gmath.Inf(1)},
@@ -447,7 +447,7 @@ func TestRound(t *testing.T) {
 
 	m := MathFuncs{}
 	data := []struct {
-		n interface{}
+		n any
 		a float64
 	}{
 		{"Inf", gmath.Inf(1)},
@@ -489,8 +489,8 @@ func TestAbs(t *testing.T) {
 
 	m := MathFuncs{}
 	data := []struct {
-		n interface{}
-		a interface{}
+		n any
+		a any
 	}{
 		{"-Inf", gmath.Inf(1)},
 		{0, int64(0)},

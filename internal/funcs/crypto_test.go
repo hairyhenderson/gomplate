@@ -20,7 +20,7 @@ func TestCreateCryptoFuncs(t *testing.T) {
 
 			ctx := context.Background()
 			fmap := CreateCryptoFuncs(ctx)
-			actual := fmap["crypto"].(func() interface{})
+			actual := fmap["crypto"].(func() any)
 
 			assert.Equal(t, ctx, actual().(*CryptoFuncs).ctx)
 		})

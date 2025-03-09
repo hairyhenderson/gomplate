@@ -12,7 +12,7 @@ import (
 )
 
 // CreateFileFuncs -
-func CreateFileFuncs(ctx context.Context) map[string]interface{} {
+func CreateFileFuncs(ctx context.Context) map[string]any {
 	fsys, err := datafs.FSysForPath(ctx, "/")
 	if err != nil {
 		fsys = datafs.WrapWdFS(osfs.NewFS())
@@ -23,8 +23,8 @@ func CreateFileFuncs(ctx context.Context) map[string]interface{} {
 		fs:  fsys,
 	}
 
-	return map[string]interface{}{
-		"file": func() interface{} { return ns },
+	return map[string]any{
+		"file": func() any { return ns },
 	}
 }
 
@@ -35,30 +35,30 @@ type FileFuncs struct {
 }
 
 // Read -
-func (f *FileFuncs) Read(path interface{}) (string, error) {
+func (f *FileFuncs) Read(path any) (string, error) {
 	b, err := fs.ReadFile(f.fs, conv.ToString(path))
 	return string(b), err
 }
 
 // Stat -
-func (f *FileFuncs) Stat(path interface{}) (fs.FileInfo, error) {
+func (f *FileFuncs) Stat(path any) (fs.FileInfo, error) {
 	return fs.Stat(f.fs, conv.ToString(path))
 }
 
 // Exists -
-func (f *FileFuncs) Exists(path interface{}) bool {
+func (f *FileFuncs) Exists(path any) bool {
 	_, err := f.Stat(conv.ToString(path))
 	return err == nil
 }
 
 // IsDir -
-func (f *FileFuncs) IsDir(path interface{}) bool {
+func (f *FileFuncs) IsDir(path any) bool {
 	i, err := f.Stat(conv.ToString(path))
 	return err == nil && i.IsDir()
 }
 
 // ReadDir -
-func (f *FileFuncs) ReadDir(path interface{}) ([]string, error) {
+func (f *FileFuncs) ReadDir(path any) ([]string, error) {
 	des, err := fs.ReadDir(f.fs, conv.ToString(path))
 	if err != nil {
 		return nil, err
@@ -73,7 +73,7 @@ func (f *FileFuncs) ReadDir(path interface{}) ([]string, error) {
 }
 
 // Walk -
-func (f *FileFuncs) Walk(path interface{}) ([]string, error) {
+func (f *FileFuncs) Walk(path any) ([]string, error) {
 	files := make([]string, 0)
 	err := fs.WalkDir(f.fs, conv.ToString(path), func(subpath string, _ fs.DirEntry, err error) error {
 		if err != nil {
@@ -92,7 +92,7 @@ func (f *FileFuncs) Walk(path interface{}) ([]string, error) {
 }
 
 // Write -
-func (f *FileFuncs) Write(path interface{}, data interface{}) (s string, err error) {
+func (f *FileFuncs) Write(path any, data any) (s string, err error) {
 	type byteser interface{ Bytes() []byte }
 
 	var content []byte

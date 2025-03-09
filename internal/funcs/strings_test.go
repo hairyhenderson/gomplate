@@ -19,7 +19,7 @@ func TestCreateStringFuncs(t *testing.T) {
 
 			ctx := context.Background()
 			fmap := CreateStringFuncs(ctx)
-			actual := fmap["strings"].(func() interface{})
+			actual := fmap["strings"].(func() any)
 
 			assert.Equal(t, ctx, actual().(*StringFuncs).ctx)
 		})
@@ -44,12 +44,12 @@ func TestIndent(t *testing.T) {
 
 	testdata := []struct {
 		out  string
-		args []interface{}
+		args []any
 	}{
-		{" foo\n bar\n baz", []interface{}{"foo\nbar\nbaz"}},
-		{"  foo\n  bar\n  baz", []interface{}{"  ", "foo\nbar\nbaz"}},
-		{"---foo\n---bar\n---baz", []interface{}{3, "-", "foo\nbar\nbaz"}},
-		{"   foo\n   bar\n   baz", []interface{}{3, "foo\nbar\nbaz"}},
+		{" foo\n bar\n baz", []any{"foo\nbar\nbaz"}},
+		{"  foo\n  bar\n  baz", []any{"  ", "foo\nbar\nbaz"}},
+		{"---foo\n---bar\n---baz", []any{3, "-", "foo\nbar\nbaz"}},
+		{"   foo\n   bar\n   baz", []any{3, "foo\nbar\nbaz"}},
 	}
 
 	for _, d := range testdata {
@@ -71,7 +71,7 @@ func TestTrimPrefix(t *testing.T) {
 func TestTitle(t *testing.T) {
 	sf := &StringFuncs{}
 	testdata := []struct {
-		in  interface{}
+		in  any
 		out string
 	}{
 		{``, ``},
@@ -158,7 +158,7 @@ func TestSort(t *testing.T) {
 	out := []string{"bar", "baz", "foo"}
 	assert.Equal(t, out, must(sf.Sort(in)))
 
-	assert.Equal(t, out, must(sf.Sort([]interface{}{"foo", "bar", "baz"})))
+	assert.Equal(t, out, must(sf.Sort([]any{"foo", "bar", "baz"})))
 }
 
 func TestQuote(t *testing.T) {
@@ -166,7 +166,7 @@ func TestQuote(t *testing.T) {
 
 	sf := &StringFuncs{}
 	testdata := []struct {
-		in  interface{}
+		in  any
 		out string
 	}{
 		{``, `""`},
@@ -187,7 +187,7 @@ func TestShellQuote(t *testing.T) {
 
 	sf := &StringFuncs{}
 	testdata := []struct {
-		in  interface{}
+		in  any
 		out string
 	}{
 		// conventional cases are covered in gompstrings.ShellQuote() tests
@@ -211,7 +211,7 @@ func TestSquote(t *testing.T) {
 
 	sf := &StringFuncs{}
 	testdata := []struct {
-		in  interface{}
+		in  any
 		out string
 	}{
 		{``, `''`},
@@ -263,7 +263,7 @@ func TestTrimLeft(t *testing.T) {
 	sf := &StringFuncs{}
 
 	testdata := []struct {
-		in     interface{}
+		in     any
 		cutset string
 		out    string
 	}{
@@ -287,7 +287,7 @@ func TestTrimRight(t *testing.T) {
 	sf := &StringFuncs{}
 
 	testdata := []struct {
-		in     interface{}
+		in     any
 		cutset string
 		out    string
 	}{

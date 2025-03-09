@@ -19,7 +19,7 @@ func TestCreateTestFuncs(t *testing.T) {
 
 			ctx := context.Background()
 			fmap := CreateTestFuncs(ctx)
-			actual := fmap["test"].(func() interface{})
+			actual := fmap["test"].(func() any)
 
 			assert.Equal(t, ctx, actual().(*TestFuncs).ctx)
 		})
@@ -93,8 +93,8 @@ func TestTernary(t *testing.T) {
 
 	f := TestFuncs{ctx: context.Background()}
 	testdata := []struct {
-		tval, fval, b interface{}
-		expected      interface{}
+		tval, fval, b any
+		expected      any
 	}{
 		{"foo", 42, false, 42},
 		{"foo", 42, "yes", "foo"},
@@ -110,7 +110,7 @@ func TestKind(t *testing.T) {
 
 	f := TestFuncs{ctx: context.Background()}
 	testdata := []struct {
-		arg      interface{}
+		arg      any
 		expected string
 	}{
 		{"foo", "string"},
@@ -133,7 +133,7 @@ func TestIsKind(t *testing.T) {
 
 	f := TestFuncs{ctx: context.Background()}
 	truedata := []struct {
-		arg  interface{}
+		arg  any
 		kind string
 	}{
 		{"foo", "string"},
@@ -155,7 +155,7 @@ func TestIsKind(t *testing.T) {
 	}
 
 	falsedata := []struct {
-		arg  interface{}
+		arg  any
 		kind string
 	}{
 		{"foo", "bool"},

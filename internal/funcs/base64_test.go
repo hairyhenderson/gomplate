@@ -20,7 +20,7 @@ func TestCreateBase64Funcs(t *testing.T) {
 
 			ctx := context.Background()
 			fmap := CreateBase64Funcs(ctx)
-			actual := fmap["base64"].(func() interface{})
+			actual := fmap["base64"].(func() any)
 
 			assert.Equal(t, ctx, actual().(*Base64Funcs).ctx)
 		})

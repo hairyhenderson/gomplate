@@ -18,7 +18,7 @@ func TestCreatePathFuncs(t *testing.T) {
 
 			ctx := context.Background()
 			fmap := CreatePathFuncs(ctx)
-			actual := fmap["path"].(func() interface{})
+			actual := fmap["path"].(func() any)
 
 			assert.Equal(t, ctx, actual().(*PathFuncs).ctx)
 		})

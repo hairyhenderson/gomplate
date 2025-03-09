@@ -21,7 +21,7 @@ func TestCreateTimeFuncs(t *testing.T) {
 
 			ctx := context.Background()
 			fmap := CreateTimeFuncs(ctx)
-			actual := fmap["time"].(func() interface{})
+			actual := fmap["time"].(func() any)
 
 			assert.Equal(t, ctx, actual().(*TimeFuncs).ctx)
 		})

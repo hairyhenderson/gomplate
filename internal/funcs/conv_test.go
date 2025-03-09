@@ -19,7 +19,7 @@ func TestCreateConvFuncs(t *testing.T) {
 
 			ctx := context.Background()
 			fmap := CreateConvFuncs(ctx)
-			actual := fmap["conv"].(func() interface{})
+			actual := fmap["conv"].(func() any)
 
 			assert.Equal(t, ctx, actual().(*ConvFuncs).ctx)
 		})
@@ -33,7 +33,7 @@ func TestDefault(t *testing.T) {
 	c := &ConvFuncs{}
 	def := "DEFAULT"
 	data := []struct {
-		val   interface{}
+		val   any
 		empty bool
 	}{
 		{0, true},

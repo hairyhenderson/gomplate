@@ -26,7 +26,7 @@ func TestCreateDataSourceFuncs(t *testing.T) {
 
 			ctx := context.Background()
 			fmap := CreateDataSourceFuncs(ctx, nil)
-			actual := fmap["_datasource"].(func() interface{})
+			actual := fmap["_datasource"].(func() any)
 
 			assert.Equal(t, ctx, actual().(*dataSourceFuncs).ctx)
 		})
@@ -57,7 +57,7 @@ func TestDatasource(t *testing.T) {
 		return d
 	}
 
-	test := func(ext, mime string, contents []byte, expected interface{}) {
+	test := func(ext, mime string, contents []byte, expected any) {
 		data := setup(ext, contents)
 
 		actual, err := data.Datasource("foo", "?type="+mime)
@@ -67,17 +67,17 @@ func TestDatasource(t *testing.T) {
 
 	testObj := func(ext, mime string, contents []byte) {
 		test(ext, mime, contents,
-			map[string]interface{}{
-				"hello": map[string]interface{}{"cruel": "world"},
+			map[string]any{
+				"hello": map[string]any{"cruel": "world"},
 			})
 	}
 
 	testObj("json", iohelpers.JSONMimetype, []byte(`{"hello":{"cruel":"world"}}`))
 	testObj("yml", iohelpers.YAMLMimetype, []byte("hello:\n  cruel: world\n"))
 	test("json", iohelpers.JSONMimetype, []byte(`[1, "two", true]`),
-		[]interface{}{1, "two", true})
+		[]any{1, "two", true})
 	test("yaml", iohelpers.YAMLMimetype, []byte("---\n- 1\n- two\n- true\n"),
-		[]interface{}{1, "two", true})
+		[]any{1, "two", true})
 
 	d := setup("", nil)
 	actual, err := d.Datasource("foo")

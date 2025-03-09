@@ -11,29 +11,29 @@ import (
 
 func TestJQ(t *testing.T) {
 	ctx := context.Background()
-	in := map[string]interface{}{
-		"store": map[string]interface{}{
-			"book": []interface{}{
-				map[string]interface{}{
+	in := map[string]any{
+		"store": map[string]any{
+			"book": []any{
+				map[string]any{
 					"category": "reference",
 					"author":   "Nigel Rees",
 					"title":    "Sayings of the Century",
 					"price":    8.95,
 				},
-				map[string]interface{}{
+				map[string]any{
 					"category": "fiction",
 					"author":   "Evelyn Waugh",
 					"title":    "Sword of Honour",
 					"price":    12.99,
 				},
-				map[string]interface{}{
+				map[string]any{
 					"category": "fiction",
 					"author":   "Herman Melville",
 					"title":    "Moby Dick",
 					"isbn":     "0-553-21311-3",
 					"price":    8.99,
 				},
-				map[string]interface{}{
+				map[string]any{
 					"category": "fiction",
 					"author":   "J. R. R. Tolkien",
 					"title":    "The Lord of the Rings",
@@ -41,7 +41,7 @@ func TestJQ(t *testing.T) {
 					"price":    22.99,
 				},
 			},
-			"bicycle": map[string]interface{}{
+			"bicycle": map[string]any{
 				"color": "red",
 				"price": 19.95,
 			},
@@ -76,14 +76,14 @@ func TestJQ(t *testing.T) {
 
 	out, err = JQ(ctx, ".store.book[]|select(.price < 10.0 )", in)
 	require.NoError(t, err)
-	expected := []interface{}{
-		map[string]interface{}{
+	expected := []any{
+		map[string]any{
 			"category": "reference",
 			"author":   "Nigel Rees",
 			"title":    "Sayings of the Century",
 			"price":    8.95,
 		},
-		map[string]interface{}{
+		map[string]any{
 			"category": "fiction",
 			"author":   "Herman Melville",
 			"title":    "Moby Dick",
@@ -93,20 +93,20 @@ func TestJQ(t *testing.T) {
 	}
 	assert.EqualValues(t, expected, out)
 
-	in = map[string]interface{}{
-		"a": map[string]interface{}{
-			"aa": map[string]interface{}{
-				"foo": map[string]interface{}{
-					"aaa": map[string]interface{}{
-						"aaaa": map[string]interface{}{
+	in = map[string]any{
+		"a": map[string]any{
+			"aa": map[string]any{
+				"foo": map[string]any{
+					"aaa": map[string]any{
+						"aaaa": map[string]any{
 							"bar": 1234,
 						},
 					},
 				},
 			},
-			"ab": map[string]interface{}{
-				"aba": map[string]interface{}{
-					"foo": map[string]interface{}{
+			"ab": map[string]any{
+				"aba": map[string]any{
+					"foo": map[string]any{
 						"abaa": true,
 						"abab": "baz",
 					},
@@ -117,7 +117,7 @@ func TestJQ(t *testing.T) {
 	out, err = JQ(ctx, `tostream|select((.[0]|index("foo")) and (.[0][-1]!="foo") and (.[1])) as $s|($s[0]|index("foo")+1) as $ind|($ind|truncate_stream($s)) as $newstream|$newstream|reduce . as [$p,$v] ({};setpath($p;$v))|add`, in)
 	require.NoError(t, err)
 	assert.Len(t, out, 3)
-	assert.Contains(t, out, map[string]interface{}{"aaaa": map[string]interface{}{"bar": 1234}})
+	assert.Contains(t, out, map[string]any{"aaaa": map[string]any{"bar": 1234}})
 	assert.Contains(t, out, true)
 	assert.Contains(t, out, "baz")
 }
@@ -130,7 +130,7 @@ func TestJQ_typeConversions(t *testing.T) {
 	}
 	type storeType struct {
 		Bicycle *bicycleType
-		safe    interface{}
+		safe    any
 	}
 
 	structIn := &storeType{
@@ -151,9 +151,9 @@ func TestJQ_typeConversions(t *testing.T) {
 	_, err = JQ(ctx, ".*", structIn)
 	require.Error(t, err)
 
-	// a type with an underlying type of map[string]interface{}, just like
+	// a type with an underlying type of map[string]any, just like
 	// gomplate.tmplctx
-	type mapType map[string]interface{}
+	type mapType map[string]any
 
 	out, err = JQ(ctx, ".foo", mapType{"foo": "bar"})
 	require.NoError(t, err)
@@ -165,7 +165,7 @@ func TestJQ_typeConversions(t *testing.T) {
 	assert.Equal(t, "bar", out)
 
 	// underlying slice type
-	type sliceType []interface{}
+	type sliceType []any
 
 	out, err = JQ(ctx, ".[1]", sliceType{"foo", "bar"})
 	require.NoError(t, err)
@@ -216,9 +216,9 @@ func TestJQConvertType_passthroughTypes(t *testing.T) {
 	_, err := jqConvertType(v)
 	require.Error(t, err)
 
-	testdata := []interface{}{
-		map[string]interface{}{"foo": 1234},
-		[]interface{}{"foo", "bar", "baz", 1, 2, 3},
+	testdata := []any{
+		map[string]any{"foo": 1234},
+		[]any{"foo", "bar", "baz", 1, 2, 3},
 		"foo",
 		[]byte("foo"),
 		json.RawMessage(`{"foo": "bar"}`),

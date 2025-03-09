@@ -42,22 +42,22 @@ func TestSlice(t *testing.T) {
 
 func TestJoin(t *testing.T) {
 	testdata := []struct {
-		in  interface{}
+		in  any
 		sep string
 		out string
 	}{
-		{[]interface{}{"foo", "bar"}, ",", "foo,bar"},
-		{[]interface{}{"foo", "bar"}, ",\n", "foo,\nbar"},
+		{[]any{"foo", "bar"}, ",", "foo,bar"},
+		{[]any{"foo", "bar"}, ",\n", "foo,\nbar"},
 		// Join handles all kinds of scalar types too...
-		{[]interface{}{42, uint64(18446744073709551615)}, "-", "42-18446744073709551615"},
+		{[]any{42, uint64(18446744073709551615)}, "-", "42-18446744073709551615"},
 		{[]int{42, 100}, ",", "42,100"},
 		{[]int64{42, 100}, ",", "42,100"},
 		{[]uint64{42, 100}, ",", "42,100"},
 		{[]bool{true, false}, ",", "true,false"},
 		{[]float64{1, 2}, ",", "1,2"},
-		{[]interface{}{1, "", true, 3.14, "foo", nil}, ",", "1,,true,3.14,foo,nil"},
+		{[]any{1, "", true, 3.14, "foo", nil}, ",", "1,,true,3.14,foo,nil"},
 		// and best-effort with weird types
-		{[]interface{}{[]string{"foo"}, "bar"}, ",", "[foo],bar"},
+		{[]any{[]string{"foo"}, "bar"}, ",", "[foo],bar"},
 	}
 	for _, d := range testdata {
 		out, err := Join(d.in, d.sep)
@@ -67,24 +67,24 @@ func TestJoin(t *testing.T) {
 }
 
 func TestHas(t *testing.T) {
-	in := map[string]interface{}{
+	in := map[string]any{
 		"foo": "bar",
-		"baz": map[string]interface{}{
+		"baz": map[string]any{
 			"qux": "quux",
 		},
 	}
 
 	testdata := []struct {
-		in  interface{}
-		key interface{}
+		in  any
+		key any
 		out bool
 	}{
 		{in, "foo", true},
 		{in, "bar", false},
 		{in["baz"], "qux", true},
 		{[]string{"foo", "bar", "baz"}, "bar", true},
-		{[]interface{}{"foo", "bar", "baz"}, "bar", true},
-		{[]interface{}{"foo", "bar", "baz"}, 42, false},
+		{[]any{"foo", "bar", "baz"}, "bar", true},
+		{[]any{"foo", "bar", "baz"}, 42, false},
 		{[]int{1, 2, 42}, 42, true},
 	}
 
@@ -321,13 +321,13 @@ func TestToInts(t *testing.T) {
 }
 
 func TestToFloat64(t *testing.T) {
-	z := []interface{}{nil, "", "foo"}
+	z := []any{nil, "", "foo"}
 	for _, n := range z {
 		_, err := ToFloat64(n)
 		require.Error(t, err)
 	}
 
-	z = []interface{}{0, 0.0, false, float32(0), "0", int64(0), uint(0), "0x0", "00", "0,000"}
+	z = []any{0, 0.0, false, float32(0), "0", int64(0), uint(0), "0x0", "00", "0,000"}
 	for _, n := range z {
 		actual, err := ToFloat64(n)
 		require.NoError(t, err)
@@ -338,14 +338,14 @@ func TestToFloat64(t *testing.T) {
 	require.NoError(t, err)
 	assert.InEpsilon(t, 1.0, actual, 1e-12)
 
-	z = []interface{}{42, 42.0, float32(42), "42", "42.0", uint8(42), "0x2A", "052"}
+	z = []any{42, 42.0, float32(42), "42", "42.0", uint8(42), "0x2A", "052"}
 	for _, n := range z {
 		actual, err = ToFloat64(n)
 		require.NoError(t, err)
 		assert.InEpsilon(t, 42.0, actual, 1e-12)
 	}
 
-	z = []interface{}{1000.34, "1000.34", "1,000.34"}
+	z = []any{1000.34, "1000.34", "1,000.34"}
 	for _, n := range z {
 		actual, err = ToFloat64(n)
 		require.NoError(t, err)
@@ -382,7 +382,7 @@ func TestToString(t *testing.T) {
 	var n *string
 
 	testdata := []struct {
-		in  interface{}
+		in  any
 		out string
 	}{
 		{nil, "nil"},
@@ -414,7 +414,7 @@ func TestToString(t *testing.T) {
 }
 
 func TestToBool(t *testing.T) {
-	trueData := []interface{}{
+	trueData := []any{
 		true,
 		1,
 		int8(1),
@@ -442,7 +442,7 @@ func TestToBool(t *testing.T) {
 		assert.True(t, out)
 	}
 
-	falseData := []interface{}{
+	falseData := []any{
 		nil,
 		false,
 		42,
@@ -464,33 +464,33 @@ func TestToBool(t *testing.T) {
 
 func TestDict(t *testing.T) {
 	testdata := []struct {
-		expected map[string]interface{}
-		args     []interface{}
+		expected map[string]any
+		args     []any
 	}{
-		{expected: map[string]interface{}{}},
+		{expected: map[string]any{}},
 		{
-			args:     []interface{}{},
-			expected: map[string]interface{}{},
+			args:     []any{},
+			expected: map[string]any{},
 		},
 		{
-			args:     []interface{}{"foo"},
-			expected: map[string]interface{}{"foo": ""},
+			args:     []any{"foo"},
+			expected: map[string]any{"foo": ""},
 		},
 		{
-			args:     []interface{}{42},
-			expected: map[string]interface{}{"42": ""},
+			args:     []any{42},
+			expected: map[string]any{"42": ""},
 		},
 		{
-			args:     []interface{}{"foo", nil},
-			expected: map[string]interface{}{"foo": nil},
+			args:     []any{"foo", nil},
+			expected: map[string]any{"foo": nil},
 		},
 		{
-			args:     []interface{}{"foo", "bar"},
-			expected: map[string]interface{}{"foo": "bar"},
+			args:     []any{"foo", "bar"},
+			expected: map[string]any{"foo": "bar"},
 		},
 		{
-			args: []interface{}{"foo", "bar", "baz", true},
-			expected: map[string]interface{}{
+			args: []any{"foo", "bar", "baz", true},
+			expected: map[string]any{
 				"foo": "bar",
 				"baz": true,
 			},

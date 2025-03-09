@@ -10,11 +10,11 @@ import (
 )
 
 // CreateTestFuncs -
-func CreateTestFuncs(ctx context.Context) map[string]interface{} {
-	f := map[string]interface{}{}
+func CreateTestFuncs(ctx context.Context) map[string]any {
+	f := map[string]any{}
 
 	ns := &TestFuncs{ctx}
-	f["test"] = func() interface{} { return ns }
+	f["test"] = func() any { return ns }
 
 	f["assert"] = ns.Assert
 	f["fail"] = ns.Fail
@@ -31,7 +31,7 @@ type TestFuncs struct {
 }
 
 // Assert -
-func (TestFuncs) Assert(args ...interface{}) (string, error) {
+func (TestFuncs) Assert(args ...any) (string, error) {
 	input := conv.ToBool(args[len(args)-1])
 	switch len(args) {
 	case 1:
@@ -48,7 +48,7 @@ func (TestFuncs) Assert(args ...interface{}) (string, error) {
 }
 
 // Fail -
-func (TestFuncs) Fail(args ...interface{}) (string, error) {
+func (TestFuncs) Fail(args ...any) (string, error) {
 	switch len(args) {
 	case 0:
 		return "", test.Fail("")
@@ -60,7 +60,7 @@ func (TestFuncs) Fail(args ...interface{}) (string, error) {
 }
 
 // Required -
-func (TestFuncs) Required(args ...interface{}) (interface{}, error) {
+func (TestFuncs) Required(args ...any) (any, error) {
 	switch len(args) {
 	case 1:
 		return test.Required("", args[0])
@@ -76,7 +76,7 @@ func (TestFuncs) Required(args ...interface{}) (interface{}, error) {
 }
 
 // Ternary -
-func (TestFuncs) Ternary(tval, fval, b interface{}) interface{} {
+func (TestFuncs) Ternary(tval, fval, b any) any {
 	if conv.ToBool(b) {
 		return tval
 	}
@@ -84,12 +84,12 @@ func (TestFuncs) Ternary(tval, fval, b interface{}) interface{} {
 }
 
 // Kind - return the kind of the argument
-func (TestFuncs) Kind(arg interface{}) string {
+func (TestFuncs) Kind(arg any) string {
 	return reflect.ValueOf(arg).Kind().String()
 }
 
 // IsKind - return whether or not the argument is of the given kind
-func (f TestFuncs) IsKind(kind string, arg interface{}) bool {
+func (f TestFuncs) IsKind(kind string, arg any) bool {
 	k := f.Kind(arg)
 	if kind == "number" {
 		switch k {

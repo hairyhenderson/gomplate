@@ -74,7 +74,7 @@ func matchChars(match string) ([]rune, error) {
 }
 
 // Item -
-func Item(items []interface{}) (interface{}, error) {
+func Item(items []any) (any, error) {
 	if len(items) == 0 {
 		return nil, fmt.Errorf("expected a non-empty array or slice")
 	}

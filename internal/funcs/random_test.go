@@ -20,7 +20,7 @@ func TestCreateRandomFuncs(t *testing.T) {
 
 			ctx := context.Background()
 			fmap := CreateRandomFuncs(ctx)
-			actual := fmap["random"].(func() interface{})
+			actual := fmap["random"].(func() any)
 
 			assert.Equal(t, ctx, actual().(*RandomFuncs).ctx)
 		})

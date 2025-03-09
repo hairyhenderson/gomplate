@@ -148,7 +148,7 @@ func (c *Config) UnmarshalYAML(value *yaml.Node) error {
 // TODO: remove when we remove the deprecated array format for templates
 //
 // Deprecated: custom unmarshaling will be removed in the next version
-func (c Config) MarshalYAML() (interface{}, error) {
+func (c Config) MarshalYAML() (any, error) {
 	aux := rawConfig{
 		DataSources:           c.DataSources,
 		Context:               c.Context,
@@ -393,7 +393,7 @@ func (c Config) validate() (err error) {
 	return err
 }
 
-func notTogether(names []string, values ...interface{}) error {
+func notTogether(names []string, values ...any) error {
 	found := ""
 	for i, value := range values {
 		if isZero(value) {
@@ -408,7 +408,7 @@ func notTogether(names []string, values ...interface{}) error {
 	return nil
 }
 
-func mustTogether(left, right string, lValue, rValue interface{}) error {
+func mustTogether(left, right string, lValue, rValue any) error {
 	if !isZero(lValue) && isZero(rValue) {
 		return fmt.Errorf("these options must be set together: '%s', '%s'",
 			left, right)
@@ -417,7 +417,7 @@ func mustTogether(left, right string, lValue, rValue interface{}) error {
 	return nil
 }
 
-func isZero(value interface{}) bool {
+func isZero(value any) bool {
 	switch v := value.(type) {
 	case string:
 		return v == ""

@@ -10,7 +10,7 @@ import (
 )
 
 // context for templates
-type tmplctx map[string]interface{}
+type tmplctx map[string]any
 
 // Env - Map environment variables for use in a template
 func (c *tmplctx) Env() map[string]string {
@@ -26,7 +26,7 @@ func (c *tmplctx) Env() map[string]string {
 func createTmplContext(
 	ctx context.Context, aliases []string,
 	sr datafs.DataSourceReader,
-) (interface{}, error) {
+) (any, error) {
 	tctx := &tmplctx{}
 	for _, a := range aliases {
 		ct, b, err := sr.ReadSource(ctx, a)

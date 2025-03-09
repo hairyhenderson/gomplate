@@ -7,7 +7,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func must(r interface{}, err error) interface{} {
+func must(r any, err error) any {
 	if err != nil {
 		panic(err)
 	}

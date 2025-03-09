@@ -8,7 +8,7 @@ import (
 )
 
 // JSONPath -
-func JSONPath(p string, in interface{}) (interface{}, error) {
+func JSONPath(p string, in any) (any, error) {
 	jp, err := parsePath(p)
 	if err != nil {
 		return nil, fmt.Errorf("couldn't parse JSONPath %s: %w", p, err)
@@ -18,7 +18,7 @@ func JSONPath(p string, in interface{}) (interface{}, error) {
 		return nil, fmt.Errorf("executing JSONPath failed: %w", err)
 	}
 
-	var out interface{}
+	var out any
 	if len(results) == 1 && len(results[0]) == 1 {
 		v := results[0][0]
 		out, err = extractResult(v)
@@ -26,7 +26,7 @@ func JSONPath(p string, in interface{}) (interface{}, error) {
 			return nil, err
 		}
 	} else {
-		a := []interface{}{}
+		a := []any{}
 		for _, r := range results {
 			for _, v := range r {
 				o, err := extractResult(v)
@@ -54,7 +54,7 @@ func parsePath(p string) (*jsonpath.JSONPath, error) {
 	return jp, nil
 }
 
-func extractResult(v reflect.Value) (interface{}, error) {
+func extractResult(v reflect.Value) (any, error) {
 	if v.CanInterface() {
 		return v.Interface(), nil
 	}

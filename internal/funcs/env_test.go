@@ -19,7 +19,7 @@ func TestCreateEnvFuncs(t *testing.T) {
 
 			ctx := context.Background()
 			fmap := CreateEnvFuncs(ctx)
-			actual := fmap["env"].(func() interface{})
+			actual := fmap["env"].(func() any)
 
 			assert.Equal(t, ctx, actual().(*EnvFuncs).ctx)
 		})

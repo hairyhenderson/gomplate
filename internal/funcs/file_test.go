@@ -28,7 +28,7 @@ func TestCreateFileFuncs(t *testing.T) {
 
 			ctx := context.Background()
 			fmap := CreateFileFuncs(ctx)
-			actual := fmap["file"].(func() interface{})
+			actual := fmap["file"].(func() any)
 
 			assert.Equal(t, ctx, actual().(*FileFuncs).ctx)
 		})

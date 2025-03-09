@@ -264,7 +264,7 @@ func (f *mergeFile) readSubFile(sf subFile) (map[string]any, error) {
 	return sfData, nil
 }
 
-func mergeData(data []map[string]interface{}) ([]byte, error) {
+func mergeData(data []map[string]any) ([]byte, error) {
 	dst := data[0]
 	data = data[1:]
 

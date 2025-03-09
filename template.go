@@ -22,7 +22,7 @@ import (
 // ignorefile name, like .gitignore
 const gomplateignore = ".gomplateignore"
 
-func addTmplFuncs(f template.FuncMap, root *template.Template, tctx interface{}, path string) {
+func addTmplFuncs(f template.FuncMap, root *template.Template, tctx any, path string) {
 	t := tmpl.New(root, tctx, path)
 	tns := func() *tmpl.Template { return t }
 	f["tmpl"] = tns

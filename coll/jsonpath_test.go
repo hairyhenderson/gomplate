@@ -8,8 +8,8 @@ import (
 )
 
 type (
-	m  = map[string]interface{}
-	ar = []interface{}
+	m  = map[string]any
+	ar = []any
 )
 
 func TestJSONPath(t *testing.T) {
@@ -127,7 +127,7 @@ func TestJSONPath(t *testing.T) {
 	}
 	type storeType struct {
 		Bicycle *bicycleType
-		safe    interface{}
+		safe    any
 	}
 
 	structIn := &storeType{

@@ -33,7 +33,7 @@ type ClientOptions struct {
 type Ec2Info struct {
 	describer  func() (InstanceDescriber, error)
 	metaClient *Ec2Meta
-	cache      map[string]interface{}
+	cache      map[string]any
 }
 
 // InstanceDescriber - A subset of ec2iface.EC2API that we can use to call EC2.DescribeInstances
@@ -137,7 +137,7 @@ func NewEc2Info(options ClientOptions) (info *Ec2Info) {
 			return describerClient, nil
 		},
 		metaClient: metaClient,
-		cache:      make(map[string]interface{}),
+		cache:      make(map[string]any),
 	}
 }
 

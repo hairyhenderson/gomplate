@@ -18,7 +18,7 @@ func TestCreateDataFuncs(t *testing.T) {
 
 			ctx := context.Background()
 			fmap := CreateDataFuncs(ctx)
-			actual := fmap["data"].(func() interface{})
+			actual := fmap["data"].(func() any)
 
 			assert.Equal(t, ctx, actual().(*DataFuncs).ctx)
 		})

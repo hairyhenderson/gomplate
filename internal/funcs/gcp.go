@@ -8,13 +8,13 @@ import (
 )
 
 // CreateGCPFuncs -
-func CreateGCPFuncs(ctx context.Context) map[string]interface{} {
+func CreateGCPFuncs(ctx context.Context) map[string]any {
 	ns := &GcpFuncs{
 		ctx:     ctx,
 		gcpopts: gcp.GetClientOptions(),
 	}
-	return map[string]interface{}{
-		"gcp": func() interface{} { return ns },
+	return map[string]any{
+		"gcp": func() any { return ns },
 	}
 }
 

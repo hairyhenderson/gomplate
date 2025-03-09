@@ -19,7 +19,7 @@ func TestCreateAWSFuncs(t *testing.T) {
 
 			ctx := context.Background()
 			fmap := CreateAWSFuncs(ctx)
-			actual := fmap["aws"].(func() interface{})
+			actual := fmap["aws"].(func() any)
 
 			assert.Equal(t, ctx, actual().(*Funcs).ctx)
 		})
@@ -38,7 +38,7 @@ func TestAWSFuncs(t *testing.T) {
 	assert.Equal(t, "unknown", must(af.EC2Region()))
 }
 
-func must(r interface{}, err error) interface{} {
+func must(r any, err error) any {
 	if err != nil {
 		panic(err)
 	}

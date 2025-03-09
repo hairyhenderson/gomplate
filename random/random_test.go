@@ -82,11 +82,11 @@ func TestItem(t *testing.T) {
 	_, err := Item(nil)
 	require.Error(t, err)
 
-	i, err := Item([]interface{}{"foo"})
+	i, err := Item([]any{"foo"})
 	require.NoError(t, err)
 	assert.Equal(t, "foo", i)
 
-	in := []interface{}{"foo", "bar"}
+	in := []any{"foo", "bar"}
 	got := ""
 	for range 10 {
 		i, err = Item(in)

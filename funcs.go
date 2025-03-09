@@ -36,7 +36,7 @@ func CreateFuncs(ctx context.Context) template.FuncMap {
 }
 
 // addToMap - add src's entries to dst
-func addToMap(dst, src map[string]interface{}) {
+func addToMap(dst, src map[string]any) {
 	for k, v := range src {
 		dst[k] = v
 	}

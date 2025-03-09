@@ -12,10 +12,10 @@ import (
 )
 
 // CreateRandomFuncs -
-func CreateRandomFuncs(ctx context.Context) map[string]interface{} {
+func CreateRandomFuncs(ctx context.Context) map[string]any {
 	ns := &RandomFuncs{ctx}
-	return map[string]interface{}{
-		"random": func() interface{} { return ns },
+	return map[string]any{
+		"random": func() any { return ns },
 	}
 }
 
@@ -25,7 +25,7 @@ type RandomFuncs struct {
 }
 
 // ASCII -
-func (RandomFuncs) ASCII(count interface{}) (string, error) {
+func (RandomFuncs) ASCII(count any) (string, error) {
 	n, err := conv.ToInt(count)
 	if err != nil {
 		return "", fmt.Errorf("count must be an integer: %w", err)
@@ -35,7 +35,7 @@ func (RandomFuncs) ASCII(count interface{}) (string, error) {
 }
 
 // Alpha -
-func (RandomFuncs) Alpha(count interface{}) (string, error) {
+func (RandomFuncs) Alpha(count any) (string, error) {
 	n, err := conv.ToInt(count)
 	if err != nil {
 		return "", fmt.Errorf("count must be an integer: %w", err)
@@ -45,7 +45,7 @@ func (RandomFuncs) Alpha(count interface{}) (string, error) {
 }
 
 // AlphaNum -
-func (RandomFuncs) AlphaNum(count interface{}) (string, error) {
+func (RandomFuncs) AlphaNum(count any) (string, error) {
 	n, err := conv.ToInt(count)
 	if err != nil {
 		return "", fmt.Errorf("count must be an integer: %w", err)
@@ -55,7 +55,7 @@ func (RandomFuncs) AlphaNum(count interface{}) (string, error) {
 }
 
 // String -
-func (RandomFuncs) String(count interface{}, args ...interface{}) (string, error) {
+func (RandomFuncs) String(count any, args ...any) (string, error) {
 	c, err := conv.ToInt(count)
 	if err != nil {
 		return "", fmt.Errorf("count must be an integer: %w", err)
@@ -98,7 +98,7 @@ func (RandomFuncs) String(count interface{}, args ...interface{}) (string, error
 	return random.StringRE(c, m)
 }
 
-func isString(s interface{}) bool {
+func isString(s any) bool {
 	switch s.(type) {
 	case string:
 		return true
@@ -131,7 +131,7 @@ func toCodePoints(l, u string) (rune, rune, error) {
 }
 
 // Item -
-func (RandomFuncs) Item(items interface{}) (interface{}, error) {
+func (RandomFuncs) Item(items any) (any, error) {
 	i, err := iconv.InterfaceSlice(items)
 	if err != nil {
 		return nil, err
@@ -140,7 +140,7 @@ func (RandomFuncs) Item(items interface{}) (interface{}, error) {
 }
 
 // Number -
-func (RandomFuncs) Number(args ...interface{}) (int64, error) {
+func (RandomFuncs) Number(args ...any) (int64, error) {
 	var nMin, nMax int64
 	nMin, nMax = 0, 100
 
@@ -169,7 +169,7 @@ func (RandomFuncs) Number(args ...interface{}) (int64, error) {
 }
 
 // Float -
-func (RandomFuncs) Float(args ...interface{}) (float64, error) {
+func (RandomFuncs) Float(args ...any) (float64, error) {
 	var nMin, nMax float64
 	nMin, nMax = 0, 1.0
 

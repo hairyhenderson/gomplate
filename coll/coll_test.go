@@ -16,24 +16,24 @@ func TestSlice(t *testing.T) {
 }
 
 func TestHas(t *testing.T) {
-	in := map[string]interface{}{
+	in := map[string]any{
 		"foo": "bar",
-		"baz": map[string]interface{}{
+		"baz": map[string]any{
 			"qux": "quux",
 		},
 	}
 
 	testdata := []struct {
-		in  interface{}
-		key interface{}
+		in  any
+		key any
 		out bool
 	}{
 		{in, "foo", true},
 		{in, "bar", false},
 		{in["baz"], "qux", true},
 		{[]string{"foo", "bar", "baz"}, "bar", true},
-		{[]interface{}{"foo", "bar", "baz"}, "bar", true},
-		{[]interface{}{"foo", "bar", "baz"}, 42, false},
+		{[]any{"foo", "bar", "baz"}, "bar", true},
+		{[]any{"foo", "bar", "baz"}, 42, false},
 		{[]int{1, 2, 42}, 42, true},
 	}
 
@@ -44,16 +44,16 @@ func TestHas(t *testing.T) {
 
 func TestDict(t *testing.T) {
 	testdata := []struct {
-		expected map[string]interface{}
-		args     []interface{}
+		expected map[string]any
+		args     []any
 	}{
-		{expected: map[string]interface{}{}},
-		{args: []interface{}{}, expected: map[string]interface{}{}},
-		{args: []interface{}{"foo"}, expected: map[string]interface{}{"foo": ""}},
-		{args: []interface{}{42}, expected: map[string]interface{}{"42": ""}},
-		{args: []interface{}{"foo", nil}, expected: map[string]interface{}{"foo": nil}},
-		{args: []interface{}{"foo", "bar"}, expected: map[string]interface{}{"foo": "bar"}},
-		{args: []interface{}{"foo", "bar", "baz", true}, expected: map[string]interface{}{
+		{expected: map[string]any{}},
+		{args: []any{}, expected: map[string]any{}},
+		{args: []any{"foo"}, expected: map[string]any{"foo": ""}},
+		{args: []any{42}, expected: map[string]any{"42": ""}},
+		{args: []any{"foo", nil}, expected: map[string]any{"foo": nil}},
+		{args: []any{"foo", "bar"}, expected: map[string]any{"foo": "bar"}},
+		{args: []any{"foo", "bar", "baz", true}, expected: map[string]any{
 			"foo": "bar",
 			"baz": true,
 		}},
@@ -69,7 +69,7 @@ func TestKeys(t *testing.T) {
 	_, err := Keys()
 	require.Error(t, err)
 
-	in := map[string]interface{}{
+	in := map[string]any{
 		"foo": 1,
 		"bar": 2,
 	}
@@ -78,7 +78,7 @@ func TestKeys(t *testing.T) {
 	require.NoError(t, err)
 	assert.EqualValues(t, expected, keys)
 
-	in2 := map[string]interface{}{
+	in2 := map[string]any{
 		"baz": 3,
 		"qux": 4,
 	}
@@ -87,7 +87,7 @@ func TestKeys(t *testing.T) {
 	require.NoError(t, err)
 	assert.EqualValues(t, expected, keys)
 
-	in3 := map[string]interface{}{
+	in3 := map[string]any{
 		"Foo": 5,
 		"Bar": 6,
 		"foo": 7,
@@ -103,114 +103,114 @@ func TestValues(t *testing.T) {
 	_, err := Values()
 	require.Error(t, err)
 
-	in := map[string]interface{}{
+	in := map[string]any{
 		"foo": 1,
 		"bar": 2,
 	}
-	expected := []interface{}{2, 1}
+	expected := []any{2, 1}
 	values, err := Values(in)
 	require.NoError(t, err)
 	assert.EqualValues(t, expected, values)
 
-	in2 := map[string]interface{}{
+	in2 := map[string]any{
 		"baz": 3,
 		"qux": 4,
 	}
-	expected = []interface{}{2, 1, 3, 4}
+	expected = []any{2, 1, 3, 4}
 	values, err = Values(in, in2)
 	require.NoError(t, err)
 	assert.EqualValues(t, expected, values)
 
-	in3 := map[string]interface{}{
+	in3 := map[string]any{
 		"Foo": 5,
 		"Bar": 6,
 		"foo": 7,
 		"bar": 8,
 	}
-	expected = []interface{}{2, 1, 3, 4, 6, 5, 8, 7}
+	expected = []any{2, 1, 3, 4, 6, 5, 8, 7}
 	values, err = Values(in, in2, in3)
 	require.NoError(t, err)
 	assert.EqualValues(t, expected, values)
 }
 
 func TestAppend(t *testing.T) {
-	out, err := Append(42, []interface{}{})
+	out, err := Append(42, []any{})
 	require.NoError(t, err)
-	assert.EqualValues(t, []interface{}{42}, out)
+	assert.EqualValues(t, []any{42}, out)
 
-	out, err = Append(42, []interface{}{4.9, false, "foo"})
+	out, err = Append(42, []any{4.9, false, "foo"})
 	require.NoError(t, err)
-	assert.EqualValues(t, []interface{}{4.9, false, "foo", 42}, out)
+	assert.EqualValues(t, []any{4.9, false, "foo", 42}, out)
 
-	// a strange but valid use-cases, since we're converting to an []interface{}
+	// a strange but valid use-cases, since we're converting to an []any
 	out, err = Append(42, []string{"foo"})
 	require.NoError(t, err)
-	assert.EqualValues(t, []interface{}{"foo", 42}, out)
+	assert.EqualValues(t, []any{"foo", 42}, out)
 
 	out, err = Append("baz", []string{"foo", "bar"})
 	require.NoError(t, err)
-	assert.EqualValues(t, []interface{}{"foo", "bar", "baz"}, out)
+	assert.EqualValues(t, []any{"foo", "bar", "baz"}, out)
 }
 
 func TestPrepend(t *testing.T) {
-	out, err := Prepend(42, []interface{}{})
+	out, err := Prepend(42, []any{})
 	require.NoError(t, err)
-	assert.EqualValues(t, []interface{}{42}, out)
+	assert.EqualValues(t, []any{42}, out)
 
-	out, err = Prepend(42, []interface{}{4.9, false, "foo"})
+	out, err = Prepend(42, []any{4.9, false, "foo"})
 	require.NoError(t, err)
-	assert.EqualValues(t, []interface{}{42, 4.9, false, "foo"}, out)
+	assert.EqualValues(t, []any{42, 4.9, false, "foo"}, out)
 
-	// a strange but valid use-cases, since we're converting to an []interface{}
+	// a strange but valid use-cases, since we're converting to an []any
 	out, err = Prepend(42, []string{"foo"})
 	require.NoError(t, err)
-	assert.EqualValues(t, []interface{}{42, "foo"}, out)
+	assert.EqualValues(t, []any{42, "foo"}, out)
 
 	out, err = Prepend("foo", []string{"bar", "baz"})
 	require.NoError(t, err)
-	assert.EqualValues(t, []interface{}{"foo", "bar", "baz"}, out)
+	assert.EqualValues(t, []any{"foo", "bar", "baz"}, out)
 }
 
 func TestUniq(t *testing.T) {
-	out, err := Uniq([]interface{}{1, 2, 3, 1, true, false, true, "1", 2})
+	out, err := Uniq([]any{1, 2, 3, 1, true, false, true, "1", 2})
 	require.NoError(t, err)
-	assert.EqualValues(t, []interface{}{1, 2, 3, true, false, "1"}, out)
+	assert.EqualValues(t, []any{1, 2, 3, true, false, "1"}, out)
 
 	out, err = Uniq([]string{"one", "two", "one", "three"})
 	require.NoError(t, err)
-	assert.EqualValues(t, []interface{}{"one", "two", "three"}, out)
+	assert.EqualValues(t, []any{"one", "two", "three"}, out)
 }
 
 func TestReverse(t *testing.T) {
-	out, err := Reverse([]interface{}{})
+	out, err := Reverse([]any{})
 	require.NoError(t, err)
-	assert.EqualValues(t, []interface{}{}, out)
+	assert.EqualValues(t, []any{}, out)
 
-	out, err = Reverse([]interface{}{8})
+	out, err = Reverse([]any{8})
 	require.NoError(t, err)
-	assert.EqualValues(t, []interface{}{8}, out)
+	assert.EqualValues(t, []any{8}, out)
 
-	out, err = Reverse([]interface{}{1, 2, 3, 4})
+	out, err = Reverse([]any{1, 2, 3, 4})
 	require.NoError(t, err)
-	assert.EqualValues(t, []interface{}{4, 3, 2, 1}, out)
+	assert.EqualValues(t, []any{4, 3, 2, 1}, out)
 
 	out, err = Reverse([]int{1, 2, 3, 4})
 	require.NoError(t, err)
-	assert.EqualValues(t, []interface{}{4, 3, 2, 1}, out)
+	assert.EqualValues(t, []any{4, 3, 2, 1}, out)
 }
 
 func TestMerge(t *testing.T) {
-	dst := map[string]interface{}{}
-	src := map[string]interface{}{}
-	expected := map[string]interface{}{}
+	dst := map[string]any{}
+	src := map[string]any{}
+	expected := map[string]any{}
 
 	out, err := Merge(dst, src)
 	require.NoError(t, err)
 	assert.EqualValues(t, expected, out)
 
-	dst = map[string]interface{}{"a": 4, "c": 5}
-	src = map[string]interface{}{"a": 1, "b": 2, "c": 3}
-	expected = map[string]interface{}{
+	dst = map[string]any{"a": 4, "c": 5}
+	src = map[string]any{"a": 1, "b": 2, "c": 3}
+	expected = map[string]any{
 		"a": dst["a"], "b": src["b"], "c": dst["c"],
 	}
 
@@ -218,10 +218,10 @@ func TestMerge(t *testing.T) {
 	require.NoError(t, err)
 	assert.EqualValues(t, expected, out)
 
-	dst = map[string]interface{}{"a": 4, "c": 5}
-	src = map[string]interface{}{"a": 1, "b": 2, "c": 3}
-	src2 := map[string]interface{}{"a": 1, "b": 2, "c": 3, "d": 4}
-	expected = map[string]interface{}{
+	dst = map[string]any{"a": 4, "c": 5}
+	src = map[string]any{"a": 1, "b": 2, "c": 3}
+	src2 := map[string]any{"a": 1, "b": 2, "c": 3, "d": 4}
+	expected = map[string]any{
 		"a": dst["a"], "b": src["b"], "c": dst["c"], "d": src2["d"],
 	}
 
@@ -229,10 +229,10 @@ func TestMerge(t *testing.T) {
 	require.NoError(t, err)
 	assert.EqualValues(t, expected, out)
 
-	dst = map[string]interface{}{"a": false, "c": 5}
-	src = map[string]interface{}{"a": true, "b": 2, "c": 3}
-	src2 = map[string]interface{}{"a": true, "b": 2, "c": 3, "d": 4}
-	expected = map[string]interface{}{
+	dst = map[string]any{"a": false, "c": 5}
+	src = map[string]any{"a": true, "b": 2, "c": 3}
+	src2 = map[string]any{"a": true, "b": 2, "c": 3, "d": 4}
+	expected = map[string]any{
 		"a": dst["a"], "b": src["b"], "c": dst["c"], "d": src2["d"],
 	}
 
@@ -240,15 +240,15 @@ func TestMerge(t *testing.T) {
 	require.NoError(t, err)
 	assert.EqualValues(t, expected, out)
 
-	dst = map[string]interface{}{"a": true, "c": 5}
-	src = map[string]interface{}{
+	dst = map[string]any{"a": true, "c": 5}
+	src = map[string]any{
 		"a": false,
-		"b": map[string]interface{}{
+		"b": map[string]any{
 			"ca": "foo",
 		},
 	}
-	src2 = map[string]interface{}{"a": false, "b": 2, "c": 3, "d": 4}
-	expected = map[string]interface{}{
+	src2 = map[string]any{"a": false, "b": 2, "c": 3, "d": 4}
+	expected = map[string]any{
 		"a": dst["a"], "b": src["b"], "c": dst["c"], "d": src2["d"],
 	}
 
@@ -256,22 +256,22 @@ func TestMerge(t *testing.T) {
 	require.NoError(t, err)
 	assert.EqualValues(t, expected, out)
 
-	dst = map[string]interface{}{
+	dst = map[string]any{
 		"a": true,
-		"b": map[string]interface{}{
+		"b": map[string]any{
 			"ca": "foo",
 			"cb": "bar",
 		},
 		"c": 5,
 	}
-	src = map[string]interface{}{
+	src = map[string]any{
 		"a": false,
-		"b": map[string]interface{}{
+		"b": map[string]any{
 			"ca": 8,
 		},
 	}
-	expected = map[string]interface{}{
-		"a": dst["a"], "b": map[string]interface{}{
+	expected = map[string]any{
+		"a": dst["a"], "b": map[string]any{
 			"ca": "foo",
 			"cb": "bar",
 		}, "c": dst["c"],
@@ -288,19 +288,19 @@ type coords struct {
 
 func TestSameTypes(t *testing.T) {
 	data := []struct {
-		in  []interface{}
+		in  []any
 		out bool
 	}{
-		{[]interface{}{}, true},
-		{[]interface{}{"a", "b"}, true},
-		{[]interface{}{1.0, 3.14}, true},
-		{[]interface{}{1, 3}, true},
-		{[]interface{}{true, false}, true},
-		{[]interface{}{1, 3.0}, false},
-		{[]interface{}{"a", nil}, false},
-		{[]interface{}{"a", true}, false},
-		{[]interface{}{coords{2, 3}, coords{3, 4}}, true},
-		{[]interface{}{coords{2, 3}, &coords{3, 4}}, false},
+		{[]any{}, true},
+		{[]any{"a", "b"}, true},
+		{[]any{1.0, 3.14}, true},
+		{[]any{1, 3}, true},
+		{[]any{true, false}, true},
+		{[]any{1, 3.0}, false},
+		{[]any{"a", nil}, false},
+		{[]any{"a", true}, false},
+		{[]any{coords{2, 3}, coords{3, 4}}, true},
+		{[]any{coords{2, 3}, &coords{3, 4}}, false},
 	}
 
 	for _, d := range data {
@@ -310,7 +310,7 @@ func TestSameTypes(t *testing.T) {
 
 func TestLessThan(t *testing.T) {
 	data := []struct {
-		left, right interface{}
+		left, right any
 		key         string
 		out         bool
 	}{
@@ -324,17 +324,17 @@ func TestLessThan(t *testing.T) {
 		{left: uint(0xff), right: uint(0x32)},
 		{left: 1, right: 3, out: true},
 		{left: true, right: false, out: false},
-		{left: map[string]interface{}{"foo": 1}, right: map[string]interface{}{"foo": 2}},
+		{left: map[string]any{"foo": 1}, right: map[string]any{"foo": 2}},
 		{
 			key:   "foo",
-			left:  map[string]interface{}{"foo": 1},
-			right: map[string]interface{}{"foo": 2},
+			left:  map[string]any{"foo": 1},
+			right: map[string]any{"foo": 2},
 			out:   true,
 		},
 		{
 			key:   "bar",
-			left:  map[string]interface{}{"foo": 1},
-			right: map[string]interface{}{"foo": 2},
+			left:  map[string]any{"foo": 1},
+			right: map[string]any{"foo": 2},
 		},
 		{key: "X", left: coords{}, right: coords{-1, 2}},
 		{key: "Y", left: &coords{1, 1}, right: &coords{-1, 2}, out: true},
@@ -356,23 +356,23 @@ func TestSort(t *testing.T) {
 
 	data := []struct {
 		key string
-		in  interface{}
-		out []interface{}
+		in  any
+		out []any
 	}{
 		{
 			key: "",
 			in:  []string{"b", "c", "a", "d"},
-			out: []interface{}{"a", "b", "c", "d"},
+			out: []any{"a", "b", "c", "d"},
 		},
 		{
 			key: "",
-			in:  []interface{}{"b", "c", "a", "d"},
-			out: []interface{}{"a", "b", "c", "d"},
+			in:  []any{"b", "c", "a", "d"},
+			out: []any{"a", "b", "c", "d"},
 		},
 		{
 			key: "",
-			in:  []interface{}{"c", "a", "b", 3, 1, 2},
-			out: []interface{}{"c", "a", "b", 3, 1, 2},
+			in:  []any{"c", "a", "b", 3, 1, 2},
+			out: []any{"c", "a", "b", 3, 1, 2},
 		},
 		{
 			key: "",
@@ -382,41 +382,41 @@ func TestSort(t *testing.T) {
 
 		{
 			key: "",
-			in: []map[string]interface{}{
+			in: []map[string]any{
 				{"name": "Bart", "age": 12},
 				{"age": 1, "name": "Maggie"},
 				{"name": "Lisa", "age": 6},
 			},
-			out: []interface{}{
-				map[string]interface{}{"name": "Bart", "age": 12},
-				map[string]interface{}{"age": 1, "name": "Maggie"},
-				map[string]interface{}{"name": "Lisa", "age": 6},
+			out: []any{
+				map[string]any{"name": "Bart", "age": 12},
+				map[string]any{"age": 1, "name": "Maggie"},
+				map[string]any{"name": "Lisa", "age": 6},
 			},
 		},
 		{
 			key: "name",
-			in: []map[string]interface{}{
+			in: []map[string]any{
 				{"name": "Bart", "age": 12},
 				{"age": 1, "name": "Maggie"},
 				{"name": "Lisa", "age": 6},
 			},
-			out: []interface{}{
-				map[string]interface{}{"name": "Bart", "age": 12},
-				map[string]interface{}{"name": "Lisa", "age": 6},
-				map[string]interface{}{"age": 1, "name": "Maggie"},
+			out: []any{
+				map[string]any{"name": "Bart", "age": 12},
+				map[string]any{"name": "Lisa", "age": 6},
+				map[string]any{"age": 1, "name": "Maggie"},
 			},
 		},
 		{
 			key: "age",
-			in: []map[string]interface{}{
+			in: []map[string]any{
 				{"name": "Bart", "age": 12},
 				{"age": 1, "name": "Maggie"},
 				{"name": "Lisa", "age": 6},
 			},
-			out: []interface{}{
-				map[string]interface{}{"age": 1, "name": "Maggie"},
-				map[string]interface{}{"name": "Lisa", "age": 6},
-				map[string]interface{}{"name": "Bart", "age": 12},
+			out: []any{
+				map[string]any{"age": 1, "name": "Maggie"},
+				map[string]any{"name": "Lisa", "age": 6},
+				map[string]any{"name": "Bart", "age": 12},
 			},
 		},
 		{
@@ -426,7 +426,7 @@ func TestSort(t *testing.T) {
 				{"x": 13, "y": -8},
 				{"x": 1, "y": 0},
 			},
-			out: []interface{}{
+			out: []any{
 				map[string]int{"x": 13, "y": -8},
 				map[string]int{"x": 1, "y": 0},
 				map[string]int{"x": 54, "y": 6},
@@ -439,7 +439,7 @@ func TestSort(t *testing.T) {
 				{3, 3},
 				{1, 5},
 			},
-			out: []interface{}{
+			out: []any{
 				coords{1, 5},
 				coords{2, 4},
 				coords{3, 3},
@@ -452,7 +452,7 @@ func TestSort(t *testing.T) {
 				{3, 3},
 				{1, 5},
 			},
-			out: []interface{}{
+			out: []any{
 				&coords{1, 5},
 				&coords{2, 4},
 				&coords{3, 3},
@@ -471,70 +471,70 @@ func TestSort(t *testing.T) {
 
 func TestFlatten(t *testing.T) {
 	data := []struct {
-		in       interface{}
-		expected []interface{}
+		in       any
+		expected []any
 		depth    int
 	}{
-		{in: []int{1, 2, 3}, expected: []interface{}{1, 2, 3}},
-		{in: [3]int{1, 2, 3}, expected: []interface{}{1, 2, 3}},
-		{in: []interface{}{[]string{}, []int{1, 2}, 3}, expected: []interface{}{[]string{}, []int{1, 2}, 3}},
+		{in: []int{1, 2, 3}, expected: []any{1, 2, 3}},
+		{in: [3]int{1, 2, 3}, expected: []any{1, 2, 3}},
+		{in: []any{[]string{}, []int{1, 2}, 3}, expected: []any{[]string{}, []int{1, 2}, 3}},
 		{
-			in:       []interface{}{[]string{"one"}, [][]int{{1, 2}}, 3},
-			expected: []interface{}{[]string{"one"}, [][]int{{1, 2}}, 3},
+			in:       []any{[]string{"one"}, [][]int{{1, 2}}, 3},
+			expected: []any{[]string{"one"}, [][]int{{1, 2}}, 3},
 		},
-		{depth: 1, in: []int{1, 2, 3}, expected: []interface{}{1, 2, 3}},
-		{depth: 1, in: [3]int{1, 2, 3}, expected: []interface{}{1, 2, 3}},
-		{depth: 1, in: []interface{}{[]string{}, []int{1, 2}, 3}, expected: []interface{}{1, 2, 3}},
+		{depth: 1, in: []int{1, 2, 3}, expected: []any{1, 2, 3}},
+		{depth: 1, in: [3]int{1, 2, 3}, expected: []any{1, 2, 3}},
+		{depth: 1, in: []any{[]string{}, []int{1, 2}, 3}, expected: []any{1, 2, 3}},
 		{
 			depth:    1,
-			in:       []interface{}{[]string{"one"}, [][]int{{1, 2}}, 3},
-			expected: []interface{}{"one", []int{1, 2}, 3},
+			in:       []any{[]string{"one"}, [][]int{{1, 2}}, 3},
+			expected: []any{"one", []int{1, 2}, 3},
 		},
-		{depth: 2, in: []int{1, 2, 3}, expected: []interface{}{1, 2, 3}},
-		{depth: 2, in: [3]int{1, 2, 3}, expected: []interface{}{1, 2, 3}},
-		{depth: 2, in: []interface{}{[]string{}, []int{1, 2}, 3}, expected: []interface{}{1, 2, 3}},
+		{depth: 2, in: []int{1, 2, 3}, expected: []any{1, 2, 3}},
+		{depth: 2, in: [3]int{1, 2, 3}, expected: []any{1, 2, 3}},
+		{depth: 2, in: []any{[]string{}, []int{1, 2}, 3}, expected: []any{1, 2, 3}},
 		{
 			depth:    2,
-			in:       []interface{}{[]string{"one"}, [][]int{{1, 2}}, 3},
-			expected: []interface{}{"one", 1, 2, 3},
+			in:       []any{[]string{"one"}, [][]int{{1, 2}}, 3},
+			expected: []any{"one", 1, 2, 3},
 		},
 		{
 			depth: 2,
-			in: []interface{}{
+			in: []any{
 				[]string{"one"},
-				[]interface{}{
-					[]interface{}{
+				[]any{
+					[]any{
 						[]int{1},
-						[]interface{}{2, []int{3}},
+						[]any{2, []int{3}},
 					},
 					[]int{4, 5},
 				},
 				6,
 			},
-			expected: []interface{}{"one", []int{1}, []interface{}{2, []int{3}}, 4, 5, 6},
+			expected: []any{"one", []int{1}, []any{2, []int{3}}, 4, 5, 6},
 		},
-		{depth: -1, in: []int{1, 2, 3}, expected: []interface{}{1, 2, 3}},
-		{depth: -1, in: [3]int{1, 2, 3}, expected: []interface{}{1, 2, 3}},
-		{depth: -1, in: []interface{}{[]string{}, []int{1, 2}, 3}, expected: []interface{}{1, 2, 3}},
+		{depth: -1, in: []int{1, 2, 3}, expected: []any{1, 2, 3}},
+		{depth: -1, in: [3]int{1, 2, 3}, expected: []any{1, 2, 3}},
+		{depth: -1, in: []any{[]string{}, []int{1, 2}, 3}, expected: []any{1, 2, 3}},
 		{
 			depth:    -1,
-			in:       []interface{}{[]string{"one"}, [][]int{{1, 2}}, 3},
-			expected: []interface{}{"one", 1, 2, 3},
+			in:       []any{[]string{"one"}, [][]int{{1, 2}}, 3},
+			expected: []any{"one", 1, 2, 3},
 		},
 		{
 			depth: -1,
-			in: []interface{}{
+			in: []any{
 				[]string{"one"},
-				[]interface{}{
-					[]interface{}{
+				[]any{
+					[]any{
 						[]int{1},
-						[]interface{}{2, []int{3}},
+						[]any{2, []int{3}},
 					},
 					[]int{4, 5},
 				},
 				6,
 			},
-			expected: []interface{}{"one", 1, 2, 3, 4, 5, 6},
+			expected: []any{"one", 1, 2, 3, 4, 5, 6},
 		},
 	}
 
@@ -549,17 +549,17 @@ func TestFlatten(t *testing.T) {
 }
 
 func BenchmarkFlatten(b *testing.B) {
-	data := []interface{}{
+	data := []any{
 		[]int{1, 2, 3},
 		[3]int{1, 2, 3},
-		[]interface{}{[]string{}, []int{1, 2}, 3},
-		[]interface{}{[]string{"one"}, [][]int{{1, 2}}, 3},
-		[]interface{}{
+		[]any{[]string{}, []int{1, 2}, 3},
+		[]any{[]string{"one"}, [][]int{{1, 2}}, 3},
+		[]any{
 			[]string{"one"},
-			[]interface{}{
-				[]interface{}{
+			[]any{
+				[]any{
 					[]int{1},
-					[]interface{}{2, []int{3}},
+					[]any{2, []int{3}},
 				},
 				[]int{4, 5},
 			},
@@ -578,42 +578,42 @@ func BenchmarkFlatten(b *testing.B) {
 }
 
 func TestOmit(t *testing.T) {
-	in := map[string]interface{}{
+	in := map[string]any{
 		"foo": "bar",
 		"bar": true,
 		"":    "baz",
 	}
 	assert.EqualValues(t, in, Omit(in, "baz"))
 
-	expected := map[string]interface{}{
+	expected := map[string]any{
 		"foo": "bar",
 		"bar": true,
 	}
 	assert.EqualValues(t, expected, Omit(in, ""))
 
-	expected = map[string]interface{}{
+	expected = map[string]any{
 		"": "baz",
 	}
 	assert.EqualValues(t, expected, Omit(in, "foo", "bar"))
 
-	assert.EqualValues(t, map[string]interface{}{}, Omit(in, "foo", "bar", ""))
+	assert.EqualValues(t, map[string]any{}, Omit(in, "foo", "bar", ""))
 }
 
 func TestPick(t *testing.T) {
-	in := map[string]interface{}{
+	in := map[string]any{
 		"foo": "bar",
 		"bar": true,
 		"":    "baz",
 	}
-	expected := map[string]interface{}{}
+	expected := map[string]any{}
 	assert.EqualValues(t, expected, Pick(in, "baz"))
 
-	expected = map[string]interface{}{
+	expected = map[string]any{
 		"": "baz",
 	}
 	assert.EqualValues(t, expected, Pick(in, ""))
 
-	expected = map[string]interface{}{
+	expected = map[string]any{
 		"foo": "bar",
 		"bar": true,
 	}

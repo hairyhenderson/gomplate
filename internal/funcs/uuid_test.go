@@ -20,7 +20,7 @@ func TestCreateUUIDFuncs(t *testing.T) {
 
 			ctx := context.Background()
 			fmap := CreateUUIDFuncs(ctx)
-			actual := fmap["uuid"].(func() interface{})
+			actual := fmap["uuid"].(func() any)
 
 			assert.Equal(t, ctx, actual().(*UUIDFuncs).ctx)
 		})
@@ -63,7 +63,7 @@ func TestIsValid(t *testing.T) {
 	t.Parallel()
 
 	u := UUIDFuncs{ctx: context.Background()}
-	in := interface{}(false)
+	in := any(false)
 	i, err := u.IsValid(in)
 	require.NoError(t, err)
 	assert.False(t, i)
@@ -73,7 +73,7 @@ func TestIsValid(t *testing.T) {
 	require.NoError(t, err)
 	assert.False(t, i)
 
-	testdata := []interface{}{
+	testdata := []any{
 		"123456781234123412341234567890ab",
 		"12345678-1234-1234-1234-1234567890ab",
 		"urn:uuid:12345678-1234-1234-1234-1234567890ab",
@@ -91,7 +91,7 @@ func TestParse(t *testing.T) {
 	t.Parallel()
 
 	u := UUIDFuncs{ctx: context.Background()}
-	in := interface{}(false)
+	in := any(false)
 	_, err := u.Parse(in)
 	require.Error(t, err)
 
@@ -100,7 +100,7 @@ func TestParse(t *testing.T) {
 	require.Error(t, err)
 
 	in = "12345678-1234-1234-1234-1234567890ab"
-	testdata := []interface{}{
+	testdata := []any{
 		"123456781234123412341234567890ab",
 		"12345678-1234-1234-1234-1234567890ab",
 		"urn:uuid:12345678-1234-1234-1234-1234567890ab",

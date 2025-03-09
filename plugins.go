@@ -64,7 +64,7 @@ type PluginOpts struct {
 
 // PluginFunc creates a template function that runs an external process - either
 // a shell script or commandline executable.
-func PluginFunc(ctx context.Context, cmd string, opts PluginOpts) func(...interface{}) (interface{}, error) {
+func PluginFunc(ctx context.Context, cmd string, opts PluginOpts) func(...any) (any, error) {
 	timeout := opts.Timeout
 	if timeout == 0 {
 		timeout = 5 * time.Second
@@ -126,7 +126,7 @@ func findPowershell() string {
 	return "pwsh"
 }
 
-func (p *plugin) run(args ...interface{}) (interface{}, error) {
+func (p *plugin) run(args ...any) (any, error) {
 	a := conv.ToStrings(args...)
 	a = append(p.args, a...)
 

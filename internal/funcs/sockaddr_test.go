@@ -18,7 +18,7 @@ func TestCreateSockaddrFuncs(t *testing.T) {
 
 			ctx := context.Background()
 			fmap := CreateSockaddrFuncs(ctx)
-			actual := fmap["sockaddr"].(func() interface{})
+			actual := fmap["sockaddr"].(func() any)
 
 			assert.Equal(t, ctx, actual().(*SockaddrFuncs).ctx)
 		})

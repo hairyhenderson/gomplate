@@ -185,7 +185,7 @@ func (r *renderer) RenderTemplates(ctx context.Context, templates []Template) er
 	return r.renderTemplatesWithData(ctx, templates, tmplctx)
 }
 
-func (r *renderer) renderTemplatesWithData(ctx context.Context, templates []Template, tmplctx interface{}) error {
+func (r *renderer) renderTemplatesWithData(ctx context.Context, templates []Template, tmplctx any) error {
 	// update funcs with the current context
 	// only done here to ensure the context is properly set in func namespaces
 	f := CreateFuncs(ctx)
@@ -208,7 +208,7 @@ func (r *renderer) renderTemplatesWithData(ctx context.Context, templates []Temp
 	return nil
 }
 
-func (r *renderer) renderTemplate(ctx context.Context, template Template, f template.FuncMap, tmplctx interface{}) error {
+func (r *renderer) renderTemplate(ctx context.Context, template Template, f template.FuncMap, tmplctx any) error {
 	if template.Writer != nil {
 		if wr, ok := template.Writer.(io.Closer); ok {
 			defer wr.Close()
@@ -239,7 +239,7 @@ func (r *renderer) Render(ctx context.Context, name, text string, wr io.Writer) 
 }
 
 // parseTemplate - parses text as a Go template with the given name and options
-func (r *renderer) parseTemplate(ctx context.Context, name, text string, funcs template.FuncMap, tmplctx interface{}) (tmpl *template.Template, err error) {
+func (r *renderer) parseTemplate(ctx context.Context, name, text string, funcs template.FuncMap, tmplctx any) (tmpl *template.Template, err error) {
 	tmpl = template.New(name)
 
 	missingKey := r.missingKey
