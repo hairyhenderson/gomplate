@@ -26,7 +26,7 @@ funcs:
         the pre release version is 1.1.1-beta.1
   - name: semver.CheckConstraint
     description: |
-      Test whether the input version matchs the constraint.
+      Test whether the input version matches the constraint.
 
       Ref: https://github.com/Masterminds/semver#checking-version-constraints
     pipeline: true

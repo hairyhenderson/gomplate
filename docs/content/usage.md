@@ -64,7 +64,7 @@ gomplate --input-dir=templates --output-dir=config --datasource config=config.ya
 
 ### `--output-map`
 
-Sometimes a 1-to-1 mapping betwen input filenames and output filenames is not desirable. For these cases, you can supply a template string as the argument to `--output-map`. The template string is interpreted as a regular gomplate template, and all datasources and external nested templates are available to the output map template.
+Sometimes a 1-to-1 mapping between input filenames and output filenames is not desirable. For these cases, you can supply a template string as the argument to `--output-map`. The template string is interpreted as a regular gomplate template, and all datasources and external nested templates are available to the output map template.
 
 A new [context][] is provided, with the input filename is available at `.in`, and the original context is available at `.ctx`. For convenience, any context keys not conflicting with `in` or `ctx` are also copied.
 

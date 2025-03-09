@@ -302,7 +302,7 @@ funcs:
       This function attempts to convert most types of input (strings, numbers,
       and booleans).
 
-      Unconvertable inputs will result in errors.
+      Unconvertible inputs will result in errors.
 
       Floating-point numbers (with decimal points) are truncated.
     arguments:
@@ -327,7 +327,7 @@ funcs:
       platforms, but is useful when input to another function must be provided
       as an `int`.
 
-      Unconvertable inputs will result in errors.
+      Unconvertible inputs will result in errors.
 
       On 32-bit systems, given a number that is too large to fit in an `int`,
       the result is `-1`. This is done to protect against
@@ -354,7 +354,7 @@ funcs:
     description: |
       Converts the inputs to an array of `int64`s.
 
-      Unconvertable inputs will result in errors.
+      Unconvertible inputs will result in errors.
 
       This delegates to [`conv.ToInt64`](#convtoint64) for each input argument.
     arguments:
@@ -370,7 +370,7 @@ funcs:
     description: |
       Converts the inputs to an array of `int`s.
 
-      Unconvertable inputs will result in errors.
+      Unconvertible inputs will result in errors.
 
       This delegates to [`conv.ToInt`](#convtoint) for each input argument.
     arguments:
@@ -389,7 +389,7 @@ funcs:
       This function attempts to convert most types of input (strings, numbers,
       and booleans).
       
-      Unconvertable inputs will result in errors.
+      Unconvertible inputs will result in errors.
     arguments:
       - name: in
         required: true
@@ -405,7 +405,7 @@ funcs:
     description: |
       Converts the inputs to an array of `float64`s.
 
-      Unconvertable inputs will result in errors.
+      Unconvertible inputs will result in errors.
 
       This delegates to [`conv.ToFloat64`](#convtofloat64) for each input argument.
     arguments:

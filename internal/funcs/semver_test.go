@@ -17,7 +17,7 @@ func TestSemverFuncs_MatchConstraint(t *testing.T) {
 		wantErr    bool
 	}{
 		{
-			name:       "mached constraint",
+			name:       "matched constraint",
 			constraint: ">=1.0.0",
 			in:         "v1.1.1",
 			want:       true,

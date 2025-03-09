@@ -112,7 +112,7 @@ type rawConfig struct {
 
 // TODO: remove when we remove the deprecated array format for templates
 //
-// Deprecated: custom unmarshaling will be removed in the next version
+// Deprecated: custom unmarshalling will be removed in the next version
 func (c *Config) UnmarshalYAML(value *yaml.Node) error {
 	r := rawConfig{}
 	err := value.Decode(&r)
@@ -148,7 +148,7 @@ func (c *Config) UnmarshalYAML(value *yaml.Node) error {
 
 // TODO: remove when we remove the deprecated array format for templates
 //
-// Deprecated: custom unmarshaling will be removed in the next version
+// Deprecated: custom unmarshalling will be removed in the next version
 func (c Config) MarshalYAML() (any, error) {
 	aux := rawConfig{
 		DataSources:           c.DataSources,
