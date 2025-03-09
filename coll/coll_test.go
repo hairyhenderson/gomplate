@@ -569,7 +569,7 @@ func BenchmarkFlatten(b *testing.B) {
 	for depth := -1; depth <= 2; depth++ {
 		for _, d := range data {
 			b.Run(fmt.Sprintf("depth%d %T(%v)", depth, d, d), func(b *testing.B) {
-				for i := 0; i < b.N; i++ {
+				for b.Loop() {
 					Flatten(d, depth)
 				}
 			})

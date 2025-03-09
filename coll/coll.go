@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"maps"
 	"reflect"
+	"slices"
 	"sort"
 
 	"github.com/hairyhenderson/gomplate/v4/conv"
@@ -163,22 +164,12 @@ func Merge(dst map[string]any, srcs ...map[string]any) (map[string]any, error) {
 	return dst, nil
 }
 
-// returns whether or not a contains v
-func contains(v string, a []string) bool {
-	for _, n := range a {
-		if n == v {
-			return true
-		}
-	}
-	return false
-}
-
 // Omit returns a new map without any entries that have the
 // given keys (inverse of Pick).
 func Omit(in map[string]any, keys ...string) map[string]any {
 	out := map[string]any{}
 	for k, v := range in {
-		if !contains(k, keys) {
+		if !slices.Contains(keys, k) {
 			out[k] = v
 		}
 	}
@@ -190,7 +181,7 @@ func Omit(in map[string]any, keys ...string) map[string]any {
 func Pick(in map[string]any, keys ...string) map[string]any {
 	out := map[string]any{}
 	for k, v := range in {
-		if contains(k, keys) {
+		if slices.Contains(keys, k) {
 			out[k] = v
 		}
 	}

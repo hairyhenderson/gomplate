@@ -239,7 +239,7 @@ func BenchmarkIsFloat(b *testing.B) {
 	m := MathFuncs{}
 	for _, n := range data {
 		b.Run(fmt.Sprintf("%T(%v)", n, n), func(b *testing.B) {
-			for i := 0; i < b.N; i++ {
+			for b.Loop() {
 				m.IsFloat(n)
 			}
 		})

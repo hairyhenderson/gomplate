@@ -63,7 +63,7 @@ func TestToBytes(t *testing.T) {
 }
 
 func BenchmarkToBytes(b *testing.B) {
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		b.StopTimer()
 		buf := &bytes.Buffer{}
 		buf.WriteString("hi")

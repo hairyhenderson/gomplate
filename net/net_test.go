@@ -25,7 +25,7 @@ func TestLookupIPs(t *testing.T) {
 }
 
 func BenchmarkLookupIPs(b *testing.B) {
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		must(LookupIPs("localhost"))
 	}
 }
