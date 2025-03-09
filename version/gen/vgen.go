@@ -85,7 +85,7 @@ func latestTag() (*semver.Version, error) {
 
 	// find the latest tag
 	var latest *semver.Version
-	for _, tag := range strings.Split(tags, "\n") {
+	for tag := range strings.SplitSeq(tags, "\n") {
 		ver, err := semver.NewVersion(tag)
 		if err != nil {
 			return nil, fmt.Errorf("parsing tag %q failed: %w", tag, err)
