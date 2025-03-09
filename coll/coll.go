@@ -29,7 +29,7 @@ func Has(in interface{}, key interface{}) bool {
 		return av.MapIndex(kv).IsValid()
 	case reflect.Slice, reflect.Array:
 		l := av.Len()
-		for i := 0; i < l; i++ {
+		for i := range l {
 			v := av.Index(i).Interface()
 			if reflect.DeepEqual(v, key) {
 				return true

@@ -104,7 +104,7 @@ func TestStdinFS(t *testing.T) {
 		ctx := ContextWithStdin(context.Background(), bytes.NewReader(content))
 		fsys = fsimpl.WithContextFS(ctx, fsys)
 
-		for i := 0; i < 3; i++ {
+		for i := range 3 {
 			f, err := fsys.Open("foo")
 			require.NoError(t, err)
 
@@ -118,7 +118,7 @@ func TestStdinFS(t *testing.T) {
 		ctx := ContextWithStdin(context.Background(), bytes.NewReader(content))
 		fsys = fsimpl.WithContextFS(ctx, fsys)
 
-		for i := 0; i < 3; i++ {
+		for i := range 3 {
 			b, err := fs.ReadFile(fsys, "foo")
 			require.NoError(t, err)
 			require.Equal(t, content, b, "read %d failed", i)

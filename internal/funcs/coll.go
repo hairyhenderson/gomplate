@@ -187,7 +187,7 @@ func pickOmitArgs(args ...interface{}) (map[string]interface{}, []string, error)
 		if reflect.TypeOf(args[0]).Kind() == reflect.Slice {
 			sl := reflect.ValueOf(args[0])
 			expandedArgs := make([]interface{}, sl.Len()+1)
-			for i := 0; i < sl.Len(); i++ {
+			for i := range sl.Len() {
 				expandedArgs[i] = sl.Index(i).Interface()
 			}
 			expandedArgs[len(expandedArgs)-1] = m

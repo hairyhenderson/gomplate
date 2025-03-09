@@ -33,7 +33,7 @@ func Indent(width int, indent, s string) (string, error) {
 
 	res := make([]byte, 0, len(s)+len(indent)*lines)
 	bol := true
-	for i := 0; i < len(s); i++ {
+	for i := range len(s) {
 		c := s[i]
 		if bol && c != '\n' {
 			res = append(res, indent...)

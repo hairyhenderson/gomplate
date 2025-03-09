@@ -202,7 +202,7 @@ func (f *StringFuncs) Sort(list interface{}) ([]string, error) {
 	case []interface{}:
 		l := len(v)
 		b := make([]string, len(v))
-		for i := 0; i < l; i++ {
+		for i := range l {
 			b[i] = conv.ToString(v[i])
 		}
 		return gompstrings.Sort(b), nil
@@ -325,7 +325,7 @@ func (StringFuncs) ShellQuote(in interface{}) string {
 	case reflect.Array, reflect.Slice:
 		var sb strings.Builder
 		vLen := val.Len()
-		for n := 0; n < vLen; n++ {
+		for n := range vLen {
 			sb.WriteString(gompstrings.ShellQuote(conv.ToString(val.Index(n))))
 			if n+1 != vLen {
 				sb.WriteRune(' ')

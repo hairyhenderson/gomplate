@@ -88,7 +88,7 @@ func TestItem(t *testing.T) {
 
 	in := []interface{}{"foo", "bar"}
 	got := ""
-	for j := 0; j < 10; j++ {
+	for range 10 {
 		i, err = Item(in)
 		require.NoError(t, err)
 		got += i.(string)
