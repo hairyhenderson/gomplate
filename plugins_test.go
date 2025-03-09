@@ -58,8 +58,7 @@ func TestBuildCommand(t *testing.T) {
 }
 
 func TestRun(t *testing.T) {
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
+	ctx := t.Context()
 
 	stderr := &bytes.Buffer{}
 	p := &plugin{
