@@ -3,6 +3,7 @@ package gomplate
 import (
 	"fmt"
 	"io"
+	"maps"
 	"net/http"
 	"os"
 	"slices"
@@ -196,9 +197,7 @@ func mergeDataSources(left, right DataSource) DataSource {
 	if left.Header == nil {
 		left.Header = right.Header
 	} else {
-		for k, v := range right.Header {
-			left.Header[k] = v
-		}
+		maps.Copy(left.Header, right.Header)
 	}
 	return left
 }
@@ -325,9 +324,7 @@ func (c *Config) MergeFrom(o *Config) *Config {
 		c.Context = mergeDataSourceMaps(c.Context, o.Context)
 	}
 	if len(o.Plugins) > 0 {
-		for k, v := range o.Plugins {
-			c.Plugins[k] = v
-		}
+		maps.Copy(c.Plugins, o.Plugins)
 	}
 
 	return c

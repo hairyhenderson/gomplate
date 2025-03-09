@@ -7,6 +7,7 @@ package coll
 
 import (
 	"fmt"
+	"maps"
 	"reflect"
 	"sort"
 
@@ -196,18 +197,10 @@ func Pick(in map[string]any, keys ...string) map[string]any {
 	return out
 }
 
-func copyMap(m map[string]any) map[string]any {
-	n := map[string]any{}
-	for k, v := range m {
-		n[k] = v
-	}
-	return n
-}
-
 // Merges a default and override map
 func mergeValues(d map[string]any, o map[string]any) map[string]any {
-	def := copyMap(d)
-	over := copyMap(o)
+	def := maps.Clone(d)
+	over := maps.Clone(o)
 	for k, v := range over {
 		// If the key doesn't exist already, then just set the key to that value
 		if _, exists := def[k]; !exists {

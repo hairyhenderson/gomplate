@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"io/fs"
+	"maps"
 	"os"
 	"path/filepath"
 	"text/template"
@@ -37,9 +38,8 @@ func copyFuncMap(funcMap template.FuncMap) template.FuncMap {
 	}
 
 	newFuncMap := make(template.FuncMap, len(funcMap))
-	for k, v := range funcMap {
-		newFuncMap[k] = v
-	}
+	maps.Copy(newFuncMap, funcMap)
+
 	return newFuncMap
 }
 

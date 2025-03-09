@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"io/fs"
+	"maps"
 	"net/http"
 	"path"
 	"slices"
@@ -191,10 +192,10 @@ func (r *renderer) renderTemplatesWithData(ctx context.Context, templates []Temp
 	f := CreateFuncs(ctx)
 
 	// add datasource funcs here because they need to share the source reader
-	addToMap(f, funcs.CreateDataSourceFuncs(ctx, r.sr))
+	maps.Copy(f, funcs.CreateDataSourceFuncs(ctx, r.sr))
 
 	// add user-defined funcs last so they override the built-in funcs
-	addToMap(f, r.funcs)
+	maps.Copy(f, r.funcs)
 
 	// track some metrics for debug output
 	start := time.Now()
