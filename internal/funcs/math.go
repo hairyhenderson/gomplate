@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	gmath "math"
+	"slices"
 	"strconv"
 
 	"github.com/hairyhenderson/gomplate/v4/conv"
@@ -64,13 +65,9 @@ func (f MathFuncs) IsFloat(n any) bool {
 }
 
 func (f MathFuncs) containsFloat(n ...any) bool {
-	c := false
-	for _, v := range n {
-		if f.IsFloat(v) {
-			return true
-		}
-	}
-	return c
+	return slices.ContainsFunc(n, func(v any) bool {
+		return f.IsFloat(v)
+	})
 }
 
 // IsNum -
