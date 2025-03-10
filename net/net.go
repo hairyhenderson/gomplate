@@ -3,6 +3,7 @@ package net
 
 import (
 	"net"
+	"slices"
 )
 
 // LookupIP -
@@ -30,21 +31,12 @@ func LookupIPs(name string) ([]string, error) {
 	for _, v := range srcIPs {
 		if v.To4() != nil {
 			s := v.String()
-			if !contains(ips, s) {
+			if !slices.Contains(ips, s) {
 				ips = append(ips, s)
 			}
 		}
 	}
 	return ips, nil
-}
-
-func contains(a []string, s string) bool {
-	for _, v := range a {
-		if v == s {
-			return true
-		}
-	}
-	return false
 }
 
 // LookupCNAME -

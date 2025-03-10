@@ -2,6 +2,7 @@ package gomplate
 
 import (
 	"context"
+	"maps"
 	"text/template"
 
 	"github.com/hairyhenderson/gomplate/v4/internal/config"
@@ -11,35 +12,28 @@ import (
 // CreateFuncs - function mappings are created here
 func CreateFuncs(ctx context.Context) template.FuncMap {
 	f := template.FuncMap{}
-	addToMap(f, funcs.CreateDataFuncs(ctx))
-	addToMap(f, funcs.CreateAWSFuncs(ctx))
-	addToMap(f, funcs.CreateGCPFuncs(ctx))
-	addToMap(f, funcs.CreateBase64Funcs(ctx))
-	addToMap(f, funcs.CreateNetFuncs(ctx))
-	addToMap(f, funcs.CreateReFuncs(ctx))
-	addToMap(f, funcs.CreateStringFuncs(ctx))
-	addToMap(f, funcs.CreateEnvFuncs(ctx))
-	addToMap(f, funcs.CreateConvFuncs(ctx))
-	addToMap(f, funcs.CreateTimeFuncs(ctx))
-	addToMap(f, funcs.CreateMathFuncs(ctx))
-	addToMap(f, funcs.CreateCryptoFuncs(ctx))
-	addToMap(f, funcs.CreateFileFuncs(ctx))
-	addToMap(f, funcs.CreateFilePathFuncs(ctx))
-	addToMap(f, funcs.CreatePathFuncs(ctx))
-	addToMap(f, funcs.CreateSockaddrFuncs(ctx))
-	addToMap(f, funcs.CreateTestFuncs(ctx))
-	addToMap(f, funcs.CreateCollFuncs(ctx))
-	addToMap(f, funcs.CreateUUIDFuncs(ctx))
-	addToMap(f, funcs.CreateRandomFuncs(ctx))
-	addToMap(f, funcs.CreateSemverFuncs(ctx))
+	maps.Copy(f, funcs.CreateDataFuncs(ctx))
+	maps.Copy(f, funcs.CreateAWSFuncs(ctx))
+	maps.Copy(f, funcs.CreateGCPFuncs(ctx))
+	maps.Copy(f, funcs.CreateBase64Funcs(ctx))
+	maps.Copy(f, funcs.CreateNetFuncs(ctx))
+	maps.Copy(f, funcs.CreateReFuncs(ctx))
+	maps.Copy(f, funcs.CreateStringFuncs(ctx))
+	maps.Copy(f, funcs.CreateEnvFuncs(ctx))
+	maps.Copy(f, funcs.CreateConvFuncs(ctx))
+	maps.Copy(f, funcs.CreateTimeFuncs(ctx))
+	maps.Copy(f, funcs.CreateMathFuncs(ctx))
+	maps.Copy(f, funcs.CreateCryptoFuncs(ctx))
+	maps.Copy(f, funcs.CreateFileFuncs(ctx))
+	maps.Copy(f, funcs.CreateFilePathFuncs(ctx))
+	maps.Copy(f, funcs.CreatePathFuncs(ctx))
+	maps.Copy(f, funcs.CreateSockaddrFuncs(ctx))
+	maps.Copy(f, funcs.CreateTestFuncs(ctx))
+	maps.Copy(f, funcs.CreateCollFuncs(ctx))
+	maps.Copy(f, funcs.CreateUUIDFuncs(ctx))
+	maps.Copy(f, funcs.CreateRandomFuncs(ctx))
+	maps.Copy(f, funcs.CreateSemverFuncs(ctx))
 	return f
-}
-
-// addToMap - add src's entries to dst
-func addToMap(dst, src map[string]interface{}) {
-	for k, v := range src {
-		dst[k] = v
-	}
 }
 
 // SetExperimental enables experimental functions and features in the given

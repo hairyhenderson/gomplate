@@ -8,10 +8,10 @@ import (
 )
 
 // CreateSockaddrFuncs -
-func CreateSockaddrFuncs(ctx context.Context) map[string]interface{} {
+func CreateSockaddrFuncs(ctx context.Context) map[string]any {
 	ns := &SockaddrFuncs{ctx}
-	return map[string]interface{}{
-		"sockaddr": func() interface{} { return ns },
+	return map[string]any{
+		"sockaddr": func() any { return ns },
 	}
 }
 
@@ -56,7 +56,7 @@ func (SockaddrFuncs) Include(selectorName, selectorParam string, inputIfAddrs so
 }
 
 // Attr -
-func (SockaddrFuncs) Attr(selectorName string, ifAddrsRaw interface{}) (string, error) {
+func (SockaddrFuncs) Attr(selectorName string, ifAddrsRaw any) (string, error) {
 	return template.Attr(selectorName, ifAddrsRaw)
 }
 

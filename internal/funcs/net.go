@@ -16,10 +16,10 @@ import (
 )
 
 // CreateNetFuncs -
-func CreateNetFuncs(ctx context.Context) map[string]interface{} {
+func CreateNetFuncs(ctx context.Context) map[string]any {
 	ns := &NetFuncs{ctx}
-	return map[string]interface{}{
-		"net": func() interface{} { return ns },
+	return map[string]any{
+		"net": func() any { return ns },
 	}
 }
 
@@ -29,39 +29,39 @@ type NetFuncs struct {
 }
 
 // LookupIP -
-func (f NetFuncs) LookupIP(name interface{}) (string, error) {
+func (f NetFuncs) LookupIP(name any) (string, error) {
 	return net.LookupIP(conv.ToString(name))
 }
 
 // LookupIPs -
-func (f NetFuncs) LookupIPs(name interface{}) ([]string, error) {
+func (f NetFuncs) LookupIPs(name any) ([]string, error) {
 	return net.LookupIPs(conv.ToString(name))
 }
 
 // LookupCNAME -
-func (f NetFuncs) LookupCNAME(name interface{}) (string, error) {
+func (f NetFuncs) LookupCNAME(name any) (string, error) {
 	return net.LookupCNAME(conv.ToString(name))
 }
 
 // LookupSRV -
-func (f NetFuncs) LookupSRV(name interface{}) (*stdnet.SRV, error) {
+func (f NetFuncs) LookupSRV(name any) (*stdnet.SRV, error) {
 	return net.LookupSRV(conv.ToString(name))
 }
 
 // LookupSRVs -
-func (f NetFuncs) LookupSRVs(name interface{}) ([]*stdnet.SRV, error) {
+func (f NetFuncs) LookupSRVs(name any) ([]*stdnet.SRV, error) {
 	return net.LookupSRVs(conv.ToString(name))
 }
 
 // LookupTXT -
-func (f NetFuncs) LookupTXT(name interface{}) ([]string, error) {
+func (f NetFuncs) LookupTXT(name any) ([]string, error) {
 	return net.LookupTXT(conv.ToString(name))
 }
 
 // ParseIP -
 //
 // Deprecated: use [ParseAddr] instead
-func (f *NetFuncs) ParseIP(ip interface{}) (netaddr.IP, error) {
+func (f *NetFuncs) ParseIP(ip any) (netaddr.IP, error) {
 	deprecated.WarnDeprecated(f.ctx, "net.ParseIP is deprecated - use net.ParseAddr instead")
 	return netaddr.ParseIP(conv.ToString(ip))
 }
@@ -69,7 +69,7 @@ func (f *NetFuncs) ParseIP(ip interface{}) (netaddr.IP, error) {
 // ParseIPPrefix -
 //
 // Deprecated: use [ParsePrefix] instead
-func (f *NetFuncs) ParseIPPrefix(ipprefix interface{}) (netaddr.IPPrefix, error) {
+func (f *NetFuncs) ParseIPPrefix(ipprefix any) (netaddr.IPPrefix, error) {
 	deprecated.WarnDeprecated(f.ctx, "net.ParseIPPrefix is deprecated - use net.ParsePrefix instead")
 	return netaddr.ParseIPPrefix(conv.ToString(ipprefix))
 }
@@ -77,29 +77,29 @@ func (f *NetFuncs) ParseIPPrefix(ipprefix interface{}) (netaddr.IPPrefix, error)
 // ParseIPRange -
 //
 // Deprecated: use [ParseRange] instead
-func (f *NetFuncs) ParseIPRange(iprange interface{}) (netaddr.IPRange, error) {
+func (f *NetFuncs) ParseIPRange(iprange any) (netaddr.IPRange, error) {
 	deprecated.WarnDeprecated(f.ctx, "net.ParseIPRange is deprecated - use net.ParseRange instead")
 	return netaddr.ParseIPRange(conv.ToString(iprange))
 }
 
 // ParseAddr -
-func (f NetFuncs) ParseAddr(ip interface{}) (netip.Addr, error) {
+func (f NetFuncs) ParseAddr(ip any) (netip.Addr, error) {
 	return netip.ParseAddr(conv.ToString(ip))
 }
 
 // ParsePrefix -
-func (f NetFuncs) ParsePrefix(ipprefix interface{}) (netip.Prefix, error) {
+func (f NetFuncs) ParsePrefix(ipprefix any) (netip.Prefix, error) {
 	return netip.ParsePrefix(conv.ToString(ipprefix))
 }
 
 // ParseRange -
 //
 // Experimental: this API may change in the future
-func (f NetFuncs) ParseRange(iprange interface{}) (netipx.IPRange, error) {
+func (f NetFuncs) ParseRange(iprange any) (netipx.IPRange, error) {
 	return netipx.ParseIPRange(conv.ToString(iprange))
 }
 
-func (f *NetFuncs) parseNetipPrefix(prefix interface{}) (netip.Prefix, error) {
+func (f *NetFuncs) parseNetipPrefix(prefix any) (netip.Prefix, error) {
 	switch p := prefix.(type) {
 	case *stdnet.IPNet:
 		return f.ipPrefixFromIPNet(p), nil
@@ -122,7 +122,7 @@ func (f NetFuncs) ipPrefixFromIPNet(n *stdnet.IPNet) netip.Prefix {
 
 // CIDRHost -
 // Experimental!
-func (f *NetFuncs) CIDRHost(hostnum interface{}, prefix interface{}) (netip.Addr, error) {
+func (f *NetFuncs) CIDRHost(hostnum any, prefix any) (netip.Addr, error) {
 	if err := checkExperimental(f.ctx); err != nil {
 		return netip.Addr{}, err
 	}
@@ -144,7 +144,7 @@ func (f *NetFuncs) CIDRHost(hostnum interface{}, prefix interface{}) (netip.Addr
 
 // CIDRNetmask -
 // Experimental!
-func (f *NetFuncs) CIDRNetmask(prefix interface{}) (netip.Addr, error) {
+func (f *NetFuncs) CIDRNetmask(prefix any) (netip.Addr, error) {
 	if err := checkExperimental(f.ctx); err != nil {
 		return netip.Addr{}, err
 	}
@@ -156,7 +156,7 @@ func (f *NetFuncs) CIDRNetmask(prefix interface{}) (netip.Addr, error) {
 
 	// fill an appropriately sized byte slice with as many 1s as prefix bits
 	b := make([]byte, p.Addr().BitLen()/8)
-	for i := 0; i < p.Bits(); i++ {
+	for i := range p.Bits() {
 		//nolint:gosec // G115 is not applicable, the value was checked at parse
 		// time
 		b[i/8] |= 1 << uint(7-i%8)
@@ -172,7 +172,7 @@ func (f *NetFuncs) CIDRNetmask(prefix interface{}) (netip.Addr, error) {
 
 // CIDRSubnets -
 // Experimental!
-func (f *NetFuncs) CIDRSubnets(newbits interface{}, prefix interface{}) ([]netip.Prefix, error) {
+func (f *NetFuncs) CIDRSubnets(newbits any, prefix any) ([]netip.Prefix, error) {
 	if err := checkExperimental(f.ctx); err != nil {
 		return nil, err
 	}
@@ -206,7 +206,7 @@ func (f *NetFuncs) CIDRSubnets(newbits interface{}, prefix interface{}) ([]netip
 
 // CIDRSubnetSizes -
 // Experimental!
-func (f *NetFuncs) CIDRSubnetSizes(args ...interface{}) ([]netip.Prefix, error) {
+func (f *NetFuncs) CIDRSubnetSizes(args ...any) ([]netip.Prefix, error) {
 	if err := checkExperimental(f.ctx); err != nil {
 		return nil, err
 	}

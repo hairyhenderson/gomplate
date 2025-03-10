@@ -9,10 +9,10 @@ import (
 )
 
 // CreateReFuncs -
-func CreateReFuncs(ctx context.Context) map[string]interface{} {
+func CreateReFuncs(ctx context.Context) map[string]any {
 	ns := &ReFuncs{ctx}
-	return map[string]interface{}{
-		"regexp": func() interface{} { return ns },
+	return map[string]any{
+		"regexp": func() any { return ns },
 	}
 }
 
@@ -22,12 +22,12 @@ type ReFuncs struct {
 }
 
 // Find -
-func (ReFuncs) Find(re, input interface{}) (string, error) {
+func (ReFuncs) Find(re, input any) (string, error) {
 	return regexp.Find(conv.ToString(re), conv.ToString(input))
 }
 
 // FindAll -
-func (ReFuncs) FindAll(args ...interface{}) ([]string, error) {
+func (ReFuncs) FindAll(args ...any) ([]string, error) {
 	re := ""
 	n := 0
 	input := ""
@@ -55,31 +55,31 @@ func (ReFuncs) FindAll(args ...interface{}) ([]string, error) {
 }
 
 // Match -
-func (ReFuncs) Match(re, input interface{}) (bool, error) {
+func (ReFuncs) Match(re, input any) (bool, error) {
 	return regexp.Match(conv.ToString(re), conv.ToString(input))
 }
 
 // QuoteMeta -
-func (ReFuncs) QuoteMeta(in interface{}) string {
+func (ReFuncs) QuoteMeta(in any) string {
 	return regexp.QuoteMeta(conv.ToString(in))
 }
 
 // Replace -
-func (ReFuncs) Replace(re, replacement, input interface{}) (string, error) {
+func (ReFuncs) Replace(re, replacement, input any) (string, error) {
 	return regexp.Replace(conv.ToString(re),
 		conv.ToString(replacement),
 		conv.ToString(input))
 }
 
 // ReplaceLiteral -
-func (ReFuncs) ReplaceLiteral(re, replacement, input interface{}) (string, error) {
+func (ReFuncs) ReplaceLiteral(re, replacement, input any) (string, error) {
 	return regexp.ReplaceLiteral(conv.ToString(re),
 		conv.ToString(replacement),
 		conv.ToString(input))
 }
 
 // Split -
-func (ReFuncs) Split(args ...interface{}) ([]string, error) {
+func (ReFuncs) Split(args ...any) ([]string, error) {
 	re := ""
 	n := -1
 	input := ""

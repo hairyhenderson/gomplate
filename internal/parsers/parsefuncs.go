@@ -25,7 +25,7 @@ import (
 	"github.com/hairyhenderson/yaml"
 )
 
-func unmarshalObj(obj map[string]interface{}, in string, f func([]byte, interface{}) error) (map[string]interface{}, error) {
+func unmarshalObj(obj map[string]any, in string, f func([]byte, any) error) (map[string]any, error) {
 	err := f([]byte(in), &obj)
 	if err != nil {
 		return nil, fmt.Errorf("unable to unmarshal object %s: %w", in, err)
@@ -33,7 +33,7 @@ func unmarshalObj(obj map[string]interface{}, in string, f func([]byte, interfac
 	return obj, nil
 }
 
-func unmarshalArray(obj []interface{}, in string, f func([]byte, interface{}) error) ([]interface{}, error) {
+func unmarshalArray(obj []any, in string, f func([]byte, any) error) ([]any, error) {
 	err := f([]byte(in), &obj)
 	if err != nil {
 		return nil, fmt.Errorf("unable to unmarshal array %s: %w", in, err)
@@ -42,8 +42,8 @@ func unmarshalArray(obj []interface{}, in string, f func([]byte, interface{}) er
 }
 
 // JSON - Unmarshal a JSON Object. Can be ejson-encrypted.
-func JSON(in string) (map[string]interface{}, error) {
-	obj := make(map[string]interface{})
+func JSON(in string) (map[string]any, error) {
+	obj := make(map[string]any)
 	out, err := unmarshalObj(obj, in, yaml.Unmarshal)
 	if err != nil {
 		return out, err
@@ -57,7 +57,7 @@ func JSON(in string) (map[string]interface{}, error) {
 }
 
 // decryptEJSON - decrypts an ejson input, and unmarshals it, stripping the _public_key field.
-func decryptEJSON(in string) (map[string]interface{}, error) {
+func decryptEJSON(in string) (map[string]any, error) {
 	keyDir := getenv("EJSON_KEYDIR", "/opt/ejson/keys")
 	key := getenv("EJSON_KEY")
 
@@ -67,7 +67,7 @@ func decryptEJSON(in string) (map[string]interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	obj := make(map[string]interface{})
+	obj := make(map[string]any)
 	out, err := unmarshalObj(obj, rOut.String(), yaml.Unmarshal)
 	if err != nil {
 		return nil, err
@@ -101,14 +101,14 @@ func getenv(key string, def ...string) string {
 }
 
 // JSONArray - Unmarshal a JSON Array
-func JSONArray(in string) ([]interface{}, error) {
-	obj := make([]interface{}, 1)
+func JSONArray(in string) ([]any, error) {
+	obj := make([]any, 1)
 	return unmarshalArray(obj, in, yaml.Unmarshal)
 }
 
 // YAML - Unmarshal a YAML Object
-func YAML(in string) (map[string]interface{}, error) {
-	obj := make(map[string]interface{})
+func YAML(in string) (map[string]any, error) {
+	obj := make(map[string]any)
 	s := strings.NewReader(in)
 	d := yaml.NewDecoder(s)
 	for {
@@ -129,8 +129,8 @@ func YAML(in string) (map[string]interface{}, error) {
 }
 
 // YAMLArray - Unmarshal a YAML Array
-func YAMLArray(in string) ([]interface{}, error) {
-	obj := make([]interface{}, 1)
+func YAMLArray(in string) ([]any, error) {
+	obj := make([]any, 1)
 	s := strings.NewReader(in)
 	d := yaml.NewDecoder(s)
 	for {
@@ -151,7 +151,7 @@ func YAMLArray(in string) ([]interface{}, error) {
 
 // stringifyYAMLArrayMapKeys recurses into the input array and changes all
 // non-string map keys to string map keys. Modifies the input array.
-func stringifyYAMLArrayMapKeys(in []interface{}) error {
+func stringifyYAMLArrayMapKeys(in []any) error {
 	if _, changed := stringifyMapKeys(in); changed {
 		return fmt.Errorf("stringifyYAMLArrayMapKeys: output type did not match input type, this should be impossible")
 	}
@@ -160,7 +160,7 @@ func stringifyYAMLArrayMapKeys(in []interface{}) error {
 
 // stringifyYAMLMapMapKeys recurses into the input map and changes all
 // non-string map keys to string map keys. Modifies the input map.
-func stringifyYAMLMapMapKeys(in map[string]interface{}) error {
+func stringifyYAMLMapMapKeys(in map[string]any) error {
 	if _, changed := stringifyMapKeys(in); changed {
 		return fmt.Errorf("stringifyYAMLMapMapKeys: output type did not match input type, this should be impossible")
 	}
@@ -168,28 +168,28 @@ func stringifyYAMLMapMapKeys(in map[string]interface{}) error {
 }
 
 // stringifyMapKeys recurses into in and changes all instances of
-// map[interface{}]interface{} to map[string]interface{}. This is useful to
+// map[any]any to map[string]any. This is useful to
 // work around the impedance mismatch between JSON and YAML unmarshaling that's
 // described here: https://github.com/go-yaml/yaml/issues/139
 //
 // Taken and modified from https://github.com/gohugoio/hugo/blob/cdfd1c99baa22d69e865294dfcd783811f96c880/parser/metadecoders/decoder.go#L257, Apache License 2.0
 // Originally inspired by https://github.com/stripe/stripe-mock/blob/24a2bb46a49b2a416cfea4150ab95781f69ee145/mapstr.go#L13, MIT License
-func stringifyMapKeys(in interface{}) (interface{}, bool) {
+func stringifyMapKeys(in any) (any, bool) {
 	switch in := in.(type) {
-	case []interface{}:
+	case []any:
 		for i, v := range in {
 			if vv, replaced := stringifyMapKeys(v); replaced {
 				in[i] = vv
 			}
 		}
-	case map[string]interface{}:
+	case map[string]any:
 		for k, v := range in {
 			if vv, changed := stringifyMapKeys(v); changed {
 				in[k] = vv
 			}
 		}
-	case map[interface{}]interface{}:
-		res := make(map[string]interface{})
+	case map[any]any:
+		res := make(map[string]any)
 
 		for k, v := range in {
 			ks := conv.ToString(k)
@@ -206,18 +206,18 @@ func stringifyMapKeys(in interface{}) (interface{}, bool) {
 }
 
 // TOML - Unmarshal a TOML Object
-func TOML(in string) (interface{}, error) {
-	obj := make(map[string]interface{})
+func TOML(in string) (any, error) {
+	obj := make(map[string]any)
 	return unmarshalObj(obj, in, toml.Unmarshal)
 }
 
 // DotEnv - Unmarshal a dotenv file
-func DotEnv(in string) (interface{}, error) {
+func DotEnv(in string) (any, error) {
 	env, err := godotenv.Unmarshal(in)
 	if err != nil {
 		return nil, err
 	}
-	out := make(map[string]interface{})
+	out := make(map[string]any)
 	for k, v := range env {
 		out[k] = v
 	}
@@ -352,7 +352,7 @@ func CSVByColumn(args ...string) (cols map[string][]string, err error) {
 }
 
 // ToCSV -
-func ToCSV(args ...interface{}) (string, error) {
+func ToCSV(args ...any) (string, error) {
 	delim := ","
 	var in [][]string
 	if len(args) == 2 {
@@ -367,22 +367,22 @@ func ToCSV(args ...interface{}) (string, error) {
 		switch a := args[0].(type) {
 		case [][]string:
 			in = a
-		case [][]interface{}:
+		case [][]any:
 			in = make([][]string, len(a))
 			for i, v := range a {
 				in[i] = conv.ToStrings(v...)
 			}
-		case []interface{}:
+		case []any:
 			in = make([][]string, len(a))
 			for i, v := range a {
-				ar, ok := v.([]interface{})
+				ar, ok := v.([]any)
 				if !ok {
-					return "", fmt.Errorf("can't parse ToCSV input - must be a two-dimensional array (like [][]string or [][]interface{}) (was %T)", args[0])
+					return "", fmt.Errorf("can't parse ToCSV input - must be a two-dimensional array (like [][]string or [][]any) (was %T)", args[0])
 				}
 				in[i] = conv.ToStrings(ar...)
 			}
 		default:
-			return "", fmt.Errorf("can't parse ToCSV input - must be a two-dimensional array (like [][]string or [][]interface{}) (was %T)", args[0])
+			return "", fmt.Errorf("can't parse ToCSV input - must be a two-dimensional array (like [][]string or [][]any) (was %T)", args[0])
 		}
 	}
 	b := &bytes.Buffer{}
@@ -397,7 +397,7 @@ func ToCSV(args ...interface{}) (string, error) {
 	return b.String(), nil
 }
 
-func marshalObj(obj interface{}, f func(interface{}) ([]byte, error)) (string, error) {
+func marshalObj(obj any, f func(any) ([]byte, error)) (string, error) {
 	b, err := f(obj)
 	if err != nil {
 		return "", fmt.Errorf("unable to marshal object %s: %w", obj, err)
@@ -406,7 +406,7 @@ func marshalObj(obj interface{}, f func(interface{}) ([]byte, error)) (string, e
 	return string(b), nil
 }
 
-func toJSONBytes(in interface{}) ([]byte, error) {
+func toJSONBytes(in any) ([]byte, error) {
 	h := &codec.JsonHandle{}
 	h.Canonical = true
 	buf := new(bytes.Buffer)
@@ -418,7 +418,7 @@ func toJSONBytes(in interface{}) ([]byte, error) {
 }
 
 // ToJSON - Stringify a struct as JSON
-func ToJSON(in interface{}) (string, error) {
+func ToJSON(in any) (string, error) {
 	s, err := toJSONBytes(in)
 	if err != nil {
 		return "", err
@@ -427,7 +427,7 @@ func ToJSON(in interface{}) (string, error) {
 }
 
 // ToJSONPretty - Stringify a struct as JSON (indented)
-func ToJSONPretty(indent string, in interface{}) (string, error) {
+func ToJSONPretty(indent string, in any) (string, error) {
 	out := new(bytes.Buffer)
 	b, err := toJSONBytes(in)
 	if err != nil {
@@ -442,10 +442,10 @@ func ToJSONPretty(indent string, in interface{}) (string, error) {
 }
 
 // ToYAML - Stringify a struct as YAML
-func ToYAML(in interface{}) (string, error) {
+func ToYAML(in any) (string, error) {
 	// I'd use yaml.Marshal, but between v2 and v3 the indent has changed from
 	// 2 to 4. This explicitly sets it back to 2.
-	marshal := func(in interface{}) (out []byte, err error) {
+	marshal := func(in any) (out []byte, err error) {
 		buf := &bytes.Buffer{}
 		e := yaml.NewEncoder(buf)
 		e.SetIndent(2)
@@ -458,7 +458,7 @@ func ToYAML(in interface{}) (string, error) {
 }
 
 // ToTOML - Stringify a struct as TOML
-func ToTOML(in interface{}) (string, error) {
+func ToTOML(in any) (string, error) {
 	buf := new(bytes.Buffer)
 	err := toml.NewEncoder(buf).Encode(in)
 	if err != nil {
@@ -468,7 +468,7 @@ func ToTOML(in interface{}) (string, error) {
 }
 
 // CUE - Unmarshal a CUE expression into the appropriate type
-func CUE(in string) (interface{}, error) {
+func CUE(in string) (any, error) {
 	cuectx := cuecontext.New()
 	val := cuectx.CompileString(in)
 
@@ -478,11 +478,11 @@ func CUE(in string) (interface{}, error) {
 
 	switch val.Kind() {
 	case cue.StructKind:
-		out := map[string]interface{}{}
+		out := map[string]any{}
 		err := val.Decode(&out)
 		return out, err
 	case cue.ListKind:
-		out := []interface{}{}
+		out := []any{}
 		err := val.Decode(&out)
 		return out, err
 	case cue.BytesKind:
@@ -512,7 +512,7 @@ func CUE(in string) (interface{}, error) {
 	}
 }
 
-func ToCUE(in interface{}) (string, error) {
+func ToCUE(in any) (string, error) {
 	cuectx := cuecontext.New()
 	v := cuectx.Encode(in)
 	if v.Err() != nil {

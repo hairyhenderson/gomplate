@@ -29,7 +29,7 @@ func Bool(in string) bool {
 // Possible non-boolean true values are: 1 or the strings "t", "true", or "yes"
 // (any capitalizations)
 // All other values are considered false.
-func ToBool(in interface{}) bool {
+func ToBool(in any) bool {
 	if b, ok := in.(bool); ok {
 		return b
 	}
@@ -60,7 +60,7 @@ func ToBool(in interface{}) bool {
 }
 
 // ToBools -
-func ToBools(in ...interface{}) []bool {
+func ToBools(in ...any) []bool {
 	out := make([]bool, len(in))
 	for i, v := range in {
 		out[i] = ToBool(v)
@@ -71,7 +71,7 @@ func ToBools(in ...interface{}) []bool {
 // Slice creates a slice from a bunch of arguments
 //
 // Deprecated: use [github.com/hairyhenderson/gomplate/v4/coll.Slice] instead
-func Slice(args ...interface{}) []interface{} {
+func Slice(args ...any) []any {
 	return args
 }
 
@@ -80,14 +80,14 @@ func Slice(args ...interface{}) []interface{} {
 //
 // This is functionally identical to strings.Join, except that each element is
 // coerced to a string first
-func Join(in interface{}, sep string) (out string, err error) {
+func Join(in any, sep string) (out string, err error) {
 	s, ok := in.([]string)
 	if ok {
 		return strings.Join(s, sep), nil
 	}
 
-	var a []interface{}
-	a, ok = in.([]interface{})
+	var a []any
+	a, ok = in.([]any)
 	if !ok {
 		a, err = iconv.InterfaceSlice(in)
 		if err != nil {
@@ -107,7 +107,7 @@ func Join(in interface{}, sep string) (out string, err error) {
 }
 
 // Has determines whether or not a given object has a property with the given key
-func Has(in interface{}, key interface{}) bool {
+func Has(in any, key any) bool {
 	av := reflect.ValueOf(in)
 
 	switch av.Kind() {
@@ -116,7 +116,7 @@ func Has(in interface{}, key interface{}) bool {
 		return av.MapIndex(kv).IsValid()
 	case reflect.Slice, reflect.Array:
 		l := av.Len()
-		for i := 0; i < l; i++ {
+		for i := range l {
 			v := av.Index(i).Interface()
 			if reflect.DeepEqual(v, key) {
 				return true
@@ -128,7 +128,7 @@ func Has(in interface{}, key interface{}) bool {
 }
 
 // ToString -
-func ToString(in interface{}) string {
+func ToString(in any) string {
 	if in == nil {
 		return "nil"
 	}
@@ -151,7 +151,7 @@ func ToString(in interface{}) string {
 }
 
 // ToStrings -
-func ToStrings(in ...interface{}) []string {
+func ToStrings(in ...any) []string {
 	out := make([]string, len(in))
 	for i, v := range in {
 		out[i] = ToString(v)
@@ -184,7 +184,7 @@ func MustAtoi(s string) int {
 }
 
 // ToInt64 - convert input to an int64, if convertible. Otherwise, returns 0.
-func ToInt64(v interface{}) (int64, error) {
+func ToInt64(v any) (int64, error) {
 	if str, ok := v.(string); ok {
 		return strToInt64(str)
 	}
@@ -218,7 +218,7 @@ func ToInt64(v interface{}) (int64, error) {
 }
 
 // ToInt -
-func ToInt(in interface{}) (int, error) {
+func ToInt(in any) (int, error) {
 	i, err := ToInt64(in)
 	if err != nil {
 		return 0, err
@@ -236,7 +236,7 @@ func ToInt(in interface{}) (int, error) {
 }
 
 // ToInt64s -
-func ToInt64s(in ...interface{}) ([]int64, error) {
+func ToInt64s(in ...any) ([]int64, error) {
 	out := make([]int64, len(in))
 	for i, v := range in {
 		n, err := ToInt64(v)
@@ -251,7 +251,7 @@ func ToInt64s(in ...interface{}) ([]int64, error) {
 }
 
 // ToInts -
-func ToInts(in ...interface{}) ([]int, error) {
+func ToInts(in ...any) ([]int, error) {
 	out := make([]int, len(in))
 	for i, v := range in {
 		n, err := ToInt(v)
@@ -266,7 +266,7 @@ func ToInts(in ...interface{}) ([]int, error) {
 }
 
 // ToFloat64 - convert input to a float64, if convertible. Otherwise, errors.
-func ToFloat64(v interface{}) (float64, error) {
+func ToFloat64(v any) (float64, error) {
 	if str, ok := v.(string); ok {
 		return strToFloat64(str)
 	}
@@ -334,7 +334,7 @@ func strToFloat64(str string) (float64, error) {
 }
 
 // ToFloat64s -
-func ToFloat64s(in ...interface{}) ([]float64, error) {
+func ToFloat64s(in ...any) ([]float64, error) {
 	out := make([]float64, len(in))
 	for i, v := range in {
 		f, err := ToFloat64(v)
@@ -352,8 +352,8 @@ func ToFloat64s(in ...interface{}) ([]float64, error) {
 // is provided, the last is used as the key, and an empty string is
 // set as the value.
 // All keys are converted to strings, regardless of input type.
-func Dict(v ...interface{}) (map[string]interface{}, error) {
-	dict := map[string]interface{}{}
+func Dict(v ...any) (map[string]any, error) {
+	dict := map[string]any{}
 	lenv := len(v)
 	for i := 0; i < lenv; i += 2 {
 		key := ToString(v[i])

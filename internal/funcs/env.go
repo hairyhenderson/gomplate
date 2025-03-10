@@ -8,11 +8,11 @@ import (
 )
 
 // CreateEnvFuncs -
-func CreateEnvFuncs(ctx context.Context) map[string]interface{} {
+func CreateEnvFuncs(ctx context.Context) map[string]any {
 	ns := &EnvFuncs{ctx}
 
-	return map[string]interface{}{
-		"env":    func() interface{} { return ns },
+	return map[string]any{
+		"env":    func() any { return ns },
 		"getenv": ns.Getenv,
 	}
 }
@@ -23,11 +23,11 @@ type EnvFuncs struct {
 }
 
 // Getenv -
-func (EnvFuncs) Getenv(key interface{}, def ...string) string {
+func (EnvFuncs) Getenv(key any, def ...string) string {
 	return env.Getenv(conv.ToString(key), def...)
 }
 
 // ExpandEnv -
-func (EnvFuncs) ExpandEnv(s interface{}) string {
+func (EnvFuncs) ExpandEnv(s any) string {
 	return env.ExpandEnv(conv.ToString(s))
 }

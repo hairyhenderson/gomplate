@@ -12,16 +12,16 @@ import (
 )
 
 // CreateDataSourceFuncs -
-func CreateDataSourceFuncs(ctx context.Context, sr datafs.DataSourceReader) map[string]interface{} {
+func CreateDataSourceFuncs(ctx context.Context, sr datafs.DataSourceReader) map[string]any {
 	ns := &dataSourceFuncs{
 		ctx: ctx,
 		sr:  sr,
 	}
 
-	f := map[string]interface{}{}
+	f := map[string]any{}
 
 	// undocumented but available
-	f["_datasource"] = func() interface{} { return ns }
+	f["_datasource"] = func() any { return ns }
 
 	f["datasource"] = ns.Datasource
 	f["ds"] = ns.Datasource
@@ -52,7 +52,7 @@ func (d *dataSourceFuncs) Include(alias string, args ...string) (string, error) 
 }
 
 // Datasource - Reads from the named datasource, and returns the parsed datafs.
-func (d *dataSourceFuncs) Datasource(alias string, args ...string) (interface{}, error) {
+func (d *dataSourceFuncs) Datasource(alias string, args ...string) (any, error) {
 	ct, b, err := d.sr.ReadSource(d.ctx, alias, args...)
 	if err != nil {
 		return nil, err

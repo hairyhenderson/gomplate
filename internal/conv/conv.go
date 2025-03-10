@@ -5,11 +5,11 @@ import (
 	"reflect"
 )
 
-// InterfaceSlice converts an array or slice of any type into an []interface{}
+// InterfaceSlice converts an array or slice of any type into an []any
 // for use in functions that expect this.
-func InterfaceSlice(slice interface{}) ([]interface{}, error) {
-	// avoid all this nonsense if this is already a []interface{}...
-	if s, ok := slice.([]interface{}); ok {
+func InterfaceSlice(slice any) ([]any, error) {
+	// avoid all this nonsense if this is already a []any...
+	if s, ok := slice.([]any); ok {
 		return s, nil
 	}
 	s := reflect.ValueOf(slice)
@@ -17,8 +17,8 @@ func InterfaceSlice(slice interface{}) ([]interface{}, error) {
 	switch kind {
 	case reflect.Slice, reflect.Array:
 		l := s.Len()
-		ret := make([]interface{}, l)
-		for i := 0; i < l; i++ {
+		ret := make([]any, l)
+		for i := range l {
 			ret[i] = s.Index(i).Interface()
 		}
 		return ret, nil

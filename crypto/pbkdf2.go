@@ -2,17 +2,16 @@ package crypto
 
 import (
 	"crypto"
+	"crypto/pbkdf2"
 	"crypto/sha1" //nolint: gosec
 	"crypto/sha256"
 	"crypto/sha512"
 	"fmt"
 	"hash"
 	"sync"
-
-	"golang.org/x/crypto/pbkdf2"
 )
 
-var hashFuncs = sync.OnceValue[map[crypto.Hash]func() hash.Hash](func() map[crypto.Hash]func() hash.Hash {
+var hashFuncs = sync.OnceValue(func() map[crypto.Hash]func() hash.Hash {
 	h := make(map[crypto.Hash]func() hash.Hash)
 	h[crypto.SHA1] = sha1.New
 	h[crypto.SHA224] = sha256.New224
@@ -53,5 +52,6 @@ func PBKDF2(password, salt []byte, iter, keylen int, hashFunc crypto.Hash) ([]by
 	if !ok {
 		return nil, fmt.Errorf("hashFunc not supported: %v", hashFunc)
 	}
-	return pbkdf2.Key(password, salt, iter, keylen, h), nil
+
+	return pbkdf2.Key(h, string(password), salt, iter, keylen)
 }

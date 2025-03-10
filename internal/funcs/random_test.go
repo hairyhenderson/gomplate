@@ -13,14 +13,14 @@ import (
 func TestCreateRandomFuncs(t *testing.T) {
 	t.Parallel()
 
-	for i := 0; i < 10; i++ {
+	for i := range 10 {
 		// Run this a bunch to catch race conditions
 		t.Run(strconv.Itoa(i), func(t *testing.T) {
 			t.Parallel()
 
 			ctx := context.Background()
 			fmap := CreateRandomFuncs(ctx)
-			actual := fmap["random"].(func() interface{})
+			actual := fmap["random"].(func() any)
 
 			assert.Equal(t, ctx, actual().(*RandomFuncs).ctx)
 		})
@@ -168,7 +168,7 @@ func TestItem(t *testing.T) {
 
 	in := []string{"foo", "bar"}
 	got := ""
-	for j := 0; j < 10; j++ {
+	for range 10 {
 		i, err = f.Item(in)
 		require.NoError(t, err)
 		got += i.(string)

@@ -127,7 +127,7 @@ func BenchmarkResolveURL(b *testing.B) {
 
 	for _, a := range args {
 		b.Run(fmt.Sprintf("base=%s_rel=%s", &a.url, a.rel), func(b *testing.B) {
-			for i := 0; i < b.N; i++ {
+			for b.Loop() {
 				_, _ = resolveURL(a.url, a.rel)
 			}
 		})

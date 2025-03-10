@@ -14,7 +14,7 @@ import (
 // will return an error if the key is not found. Note that the argument order is
 // different from the template function definition found in `funcs/coll.go` to
 // allow for variadic indexes.
-func Index(v interface{}, keys ...interface{}) (interface{}, error) {
+func Index(v any, keys ...any) (any, error) {
 	item := reflect.ValueOf(v)
 	item = indirectInterface(item)
 	if !item.IsValid() {

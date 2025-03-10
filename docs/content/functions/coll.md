@@ -8,7 +8,7 @@ menu:
 These functions help manipulate and query collections of data, like lists (slices, or arrays) and maps (dictionaries).
 
 #### Implementation Note
-For the functions that return an array, a Go `[]interface{}` is returned, regardless of whether or not the
+For the functions that return an array, a Go `[]any` is returned, regardless of whether or not the
 input was a different type.
 
 ## `coll.Dict`

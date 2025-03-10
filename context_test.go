@@ -53,13 +53,13 @@ func TestCreateContext(t *testing.T) {
 	require.NoError(t, err)
 	assert.IsType(t, &tmplctx{}, c)
 	tctx := c.(*tmplctx)
-	ds := ((*tctx)["foo"]).(map[string]interface{})
+	ds := ((*tctx)["foo"]).(map[string]any)
 	assert.Equal(t, "bar", ds["foo"])
 
 	t.Setenv("bar", "bar: baz")
 	c, err = createTmplContext(ctx, []string{"."}, sr)
 	require.NoError(t, err)
-	assert.IsType(t, map[string]interface{}{}, c)
-	ds = c.(map[string]interface{})
+	assert.IsType(t, map[string]any{}, c)
+	ds = c.(map[string]any)
 	assert.Equal(t, "baz", ds["bar"])
 }

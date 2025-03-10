@@ -26,7 +26,7 @@ func NewDummyEc2Info(metaClient *Ec2Meta) *Ec2Info {
 	i := &Ec2Info{
 		metaClient: metaClient,
 		describer:  func() (InstanceDescriber, error) { return DummyInstanceDescriber{}, nil },
-		cache:      map[string]interface{}{},
+		cache:      map[string]any{},
 	}
 	return i
 }

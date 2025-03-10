@@ -10,7 +10,7 @@ import (
 )
 
 // JQ -
-func JQ(ctx context.Context, jqExpr string, in interface{}) (interface{}, error) {
+func JQ(ctx context.Context, jqExpr string, in any) (any, error) {
 	query, err := gojq.Parse(jqExpr)
 	if err != nil {
 		return nil, fmt.Errorf("jq parsing expression %q: %w", jqExpr, err)
@@ -23,8 +23,8 @@ func JQ(ctx context.Context, jqExpr string, in interface{}) (interface{}, error)
 	}
 
 	iter := query.RunWithContext(ctx, in)
-	var out interface{}
-	a := []interface{}{}
+	var out any
+	a := []any{}
 	for {
 		v, ok := iter.Next()
 		if !ok {
@@ -44,12 +44,12 @@ func JQ(ctx context.Context, jqExpr string, in interface{}) (interface{}, error)
 	return out, nil
 }
 
-// jqConvertType converts the input to a map[string]interface{}, []interface{},
+// jqConvertType converts the input to a map[string]any, []any,
 // or other supported primitive JSON types.
-func jqConvertType(in interface{}) (interface{}, error) {
+func jqConvertType(in any) (any, error) {
 	// if it's already a supported type, pass it through
 	switch in.(type) {
-	case map[string]interface{}, []interface{},
+	case map[string]any, []any,
 		string, []byte,
 		nil, bool,
 		int, int8, int16, int32, int64,
@@ -67,8 +67,8 @@ func jqConvertType(in interface{}) (interface{}, error) {
 		value = value.Elem()
 	}
 
-	mapType := reflect.TypeOf(map[string]interface{}{})
-	sliceType := reflect.TypeOf([]interface{}{})
+	mapType := reflect.TypeOf(map[string]any{})
+	sliceType := reflect.TypeOf([]any{})
 	// if it can be converted to a map or slice, do that
 	if inType.ConvertibleTo(mapType) {
 		return value.Convert(mapType).Interface(), nil
@@ -83,7 +83,7 @@ func jqConvertType(in interface{}) (interface{}, error) {
 		if err != nil {
 			return nil, fmt.Errorf("json marshal struct: %w", err)
 		}
-		var m map[string]interface{}
+		var m map[string]any
 		err = json.Unmarshal(b, &m)
 		if err != nil {
 			return nil, fmt.Errorf("json unmarshal struct: %w", err)

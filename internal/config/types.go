@@ -73,7 +73,7 @@ func (t *Templates) unmarshalYAMLArray(value *yaml.Node) error {
 	return nil
 }
 
-func (t Templates) MarshalYAML() (interface{}, error) {
+func (t Templates) MarshalYAML() (any, error) {
 	type rawTemplate struct {
 		Header http.Header `yaml:"header,omitempty,flow"`
 		URL    string      `yaml:"url"`
@@ -133,7 +133,7 @@ func (d *DataSource) UnmarshalYAML(value *yaml.Node) error {
 
 // MarshalYAML - satisfy the yaml.Marshaler interface - URLs aren't
 // well supported, and anyway we need to do some extra parsing
-func (d DataSource) MarshalYAML() (interface{}, error) {
+func (d DataSource) MarshalYAML() (any, error) {
 	type raw struct {
 		Header http.Header
 		URL    string

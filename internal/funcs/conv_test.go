@@ -12,14 +12,14 @@ import (
 func TestCreateConvFuncs(t *testing.T) {
 	t.Parallel()
 
-	for i := 0; i < 10; i++ {
+	for i := range 10 {
 		// Run this a bunch to catch race conditions
 		t.Run(strconv.Itoa(i), func(t *testing.T) {
 			t.Parallel()
 
 			ctx := context.Background()
 			fmap := CreateConvFuncs(ctx)
-			actual := fmap["conv"].(func() interface{})
+			actual := fmap["conv"].(func() any)
 
 			assert.Equal(t, ctx, actual().(*ConvFuncs).ctx)
 		})
@@ -33,7 +33,7 @@ func TestDefault(t *testing.T) {
 	c := &ConvFuncs{}
 	def := "DEFAULT"
 	data := []struct {
-		val   interface{}
+		val   any
 		empty bool
 	}{
 		{0, true},

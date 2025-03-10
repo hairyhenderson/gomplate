@@ -8,7 +8,7 @@ import (
 // STS -
 type STS struct {
 	identifier func() CallerIdentitifier
-	cache      map[string]interface{}
+	cache      map[string]any
 }
 
 var identifierClient CallerIdentitifier
@@ -28,7 +28,7 @@ func NewSTS(_ ClientOptions) *STS {
 			}
 			return identifierClient
 		},
-		cache: make(map[string]interface{}),
+		cache: make(map[string]any),
 	}
 }
 

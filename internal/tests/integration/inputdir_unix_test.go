@@ -35,7 +35,7 @@ func checkFileUlimit(t *testing.T, b uint64) {
 func TestInputDir_RespectsUlimit(t *testing.T) {
 	numfiles := uint32(32)
 	flist := map[string]string{}
-	for i := 0; i < int(numfiles); i++ {
+	for i := range int(numfiles) {
 		k := fmt.Sprintf("file_%d", i)
 		flist[k] = fmt.Sprintf("hello world %d\n", i)
 	}
@@ -67,7 +67,7 @@ func TestInputDir_RespectsUlimit(t *testing.T) {
 	assert.NilError(t, err)
 	assert.Equal(t, int(numfiles), len(files))
 
-	for i := 0; i < int(numfiles); i++ {
+	for i := range int(numfiles) {
 		f := testdir.Join("out", fmt.Sprintf("file_%d", i))
 		_, err := os.Stat(f)
 		assert.NilError(t, err)

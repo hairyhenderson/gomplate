@@ -7,7 +7,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func must(r interface{}, err error) interface{} {
+func must(r any, err error) any {
 	if err != nil {
 		panic(err)
 	}
@@ -25,7 +25,7 @@ func TestLookupIPs(t *testing.T) {
 }
 
 func BenchmarkLookupIPs(b *testing.B) {
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		must(LookupIPs("localhost"))
 	}
 }

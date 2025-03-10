@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	gmath "math"
+	"slices"
 	"strconv"
 
 	"github.com/hairyhenderson/gomplate/v4/conv"
@@ -12,11 +13,11 @@ import (
 )
 
 // CreateMathFuncs -
-func CreateMathFuncs(ctx context.Context) map[string]interface{} {
-	f := map[string]interface{}{}
+func CreateMathFuncs(ctx context.Context) map[string]any {
+	f := map[string]any{}
 
 	ns := &MathFuncs{ctx}
-	f["math"] = func() interface{} { return ns }
+	f["math"] = func() any { return ns }
 
 	f["add"] = ns.Add
 	f["sub"] = ns.Sub
@@ -34,7 +35,7 @@ type MathFuncs struct {
 }
 
 // IsInt -
-func (f MathFuncs) IsInt(n interface{}) bool {
+func (f MathFuncs) IsInt(n any) bool {
 	switch i := n.(type) {
 	case int, int8, int16, int32, int64, uint, uint8, uint16, uint32, uint64:
 		return true
@@ -46,7 +47,7 @@ func (f MathFuncs) IsInt(n interface{}) bool {
 }
 
 // IsFloat -
-func (f MathFuncs) IsFloat(n interface{}) bool {
+func (f MathFuncs) IsFloat(n any) bool {
 	switch i := n.(type) {
 	case float32, float64:
 		return true
@@ -63,23 +64,13 @@ func (f MathFuncs) IsFloat(n interface{}) bool {
 	return false
 }
 
-func (f MathFuncs) containsFloat(n ...interface{}) bool {
-	c := false
-	for _, v := range n {
-		if f.IsFloat(v) {
-			return true
-		}
-	}
-	return c
-}
-
 // IsNum -
-func (f MathFuncs) IsNum(n interface{}) bool {
+func (f MathFuncs) IsNum(n any) bool {
 	return f.IsInt(n) || f.IsFloat(n)
 }
 
 // Abs -
-func (f MathFuncs) Abs(n interface{}) (interface{}, error) {
+func (f MathFuncs) Abs(n any) (any, error) {
 	fn, err := conv.ToFloat64(n)
 	if err != nil {
 		return nil, fmt.Errorf("expected a number: %w", err)
@@ -94,8 +85,8 @@ func (f MathFuncs) Abs(n interface{}) (interface{}, error) {
 }
 
 // Add -
-func (f MathFuncs) Add(n ...interface{}) (interface{}, error) {
-	if f.containsFloat(n...) {
+func (f MathFuncs) Add(n ...any) (any, error) {
+	if slices.ContainsFunc(n, f.IsFloat) {
 		nums, err := conv.ToFloat64s(n...)
 		if err != nil {
 			return nil, fmt.Errorf("expected number inputs: %w", err)
@@ -123,8 +114,8 @@ func (f MathFuncs) Add(n ...interface{}) (interface{}, error) {
 }
 
 // Mul -
-func (f MathFuncs) Mul(n ...interface{}) (interface{}, error) {
-	if f.containsFloat(n...) {
+func (f MathFuncs) Mul(n ...any) (any, error) {
+	if slices.ContainsFunc(n, f.IsFloat) {
 		nums, err := conv.ToFloat64s(n...)
 		if err != nil {
 			return nil, fmt.Errorf("expected number inputs: %w", err)
@@ -152,8 +143,8 @@ func (f MathFuncs) Mul(n ...interface{}) (interface{}, error) {
 }
 
 // Sub -
-func (f MathFuncs) Sub(a, b interface{}) (interface{}, error) {
-	if f.containsFloat(a, b) {
+func (f MathFuncs) Sub(a, b any) (any, error) {
+	if slices.ContainsFunc([]any{a, b}, f.IsFloat) {
 		fa, err := conv.ToFloat64(a)
 		if err != nil {
 			return nil, fmt.Errorf("expected a number: %w", err)
@@ -181,7 +172,7 @@ func (f MathFuncs) Sub(a, b interface{}) (interface{}, error) {
 }
 
 // Div -
-func (f MathFuncs) Div(a, b interface{}) (interface{}, error) {
+func (f MathFuncs) Div(a, b any) (any, error) {
 	divisor, err := conv.ToFloat64(a)
 	if err != nil {
 		return nil, fmt.Errorf("expected a number: %w", err)
@@ -200,7 +191,7 @@ func (f MathFuncs) Div(a, b interface{}) (interface{}, error) {
 }
 
 // Rem -
-func (f MathFuncs) Rem(a, b interface{}) (interface{}, error) {
+func (f MathFuncs) Rem(a, b any) (any, error) {
 	ia, err := conv.ToInt64(a)
 	if err != nil {
 		return nil, fmt.Errorf("expected a number: %w", err)
@@ -215,7 +206,7 @@ func (f MathFuncs) Rem(a, b interface{}) (interface{}, error) {
 }
 
 // Pow -
-func (f MathFuncs) Pow(a, b interface{}) (interface{}, error) {
+func (f MathFuncs) Pow(a, b any) (any, error) {
 	fa, err := conv.ToFloat64(a)
 	if err != nil {
 		return nil, fmt.Errorf("expected a number: %w", err)
@@ -236,7 +227,7 @@ func (f MathFuncs) Pow(a, b interface{}) (interface{}, error) {
 
 // Seq - return a sequence from `start` to `end`, in steps of `step`
 // start and step are optional, and default to 1.
-func (f MathFuncs) Seq(n ...interface{}) ([]int64, error) {
+func (f MathFuncs) Seq(n ...any) ([]int64, error) {
 	start := int64(1)
 	end := int64(0)
 	step := int64(1)
@@ -282,8 +273,8 @@ func (f MathFuncs) Seq(n ...interface{}) ([]int64, error) {
 }
 
 // Max -
-func (f MathFuncs) Max(a interface{}, b ...interface{}) (interface{}, error) {
-	if f.IsFloat(a) || f.containsFloat(b...) {
+func (f MathFuncs) Max(a any, b ...any) (any, error) {
+	if f.IsFloat(a) || slices.ContainsFunc(b, f.IsFloat) {
 		m, err := conv.ToFloat64(a)
 		if err != nil {
 			return nil, fmt.Errorf("expected a number: %w", err)
@@ -321,8 +312,8 @@ func (f MathFuncs) Max(a interface{}, b ...interface{}) (interface{}, error) {
 }
 
 // Min -
-func (f MathFuncs) Min(a interface{}, b ...interface{}) (interface{}, error) {
-	if f.IsFloat(a) || f.containsFloat(b...) {
+func (f MathFuncs) Min(a any, b ...any) (any, error) {
+	if f.IsFloat(a) || slices.ContainsFunc(b, f.IsFloat) {
 		m, err := conv.ToFloat64(a)
 		if err != nil {
 			return nil, fmt.Errorf("expected a number: %w", err)
@@ -358,7 +349,7 @@ func (f MathFuncs) Min(a interface{}, b ...interface{}) (interface{}, error) {
 }
 
 // Ceil -
-func (f MathFuncs) Ceil(n interface{}) (interface{}, error) {
+func (f MathFuncs) Ceil(n any) (any, error) {
 	in, err := conv.ToFloat64(n)
 	if err != nil {
 		return nil, fmt.Errorf("n must be a number: %w", err)
@@ -368,7 +359,7 @@ func (f MathFuncs) Ceil(n interface{}) (interface{}, error) {
 }
 
 // Floor -
-func (f MathFuncs) Floor(n interface{}) (interface{}, error) {
+func (f MathFuncs) Floor(n any) (any, error) {
 	in, err := conv.ToFloat64(n)
 	if err != nil {
 		return nil, fmt.Errorf("n must be a number: %w", err)
@@ -378,7 +369,7 @@ func (f MathFuncs) Floor(n interface{}) (interface{}, error) {
 }
 
 // Round -
-func (f MathFuncs) Round(n interface{}) (interface{}, error) {
+func (f MathFuncs) Round(n any) (any, error) {
 	in, err := conv.ToFloat64(n)
 	if err != nil {
 		return nil, fmt.Errorf("n must be a number: %w", err)

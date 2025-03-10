@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"bytes"
-	"context"
 	"strings"
 	"testing"
 
@@ -42,8 +41,7 @@ func TestOptionalExecArgs(t *testing.T) {
 }
 
 func TestRunMain(t *testing.T) {
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
+	ctx := t.Context()
 
 	err := Main(ctx, []string{"-h"}, nil, nil, nil)
 	require.NoError(t, err)
@@ -60,8 +58,7 @@ func TestRunMain(t *testing.T) {
 }
 
 func TestPostRunExec(t *testing.T) {
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
+	ctx := t.Context()
 
 	out := &bytes.Buffer{}
 	err := postRunExec(ctx, []string{"cat"}, strings.NewReader("hello world"), out, out)

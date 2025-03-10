@@ -97,59 +97,59 @@ func wdForTest(t *testing.T) string {
 }
 
 func TestMergeData(t *testing.T) {
-	def := map[string]interface{}{
+	def := map[string]any{
 		"f": true,
 		"t": false,
 		"z": "def",
 	}
-	out, err := mergeData([]map[string]interface{}{def})
+	out, err := mergeData([]map[string]any{def})
 	require.NoError(t, err)
 	assert.Equal(t, "f: true\nt: false\nz: def\n", string(out))
 
-	over := map[string]interface{}{
+	over := map[string]any{
 		"f": false,
 		"t": true,
 		"z": "over",
 	}
-	out, err = mergeData([]map[string]interface{}{over, def})
+	out, err = mergeData([]map[string]any{over, def})
 	require.NoError(t, err)
 	assert.Equal(t, "f: false\nt: true\nz: over\n", string(out))
 
-	over = map[string]interface{}{
+	over = map[string]any{
 		"f": false,
 		"t": true,
 		"z": "over",
-		"m": map[string]interface{}{
+		"m": map[string]any{
 			"a": "aaa",
 		},
 	}
-	out, err = mergeData([]map[string]interface{}{over, def})
+	out, err = mergeData([]map[string]any{over, def})
 	require.NoError(t, err)
 	assert.Equal(t, "f: false\nm:\n  a: aaa\nt: true\nz: over\n", string(out))
 
-	uber := map[string]interface{}{
+	uber := map[string]any{
 		"z": "über",
 	}
-	out, err = mergeData([]map[string]interface{}{uber, over, def})
+	out, err = mergeData([]map[string]any{uber, over, def})
 	require.NoError(t, err)
 	assert.Equal(t, "f: false\nm:\n  a: aaa\nt: true\nz: über\n", string(out))
 
-	uber = map[string]interface{}{
+	uber = map[string]any{
 		"m": "notamap",
-		"z": map[string]interface{}{
+		"z": map[string]any{
 			"b": "bbb",
 		},
 	}
-	out, err = mergeData([]map[string]interface{}{uber, over, def})
+	out, err = mergeData([]map[string]any{uber, over, def})
 	require.NoError(t, err)
 	assert.Equal(t, "f: false\nm: notamap\nt: true\nz:\n  b: bbb\n", string(out))
 
-	uber = map[string]interface{}{
-		"m": map[string]interface{}{
+	uber = map[string]any{
+		"m": map[string]any{
 			"b": "bbb",
 		},
 	}
-	out, err = mergeData([]map[string]interface{}{uber, over, def})
+	out, err = mergeData([]map[string]any{uber, over, def})
 	require.NoError(t, err)
 	assert.Equal(t, "f: false\nm:\n  a: aaa\n  b: bbb\nt: true\nz: over\n", string(out))
 }

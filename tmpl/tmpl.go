@@ -11,12 +11,12 @@ import (
 // Template -
 type Template struct {
 	root       *template.Template
-	defaultCtx interface{}
+	defaultCtx any
 	path       string
 }
 
 // New -
-func New(root *template.Template, tctx interface{}, path string) *Template {
+func New(root *template.Template, tctx any, path string) *Template {
 	return &Template{root, tctx, path}
 }
 
@@ -43,7 +43,7 @@ func (t *Template) PathDir() (string, error) {
 // {{ tmpl.Inline "name" "inline template" }} - named template with default context
 // {{ tmpl.Inline "inline template" $foo }} - unnamed (single-use) template with given context
 // {{ tmpl.Inline "name" "inline template" $foo }} - named template with given context
-func (t *Template) Inline(args ...interface{}) (string, error) {
+func (t *Template) Inline(args ...any) (string, error) {
 	name, in, ctx, err := t.parseArgs(args...)
 	if err != nil {
 		return "", err
@@ -51,7 +51,7 @@ func (t *Template) Inline(args ...interface{}) (string, error) {
 	return t.inline(name, in, ctx)
 }
 
-func (t *Template) inline(name, in string, ctx interface{}) (string, error) {
+func (t *Template) inline(name, in string, ctx any) (string, error) {
 	tmpl, err := t.root.New(name).Parse(in)
 	if err != nil {
 		return "", err
@@ -60,7 +60,7 @@ func (t *Template) inline(name, in string, ctx interface{}) (string, error) {
 }
 
 // Exec - execute (render) a template - this is the built-in `template` action, except with output...
-func (t *Template) Exec(name string, tmplcontext ...interface{}) (string, error) {
+func (t *Template) Exec(name string, tmplcontext ...any) (string, error) {
 	ctx := t.defaultCtx
 	if len(tmplcontext) == 1 {
 		ctx = tmplcontext[0]
@@ -72,7 +72,7 @@ func (t *Template) Exec(name string, tmplcontext ...interface{}) (string, error)
 	return render(tmpl, ctx)
 }
 
-func render(tmpl *template.Template, ctx interface{}) (string, error) {
+func render(tmpl *template.Template, ctx any) (string, error) {
 	out := &bytes.Buffer{}
 	err := tmpl.Execute(out, ctx)
 	if err != nil {
@@ -81,7 +81,7 @@ func render(tmpl *template.Template, ctx interface{}) (string, error) {
 	return out.String(), nil
 }
 
-func (t *Template) parseArgs(args ...interface{}) (name, in string, ctx interface{}, err error) {
+func (t *Template) parseArgs(args ...any) (name, in string, ctx any, err error) {
 	name = "<inline>"
 	ctx = t.defaultCtx
 
@@ -97,7 +97,7 @@ func (t *Template) parseArgs(args ...interface{}) (name, in string, ctx interfac
 	case 1:
 		in = first
 	case 2:
-		// this can either be (name string, in string) or (in string, ctx interface{})
+		// this can either be (name string, in string) or (in string, ctx any)
 		switch second := args[1].(type) {
 		case string:
 			name = first

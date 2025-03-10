@@ -14,7 +14,7 @@ import (
 )
 
 // CreateTimeFuncs -
-func CreateTimeFuncs(ctx context.Context) map[string]interface{} {
+func CreateTimeFuncs(ctx context.Context) map[string]any {
 	ns := &TimeFuncs{
 		ctx:         ctx,
 		ANSIC:       gotime.ANSIC,
@@ -34,8 +34,8 @@ func CreateTimeFuncs(ctx context.Context) map[string]interface{} {
 		StampNano:   gotime.StampNano,
 	}
 
-	return map[string]interface{}{
-		"time": func() interface{} { return ns },
+	return map[string]any{
+		"time": func() any { return ns },
 	}
 }
 
@@ -70,18 +70,18 @@ func (TimeFuncs) ZoneOffset() int {
 }
 
 // Parse -
-func (TimeFuncs) Parse(layout string, value interface{}) (gotime.Time, error) {
+func (TimeFuncs) Parse(layout string, value any) (gotime.Time, error) {
 	return gotime.Parse(layout, conv.ToString(value))
 }
 
 // ParseLocal -
-func (f TimeFuncs) ParseLocal(layout string, value interface{}) (gotime.Time, error) {
+func (f TimeFuncs) ParseLocal(layout string, value any) (gotime.Time, error) {
 	tz := env.Getenv("TZ", "Local")
 	return f.ParseInLocation(layout, tz, value)
 }
 
 // ParseInLocation -
-func (TimeFuncs) ParseInLocation(layout, location string, value interface{}) (gotime.Time, error) {
+func (TimeFuncs) ParseInLocation(layout, location string, value any) (gotime.Time, error) {
 	loc, err := gotime.LoadLocation(location)
 	if err != nil {
 		return gotime.Time{}, err
@@ -96,7 +96,7 @@ func (TimeFuncs) Now() gotime.Time {
 
 // Unix - convert UNIX time (in seconds since the UNIX epoch) into a time.Time for further processing
 // Takes a string or number (int or float)
-func (TimeFuncs) Unix(in interface{}) (gotime.Time, error) {
+func (TimeFuncs) Unix(in any) (gotime.Time, error) {
 	sec, nsec, err := parseNum(in)
 	if err != nil {
 		return gotime.Time{}, err
@@ -105,7 +105,7 @@ func (TimeFuncs) Unix(in interface{}) (gotime.Time, error) {
 }
 
 // Nanosecond -
-func (TimeFuncs) Nanosecond(n interface{}) (gotime.Duration, error) {
+func (TimeFuncs) Nanosecond(n any) (gotime.Duration, error) {
 	in, err := conv.ToInt64(n)
 	if err != nil {
 		return 0, fmt.Errorf("expected a number: %w", err)
@@ -115,7 +115,7 @@ func (TimeFuncs) Nanosecond(n interface{}) (gotime.Duration, error) {
 }
 
 // Microsecond -
-func (TimeFuncs) Microsecond(n interface{}) (gotime.Duration, error) {
+func (TimeFuncs) Microsecond(n any) (gotime.Duration, error) {
 	in, err := conv.ToInt64(n)
 	if err != nil {
 		return 0, fmt.Errorf("expected a number: %w", err)
@@ -125,7 +125,7 @@ func (TimeFuncs) Microsecond(n interface{}) (gotime.Duration, error) {
 }
 
 // Millisecond -
-func (TimeFuncs) Millisecond(n interface{}) (gotime.Duration, error) {
+func (TimeFuncs) Millisecond(n any) (gotime.Duration, error) {
 	in, err := conv.ToInt64(n)
 	if err != nil {
 		return 0, fmt.Errorf("expected a number: %w", err)
@@ -135,7 +135,7 @@ func (TimeFuncs) Millisecond(n interface{}) (gotime.Duration, error) {
 }
 
 // Second -
-func (TimeFuncs) Second(n interface{}) (gotime.Duration, error) {
+func (TimeFuncs) Second(n any) (gotime.Duration, error) {
 	in, err := conv.ToInt64(n)
 	if err != nil {
 		return 0, fmt.Errorf("expected a number: %w", err)
@@ -145,7 +145,7 @@ func (TimeFuncs) Second(n interface{}) (gotime.Duration, error) {
 }
 
 // Minute -
-func (TimeFuncs) Minute(n interface{}) (gotime.Duration, error) {
+func (TimeFuncs) Minute(n any) (gotime.Duration, error) {
 	in, err := conv.ToInt64(n)
 	if err != nil {
 		return 0, fmt.Errorf("expected a number: %w", err)
@@ -155,7 +155,7 @@ func (TimeFuncs) Minute(n interface{}) (gotime.Duration, error) {
 }
 
 // Hour -
-func (TimeFuncs) Hour(n interface{}) (gotime.Duration, error) {
+func (TimeFuncs) Hour(n any) (gotime.Duration, error) {
 	in, err := conv.ToInt64(n)
 	if err != nil {
 		return 0, fmt.Errorf("expected a number: %w", err)
@@ -165,7 +165,7 @@ func (TimeFuncs) Hour(n interface{}) (gotime.Duration, error) {
 }
 
 // ParseDuration -
-func (TimeFuncs) ParseDuration(n interface{}) (gotime.Duration, error) {
+func (TimeFuncs) ParseDuration(n any) (gotime.Duration, error) {
 	return gotime.ParseDuration(conv.ToString(n))
 }
 
@@ -182,7 +182,7 @@ func (TimeFuncs) Until(n gotime.Time) gotime.Duration {
 // convert a number input to a pair of int64s, representing the integer portion and the decimal remainder
 // this can handle a string as well as any integer or float type
 // precision is at the "nano" level (i.e. 1e+9)
-func parseNum(in interface{}) (integral int64, fractional int64, err error) {
+func parseNum(in any) (integral int64, fractional int64, err error) {
 	if s, ok := in.(string); ok {
 		ss := strings.Split(s, ".")
 		if len(ss) > 2 {

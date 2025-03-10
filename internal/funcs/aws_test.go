@@ -12,14 +12,14 @@ import (
 func TestCreateAWSFuncs(t *testing.T) {
 	t.Parallel()
 
-	for i := 0; i < 10; i++ {
+	for i := range 10 {
 		// Run this a bunch to catch race conditions
 		t.Run(strconv.Itoa(i), func(t *testing.T) {
 			t.Parallel()
 
 			ctx := context.Background()
 			fmap := CreateAWSFuncs(ctx)
-			actual := fmap["aws"].(func() interface{})
+			actual := fmap["aws"].(func() any)
 
 			assert.Equal(t, ctx, actual().(*Funcs).ctx)
 		})
@@ -38,7 +38,7 @@ func TestAWSFuncs(t *testing.T) {
 	assert.Equal(t, "unknown", must(af.EC2Region()))
 }
 
-func must(r interface{}, err error) interface{} {
+func must(r any, err error) any {
 	if err != nil {
 		panic(err)
 	}

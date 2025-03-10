@@ -7,10 +7,10 @@ import (
 )
 
 // CreateSemverFuncs -
-func CreateSemverFuncs(ctx context.Context) map[string]interface{} {
+func CreateSemverFuncs(ctx context.Context) map[string]any {
 	ns := &SemverFuncs{ctx}
-	return map[string]interface{}{
-		"semver": func() interface{} { return ns },
+	return map[string]any{
+		"semver": func() any { return ns },
 	}
 }
 

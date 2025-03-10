@@ -13,14 +13,14 @@ import (
 func TestCreateBase64Funcs(t *testing.T) {
 	t.Parallel()
 
-	for i := 0; i < 10; i++ {
+	for i := range 10 {
 		// Run this a bunch to catch race conditions
 		t.Run(strconv.Itoa(i), func(t *testing.T) {
 			t.Parallel()
 
 			ctx := context.Background()
 			fmap := CreateBase64Funcs(ctx)
-			actual := fmap["base64"].(func() interface{})
+			actual := fmap["base64"].(func() any)
 
 			assert.Equal(t, ctx, actual().(*Base64Funcs).ctx)
 		})
@@ -63,7 +63,7 @@ func TestToBytes(t *testing.T) {
 }
 
 func BenchmarkToBytes(b *testing.B) {
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		b.StopTimer()
 		buf := &bytes.Buffer{}
 		buf.WriteString("hi")

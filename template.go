@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"io/fs"
+	"maps"
 	"os"
 	"path/filepath"
 	"text/template"
@@ -22,7 +23,7 @@ import (
 // ignorefile name, like .gitignore
 const gomplateignore = ".gomplateignore"
 
-func addTmplFuncs(f template.FuncMap, root *template.Template, tctx interface{}, path string) {
+func addTmplFuncs(f template.FuncMap, root *template.Template, tctx any, path string) {
 	t := tmpl.New(root, tctx, path)
 	tns := func() *tmpl.Template { return t }
 	f["tmpl"] = tns
@@ -37,9 +38,8 @@ func copyFuncMap(funcMap template.FuncMap) template.FuncMap {
 	}
 
 	newFuncMap := make(template.FuncMap, len(funcMap))
-	for k, v := range funcMap {
-		newFuncMap[k] = v
-	}
+	maps.Copy(newFuncMap, funcMap)
+
 	return newFuncMap
 }
 

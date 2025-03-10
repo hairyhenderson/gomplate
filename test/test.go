@@ -27,7 +27,7 @@ func Fail(message string) error {
 }
 
 // Required -
-func Required(message string, value interface{}) (interface{}, error) {
+func Required(message string, value any) (any, error) {
 	if message == "" {
 		message = "can not render template: a required value was not set"
 	}

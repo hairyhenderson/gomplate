@@ -13,11 +13,11 @@ import (
 )
 
 // CreateCollFuncs -
-func CreateCollFuncs(ctx context.Context) map[string]interface{} {
-	f := map[string]interface{}{}
+func CreateCollFuncs(ctx context.Context) map[string]any {
+	f := map[string]any{}
 
 	ns := &CollFuncs{ctx}
-	f["coll"] = func() interface{} { return ns }
+	f["coll"] = func() any { return ns }
 
 	f["has"] = ns.Has
 	f["slice"] = ns.deprecatedSlice
@@ -44,13 +44,13 @@ type CollFuncs struct {
 }
 
 // Slice -
-func (CollFuncs) Slice(args ...interface{}) []interface{} {
+func (CollFuncs) Slice(args ...any) []any {
 	return coll.Slice(args...)
 }
 
 // deprecatedSlice -
 // Deprecated: use coll.Slice instead
-func (f *CollFuncs) deprecatedSlice(args ...interface{}) []interface{} {
+func (f *CollFuncs) deprecatedSlice(args ...any) []any {
 	deprecated.WarnDeprecated(f.ctx, "the 'slice' alias for coll.Slice is deprecated - use coll.Slice instead")
 	return coll.Slice(args...)
 }
@@ -61,7 +61,7 @@ func (CollFuncs) GoSlice(item reflect.Value, indexes ...reflect.Value) (reflect.
 }
 
 // Has -
-func (CollFuncs) Has(in interface{}, key string) bool {
+func (CollFuncs) Has(in any, key string) bool {
 	return coll.Has(in, key)
 }
 
@@ -70,7 +70,7 @@ func (CollFuncs) Has(in interface{}, key string) bool {
 // the arguments are ordered differently for pipeline compatibility. Also, this
 // function is more strict, and will return an error when the value doesn't
 // contain the given key.
-func (CollFuncs) Index(args ...interface{}) (interface{}, error) {
+func (CollFuncs) Index(args ...any) (any, error) {
 	if len(args) < 2 {
 		return nil, fmt.Errorf("wrong number of args: wanted at least 2, got %d", len(args))
 	}
@@ -82,50 +82,50 @@ func (CollFuncs) Index(args ...interface{}) (interface{}, error) {
 }
 
 // Dict -
-func (CollFuncs) Dict(in ...interface{}) (map[string]interface{}, error) {
+func (CollFuncs) Dict(in ...any) (map[string]any, error) {
 	return coll.Dict(in...)
 }
 
 // Keys -
-func (CollFuncs) Keys(in ...map[string]interface{}) ([]string, error) {
+func (CollFuncs) Keys(in ...map[string]any) ([]string, error) {
 	return coll.Keys(in...)
 }
 
 // Values -
-func (CollFuncs) Values(in ...map[string]interface{}) ([]interface{}, error) {
+func (CollFuncs) Values(in ...map[string]any) ([]any, error) {
 	return coll.Values(in...)
 }
 
 // Append -
-func (CollFuncs) Append(v interface{}, list interface{}) ([]interface{}, error) {
+func (CollFuncs) Append(v any, list any) ([]any, error) {
 	return coll.Append(v, list)
 }
 
 // Prepend -
-func (CollFuncs) Prepend(v interface{}, list interface{}) ([]interface{}, error) {
+func (CollFuncs) Prepend(v any, list any) ([]any, error) {
 	return coll.Prepend(v, list)
 }
 
 // Uniq -
-func (CollFuncs) Uniq(in interface{}) ([]interface{}, error) {
+func (CollFuncs) Uniq(in any) ([]any, error) {
 	return coll.Uniq(in)
 }
 
 // Reverse -
-func (CollFuncs) Reverse(in interface{}) ([]interface{}, error) {
+func (CollFuncs) Reverse(in any) ([]any, error) {
 	return coll.Reverse(in)
 }
 
 // Merge -
-func (CollFuncs) Merge(dst map[string]interface{}, src ...map[string]interface{}) (map[string]interface{}, error) {
+func (CollFuncs) Merge(dst map[string]any, src ...map[string]any) (map[string]any, error) {
 	return coll.Merge(dst, src...)
 }
 
 // Sort -
-func (CollFuncs) Sort(args ...interface{}) ([]interface{}, error) {
+func (CollFuncs) Sort(args ...any) ([]any, error) {
 	var (
 		key  string
-		list interface{}
+		list any
 	)
 	if len(args) == 0 || len(args) > 2 {
 		return nil, fmt.Errorf("wrong number of args: wanted 1 or 2, got %d", len(args))
@@ -141,17 +141,17 @@ func (CollFuncs) Sort(args ...interface{}) ([]interface{}, error) {
 }
 
 // JSONPath -
-func (CollFuncs) JSONPath(p string, in interface{}) (interface{}, error) {
+func (CollFuncs) JSONPath(p string, in any) (any, error) {
 	return coll.JSONPath(p, in)
 }
 
 // JQ -
-func (f *CollFuncs) JQ(jqExpr string, in interface{}) (interface{}, error) {
+func (f *CollFuncs) JQ(jqExpr string, in any) (any, error) {
 	return coll.JQ(f.ctx, jqExpr, in)
 }
 
 // Flatten -
-func (CollFuncs) Flatten(args ...interface{}) ([]interface{}, error) {
+func (CollFuncs) Flatten(args ...any) ([]any, error) {
 	if len(args) == 0 || len(args) > 2 {
 		return nil, fmt.Errorf("wrong number of args: wanted 1 or 2, got %d", len(args))
 	}
@@ -172,22 +172,22 @@ func (CollFuncs) Flatten(args ...interface{}) ([]interface{}, error) {
 	return coll.Flatten(list, depth)
 }
 
-func pickOmitArgs(args ...interface{}) (map[string]interface{}, []string, error) {
+func pickOmitArgs(args ...any) (map[string]any, []string, error) {
 	if len(args) <= 1 {
 		return nil, nil, fmt.Errorf("wrong number of args: wanted 2 or more, got %d", len(args))
 	}
 
-	m, ok := args[len(args)-1].(map[string]interface{})
+	m, ok := args[len(args)-1].(map[string]any)
 	if !ok {
-		return nil, nil, fmt.Errorf("wrong map type: must be map[string]interface{}, got %T", args[len(args)-1])
+		return nil, nil, fmt.Errorf("wrong map type: must be map[string]any, got %T", args[len(args)-1])
 	}
 
 	// special-case - if there's only one key and it's a slice, expand it
 	if len(args) == 2 {
 		if reflect.TypeOf(args[0]).Kind() == reflect.Slice {
 			sl := reflect.ValueOf(args[0])
-			expandedArgs := make([]interface{}, sl.Len()+1)
-			for i := 0; i < sl.Len(); i++ {
+			expandedArgs := make([]any, sl.Len()+1)
+			for i := range sl.Len() {
 				expandedArgs[i] = sl.Index(i).Interface()
 			}
 			expandedArgs[len(expandedArgs)-1] = m
@@ -207,7 +207,7 @@ func pickOmitArgs(args ...interface{}) (map[string]interface{}, []string, error)
 }
 
 // Pick -
-func (CollFuncs) Pick(args ...interface{}) (map[string]interface{}, error) {
+func (CollFuncs) Pick(args ...any) (map[string]any, error) {
 	m, keys, err := pickOmitArgs(args...)
 	if err != nil {
 		return nil, err
@@ -216,7 +216,7 @@ func (CollFuncs) Pick(args ...interface{}) (map[string]interface{}, error) {
 }
 
 // Omit -
-func (CollFuncs) Omit(args ...interface{}) (map[string]interface{}, error) {
+func (CollFuncs) Omit(args ...any) (map[string]any, error) {
 	m, keys, err := pickOmitArgs(args...)
 	if err != nil {
 		return nil, err
@@ -225,14 +225,14 @@ func (CollFuncs) Omit(args ...interface{}) (map[string]interface{}, error) {
 }
 
 // Set -
-func (CollFuncs) Set(key string, value interface{}, m map[string]interface{}) (map[string]interface{}, error) {
+func (CollFuncs) Set(key string, value any, m map[string]any) (map[string]any, error) {
 	m[key] = value
 
 	return m, nil
 }
 
 // Unset -
-func (CollFuncs) Unset(key string, m map[string]interface{}) (map[string]interface{}, error) {
+func (CollFuncs) Unset(key string, m map[string]any) (map[string]any, error) {
 	delete(m, key)
 
 	return m, nil

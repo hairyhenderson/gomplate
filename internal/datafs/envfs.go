@@ -194,7 +194,7 @@ func (fi staticFileInfo) Mode() fs.FileMode           { return fi.mode }
 func (fi *staticFileInfo) ModTime() time.Time         { return fi.modTime }
 func (fi staticFileInfo) Name() string                { return fi.name }
 func (fi staticFileInfo) Size() int64                 { return fi.size }
-func (fi staticFileInfo) Sys() interface{}            { return nil }
+func (fi staticFileInfo) Sys() any                    { return nil }
 func (fi *staticFileInfo) Info() (fs.FileInfo, error) { return fi, nil }
 func (fi staticFileInfo) Type() fs.FileMode           { return fi.Mode().Type() }
 

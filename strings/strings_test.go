@@ -42,7 +42,7 @@ func BenchmarkIndent(b *testing.B) {
 	longString := strings.Repeat("a fairly long string \n", 20)
 	outs := make([]string, b.N*8)
 	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
+	for i := range b.N {
 		outs[0+i*8], _ = Indent(20, " ", longString)
 		outs[1+i*8], _ = Indent(-1, "  ", actual)
 		outs[2+i*8], _ = Indent(1, "  ", actual)

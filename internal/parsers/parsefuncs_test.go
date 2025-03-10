@@ -15,14 +15,14 @@ import (
 )
 
 func TestUnmarshalObj(t *testing.T) {
-	expected := map[string]interface{}{
-		"foo":     map[string]interface{}{"bar": "baz"},
+	expected := map[string]any{
+		"foo":     map[string]any{"bar": "baz"},
 		"one":     1.0,
 		"true":    true,
 		"escaped": "\"/\\\b\f\n\r\t∞",
 	}
 
-	test := func(actual map[string]interface{}, err error) {
+	test := func(actual map[string]any, err error) {
 		t.Helper()
 		require.NoError(t, err)
 		assert.Equal(t, expected["foo"], actual["foo"], "foo")
@@ -56,24 +56,24 @@ one: 1.0
 escaped: "\"\/\\\b\f\n\r\t\u221e"
 `))
 
-	obj := make(map[string]interface{})
-	_, err := unmarshalObj(obj, "SOMETHING", func(_ []byte, _ interface{}) error {
+	obj := make(map[string]any)
+	_, err := unmarshalObj(obj, "SOMETHING", func(_ []byte, _ any) error {
 		return fmt.Errorf("fail")
 	})
 	assert.EqualError(t, err, "unable to unmarshal object SOMETHING: fail")
 }
 
 func TestUnmarshalArray(t *testing.T) {
-	expected := []interface{}{
+	expected := []any{
 		"foo", "bar",
-		map[string]interface{}{
-			"baz":   map[string]interface{}{"qux": true},
-			"quux":  map[string]interface{}{"42": 18},
-			"corge": map[string]interface{}{"false": "blah"},
+		map[string]any{
+			"baz":   map[string]any{"qux": true},
+			"quux":  map[string]any{"42": 18},
+			"corge": map[string]any{"false": "blah"},
 		},
 	}
 
-	test := func(actual []interface{}, err error) {
+	test := func(actual []any, err error) {
 		require.NoError(t, err)
 		assert.EqualValues(t, expected, actual)
 	}
@@ -116,20 +116,20 @@ this shouldn't be reached
 `)
 	require.NoError(t, err)
 	assert.EqualValues(t,
-		[]interface{}{
-			map[string]interface{}{
-				"foo": map[string]interface{}{
+		[]any{
+			map[string]any{
+				"foo": map[string]any{
 					"bar": "baz",
 				},
 			},
-			map[string]interface{}{
-				"qux": map[string]interface{}{
+			map[string]any{
+				"qux": map[string]any{
 					"bar":  "baz",
 					"quux": "corge",
 				},
 			},
-			map[string]interface{}{
-				"baz": map[string]interface{}{
+			map[string]any{
+				"baz": map[string]any{
 					"qux":   true,
 					"42":    18,
 					"false": "blah",
@@ -138,8 +138,8 @@ this shouldn't be reached
 		},
 		actual)
 
-	obj := make([]interface{}, 1)
-	_, err = unmarshalArray(obj, "SOMETHING", func(_ []byte, _ interface{}) error {
+	obj := make([]any, 1)
+	_, err = unmarshalArray(obj, "SOMETHING", func(_ []byte, _ any) error {
 		return fmt.Errorf("fail")
 	})
 	assert.EqualError(t, err, "unable to unmarshal array SOMETHING: fail")
@@ -147,12 +147,12 @@ this shouldn't be reached
 
 func TestMarshalObj(t *testing.T) {
 	expected := "foo"
-	actual, err := marshalObj(nil, func(_ interface{}) ([]byte, error) {
+	actual, err := marshalObj(nil, func(_ any) ([]byte, error) {
 		return []byte("foo"), nil
 	})
 	require.NoError(t, err)
 	assert.Equal(t, expected, actual)
-	_, err = marshalObj(nil, func(_ interface{}) ([]byte, error) {
+	_, err = marshalObj(nil, func(_ any) ([]byte, error) {
 		return nil, fmt.Errorf("fail")
 	})
 	require.Error(t, err)
@@ -179,13 +179,13 @@ func (b *badObject) CodecDecodeSelf(_ *codec.Decoder) {
 
 func TestToJSON(t *testing.T) {
 	expected := `{"down":{"the":{"rabbit":{"hole":true}}},"foo":"bar","one":1,"true":true}`
-	in := map[string]interface{}{
+	in := map[string]any{
 		"foo":  "bar",
 		"one":  1,
 		"true": true,
-		"down": map[interface{}]interface{}{
-			"the": map[interface{}]interface{}{
-				"rabbit": map[interface{}]interface{}{
+		"down": map[any]any{
+			"the": map[any]any{
+				"rabbit": map[any]any{
 					"hole": true,
 				},
 			},
@@ -212,13 +212,13 @@ func TestToJSONPretty(t *testing.T) {
   "one": 1,
   "true": true
 }`
-	in := map[string]interface{}{
+	in := map[string]any{
 		"foo":  "bar",
 		"one":  1,
 		"true": true,
-		"down": map[string]interface{}{
-			"the": map[string]interface{}{
-				"rabbit": map[string]interface{}{
+		"down": map[string]any{
+			"the": map[string]any{
+				"rabbit": map[string]any{
 					"hole": true,
 				},
 			},
@@ -244,13 +244,13 @@ one: 1
 "true": true
 `
 	mst, _ := time.LoadLocation("MST")
-	in := map[string]interface{}{
+	in := map[string]any{
 		"foo":  "bar",
 		"one":  1,
 		"true": true,
 		`multi
 line
-key`: map[string]interface{}{
+key`: map[string]any{
 			"hello": "world",
 		},
 		"d": time.Date(2006, time.January, 2, 15, 4, 5, 999999999, mst),
@@ -384,7 +384,7 @@ func TestToCSV(t *testing.T) {
 	require.Error(t, err)
 
 	expected = "first,second,third\r\n1,2,3\r\n4,5,6\r\n"
-	out, err = ToCSV([][]interface{}{
+	out, err = ToCSV([][]any{
 		{"first", "second", "third"},
 		{"1", "2", "3"},
 		{"4", "5", "6"},
@@ -393,10 +393,10 @@ func TestToCSV(t *testing.T) {
 	assert.Equal(t, expected, out)
 
 	expected = "first|second|third\r\n1|2|3\r\n4|5|6\r\n"
-	out, err = ToCSV("|", []interface{}{
-		[]interface{}{"first", "second", "third"},
-		[]interface{}{1, "2", 3},
-		[]interface{}{"4", 5, "6"},
+	out, err = ToCSV("|", []any{
+		[]any{"first", "second", "third"},
+		[]any{1, "2", 3},
+		[]any{"4", 5, "6"},
 	})
 	require.NoError(t, err)
 	assert.Equal(t, expected, out)
@@ -439,36 +439,36 @@ hosts = [
   "omega"
 ]
 `
-	expected := map[string]interface{}{
+	expected := map[string]any{
 		"title": "TOML Example",
-		"owner": map[string]interface{}{
+		"owner": map[string]any{
 			"name":         "Tom Preston-Werner",
 			"organization": "GitHub",
 			"bio":          "GitHub Cofounder & CEO\nLikes tater tots and beer.",
 			"dob":          time.Date(1979, time.May, 27, 7, 32, 0, 0, time.UTC),
 		},
-		"database": map[string]interface{}{
+		"database": map[string]any{
 			"server":         "192.168.1.1",
-			"ports":          []interface{}{int64(8001), int64(8001), int64(8002)},
+			"ports":          []any{int64(8001), int64(8001), int64(8002)},
 			"connection_max": int64(5000),
 			"enabled":        true,
 		},
-		"servers": map[string]interface{}{
-			"alpha": map[string]interface{}{
+		"servers": map[string]any{
+			"alpha": map[string]any{
 				"ip": "10.0.0.1",
 				"dc": "eqdc10",
 			},
-			"beta": map[string]interface{}{
+			"beta": map[string]any{
 				"ip": "10.0.0.2",
 				"dc": "eqdc10",
 			},
 		},
-		"clients": map[string]interface{}{
-			"data": []interface{}{
-				[]interface{}{"gamma", "delta"},
-				[]interface{}{int64(1), int64(2)},
+		"clients": map[string]any{
+			"data": []any{
+				[]any{"gamma", "delta"},
+				[]any{int64(1), int64(2)},
 			},
-			"hosts": []interface{}{"alpha", "omega"},
+			"hosts": []any{"alpha", "omega"},
 		},
 	}
 
@@ -487,13 +487,13 @@ true = true
     [down.the.rabbit]
       hole = true
 `
-	in := map[string]interface{}{
+	in := map[string]any{
 		"foo":  "bar",
 		"one":  1,
 		"true": true,
-		"down": map[interface{}]interface{}{
-			"the": map[interface{}]interface{}{
-				"rabbit": map[interface{}]interface{}{
+		"down": map[any]any{
+			"the": map[any]any{
+				"rabbit": map[any]any{
 					"hole": true,
 				},
 			},
@@ -507,7 +507,7 @@ true = true
 func TestDecryptEJSON(t *testing.T) {
 	privateKey := "e282d979654f88267f7e6c2d8268f1f4314b8673579205ed0029b76de9c8223f"
 	publicKey := "6e05ec625bcdca34864181cc43e6fcc20a57732a453bc2f4a2e117ffdf1a6762"
-	expected := map[string]interface{}{
+	expected := map[string]any{
 		"password":     "supersecret",
 		"_unencrypted": "notsosecret",
 	}
@@ -555,7 +555,7 @@ FOO.BAR = "values can be double-quoted, and shell\nescapes are supported"
 BAZ = "variable expansion: ${FOO}"
 QUX='single quotes ignore $variables'
 `
-	expected := map[string]interface{}{
+	expected := map[string]any{
 		"FOO":     "a regular unquoted value",
 		"BAR":     "another value, exports are ignored",
 		"FOO.BAR": "values can be double-quoted, and shell\nescapes are supported",
@@ -569,43 +569,43 @@ QUX='single quotes ignore $variables'
 
 func TestStringifyYAMLArrayMapKeys(t *testing.T) {
 	cases := []struct {
-		input    []interface{}
-		want     []interface{}
+		input    []any
+		want     []any
 		replaced bool
 	}{
 		{
-			[]interface{}{map[interface{}]interface{}{"a": 1, "b": 2}},
-			[]interface{}{map[string]interface{}{"a": 1, "b": 2}},
+			[]any{map[any]any{"a": 1, "b": 2}},
+			[]any{map[string]any{"a": 1, "b": 2}},
 			false,
 		},
 		{
-			[]interface{}{map[interface{}]interface{}{"a": []interface{}{1, map[interface{}]interface{}{"b": 2}}}},
-			[]interface{}{map[string]interface{}{"a": []interface{}{1, map[string]interface{}{"b": 2}}}},
+			[]any{map[any]any{"a": []any{1, map[any]any{"b": 2}}}},
+			[]any{map[string]any{"a": []any{1, map[string]any{"b": 2}}}},
 			false,
 		},
 		{
-			[]interface{}{map[interface{}]interface{}{true: 1, "b": false}},
-			[]interface{}{map[string]interface{}{"true": 1, "b": false}},
+			[]any{map[any]any{true: 1, "b": false}},
+			[]any{map[string]any{"true": 1, "b": false}},
 			false,
 		},
 		{
-			[]interface{}{map[interface{}]interface{}{1: "a", 2: "b"}},
-			[]interface{}{map[string]interface{}{"1": "a", "2": "b"}},
+			[]any{map[any]any{1: "a", 2: "b"}},
+			[]any{map[string]any{"1": "a", "2": "b"}},
 			false,
 		},
 		{
-			[]interface{}{map[interface{}]interface{}{"a": map[interface{}]interface{}{"b": 1}}},
-			[]interface{}{map[string]interface{}{"a": map[string]interface{}{"b": 1}}},
+			[]any{map[any]any{"a": map[any]any{"b": 1}}},
+			[]any{map[string]any{"a": map[string]any{"b": 1}}},
 			false,
 		},
 		{
-			[]interface{}{map[string]interface{}{"a": map[string]interface{}{"b": 1}}},
-			[]interface{}{map[string]interface{}{"a": map[string]interface{}{"b": 1}}},
+			[]any{map[string]any{"a": map[string]any{"b": 1}}},
+			[]any{map[string]any{"a": map[string]any{"b": 1}}},
 			false,
 		},
 		{
-			[]interface{}{map[interface{}]interface{}{1: "a", 2: "b"}},
-			[]interface{}{map[string]interface{}{"1": "a", "2": "b"}},
+			[]any{map[any]any{1: "a", 2: "b"}},
+			[]any{map[string]any{"1": "a", "2": "b"}},
 			false,
 		},
 	}
@@ -619,36 +619,36 @@ func TestStringifyYAMLArrayMapKeys(t *testing.T) {
 
 func TestStringifyYAMLMapMapKeys(t *testing.T) {
 	cases := []struct {
-		input map[string]interface{}
-		want  map[string]interface{}
+		input map[string]any
+		want  map[string]any
 	}{
 		{
-			map[string]interface{}{"root": map[interface{}]interface{}{"a": 1, "b": 2}},
-			map[string]interface{}{"root": map[string]interface{}{"a": 1, "b": 2}},
+			map[string]any{"root": map[any]any{"a": 1, "b": 2}},
+			map[string]any{"root": map[string]any{"a": 1, "b": 2}},
 		},
 		{
-			map[string]interface{}{"root": map[interface{}]interface{}{"a": []interface{}{1, map[interface{}]interface{}{"b": 2}}}},
-			map[string]interface{}{"root": map[string]interface{}{"a": []interface{}{1, map[string]interface{}{"b": 2}}}},
+			map[string]any{"root": map[any]any{"a": []any{1, map[any]any{"b": 2}}}},
+			map[string]any{"root": map[string]any{"a": []any{1, map[string]any{"b": 2}}}},
 		},
 		{
-			map[string]interface{}{"root": map[interface{}]interface{}{true: 1, "b": false}},
-			map[string]interface{}{"root": map[string]interface{}{"true": 1, "b": false}},
+			map[string]any{"root": map[any]any{true: 1, "b": false}},
+			map[string]any{"root": map[string]any{"true": 1, "b": false}},
 		},
 		{
-			map[string]interface{}{"root": map[interface{}]interface{}{1: "a", 2: "b"}},
-			map[string]interface{}{"root": map[string]interface{}{"1": "a", "2": "b"}},
+			map[string]any{"root": map[any]any{1: "a", 2: "b"}},
+			map[string]any{"root": map[string]any{"1": "a", "2": "b"}},
 		},
 		{
-			map[string]interface{}{"root": map[interface{}]interface{}{"a": map[interface{}]interface{}{"b": 1}}},
-			map[string]interface{}{"root": map[string]interface{}{"a": map[string]interface{}{"b": 1}}},
+			map[string]any{"root": map[any]any{"a": map[any]any{"b": 1}}},
+			map[string]any{"root": map[string]any{"a": map[string]any{"b": 1}}},
 		},
 		{
-			map[string]interface{}{"a": map[string]interface{}{"b": 1}},
-			map[string]interface{}{"a": map[string]interface{}{"b": 1}},
+			map[string]any{"a": map[string]any{"b": 1}},
+			map[string]any{"a": map[string]any{"b": 1}},
 		},
 		{
-			map[string]interface{}{"root": []interface{}{map[interface{}]interface{}{1: "a", 2: "b"}}},
-			map[string]interface{}{"root": []interface{}{map[string]interface{}{"1": "a", "2": "b"}}},
+			map[string]any{"root": []any{map[any]any{1: "a", 2: "b"}}},
+			map[string]any{"root": []any{map[string]any{"1": "a", "2": "b"}}},
 		},
 	}
 
@@ -670,8 +670,8 @@ two: 2
 list: [ 1, 2, 3 ]
 `
 
-	expected := map[string]interface{}{
-		"matches": []interface{}{
+	expected := map[string]any{
+		"matches": []any{
 			"localhost:443",
 			"localhost",
 			"443",
@@ -679,7 +679,7 @@ list: [ 1, 2, 3 ]
 		"one":            int64(1),
 		"two":            int64(2),
 		"two-and-a-half": 2.5,
-		"list":           []interface{}{int64(1), int64(2), int64(3)},
+		"list":           []any{int64(1), int64(2), int64(3)},
 	}
 
 	out, err := CUE(in)
@@ -688,7 +688,7 @@ list: [ 1, 2, 3 ]
 
 	out, err = CUE(`[1,2,3]`)
 	require.NoError(t, err)
-	assert.Equal(t, []interface{}{int64(1), int64(2), int64(3)}, out)
+	assert.Equal(t, []any{int64(1), int64(2), int64(3)}, out)
 
 	out, err = CUE(`"hello world"`)
 	require.NoError(t, err)
@@ -720,8 +720,8 @@ list: [ 1, 2, 3 ]
 }
 
 func TestToCUE(t *testing.T) {
-	in := map[string]interface{}{
-		"matches": []interface{}{
+	in := map[string]any{
+		"matches": []any{
 			"localhost:443",
 			"localhost",
 			"443",
@@ -729,7 +729,7 @@ func TestToCUE(t *testing.T) {
 		"one":            1,
 		"two":            2,
 		"two-and-a-half": 2.5,
-		"list":           []interface{}{1, 2, 3},
+		"list":           []any{1, 2, 3},
 	}
 
 	expected := `{
@@ -744,7 +744,7 @@ func TestToCUE(t *testing.T) {
 	require.NoError(t, err)
 	assert.EqualValues(t, expected, out)
 
-	out, err = ToCUE([]interface{}{1, 2, 3})
+	out, err = ToCUE([]any{1, 2, 3})
 	require.NoError(t, err)
 	assert.EqualValues(t, `[1, 2, 3]`, out)
 

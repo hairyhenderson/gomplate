@@ -13,14 +13,14 @@ func TestDatasources_VaultEc2(t *testing.T) {
 	accountID, user := "1", "Test"
 	tmpDir, v, srv, cert := setupDatasourcesVaultAWSTest(t, accountID, user)
 
-	v.vc.Logical().Write("secret/foo", map[string]interface{}{"value": "bar"})
+	v.vc.Logical().Write("secret/foo", map[string]any{"value": "bar"})
 	defer v.vc.Logical().Delete("secret/foo")
 
 	err := v.vc.Sys().EnableAuth("aws", "aws", "")
 	require.NoError(t, err)
 	defer v.vc.Sys().DisableAuth("aws")
 
-	_, err = v.vc.Logical().Write("auth/aws/config/client", map[string]interface{}{
+	_, err = v.vc.Logical().Write("auth/aws/config/client", map[string]any{
 		"secret_key": "secret", "access_key": "access",
 		"endpoint":     srv.URL + "/ec2",
 		"iam_endpoint": srv.URL + "/iam",
@@ -29,12 +29,12 @@ func TestDatasources_VaultEc2(t *testing.T) {
 	})
 	require.NoError(t, err)
 
-	_, err = v.vc.Logical().Write("auth/aws/config/certificate/testcert", map[string]interface{}{
+	_, err = v.vc.Logical().Write("auth/aws/config/certificate/testcert", map[string]any{
 		"type": "pkcs7", "aws_public_cert": string(cert),
 	})
 	require.NoError(t, err)
 
-	_, err = v.vc.Logical().Write("auth/aws/role/ami-00000000", map[string]interface{}{
+	_, err = v.vc.Logical().Write("auth/aws/role/ami-00000000", map[string]any{
 		"auth_type": "ec2", "bound_ami_id": "ami-00000000",
 		"policies": "readpol",
 	})

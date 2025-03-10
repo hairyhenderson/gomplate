@@ -13,14 +13,14 @@ import (
 )
 
 func TestCreateCryptoFuncs(t *testing.T) {
-	for i := 0; i < 10; i++ {
+	for i := range 10 {
 		// Run this a bunch to catch race conditions
 		t.Run(strconv.Itoa(i), func(t *testing.T) {
 			t.Parallel()
 
 			ctx := context.Background()
 			fmap := CreateCryptoFuncs(ctx)
-			actual := fmap["crypto"].(func() interface{})
+			actual := fmap["crypto"].(func() any)
 
 			assert.Equal(t, ctx, actual().(*CryptoFuncs).ctx)
 		})

@@ -9,10 +9,10 @@ import (
 )
 
 // CreateUUIDFuncs -
-func CreateUUIDFuncs(ctx context.Context) map[string]interface{} {
+func CreateUUIDFuncs(ctx context.Context) map[string]any {
 	ns := &UUIDFuncs{ctx}
-	return map[string]interface{}{
-		"uuid": func() interface{} { return ns },
+	return map[string]any{
+		"uuid": func() any { return ns },
 	}
 }
 
@@ -47,7 +47,7 @@ func (UUIDFuncs) Nil() (string, error) {
 
 // IsValid - checks if the given UUID is in the correct format. It does not
 // validate whether the version or variant are correct.
-func (f UUIDFuncs) IsValid(in interface{}) (bool, error) {
+func (f UUIDFuncs) IsValid(in any) (bool, error) {
 	_, err := f.Parse(in)
 	return err == nil, nil
 }
@@ -58,7 +58,7 @@ func (f UUIDFuncs) IsValid(in interface{}) (bool, error) {
 // urn:uuid:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx are decoded as well as the
 // Microsoft encoding {xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx} and the raw hex
 // encoding: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx.
-func (UUIDFuncs) Parse(in interface{}) (uuid.UUID, error) {
+func (UUIDFuncs) Parse(in any) (uuid.UUID, error) {
 	u, err := uuid.Parse(conv.ToString(in))
 	if err != nil {
 		return uuid.Nil, err

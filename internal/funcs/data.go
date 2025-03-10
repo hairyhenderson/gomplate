@@ -8,12 +8,12 @@ import (
 )
 
 // CreateDataFuncs -
-func CreateDataFuncs(ctx context.Context) map[string]interface{} {
-	f := map[string]interface{}{}
+func CreateDataFuncs(ctx context.Context) map[string]any {
+	f := map[string]any{}
 
 	ns := &DataFuncs{ctx}
 
-	f["data"] = func() interface{} { return ns }
+	f["data"] = func() any { return ns }
 
 	f["json"] = ns.JSON
 	f["jsonArray"] = ns.JSONArray
@@ -39,27 +39,27 @@ type DataFuncs struct {
 }
 
 // JSON -
-func (f *DataFuncs) JSON(in interface{}) (map[string]interface{}, error) {
+func (f *DataFuncs) JSON(in any) (map[string]any, error) {
 	return parsers.JSON(conv.ToString(in))
 }
 
 // JSONArray -
-func (f *DataFuncs) JSONArray(in interface{}) ([]interface{}, error) {
+func (f *DataFuncs) JSONArray(in any) ([]any, error) {
 	return parsers.JSONArray(conv.ToString(in))
 }
 
 // YAML -
-func (f *DataFuncs) YAML(in interface{}) (map[string]interface{}, error) {
+func (f *DataFuncs) YAML(in any) (map[string]any, error) {
 	return parsers.YAML(conv.ToString(in))
 }
 
 // YAMLArray -
-func (f *DataFuncs) YAMLArray(in interface{}) ([]interface{}, error) {
+func (f *DataFuncs) YAMLArray(in any) ([]any, error) {
 	return parsers.YAMLArray(conv.ToString(in))
 }
 
 // TOML -
-func (f *DataFuncs) TOML(in interface{}) (interface{}, error) {
+func (f *DataFuncs) TOML(in any) (any, error) {
 	return parsers.TOML(conv.ToString(in))
 }
 
@@ -79,36 +79,36 @@ func (f *DataFuncs) CSVByColumn(args ...string) (cols map[string][]string, err e
 }
 
 // CUE -
-func (f *DataFuncs) CUE(in interface{}) (interface{}, error) {
+func (f *DataFuncs) CUE(in any) (any, error) {
 	return parsers.CUE(conv.ToString(in))
 }
 
 // ToCSV -
-func (f *DataFuncs) ToCSV(args ...interface{}) (string, error) {
+func (f *DataFuncs) ToCSV(args ...any) (string, error) {
 	return parsers.ToCSV(args...)
 }
 
 // ToCUE -
-func (f *DataFuncs) ToCUE(in interface{}) (string, error) {
+func (f *DataFuncs) ToCUE(in any) (string, error) {
 	return parsers.ToCUE(in)
 }
 
 // ToJSON -
-func (f *DataFuncs) ToJSON(in interface{}) (string, error) {
+func (f *DataFuncs) ToJSON(in any) (string, error) {
 	return parsers.ToJSON(in)
 }
 
 // ToJSONPretty -
-func (f *DataFuncs) ToJSONPretty(indent string, in interface{}) (string, error) {
+func (f *DataFuncs) ToJSONPretty(indent string, in any) (string, error) {
 	return parsers.ToJSONPretty(indent, in)
 }
 
 // ToYAML -
-func (f *DataFuncs) ToYAML(in interface{}) (string, error) {
+func (f *DataFuncs) ToYAML(in any) (string, error) {
 	return parsers.ToYAML(in)
 }
 
 // ToTOML -
-func (f *DataFuncs) ToTOML(in interface{}) (string, error) {
+func (f *DataFuncs) ToTOML(in any) (string, error) {
 	return parsers.ToTOML(in)
 }

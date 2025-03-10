@@ -20,12 +20,12 @@ import (
 )
 
 // CreateCryptoFuncs -
-func CreateCryptoFuncs(ctx context.Context) map[string]interface{} {
-	f := map[string]interface{}{}
+func CreateCryptoFuncs(ctx context.Context) map[string]any {
+	f := map[string]any{}
 
 	ns := &CryptoFuncs{ctx}
 
-	f["crypto"] = func() interface{} { return ns }
+	f["crypto"] = func() any { return ns }
 	return f
 }
 
@@ -37,7 +37,7 @@ type CryptoFuncs struct {
 // PBKDF2 - Run the Password-Based Key Derivation Function #2 as defined in
 // RFC 2898 (PKCS #5 v2.0). This function outputs the binary result in hex
 // format.
-func (CryptoFuncs) PBKDF2(password, salt, iter, keylen interface{}, hashFunc ...string) (k string, err error) {
+func (CryptoFuncs) PBKDF2(password, salt, iter, keylen any, hashFunc ...string) (k string, err error) {
 	var h gcrypto.Hash
 	if len(hashFunc) == 0 {
 		h = gcrypto.SHA1
@@ -65,36 +65,36 @@ func (CryptoFuncs) PBKDF2(password, salt, iter, keylen interface{}, hashFunc ...
 }
 
 // WPAPSK - Convert an ASCII passphrase to WPA PSK for a given SSID
-func (f CryptoFuncs) WPAPSK(ssid, password interface{}) (string, error) {
+func (f CryptoFuncs) WPAPSK(ssid, password any) (string, error) {
 	return f.PBKDF2(password, ssid, 4096, 32)
 }
 
 // SHA1 - Note: SHA-1 is cryptographically broken and should not be used for secure applications.
-func (f CryptoFuncs) SHA1(input interface{}) string {
+func (f CryptoFuncs) SHA1(input any) string {
 	out, _ := f.SHA1Bytes(input)
 	return fmt.Sprintf("%02x", out)
 }
 
 // SHA224 -
-func (f CryptoFuncs) SHA224(input interface{}) string {
+func (f CryptoFuncs) SHA224(input any) string {
 	out, _ := f.SHA224Bytes(input)
 	return fmt.Sprintf("%02x", out)
 }
 
 // SHA256 -
-func (f CryptoFuncs) SHA256(input interface{}) string {
+func (f CryptoFuncs) SHA256(input any) string {
 	out, _ := f.SHA256Bytes(input)
 	return fmt.Sprintf("%02x", out)
 }
 
 // SHA384 -
-func (f CryptoFuncs) SHA384(input interface{}) string {
+func (f CryptoFuncs) SHA384(input any) string {
 	out, _ := f.SHA384Bytes(input)
 	return fmt.Sprintf("%02x", out)
 }
 
 // SHA512 -
-func (f CryptoFuncs) SHA512(input interface{}) string {
+func (f CryptoFuncs) SHA512(input any) string {
 	out, _ := f.SHA512Bytes(input)
 	return fmt.Sprintf("%02x", out)
 }
@@ -102,7 +102,7 @@ func (f CryptoFuncs) SHA512(input interface{}) string {
 // SHA512_224 -
 //
 //nolint:revive,stylecheck
-func (f CryptoFuncs) SHA512_224(input interface{}) string {
+func (f CryptoFuncs) SHA512_224(input any) string {
 	out, _ := f.SHA512_224Bytes(input)
 	return fmt.Sprintf("%02x", out)
 }
@@ -110,13 +110,13 @@ func (f CryptoFuncs) SHA512_224(input interface{}) string {
 // SHA512_256 -
 //
 //nolint:revive,stylecheck
-func (f CryptoFuncs) SHA512_256(input interface{}) string {
+func (f CryptoFuncs) SHA512_256(input any) string {
 	out, _ := f.SHA512_256Bytes(input)
 	return fmt.Sprintf("%02x", out)
 }
 
 // SHA1 - Note: SHA-1 is cryptographically broken and should not be used for secure applications.
-func (CryptoFuncs) SHA1Bytes(input interface{}) ([]byte, error) {
+func (CryptoFuncs) SHA1Bytes(input any) ([]byte, error) {
 	//nolint:gosec
 	b := sha1.Sum(toBytes(input))
 	out := make([]byte, len(b))
@@ -125,7 +125,7 @@ func (CryptoFuncs) SHA1Bytes(input interface{}) ([]byte, error) {
 }
 
 // SHA224 -
-func (CryptoFuncs) SHA224Bytes(input interface{}) ([]byte, error) {
+func (CryptoFuncs) SHA224Bytes(input any) ([]byte, error) {
 	b := sha256.Sum224(toBytes(input))
 	out := make([]byte, len(b))
 	copy(out, b[:])
@@ -133,7 +133,7 @@ func (CryptoFuncs) SHA224Bytes(input interface{}) ([]byte, error) {
 }
 
 // SHA256 -
-func (CryptoFuncs) SHA256Bytes(input interface{}) ([]byte, error) {
+func (CryptoFuncs) SHA256Bytes(input any) ([]byte, error) {
 	b := sha256.Sum256(toBytes(input))
 	out := make([]byte, len(b))
 	copy(out, b[:])
@@ -141,7 +141,7 @@ func (CryptoFuncs) SHA256Bytes(input interface{}) ([]byte, error) {
 }
 
 // SHA384 -
-func (CryptoFuncs) SHA384Bytes(input interface{}) ([]byte, error) {
+func (CryptoFuncs) SHA384Bytes(input any) ([]byte, error) {
 	b := sha512.Sum384(toBytes(input))
 	out := make([]byte, len(b))
 	copy(out, b[:])
@@ -149,7 +149,7 @@ func (CryptoFuncs) SHA384Bytes(input interface{}) ([]byte, error) {
 }
 
 // SHA512 -
-func (CryptoFuncs) SHA512Bytes(input interface{}) ([]byte, error) {
+func (CryptoFuncs) SHA512Bytes(input any) ([]byte, error) {
 	b := sha512.Sum512(toBytes(input))
 	out := make([]byte, len(b))
 	copy(out, b[:])
@@ -157,7 +157,7 @@ func (CryptoFuncs) SHA512Bytes(input interface{}) ([]byte, error) {
 }
 
 // SHA512_224 -
-func (CryptoFuncs) SHA512_224Bytes(input interface{}) ([]byte, error) {
+func (CryptoFuncs) SHA512_224Bytes(input any) ([]byte, error) {
 	b := sha512.Sum512_224(toBytes(input))
 	out := make([]byte, len(b))
 	copy(out, b[:])
@@ -165,7 +165,7 @@ func (CryptoFuncs) SHA512_224Bytes(input interface{}) ([]byte, error) {
 }
 
 // SHA512_256 -
-func (CryptoFuncs) SHA512_256Bytes(input interface{}) ([]byte, error) {
+func (CryptoFuncs) SHA512_256Bytes(input any) ([]byte, error) {
 	b := sha512.Sum512_256(toBytes(input))
 	out := make([]byte, len(b))
 	copy(out, b[:])
@@ -173,7 +173,7 @@ func (CryptoFuncs) SHA512_256Bytes(input interface{}) ([]byte, error) {
 }
 
 // Bcrypt -
-func (CryptoFuncs) Bcrypt(args ...interface{}) (string, error) {
+func (CryptoFuncs) Bcrypt(args ...any) (string, error) {
 	input := ""
 
 	var err error
@@ -199,7 +199,7 @@ func (CryptoFuncs) Bcrypt(args ...interface{}) (string, error) {
 
 // RSAEncrypt -
 // Experimental!
-func (f *CryptoFuncs) RSAEncrypt(key string, in interface{}) ([]byte, error) {
+func (f *CryptoFuncs) RSAEncrypt(key string, in any) ([]byte, error) {
 	if err := checkExperimental(f.ctx); err != nil {
 		return nil, err
 	}
@@ -229,7 +229,7 @@ func (f *CryptoFuncs) RSADecryptBytes(key string, in []byte) ([]byte, error) {
 
 // RSAGenerateKey -
 // Experimental!
-func (f *CryptoFuncs) RSAGenerateKey(args ...interface{}) (string, error) {
+func (f *CryptoFuncs) RSAGenerateKey(args ...any) (string, error) {
 	err := checkExperimental(f.ctx)
 	if err != nil {
 		return "", err
@@ -261,7 +261,7 @@ func (f *CryptoFuncs) RSADerivePublicKey(privateKey string) (string, error) {
 
 // ECDSAGenerateKey -
 // Experimental!
-func (f *CryptoFuncs) ECDSAGenerateKey(args ...interface{}) (string, error) {
+func (f *CryptoFuncs) ECDSAGenerateKey(args ...any) (string, error) {
 	if err := checkExperimental(f.ctx); err != nil {
 		return "", err
 	}
@@ -343,7 +343,7 @@ func (f *CryptoFuncs) Ed25519DerivePublicKey(privateKey string) (string, error) 
 
 // EncryptAES -
 // Experimental!
-func (f *CryptoFuncs) EncryptAES(key string, args ...interface{}) ([]byte, error) {
+func (f *CryptoFuncs) EncryptAES(key string, args ...any) ([]byte, error) {
 	if err := checkExperimental(f.ctx); err != nil {
 		return nil, err
 	}
@@ -358,7 +358,7 @@ func (f *CryptoFuncs) EncryptAES(key string, args ...interface{}) ([]byte, error
 
 // DecryptAES -
 // Experimental!
-func (f *CryptoFuncs) DecryptAES(key string, args ...interface{}) (string, error) {
+func (f *CryptoFuncs) DecryptAES(key string, args ...any) (string, error) {
 	if err := checkExperimental(f.ctx); err != nil {
 		return "", err
 	}
@@ -369,7 +369,7 @@ func (f *CryptoFuncs) DecryptAES(key string, args ...interface{}) (string, error
 
 // DecryptAESBytes -
 // Experimental!
-func (f *CryptoFuncs) DecryptAESBytes(key string, args ...interface{}) ([]byte, error) {
+func (f *CryptoFuncs) DecryptAESBytes(key string, args ...any) ([]byte, error) {
 	if err := checkExperimental(f.ctx); err != nil {
 		return nil, err
 	}
@@ -382,7 +382,7 @@ func (f *CryptoFuncs) DecryptAESBytes(key string, args ...interface{}) ([]byte, 
 	return crypto.DecryptAESCBC(k, msg)
 }
 
-func parseAESArgs(key string, args ...interface{}) ([]byte, []byte, error) {
+func parseAESArgs(key string, args ...any) ([]byte, []byte, error) {
 	keyBits := 256 // default to AES-256-CBC
 
 	var msg []byte

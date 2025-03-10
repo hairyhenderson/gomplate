@@ -9,14 +9,14 @@ import (
 
 func TestInterfaceSlice(t *testing.T) {
 	data := []struct {
-		in, expected interface{}
+		in, expected any
 	}{
-		{[]int{1, 2, 3}, []interface{}{1, 2, 3}},
-		{[3]int{1, 2, 3}, []interface{}{1, 2, 3}},
-		{[]string{"foo", "bar", "baz"}, []interface{}{"foo", "bar", "baz"}},
-		{[3]string{"foo", "bar", "baz"}, []interface{}{"foo", "bar", "baz"}},
-		{[]interface{}{[]string{}, []int{1, 2}, 3}, []interface{}{[]string{}, []int{1, 2}, 3}},
-		{[3]interface{}{[]string{}, []int{1, 2}, 3}, []interface{}{[]string{}, []int{1, 2}, 3}},
+		{[]int{1, 2, 3}, []any{1, 2, 3}},
+		{[3]int{1, 2, 3}, []any{1, 2, 3}},
+		{[]string{"foo", "bar", "baz"}, []any{"foo", "bar", "baz"}},
+		{[3]string{"foo", "bar", "baz"}, []any{"foo", "bar", "baz"}},
+		{[]any{[]string{}, []int{1, 2}, 3}, []any{[]string{}, []int{1, 2}, 3}},
+		{[3]any{[]string{}, []int{1, 2}, 3}, []any{[]string{}, []int{1, 2}, 3}},
 	}
 
 	for _, d := range data {
@@ -30,18 +30,18 @@ func TestInterfaceSlice(t *testing.T) {
 }
 
 func BenchmarkInterfaceSlice(b *testing.B) {
-	data := []interface{}{
+	data := []any{
 		[]int{1, 2, 3},
 		[3]int{1, 2, 3},
 		[]string{"foo", "bar", "baz", "foo", "bar", "baz", "foo", "bar", "baz", "foo", "bar", "baz"},
 		[12]string{"foo", "bar", "baz", "foo", "bar", "baz", "foo", "bar", "baz", "foo", "bar", "baz"},
-		[]interface{}{[]string{}, []int{1, 2}, 3},
-		[3]interface{}{[]string{}, []int{1, 2}, 3},
+		[]any{[]string{}, []int{1, 2}, 3},
+		[3]any{[]string{}, []int{1, 2}, 3},
 	}
 
 	for _, d := range data {
 		b.Run(fmt.Sprintf("%T(%v)", d, d), func(b *testing.B) {
-			for i := 0; i < b.N; i++ {
+			for b.Loop() {
 				InterfaceSlice(d)
 			}
 		})

@@ -171,11 +171,11 @@ func TestDatasources_Consul_WithVaultAuth(t *testing.T) {
 	require.NoError(t, err)
 	defer v.vc.Sys().Unmount("consul/")
 
-	_, err = v.vc.Logical().Write("consul/config/access", map[string]interface{}{
+	_, err = v.vc.Logical().Write("consul/config/access", map[string]any{
 		"address": consulAddr, "token": consulRootToken,
 	})
 	require.NoError(t, err)
-	_, err = v.vc.Logical().Write("consul/roles/readonly", map[string]interface{}{
+	_, err = v.vc.Logical().Write("consul/roles/readonly", map[string]any{
 		"policies": "readonly",
 	})
 	require.NoError(t, err)

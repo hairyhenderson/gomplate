@@ -11,14 +11,14 @@ import (
 func TestCreateDataFuncs(t *testing.T) {
 	t.Parallel()
 
-	for i := 0; i < 10; i++ {
+	for i := range 10 {
 		// Run this a bunch to catch race conditions
 		t.Run(strconv.Itoa(i), func(t *testing.T) {
 			t.Parallel()
 
 			ctx := context.Background()
 			fmap := CreateDataFuncs(ctx)
-			actual := fmap["data"].(func() interface{})
+			actual := fmap["data"].(func() any)
 
 			assert.Equal(t, ctx, actual().(*DataFuncs).ctx)
 		})

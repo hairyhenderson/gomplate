@@ -171,7 +171,7 @@ func TestMappingNamer(t *testing.T) {
 	reg := datafs.NewRegistry()
 	tr := &renderer{
 		sr: datafs.NewSourceReader(reg),
-		funcs: map[string]interface{}{
+		funcs: map[string]any{
 			"foo": func() string { return "foo" },
 		},
 	}
