@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	gmath "math"
+	"slices"
 	"strconv"
 	"testing"
 
@@ -358,9 +359,9 @@ func TestContainsFloat(t *testing.T) {
 			t.Parallel()
 
 			if d.expected {
-				assert.True(t, m.containsFloat(d.n...))
+				assert.True(t, slices.ContainsFunc(d.n, m.IsFloat))
 			} else {
-				assert.False(t, m.containsFloat(d.n...))
+				assert.False(t, slices.ContainsFunc(d.n, m.IsFloat))
 			}
 		})
 	}

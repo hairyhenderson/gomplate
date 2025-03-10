@@ -64,12 +64,6 @@ func (f MathFuncs) IsFloat(n any) bool {
 	return false
 }
 
-func (f MathFuncs) containsFloat(n ...any) bool {
-	return slices.ContainsFunc(n, func(v any) bool {
-		return f.IsFloat(v)
-	})
-}
-
 // IsNum -
 func (f MathFuncs) IsNum(n any) bool {
 	return f.IsInt(n) || f.IsFloat(n)
@@ -92,7 +86,7 @@ func (f MathFuncs) Abs(n any) (any, error) {
 
 // Add -
 func (f MathFuncs) Add(n ...any) (any, error) {
-	if f.containsFloat(n...) {
+	if slices.ContainsFunc(n, f.IsFloat) {
 		nums, err := conv.ToFloat64s(n...)
 		if err != nil {
 			return nil, fmt.Errorf("expected number inputs: %w", err)
@@ -121,7 +115,7 @@ func (f MathFuncs) Add(n ...any) (any, error) {
 
 // Mul -
 func (f MathFuncs) Mul(n ...any) (any, error) {
-	if f.containsFloat(n...) {
+	if slices.ContainsFunc(n, f.IsFloat) {
 		nums, err := conv.ToFloat64s(n...)
 		if err != nil {
 			return nil, fmt.Errorf("expected number inputs: %w", err)
@@ -150,7 +144,7 @@ func (f MathFuncs) Mul(n ...any) (any, error) {
 
 // Sub -
 func (f MathFuncs) Sub(a, b any) (any, error) {
-	if f.containsFloat(a, b) {
+	if slices.ContainsFunc([]any{a, b}, f.IsFloat) {
 		fa, err := conv.ToFloat64(a)
 		if err != nil {
 			return nil, fmt.Errorf("expected a number: %w", err)
@@ -280,7 +274,7 @@ func (f MathFuncs) Seq(n ...any) ([]int64, error) {
 
 // Max -
 func (f MathFuncs) Max(a any, b ...any) (any, error) {
-	if f.IsFloat(a) || f.containsFloat(b...) {
+	if f.IsFloat(a) || slices.ContainsFunc(b, f.IsFloat) {
 		m, err := conv.ToFloat64(a)
 		if err != nil {
 			return nil, fmt.Errorf("expected a number: %w", err)
@@ -319,7 +313,7 @@ func (f MathFuncs) Max(a any, b ...any) (any, error) {
 
 // Min -
 func (f MathFuncs) Min(a any, b ...any) (any, error) {
-	if f.IsFloat(a) || f.containsFloat(b...) {
+	if f.IsFloat(a) || slices.ContainsFunc(b, f.IsFloat) {
 		m, err := conv.ToFloat64(a)
 		if err != nil {
 			return nil, fmt.Errorf("expected a number: %w", err)

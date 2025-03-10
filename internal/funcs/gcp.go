@@ -28,7 +28,7 @@ type GcpFuncs struct {
 
 // Meta -
 func (a *GcpFuncs) Meta(key string, def ...string) (string, error) {
-	a.meta = sync.OnceValue[*gcp.MetaClient](func() *gcp.MetaClient {
+	a.meta = sync.OnceValue(func() *gcp.MetaClient {
 		return gcp.NewMetaClient(a.ctx, a.gcpopts)
 	})()
 
