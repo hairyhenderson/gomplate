@@ -9,6 +9,10 @@ permissions:
   pull-requests: write
   packages: write
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
 jobs:
   deploy-alpine:
     runs-on: ubuntu-latest
