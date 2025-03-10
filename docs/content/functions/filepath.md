@@ -277,7 +277,7 @@ b/c
 
 Splits path immediately following the final path separator, separating it into a directory and file name component.
 
-The function returns an array with two values, the first being the diretory, and the second the file.
+The function returns an array with two values, the first being the directory, and the second the file.
 
 A wrapper for Go's [`filepath.Split`](https://pkg.go.dev/path/filepath/#Split) function.
 
