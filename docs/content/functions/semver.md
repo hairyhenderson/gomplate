@@ -49,7 +49,7 @@ the pre release version is 1.1.1-beta.1
 ## `semver.CheckConstraint`_(unreleased)_
 **Unreleased:** _This function is in development, and not yet available in released builds of gomplate._
 
-Test whether the input version matchs the constraint.
+Test whether the input version matches the constraint.
 
 Ref: https://github.com/Masterminds/semver#checking-version-constraints
 

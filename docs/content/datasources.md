@@ -136,7 +136,7 @@ bar
 
 ### The `.env` file format
 
-Many applications and frameworks support the use of a ".env" file for providing environment variables. It can also be considerd a simple key/value file format, and as such can be used as a datasource in gomplate.
+Many applications and frameworks support the use of a ".env" file for providing environment variables. It can also be considered a simple key/value file format, and as such can be used as a datasource in gomplate.
 
 To [override](#overriding-mime-types), use the unregistered `application/x-env` MIME type.
 

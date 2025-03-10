@@ -61,7 +61,7 @@ func TestWrite(t *testing.T) {
 	require.NoError(t, err)
 	assert.Equal(t, "truncate", string(out))
 
-	foopath = filepath.Join(newwd, "nonexistant", "subdir", "foo")
+	foopath = filepath.Join(newwd, "nonexistent", "subdir", "foo")
 	err = iohelpers.WriteFile(fsys, foopath, []byte("Hello subdirranean world!"))
 	require.NoError(t, err)
 

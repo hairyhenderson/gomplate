@@ -187,7 +187,7 @@ $ gomplate -i '{{ (time.Now).Format time.Kitchen }}
 ## `time.ParseLocal`
 
 Same as [`time.Parse`](#timeparse), except that in the absence of a time zone
-indicator, the timestamp wil be parsed in the local timezone.
+indicator, the timestamp will be parsed in the local timezone.
 
 _Added in gomplate [v2.2.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.2.0)_
 ### Usage

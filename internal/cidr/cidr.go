@@ -122,7 +122,7 @@ func PreviousSubnet(network netip.Prefix, prefixLen int) (netip.Prefix, bool) {
 
 // NextSubnet returns the next available subnet of the desired mask size
 // starting for the maximum IP of the offset subnet
-// If the IP exceeds the maxium IP then the second return value is true
+// If the IP exceeds the maximum IP then the second return value is true
 func NextSubnet(network netip.Prefix, prefixLen int) (netip.Prefix, bool) {
 	currentLast := netipx.PrefixLastIP(network)
 

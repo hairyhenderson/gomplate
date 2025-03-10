@@ -29,7 +29,7 @@ func TestParseSourceURL(t *testing.T) {
 	require.NoError(t, err)
 	assert.EqualValues(t, expected, u)
 
-	// behviour change in v4 - return relative if it's relative
+	// behaviour change in v4 - return relative if it's relative
 	expected = &url.URL{Path: "./foo/bar.json"}
 	u, err = ParseSourceURL("./foo/bar.json")
 	require.NoError(t, err)

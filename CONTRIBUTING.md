@@ -22,7 +22,7 @@ If you think you've found a sensitive security issue, please e-mail me before op
 
 ## Versioning, API and Deprecation
 
-I try to follow [Semantic Versioning 2.0.0](https://semver.org/spec/v2.0.0.html) as much as possible, and as such the version numbers attached to gomplate releases have _semantic meaning_. That is, patch-level releases (e.g. when going from 2.3.0 to 2.3.1) will only contain bug fixes and will not otherwise add or remove features, while minor-level releses (e.g. 2.3.0 to 2.4.0) will only contain new features and will not remove or make breaking changes to features, and major-level releases (e.g. 2.3.0 to 3.0.0) will contain breaking changes (either feature removals, renames, or significant behaviour changes).
+I try to follow [Semantic Versioning 2.0.0](https://semver.org/spec/v2.0.0.html) as much as possible, and as such the version numbers attached to gomplate releases have _semantic meaning_. That is, patch-level releases (e.g. when going from 2.3.0 to 2.3.1) will only contain bug fixes and will not otherwise add or remove features, while minor-level releases (e.g. 2.3.0 to 2.4.0) will only contain new features and will not remove or make breaking changes to features, and major-level releases (e.g. 2.3.0 to 3.0.0) will contain breaking changes (either feature removals, renames, or significant behaviour changes).
 
 When making a change that'll require either a _minor_ or _major_ version bump upon release, the PR should be labeled with the `api/minor` or `api/major` labels.
 

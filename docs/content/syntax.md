@@ -74,7 +74,7 @@ Hello,  bar!
 Hello,  baz!
 ```
 
-### Suppressing trailling newlines
+### Suppressing trailing newlines
 
 This code:
 

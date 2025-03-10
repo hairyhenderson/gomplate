@@ -159,7 +159,7 @@ See [`--exec-pipe`](../usage/#--exec-pipe).
 
 Use the rendered output as the [`postExec`](#postexec) command's standard input.
 
-Must be used in conjuction with [`postExec`](#postexec), and will override
+Must be used in conjunction with [`postExec`](#postexec), and will override
 any [`outputFiles`](#outputfiles) settings.
 
 ## `experimental`

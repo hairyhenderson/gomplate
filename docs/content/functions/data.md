@@ -210,7 +210,7 @@ $ gomplate -d person.json -f input.tmpl
 Converts a JSON string into an object. Works for JSON Objects, but will
 also parse JSON Arrays. Will not parse other valid JSON types.
 
-For more explict JSON Array support, see [`data.JSONArray`](#datajsonarray).
+For more explicit JSON Array support, see [`data.JSONArray`](#datajsonarray).
 
 #### Encrypted JSON support (EJSON)
 
@@ -291,7 +291,7 @@ Hello world
 Converts a YAML string into an object. Works for YAML Objects but will
 also parse YAML Arrays. This can be used to access properties of YAML objects.
 
-For more explict YAML Array support, see [`data.JSONArray`](#datayamlarray).
+For more explicit YAML Array support, see [`data.JSONArray`](#datayamlarray).
 
 _Added in gomplate [v2.0.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.0.0)_
 ### Usage

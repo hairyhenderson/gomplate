@@ -158,7 +158,7 @@ math.Floor num
 
 | name | description |
 |------|-------------|
-| `num` | _(required)_ The input number. Will be converted to a `float64`, or `0` if not convertable |
+| `num` | _(required)_ The input number. Will be converted to a `float64`, or `0` if not convertible |
 
 ### Examples
 
@@ -408,7 +408,7 @@ math.Round num
 
 | name | description |
 |------|-------------|
-| `num` | _(required)_ The input number. Will be converted to a `float64`, or `0` if not convertable |
+| `num` | _(required)_ The input number. Will be converted to a `float64`, or `0` if not convertible |
 
 ### Examples
 
