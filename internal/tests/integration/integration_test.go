@@ -61,8 +61,26 @@ func assertSuccess(t *testing.T, o, e string, err error, expected string) {
 	t.Helper()
 
 	require.NoError(t, err)
-	assert.Equal(t, "", e)
+	// Filter out AWS SDK checksum warnings
+	filteredErr := filterAWSChecksumWarnings(e)
+	assert.Equal(t, "", filteredErr)
 	assert.Equal(t, expected, o)
+}
+
+// filterAWSChecksumWarnings removes AWS SDK checksum warning messages from the
+// error output. These are a non-issue for our tests, since we use gofakes3 and
+// anonymous buckets.
+func filterAWSChecksumWarnings(e string) string {
+	lines := strings.Split(e, "\n")
+
+	filteredLines := make([]string, 0, len(lines))
+	for _, line := range lines {
+		if !strings.Contains(line, "WARN Response has no supported checksum. Not validating response payload.") {
+			filteredLines = append(filteredLines, line)
+		}
+	}
+
+	return strings.Join(filteredLines, "\n")
 }
 
 func assertFailed(t *testing.T, o, e string, err error, expected string) {
