@@ -26,6 +26,7 @@ jobs:
         with:
           app-id: ${{ vars.APP_ID }}
           private-key: ${{ secrets.PRIVATE_KEY }}
+      - uses: actions/checkout@v4
       - name: install lab
         env:
           GH_TOKEN: ${{ steps.app-token.outputs.token }}
@@ -33,9 +34,10 @@ jobs:
           gh release download --repo zaquestion/lab v0.25.1 -p lab_0.25.1_linux_amd64.tar.gz
           tar -xzf lab_0.25.1_linux_amd64.tar.gz
           ./lab --version
-      - uses: actions/checkout@v4
       - name: Retrieve release artifacts
         id: artifacts
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
         run: |
           # need the checksums
           gh release download ${TAG_NAME} --skip-existing -p "${TAG_NAME}.sha*"
@@ -46,8 +48,6 @@ jobs:
           # need gomplate to template the APKBUILD!
           gh release download ${TAG_NAME} --skip-existing -p gomplate_linux-amd64
           chmod 755 gomplate_linux-amd64
-        env:
-          GH_TOKEN: ${{ steps.app-token.outputs.token }}
       - name: checkout alpinelinux/aports
         run: |
           set -ex
@@ -124,23 +124,15 @@ jobs:
         driver-opts: |
           image=moby/buildkit:buildx-stable-1
           network=host
-    - name: Available platforms
-      run: echo {{ `${{ steps.buildx.outputs.platforms }}` }}
-    - run: docker info && docker version
     - uses: actions/checkout@v4
       with:
         fetch-depth: 0
-    - uses: actions/create-github-app-token@v1
-      id: app-token
-      with:
-        app-id: ${{ vars.APP_ID }}
-        private-key: ${{ secrets.PRIVATE_KEY }}
     - name: Login to GHCR
       uses: docker/login-action@v3.3.0
       with:
           registry: ghcr.io
           username: ${{ github.actor }}
-          password: ${{ steps.app-token.outputs.token }}
+          password: ${{ secrets.GITHUB_TOKEN }}
     - name: Login to DockerHub
       uses: docker/login-action@v3.3.0
       with:
@@ -161,32 +153,19 @@ jobs:
         make docker-multi COMMIT=${COMMIT} DOCKER_REPO=${srcrepo} BUILDX_ACTION=--push
 
         set -x
-        export repo=${srcrepo}
         export git_tag=${TAG_NAME}
         export major_version=${git_tag%\.*}
-        docker buildx imagetools create -t ${repo}:stable ${srcrepo}:latest
-        docker buildx imagetools create -t ${repo}:${git_tag} ${srcrepo}:latest
-        docker buildx imagetools create -t ${repo}:${major_version} ${srcrepo}:latest
+        
+        # Push tags first to GHCR, then to DockerHub (last in case of rate-limiting)
+        for repo in "${srcrepo}" "gomplate/gomplate" "hairyhenderson/gomplate"; do
+          for tag in "stable" "${git_tag}" "${major_version}"; do
+            docker buildx imagetools create -t ${repo}:${tag} ${srcrepo}:latest
+            docker buildx imagetools create -t ${repo}:${tag}-alpine ${srcrepo}:alpine
+          done
+        done
 
-        docker buildx imagetools create -t ${repo}:stable-alpine ${srcrepo}:alpine
-        docker buildx imagetools create -t ${repo}:${git_tag}-alpine ${srcrepo}:alpine
-        docker buildx imagetools create -t ${repo}:${major_version}-alpine ${srcrepo}:alpine
-
-        # and now DockerHub (if we don't get rate-limited)
-        export repo=gomplate/gomplate
-        docker buildx imagetools create -t ${repo}:stable ${srcrepo}:latest
-        docker buildx imagetools create -t ${repo}:${git_tag} ${srcrepo}:latest
-        docker buildx imagetools create -t ${repo}:${major_version} ${srcrepo}:latest
-
-        docker buildx imagetools create -t ${repo}:stable-alpine ${srcrepo}:alpine
-        docker buildx imagetools create -t ${repo}:${git_tag}-alpine ${srcrepo}:alpine
-        docker buildx imagetools create -t ${repo}:${major_version}-alpine ${srcrepo}:alpine
-
-        export repo=hairyhenderon/gomplate
-        docker buildx imagetools create -t ${repo}:stable ${srcrepo}:latest
-        docker buildx imagetools create -t ${repo}:${git_tag} ${srcrepo}:latest
-        docker buildx imagetools create -t ${repo}:${major_version} ${srcrepo}:latest
-
-        docker buildx imagetools create -t ${repo}:stable-alpine ${srcrepo}:alpine
-        docker buildx imagetools create -t ${repo}:${git_tag}-alpine ${srcrepo}:alpine
-        docker buildx imagetools create -t ${repo}:${major_version}-alpine ${srcrepo}:alpine
+        # also push latest and alpine tags to the other repos
+        for repo in "gomplate/gomplate" "hairyhenderson/gomplate"; do
+          docker buildx imagetools create -t ${repo}:latest ${srcrepo}:latest
+          docker buildx imagetools create -t ${repo}:alpine ${srcrepo}:alpine
+        done
