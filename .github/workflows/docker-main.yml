@@ -17,7 +17,7 @@ jobs:
       id: buildx
       uses: docker/setup-buildx-action@v3.10.0
       with:
-        version: v0.14.1
+        version: v0.19.3
         driver-opts: |
           image=moby/buildkit:buildx-stable-1
           network=host
@@ -38,10 +38,10 @@ jobs:
           password: ${{ secrets.DOCKERHUB_TOKEN }}
     - name: Build & Push (latest tag)
       run: |
-        export srcrepo=${{ github.repository}}
+        export srcrepo=ghcr.io/${{ github.repository}}
         make docker-multi COMMIT=${{ github.sha }} DOCKER_REPO=${srcrepo} BUILDX_ACTION=--push
 
-        docker buildx imagetools create -t gomplate/gomplate:latest ${srcrepo}:latest
-        docker buildx imagetools create -t gomplate/gomplate:alpine ${srcrepo}:alpine
-        docker buildx imagetools create -t ghcr.io/${srcrepo}:latest ${srcrepo}:latest
-        docker buildx imagetools create -t ghcr.io/${srcrepo}:alpine ${srcrepo}:alpine
+        for repo in "gomplate/gomplate" "hairyhenderson/gomplate"; do
+          docker buildx imagetools create -t ${repo}:latest ${srcrepo}:latest
+          docker buildx imagetools create -t ${repo}:alpine ${srcrepo}:alpine
+        done

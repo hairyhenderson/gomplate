@@ -28,7 +28,8 @@ func main() {
 }
 
 func describedVersion() (*semver.Version, error) {
-	desc, err := runCmd("git describe --always")
+	// --tags ensures we get the most recent tag, whether lightweight or annotated
+	desc, err := runCmd("git describe --tags --always")
 	if err != nil {
 		return nil, fmt.Errorf("git describe failed: %w", err)
 	}
