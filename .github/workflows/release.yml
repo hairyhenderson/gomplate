@@ -87,28 +87,6 @@ jobs:
           ../../../lab mr create --allow-collaboration \
             -m "community/gomplate: upgrade to ${VERSION}" \
             -m "https://github.com/${{ github.repository }}/releases/tag/${TAG_NAME}"
-  deploy-homebrew:
-    # run on macOS - this doesn't work in Linuxbrew
-    runs-on: macos-latest
-    environment:
-      name: homebrew
-    env:
-      TAG_NAME: ${{ github.event.release.tag_name }}
-    steps:
-      - uses: actions/create-github-app-token@v1
-        id: app-token
-        with:
-          app-id: ${{ vars.APP_ID }}
-          private-key: ${{ secrets.PRIVATE_KEY }}
-      - name: Set up Homebrew
-        id: set-up-homebrew
-        uses: Homebrew/actions/setup-homebrew@master
-      - name: Bump packages
-        uses: Homebrew/actions/bump-packages@master
-        with:
-          token: ${{ steps.app-token.outputs.token }}
-          formulae: gomplate
-          fork: true
   deploy-docker:
     runs-on: ubuntu-latest
     env:
