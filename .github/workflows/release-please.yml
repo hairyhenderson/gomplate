@@ -22,7 +22,7 @@ jobs:
       version: ${{ steps.release.outputs.version }}
       html_url: ${{ steps.release.outputs.html_url }}
     steps:
-      - uses: actions/create-github-app-token@v1
+      - uses: actions/create-github-app-token@v2
         id: app-token
         with:
           app-id: ${{ vars.APP_ID }}
@@ -132,7 +132,7 @@ jobs:
             goarch: '386'
             extension: .exe
     steps:
-      - uses: actions/create-github-app-token@v1
+      - uses: actions/create-github-app-token@v2
         id: app-token
         with:
           app-id: ${{ vars.APP_ID }}
@@ -166,7 +166,7 @@ jobs:
       VERSION: ${{ needs.build-artifacts.outputs.version }}
       TAG_NAME: ${{ needs.build-artifacts.outputs.tag_name }}
     steps:
-      - uses: actions/create-github-app-token@v1
+      - uses: actions/create-github-app-token@v2
         id: app-token
         with:
           app-id: ${{ vars.APP_ID }}
