@@ -1,5 +1,15 @@
 # Change Log
 
+## [4.3.2](https://github.com/hairyhenderson/gomplate/compare/v4.3.1...v4.3.2) (2025-04-09)
+
+
+### Dependencies
+
+* **actions:** Bump docker/login-action from 3.3.0 to 3.4.0 ([#2354](https://github.com/hairyhenderson/gomplate/issues/2354)) ([811d337](https://github.com/hairyhenderson/gomplate/commit/811d3378605669035efb311acab13cbaef142573))
+* **go:** Bump github.com/golang-jwt/jwt/v5 in the go_modules group ([#2356](https://github.com/hairyhenderson/gomplate/issues/2356)) ([238bc62](https://github.com/hairyhenderson/gomplate/commit/238bc628f3f2f4863c10b28f9a868f6d23d5c9dc))
+* **go:** Bump github.com/hairyhenderson/go-fsimpl from 0.2.4 to 0.2.5 ([#2352](https://github.com/hairyhenderson/gomplate/issues/2352)) ([3e0859b](https://github.com/hairyhenderson/gomplate/commit/3e0859bd4dbcaab7c32ccd9420ed183f9d22d7dd))
+* **go:** Bump k8s.io/client-go from 0.32.2 to 0.32.3 ([#2349](https://github.com/hairyhenderson/gomplate/issues/2349)) ([e713cb0](https://github.com/hairyhenderson/gomplate/commit/e713cb0b7936759d25fe0be558f93d6a2c26a9a6))
+
 ## [4.3.1](https://github.com/hairyhenderson/gomplate/compare/v4.3.0...v4.3.1) (2025-03-11)
 
 
