@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"net/http/httptest"
 	"os"
+	"strings"
 	"testing"
 
 	"github.com/johannesboyne/gofakes3"
@@ -44,66 +45,86 @@ func setupDatasourcesBlobTest(t *testing.T) *httptest.Server {
 }
 
 func TestDatasources_Blob_S3Datasource(t *testing.T) {
-	o, e, err := cmd(t,
-		"-c", "data=s3://noaa-bathymetry-pds/csv/2022/03/02/20220302_056e577c7cd8323fdd8a04d3812cf78e_pointData.csv?region=us-east-1&type=text/csv",
-		"-i", `{{ index (index .data 0) 6 }}: {{ index (index .data 1) 6 }}
-{{ index (index .data 0) 5 }}: {{ index (index .data 1) 5 }}`).
-		withEnv("AWS_ANON", "true").
-		withEnv("AWS_TIMEOUT", "5000").
-		run()
-	assertSuccess(t, o, e, err, `PLATFORM_NAME: Ramform Hyperion
-TIME: 2022-03-01T22:00:04.000Z`)
+	t.Run("read from public s3 bucket", func(t *testing.T) {
+		// this test sometimes fails with a 404, as buckets get moved around...
+		// so we'll just skip it if it fails
+		o, e, err := cmd(t,
+			"-c", "data=s3://noaa-ghcn-pds/csv/by_year/1763.csv?region=us-east-1&type=text/csv",
+			"-i", `{{ index (index .data 0) 0 }}: {{ index (index .data 1) 0 }}
+{{ index (index .data 0) 3 }}: {{ index (index .data 1) 3 }}`).
+			withEnv("AWS_ANON", "true").
+			withEnv("AWS_TIMEOUT", "5000").
+			run()
+		if err != nil {
+			// if it's a NoSuchBucket error, we'll skip the test
+			if strings.Contains(err.Error(), "NoSuchBucket") {
+				t.Skip("skipping test as bucket is gone, we might want to update the test")
+			}
+		}
+		assertSuccess(t, o, e, err, `ID: ITE00100554
+DATA_VALUE: -36`)
+	})
 
 	srv := setupDatasourcesBlobTest(t)
 
-	o, e, err = cmd(t,
-		"-c", "data=s3://mybucket/foo.json?"+
+	t.Run("read from private fakes3 bucket", func(t *testing.T) {
+		o, e, err := cmd(t,
+			"-c", "data=s3://mybucket/foo.json?"+
+				"region=us-east-1&"+
+				"disableSSL=true&"+
+				"endpoint="+srv.Listener.Addr().String()+"&"+
+				"s3ForcePathStyle=true",
+			"-i", "{{ .data.value }}").
+			withEnv("AWS_ACCESS_KEY_ID", "YOUR-ACCESSKEYID").
+			withEnv("AWS_SECRET_ACCESS_KEY", "YOUR-SECRETACCESSKEY").
+			run()
+		assertSuccess(t, o, e, err, "json")
+	})
+
+	t.Run("read from public fakes3 bucket", func(t *testing.T) {
+		o, e, err := cmd(t,
+			"-c", "data=s3://mybucket/foo.json?"+
+				"region=us-east-1&"+
+				"disableSSL=true&"+
+				"s3ForcePathStyle=true",
+			"-i", "{{ .data.value }}").
+			withEnv("AWS_ANON", "true").
+			withEnv("AWS_S3_ENDPOINT", srv.Listener.Addr().String()).
+			run()
+		assertSuccess(t, o, e, err, "json")
+	})
+}
+
+func TestDatasources_Blob_S3Directory(t *testing.T) {
+	t.Run("read from public s3 bucket", func(t *testing.T) {
+		o, e, err := cmd(t, "-c", "data=s3://noaa-ghcn-pds/csv/by_year/?region=us-east-1",
+			"-i", "{{ index .data 0 }}").
+			withEnv("AWS_ANON", "true").
+			withEnv("AWS_TIMEOUT", "15000").
+			run()
+		if err != nil {
+			// if it's a NoSuchBucket error, we'll skip the test
+			if strings.Contains(err.Error(), "NoSuchBucket") {
+				t.Skip("skipping test as bucket is gone, we might want to update the test")
+			}
+		}
+		assertSuccess(t, o, e, err, "1750.csv")
+	})
+
+	srv := setupDatasourcesBlobTest(t)
+
+	t.Run("read from private fakes3 bucket", func(t *testing.T) {
+		o, e, err := cmd(t, "-c", "data=s3://mybucket/a/b/c/?"+
 			"region=us-east-1&"+
 			"disableSSL=true&"+
 			"endpoint="+srv.Listener.Addr().String()+"&"+
 			"s3ForcePathStyle=true",
-		"-i", "{{ .data.value }}").
-		withEnv("AWS_ACCESS_KEY_ID", "YOUR-ACCESSKEYID").
-		withEnv("AWS_SECRET_ACCESS_KEY", "YOUR-SECRETACCESSKEY").
-		run()
-	assertSuccess(t, o, e, err, "json")
-
-	o, e, err = cmd(t,
-		"-c", "data=s3://mybucket/foo.json?"+
-			"region=us-east-1&"+
-			"disableSSL=true&"+
-			"s3ForcePathStyle=true",
-		"-i", "{{ .data.value }}").
-		withEnv("AWS_ANON", "true").
-		withEnv("AWS_S3_ENDPOINT", srv.Listener.Addr().String()).
-		run()
-	assertSuccess(t, o, e, err, "json")
-}
-
-func TestDatasources_Blob_S3Directory(t *testing.T) {
-	// This recently replaced ryft-public-sample-data after access was disabled.
-	// This bucket came from https://registry.opendata.aws, and is public. The
-	// content isn't important, just that it's something we can read and parse
-	// on a _real_ S3 bucket.
-	o, e, err := cmd(t, "-c", "data=s3://noaa-bathymetry-pds/csv/2022/03/02/?region=us-east-1",
-		"-i", "{{ index .data 0 }}").
-		withEnv("AWS_ANON", "true").
-		withEnv("AWS_TIMEOUT", "15000").
-		run()
-	assertSuccess(t, o, e, err, "20220302_056e577c7cd8323fdd8a04d3812cf78e_pointData.csv")
-
-	srv := setupDatasourcesBlobTest(t)
-
-	o, e, err = cmd(t, "-c", "data=s3://mybucket/a/b/c/?"+
-		"region=us-east-1&"+
-		"disableSSL=true&"+
-		"endpoint="+srv.Listener.Addr().String()+"&"+
-		"s3ForcePathStyle=true",
-		"-i", "{{ .data }}").
-		withEnv("AWS_ACCESS_KEY_ID", "YOUR-ACCESSKEYID").
-		withEnv("AWS_SECRET_ACCESS_KEY", "YOUR-SECRETACCESSKEY").
-		run()
-	assertSuccess(t, o, e, err, "[d goodbye.txt hello.txt]")
+			"-i", "{{ .data }}").
+			withEnv("AWS_ACCESS_KEY_ID", "YOUR-ACCESSKEYID").
+			withEnv("AWS_SECRET_ACCESS_KEY", "YOUR-SECRETACCESSKEY").
+			run()
+		assertSuccess(t, o, e, err, "[d goodbye.txt hello.txt]")
+	})
 }
 
 func TestDatasources_Blob_S3MIMETypes(t *testing.T) {
