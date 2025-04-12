@@ -24,7 +24,7 @@ jobs:
       run: |
         docker build --target gomplate-alpine -t gomplate .
     - name: Install Trivy
-      uses: aquasecurity/setup-trivy@v0.2.2
+      uses: aquasecurity/setup-trivy@v0.2.3
       with:
         version: v0.57.0
         cache: true
