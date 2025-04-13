@@ -95,7 +95,7 @@ func TestPath(t *testing.T) {
 
 	p, err := tmpl.Path()
 	require.NoError(t, err)
-	assert.Equal(t, "", p)
+	assert.Empty(t, p)
 
 	tmpl = New(nil, nil, "foo")
 	p, err = tmpl.Path()
@@ -108,7 +108,7 @@ func TestPathDir(t *testing.T) {
 
 	p, err := tmpl.PathDir()
 	require.NoError(t, err)
-	assert.Equal(t, "", p)
+	assert.Empty(t, p)
 
 	tmpl = New(nil, nil, "foo")
 	p, err = tmpl.PathDir()

@@ -52,7 +52,7 @@ func inOutContains(t *testing.T, i, o string) {
 	t.Helper()
 
 	stdout, stderr, err := cmd(t, "-i", i).run()
-	assert.Equal(t, "", stderr)
+	assert.Empty(t, stderr)
 	assert.Contains(t, stdout, o)
 	require.NoError(t, err)
 }
@@ -63,7 +63,7 @@ func assertSuccess(t *testing.T, o, e string, err error, expected string) {
 	require.NoError(t, err)
 	// Filter out AWS SDK checksum warnings
 	filteredErr := filterAWSChecksumWarnings(e)
-	assert.Equal(t, "", filteredErr)
+	assert.Empty(t, filteredErr)
 	assert.Equal(t, expected, o)
 }
 
@@ -87,7 +87,7 @@ func assertFailed(t *testing.T, o, e string, err error, expected string) {
 	t.Helper()
 
 	assert.Contains(t, e, expected)
-	assert.Equal(t, "", o)
+	assert.Empty(t, o)
 	require.Error(t, err)
 }
 

@@ -158,14 +158,14 @@ func TestWDFS_WriteOps(t *testing.T) {
 
 func skipWindows(t *testing.T) {
 	t.Helper()
-	if runtime.GOOS == "windows" {
+	if runtime.GOOS == osWindows {
 		t.Skip("skipping non-Windows test")
 	}
 }
 
 func skipNonWindows(t *testing.T) {
 	t.Helper()
-	if runtime.GOOS != "windows" {
+	if runtime.GOOS != osWindows {
 		t.Skip("skipping Windows test")
 	}
 }

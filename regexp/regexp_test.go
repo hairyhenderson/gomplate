@@ -35,7 +35,7 @@ func TestFindAll(t *testing.T) {
 	for _, d := range testdata {
 		f, err := FindAll(d.re, d.n, d.in)
 		require.NoError(t, err)
-		assert.EqualValues(t, d.expected, f)
+		assert.Equal(t, d.expected, f)
 	}
 }
 
@@ -119,7 +119,7 @@ func TestSplit(t *testing.T) {
 	for _, d := range testdata {
 		f, err := Split(d.re, d.n, d.in)
 		require.NoError(t, err)
-		assert.EqualValues(t, d.expected, f)
+		assert.Equal(t, d.expected, f)
 	}
 }
 

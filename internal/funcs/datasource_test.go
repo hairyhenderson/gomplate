@@ -82,7 +82,7 @@ func TestDatasource(t *testing.T) {
 	d := setup("", nil)
 	actual, err := d.Datasource("foo")
 	require.NoError(t, err)
-	assert.Equal(t, "", actual)
+	assert.Empty(t, actual)
 
 	_, err = d.Datasource("bar")
 	require.Error(t, err)
@@ -168,7 +168,7 @@ func TestDefineDatasource(t *testing.T) {
 	_, err = d.DefineDatasource("data", "foo.json")
 	s, _ := reg.Lookup("data")
 	require.NoError(t, err)
-	assert.EqualValues(t, &url.URL{Path: "foo.json"}, s.URL)
+	assert.Equal(t, &url.URL{Path: "foo.json"}, s.URL)
 
 	reg = datafs.NewRegistry()
 	d = &dataSourceFuncs{sr: datafs.NewSourceReader(reg)}

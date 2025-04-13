@@ -40,11 +40,11 @@ func TestFlatten(t *testing.T) {
 
 	out, err := c.Flatten([]any{1, []any{[]int{2}, 3}})
 	require.NoError(t, err)
-	assert.EqualValues(t, []any{1, 2, 3}, out)
+	assert.Equal(t, []any{1, 2, 3}, out)
 
 	out, err = c.Flatten(1, []any{1, []any{[]int{2}, 3}})
 	require.NoError(t, err)
-	assert.EqualValues(t, []any{1, []int{2}, 3}, out)
+	assert.Equal(t, []any{1, []int{2}, 3}, out)
 }
 
 func TestPick(t *testing.T) {
@@ -74,7 +74,7 @@ func TestPick(t *testing.T) {
 	}
 	out, err := c.Pick("baz", in)
 	require.NoError(t, err)
-	assert.EqualValues(t, map[string]any{}, out)
+	assert.Equal(t, map[string]any{}, out)
 
 	expected := map[string]any{
 		"foo": "bar",
@@ -82,18 +82,18 @@ func TestPick(t *testing.T) {
 	}
 	out, err = c.Pick("foo", "bar", in)
 	require.NoError(t, err)
-	assert.EqualValues(t, expected, out)
+	assert.Equal(t, expected, out)
 
 	expected = map[string]any{
 		"": "baz",
 	}
 	out, err = c.Pick("", in)
 	require.NoError(t, err)
-	assert.EqualValues(t, expected, out)
+	assert.Equal(t, expected, out)
 
 	out, err = c.Pick("foo", "bar", "", in)
 	require.NoError(t, err)
-	assert.EqualValues(t, in, out)
+	assert.Equal(t, in, out)
 
 	t.Run("supports slice key", func(t *testing.T) {
 		t.Parallel()
@@ -105,7 +105,7 @@ func TestPick(t *testing.T) {
 		}
 		out, err := c.Pick([]string{"foo", "bar"}, in)
 		require.NoError(t, err)
-		assert.EqualValues(t, map[string]any{"foo": "bar", "bar": true}, out)
+		assert.Equal(t, map[string]any{"foo": "bar", "bar": true}, out)
 	})
 }
 
@@ -136,7 +136,7 @@ func TestOmit(t *testing.T) {
 	}
 	out, err := c.Omit("baz", in)
 	require.NoError(t, err)
-	assert.EqualValues(t, in, out)
+	assert.Equal(t, in, out)
 
 	expected := map[string]any{
 		"foo": "bar",
@@ -144,18 +144,18 @@ func TestOmit(t *testing.T) {
 	}
 	out, err = c.Omit("", in)
 	require.NoError(t, err)
-	assert.EqualValues(t, expected, out)
+	assert.Equal(t, expected, out)
 
 	expected = map[string]any{
 		"": "baz",
 	}
 	out, err = c.Omit("foo", "bar", in)
 	require.NoError(t, err)
-	assert.EqualValues(t, expected, out)
+	assert.Equal(t, expected, out)
 
 	out, err = c.Omit("foo", "bar", "", in)
 	require.NoError(t, err)
-	assert.EqualValues(t, map[string]any{}, out)
+	assert.Equal(t, map[string]any{}, out)
 
 	t.Run("supports slice of strings", func(t *testing.T) {
 		t.Parallel()
@@ -167,7 +167,7 @@ func TestOmit(t *testing.T) {
 		}
 		out, err := c.Omit([]string{"foo", "bar"}, in)
 		require.NoError(t, err)
-		assert.EqualValues(t, map[string]any{"": "baz"}, out)
+		assert.Equal(t, map[string]any{"": "baz"}, out)
 	})
 
 	t.Run("supports slice of any", func(t *testing.T) {
@@ -180,7 +180,7 @@ func TestOmit(t *testing.T) {
 		}
 		out, err := c.Omit([]any{"foo", "bar"}, in)
 		require.NoError(t, err)
-		assert.EqualValues(t, map[string]any{"": "baz"}, out)
+		assert.Equal(t, map[string]any{"": "baz"}, out)
 	})
 }
 
@@ -207,14 +207,14 @@ func TestGoSlice(t *testing.T) {
 	out, err := c.GoSlice(in)
 	require.NoError(t, err)
 	assert.Equal(t, reflect.TypeOf([]int{}), out.Type())
-	assert.EqualValues(t, []int{1}, out.Interface())
+	assert.Equal(t, []int{1}, out.Interface())
 
 	// valid slice, slicing
 	in = reflect.ValueOf([]string{"foo", "bar", "baz"})
 	out, err = c.GoSlice(in, reflect.ValueOf(1), reflect.ValueOf(3))
 	require.NoError(t, err)
 	assert.Equal(t, reflect.TypeOf([]string{}), out.Type())
-	assert.EqualValues(t, []string{"bar", "baz"}, out.Interface())
+	assert.Equal(t, []string{"bar", "baz"}, out.Interface())
 }
 
 func TestCollFuncs_Set(t *testing.T) {
@@ -225,12 +225,12 @@ func TestCollFuncs_Set(t *testing.T) {
 	m := map[string]any{"foo": "bar"}
 	out, err := c.Set("foo", "baz", m)
 	require.NoError(t, err)
-	assert.EqualValues(t, map[string]any{"foo": "baz"}, out)
+	assert.Equal(t, map[string]any{"foo": "baz"}, out)
 
 	// m was modified so foo is now baz
 	out, err = c.Set("bar", "baz", m)
 	require.NoError(t, err)
-	assert.EqualValues(t, map[string]any{"foo": "baz", "bar": "baz"}, out)
+	assert.Equal(t, map[string]any{"foo": "baz", "bar": "baz"}, out)
 }
 
 func TestCollFuncs_Unset(t *testing.T) {

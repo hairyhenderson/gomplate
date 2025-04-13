@@ -75,7 +75,7 @@ func TestUnmarshalArray(t *testing.T) {
 
 	test := func(actual []any, err error) {
 		require.NoError(t, err)
-		assert.EqualValues(t, expected, actual)
+		assert.Equal(t, expected, actual)
 	}
 	test(JSONArray(`["foo","bar",{"baz":{"qux": true},"quux":{"42":18},"corge":{"false":"blah"}}]`))
 	test(YAMLArray(`
@@ -115,7 +115,7 @@ this shouldn't be reached
     false: blah
 `)
 	require.NoError(t, err)
-	assert.EqualValues(t,
+	assert.Equal(t,
 		[]any{
 			map[string]any{
 				"foo": map[string]any{
@@ -520,11 +520,11 @@ func TestDecryptEJSON(t *testing.T) {
 	t.Setenv("EJSON_KEY", privateKey)
 	actual, err := decryptEJSON(in)
 	require.NoError(t, err)
-	assert.EqualValues(t, expected, actual)
+	assert.Equal(t, expected, actual)
 
 	actual, err = JSON(in)
 	require.NoError(t, err)
-	assert.EqualValues(t, expected, actual)
+	assert.Equal(t, expected, actual)
 
 	tmpDir := fs.NewDir(t, "gomplate-ejsontest",
 		fs.WithFile(publicKey, privateKey),
@@ -535,14 +535,14 @@ func TestDecryptEJSON(t *testing.T) {
 	t.Setenv("EJSON_KEY_FILE", tmpDir.Join(publicKey))
 	actual, err = decryptEJSON(in)
 	require.NoError(t, err)
-	assert.EqualValues(t, expected, actual)
+	assert.Equal(t, expected, actual)
 
 	os.Unsetenv("EJSON_KEY")
 	os.Unsetenv("EJSON_KEY_FILE")
 	t.Setenv("EJSON_KEYDIR", tmpDir.Path())
 	actual, err = decryptEJSON(in)
 	require.NoError(t, err)
-	assert.EqualValues(t, expected, actual)
+	assert.Equal(t, expected, actual)
 }
 
 func TestDotEnv(t *testing.T) {
@@ -564,7 +564,7 @@ QUX='single quotes ignore $variables'
 	}
 	out, err := DotEnv(in)
 	require.NoError(t, err)
-	assert.EqualValues(t, expected, out)
+	assert.Equal(t, expected, out)
 }
 
 func TestStringifyYAMLArrayMapKeys(t *testing.T) {
@@ -613,7 +613,7 @@ func TestStringifyYAMLArrayMapKeys(t *testing.T) {
 	for _, c := range cases {
 		err := stringifyYAMLArrayMapKeys(c.input)
 		require.NoError(t, err)
-		assert.EqualValues(t, c.want, c.input)
+		assert.Equal(t, c.want, c.input)
 	}
 }
 
@@ -655,7 +655,7 @@ func TestStringifyYAMLMapMapKeys(t *testing.T) {
 	for _, c := range cases {
 		err := stringifyYAMLMapMapKeys(c.input)
 		require.NoError(t, err)
-		assert.EqualValues(t, c.want, c.input)
+		assert.Equal(t, c.want, c.input)
 	}
 }
 
@@ -704,7 +704,7 @@ list: [ 1, 2, 3 ]
 
 	out, err = CUE(`42`)
 	require.NoError(t, err)
-	assert.EqualValues(t, int64(42), out)
+	assert.Equal(t, 42, out)
 
 	out, err = CUE(`42.0`)
 	require.NoError(t, err)
@@ -742,37 +742,37 @@ func TestToCUE(t *testing.T) {
 
 	out, err := ToCUE(in)
 	require.NoError(t, err)
-	assert.EqualValues(t, expected, out)
+	assert.Equal(t, expected, out)
 
 	out, err = ToCUE([]any{1, 2, 3})
 	require.NoError(t, err)
-	assert.EqualValues(t, `[1, 2, 3]`, out)
+	assert.Equal(t, `[1, 2, 3]`, out)
 
 	out, err = ToCUE("hello world")
 	require.NoError(t, err)
-	assert.EqualValues(t, `"hello world"`, out)
+	assert.Equal(t, `"hello world"`, out)
 
 	out, err = ToCUE(true)
 	require.NoError(t, err)
-	assert.EqualValues(t, `true`, out)
+	assert.Equal(t, `true`, out)
 
 	out, err = ToCUE([]byte{0, 1, 2, 3, 4})
 	require.NoError(t, err)
-	assert.EqualValues(t, `'\x00\x01\x02\x03\x04'`, out)
+	assert.Equal(t, `'\x00\x01\x02\x03\x04'`, out)
 
 	out, err = ToCUE(42)
 	require.NoError(t, err)
-	assert.EqualValues(t, `42`, out)
+	assert.Equal(t, `42`, out)
 
 	out, err = ToCUE(42.0)
 	require.NoError(t, err)
-	assert.EqualValues(t, `42.0`, out)
+	assert.Equal(t, `42.0`, out)
 
 	out, err = ToCUE(nil)
 	require.NoError(t, err)
-	assert.EqualValues(t, `null`, out)
+	assert.Equal(t, `null`, out)
 
 	out, err = ToCUE(struct{}{})
 	require.NoError(t, err)
-	assert.EqualValues(t, `{}`, out)
+	assert.Equal(t, `{}`, out)
 }

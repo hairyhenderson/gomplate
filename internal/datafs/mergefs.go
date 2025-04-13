@@ -133,7 +133,7 @@ func (f *mergeFS) Open(name string) (fs.File, error) {
 
 		// need to support absolute paths on local filesystem too
 		// TODO: this is a hack, probably fix this?
-		if fsURL.Scheme == "file" && runtime.GOOS != "windows" {
+		if fsURL.Scheme == "file" && runtime.GOOS != osWindows {
 			base = fsURL.Path + base
 		}
 

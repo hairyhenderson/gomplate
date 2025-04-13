@@ -59,7 +59,7 @@ func TestEmptySkipper(t *testing.T) {
 		} else {
 			assert.NotNil(t, f.w)
 			assert.True(t, opened)
-			assert.EqualValues(t, d.in, w.Bytes())
+			assert.Equal(t, d.in, w.Bytes())
 		}
 	}
 }
@@ -116,7 +116,7 @@ func TestSameSkipper(t *testing.T) {
 			} else {
 				assert.NotNil(t, f.w)
 				assert.True(t, opened)
-				assert.EqualValues(t, d.in, w.Bytes())
+				assert.Equal(t, d.in, w.Bytes())
 			}
 		})
 	}

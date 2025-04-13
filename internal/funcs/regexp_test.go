@@ -63,7 +63,7 @@ func TestFind(t *testing.T) {
 
 	f, err = re.Find(false, 42)
 	require.NoError(t, err)
-	assert.Equal(t, "", f)
+	assert.Empty(t, f)
 }
 
 func TestFindAll(t *testing.T) {
@@ -72,11 +72,11 @@ func TestFindAll(t *testing.T) {
 	re := &ReFuncs{}
 	f, err := re.FindAll(`[a-z]+`, `foo bar baz`)
 	require.NoError(t, err)
-	assert.EqualValues(t, []string{"foo", "bar", "baz"}, f)
+	assert.Equal(t, []string{"foo", "bar", "baz"}, f)
 
 	f, err = re.FindAll(`[a-z]+`, -1, `foo bar baz`)
 	require.NoError(t, err)
-	assert.EqualValues(t, []string{"foo", "bar", "baz"}, f)
+	assert.Equal(t, []string{"foo", "bar", "baz"}, f)
 
 	_, err = re.FindAll(`[a-`, "")
 	require.Error(t, err)
@@ -93,11 +93,11 @@ func TestFindAll(t *testing.T) {
 
 	f, err = re.FindAll(`[a-z]+`, 2, `foo bar baz`)
 	require.NoError(t, err)
-	assert.EqualValues(t, []string{"foo", "bar"}, f)
+	assert.Equal(t, []string{"foo", "bar"}, f)
 
 	f, err = re.FindAll(`[a-z]+`, 14, `foo bar baz`)
 	require.NoError(t, err)
-	assert.EqualValues(t, []string{"foo", "bar", "baz"}, f)
+	assert.Equal(t, []string{"foo", "bar", "baz"}, f)
 
 	f, err = re.FindAll(`qux`, `foo bar baz`)
 	require.NoError(t, err)
@@ -110,11 +110,11 @@ func TestSplit(t *testing.T) {
 	re := &ReFuncs{}
 	f, err := re.Split(` `, `foo bar baz`)
 	require.NoError(t, err)
-	assert.EqualValues(t, []string{"foo", "bar", "baz"}, f)
+	assert.Equal(t, []string{"foo", "bar", "baz"}, f)
 
 	f, err = re.Split(`\s+`, -1, `foo  bar baz`)
 	require.NoError(t, err)
-	assert.EqualValues(t, []string{"foo", "bar", "baz"}, f)
+	assert.Equal(t, []string{"foo", "bar", "baz"}, f)
 
 	_, err = re.Split(`[a-`, "")
 	require.Error(t, err)
@@ -131,15 +131,15 @@ func TestSplit(t *testing.T) {
 
 	f, err = re.Split(`\s+`, 2, `foo bar baz`)
 	require.NoError(t, err)
-	assert.EqualValues(t, []string{"foo", "bar baz"}, f)
+	assert.Equal(t, []string{"foo", "bar baz"}, f)
 
 	f, err = re.Split(`\s`, 14, `foo  bar baz`)
 	require.NoError(t, err)
-	assert.EqualValues(t, []string{"foo", "", "bar", "baz"}, f)
+	assert.Equal(t, []string{"foo", "", "bar", "baz"}, f)
 
 	f, err = re.Split(`[\s,.]`, 14, `foo bar.baz,qux`)
 	require.NoError(t, err)
-	assert.EqualValues(t, []string{"foo", "bar", "baz", "qux"}, f)
+	assert.Equal(t, []string{"foo", "bar", "baz", "qux"}, f)
 }
 
 func TestReplaceLiteral(t *testing.T) {

@@ -46,7 +46,7 @@ func TestExpandEnvFsys(t *testing.T) {
 
 	fsys = writeOnly(fsys)
 	t.Setenv("FOO_FILE", "/tmp/unreadable")
-	assert.Equal(t, "", ExpandEnvFsys(fsys, "${FOO}"))
+	assert.Empty(t, ExpandEnvFsys(fsys, "${FOO}"))
 }
 
 // Maybe extract this into a separate package sometime...

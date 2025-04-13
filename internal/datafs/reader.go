@@ -18,6 +18,8 @@ import (
 	"github.com/hairyhenderson/gomplate/v4/internal/iohelpers"
 )
 
+const osWindows = "windows"
+
 // typeOverrideParam gets the query parameter used to override the content type
 // used to parse a given datasource - use GOMPLATE_TYPE_PARAM to use a different
 // parameter name.
@@ -132,7 +134,7 @@ func (d *dsReader) readFileContent(ctx context.Context, u *url.URL, hdr http.Hea
 
 	// need to support absolute paths on local filesystem too
 	// TODO: this is a hack, probably fix this?
-	if u.Scheme == "file" && runtime.GOOS != "windows" {
+	if u.Scheme == "file" && runtime.GOOS != osWindows {
 		fname = u.Path + fname
 	}
 

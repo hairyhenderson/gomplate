@@ -101,7 +101,7 @@ func (f CryptoFuncs) SHA512(input any) string {
 
 // SHA512_224 -
 //
-//nolint:revive,stylecheck
+//nolint:revive
 func (f CryptoFuncs) SHA512_224(input any) string {
 	out, _ := f.SHA512_224Bytes(input)
 	return fmt.Sprintf("%02x", out)
@@ -109,7 +109,7 @@ func (f CryptoFuncs) SHA512_224(input any) string {
 
 // SHA512_256 -
 //
-//nolint:revive,stylecheck
+//nolint:revive
 func (f CryptoFuncs) SHA512_256(input any) string {
 	out, _ := f.SHA512_256Bytes(input)
 	return fmt.Sprintf("%02x", out)

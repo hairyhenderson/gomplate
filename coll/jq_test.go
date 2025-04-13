@@ -64,7 +64,7 @@ func TestJQ(t *testing.T) {
 
 	out, err = JQ(ctx, ".store", in)
 	require.NoError(t, err)
-	assert.EqualValues(t, in["store"], out)
+	assert.Equal(t, in["store"], out)
 
 	out, err = JQ(ctx, ".store.book[].author", in)
 	require.NoError(t, err)
@@ -91,7 +91,7 @@ func TestJQ(t *testing.T) {
 			"price":    8.99,
 		},
 	}
-	assert.EqualValues(t, expected, out)
+	assert.Equal(t, expected, out)
 
 	in = map[string]any{
 		"a": map[string]any{

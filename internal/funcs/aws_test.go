@@ -33,8 +33,8 @@ func TestAWSFuncs(t *testing.T) {
 	i := aws.NewDummyEc2Info(m)
 	af := &Funcs{meta: m, info: i}
 	assert.Equal(t, "unknown", must(af.EC2Region()))
-	assert.Equal(t, "", must(af.EC2Meta("foo")))
-	assert.Equal(t, "", must(af.EC2Tag("foo")))
+	assert.Empty(t, must(af.EC2Meta("foo")))
+	assert.Empty(t, must(af.EC2Tag("foo")))
 	assert.Equal(t, "unknown", must(af.EC2Region()))
 }
 

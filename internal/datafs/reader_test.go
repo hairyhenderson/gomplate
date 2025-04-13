@@ -19,8 +19,6 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-const osWindows = "windows"
-
 func TestResolveURL(t *testing.T) {
 	out, err := resolveURL(*mustParseURL("http://example.com/foo.json"), "bar.json")
 	require.NoError(t, err)
