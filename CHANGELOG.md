@@ -1,5 +1,25 @@
 # Change Log
 
+## [4.3.2](https://github.com/hairyhenderson/gomplate/compare/v4.3.1...v4.3.2) (2025-04-14)
+
+
+### Bug Fixes
+
+* **test:** Use a bucket that exists for the S3 bucket test ([#2364](https://github.com/hairyhenderson/gomplate/issues/2364)) ([af67a73](https://github.com/hairyhenderson/gomplate/commit/af67a7318344a7052cd7f7c08396441a9291afcd))
+
+
+### Dependencies
+
+* **actions:** Bump actions/create-github-app-token in the actions group ([#2359](https://github.com/hairyhenderson/gomplate/issues/2359)) ([c2b5f75](https://github.com/hairyhenderson/gomplate/commit/c2b5f756b909734413c0645d01a1c72b9e87f659))
+* **actions:** Bump aquasecurity/setup-trivy from 0.2.2 to 0.2.3 ([#2363](https://github.com/hairyhenderson/gomplate/issues/2363)) ([2853363](https://github.com/hairyhenderson/gomplate/commit/2853363d506c15bfe1c0338b3662860aa726a52c))
+* **actions:** Bump docker/login-action from 3.3.0 to 3.4.0 ([#2354](https://github.com/hairyhenderson/gomplate/issues/2354)) ([811d337](https://github.com/hairyhenderson/gomplate/commit/811d3378605669035efb311acab13cbaef142573))
+* **actions:** Bump golangci/golangci-lint-action from 6 to 7 ([#2357](https://github.com/hairyhenderson/gomplate/issues/2357)) ([623a7d5](https://github.com/hairyhenderson/gomplate/commit/623a7d5952b77a76f4bf122f3e057fd2249bc99d))
+* **go:** Bump cuelang.org/go from 0.12.0 to 0.12.1 ([#2360](https://github.com/hairyhenderson/gomplate/issues/2360)) ([40eab0b](https://github.com/hairyhenderson/gomplate/commit/40eab0b7df39f7751578fc85e5cd133b86fb2812))
+* **go:** Bump github.com/golang-jwt/jwt/v5 in the go_modules group ([#2356](https://github.com/hairyhenderson/gomplate/issues/2356)) ([238bc62](https://github.com/hairyhenderson/gomplate/commit/238bc628f3f2f4863c10b28f9a868f6d23d5c9dc))
+* **go:** Bump github.com/hairyhenderson/go-fsimpl from 0.2.4 to 0.2.5 ([#2352](https://github.com/hairyhenderson/gomplate/issues/2352)) ([3e0859b](https://github.com/hairyhenderson/gomplate/commit/3e0859bd4dbcaab7c32ccd9420ed183f9d22d7dd))
+* **go:** Bump k8s.io/client-go from 0.32.2 to 0.32.3 ([#2349](https://github.com/hairyhenderson/gomplate/issues/2349)) ([e713cb0](https://github.com/hairyhenderson/gomplate/commit/e713cb0b7936759d25fe0be558f93d6a2c26a9a6))
+* **go:** Bump the golang-x group with 4 updates ([#2361](https://github.com/hairyhenderson/gomplate/issues/2361)) ([03c56f3](https://github.com/hairyhenderson/gomplate/commit/03c56f3119097e46d3c57770d177e87b49444d54))
+
 ## [4.3.1](https://github.com/hairyhenderson/gomplate/compare/v4.3.0...v4.3.1) (2025-03-11)
 
 
