@@ -97,7 +97,7 @@ pluginTimeout: 2s
 
 	cf, err = Parse(strings.NewReader(in))
 	require.NoError(t, err)
-	assert.EqualValues(t, expected, cf)
+	assert.Equal(t, expected, cf)
 }
 
 func mustURL(s string) *url.URL {
@@ -270,7 +270,7 @@ func TestMergeFrom(t *testing.T) {
 		OutMode: "644",
 	}
 
-	assert.EqualValues(t, expected, cfg.MergeFrom(other))
+	assert.Equal(t, expected, cfg.MergeFrom(other))
 
 	cfg = &Config{
 		Input: "hello world",
@@ -284,7 +284,7 @@ func TestMergeFrom(t *testing.T) {
 		OutputFiles: []string{"out", "out2"},
 	}
 
-	assert.EqualValues(t, expected, cfg.MergeFrom(other))
+	assert.Equal(t, expected, cfg.MergeFrom(other))
 
 	cfg = &Config{
 		Input:       "hello world",
@@ -299,7 +299,7 @@ func TestMergeFrom(t *testing.T) {
 		OutputDir: "out/",
 	}
 
-	assert.EqualValues(t, expected, cfg.MergeFrom(other))
+	assert.Equal(t, expected, cfg.MergeFrom(other))
 
 	cfg = &Config{
 		Input:       "hello world",
@@ -316,7 +316,7 @@ func TestMergeFrom(t *testing.T) {
 		PostExec: []string{"cat"},
 	}
 
-	assert.EqualValues(t, expected, cfg.MergeFrom(other))
+	assert.Equal(t, expected, cfg.MergeFrom(other))
 
 	cfg = &Config{
 		Input:       "hello world",
@@ -342,7 +342,7 @@ func TestMergeFrom(t *testing.T) {
 		PluginTimeout: 500 * time.Microsecond,
 	}
 
-	assert.EqualValues(t, expected, cfg.MergeFrom(other))
+	assert.Equal(t, expected, cfg.MergeFrom(other))
 
 	cfg = &Config{
 		Input:   "hello world",
@@ -397,7 +397,7 @@ func TestMergeFrom(t *testing.T) {
 		OutMode: "644",
 	}
 
-	assert.EqualValues(t, expected, cfg.MergeFrom(other))
+	assert.Equal(t, expected, cfg.MergeFrom(other))
 
 	// test template merging & a few other things
 	cfg = &Config{
@@ -441,7 +441,7 @@ func TestMergeFrom(t *testing.T) {
 		},
 	}
 
-	assert.EqualValues(t, expected, cfg.MergeFrom(other))
+	assert.Equal(t, expected, cfg.MergeFrom(other))
 }
 
 func TestConfig_String(t *testing.T) {
@@ -573,8 +573,8 @@ func TestApplyDefaults(t *testing.T) {
 	cfg := &Config{}
 
 	cfg.applyDefaults()
-	assert.EqualValues(t, []string{"-"}, cfg.InputFiles)
-	assert.EqualValues(t, []string{"-"}, cfg.OutputFiles)
+	assert.Equal(t, []string{"-"}, cfg.InputFiles)
+	assert.Equal(t, []string{"-"}, cfg.OutputFiles)
 	assert.Empty(t, cfg.OutputDir)
 	assert.Equal(t, "{{", cfg.LDelim)
 	assert.Equal(t, "}}", cfg.RDelim)
@@ -598,7 +598,7 @@ func TestApplyDefaults(t *testing.T) {
 
 	cfg.applyDefaults()
 	assert.Empty(t, cfg.InputFiles)
-	assert.EqualValues(t, []string{"-"}, cfg.OutputFiles)
+	assert.Equal(t, []string{"-"}, cfg.OutputFiles)
 	assert.Empty(t, cfg.OutputDir)
 	assert.Equal(t, "<", cfg.LDelim)
 	assert.Equal(t, ">", cfg.RDelim)
@@ -610,7 +610,7 @@ func TestApplyDefaults(t *testing.T) {
 
 	cfg.applyDefaults()
 	assert.Empty(t, cfg.InputFiles)
-	assert.EqualValues(t, []string{"-"}, cfg.OutputFiles)
+	assert.Equal(t, []string{"-"}, cfg.OutputFiles)
 	assert.Empty(t, cfg.OutputDir)
 	assert.True(t, cfg.ExecPipe)
 
@@ -657,7 +657,7 @@ func TestPluginConfig_UnmarshalYAML(t *testing.T) {
 	out := PluginConfig{}
 	err := yaml.Unmarshal([]byte(in), &out)
 	require.NoError(t, err)
-	assert.EqualValues(t, PluginConfig{Cmd: "foo"}, out)
+	assert.Equal(t, PluginConfig{Cmd: "foo"}, out)
 
 	in = `[foo, bar]`
 	out = PluginConfig{}
@@ -668,7 +668,7 @@ func TestPluginConfig_UnmarshalYAML(t *testing.T) {
 	out = PluginConfig{}
 	err = yaml.Unmarshal([]byte(in), &out)
 	require.NoError(t, err)
-	assert.EqualValues(t, PluginConfig{Cmd: "foo"}, out)
+	assert.Equal(t, PluginConfig{Cmd: "foo"}, out)
 
 	in = `cmd: foo
 timeout: 10ms
@@ -677,7 +677,7 @@ pipe: true
 	out = PluginConfig{}
 	err = yaml.Unmarshal([]byte(in), &out)
 	require.NoError(t, err)
-	assert.EqualValues(t, PluginConfig{
+	assert.Equal(t, PluginConfig{
 		Cmd:     "foo",
 		Timeout: time.Duration(10) * time.Millisecond,
 		Pipe:    true,

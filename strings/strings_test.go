@@ -60,8 +60,8 @@ func BenchmarkIndent(b *testing.B) {
 }
 
 func TestTrunc(t *testing.T) {
-	assert.Equal(t, "", Trunc(5, ""))
-	assert.Equal(t, "", Trunc(0, "hello, world"))
+	assert.Empty(t, Trunc(5, ""))
+	assert.Empty(t, Trunc(0, "hello, world"))
 	assert.Equal(t, "hello", Trunc(5, "hello, world"))
 	assert.Equal(t, "hello, world", Trunc(12, "hello, world"))
 	assert.Equal(t, "hello, world", Trunc(42, "hello, world"))
@@ -78,15 +78,15 @@ func TestShellQuote(t *testing.T) {
 func TestSort(t *testing.T) {
 	in := []string{}
 	expected := []string{}
-	assert.EqualValues(t, expected, Sort(in))
+	assert.Equal(t, expected, Sort(in))
 
 	in = []string{"c", "a", "b"}
 	expected = []string{"a", "b", "c"}
-	assert.EqualValues(t, expected, Sort(in))
+	assert.Equal(t, expected, Sort(in))
 
 	in = []string{"42", "45", "18"}
 	expected = []string{"18", "42", "45"}
-	assert.EqualValues(t, expected, Sort(in))
+	assert.Equal(t, expected, Sort(in))
 }
 
 func TestCaseFuncs(t *testing.T) {
@@ -176,5 +176,5 @@ func TestSkipLines(t *testing.T) {
 
 	out, err = SkipLines(4, "foo\nbar\n\nbaz")
 	require.NoError(t, err)
-	assert.Equal(t, "", out)
+	assert.Empty(t, out)
 }

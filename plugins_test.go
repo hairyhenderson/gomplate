@@ -22,7 +22,7 @@ func TestBindPlugins(t *testing.T) {
 	}
 	err := bindPlugins(ctx, cfg, fm)
 	require.NoError(t, err)
-	assert.EqualValues(t, template.FuncMap{}, fm)
+	assert.Equal(t, template.FuncMap{}, fm)
 
 	cfg.Plugins = map[string]PluginConfig{"foo": {Cmd: "bar"}}
 	err = bindPlugins(ctx, cfg, fm)
@@ -53,7 +53,7 @@ func TestBuildCommand(t *testing.T) {
 		}
 		name, args := p.buildCommand(d.args)
 		actual := append([]string{name}, args...)
-		assert.EqualValues(t, d.expected, actual)
+		assert.Equal(t, d.expected, actual)
 	}
 }
 
@@ -69,7 +69,7 @@ func TestRun(t *testing.T) {
 	}
 	out, err := p.run("foo")
 	require.NoError(t, err)
-	assert.Equal(t, "", stderr.String())
+	assert.Empty(t, stderr.String())
 	assert.Equal(t, "foo", strings.TrimSpace(out.(string)))
 
 	p = &plugin{
@@ -81,7 +81,7 @@ func TestRun(t *testing.T) {
 	}
 	out, err = p.run()
 	require.NoError(t, err)
-	assert.Equal(t, "", stderr.String())
+	assert.Empty(t, stderr.String())
 	assert.Equal(t, "foo bar", strings.TrimSpace(out.(string)))
 
 	p = &plugin{
@@ -93,7 +93,7 @@ func TestRun(t *testing.T) {
 	}
 	out, err = p.run("baz", "qux")
 	require.NoError(t, err)
-	assert.Equal(t, "", stderr.String())
+	assert.Empty(t, stderr.String())
 	assert.Equal(t, "foo bar baz qux", strings.TrimSpace(out.(string)))
 }
 

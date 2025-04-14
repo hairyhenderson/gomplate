@@ -65,7 +65,7 @@ func TestJSONPath(t *testing.T) {
 
 	out, err = JSONPath(".store", in)
 	require.NoError(t, err)
-	assert.EqualValues(t, in["store"], out)
+	assert.Equal(t, in["store"], out)
 
 	out, err = JSONPath("$.store.book[*].author", in)
 	require.NoError(t, err)
@@ -92,7 +92,7 @@ func TestJSONPath(t *testing.T) {
 			"price":    8.99,
 		},
 	}
-	assert.EqualValues(t, expected, out)
+	assert.Equal(t, expected, out)
 
 	in = m{
 		"a": m{

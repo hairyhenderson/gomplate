@@ -186,7 +186,7 @@ datasources:
 	o, e, err := cmd(t).withDir(tmpDir.Path()).
 		withEnv("GOMPLATE_LEFT_DELIM", "<<").run()
 	require.NoError(t, err)
-	assert.Equal(t, "", e)
+	assert.Empty(t, e)
 	assert.Equal(t, "hello world", o)
 }
 
@@ -210,7 +210,7 @@ datasources:
 		withDir(tmpDir.Path()).
 		withEnv("GOMPLATE_LEFT_DELIM", "<<").run()
 	require.NoError(t, err)
-	assert.Equal(t, "", e)
+	assert.Empty(t, e)
 	assert.Equal(t, "hello world", o)
 }
 

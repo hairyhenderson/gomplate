@@ -37,7 +37,7 @@ func TestEncrypt(t *testing.T) {
 	resp, err := kmsClient.Encrypt("dummykey", "plaintextvalue")
 	require.NoError(t, err)
 	expectedResp, _ := b64.Encode([]byte("PLAINTEXTVALUE"))
-	assert.EqualValues(t, expectedResp, resp)
+	assert.Equal(t, expectedResp, resp)
 }
 
 func TestDecrypt(t *testing.T) {
@@ -49,5 +49,5 @@ func TestDecrypt(t *testing.T) {
 	// Success
 	resp, err := kmsClient.Decrypt(encodedCiphertextBlob)
 	require.NoError(t, err)
-	assert.EqualValues(t, "ciphervalue", resp)
+	assert.Equal(t, "ciphervalue", resp)
 }

@@ -1,28 +1,10 @@
-linters-settings:
-  govet:
-    enable-all: true
-  gocyclo:
-    min-complexity: 10
-  gomoddirectives:
-    replace-local: false
-    replace-allow-list: []
-    retract-allow-no-explanation: false
-    exclude-forbidden: true
-  dupl:
-    threshold: 100
-  goconst:
-    min-len: 2
-    min-occurrences: 5
-    ignore-tests: true
-  lll:
-    line-length: 140
-  nolintlint:
-    allow-unused: false # report any unused nolint directives
-    require-explanation: false # don't require an explanation for nolint directives
-    require-specific: false # don't require nolint directives to be specific about which linter is being skipped
+version: "2"
+
+run:
+  concurrency: 4
 
 linters:
-  disable-all: true
+  default: none
   enable:
     - asciicheck
     - bodyclose
@@ -40,16 +22,12 @@ linters:
     - gocritic
     # - gocyclo
     # - godox
-    - gofmt
-    - gofumpt
     - goheader
-    - goimports
     # - gomnd
     - gomoddirectives
     - gomodguard
     - goprintffuncname
     - gosec
-    - gosimple
     - govet
     - ineffassign
     # - lll
@@ -65,21 +43,60 @@ linters:
     - sloglint
     - sqlclosecheck
     - staticcheck
-    - stylecheck
     - testifylint
-    - typecheck
     - unconvert
     - unparam
     - unused
     - whitespace
     # - wsl
+  settings:
+    dupl:
+      threshold: 100
+    goconst:
+      min-len: 2
+      min-occurrences: 5
+    gocyclo:
+      min-complexity: 10
+    gomoddirectives:
+      replace-local: false
+      exclude-forbidden: true
+      retract-allow-no-explanation: false
+    govet:
+      enable-all: true
+    lll:
+      line-length: 140
+    nolintlint:
+      allow-unused: false # report any unused nolint directives
+      require-explanation: false # don't require an explanation for nolint directives
+      require-specific: false # don't require nolint directives to be specific about which linter is being skipped
 
-issues:
-  exclude-rules:
-    - path: _test\.go
-      linters:
-        - errcheck
+  exclusions:
+    generated: lax
+    presets:
+      - comments
+      - common-false-positives
+      - legacy
+      - std-error-handling
+    rules:
+      - linters:
+          - errcheck
+        path: _test\.go
+      - linters:
+          - goconst
+        path: (.+)_test\.go
+    paths:
+      - third_party$
+      - builtin$
+      - examples$
 
-run:
-  concurrency: 4
-  timeout: 5m
+formatters:
+  enable:
+    - gofmt
+    - gofumpt
+    - goimports
+  exclusions:
+    generated: lax
+    paths:
+      - third_party$
+      - builtin$
+      - examples$

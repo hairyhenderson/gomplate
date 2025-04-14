@@ -169,11 +169,11 @@ func TestSeq(t *testing.T) {
 	t.Parallel()
 
 	m := MathFuncs{}
-	assert.EqualValues(t, []int64{0, 1, 2, 3}, mustSeq(t, 0, 3))
-	assert.EqualValues(t, []int64{1, 0}, mustSeq(t, 0))
-	assert.EqualValues(t, []int64{0, 2, 4}, mustSeq(t, 0, 4, 2))
-	assert.EqualValues(t, []int64{0, 2, 4}, mustSeq(t, 0, 5, 2))
-	assert.EqualValues(t, []int64{0}, mustSeq(t, 0, 5, 8))
+	assert.Equal(t, []int64{0, 1, 2, 3}, mustSeq(t, 0, 3))
+	assert.Equal(t, []int64{1, 0}, mustSeq(t, 0))
+	assert.Equal(t, []int64{0, 2, 4}, mustSeq(t, 0, 4, 2))
+	assert.Equal(t, []int64{0, 2, 4}, mustSeq(t, 0, 5, 2))
+	assert.Equal(t, []int64{0}, mustSeq(t, 0, 5, 8))
 	_, err := m.Seq()
 	require.Error(t, err)
 }

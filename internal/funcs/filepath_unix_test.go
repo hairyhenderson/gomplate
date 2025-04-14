@@ -29,5 +29,5 @@ func TestFilePathFuncs(t *testing.T) {
 	r, _ := f.Rel("/foo/bar", "/foo/bar/baz")
 	assert.Equal(t, "baz", r)
 	assert.Equal(t, []string{"/foo/bar/", "baz"}, f.Split("/foo/bar/baz"))
-	assert.Equal(t, "", f.VolumeName("/foo/bar"))
+	assert.Empty(t, f.VolumeName("/foo/bar"))
 }

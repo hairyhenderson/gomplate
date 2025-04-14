@@ -104,7 +104,7 @@ func TestTag_NonEC2(t *testing.T) {
 		cache:      make(map[string]any),
 	}
 
-	assert.Equal(t, "", must(e.Tag("foo")))
+	assert.Empty(t, must(e.Tag("foo")))
 	assert.Equal(t, "default", must(e.Tag("foo", "default")))
 }
 

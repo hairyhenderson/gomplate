@@ -59,7 +59,7 @@ func TestEc2MetaTemplates(t *testing.T) {
 	}
 
 	g := createGomplate(nil, "")
-	assert.Equal(t, "", testTemplate(t, g, `{{ec2meta "foo"}}`))
+	assert.Empty(t, testTemplate(t, g, `{{ec2meta "foo"}}`))
 	assert.Equal(t, "default", testTemplate(t, g, `{{ec2meta "foo" "default"}}`))
 
 	g = createGomplate(map[string]string{"instance-id": "i-1234"}, "")

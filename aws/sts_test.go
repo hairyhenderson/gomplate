@@ -24,7 +24,7 @@ func TestNewSTS(t *testing.T) {
 
 	out, err := s.getCallerID()
 	require.NoError(t, err)
-	assert.EqualValues(t, &sts.GetCallerIdentityOutput{
+	assert.Equal(t, &sts.GetCallerIdentityOutput{
 		Account: aws.String("acct"),
 		Arn:     aws.String("arn"),
 		UserId:  aws.String("uid"),
@@ -46,7 +46,7 @@ func TestNewSTS(t *testing.T) {
 
 	out, err = s.getCallerID()
 	require.NoError(t, err)
-	assert.EqualValues(t, &sts.GetCallerIdentityOutput{
+	assert.Equal(t, &sts.GetCallerIdentityOutput{
 		Account: aws.String("acct"),
 		Arn:     aws.String("arn"),
 		UserId:  aws.String("uid"),

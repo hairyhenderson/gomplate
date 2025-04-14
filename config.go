@@ -265,7 +265,7 @@ func (c *Config) MergeFrom(o *Config) *Config {
 		c.InputDir = o.InputDir
 		c.InputFiles = nil
 	case !isZero(o.InputFiles):
-		if !(len(o.InputFiles) == 1 && o.InputFiles[0] == "-") {
+		if len(o.InputFiles) != 1 || o.InputFiles[0] != "-" {
 			c.Input = ""
 			c.InputFiles = o.InputFiles
 			c.InputDir = ""

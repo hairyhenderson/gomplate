@@ -15,7 +15,7 @@ func must(r any, err error) any {
 }
 
 func TestEncode(t *testing.T) {
-	assert.Equal(t, "", must(Encode([]byte(""))))
+	assert.Empty(t, must(Encode([]byte(""))))
 	assert.Equal(t, "Zg==", must(Encode([]byte("f"))))
 	assert.Equal(t, "Zm8=", must(Encode([]byte("fo"))))
 	assert.Equal(t, "Zm9v", must(Encode([]byte("foo"))))

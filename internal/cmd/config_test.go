@@ -50,7 +50,7 @@ func TestReadConfigFile(t *testing.T) {
 
 	cfg, err := readConfigFile(ctx, cmd)
 	require.NoError(t, err)
-	assert.EqualValues(t, &gomplate.Config{}, cfg)
+	assert.Equal(t, &gomplate.Config{}, cfg)
 
 	cmd.ParseFlags([]string{"--config", "config.yaml"})
 
@@ -58,7 +58,7 @@ func TestReadConfigFile(t *testing.T) {
 
 	cfg, err = readConfigFile(ctx, cmd)
 	require.NoError(t, err)
-	assert.EqualValues(t, &gomplate.Config{Input: "hello world"}, cfg)
+	assert.Equal(t, &gomplate.Config{Input: "hello world"}, cfg)
 
 	fsys["config.yaml"] = &fstest.MapFile{Data: []byte("in: hello world\nin: \n")}
 
@@ -96,7 +96,7 @@ func TestLoadConfig(t *testing.T) {
 		Stderr: stderr,
 	}
 	require.NoError(t, err)
-	assert.EqualValues(t, expected, out)
+	assert.Equal(t, expected, out)
 
 	cmd.ParseFlags([]string{"--in", "foo"})
 	out, err = loadConfig(ctx, cmd, cmd.Flags().Args())
@@ -107,7 +107,7 @@ func TestLoadConfig(t *testing.T) {
 		Stderr: stderr,
 	}
 	require.NoError(t, err)
-	assert.EqualValues(t, expected, out)
+	assert.Equal(t, expected, out)
 
 	cmd.ParseFlags([]string{"--in", "foo", "--exec-pipe", "--", "tr", "[a-z]", "[A-Z]"})
 	out, err = loadConfig(ctx, cmd, cmd.Flags().Args())
@@ -120,7 +120,7 @@ func TestLoadConfig(t *testing.T) {
 		Stderr:   stderr,
 	}
 	require.NoError(t, err)
-	assert.EqualValues(t, expected, out)
+	assert.Equal(t, expected, out)
 }
 
 func TestPostExecInput(t *testing.T) {
@@ -154,13 +154,13 @@ func TestCobraConfig(t *testing.T) {
 
 	cfg, err := cobraConfig(cmd, cmd.Flags().Args())
 	require.NoError(t, err)
-	assert.EqualValues(t, &gomplate.Config{}, cfg)
+	assert.Equal(t, &gomplate.Config{}, cfg)
 
 	cmd.ParseFlags([]string{"--file", "in", "--", "echo", "foo"})
 
 	cfg, err = cobraConfig(cmd, cmd.Flags().Args())
 	require.NoError(t, err)
-	assert.EqualValues(t, &gomplate.Config{
+	assert.Equal(t, &gomplate.Config{
 		InputFiles: []string{"in"},
 		PostExec:   []string{"echo", "foo"},
 	}, cfg)
@@ -179,7 +179,7 @@ func TestProcessIncludes(t *testing.T) {
 	}
 
 	for _, d := range data {
-		assert.EqualValues(t, d.expected, processIncludes(d.inc, d.exc))
+		assert.Equal(t, d.expected, processIncludes(d.inc, d.exc))
 	}
 }
 
@@ -221,7 +221,7 @@ func TestPickConfigFile(t *testing.T) {
 		cf, req, skip := pickConfigFile(cmd)
 		assert.False(t, req)
 		assert.True(t, skip)
-		assert.Equal(t, "", cf)
+		assert.Empty(t, cf)
 	})
 
 	t.Run("GOMPLATE_CONFIG env var with empty value should skip reading", func(t *testing.T) {
@@ -229,7 +229,7 @@ func TestPickConfigFile(t *testing.T) {
 		cf, req, skip := pickConfigFile(cmd)
 		assert.False(t, req)
 		assert.True(t, skip)
-		assert.Equal(t, "", cf)
+		assert.Empty(t, cf)
 	})
 }
 
@@ -308,7 +308,7 @@ func TestApplyEnvVars(t *testing.T) {
 
 			actual, err := applyEnvVars(context.Background(), d.input)
 			require.NoError(t, err)
-			assert.EqualValues(t, d.expected, actual)
+			assert.Equal(t, d.expected, actual)
 		})
 	}
 }
@@ -327,7 +327,7 @@ func TestParseDataSourceFlags(t *testing.T) {
 	cfg := &gomplate.Config{}
 	err := parseDataSourceFlags(cfg, nil, nil, nil, nil)
 	require.NoError(t, err)
-	assert.EqualValues(t, &gomplate.Config{}, cfg)
+	assert.Equal(t, &gomplate.Config{}, cfg)
 
 	cfg = &gomplate.Config{}
 	err = parseDataSourceFlags(cfg, []string{"foo/bar/baz.json"}, nil, nil, nil)
@@ -341,7 +341,7 @@ func TestParseDataSourceFlags(t *testing.T) {
 			"baz": {URL: mustURL("foo/bar/baz.json")},
 		},
 	}
-	assert.EqualValues(t, expected, cfg, "expected: %+v\nactual: %+v\n", expected, cfg)
+	assert.Equal(t, expected, cfg, "expected: %+v\nactual: %+v\n", expected, cfg)
 
 	cfg = &gomplate.Config{}
 	err = parseDataSourceFlags(cfg,
@@ -350,7 +350,7 @@ func TestParseDataSourceFlags(t *testing.T) {
 		nil,
 		[]string{"baz=Accept: application/json"})
 	require.NoError(t, err)
-	assert.EqualValues(t, &gomplate.Config{
+	assert.Equal(t, &gomplate.Config{
 		DataSources: map[string]gomplate.DataSource{
 			"baz": {
 				URL: mustURL("foo/bar/baz.json"),
@@ -372,7 +372,7 @@ func TestParseDataSourceFlags(t *testing.T) {
 		},
 	)
 	require.NoError(t, err)
-	assert.EqualValues(t, &gomplate.Config{
+	assert.Equal(t, &gomplate.Config{
 		DataSources: map[string]gomplate.DataSource{
 			"baz": {URL: mustURL("foo/bar/baz.json")},
 		},
@@ -397,7 +397,7 @@ func TestParseDataSourceFlags(t *testing.T) {
 		[]string{"foo=Accept: application/json", "bar=Authorization: Basic xxxxx"},
 	)
 	require.NoError(t, err)
-	assert.EqualValues(t, &gomplate.Config{
+	assert.Equal(t, &gomplate.Config{
 		Templates: map[string]gomplate.DataSource{
 			"foo": {
 				URL:    mustURL("http://example.com"),
@@ -421,7 +421,7 @@ func TestParsePluginFlags(t *testing.T) {
 	cfg = &gomplate.Config{}
 	err = ParsePluginFlags(cfg, []string{"foo=bar"})
 	require.NoError(t, err)
-	assert.EqualValues(t, &gomplate.Config{Plugins: map[string]gomplate.PluginConfig{"foo": {Cmd: "bar"}}}, cfg)
+	assert.Equal(t, &gomplate.Config{Plugins: map[string]gomplate.PluginConfig{"foo": {Cmd: "bar"}}}, cfg)
 }
 
 func TestParseDatasourceArgNoAlias(t *testing.T) {
@@ -441,7 +441,7 @@ func TestParseDatasourceArgWithAlias(t *testing.T) {
 	alias, ds, err := parseDatasourceArg("data=foo.json")
 	require.NoError(t, err)
 	assert.Equal(t, "data", alias)
-	assert.EqualValues(t, &url.URL{Path: "foo.json"}, ds.URL)
+	assert.Equal(t, &url.URL{Path: "foo.json"}, ds.URL)
 
 	alias, ds, err = parseDatasourceArg("data=/otherdir/foo.json")
 	require.NoError(t, err)
@@ -454,33 +454,33 @@ func TestParseDatasourceArgWithAlias(t *testing.T) {
 		alias, ds, err = parseDatasourceArg("data=foo.json")
 		require.NoError(t, err)
 		assert.Equal(t, "data", alias)
-		assert.EqualValues(t, &url.URL{Path: "foo.json"}, ds.URL)
+		assert.Equal(t, &url.URL{Path: "foo.json"}, ds.URL)
 
 		alias, ds, err = parseDatasourceArg(`data=\otherdir\foo.json`)
 		require.NoError(t, err)
 		assert.Equal(t, "data", alias)
-		assert.EqualValues(t, &url.URL{Scheme: "file", Path: "/otherdir/foo.json"}, ds.URL)
+		assert.Equal(t, &url.URL{Scheme: "file", Path: "/otherdir/foo.json"}, ds.URL)
 
 		alias, ds, err = parseDatasourceArg("data=C:\\windowsdir\\foo.json")
 		require.NoError(t, err)
 		assert.Equal(t, "data", alias)
-		assert.EqualValues(t, &url.URL{Scheme: "file", Path: "C:/windowsdir/foo.json"}, ds.URL)
+		assert.Equal(t, &url.URL{Scheme: "file", Path: "C:/windowsdir/foo.json"}, ds.URL)
 
 		alias, ds, err = parseDatasourceArg("data=\\\\somehost\\share\\foo.json")
 		require.NoError(t, err)
 		assert.Equal(t, "data", alias)
-		assert.EqualValues(t, &url.URL{Scheme: "file", Host: "somehost", Path: "/share/foo.json"}, ds.URL)
+		assert.Equal(t, &url.URL{Scheme: "file", Host: "somehost", Path: "/share/foo.json"}, ds.URL)
 	}
 
 	alias, ds, err = parseDatasourceArg("data=sftp://example.com/blahblah/foo.json")
 	require.NoError(t, err)
 	assert.Equal(t, "data", alias)
-	assert.EqualValues(t, &url.URL{Scheme: "sftp", Host: "example.com", Path: "/blahblah/foo.json"}, ds.URL)
+	assert.Equal(t, &url.URL{Scheme: "sftp", Host: "example.com", Path: "/blahblah/foo.json"}, ds.URL)
 
 	alias, ds, err = parseDatasourceArg("merged=merge:./foo.yaml|http://example.com/bar.json%3Ffoo=bar")
 	require.NoError(t, err)
 	assert.Equal(t, "merged", alias)
-	assert.EqualValues(t, &url.URL{Scheme: "merge", Opaque: "./foo.yaml|http://example.com/bar.json%3Ffoo=bar"}, ds.URL)
+	assert.Equal(t, &url.URL{Scheme: "merge", Opaque: "./foo.yaml|http://example.com/bar.json%3Ffoo=bar"}, ds.URL)
 }
 
 func TestParseHeaderArgs(t *testing.T) {

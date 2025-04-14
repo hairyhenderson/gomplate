@@ -94,8 +94,8 @@ func TestTrunc(t *testing.T) {
 	t.Parallel()
 
 	sf := &StringFuncs{}
-	assert.Equal(t, "", sf.Trunc(5, ""))
-	assert.Equal(t, "", sf.Trunc(0, nil))
+	assert.Empty(t, sf.Trunc(5, ""))
+	assert.Empty(t, sf.Trunc(0, nil))
 	assert.Equal(t, "123", sf.Trunc(3, 123456789))
 	assert.Equal(t, "hello, world", sf.Trunc(-1, "hello, world"))
 }
