@@ -1,5 +1,12 @@
 # Change Log
 
+## [4.3.3](https://github.com/hairyhenderson/gomplate/compare/v4.3.2...v4.3.3) (2025-04-17)
+
+
+### Dependencies
+
+* **go:** Bump golang.org/x/net in the go_modules group ([#2366](https://github.com/hairyhenderson/gomplate/issues/2366)) ([d1bbf8c](https://github.com/hairyhenderson/gomplate/commit/d1bbf8c29e450171bf0d83d46039bbd27b05b78d))
+
 ## [4.3.2](https://github.com/hairyhenderson/gomplate/compare/v4.3.1...v4.3.2) (2025-04-14)
 
 
