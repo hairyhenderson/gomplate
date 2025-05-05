@@ -1,5 +1,13 @@
 # Change Log
 
+## [4.3.3](https://github.com/hairyhenderson/gomplate/compare/v4.3.2...v4.3.3) (2025-05-05)
+
+
+### Dependencies
+
+* **go:** Bump github.com/hairyhenderson/go-fsimpl from 0.2.5 to 0.3.0 ([#2368](https://github.com/hairyhenderson/gomplate/issues/2368)) ([e3c3b0f](https://github.com/hairyhenderson/gomplate/commit/e3c3b0f0e4ba4b93249d5d782e631961340dee5f))
+* **go:** Bump golang.org/x/net in the go_modules group ([#2366](https://github.com/hairyhenderson/gomplate/issues/2366)) ([d1bbf8c](https://github.com/hairyhenderson/gomplate/commit/d1bbf8c29e450171bf0d83d46039bbd27b05b78d))
+
 ## [4.3.2](https://github.com/hairyhenderson/gomplate/compare/v4.3.1...v4.3.2) (2025-04-14)
 
 
