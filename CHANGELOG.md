@@ -1,5 +1,23 @@
 # Change Log
 
+## [4.3.3](https://github.com/hairyhenderson/gomplate/compare/v4.3.2...v4.3.3) (2025-06-05)
+
+
+### Dependencies
+
+* **actions:** Bump golangci/golangci-lint-action from 7 to 8 ([#2373](https://github.com/hairyhenderson/gomplate/issues/2373)) ([b816afe](https://github.com/hairyhenderson/gomplate/commit/b816afef7f79add26de206a1c1e66f104accd980))
+* **go:** Bump cuelang.org/go from 0.12.1 to 0.13.0 ([#2380](https://github.com/hairyhenderson/gomplate/issues/2380)) ([f80f64c](https://github.com/hairyhenderson/gomplate/commit/f80f64c9fdefd23960e787a9e7f48da638144b9c))
+* **go:** Bump github.com/aws/aws-sdk-go in the aws-sdk group ([#2369](https://github.com/hairyhenderson/gomplate/issues/2369)) ([d6540bd](https://github.com/hairyhenderson/gomplate/commit/d6540bd8ae1f6503e91ab2fb806f855757c52bc3))
+* **go:** Bump github.com/hairyhenderson/go-fsimpl from 0.2.5 to 0.3.0 ([#2368](https://github.com/hairyhenderson/gomplate/issues/2368)) ([e3c3b0f](https://github.com/hairyhenderson/gomplate/commit/e3c3b0f0e4ba4b93249d5d782e631961340dee5f))
+* **go:** Bump github.com/hairyhenderson/go-fsimpl from 0.3.0 to 0.3.1 ([#2382](https://github.com/hairyhenderson/gomplate/issues/2382)) ([38ce9b8](https://github.com/hairyhenderson/gomplate/commit/38ce9b8dbb9a0e330522817c53cf1ffe25c9a4c9))
+* **go:** Bump github.com/hashicorp/vault/api in the hashicorp group ([#2390](https://github.com/hairyhenderson/gomplate/issues/2390)) ([554aeeb](https://github.com/hairyhenderson/gomplate/commit/554aeebfb21bfc09ff1918c3cacd186ad19e4db9))
+* **go:** Bump github.com/lmittmann/tint from 1.0.7 to 1.1.0 ([#2378](https://github.com/hairyhenderson/gomplate/issues/2378)) ([714ee64](https://github.com/hairyhenderson/gomplate/commit/714ee64a4a1a3334384bc93d5c270c0f172c254a))
+* **go:** Bump github.com/lmittmann/tint from 1.1.0 to 1.1.1 ([#2385](https://github.com/hairyhenderson/gomplate/issues/2385)) ([a8d4924](https://github.com/hairyhenderson/gomplate/commit/a8d4924c17d3c462594f86a5210b2cc1c08e31d2))
+* **go:** Bump github.com/ugorji/go/codec from 1.2.12 to 1.2.14 ([#2383](https://github.com/hairyhenderson/gomplate/issues/2383)) ([3e519b3](https://github.com/hairyhenderson/gomplate/commit/3e519b342e4173b98b8428f305e9276d0880ddad))
+* **go:** Bump golang.org/x/net in the go_modules group ([#2366](https://github.com/hairyhenderson/gomplate/issues/2366)) ([d1bbf8c](https://github.com/hairyhenderson/gomplate/commit/d1bbf8c29e450171bf0d83d46039bbd27b05b78d))
+* **go:** Bump k8s.io/client-go from 0.32.3 to 0.33.1 ([#2377](https://github.com/hairyhenderson/gomplate/issues/2377)) ([7375cf0](https://github.com/hairyhenderson/gomplate/commit/7375cf03990db67f628a046b45fb760be1d248d9))
+* **go:** Bump the golang-x group with 4 updates ([#2374](https://github.com/hairyhenderson/gomplate/issues/2374)) ([f0e9343](https://github.com/hairyhenderson/gomplate/commit/f0e9343607f4d6d75f66edacec266ff912a79844))
+
 ## [4.3.2](https://github.com/hairyhenderson/gomplate/compare/v4.3.1...v4.3.2) (2025-04-14)
 
 
