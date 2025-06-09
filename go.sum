@@ -346,8 +346,8 @@ github.com/hashicorp/vault/api v1.20.0 h1:KQMHElgudOsr+IbJgmbjHnCTxEpKs9LnozA1D3
 github.com/hashicorp/vault/api v1.20.0/go.mod h1:GZ4pcjfzoOWpkJ3ijHNpEoAxKEsBJnVljyTe3jM2Sms=
 github.com/hashicorp/vault/api/auth/approle v0.9.0 h1:FdpspwGVWnGiWmAxd5L1Yd+T+fX2kYnyAIvI5oGdvNs=
 github.com/hashicorp/vault/api/auth/approle v0.9.0/go.mod h1:fvtJhBs3AYMs2fXk4U5+u+7unhUGuboiKzFpLPpIazw=
-github.com/hashicorp/vault/api/auth/aws v0.9.0 h1:XtV/fRhgf/MaPv5SLBgXf+Yn/QGjFYIlJkdcPktDlbc=
-github.com/hashicorp/vault/api/auth/aws v0.9.0/go.mod h1:DvUmnZg9T+HGYdkagNMCssdgbt9ODAyBjllY8PpaMvM=
+github.com/hashicorp/vault/api/auth/aws v0.10.0 h1:65gibOnaZxflNVW3kxgbXZqIC1imVj6uB/TTWkf76c0=
+github.com/hashicorp/vault/api/auth/aws v0.10.0/go.mod h1:VBdP6zwH2MBC4BW+pZ+soPYeabXBVUTfWDccWfFo49I=
 github.com/hashicorp/vault/api/auth/userpass v0.9.0 h1:tdIY+xe9O0SAcNY1CK7Wk0ENWNKmmGzJ9+iqZfFBW4I=
 github.com/hashicorp/vault/api/auth/userpass v0.9.0/go.mod h1:W2Cb0z6MjAHkDjGG95mmRGzCETX5Y+O++UBXX/ZlNGc=
 github.com/inconshreveable/mousetrap v1.1.0 h1:wN+x4NVGpMsO7ErUn/mUI3vEoE6Jt13X2s0bqwp9tc8=
