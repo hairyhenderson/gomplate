@@ -8,39 +8,46 @@ this guide is based on my experience migrating helm values generation of our 100
 
 ### using environment variables effectively
 
-you can create your own environment variables using .Env - use it wisely  
-we had cluster, environment, service, and terraform outputs as environment variables that acted as "sources" of information as that is where the specific configurations lived. in turn, SERVICE, ENVIRONMENT, etc. had their own existing central location.
-something like this: `{{- $ENVIRONMENT := env.Getenv "ENVIRONMENT" }}` in a central configuration file. in a multi-repo structure, however, these values may need to be managed via external systems using a [datasource](https://docs.gomplate.ca/datasources/) like vault or consul.
+you can and should create your own environment variables.
+for example, we had cluster, environment, service, and terraform outputs as environment variables that acted as canonical sources for configuration values. in a multi-repo structure, however, these values may need to be managed via external systems using a [datasource](https://docs.gomplate.ca/datasources/) like vault or consul.
 
-limit this to the overarching umbrellas that configs fall under such that as many templates as possible can benefit from it, rather than scoping it to be used for individual templates. in the below block, we use our "custom" 
+limit this to the overarching umbrellas that configs fall under, such that as many templates as possible can benefit from it, rather than scoping it to be used for individual templates.
 
-```yaml
+in the below example, we declare a custom environment variable, then allow ourselves to reference it.
+
+in your gomplate configuration:
+
+```gotemplate
+{{ $ENVIRONMENT := env.Getenv "ENVIRONMENT" }}
+{{- printf "%s/envs/%s/values.gotemplate" $PREFIX $ENVIRONMENT | defineDatasource "ENVIRONMENT_DS"  -}}
+
+{{- $TEMPLATE_VARS := coll.Dict "ENVIRONMENT" $ENVIRONMENT -}}
+
+{{- $ctx := coll.Dict "GLOBAL_VARS" $TEMPLATE_VARS
+                      "ENVIRONMENT" (ds "ENVIRONMENT_DS")  -}}
+
+{{- tmpl.Exec "template" $ctx -}}
+
+```
+
+in your template:
+
+```gotemplate
 ---
-ingress:
-  hosts:
-  - '*.{{ .CLUSTER.type.domain }}'
 env:
-  crnPartition: {{ .CLUSTER.type.crnPartition }}
-  crnRegion: {{ .CLUSTER.type.crnRegion }}
-  envName: {{ .ENVIRONMENT.name }}
-  user_management:
-    host: {{ .CLUSTER.type.user_management.host }}
-    port: {{ .CLUSTER.type.user_management.port }}
-  ENV: {{ .ENVIRONMENT.name }}
-  data:
-    host: {{ .SERVICE.data_app.host }}
-    port: {{ .SERVICE.data_app.port }}
-  publicApiEndpoint: https://{{ .CLUSTER.type.apiEndpoint }}
-
+  name: {{ .ENVIRONMENT.name }}
+  dependency:
+    host: {{ .ENVIRONMENT.dependency.host }}
+    port: {{ .ENVIRONMENT.dependency.port }}
 ```
 
 ### managing config divergence
 
-let's say you're in a situation where multiple groups of configs behave differently from one another in a seemingly random way. you could, of course, try to conditional your way out of it:
+let's say you're in a situation where multiple groups of configs behave differently from one another, unpredictably. you could, of course, try to conditional your way out of it:
 
-```yaml
+```gotemplate
 db:
-  {{- if or (eq .CLUSTER.name "devs-dev") (eq .CLUSTER.name "dev-gov") (eq .CLUSTER.name "int-gov") }}
+  {{- if or (eq .CLUSTER.name "megadev") (eq .CLUSTER.name "dev-gov") (eq .CLUSTER.name "int-gov") }}
   auth: true
   {{- else }}
   auth: false
@@ -56,7 +63,7 @@ db:
 
 this is repetitive and error-prone. it is also difficult to understand.
 
-my recommendation: i would always check if it can be a terraform output. however, many config values are not easily produced by terraform. you can, instead, create a configuration file json and datasource it like so (it can even be a [template](http://docs.gomplate.ca/functions/tmpl/) itself!). i like json for this because you can separate values out rather cleanly.
+firstly, verify the config in question cannot be referenced another way via a custom environment variable, like a terraform output. if not, you can, instead, create a configuration file json and datasource it like so (it can even be a [template](http://docs.gomplate.ca/functions/tmpl/) itself!). json is a favorite because it allows one to untangle values rather cleanly.
 
 **config.json:**
 
@@ -72,7 +79,7 @@ my recommendation: i would always check if it can be a terraform output. however
 
 **values.gtmpl:**
 
-```yaml
+```gotemplate
 {{- defineDatasource "config" "/path/to/config/file" -}}
 {{- $config := ds "config" }}
 envVars:
@@ -80,12 +87,12 @@ envVars:
     VALUE: {{ tpl (index $config.oidc_issuer_format .CLUSTER.name) }}
 ```
 
-### using logic
+### working with conditionals
 
-inline logic is great for a black-and-white situation, but quickly becomes difficult to read and write.
- instead, use variables to reference it. in this example, the variable is defined before the yaml start, but it can easily be defined in another .gtmpl and used as a datasource.
+inline logic is great in boolean settings, but quickly becomes difficult to read and write.
+ instead, use variables to reference it. in this example, the variable is defined before the gotemplate start, but it can easily be defined in another .gtmpl and used as a datasource. ** note: fact check/ex.
 
- ```yaml
+ ```gotemplate
 
 replicas: {{- if eq .ENVIRONMENT.name "prod" }} 3 {{ else }} 1 {{ end }}
 
@@ -94,7 +101,7 @@ replicas: {{- if eq .ENVIRONMENT.name "prod" }} 3 {{ else }} 1 {{ end }}
 
 becomes:
 
-```yaml
+```gotemplate
 
 {{- $replicas := 1 -}}
 {{- if eq .ENVIRONMENT.name "prod" }}{{- $replicas = 3 -}}{{- end }}
@@ -103,18 +110,19 @@ replicas: {{ $replicas }}
 
 ```
 
-### my "central config" has me typing too much. what gives?
+### saving your fingers (avoiding repetitive typing)
 
-following the widely-known best practice to group similar configurations together and "put them where they belong" so to speak (i.e. if they are PART of something thent they go below a level of its parent) (whatever that's called),
- it would make sense that an inexperienced gomplater would iterate down the configs. this will become difficult to read after a few levels, and adjusting the template should the location of these configs change would be rather cumbersome.
+a common idea present in engineering is to group similar configurations, both in their source and their target locations. it is not uncommon to then find oneself with a block of highly-nested configuration that needs calling.
 
-```yaml
+an inexperienced gomplater would iterate down the configs. however, an issue arises when the configs' home must change - it will be cumbersome to update the template. it is also more difficult to read.
+
+```gotemplate
 
 envVars:
   - name: REGION
-    value: {{ .CLUSTER.type.crnRegion }}
+    value: {{ .CLUSTER.type.region }}
   - name: PARTITION
-    value: {{ .CLUSTER.type.crnPartition }}
+    value: {{ .CLUSTER.type.partition }}
   - name: SERVICEDEPENDENCY_HOST
     value: {{ .CLUSTER.type.dep.host }}
   - name: SERVICEDEPENDENCY_PORT
@@ -124,7 +132,7 @@ envVars:
 
 becomes
 
-```yaml
+```gotemplate
 
 {{- with .CLUSTER.type -}}
 envVars:
@@ -140,6 +148,15 @@ envVars:
 
 ```
 
-### okay, but now do i have to do it all over again on the next template?
+### minimizing repetition
 
-no you do not! imagine, if you will, that every single one of your microservices has a region and a partition, and it lives two levels deep in a config (i.e. .CLUSTER.type.region/.partition as demonstrated).
+so your template is as good as it's going to get, but what about the next one? imagine that every single one of your microservices requires the above snippet. a ```with``` statement might make it easier to read once, but do you want to write it out n+1 times? use functions!
+
+```gotemplate
+example where several templates require the same block of configs
+use a function to tpl the configs
+```
+
+### closing thoughts
+
+not exhaustive. provide tldr
