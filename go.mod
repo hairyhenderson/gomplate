@@ -5,7 +5,7 @@ go 1.24.1
 require (
 	cuelang.org/go v0.13.1
 	github.com/Masterminds/goutils v1.1.1
-	github.com/Masterminds/semver/v3 v3.3.1
+	github.com/Masterminds/semver/v3 v3.4.0
 	github.com/Shopify/ejson v1.5.4
 	github.com/aws/aws-sdk-go v1.55.7
 	github.com/fullsailor/pkcs7 v0.0.0-20190404230743-d7302db945fa
