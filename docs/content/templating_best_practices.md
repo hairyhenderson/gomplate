@@ -18,7 +18,7 @@ You can and should create your own context using environment variables -- but ch
 - Shared config paths
 - Terraform outputs
 
-In the below example, we declare a custom environment variable in a global template (a [configuration](https://docs.gomplate.ca/config/) file will also do the trick)
+In the below example, we declare a custom environment variable in a global template (a [configuration](/config/) file will also do the trick)
 and set up the context:
 
 ```gotemplate
@@ -67,7 +67,7 @@ This approach is repetitive, error-prone, and difficult to maintain. Instead:
 1. Check if the config exists in environment variables or external [datasources](https://docs.gomplate.ca/datasources/) like Consul.
 2. If not, create a dedicated config file (which can itself be a template!)
 
-The below example demonstrates this idea. Note that while JSON is shown here, YAML or CSV formats could be used depending on your specific needs.
+The below example demonstrates this idea. Note that while JSON is shown here, any format could be used depending on your specific needs.
 
 **config.json:**
 
@@ -84,7 +84,6 @@ The below example demonstrates this idea. Note that while JSON is shown here, YA
     "int2": "cloudprovisioner_iam",
     "gov": "cloudprovisioner_iam",
     "prod": "{{ index .TF_OUTPUTS_ALL_SERVICES \"cloud_provisioner\" \"db-user-name\" \"value\" }}"
-
 }
 ```
 
@@ -142,7 +141,6 @@ replicas: {{ index $config.replicas .ENVIRONMENT.name }}
 When working with nested configurations, you might find yourself repeating the same path multiple times:
 
 ```gotemplate
-
 envVars:
   - name: REGION
     value: {{ .CLUSTER.type.region }}
@@ -152,13 +150,11 @@ envVars:
     value: {{ .CLUSTER.type.dep.host }}
   - name: SERVICEDEPENDENCY_PORT
     value: {{ .CLUSTER.type.dep.port }}
-
 ```
 
 Using `with` blocks cuts repetition, makes structure easier to read, and reduces chances of errors:
 
 ```gotemplate
-
 {{- with .CLUSTER.type -}}
 envVars:
   - name: REGION
@@ -170,7 +166,6 @@ envVars:
   - name: SERVICEDEPENDENCY_PORT
     value: {{ .dep.port }}
 {{- end -}}
-
 ```
 
 ### Closing Thoughts
@@ -189,9 +184,7 @@ Remember that templates should be:
 - Well-structured with configuration separate from logic
 - Consistent in their approach to similar problems
 
-While these patterns emerged from a Helm values use case, they apply to any complex templating needs with Gomplate.
-
 For more advanced usage, check out:
-- [Datasource docs](https://docs.gomplate.ca/datasources/) for additional data formats and sources
-- [Functions reference](https://docs.gomplate.ca/functions/) for the full range of templating capabilities
-- [Configuration guide](https://docs.gomplate.ca/config/) for template reuse patterns
+- [Datasource docs](/datasources/) for additional data formats and sources
+- [Functions reference](/functions/) for the full range of templating capabilities
+- [Configuration guide](/config/) for template reuse patterns
