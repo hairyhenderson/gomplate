@@ -4,7 +4,7 @@ weight: 11
 menu: main
 ---
 
-This guide provides practical recommendations for writing clear, reusable, and scalable templates in Gomplate. While many examples come from Helm values generation in a microservices environment, the concepts apply to a broad range of templating use cases.
+This guide provides practical recommendations for writing clear, reusable, and scalable templates in Gomplate.
 
 ### Using Environment Variables Effectively
 
