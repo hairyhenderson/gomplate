@@ -11,6 +11,7 @@ import (
 	"github.com/hairyhenderson/gomplate/v4/internal/iohelpers"
 	"github.com/hashicorp/vault/api"
 	"github.com/hashicorp/vault/api/auth/aws"
+	authk8s "github.com/hashicorp/vault/api/auth/kubernetes"
 )
 
 // compositeVaultAuthMethod configures the auth method based on environment
@@ -19,6 +20,7 @@ import (
 func compositeVaultAuthMethod(envFsys fs.FS) api.AuthMethod {
 	return vaultauth.CompositeAuthMethod(
 		vaultauth.EnvAuthMethod(),
+		envKubernetesAuthAdapter(envFsys),
 		envEC2AuthAdapter(envFsys),
 		envIAMAuthAdapter(envFsys),
 	)
@@ -82,6 +84,25 @@ func envIAMAuthAdapter(envFS fs.FS) api.AuthMethod {
 	}
 
 	return awsauth
+}
+
+func envKubernetesAuthAdapter(envFS fs.FS) api.AuthMethod {
+    role := GetenvFsys(envFS, "VAULT_AUTH_K8S_ROLE")
+    if role == "" {
+        return nil
+    }
+    mount := GetenvFsys(envFS, "VAULT_AUTH_K8S_MOUNT", "kubernetes")
+    jwtPath := GetenvFsys(envFS, "VAULT_AUTH_K8S_JWT_PATH", "/var/run/secrets/kubernetes.io/serviceaccount/token")
+
+    k8sAuth, err := authk8s.NewKubernetesAuth(
+        role,
+        authk8s.WithMountPath(mount),
+        authk8s.WithServiceAccountTokenPath(jwtPath),
+    )
+    if err != nil {
+        return nil
+    }
+    return k8sAuth
 }
 
 // ec2AuthNonceWriter - wraps an AWSAuth, and writes the nonce to the nonce
