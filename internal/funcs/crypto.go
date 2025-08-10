@@ -398,7 +398,7 @@ func parseAESArgs(key string, args ...any) ([]byte, []byte, error) {
 		}
 		msg = toBytes(args[1])
 	default:
-		return nil, nil, fmt.Errorf("wrong number of args: want 2 or 3, got %d", len(args))
+		return nil, nil, fmt.Errorf("wrong number of args: want 1 or 2, got %d", len(args))
 	}
 
 	k := make([]byte, keyBits/8)
