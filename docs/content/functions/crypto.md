@@ -46,6 +46,44 @@ $ gomplate -i '{{ crypto.Bcrypt 4 "foo" }}
 $2a$04$zjba3N38sjyYsw0Y7IRCme1H4gD0MJxH8Ixai0/sgsrf7s1MFUK1C
 ```
 
+## `crypto.YescryptMCF`
+**Experimental:** This function is [_experimental_][experimental] and may be enabled with the [`--experimental`][experimental] flag.
+
+Uses the [Yescrypt](https://www.openwall.com/yescrypt/) password hashing algorithm to generate the hash of a given string.
+Wraps the [`github.com/openwall/yescrypt-go`](https://pkg.go.dev/github.com/openwall/yescrypt-go) package.
+Yescrypt is a modern, memory-hard key derivation function designed as an extension of scrypt, providing resistance to GPU/ASIC attacks.
+
+### Usage
+
+```
+crypto.YescryptMCF [cost blockSize salt] input
+```
+
+```
+input | crypto.YescryptMCF [cost blockSize salt]
+```
+
+### Arguments
+
+| name        | description                                                                                               |
+| ----------- | --------------------------------------------------------------------------------------------------------- |
+| `cost`      | _(optional)_ the cost parameter (N) controlling CPU/memory cost; integer in `[10, 18]`, defaults to `14`  |
+| `blockSize` | _(optional)_ the block size parameter (r) controlling memory usage; integer in `[1, 32]`, defaults to `8` |
+| `salt`      | _(optional)_ a salt string to use for hashing; defaults to a random alphanumeric string of length 10      |
+| `input`     | _(required)_ the input to hash, usually a password                                                        |
+
+### Examples
+
+```console
+$ gomplate -i '{{ "foo" | crypto.YescryptMCF }}'
+$y$jB5$YZZJoNING3pMhVIKFhIJJ/$n.9CRZ17bqvvDKyrAWqvghg7k5rq9M9F4rpWntnpeV0
+```
+
+```console
+$ gomplate -i '{{ crypto.YescryptMCF 10 1 "mysalt" "foo" }}'
+$y$j7.$hZrQVl4R$y2MSQDqiVCS0Q7PsGv7f8b4O7s/O0Kmgw.2hvgxbqL1
+```
+
 ## `crypto.DecryptAES` _(experimental)_
 **Experimental:** This function is [_experimental_][experimental] and may be enabled with the [`--experimental`][experimental] flag.
 
