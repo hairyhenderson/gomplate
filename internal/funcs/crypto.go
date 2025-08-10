@@ -13,6 +13,7 @@ import (
 	"strings"
 	"unicode/utf8"
 
+	"github.com/openwall/yescrypt-go"
 	"golang.org/x/crypto/bcrypt"
 
 	"github.com/hairyhenderson/gomplate/v5/conv"
@@ -195,6 +196,66 @@ func (CryptoFuncs) Bcrypt(args ...any) (string, error) {
 
 	hash, err := bcrypt.GenerateFromPassword([]byte(input), cost)
 	return string(hash), err
+}
+
+// YescryptMCF -
+func (CryptoFuncs) YescryptMCF(args ...any) (string, error) {
+	cost := 14
+	blockSize := 8
+	salt, _ := RandomFuncs{}.AlphaNum(16)
+	input := ""
+	var err error
+
+	switch len(args) {
+	case 1:
+		input = conv.ToString(args[0])
+	case 4:
+		cost, err = conv.ToInt(args[0])
+		if err != nil {
+			return "", fmt.Errorf("yescrypt cost must be an integer: %w", err)
+		}
+
+		blockSize, err = conv.ToInt(args[1])
+		if err != nil {
+			return "", fmt.Errorf("yescrypt blockSize must be an integer: %w", err)
+		}
+
+		salt = conv.ToString(args[2])
+		input = conv.ToString(args[3])
+	default:
+		return "", fmt.Errorf("wrong number of args: want 1 or 4, got %d", len(args))
+	}
+
+	// yescrypt requires
+	// - cost 		∈ [10, 18]
+	// - blockSize 	∈ [1, 32]
+	N := yescryptItoa64[(cost-1)&0x3f]
+	r := yescryptItoa64[(blockSize-1)&0x3f]
+	saltB64 := yescryptEncode64([]byte(salt))
+	settings := fmt.Sprintf("$y$j%c%c$%s", N, r, saltB64)
+
+	hash, err := yescrypt.Hash([]byte(input), []byte(settings))
+	return string(hash), err
+}
+
+// Vendored from yescrypt_wrapper.go
+const yescryptItoa64 = "./0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
+
+// Vendored from yescrypt_wrapper.go
+func yescryptEncode64(src []byte) []byte {
+	dst := make([]byte, 0, (len(src)*8+5)/6)
+	for i := 0; i < len(src); {
+		value, bits := uint32(0), 0
+		for ; bits < 24 && i < len(src); bits += 8 {
+			value |= uint32(src[i]) << bits
+			i++
+		}
+		for ; bits > 0; bits -= 6 {
+			dst = append(dst, yescryptItoa64[value&0x3f])
+			value >>= 6
+		}
+	}
+	return dst
 }
 
 // RSAEncrypt -
