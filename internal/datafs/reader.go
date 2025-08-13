@@ -221,8 +221,8 @@ func resolveURL(base url.URL, rel string) (*url.URL, error) {
 		if strings.HasPrefix(rel, "//") {
 			rel = "." + rel
 		}
-	case "aws+sm":
-		// aws+sm URLs may be opaque, so resolution needs to be handled
+	case "aws+sm", "azure+kv":
+		// aws+sm/azure+kv URLs may be opaque, so resolution needs to be handled
 		// differently
 		if base.Opaque != "" {
 			// if it's opaque and we have a relative path we'll append it to

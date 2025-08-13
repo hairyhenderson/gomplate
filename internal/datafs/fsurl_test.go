@@ -115,6 +115,26 @@ func TestSplitFSMuxURL(t *testing.T) {
 			"aws+sm:///",
 			"foo",
 		},
+		{
+			"azure+kv:foo",
+			"azure+kv:",
+			"foo",
+		},
+		{
+			"azure+kv:foo/bar",
+			"azure+kv:",
+			"foo/bar",
+		},
+		{
+			"azure+kv:/foo/bar",
+			"azure+kv:///",
+			"foo/bar",
+		},
+		{
+			"azure+kv:/foo",
+			"azure+kv:///",
+			"foo",
+		},
 	}
 
 	for _, d := range testdata {

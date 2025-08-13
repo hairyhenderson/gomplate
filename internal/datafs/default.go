@@ -22,6 +22,7 @@ var DefaultProvider = sync.OnceValue(
 		fsp.Add(EnvFS)
 		fsp.Add(StdinFS)
 		fsp.Add(mergeFSProvider)
+		fsp.Add(azureKVFSProvider)
 
 		return fsp
 	})()

@@ -58,6 +58,7 @@ Gomplate supports a number of datasources, each specified with a particular URL 
 | [AWS Systems Manager Parameter Store](#using-awssmp-datasources) | `aws+smp` | [AWS Systems Manager Parameter Store][AWS SMP] is a hierarchically-organized key/value store which allows storage of text, lists, or encrypted secrets for retrieval by AWS resources |
 | [AWS Secrets Manager](#using-awssm-datasources) | `aws+sm` | [AWS Secrets Manager][] helps you protect secrets needed to access your applications, services, and IT resources. |
 | [Amazon S3](#using-s3-datasources) | `s3` | [Amazon S3][] is a popular object storage service. |
+| [Azure Key Vault](#using-azure-key-vault-datasources) | `azure+kv` | [Azure Key Vault][] helps you protect secrets needed to access your applications, services, and IT resources. |
 | [Consul](#using-consul-datasources) | `consul`, `consul+http`, `consul+https` | [HashiCorp Consul][] provides (among many other features) a key/value store |
 | [Environment](#using-env-datasources) | `env` | Environment variables can be used as datasources - useful for testing |
 | [File](#using-file-datasources) | `file` | Files can be read in any of the [supported formats](#mime-types), including by piping through standard input (`Stdin`). [Directories](#directory-datasources) are also supported. |
@@ -75,6 +76,7 @@ When the _path_ component of the URL ends with a `/` character, the datasource i
 Currently the following datasources support directory semantics:
 
 - [File](#using-file-datasources)
+- [Azure Key Vault](#using-azure-key-vault-datasources) - lists all secret names in the vault
 - [Vault](#using-vault-datasources) - translates to Vault's `LIST` method
 - [Consul](#using-consul-datasources)
 When accessing a directory datasource, an array of key names is returned, and can be iterated through to access each individual value contained within.
@@ -766,8 +768,125 @@ The file `/tmp/vault-aws-nonce` will be created if it didn't already exist, and 
 [`data.YAML`]: ../functions/data/#datayaml
 [`coll.Merge`]: ../functions/coll/#collmerge
 
+## Using Azure Key Vault datasources
+
+The `azure+kv://` scheme can be used to retrieve secrets from [Azure Key Vault][], Microsoft Azure's managed secret store service. This allows you to securely store and retrieve application secrets, certificates, and other sensitive information.
+
+You must have appropriate permissions to access the Key Vault. Authentication is handled automatically using Azure's [DefaultAzureCredential](https://docs.microsoft.com/en-us/azure/developer/go/azure-sdk-authentication), which supports multiple authentication methods including:
+
+- Azure CLI credentials
+- Managed Identity (when running on Azure resources)  
+- Environment variables (`AZURE_TENANT_ID`, `AZURE_CLIENT_ID`, `AZURE_CLIENT_SECRET`)
+- Visual Studio Code credentials
+- Azure PowerShell credentials
+
+### URL Considerations
+
+For `azure+kv`, the _scheme_, _authority_, and _path_ components are used. This can be either a full URL or an opaque URI.
+
+- the _scheme_ must be `azure+kv`
+- the _authority_ component specifies the Key Vault hostname (e.g., `myvault.vault.azure.net`)
+- the _path_ component is used to specify the secret name
+- alternatively, use an opaque URI (e.g., `azure+kv:secretname`) with the `AZURE_KEYVAULT_URL` environment variable
+
+### Output
+
+The output will be the secret value as a string. Binary secrets are automatically decoded.
+
+### Directory Support
+
+When the path ends with `/` or when accessing the root path, Azure Key Vault datasources will return a list of all available secret names in the vault.
+
+### Environment Variables
+
+The following environment variables can be used to configure Azure Key Vault access:
+
+| Environment Variable | Description |
+|---------------------|-------------|
+| `AZURE_KEYVAULT_URL` | Default Key Vault URL when using opaque URIs (e.g., `https://myvault.vault.azure.net`) |
+| `AZURE_TENANT_ID` | Azure Active Directory tenant ID |
+| `AZURE_CLIENT_ID` | Service principal client ID |
+| `AZURE_CLIENT_SECRET` | Service principal client secret |
+
+### Examples
+
+#### Basic Secret Retrieval
+
+```console
+$ gomplate -d vault=azure+kv://myvault.vault.azure.net/database-password \
+  -i 'Password: {{ datasource "vault" }}'
+Password: super-secret-password
+```
+
+#### Using Opaque URIs with Environment Variable
+
+```console
+$ export AZURE_KEYVAULT_URL=https://myvault.vault.azure.net
+$ gomplate -d vault=azure+kv:database-password \
+  -i 'Password: {{ datasource "vault" }}'
+Password: super-secret-password
+```
+
+#### Listing All Secrets
+
+```console
+$ gomplate -d vault=azure+kv://myvault.vault.azure.net/ \
+  -i '{{ range datasource "vault" }}{{ . }}{{ "\n" }}{{ end }}'
+database-password
+api-key
+certificate-secret
+```
+
+#### Using Secrets in Templates
+
+```console
+$ gomplate -d db=azure+kv://myvault.vault.azure.net/db-config \
+  -i 'apiVersion: v1
+kind: Secret
+metadata:
+  name: database-secret
+type: Opaque
+data:
+  config: {{ datasource "db" | base64.Encode }}'
+```
+
+#### Secret Versioning
+
+Azure Key Vault automatically versions secrets when they are updated. You can access specific versions using the standard Azure URL format with the version ID:
+
+```bash
+# Get the latest version
+gomplate -d secret=azure+kv://myvault.vault.azure.net/database-password \
+  -i 'Latest: {{ datasource "secret" }}'
+
+# Get a specific version
+gomplate -d secret=azure+kv://myvault.vault.azure.net/database-password/abc123def456 \
+  -i 'Specific version: {{ datasource "secret" }}'
+
+# Dynamic versioning in templates
+gomplate -d vault=azure+kv://myvault.vault.azure.net/ -i '
+{{- $secretName := "database-password" }}
+{{- $version := "abc123def456" }}
+Latest: {{ datasource "vault" $secretName }}
+Versioned: {{ datasource "vault" (printf "%s/%s" $secretName $version) }}'
+```
+
+#### Service Principal Authentication
+
+```bash
+export AZURE_TENANT_ID="your-tenant-id"
+export AZURE_CLIENT_ID="your-client-id"  
+export AZURE_CLIENT_SECRET="your-client-secret"
+
+gomplate -d secrets=azure+kv://myvault.vault.azure.net/app-secrets \
+  -i 'App Key: {{ datasource "secrets" }}'
+```
+
+[`coll.Merge`]: ../functions/coll/#collmerge
+
 [AWS SMP]: https://docs.aws.amazon.com/systems-manager/latest/userguide/systems-manager-parameter-store.html
 [AWS Secrets Manager]: https://aws.amazon.com/secrets-manager
+[Azure Key Vault]: https://azure.microsoft.com/en-us/services/key-vault/
 [HashiCorp Consul]: https://consul.io
 [HashiCorp Vault]: https://vaultproject.io
 [JSON]: https://json.org

@@ -30,6 +30,23 @@ func SplitFSMuxURL(in *url.URL) (*url.URL, string) {
 		}
 
 		return &url.URL{Scheme: u.Scheme, Path: "/"}, strings.TrimLeft(u.Path, "/")
+	case "azure+kv":
+		// An aws+sm/azure+kv  URL can either be opaque or have a path with a leading
+		// slash. If it's opaque, the URL must not contain a leading slash. If
+		// it has a path, the URL must begin with a slash.
+		if u.Opaque != "" {
+			return &url.URL{Scheme: u.Scheme}, u.Opaque
+		}
+
+		// For hierarchical URLs, preserve the host
+		fsURL := &url.URL{Scheme: u.Scheme}
+		if u.Host != "" {
+			fsURL.Host = u.Host
+		} else {
+			fsURL.Path = "/"
+		}
+
+		return fsURL, strings.TrimLeft(u.Path, "/")
 	}
 
 	// trim leading and trailing slashes - they are not part of a valid path

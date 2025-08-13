@@ -96,6 +96,24 @@ func TestResolveURL(t *testing.T) {
 		require.NoError(t, err)
 		assert.Equal(t, "aws+sm:///foo/bar", out.String())
 	})
+
+	t.Run("azure+kv", func(t *testing.T) {
+		out, err = resolveURL(*mustParseURL("azure+kv:"), "foo")
+		require.NoError(t, err)
+		assert.Equal(t, "azure+kv:foo", out.String())
+
+		out, err = resolveURL(*mustParseURL("azure+kv:foo/"), "bar")
+		require.NoError(t, err)
+		assert.Equal(t, "azure+kv:foo/bar", out.String())
+
+		out, err = resolveURL(*mustParseURL("azure+kv:"), "/foo")
+		require.NoError(t, err)
+		assert.Equal(t, "azure+kv:///foo", out.String())
+
+		out, err = resolveURL(*mustParseURL("azure+kv:///foo/"), "bar")
+		require.NoError(t, err)
+		assert.Equal(t, "azure+kv:///foo/bar", out.String())
+	})
 }
 
 func BenchmarkResolveURL(b *testing.B) {

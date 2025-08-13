@@ -55,8 +55,8 @@ func FSysForPath(ctx context.Context, path string) (fs.FS, error) {
 	switch u.Scheme {
 	case "git+http", "git+https", "git+ssh", "git":
 		// no-op, these are handled
-	case "aws+sm":
-		// An aws+sm URL can be opaque, best not disturb it
+	case "aws+sm", "azure+kv":
+		// An aws+sm/azure+kv URL can be opaque, best not disturb it
 	case "", "file", "git+file":
 		// default to "/" so we have a rooted filesystem for all schemes, but also
 		// support volumes on Windows
