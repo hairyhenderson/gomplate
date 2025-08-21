@@ -370,6 +370,40 @@ $ gomplate -i '{{ crypto.PBKDF2 "foo" "bar" 1024 8 }}'
 32c4907c3c80792b
 ```
 
+## `crypto.PBKDF2MCF`_(unreleased)_ _(experimental)_
+**Unreleased:** _This function is in development, and not yet available in released builds of gomplate._
+**Experimental:** This function is [_experimental_][experimental] and may be enabled with the [`--experimental`][experimental] flag.
+
+[experimental]: ../config/#experimental
+
+Run the Password-Based Key Derivation Function &num;2 as defined in
+[RFC 8018 (PKCS &num;5 v2.1)](https://tools.ietf.org/html/rfc8018#section-5.2).
+
+This function outputs the mcf result string.
+
+### Usage
+
+```
+crypto.PBKDF2MCF password salt iter keylen [hashfunc]
+```
+
+### Arguments
+
+| name | description |
+|------|-------------|
+| `password` | _(required)_ the password to use to derive the key |
+| `salt` | _(required)_ the salt |
+| `iter` | _(required)_ iteration count |
+| `keylen` | _(required)_ desired length of derived key |
+| `hashfunc` | _(optional)_ the hash function to use - must be one of the allowed functions (either in the SHA-1 or SHA-2 sets). Defaults to `SHA-1` |
+
+### Examples
+
+```console
+$ gomplate -i '{{ crypto.PBKDF2MCF "foo" "bar" 1024 8 }}'
+$pbkdf2-sha1$1024$YmFy$MsSQfDyAeSs=
+```
+
 ## `crypto.RSADecrypt` _(experimental)_
 **Experimental:** This function is [_experimental_][experimental] and may be enabled with the [`--experimental`][experimental] flag.
 
