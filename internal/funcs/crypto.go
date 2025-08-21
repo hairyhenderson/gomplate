@@ -38,13 +38,20 @@ type CryptoFuncs struct {
 // RFC 2898 (PKCS #5 v2.0). This function outputs the binary result in hex
 // format.
 func (CryptoFuncs) PBKDF2(password, salt, iter, keylen any, hashFunc ...string) (k string, err error) {
-	var h gcrypto.Hash
+	dk, _, err := PBKDF2Raw(password, salt, iter, keylen, hashFunc...)
+	if err != nil {
+		return "", err
+	}
+	return fmt.Sprintf("%02x", dk), err
+}
+
+func PBKDF2Raw(password, salt, iter, keylen any, hashFunc ...string) (k []byte, h gcrypto.Hash, err error) {
 	if len(hashFunc) == 0 {
 		h = gcrypto.SHA1
 	} else {
 		h, err = crypto.StrToHash(hashFunc[0])
 		if err != nil {
-			return "", err
+			return nil, 0, err
 		}
 	}
 	pw := toBytes(password)
@@ -52,16 +59,16 @@ func (CryptoFuncs) PBKDF2(password, salt, iter, keylen any, hashFunc ...string) 
 
 	i, err := conv.ToInt(iter)
 	if err != nil {
-		return "", fmt.Errorf("iter must be an integer: %w", err)
+		return nil, 0, fmt.Errorf("iter must be an integer: %w", err)
 	}
 
 	kl, err := conv.ToInt(keylen)
 	if err != nil {
-		return "", fmt.Errorf("keylen must be an integer: %w", err)
+		return nil, 0, fmt.Errorf("keylen must be an integer: %w", err)
 	}
 
 	dk, err := crypto.PBKDF2(pw, s, i, kl, h)
-	return fmt.Sprintf("%02x", dk), err
+	return dk, h, err
 }
 
 // WPAPSK - Convert an ASCII passphrase to WPA PSK for a given SSID
