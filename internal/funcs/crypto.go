@@ -19,6 +19,12 @@ import (
 	"github.com/hairyhenderson/gomplate/v5/crypto"
 )
 
+func cryptBase64Encode(src []byte) (dst string) {
+	dst = base64.RawStdEncoding.EncodeToString(src)
+	dst = strings.Replace(dst, "+", ".", -1)
+	return
+}
+
 // CreateCryptoFuncs -
 func CreateCryptoFuncs(ctx context.Context) map[string]any {
 	f := map[string]any{}
@@ -43,6 +49,47 @@ func (CryptoFuncs) PBKDF2(password, salt, iter, keylen any, hashFunc ...string) 
 		return "", err
 	}
 	return fmt.Sprintf("%02x", dk), err
+}
+
+// PBKDF2MCF - Generate PBKDF2 hash in Modular Crypt Format (MCF)
+func (f CryptoFuncs) PBKDF2MCF(password, salt, iter, keylen any, hashFunc ...string) (string, error) {
+	dk, h, err := PBKDF2Raw(password, salt, iter, keylen, hashFunc...)
+	if err != nil {
+		return "", err
+	}
+
+	algo, err := hashToMCFName(h)
+	if err != nil {
+		return "", err
+	}
+
+	b64Salt := cryptBase64Encode(toBytes(salt))
+	b64DK := cryptBase64Encode(dk)
+
+	// Format: $pbkdf2-<algo>$<iter>$<b64salt>$<b64dk>
+	i, _ := conv.ToInt(iter)
+	return fmt.Sprintf("$pbkdf2-%s$%d$%s$%s", algo, i, b64Salt, b64DK), nil
+}
+
+func hashToMCFName(h gcrypto.Hash) (string, error) {
+	switch h {
+	case gcrypto.SHA1:
+		return "sha1", nil
+	case gcrypto.SHA224:
+		return "sha224", nil
+	case gcrypto.SHA256:
+		return "sha256", nil
+	case gcrypto.SHA384:
+		return "sha384", nil
+	case gcrypto.SHA512:
+		return "sha512", nil
+	case gcrypto.SHA512_224:
+		return "sha512-224", nil
+	case gcrypto.SHA512_256:
+		return "sha512-256", nil
+	default:
+		return "", fmt.Errorf("unsupported hash: %v", h)
+	}
 }
 
 func PBKDF2Raw(password, salt, iter, keylen any, hashFunc ...string) (k []byte, h gcrypto.Hash, err error) {
