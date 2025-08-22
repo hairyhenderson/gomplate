@@ -46,8 +46,11 @@ $ gomplate -i '{{ crypto.Bcrypt 4 "foo" }}
 $2a$04$zjba3N38sjyYsw0Y7IRCme1H4gD0MJxH8Ixai0/sgsrf7s1MFUK1C
 ```
 
-## `crypto.YescryptMCF`
+## `crypto.YescryptMCF`_(unreleased)_ _(experimental)_
+**Unreleased:** _This function is in development, and not yet available in released builds of gomplate._
 **Experimental:** This function is [_experimental_][experimental] and may be enabled with the [`--experimental`][experimental] flag.
+
+[experimental]: ../config/#experimental
 
 Uses the [Yescrypt](https://www.openwall.com/yescrypt/) password hashing algorithm to generate the hash of a given string.
 Wraps the [`github.com/openwall/yescrypt-go`](https://pkg.go.dev/github.com/openwall/yescrypt-go) package.
@@ -56,21 +59,20 @@ Yescrypt is a modern, memory-hard key derivation function designed as an extensi
 ### Usage
 
 ```
-crypto.YescryptMCF [cost blockSize salt] input
+crypto.YescryptMCF [cost] [blockSize] [salt] input
 ```
-
 ```
-input | crypto.YescryptMCF [cost blockSize salt]
+input | crypto.YescryptMCF [cost] [blockSize] [salt]
 ```
 
 ### Arguments
 
-| name        | description                                                                                               |
-| ----------- | --------------------------------------------------------------------------------------------------------- |
-| `cost`      | _(optional)_ the cost parameter (N) controlling CPU/memory cost; integer in `[10, 18]`, defaults to `14`  |
-| `blockSize` | _(optional)_ the block size parameter (r) controlling memory usage; integer in `[1, 32]`, defaults to `8` |
-| `salt`      | _(optional)_ a salt string to use for hashing; defaults to a random alphanumeric string of length 10      |
-| `input`     | _(required)_ the input to hash, usually a password                                                        |
+| name | description |
+|------|-------------|
+| `cost` | _(optional)_ the cost parameter (log₂ of the iteration count) - integer from `10` to `18` - defaults to `14` |
+| `blockSize` | _(optional)_ the block size parameter (`r`) - integer from `1` to `32` - defaults to `8` |
+| `salt` | _(optional)_ the salt string used in hashing - defaults to a random alphanumeric string of length 10 |
+| `input` | _(required)_ the input to hash, usually a password |
 
 ### Examples
 
@@ -78,10 +80,47 @@ input | crypto.YescryptMCF [cost blockSize salt]
 $ gomplate -i '{{ "foo" | crypto.YescryptMCF }}'
 $y$jB5$YZZJoNING3pMhVIKFhIJJ/$n.9CRZ17bqvvDKyrAWqvghg7k5rq9M9F4rpWntnpeV0
 ```
-
 ```console
 $ gomplate -i '{{ crypto.YescryptMCF 10 1 "mysalt" "foo" }}'
 $y$j7.$hZrQVl4R$y2MSQDqiVCS0Q7PsGv7f8b4O7s/O0Kmgw.2hvgxbqL1
+```
+
+## `crypto.Yescrypt`_(unreleased)_ _(experimental)_
+**Unreleased:** _This function is in development, and not yet available in released builds of gomplate._
+**Experimental:** This function is [_experimental_][experimental] and may be enabled with the [`--experimental`][experimental] flag.
+
+[experimental]: ../config/#experimental
+
+Uses the [Yescrypt](https://www.openwall.com/yescrypt/) password hashing algorithm to generate the hash of a given string.
+Wraps the [`github.com/openwall/yescrypt-go`](https://pkg.go.dev/github.com/openwall/yescrypt-go) package.
+Yescrypt is a modern, memory-hard key derivation function designed as an extension of scrypt, providing resistance to GPU/ASIC attacks.
+
+This function outputs the binary result as a hexadecimal string.
+
+### Usage
+
+```
+crypto.Yescrypt input salt cost blockSize keyLen
+```
+```
+keyLen | crypto.Yescrypt input salt cost blockSize
+```
+
+### Arguments
+
+| name | description |
+|------|-------------|
+| `input` | _(required)_ the input to hash, usually a password |
+| `salt` | _(required)_ the salt string used in hashing |
+| `cost` | _(required)_ the cost parameter, integer > 1 and a power of 2 |
+| `blockSize` | _(required)_ the block size parameter (`r`) - integer > 0 |
+| `keyLen` | _(required)_ desired length of derived key |
+
+### Examples
+
+```console
+$ gomplate -i '{{ crypto.Yescrypt "foo" "mysalt" 32768 8 32 }}'
+8d967e29526ea6b57b914e7df477cd2c2b6804816ba68d47284d1f75aa2a617e
 ```
 
 ## `crypto.DecryptAES` _(experimental)_
