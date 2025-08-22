@@ -180,6 +180,22 @@ func TestYescryptMCF(t *testing.T) {
 	})
 }
 
+func TestYescrypt(t *testing.T) {
+	t.Parallel()
+
+	c := testCryptoNS()
+	dk, err := c.Yescrypt("password", []byte("IEEE"), "4096", 32, 10)
+	assert.Equal(t, "9621ff00097f2a429e12", dk)
+	require.NoError(t, err)
+
+	dk, err = c.Yescrypt([]byte("password"), "IEEE", 4096, "64", 32)
+	assert.Equal(t, "9da1f71c7307e5d5a323834d44d7df8631c7d93ee7e23f93f778470724c0bbcb", dk)
+	require.NoError(t, err)
+
+	_, err = c.Yescrypt(nil, nil, nil, nil, "bogus")
+	require.Error(t, err)
+}
+
 func TestRSAGenerateKey(t *testing.T) {
 	t.Parallel()
 
