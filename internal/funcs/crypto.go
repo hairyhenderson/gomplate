@@ -198,6 +198,25 @@ func (CryptoFuncs) Bcrypt(args ...any) (string, error) {
 	return string(hash), err
 }
 
+// Yescrypt -
+func (CryptoFuncs) Yescrypt(password, salt, cost, blockSize, keylen any) (string, error) {
+	N, err := conv.ToInt(cost)
+	if err != nil {
+		return "", fmt.Errorf("cost must be an integer: %w", err)
+	}
+	r, err := conv.ToInt(blockSize)
+	if err != nil {
+		return "", fmt.Errorf("blockSize must be an integer: %w", err)
+	}
+	k, err := conv.ToInt(keylen)
+	if err != nil {
+		return "", fmt.Errorf("keylen must be an integer: %w", err)
+	}
+
+	key, err := yescrypt.Key(toBytes(password), toBytes(salt), N, r, 1, k)
+	return fmt.Sprintf("%02x", key), err
+}
+
 // YescryptMCF -
 func (CryptoFuncs) YescryptMCF(args ...any) (string, error) {
 	cost := 14

@@ -55,6 +55,35 @@ funcs:
       - |
         $ gomplate -i '{{ crypto.YescryptMCF 10 1 "mysalt" "foo" }}'
         $y$j7.$hZrQVl4R$y2MSQDqiVCS0Q7PsGv7f8b4O7s/O0Kmgw.2hvgxbqL1
+  - name: crypto.Yescrypt
+    experimental: true
+    description: |
+      Uses the [Yescrypt](https://www.openwall.com/yescrypt/) password hashing algorithm to generate the hash of a given string.
+      Wraps the [`github.com/openwall/yescrypt-go`](https://pkg.go.dev/github.com/openwall/yescrypt-go) package.
+      Yescrypt is a modern, memory-hard key derivation function designed as an extension of scrypt, providing resistance to GPU/ASIC attacks.
+
+      This function outputs the binary result as a hexadecimal string.
+    pipeline: true
+    arguments:
+      - name: input
+        required: true
+        description: the input to hash, usually a password
+      - name: salt
+        required: true
+        description: the salt string used in hashing
+      - name: cost
+        required: true
+        description: the cost parameter, integer > 1 and a power of 2
+      - name: blockSize
+        required: true
+        description: the block size parameter (`r`) - integer > 0
+      - name: keyLen
+        required: true
+        description: desired length of derived key
+    examples:
+      - |
+        $ gomplate -i '{{ crypto.Yescrypt "foo" "mysalt" 32768 8 32 }}'
+        8d967e29526ea6b57b914e7df477cd2c2b6804816ba68d47284d1f75aa2a617e
   - name: crypto.DecryptAES
     experimental: true
     released: v3.11.0
