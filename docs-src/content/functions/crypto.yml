@@ -55,6 +55,12 @@ funcs:
       - |
         $ gomplate -i '{{ crypto.YescryptMCF 10 1 "mysalt" "foo" }}'
         $y$j7.$hZrQVl4R$y2MSQDqiVCS0Q7PsGv7f8b4O7s/O0Kmgw.2hvgxbqL1
+      - |
+        $ gomplate -i '{{ "pass" | crypto.YescryptMCF 16 4 }}'
+        $y$jD1$g/5AI/JEAR1KV7bFkJqIu/$zRk92xeixtHGp8Mq6weG2tPlsQPDZ6ybweLJd6jv1w6
+      - |
+        $ gomplate -i '{{ crypto.YescryptMCF 16 4 "pass" }}'
+        $y$jD1$F7IQJtaHnk4Bo3HSYNIAi/$ttB6RTXx2SnSJIn1xsUPlaQmH056JdgejJlZmHyCtq1
   - name: crypto.Yescrypt
     experimental: true
     description: |
