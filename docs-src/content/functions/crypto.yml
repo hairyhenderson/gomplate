@@ -236,6 +236,34 @@ funcs:
       - |
         $ gomplate -i '{{ crypto.PBKDF2 "foo" "bar" 1024 8 }}'
         32c4907c3c80792b
+  - name: crypto.PBKDF2MCF
+    experimental: true
+    description: |
+      Run the Password-Based Key Derivation Function &num;2 as defined in
+      [RFC 8018 (PKCS &num;5 v2.1)](https://tools.ietf.org/html/rfc8018#section-5.2).
+
+      This function outputs the mcf result string.
+    pipeline: false
+    arguments:
+      - name: password
+        required: true
+        description: the password to use to derive the key
+      - name: salt
+        required: true
+        description: the salt
+      - name: iter
+        required: true
+        description: iteration count
+      - name: keylen
+        required: true
+        description: desired length of derived key
+      - name: hashfunc
+        required: false
+        description: the hash function to use - must be one of the allowed functions (either in the SHA-1 or SHA-2 sets). Defaults to `SHA-1`
+    examples:
+      - |
+        $ gomplate -i '{{ crypto.PBKDF2MCF "foo" "bar" 1024 8 }}'
+        $pbkdf2-sha1$1024$YmFy$MsSQfDyAeSs=
   - name: crypto.RSADecrypt
     experimental: true
     released: v3.8.0
