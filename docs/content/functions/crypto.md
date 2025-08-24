@@ -64,6 +64,12 @@ crypto.YescryptMCF [cost] [blockSize] [salt] input
 ```
 input | crypto.YescryptMCF [cost] [blockSize] [salt]
 ```
+```
+crypto.YescryptMCF [cost] [blockSize] input # salt is randomly generated
+```
+```
+input | crypto.YescryptMCF [cost] [blockSize] # salt is randomly generated
+```
 
 ### Arguments
 
