@@ -228,6 +228,18 @@ func (CryptoFuncs) YescryptMCF(args ...any) (string, error) {
 	switch len(args) {
 	case 1:
 		input = conv.ToString(args[0])
+	case 3:
+		cost, err = conv.ToInt(args[0])
+		if err != nil {
+			return "", fmt.Errorf("yescrypt cost must be an integer: %w", err)
+		}
+
+		blockSize, err = conv.ToInt(args[1])
+		if err != nil {
+			return "", fmt.Errorf("yescrypt blockSize must be an integer: %w", err)
+		}
+
+		input = conv.ToString(args[2])
 	case 4:
 		cost, err = conv.ToInt(args[0])
 		if err != nil {
