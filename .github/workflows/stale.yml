@@ -17,7 +17,7 @@ jobs:
   stale:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/stale@v9
+      - uses: actions/stale@v10
         # See https://github.com/actions/stale#all-options
         with:
           exempt-all-milestones: true
