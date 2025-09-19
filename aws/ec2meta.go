@@ -2,12 +2,10 @@ package aws
 
 import (
 	"context"
-	"net/http"
+	"io"
 	"strings"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/ec2metadata"
-	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go-v2/feature/ec2/imds"
 	"github.com/hairyhenderson/gomplate/v4/env"
 	"github.com/hairyhenderson/gomplate/v4/internal/deprecated"
 )
@@ -26,30 +24,25 @@ type Ec2Meta struct {
 }
 
 type EC2Metadata interface {
-	GetMetadata(p string) (string, error)
-	GetDynamicData(p string) (string, error)
-	Region() (string, error)
+	GetMetadata(context.Context, *imds.GetMetadataInput, ...func(*imds.Options)) (*imds.GetMetadataOutput, error)
+	GetDynamicData(context.Context, *imds.GetDynamicDataInput, ...func(*imds.Options)) (*imds.GetDynamicDataOutput, error)
+	GetRegion(context.Context, *imds.GetRegionInput, ...func(*imds.Options)) (*imds.GetRegionOutput, error)
 }
 
 // NewEc2Meta -
-func NewEc2Meta(options ClientOptions) *Ec2Meta {
+func NewEc2Meta(_ ClientOptions) *Ec2Meta {
 	return &Ec2Meta{
 		metadataCache:    make(map[string]string),
 		dynamicdataCache: make(map[string]string),
 		ec2MetadataProvider: func() (EC2Metadata, error) {
-			config := aws.NewConfig()
-			config = config.WithHTTPClient(&http.Client{Timeout: options.Timeout})
-			if endpoint := env.Getenv("AWS_META_ENDPOINT"); endpoint != "" {
-				deprecated.WarnDeprecated(context.Background(), "Use AWS_EC2_METADATA_SERVICE_ENDPOINT instead of AWS_META_ENDPOINT")
-				config = config.WithEndpoint(endpoint)
-			}
+			client := imds.NewFromConfig(SDKConfig(), func(o *imds.Options) {
+				if endpoint := env.Getenv("AWS_META_ENDPOINT"); endpoint != "" {
+					deprecated.WarnDeprecated(context.Background(), "Use AWS_EC2_METADATA_SERVICE_ENDPOINT instead of AWS_META_ENDPOINT")
+					o.Endpoint = endpoint
+				}
+			})
 
-			s, err := session.NewSession(config)
-			if err != nil {
-				return nil, err
-			}
-
-			return ec2metadata.New(s), nil
+			return client, nil
 		},
 	}
 }
@@ -86,13 +79,22 @@ func (e *Ec2Meta) retrieveMetadata(key string, def ...string) (string, error) {
 		return "", err
 	}
 
-	value, err := emd.GetMetadata(key)
+	output, err := emd.GetMetadata(context.Background(), &imds.GetMetadataInput{Path: key})
 	if err != nil {
 		if unreachable(err) {
 			e.nonAWS = true
 		}
 		return returnDefault(def), nil
 	}
+	defer output.Content.Close()
+
+	result, err := io.ReadAll(output.Content)
+	if err != nil {
+		return "", err
+	}
+
+	value := string(result)
+
 	e.metadataCache[key] = value
 
 	return value, nil
@@ -112,13 +114,22 @@ func (e *Ec2Meta) retrieveDynamicdata(key string, def ...string) (string, error)
 		return "", err
 	}
 
-	value, err := emd.GetDynamicData(key)
+	output, err := emd.GetDynamicData(context.Background(), &imds.GetDynamicDataInput{Path: key})
 	if err != nil {
 		if unreachable(err) {
 			e.nonAWS = true
 		}
 		return returnDefault(def), nil
 	}
+	defer output.Content.Close()
+
+	result, err := io.ReadAll(output.Content)
+	if err != nil {
+		return "", err
+	}
+
+	value := string(result)
+
 	e.dynamicdataCache[key] = value
 
 	return value, nil
@@ -150,10 +161,10 @@ func (e *Ec2Meta) Region(def ...string) (string, error) {
 		return "", err
 	}
 
-	region, err := emd.Region()
-	if err != nil || region == "" {
+	output, err := emd.GetRegion(context.Background(), &imds.GetRegionInput{})
+	if err != nil || output.Region == "" {
 		return defaultRegion, nil
 	}
 
-	return region, nil
+	return output.Region, nil
 }

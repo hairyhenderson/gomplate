@@ -1,9 +1,14 @@
 package aws
 
 import (
+	"context"
 	"fmt"
+	"io"
+	"strings"
 
-	"github.com/aws/aws-sdk-go/service/ec2"
+	"github.com/aws/aws-sdk-go-v2/feature/ec2/imds"
+	"github.com/aws/aws-sdk-go-v2/service/ec2"
+	"github.com/aws/aws-sdk-go-v2/service/ec2/types"
 )
 
 // MockEC2Meta -
@@ -40,15 +45,15 @@ func NewDummyEc2Meta() *Ec2Meta {
 
 // DummyInstanceDescriber - test doubles
 type DummyInstanceDescriber struct {
-	tags []*ec2.Tag
+	tags []types.Tag
 }
 
 // DescribeInstances -
-func (d DummyInstanceDescriber) DescribeInstances(*ec2.DescribeInstancesInput) (*ec2.DescribeInstancesOutput, error) {
+func (d DummyInstanceDescriber) DescribeInstances(_ context.Context, _ *ec2.DescribeInstancesInput, _ ...func(*ec2.Options)) (*ec2.DescribeInstancesOutput, error) {
 	output := &ec2.DescribeInstancesOutput{
-		Reservations: []*ec2.Reservation{
+		Reservations: []types.Reservation{
 			{
-				Instances: []*ec2.Instance{
+				Instances: []types.Instance{
 					{
 						Tags: d.tags,
 					},
@@ -65,22 +70,22 @@ type DummEC2MetadataProvider struct {
 	region      string
 }
 
-func (d DummEC2MetadataProvider) GetMetadata(p string) (string, error) {
-	v, ok := d.data[p]
+func (d DummEC2MetadataProvider) GetMetadata(_ context.Context, params *imds.GetMetadataInput, _ ...func(*imds.Options)) (*imds.GetMetadataOutput, error) {
+	v, ok := d.data[params.Path]
 	if !ok {
-		return "", fmt.Errorf("cannot find %v", p)
+		return nil, fmt.Errorf("cannot find %v", params.Path)
 	}
-	return v, nil
+	return &imds.GetMetadataOutput{Content: io.NopCloser(strings.NewReader(v))}, nil
 }
 
-func (d DummEC2MetadataProvider) GetDynamicData(p string) (string, error) {
-	v, ok := d.dynamicData[p]
+func (d DummEC2MetadataProvider) GetDynamicData(_ context.Context, params *imds.GetDynamicDataInput, _ ...func(*imds.Options)) (*imds.GetDynamicDataOutput, error) {
+	v, ok := d.dynamicData[params.Path]
 	if !ok {
-		return "", fmt.Errorf("cannot find %v", p)
+		return nil, fmt.Errorf("cannot find %v", params.Path)
 	}
-	return v, nil
+	return &imds.GetDynamicDataOutput{Content: io.NopCloser(strings.NewReader(v))}, nil
 }
 
-func (d DummEC2MetadataProvider) Region() (string, error) {
-	return d.region, nil
+func (d DummEC2MetadataProvider) GetRegion(_ context.Context, _ *imds.GetRegionInput, _ ...func(*imds.Options)) (*imds.GetRegionOutput, error) {
+	return &imds.GetRegionOutput{Region: d.region}, nil
 }
