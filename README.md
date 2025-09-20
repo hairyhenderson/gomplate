@@ -4,8 +4,6 @@ _Read the docs at [docs.gomplate.ca][docs-url], chat with developers and communi
 
 [![Build][gh-actions-image]][gh-actions-url]
 [![Go Report Card][reportcard-image]][reportcard-url]
-[![Codebeat Status][codebeat-image]][codebeat-url]
-[![Coverage][gocover-image]][gocover-url]
 [![Total Downloads][gh-downloads-image]][gh-downloads-url]
 [![CII Best Practices][cii-bp-image]][cii-bp-url]
 
@@ -98,15 +96,12 @@ _Please report any bugs found in the [issue tracker](https://github.com/hairyhen
 
 Copyright (c) 2016-2023 Dave Henderson
 
-[gh-actions-image]: https://github.com/hairyhenderson/gomplate/workflows/Build/badge.svg?branch=main
+[gh-actions-image]: https://github.com/hairyhenderson/gomplate/actions/workflows/build.yml/badge.svg
 [gh-actions-url]: https://github.com/hairyhenderson/gomplate/actions?workflow=Build&branch=main
 
 [reportcard-image]: https://goreportcard.com/badge/github.com/hairyhenderson/gomplate
 [reportcard-url]: https://goreportcard.com/report/github.com/hairyhenderson/gomplate
-[codebeat-image]: https://codebeat.co/badges/39ed2148-4b86-4d1e-8526-25f60e159ba1
-[codebeat-url]: https://codebeat.co/projects/github-com-hairyhenderson-gomplate
-[gocover-image]: https://gocover.io/_badge/github.com/hairyhenderson/gomplate
-[gocover-url]: https://gocover.io/github.com/hairyhenderson/gomplate
+
 [gh-downloads-image]: https://img.shields.io/github/downloads/hairyhenderson/gomplate/total.svg
 [gh-downloads-url]: https://github.com/hairyhenderson/gomplate/releases
 
