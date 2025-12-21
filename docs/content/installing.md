@@ -19,6 +19,14 @@ $ brew install gomplate
 🍺  /home/linuxbrew/.linuxbrew/Cellar/gomplate/3.8.0: 6 files, 7.8MB
 ```
 
+## Using mise-en-place on Linux/MacOS/Windows
+
+If you are using [mise](https://github.com/jdx/mise), the polyglot tool version manager, you can use a command like this:
+
+```console
+mise use -g gomplate@latest
+```
+
 ## macOS with MacPorts
 
 On macOS, you can also install gomplate using [MacPorts](https://www.macports.org):
