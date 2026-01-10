@@ -2,6 +2,7 @@
 package net
 
 import (
+	"context"
 	"net"
 	"slices"
 )
@@ -20,17 +21,18 @@ func LookupIP(name string) (string, error) {
 
 // LookupIPs -
 func LookupIPs(name string) ([]string, error) {
-	srcIPs, err := net.LookupIP(name)
+	resolver := &net.Resolver{}
+	srcIPs, err := resolver.LookupIPAddr(context.Background(), name)
 	if err != nil {
 		return nil, err
 	}
 
 	// perf note: this slice is not really worth pre-allocating - srcIPs tends
-	// to be very small, and net.LookupIP is relatively expensive
+	// to be very small, and LookupIPAddr is relatively expensive
 	var ips []string
 	for _, v := range srcIPs {
-		if v.To4() != nil {
-			s := v.String()
+		if v.IP.To4() != nil {
+			s := v.IP.String()
 			if !slices.Contains(ips, s) {
 				ips = append(ips, s)
 			}
@@ -41,12 +43,14 @@ func LookupIPs(name string) ([]string, error) {
 
 // LookupCNAME -
 func LookupCNAME(name string) (string, error) {
-	return net.LookupCNAME(name)
+	resolver := &net.Resolver{}
+	return resolver.LookupCNAME(context.Background(), name)
 }
 
 // LookupTXT -
 func LookupTXT(name string) ([]string, error) {
-	return net.LookupTXT(name)
+	resolver := &net.Resolver{}
+	return resolver.LookupTXT(context.Background(), name)
 }
 
 // LookupSRV -
@@ -60,7 +64,8 @@ func LookupSRV(name string) (*net.SRV, error) {
 
 // LookupSRVs -
 func LookupSRVs(name string) ([]*net.SRV, error) {
-	_, addrs, err := net.LookupSRV("", "", name)
+	resolver := &net.Resolver{}
+	_, addrs, err := resolver.LookupSRV(context.Background(), "", "", name)
 	if err != nil {
 		return nil, err
 	}

@@ -115,7 +115,7 @@ true
 
 Parse a UUID for further manipulation or inspection.
 
-This function returns a `UUID` struct, as defined in the [github.com/google/uuid](https://godoc.org/github.com/google/uuid#UUID) package. See the docs for examples of functions or fields you can call.
+This function returns a `UUID` struct, as defined in the [github.com/google/uuid](https://pkg.go.dev/github.com/google/uuid#UUID) package. See the docs for examples of functions or fields you can call.
 
 Both the standard UUID forms of `xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx` and
 `urn:uuid:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx` are decoded as well as the

@@ -12,7 +12,7 @@ funcs:
   - name: crypto.Bcrypt
     released: v2.6.0
     description: |
-      Uses the [bcrypt](https://en.wikipedia.org/wiki/Bcrypt) password hashing algorithm to generate the hash of a given string. Wraps the [`golang.org/x/crypto/brypt`](https://godoc.org/golang.org/x/crypto/bcrypt) package.
+      Uses the [bcrypt](https://en.wikipedia.org/wiki/Bcrypt) password hashing algorithm to generate the hash of a given string. Wraps the [`golang.org/x/crypto/brypt`](https://pkg.go.dev/golang.org/x/crypto/bcrypt) package.
     pipeline: true
     arguments:
       - name: cost

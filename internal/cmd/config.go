@@ -246,7 +246,7 @@ func processIncludes(includes, excludes []string) []string {
 		return nil
 	}
 
-	out := []string{}
+	out := make([]string, 0, len(excludes))
 	// if any --includes are set, we start by excluding everything
 	if len(includes) > 0 {
 		out = make([]string, 1+len(includes))

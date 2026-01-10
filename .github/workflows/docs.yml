@@ -58,6 +58,7 @@ jobs:
             --exclude="https://jqplay\.org.*" \
             --exclude="https://json\.org.*" \
             --exclude="https://goessner\.net.*" \
-            --exclude="http://opensource\.org.*"
+            --exclude="http://opensource\.org.*" \
+            --exclude="https://en.wikipedia\.org.*"
 
           kill %1

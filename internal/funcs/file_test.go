@@ -75,7 +75,7 @@ func TestFileWalk(t *testing.T) {
 	ff := &FileFuncs{fs: datafs.WrapWdFS(fsys)}
 
 	expectedLists := [][]string{{"tmp"}, {"tmp", "bar"}, {"tmp", "bar", "baz"}, {"tmp", "bar", "baz", "foo"}}
-	expectedPaths := make([]string, 0)
+	expectedPaths := make([]string, 0, len(expectedLists))
 	for _, path := range expectedLists {
 		expectedPaths = append(expectedPaths, string(filepath.Separator)+filepath.Join(path...))
 	}

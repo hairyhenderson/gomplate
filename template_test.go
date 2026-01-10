@@ -175,7 +175,9 @@ func TestCreateOutFile(t *testing.T) {
 
 	_, err := createOutFile(ctx, "in", 0o755, 0o644, false)
 	require.Error(t, err)
-	assert.IsType(t, &fs.PathError{}, err)
+
+	var pathErr *fs.PathError
+	assert.ErrorAs(t, err, &pathErr)
 }
 
 func TestParseNestedTemplates(t *testing.T) {

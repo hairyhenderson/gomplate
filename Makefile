@@ -18,7 +18,7 @@ LINT_PROCS ?= $(shell nproc)
 endif
 
 COMMIT ?= `git rev-parse --short HEAD 2>/dev/null`
-VERSION ?= $(shell $(GO) run ./version/gen/vgen.go)
+VERSION ?= $(shell $(GO) run ./internal/version/gen/vgen.go)
 
 VERSION_PATH ?= `$(GO) list ./version`
 COMMIT_FLAG ?= -X $(VERSION_PATH).GitCommit=$(COMMIT)

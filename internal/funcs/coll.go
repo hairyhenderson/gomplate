@@ -49,6 +49,7 @@ func (CollFuncs) Slice(args ...any) []any {
 }
 
 // deprecatedSlice -
+//
 // Deprecated: use coll.Slice instead
 func (f *CollFuncs) deprecatedSlice(args ...any) []any {
 	deprecated.WarnDeprecated(f.ctx, "the 'slice' alias for coll.Slice is deprecated - use coll.Slice instead")
