@@ -530,8 +530,8 @@ The _scheme_, _authority_, _path_, and _query_ URL components are used by this d
 - the _authority_ component is used to specify the bucket name
 - the _path_ component is used to specify the path to the object. [Directory](#directory-datasources) semantics are available when the path ends with a `/` character.
 - the _query_ component can be used to provide parameters to configure the connection:
-  - `access_id`: (optional) Usually unnecessary. Sets the GoogleAccessID (see https://godoc.org/cloud.google.com/go/storage#SignedURLOptions)
-  - `private_key_path`: (optional) Usually unnecessary. Sets the path to the Google service account private key (see https://godoc.org/cloud.google.com/go/storage#SignedURLOptions)
+  - `access_id`: (optional) Usually unnecessary. Sets the GoogleAccessID (see https://pkg.go.dev/cloud.google.com/go/storage#SignedURLOptions)
+  - `private_key_path`: (optional) Usually unnecessary. Sets the path to the Google service account private key (see https://pkg.go.dev/cloud.google.com/go/storage#SignedURLOptions)
   - `type`: can be used to [override the MIME type](#overriding-mime-types)
 
 ### Authentication

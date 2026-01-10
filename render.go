@@ -107,7 +107,7 @@ func newRenderer(opts RenderOptions) *renderer {
 	// this should be the only place where this registry is created
 	reg := datafs.NewRegistry()
 
-	tctxAliases := []string{}
+	tctxAliases := make([]string, 0, len(opts.Context))
 
 	for alias, ds := range opts.Context {
 		tctxAliases = append(tctxAliases, alias)

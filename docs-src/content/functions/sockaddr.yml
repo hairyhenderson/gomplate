@@ -5,11 +5,11 @@ preamble: |
   interfaces.
 
   These functions are _partly_ documented here for convenience, but the canonical
-  documentation is at https://godoc.org/github.com/hashicorp/go-sockaddr.
+  documentation is at https://pkg.go.dev/github.com/hashicorp/go-sockaddr.
 
   Aside from some convenience functions, the general method of working with these
   functions is through a _pipeline_. There are _source_ functions, which select
-  interfaces ([`IfAddr`](https://godoc.org/github.com/hashicorp/go-sockaddr#IfAddr)),
+  interfaces ([`IfAddr`](https://pkg.go.dev/github.com/hashicorp/go-sockaddr#IfAddr)),
   and there are functions to further filter, refine, and finally to select
   the specific attributes you're interested in.
 
