@@ -29,7 +29,7 @@ jobs:
           git config --global user.email "bogus@example.com"
           git config --global user.name "Someone"
           git config --global --add safe.directory /__w/gomplate/gomplate
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
       - run: make build GOARCH=${{ matrix.goarch }} GOARM=${{ matrix.goarm }}
@@ -43,10 +43,10 @@ jobs:
       TMP: C:\tmp
     steps:
       - run: pwd
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
-      - uses: actions/setup-go@v5
+      - uses: actions/setup-go@v6
         with:
           go-version-file: go.mod
       - run: |

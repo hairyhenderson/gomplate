@@ -14,7 +14,7 @@ jobs:
     name: Conventional Commits
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: webiny/action-conventional-commits@v1.3.0
         with:
           allowed-commit-types: feat,fix,docs,deps,chore,build,ci
