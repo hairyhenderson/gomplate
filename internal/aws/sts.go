@@ -1,8 +1,9 @@
 package aws
 
 import (
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/service/sts"
+	"context"
+
+	"github.com/aws/aws-sdk-go-v2/service/sts"
 )
 
 // STS -
@@ -15,7 +16,7 @@ var identifierClient CallerIdentitifier
 
 // CallerIdentitifier - an interface to wrap GetCallerIdentity
 type CallerIdentitifier interface {
-	GetCallerIdentity(*sts.GetCallerIdentityInput) (*sts.GetCallerIdentityOutput, error)
+	GetCallerIdentity(context.Context, *sts.GetCallerIdentityInput, ...func(*sts.Options)) (*sts.GetCallerIdentityOutput, error)
 }
 
 // NewSTS -
@@ -23,8 +24,7 @@ func NewSTS(_ ClientOptions) *STS {
 	return &STS{
 		identifier: func() CallerIdentitifier {
 			if identifierClient == nil {
-				session := SDKSession()
-				identifierClient = sts.New(session)
+				identifierClient = sts.NewFromConfig(SDKConfig())
 			}
 			return identifierClient
 		},
@@ -40,7 +40,7 @@ func (s *STS) getCallerID() (*sts.GetCallerIdentityOutput, error) {
 		}
 	}
 	in := &sts.GetCallerIdentityInput{}
-	out, err := i.GetCallerIdentity(in)
+	out, err := i.GetCallerIdentity(context.Background(), in)
 	if err != nil {
 		return nil, err
 	}
@@ -54,7 +54,7 @@ func (s *STS) UserID() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return aws.StringValue(cid.UserId), nil
+	return *cid.UserId, nil
 }
 
 // Account -
@@ -63,7 +63,7 @@ func (s *STS) Account() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return aws.StringValue(cid.Account), nil
+	return *cid.Account, nil
 }
 
 // Arn -
@@ -72,5 +72,5 @@ func (s *STS) Arn() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return aws.StringValue(cid.Arn), nil
+	return *cid.Arn, nil
 }

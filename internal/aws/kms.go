@@ -1,15 +1,17 @@
 package aws
 
 import (
+	"context"
+
 	b64 "github.com/hairyhenderson/gomplate/v4/base64"
 
-	"github.com/aws/aws-sdk-go/service/kms"
+	"github.com/aws/aws-sdk-go-v2/service/kms"
 )
 
 // KMSAPI is a subset of kmsiface.KMSAPI
 type KMSAPI interface {
-	Encrypt(input *kms.EncryptInput) (*kms.EncryptOutput, error)
-	Decrypt(input *kms.DecryptInput) (*kms.DecryptOutput, error)
+	Encrypt(context.Context, *kms.EncryptInput, ...func(*kms.Options)) (*kms.EncryptOutput, error)
+	Decrypt(context.Context, *kms.DecryptInput, ...func(*kms.Options)) (*kms.DecryptOutput, error)
 }
 
 // KMS is an AWS KMS client
@@ -19,7 +21,7 @@ type KMS struct {
 
 // NewKMS - Create new AWS KMS client using an SDKSession
 func NewKMS(_ ClientOptions) *KMS {
-	client := kms.New(SDKSession())
+	client := kms.NewFromConfig(SDKConfig())
 	return &KMS{
 		Client: client,
 	}
@@ -32,7 +34,7 @@ func (k *KMS) Encrypt(keyID, plaintext string) (string, error) {
 		KeyId:     &keyID,
 		Plaintext: []byte(plaintext),
 	}
-	output, err := k.Client.Encrypt(input)
+	output, err := k.Client.Encrypt(context.Background(), input)
 	if err != nil {
 		return "", err
 	}
@@ -52,7 +54,7 @@ func (k *KMS) Decrypt(ciphertext string) (string, error) {
 	input := &kms.DecryptInput{
 		CiphertextBlob: ciphertextBlob,
 	}
-	output, err := k.Client.Decrypt(input)
+	output, err := k.Client.Decrypt(context.Background(), input)
 	if err != nil {
 		return "", err
 	}

@@ -8,9 +8,9 @@ import (
 	"testing"
 	"text/template"
 
-	"github.com/hairyhenderson/gomplate/v4/aws"
 	"github.com/hairyhenderson/gomplate/v4/conv"
 	"github.com/hairyhenderson/gomplate/v4/env"
+	"github.com/hairyhenderson/gomplate/v4/internal/aws"
 	"github.com/hairyhenderson/gomplate/v4/internal/datafs"
 	"github.com/hairyhenderson/gomplate/v4/internal/parsers"
 

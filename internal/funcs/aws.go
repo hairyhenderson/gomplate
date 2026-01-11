@@ -4,8 +4,8 @@ import (
 	"context"
 	"sync"
 
-	"github.com/hairyhenderson/gomplate/v4/aws"
 	"github.com/hairyhenderson/gomplate/v4/conv"
+	"github.com/hairyhenderson/gomplate/v4/internal/aws"
 )
 
 // CreateAWSFuncs -
