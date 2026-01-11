@@ -65,12 +65,12 @@ func SDKConfig(region ...string) aws.Config {
 			opts = append(opts, config.WithRegion(region[0]))
 		}
 
-		config, err := config.LoadDefaultConfig(context.Background(), opts...)
+		cfg, err := config.LoadDefaultConfig(context.Background(), opts...)
 		if err != nil {
 			panic(fmt.Errorf("failed to load config: %w", err))
 		}
 
-		sdkConfig = config
+		sdkConfig = cfg
 	})
 
 	return sdkConfig
