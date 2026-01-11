@@ -131,20 +131,6 @@ funcs:
           quux:
             quuz: 42
         ```
-  - name: strings.Sort
-    released: v2.7.0
-    deprecated: Use [`coll.Sort`](../coll/#collsort) instead
-    description: |
-      Returns an alphanumerically-sorted copy of a given string list.
-    pipeline: true
-    arguments:
-      - name: list
-        required: true
-        description: The list to sort
-    examples:
-      - |
-        $ gomplate -i '{{ (coll.Slice "foo" "bar" "baz") | strings.Sort }}'
-        [bar baz foo]
   - name: strings.SkipLines
     released: v4.0.0
     description: |
@@ -172,8 +158,6 @@ funcs:
   - name: strings.Split
     released: v1.9.0
     description: |
-      _Not to be confused with [`split`](#split-_deprecated_), which is deprecated._
-
       Slices `input` into the substrings separated by `separator`, returning a
       slice of the substrings between those separators. If `input` does not
       contain `separator` and `separator` is not empty, returns a single-element
@@ -210,8 +194,6 @@ funcs:
   - name: strings.SplitN
     released: v1.9.0
     description: |
-      _Not to be confused with [`splitN`](#splitn-_deprecated_), which is deprecated._
-
       Slices `input` into the substrings separated by `separator`, returning a
       slice of the substrings between those separators. If `input` does not
       contain `separator` and `separator` is not empty, returns a single-element
@@ -641,163 +623,3 @@ funcs:
         Ω is 2 bytes and 1 runes
         0 is 1 bytes and 1 runes
         ᐰ is 3 bytes and 1 runes
-  - name: contains
-    deprecated: Use [`strings.Contains`](#stringscontains) instead
-    released: v1.4.0
-    description: |
-      **See [`strings.Contains`](#stringscontains) for a pipeline-compatible version**
-
-      Contains reports whether the second string is contained within the first. Equivalent to
-      [strings.Contains](https://pkg.go.dev/strings#Contains)
-    pipeline: false
-    arguments:
-      - name: input
-        required: true
-        description: the string to search
-      - name: substring
-        required: true
-        description: the string to search for
-    rawExamples:
-      - |
-        _`input.tmpl`:_
-        ```
-        {{if contains .Env.FOO "f"}}yes{{else}}no{{end}}
-        ```
-
-        ```console
-        $ FOO=foo gomplate < input.tmpl
-        yes
-        $ FOO=bar gomplate < input.tmpl
-        no
-        ```
-  - name: hasPrefix
-    deprecated: Use [`strings.HasPrefix`](#stringshasprefix) instead
-    released: v1.4.0
-    description: |
-      **See [`strings.HasPrefix`](#stringshasprefix) for a pipeline-compatible version**
-
-      Tests whether the string begins with a certain substring. Equivalent to
-      [strings.HasPrefix](https://pkg.go.dev/strings#HasPrefix)
-    pipeline: false
-    arguments:
-      - name: input
-        required: true
-        description: the string to search
-      - name: prefix
-        required: true
-        description: the prefix to search for
-    rawExamples:
-      - |
-        _`input.tmpl`:_
-        ```
-        {{if hasPrefix .Env.URL "https"}}foo{{else}}bar{{end}}
-        ```
-
-        ```console
-        $ URL=http://example.com gomplate < input.tmpl
-        bar
-        $ URL=https://example.com gomplate < input.tmpl
-        foo
-        ```
-  - name: hasSuffix
-    deprecated: Use [`strings.HasSuffix`](#stringshassuffix) instead
-    released: v1.4.0
-    description: |
-      **See [`strings.HasSuffix`](#stringshassuffix) for a pipeline-compatible version**
-
-      Tests whether the string ends with a certain substring. Equivalent to
-      [strings.HasSuffix](https://pkg.go.dev/strings#HasSuffix)
-    pipeline: false
-    arguments:
-      - name: input
-        required: true
-        description: the input to search
-      - name: suffix
-        required: true
-        description: the suffix to search for
-    rawExamples:
-      - |
-        _`input.tmpl`:_
-        ```
-        {{.Env.URL}}{{if not (hasSuffix .Env.URL ":80")}}:80{{end}}
-        ```
-
-        ```console
-        $ URL=http://example.com gomplate < input.tmpl
-        http://example.com:80
-        ```
-  - name: split
-    deprecated: Use [`strings.Split`](#stringssplit) instead
-    released: v1.4.0
-    description: |
-      **See [`strings.Split`](#stringssplit) for a pipeline-compatible version**
-
-      Creates a slice by splitting a string on a given delimiter. Equivalent to
-      [strings.Split](https://pkg.go.dev/strings#Split)
-    pipeline: false
-    arguments:
-      - name: input
-        required: true
-        description: the input string
-      - name: separator
-        required: true
-        description: the string sequence to split
-    examples:
-      - |
-        $ gomplate -i '{{range split "Bart,Lisa,Maggie" ","}}Hello, {{.}}
-        {{end}}'
-        Hello, Bart
-        Hello, Lisa
-        Hello, Maggie
-  - name: splitN
-    deprecated: Use [`strings.SplitN`](#stringssplitn) instead
-    released: v1.7.0
-    description: |
-      **See [`strings.SplitN`](#stringssplitn) for a pipeline-compatible version**
-
-      Creates a slice by splitting a string on a given delimiter. The count determines
-      the number of substrings to return. Equivalent to [strings.SplitN](https://pkg.go.dev/strings#SplitN)
-    pipeline: false
-    arguments:
-      - name: input
-        required: true
-        description: the input string
-      - name: separator
-        required: true
-        description: the string sequence to split
-      - name: count
-        required: true
-        description: the maximum number of substrings to return
-    examples:
-      - |
-        $ gomplate -i '{{ range splitN "foo:bar:baz" ":" 2 }}{{.}}
-        {{end}}'
-        foo
-        bar:baz
-  - name: trim
-    deprecated: Use [`strings.Trim`](#stringstrim) instead
-    released: v1.4.0
-    description: |
-      **See [`strings.Trim`](#stringstrim) for a pipeline-compatible version**
-
-      Trims a string by removing the given characters from the beginning and end of
-      the string. Equivalent to [strings.Trim](https://pkg.go.dev/strings/#Trim)
-    pipeline: false
-    arguments:
-      - name: input
-        required: true
-        description: the input
-      - name: cutset
-        required: true
-        description: the set of characters to cut
-    rawExamples:
-      - |
-        _`input.tmpl`:_
-        ```
-        Hello, {{trim .Env.FOO " "}}!
-        ```
-
-        ```console
-        $ FOO="  world " | gomplate < input.tmpl
-        Hello, world!
-        ```

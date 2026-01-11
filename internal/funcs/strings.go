@@ -15,7 +15,6 @@ import (
 
 	"github.com/Masterminds/goutils"
 	"github.com/hairyhenderson/gomplate/v4/conv"
-	"github.com/hairyhenderson/gomplate/v4/internal/deprecated"
 	gompstrings "github.com/hairyhenderson/gomplate/v4/strings"
 
 	"github.com/gosimple/slug"
@@ -40,14 +39,6 @@ func CreateStringFuncs(ctx context.Context) map[string]any {
 	f["shellQuote"] = ns.ShellQuote
 	f["squote"] = ns.Squote
 
-	// these are legacy aliases with non-pipelinable arg order
-	f["contains"] = ns.oldContains
-	f["hasPrefix"] = ns.oldHasPrefix
-	f["hasSuffix"] = ns.oldHasSuffix
-	f["split"] = ns.oldSplit
-	f["splitN"] = ns.oldSplitN
-	f["trim"] = ns.oldTrim
-
 	return f
 }
 
@@ -59,58 +50,6 @@ type StringFuncs struct {
 	// Und (undetermined)
 	tag language.Tag
 }
-
-// ---- legacy aliases with non-pipelinable arg order
-
-// oldContains -
-//
-// Deprecated: use [strings.Contains] instead
-func (f *StringFuncs) oldContains(s, substr string) bool {
-	deprecated.WarnDeprecated(f.ctx, "contains is deprecated - use strings.Contains instead")
-	return strings.Contains(s, substr)
-}
-
-// oldHasPrefix -
-//
-// Deprecated: use [strings.HasPrefix] instead
-func (f *StringFuncs) oldHasPrefix(s, prefix string) bool {
-	deprecated.WarnDeprecated(f.ctx, "hasPrefix is deprecated - use strings.HasPrefix instead")
-	return strings.HasPrefix(s, prefix)
-}
-
-// oldHasSuffix -
-//
-// Deprecated: use [strings.HasSuffix] instead
-func (f *StringFuncs) oldHasSuffix(s, suffix string) bool {
-	deprecated.WarnDeprecated(f.ctx, "hasSuffix is deprecated - use strings.HasSuffix instead")
-	return strings.HasSuffix(s, suffix)
-}
-
-// oldSplit -
-//
-// Deprecated: use [strings.Split] instead
-func (f *StringFuncs) oldSplit(s, sep string) []string {
-	deprecated.WarnDeprecated(f.ctx, "split is deprecated - use strings.Split instead")
-	return strings.Split(s, sep)
-}
-
-// oldSplitN -
-//
-// Deprecated: use [strings.SplitN] instead
-func (f *StringFuncs) oldSplitN(s, sep string, n int) []string {
-	deprecated.WarnDeprecated(f.ctx, "splitN is deprecated - use strings.SplitN instead")
-	return strings.SplitN(s, sep, n)
-}
-
-// oldTrim -
-//
-// Deprecated: use [strings.Trim] instead
-func (f *StringFuncs) oldTrim(s, cutset string) string {
-	deprecated.WarnDeprecated(f.ctx, "trim is deprecated - use strings.Trim instead")
-	return strings.Trim(s, cutset)
-}
-
-// ----
 
 // Abbrev -
 func (StringFuncs) Abbrev(args ...any) (string, error) {
@@ -188,27 +127,6 @@ func (StringFuncs) Repeat(count int, s any) (string, error) {
 // SkipLines -
 func (StringFuncs) SkipLines(skip int, in string) (string, error) {
 	return gompstrings.SkipLines(skip, in)
-}
-
-// Sort -
-//
-// Deprecated: use [CollFuncs.Sort] instead
-func (f *StringFuncs) Sort(list any) ([]string, error) {
-	deprecated.WarnDeprecated(f.ctx, "strings.Sort is deprecated - use coll.Sort instead")
-
-	switch v := list.(type) {
-	case []string:
-		return gompstrings.Sort(v), nil
-	case []any:
-		l := len(v)
-		b := make([]string, len(v))
-		for i := range l {
-			b[i] = conv.ToString(v[i])
-		}
-		return gompstrings.Sort(b), nil
-	default:
-		return nil, fmt.Errorf("wrong type for value; expected []string; got %T", list)
-	}
 }
 
 // Split -

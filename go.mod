@@ -37,7 +37,6 @@ require (
 	golang.org/x/term v0.37.0
 	golang.org/x/text v0.31.0
 	gotest.tools/v3 v3.5.2
-	inet.af/netaddr v0.0.0-20230525184311-b8eac61e914a
 	k8s.io/client-go v0.33.2
 )
 
@@ -171,8 +170,6 @@ require (
 	go.opentelemetry.io/otel/trace v1.36.0 // indirect
 	go.shabbyrobe.org/gocovmerge v0.0.0-20230507111327-fa4f82cfbf4d // indirect
 	go.yaml.in/yaml/v3 v3.0.4 // indirect
-	go4.org/intern v0.0.0-20230525184215-6c62f75575cb // indirect
-	go4.org/unsafe/assume-no-moving-gc v0.0.0-20231121144256-b99613f794b6 // indirect
 	gocloud.dev v0.41.0 // indirect
 	golang.org/x/net v0.47.0 // indirect
 	golang.org/x/oauth2 v0.32.0 // indirect

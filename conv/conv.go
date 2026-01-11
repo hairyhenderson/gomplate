@@ -11,20 +11,6 @@ import (
 	iconv "github.com/hairyhenderson/gomplate/v4/internal/conv"
 )
 
-// Bool converts a string to a boolean value, using strconv.ParseBool under the covers.
-// Possible true values are: 1, t, T, TRUE, true, True
-// All other values are considered false.
-//
-// See ToBool also for a more flexible version.
-//
-// Deprecated: use ToBool instead
-func Bool(in string) bool {
-	if b, err := strconv.ParseBool(in); err == nil {
-		return b
-	}
-	return false
-}
-
 // ToBool converts an arbitrary input into a boolean.
 // Possible non-boolean true values are: 1 or the strings "t", "true", or "yes"
 // (any capitalizations)
@@ -66,13 +52,6 @@ func ToBools(in ...any) []bool {
 		out[i] = ToBool(v)
 	}
 	return out
-}
-
-// Slice creates a slice from a bunch of arguments
-//
-// Deprecated: use [github.com/hairyhenderson/gomplate/v4/coll.Slice] instead
-func Slice(args ...any) []any {
-	return args
 }
 
 // Join concatenates the elements of a to create a single string.
@@ -345,25 +324,4 @@ func ToFloat64s(in ...any) ([]float64, error) {
 	}
 
 	return out, nil
-}
-
-// Dict is a convenience function that creates a map with string keys.
-// Provide arguments as key/value pairs. If an odd number of arguments
-// is provided, the last is used as the key, and an empty string is
-// set as the value.
-// All keys are converted to strings, regardless of input type.
-func Dict(v ...any) (map[string]any, error) {
-	dict := map[string]any{}
-	lenv := len(v)
-	for i := 0; i < lenv; i += 2 {
-		key := ToString(v[i])
-		if i+1 >= lenv {
-			dict[key] = ""
-			continue
-		}
-
-		dict[key] = v[i+1]
-	}
-
-	return dict, nil
 }

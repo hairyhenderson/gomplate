@@ -75,20 +75,6 @@ func TestShellQuote(t *testing.T) {
 	assert.Equal(t, `'it'"'"'s its'`, ShellQuote(`it's its`))
 }
 
-func TestSort(t *testing.T) {
-	in := []string{}
-	expected := []string{}
-	assert.Equal(t, expected, Sort(in))
-
-	in = []string{"c", "a", "b"}
-	expected = []string{"a", "b", "c"}
-	assert.Equal(t, expected, Sort(in))
-
-	in = []string{"42", "45", "18"}
-	expected = []string{"18", "42", "45"}
-	assert.Equal(t, expected, Sort(in))
-}
-
 func TestCaseFuncs(t *testing.T) {
 	testdata := []struct{ in, s, k, c string }{
 		{"  Foo bar ", "Foo_bar", "Foo-bar", "FooBar"},
