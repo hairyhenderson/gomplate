@@ -1,0 +1,39 @@
+name: Release Please Checks
+
+on:
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  check-module-version:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Skip if not release-please PR
+        if: github.head_ref != 'release-please--branches--main'
+        run: |
+          echo "Skipping - not a release-please PR"
+          exit 0
+      - uses: actions/checkout@v4
+        if: github.head_ref == 'release-please--branches--main'
+      - uses: actions/setup-go@v5
+        if: github.head_ref == 'release-please--branches--main'
+        with:
+          go-version-file: go.mod
+      - name: Check Go module version matches release version
+        if: github.head_ref == 'release-please--branches--main'
+        run: |
+          version=$(jq -r '.["."]' .release-please-manifest.json)
+          major=$(echo "$version" | cut -d. -f1)
+          module_path=$(go list -m)
+          expected_suffix="/v${major}"
+          
+          if ! echo "$module_path" | grep -q "$expected_suffix\$"; then
+            echo "❌ Module path must end with $expected_suffix for version $version"
+            echo "   Expected: github.com/hairyhenderson/gomplate$expected_suffix"
+            echo "   Got:      $module_path"
+            exit 1
+          fi
