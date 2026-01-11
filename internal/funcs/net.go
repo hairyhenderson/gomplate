@@ -9,10 +9,8 @@ import (
 
 	"github.com/hairyhenderson/gomplate/v4/conv"
 	"github.com/hairyhenderson/gomplate/v4/internal/cidr"
-	"github.com/hairyhenderson/gomplate/v4/internal/deprecated"
 	"github.com/hairyhenderson/gomplate/v4/net"
 	"go4.org/netipx"
-	"inet.af/netaddr"
 )
 
 // CreateNetFuncs -
@@ -58,30 +56,6 @@ func (f NetFuncs) LookupTXT(name any) ([]string, error) {
 	return net.LookupTXT(conv.ToString(name))
 }
 
-// ParseIP -
-//
-// Deprecated: use [ParseAddr] instead
-func (f *NetFuncs) ParseIP(ip any) (netaddr.IP, error) {
-	deprecated.WarnDeprecated(f.ctx, "net.ParseIP is deprecated - use net.ParseAddr instead")
-	return netaddr.ParseIP(conv.ToString(ip))
-}
-
-// ParseIPPrefix -
-//
-// Deprecated: use [ParsePrefix] instead
-func (f *NetFuncs) ParseIPPrefix(ipprefix any) (netaddr.IPPrefix, error) {
-	deprecated.WarnDeprecated(f.ctx, "net.ParseIPPrefix is deprecated - use net.ParsePrefix instead")
-	return netaddr.ParseIPPrefix(conv.ToString(ipprefix))
-}
-
-// ParseIPRange -
-//
-// Deprecated: use [ParseRange] instead
-func (f *NetFuncs) ParseIPRange(iprange any) (netaddr.IPRange, error) {
-	deprecated.WarnDeprecated(f.ctx, "net.ParseIPRange is deprecated - use net.ParseRange instead")
-	return netaddr.ParseIPRange(conv.ToString(iprange))
-}
-
 // ParseAddr -
 func (f NetFuncs) ParseAddr(ip any) (netip.Addr, error) {
 	return netip.ParseAddr(conv.ToString(ip))
@@ -93,8 +67,6 @@ func (f NetFuncs) ParsePrefix(ipprefix any) (netip.Prefix, error) {
 }
 
 // ParseRange -
-//
-// Experimental: this API may change in the future
 func (f NetFuncs) ParseRange(iprange any) (netipx.IPRange, error) {
 	return netipx.ParseIPRange(conv.ToString(iprange))
 }
@@ -103,10 +75,6 @@ func (f *NetFuncs) parseNetipPrefix(prefix any) (netip.Prefix, error) {
 	switch p := prefix.(type) {
 	case *stdnet.IPNet:
 		return f.ipPrefixFromIPNet(p), nil
-	case netaddr.IPPrefix:
-		deprecated.WarnDeprecated(f.ctx,
-			"support for netaddr.IPPrefix is deprecated - use net.ParsePrefix to produce a netip.Prefix instead")
-		return f.ipPrefixFromIPNet(p.Masked().IPNet()), nil
 	case netip.Prefix:
 		return p, nil
 	default:

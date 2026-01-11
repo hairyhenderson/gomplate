@@ -23,7 +23,7 @@ funcs:
 
       For creating more complex maps, see [`data.JSON`](../data/#datajson) or [`data.YAML`](../data/#datayaml).
 
-      For creating arrays, see [`coll.Slice`](#collslice-_deprecated_).
+      For creating arrays, see [`coll.Slice`](#collslice).
     arguments:
       - name: in...
         required: true
@@ -45,8 +45,6 @@ funcs:
         Hello everybody!
   - name: coll.Slice
     released: v3.2.0
-    deprecated: The `slice` alias is deprecated, use the full name `coll.Slice` instead.
-    alias: slice
     description: |
       Creates a slice (like an array or list). Useful when needing to `range` over a bunch of variables.
     pipeline: false

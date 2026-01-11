@@ -27,7 +27,7 @@ function, as used in [Helm templates](https://helm.sh/docs/chart_template_guide/
 
 For creating more complex maps, see [`data.JSON`](../data/#datajson) or [`data.YAML`](../data/#datayaml).
 
-For creating arrays, see [`coll.Slice`](#collslice-_deprecated_).
+For creating arrays, see [`coll.Slice`](#collslice).
 
 _Added in gomplate [v3.2.0](https://github.com/hairyhenderson/gomplate/releases/tag/v3.2.0)_
 ### Usage
@@ -61,10 +61,7 @@ Hello world!
 Hello everybody!
 ```
 
-## `coll.Slice` _(deprecated)_
-**Deprecation Notice:** The `slice` alias is deprecated, use the full name `coll.Slice` instead.
-
-**Alias:** `slice`
+## `coll.Slice`
 
 Creates a slice (like an array or list). Useful when needing to `range` over a bunch of variables.
 

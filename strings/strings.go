@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"math"
 	"regexp"
-	"sort"
 	"strings"
 
 	"github.com/Masterminds/goutils"
@@ -59,15 +58,6 @@ func Trunc(length int, s string) string {
 		return s
 	}
 	return s[0:length]
-}
-
-// Sort - return an alphanumerically-sorted list of strings
-//
-// Deprecated: use coll.Sort instead
-func Sort(list []string) []string {
-	sorted := sort.StringSlice(list)
-	sorted.Sort()
-	return sorted
 }
 
 var (

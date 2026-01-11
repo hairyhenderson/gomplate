@@ -6,7 +6,6 @@ import (
 	"reflect"
 
 	"github.com/hairyhenderson/gomplate/v4/conv"
-	"github.com/hairyhenderson/gomplate/v4/internal/deprecated"
 	"github.com/hairyhenderson/gomplate/v4/internal/texttemplate"
 
 	"github.com/hairyhenderson/gomplate/v4/coll"
@@ -20,7 +19,6 @@ func CreateCollFuncs(ctx context.Context) map[string]any {
 	f["coll"] = func() any { return ns }
 
 	f["has"] = ns.Has
-	f["slice"] = ns.deprecatedSlice
 	f["dict"] = ns.Dict
 	f["keys"] = ns.Keys
 	f["values"] = ns.Values
@@ -45,14 +43,6 @@ type CollFuncs struct {
 
 // Slice -
 func (CollFuncs) Slice(args ...any) []any {
-	return coll.Slice(args...)
-}
-
-// deprecatedSlice -
-//
-// Deprecated: use coll.Slice instead
-func (f *CollFuncs) deprecatedSlice(args ...any) []any {
-	deprecated.WarnDeprecated(f.ctx, "the 'slice' alias for coll.Slice is deprecated - use coll.Slice instead")
 	return coll.Slice(args...)
 }
 
