@@ -28,32 +28,37 @@ type NetFuncs struct {
 
 // LookupIP -
 func (f NetFuncs) LookupIP(name any) (string, error) {
-	return net.LookupIP(conv.ToString(name))
+	return net.LookupIP(f.ctx, conv.ToString(name))
 }
 
 // LookupIPs -
 func (f NetFuncs) LookupIPs(name any) ([]string, error) {
-	return net.LookupIPs(conv.ToString(name))
+	return net.LookupIPs(f.ctx, conv.ToString(name))
 }
 
 // LookupCNAME -
 func (f NetFuncs) LookupCNAME(name any) (string, error) {
-	return net.LookupCNAME(conv.ToString(name))
+	return stdnet.DefaultResolver.LookupCNAME(f.ctx, conv.ToString(name))
 }
 
 // LookupSRV -
 func (f NetFuncs) LookupSRV(name any) (*stdnet.SRV, error) {
-	return net.LookupSRV(conv.ToString(name))
+	_, addrs, err := stdnet.DefaultResolver.LookupSRV(f.ctx, "", "", conv.ToString(name))
+	if err != nil {
+		return nil, err
+	}
+	return addrs[0], nil
 }
 
 // LookupSRVs -
 func (f NetFuncs) LookupSRVs(name any) ([]*stdnet.SRV, error) {
-	return net.LookupSRVs(conv.ToString(name))
+	_, addrs, err := stdnet.DefaultResolver.LookupSRV(f.ctx, "", "", conv.ToString(name))
+	return addrs, err
 }
 
 // LookupTXT -
 func (f NetFuncs) LookupTXT(name any) ([]string, error) {
-	return net.LookupTXT(conv.ToString(name))
+	return stdnet.DefaultResolver.LookupTXT(f.ctx, conv.ToString(name))
 }
 
 // ParseAddr -

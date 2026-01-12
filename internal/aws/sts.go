@@ -8,7 +8,7 @@ import (
 
 // STS -
 type STS struct {
-	identifier func() CallerIdentitifier
+	identifier func(context.Context) CallerIdentitifier
 	cache      map[string]any
 }
 
@@ -20,11 +20,11 @@ type CallerIdentitifier interface {
 }
 
 // NewSTS -
-func NewSTS(_ ClientOptions) *STS {
+func NewSTS() *STS {
 	return &STS{
-		identifier: func() CallerIdentitifier {
+		identifier: func(ctx context.Context) CallerIdentitifier {
 			if identifierClient == nil {
-				identifierClient = sts.NewFromConfig(SDKConfig())
+				identifierClient = sts.NewFromConfig(SDKConfig(ctx))
 			}
 			return identifierClient
 		},
@@ -32,15 +32,15 @@ func NewSTS(_ ClientOptions) *STS {
 	}
 }
 
-func (s *STS) getCallerID() (*sts.GetCallerIdentityOutput, error) {
-	i := s.identifier()
+func (s *STS) getCallerID(ctx context.Context) (*sts.GetCallerIdentityOutput, error) {
+	i := s.identifier(ctx)
 	if val, ok := s.cache["GetCallerIdentity"]; ok {
 		if c, ok := val.(*sts.GetCallerIdentityOutput); ok {
 			return c, nil
 		}
 	}
 	in := &sts.GetCallerIdentityInput{}
-	out, err := i.GetCallerIdentity(context.Background(), in)
+	out, err := i.GetCallerIdentity(ctx, in)
 	if err != nil {
 		return nil, err
 	}
@@ -49,8 +49,8 @@ func (s *STS) getCallerID() (*sts.GetCallerIdentityOutput, error) {
 }
 
 // UserID -
-func (s *STS) UserID() (string, error) {
-	cid, err := s.getCallerID()
+func (s *STS) UserID(ctx context.Context) (string, error) {
+	cid, err := s.getCallerID(ctx)
 	if err != nil {
 		return "", err
 	}
@@ -58,8 +58,8 @@ func (s *STS) UserID() (string, error) {
 }
 
 // Account -
-func (s *STS) Account() (string, error) {
-	cid, err := s.getCallerID()
+func (s *STS) Account(ctx context.Context) (string, error) {
+	cid, err := s.getCallerID(ctx)
 	if err != nil {
 		return "", err
 	}
@@ -67,8 +67,8 @@ func (s *STS) Account() (string, error) {
 }
 
 // Arn -
-func (s *STS) Arn() (string, error) {
-	cid, err := s.getCallerID()
+func (s *STS) Arn(ctx context.Context) (string, error) {
+	cid, err := s.getCallerID(ctx)
 	if err != nil {
 		return "", err
 	}

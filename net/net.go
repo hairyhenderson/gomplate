@@ -8,8 +8,8 @@ import (
 )
 
 // LookupIP -
-func LookupIP(name string) (string, error) {
-	i, err := LookupIPs(name)
+func LookupIP(ctx context.Context, name string) (string, error) {
+	i, err := LookupIPs(ctx, name)
 	if err != nil {
 		return "", err
 	}
@@ -20,9 +20,9 @@ func LookupIP(name string) (string, error) {
 }
 
 // LookupIPs -
-func LookupIPs(name string) ([]string, error) {
+func LookupIPs(ctx context.Context, name string) ([]string, error) {
 	resolver := &net.Resolver{}
-	srcIPs, err := resolver.LookupIPAddr(context.Background(), name)
+	srcIPs, err := resolver.LookupIPAddr(ctx, name)
 	if err != nil {
 		return nil, err
 	}
@@ -42,18 +42,24 @@ func LookupIPs(name string) ([]string, error) {
 }
 
 // LookupCNAME -
+//
+// Deprecated: use [net.Resolver.LookupCNAME] instead
 func LookupCNAME(name string) (string, error) {
 	resolver := &net.Resolver{}
 	return resolver.LookupCNAME(context.Background(), name)
 }
 
 // LookupTXT -
+//
+// Deprecated: use [net.Resolver.LookupTXT] instead
 func LookupTXT(name string) ([]string, error) {
 	resolver := &net.Resolver{}
 	return resolver.LookupTXT(context.Background(), name)
 }
 
 // LookupSRV -
+//
+// Deprecated: use [net.Resolver#LookupSRV] instead
 func LookupSRV(name string) (*net.SRV, error) {
 	srvs, err := LookupSRVs(name)
 	if err != nil {
@@ -63,6 +69,8 @@ func LookupSRV(name string) (*net.SRV, error) {
 }
 
 // LookupSRVs -
+//
+// Deprecated: use [net.Resolver#LookupSRV] instead
 func LookupSRVs(name string) ([]*net.SRV, error) {
 	resolver := &net.Resolver{}
 	_, addrs, err := resolver.LookupSRV(context.Background(), "", "", name)

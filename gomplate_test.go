@@ -55,7 +55,11 @@ func TestBoolTemplates(t *testing.T) {
 func TestEc2MetaTemplates(t *testing.T) {
 	createGomplate := func(data map[string]string, region string) *renderer {
 		ec2meta := aws.MockEC2Meta(data, nil, region)
-		return newRenderer(RenderOptions{Funcs: template.FuncMap{"ec2meta": ec2meta.Meta}})
+		return newRenderer(RenderOptions{
+			Funcs: template.FuncMap{"ec2meta": func(key string, def ...string) (string, error) {
+				return ec2meta.Meta(t.Context(), key, def...)
+			}},
+		})
 	}
 
 	g := createGomplate(nil, "")
@@ -72,9 +76,13 @@ func TestEc2MetaTemplates_WithJSON(t *testing.T) {
 
 	g := newRenderer(RenderOptions{
 		Funcs: template.FuncMap{
-			"ec2meta":    ec2meta.Meta,
-			"ec2dynamic": ec2meta.Dynamic,
-			"json":       parsers.JSON,
+			"ec2meta": func(key string, def ...string) (string, error) {
+				return ec2meta.Meta(t.Context(), key, def...)
+			},
+			"ec2dynamic": func(key string, def ...string) (string, error) {
+				return ec2meta.Dynamic(t.Context(), key, def...)
+			},
+			"json": parsers.JSON,
 		},
 	})
 

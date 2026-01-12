@@ -1,6 +1,7 @@
 package aws
 
 import (
+	"context"
 	"sync"
 	"testing"
 	"time"
@@ -26,15 +27,15 @@ func TestTag_MissingKey(t *testing.T) {
 		},
 	}
 	e := &Ec2Info{
-		describer: func() (InstanceDescriber, error) {
+		describer: func(_ context.Context) (InstanceDescriber, error) {
 			return client, nil
 		},
 		metaClient: ec2meta,
 		cache:      make(map[string]any),
 	}
 
-	assert.Empty(t, must(e.Tag("missing")))
-	assert.Equal(t, "default", must(e.Tag("missing", "default")))
+	assert.Empty(t, must(e.Tag(t.Context(), "missing")))
+	assert.Equal(t, "default", must(e.Tag(t.Context(), "missing", "default")))
 }
 
 func TestTag_ValidKey(t *testing.T) {
@@ -53,15 +54,15 @@ func TestTag_ValidKey(t *testing.T) {
 		},
 	}
 	e := &Ec2Info{
-		describer: func() (InstanceDescriber, error) {
+		describer: func(_ context.Context) (InstanceDescriber, error) {
 			return client, nil
 		},
 		metaClient: ec2meta,
 		cache:      make(map[string]any),
 	}
 
-	assert.Equal(t, "bar", must(e.Tag("foo")))
-	assert.Equal(t, "bar", must(e.Tag("foo", "default")))
+	assert.Equal(t, "bar", must(e.Tag(t.Context(), "foo")))
+	assert.Equal(t, "bar", must(e.Tag(t.Context(), "foo", "default")))
 }
 
 func TestTags(t *testing.T) {
@@ -79,14 +80,14 @@ func TestTags(t *testing.T) {
 		},
 	}
 	e := &Ec2Info{
-		describer: func() (InstanceDescriber, error) {
+		describer: func(_ context.Context) (InstanceDescriber, error) {
 			return client, nil
 		},
 		metaClient: ec2meta,
 		cache:      make(map[string]any),
 	}
 
-	assert.Equal(t, map[string]string{"foo": "bar", "baz": "qux"}, must(e.Tags()))
+	assert.Equal(t, map[string]string{"foo": "bar", "baz": "qux"}, must(e.Tags(t.Context())))
 }
 
 func TestTag_NonEC2(t *testing.T) {
@@ -95,15 +96,15 @@ func TestTag_NonEC2(t *testing.T) {
 
 	client := DummyInstanceDescriber{}
 	e := &Ec2Info{
-		describer: func() (InstanceDescriber, error) {
+		describer: func(_ context.Context) (InstanceDescriber, error) {
 			return client, nil
 		},
 		metaClient: ec2meta,
 		cache:      make(map[string]any),
 	}
 
-	assert.Empty(t, must(e.Tag("foo")))
-	assert.Equal(t, "default", must(e.Tag("foo", "default")))
+	assert.Empty(t, must(e.Tag(t.Context(), "foo")))
+	assert.Equal(t, "default", must(e.Tag(t.Context(), "foo", "default")))
 }
 
 func TestNewEc2Info(t *testing.T) {
@@ -120,32 +121,32 @@ func TestNewEc2Info(t *testing.T) {
 			},
 		},
 	}
-	e := NewEc2Info(ClientOptions{})
-	e.describer = func() (InstanceDescriber, error) {
+	e := NewEc2Info()
+	e.describer = func(_ context.Context) (InstanceDescriber, error) {
 		return client, nil
 	}
 	e.metaClient = ec2meta
 
-	assert.Equal(t, "bar", must(e.Tag("foo")))
-	assert.Equal(t, "bar", must(e.Tag("foo", "default")))
+	assert.Equal(t, "bar", must(e.Tag(t.Context(), "foo")))
+	assert.Equal(t, "bar", must(e.Tag(t.Context(), "foo", "default")))
 }
 
 func TestGetClientOptions(t *testing.T) {
-	co := GetClientOptions()
+	co := getClientOptions()
 	assert.Equal(t, ClientOptions{Timeout: 500 * time.Millisecond}, co)
 
 	t.Run("valid AWS_TIMEOUT, first call", func(t *testing.T) {
 		t.Setenv("AWS_TIMEOUT", "42")
 		// reset the Once
 		coInit = sync.Once{}
-		co = GetClientOptions()
+		co = getClientOptions()
 		assert.Equal(t, ClientOptions{Timeout: 42 * time.Millisecond}, co)
 	})
 
 	t.Run("valid AWS_TIMEOUT, non-first call", func(t *testing.T) {
 		t.Setenv("AWS_TIMEOUT", "123")
 		// without resetting the Once, expect to be reused
-		co = GetClientOptions()
+		co = getClientOptions()
 		assert.Equal(t, ClientOptions{Timeout: 42 * time.Millisecond}, co)
 	})
 
@@ -154,7 +155,7 @@ func TestGetClientOptions(t *testing.T) {
 		// reset the Once
 		coInit = sync.Once{}
 		assert.Panics(t, func() {
-			GetClientOptions()
+			getClientOptions()
 		})
 	})
 }

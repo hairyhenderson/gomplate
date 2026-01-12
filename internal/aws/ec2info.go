@@ -10,7 +10,7 @@ var describerClient InstanceDescriber
 
 // Ec2Info -
 type Ec2Info struct {
-	describer  func() (InstanceDescriber, error)
+	describer  func(context.Context) (InstanceDescriber, error)
 	metaClient *Ec2Meta
 	cache      map[string]any
 }
@@ -21,12 +21,12 @@ type InstanceDescriber interface {
 }
 
 // NewEc2Info -
-func NewEc2Info(options ClientOptions) (info *Ec2Info) {
-	metaClient := NewEc2Meta(options)
+func NewEc2Info() (info *Ec2Info) {
+	metaClient := NewEc2Meta()
 	return &Ec2Info{
-		describer: func() (InstanceDescriber, error) {
+		describer: func(ctx context.Context) (InstanceDescriber, error) {
 			if describerClient == nil {
-				describerClient = ec2.NewFromConfig(SDKConfig())
+				describerClient = ec2.NewFromConfig(SDKConfig(ctx))
 			}
 			return describerClient, nil
 		},
@@ -36,8 +36,8 @@ func NewEc2Info(options ClientOptions) (info *Ec2Info) {
 }
 
 // Tag -
-func (e *Ec2Info) Tag(tag string, def ...string) (string, error) {
-	output, err := e.describeInstance()
+func (e *Ec2Info) Tag(ctx context.Context, tag string, def ...string) (string, error) {
+	output, err := e.describeInstance(ctx)
 	if err != nil {
 		return "", err
 	}
@@ -58,10 +58,10 @@ func (e *Ec2Info) Tag(tag string, def ...string) (string, error) {
 	return returnDefault(def), nil
 }
 
-func (e *Ec2Info) Tags() (map[string]string, error) {
+func (e *Ec2Info) Tags(ctx context.Context) (map[string]string, error) {
 	tags := map[string]string{}
 
-	output, err := e.describeInstance()
+	output, err := e.describeInstance(ctx)
 	if err != nil {
 		return tags, err
 	}
@@ -80,9 +80,9 @@ func (e *Ec2Info) Tags() (map[string]string, error) {
 	return tags, nil
 }
 
-func (e *Ec2Info) describeInstance() (output *ec2.DescribeInstancesOutput, err error) {
+func (e *Ec2Info) describeInstance(ctx context.Context) (output *ec2.DescribeInstancesOutput, err error) {
 	// cache the InstanceDescriber here
-	d, err := e.describer()
+	d, err := e.describer(ctx)
 	if err != nil || e.metaClient.nonAWS {
 		return nil, err
 	}
@@ -90,7 +90,7 @@ func (e *Ec2Info) describeInstance() (output *ec2.DescribeInstancesOutput, err e
 	if cached, ok := e.cache["DescribeInstances"]; ok {
 		output = cached.(*ec2.DescribeInstancesOutput)
 	} else {
-		instanceID, err := e.metaClient.Meta("instance-id")
+		instanceID, err := e.metaClient.Meta(ctx, "instance-id")
 		if err != nil {
 			return nil, err
 		}
@@ -98,7 +98,7 @@ func (e *Ec2Info) describeInstance() (output *ec2.DescribeInstancesOutput, err e
 			InstanceIds: []string{instanceID},
 		}
 
-		output, err = d.DescribeInstances(context.Background(), input)
+		output, err = d.DescribeInstances(ctx, input)
 		if err != nil {
 			// default to nil if we can't describe the instance - this could be for any reason
 			return nil, nil

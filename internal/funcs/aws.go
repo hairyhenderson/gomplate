@@ -13,8 +13,7 @@ func CreateAWSFuncs(ctx context.Context) map[string]any {
 	f := map[string]any{}
 
 	ns := &Funcs{
-		ctx:     ctx,
-		awsopts: aws.GetClientOptions(),
+		ctx: ctx,
 	}
 
 	f["aws"] = func() any { return ns }
@@ -40,49 +39,48 @@ type Funcs struct {
 	infoInit sync.Once
 	kmsInit  sync.Once
 	stsInit  sync.Once
-	awsopts  aws.ClientOptions
 }
 
 // EC2Region -
 func (a *Funcs) EC2Region(def ...string) (string, error) {
 	a.metaInit.Do(a.initMeta)
-	return a.meta.Region(def...)
+	return a.meta.Region(a.ctx, def...)
 }
 
 // EC2Meta -
 func (a *Funcs) EC2Meta(key string, def ...string) (string, error) {
 	a.metaInit.Do(a.initMeta)
-	return a.meta.Meta(key, def...)
+	return a.meta.Meta(a.ctx, key, def...)
 }
 
 // EC2Dynamic -
 func (a *Funcs) EC2Dynamic(key string, def ...string) (string, error) {
 	a.metaInit.Do(a.initMeta)
-	return a.meta.Dynamic(key, def...)
+	return a.meta.Dynamic(a.ctx, key, def...)
 }
 
 // EC2Tag -
 func (a *Funcs) EC2Tag(tag string, def ...string) (string, error) {
 	a.infoInit.Do(a.initInfo)
-	return a.info.Tag(tag, def...)
+	return a.info.Tag(a.ctx, tag, def...)
 }
 
 // EC2Tag -
 func (a *Funcs) EC2Tags() (map[string]string, error) {
 	a.infoInit.Do(a.initInfo)
-	return a.info.Tags()
+	return a.info.Tags(a.ctx)
 }
 
 // KMSEncrypt -
 func (a *Funcs) KMSEncrypt(keyID, plaintext any) (string, error) {
 	a.kmsInit.Do(a.initKMS)
-	return a.kms.Encrypt(conv.ToString(keyID), conv.ToString(plaintext))
+	return a.kms.Encrypt(a.ctx, conv.ToString(keyID), conv.ToString(plaintext))
 }
 
 // KMSDecrypt -
 func (a *Funcs) KMSDecrypt(ciphertext any) (string, error) {
 	a.kmsInit.Do(a.initKMS)
-	return a.kms.Decrypt(conv.ToString(ciphertext))
+	return a.kms.Decrypt(a.ctx, conv.ToString(ciphertext))
 }
 
 // UserID - Gets the unique identifier of the calling entity. The exact value
@@ -92,42 +90,42 @@ func (a *Funcs) KMSDecrypt(ciphertext any) (string, error) {
 // found on the Policy Variables reference page in the IAM User Guide.
 func (a *Funcs) UserID() (string, error) {
 	a.stsInit.Do(a.initSTS)
-	return a.sts.UserID()
+	return a.sts.UserID(a.ctx)
 }
 
 // Account - Gets the AWS account ID number of the account that owns or
 // contains the calling entity.
 func (a *Funcs) Account() (string, error) {
 	a.stsInit.Do(a.initSTS)
-	return a.sts.Account()
+	return a.sts.Account(a.ctx)
 }
 
 // ARN - Gets the AWS ARN associated with the calling entity
 func (a *Funcs) ARN() (string, error) {
 	a.stsInit.Do(a.initSTS)
-	return a.sts.Arn()
+	return a.sts.Arn(a.ctx)
 }
 
 func (a *Funcs) initMeta() {
 	if a.meta == nil {
-		a.meta = aws.NewEc2Meta(a.awsopts)
+		a.meta = aws.NewEc2Meta()
 	}
 }
 
 func (a *Funcs) initInfo() {
 	if a.info == nil {
-		a.info = aws.NewEc2Info(a.awsopts)
+		a.info = aws.NewEc2Info()
 	}
 }
 
 func (a *Funcs) initKMS() {
 	if a.kms == nil {
-		a.kms = aws.NewKMS(a.awsopts)
+		a.kms = aws.NewKMS(a.ctx)
 	}
 }
 
 func (a *Funcs) initSTS() {
 	if a.sts == nil {
-		a.sts = aws.NewSTS(a.awsopts)
+		a.sts = aws.NewSTS()
 	}
 }

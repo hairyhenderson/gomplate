@@ -15,18 +15,18 @@ func must(r any, err error) any {
 }
 
 func TestLookupIP(t *testing.T) {
-	assert.Equal(t, "127.0.0.1", must(LookupIP("localhost")))
-	assert.Equal(t, "198.41.0.4", must(LookupIP("a.root-servers.net")))
+	assert.Equal(t, "127.0.0.1", must(LookupIP(t.Context(), "localhost")))
+	assert.Equal(t, "198.41.0.4", must(LookupIP(t.Context(), "a.root-servers.net")))
 }
 
 func TestLookupIPs(t *testing.T) {
-	assert.Equal(t, []string{"127.0.0.1"}, must(LookupIPs("localhost")))
-	assert.ElementsMatch(t, []string{"1.1.1.1", "1.0.0.1"}, must(LookupIPs("one.one.one.one")))
+	assert.Equal(t, []string{"127.0.0.1"}, must(LookupIPs(t.Context(), "localhost")))
+	assert.ElementsMatch(t, []string{"1.1.1.1", "1.0.0.1"}, must(LookupIPs(t.Context(), "one.one.one.one")))
 }
 
 func BenchmarkLookupIPs(b *testing.B) {
 	for b.Loop() {
-		must(LookupIPs("localhost"))
+		must(LookupIPs(b.Context(), "localhost"))
 	}
 }
 

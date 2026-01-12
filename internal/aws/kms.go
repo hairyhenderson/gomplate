@@ -20,8 +20,8 @@ type KMS struct {
 }
 
 // NewKMS - Create new AWS KMS client using an SDKSession
-func NewKMS(_ ClientOptions) *KMS {
-	client := kms.NewFromConfig(SDKConfig())
+func NewKMS(ctx context.Context) *KMS {
+	client := kms.NewFromConfig(SDKConfig(ctx))
 	return &KMS{
 		Client: client,
 	}
@@ -29,12 +29,12 @@ func NewKMS(_ ClientOptions) *KMS {
 
 // Encrypt plaintext using the specified key.
 // Returns a base64 encoded ciphertext
-func (k *KMS) Encrypt(keyID, plaintext string) (string, error) {
+func (k *KMS) Encrypt(ctx context.Context, keyID, plaintext string) (string, error) {
 	input := &kms.EncryptInput{
 		KeyId:     &keyID,
 		Plaintext: []byte(plaintext),
 	}
-	output, err := k.Client.Encrypt(context.Background(), input)
+	output, err := k.Client.Encrypt(ctx, input)
 	if err != nil {
 		return "", err
 	}
@@ -46,7 +46,7 @@ func (k *KMS) Encrypt(keyID, plaintext string) (string, error) {
 }
 
 // Decrypt a base64 encoded ciphertext
-func (k *KMS) Decrypt(ciphertext string) (string, error) {
+func (k *KMS) Decrypt(ctx context.Context, ciphertext string) (string, error) {
 	ciphertextBlob, err := b64.Decode(ciphertext)
 	if err != nil {
 		return "", err
@@ -54,7 +54,7 @@ func (k *KMS) Decrypt(ciphertext string) (string, error) {
 	input := &kms.DecryptInput{
 		CiphertextBlob: ciphertextBlob,
 	}
-	output, err := k.Client.Decrypt(context.Background(), input)
+	output, err := k.Client.Decrypt(ctx, input)
 	if err != nil {
 		return "", err
 	}
