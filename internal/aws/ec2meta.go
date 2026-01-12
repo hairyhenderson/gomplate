@@ -6,8 +6,6 @@ import (
 	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/feature/ec2/imds"
-	"github.com/hairyhenderson/gomplate/v4/env"
-	"github.com/hairyhenderson/gomplate/v4/internal/deprecated"
 )
 
 const (
@@ -35,12 +33,7 @@ func NewEc2Meta() *Ec2Meta {
 		metadataCache:    make(map[string]string),
 		dynamicdataCache: make(map[string]string),
 		ec2MetadataProvider: func(ctx context.Context) (EC2Metadata, error) {
-			client := imds.NewFromConfig(SDKConfig(ctx), func(o *imds.Options) {
-				if endpoint := env.Getenv("AWS_META_ENDPOINT"); endpoint != "" {
-					deprecated.WarnDeprecated(ctx, "Use AWS_EC2_METADATA_SERVICE_ENDPOINT instead of AWS_META_ENDPOINT")
-					o.Endpoint = endpoint
-				}
-			})
+			client := imds.NewFromConfig(SDKConfig(ctx))
 
 			return client, nil
 		},
