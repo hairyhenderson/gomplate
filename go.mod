@@ -29,7 +29,7 @@ require (
 	github.com/lmittmann/tint v1.1.2
 	github.com/spf13/cobra v1.10.1
 	github.com/stretchr/testify v1.11.1
-	github.com/ugorji/go/codec v1.3.0
+	github.com/ugorji/go/codec v1.3.1
 	go4.org/netipx v0.0.0-20231129151722-fdeea329fbba
 	golang.org/x/crypto v0.45.0
 	golang.org/x/exp v0.0.0-20250305212735-054e65f0b394 // indirect
