@@ -12,17 +12,17 @@ import (
 )
 
 func TestNewSTS(t *testing.T) {
-	s := NewSTS(ClientOptions{})
+	s := NewSTS()
 	cid := &DummyCallerIdentifier{
 		account: "acct",
 		userID:  "uid",
 		arn:     "arn",
 	}
-	s.identifier = func() CallerIdentitifier {
+	s.identifier = func(_ context.Context) CallerIdentitifier {
 		return cid
 	}
 
-	out, err := s.getCallerID()
+	out, err := s.getCallerID(t.Context())
 	require.NoError(t, err)
 	assert.Equal(t, &sts.GetCallerIdentityOutput{
 		Account: aws.String("acct"),
@@ -30,11 +30,11 @@ func TestNewSTS(t *testing.T) {
 		UserId:  aws.String("uid"),
 	}, out)
 
-	assert.Equal(t, "acct", must(s.Account()))
-	assert.Equal(t, "arn", must(s.Arn()))
-	assert.Equal(t, "uid", must(s.UserID()))
+	assert.Equal(t, "acct", must(s.Account(t.Context())))
+	assert.Equal(t, "arn", must(s.Arn(t.Context())))
+	assert.Equal(t, "uid", must(s.UserID(t.Context())))
 
-	s = NewSTS(ClientOptions{})
+	s = NewSTS()
 	cid = &DummyCallerIdentifier{
 		account: "acct",
 		userID:  "uid",
@@ -44,7 +44,7 @@ func TestNewSTS(t *testing.T) {
 	identifierClient = cid
 	defer func() { identifierClient = oldIDClient }()
 
-	out, err = s.getCallerID()
+	out, err = s.getCallerID(t.Context())
 	require.NoError(t, err)
 	assert.Equal(t, &sts.GetCallerIdentityOutput{
 		Account: aws.String("acct"),
@@ -52,39 +52,39 @@ func TestNewSTS(t *testing.T) {
 		UserId:  aws.String("uid"),
 	}, out)
 
-	assert.Equal(t, "acct", must(s.Account()))
-	assert.Equal(t, "arn", must(s.Arn()))
-	assert.Equal(t, "uid", must(s.UserID()))
+	assert.Equal(t, "acct", must(s.Account(t.Context())))
+	assert.Equal(t, "arn", must(s.Arn(t.Context())))
+	assert.Equal(t, "uid", must(s.UserID(t.Context())))
 }
 
 func TestGetCallerIDErrors(t *testing.T) {
-	s := NewSTS(ClientOptions{})
+	s := NewSTS()
 	cid := &DummyCallerIdentifier{
 		account: "acct",
 		userID:  "uid",
 		arn:     "arn",
 	}
-	s.identifier = func() CallerIdentitifier {
+	s.identifier = func(_ context.Context) CallerIdentitifier {
 		return cid
 	}
 
-	out, err := s.Account()
+	out, err := s.Account(t.Context())
 	require.NoError(t, err)
 	assert.Equal(t, "acct", out)
 
-	s = NewSTS(ClientOptions{})
+	s = NewSTS()
 	cid = &DummyCallerIdentifier{
 		err: errors.New("ERRORED"),
 	}
-	s.identifier = func() CallerIdentitifier {
+	s.identifier = func(_ context.Context) CallerIdentitifier {
 		return cid
 	}
 
-	_, err = s.Account()
+	_, err = s.Account(t.Context())
 	require.EqualError(t, err, "ERRORED")
-	_, err = s.UserID()
+	_, err = s.UserID(t.Context())
 	require.EqualError(t, err, "ERRORED")
-	_, err = s.Arn()
+	_, err = s.Arn(t.Context())
 	require.EqualError(t, err, "ERRORED")
 }
 

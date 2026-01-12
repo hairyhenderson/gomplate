@@ -16,7 +16,7 @@ func MockEC2Meta(data map[string]string, dynamicData map[string]string, region s
 	return &Ec2Meta{
 		metadataCache:    map[string]string{},
 		dynamicdataCache: map[string]string{},
-		ec2MetadataProvider: func() (EC2Metadata, error) {
+		ec2MetadataProvider: func(_ context.Context) (EC2Metadata, error) {
 			return &DummEC2MetadataProvider{
 				data:        data,
 				dynamicData: dynamicData,
@@ -30,7 +30,7 @@ func MockEC2Meta(data map[string]string, dynamicData map[string]string, region s
 func NewDummyEc2Info(metaClient *Ec2Meta) *Ec2Info {
 	i := &Ec2Info{
 		metaClient: metaClient,
-		describer:  func() (InstanceDescriber, error) { return DummyInstanceDescriber{}, nil },
+		describer:  func(_ context.Context) (InstanceDescriber, error) { return DummyInstanceDescriber{}, nil },
 		cache:      map[string]any{},
 	}
 	return i

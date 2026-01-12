@@ -1,7 +1,6 @@
 package funcs
 
 import (
-	"context"
 	stdnet "net"
 	"net/netip"
 	"strconv"
@@ -20,7 +19,7 @@ func TestCreateNetFuncs(t *testing.T) {
 		t.Run(strconv.Itoa(i), func(t *testing.T) {
 			t.Parallel()
 
-			ctx := context.Background()
+			ctx := t.Context()
 			fmap := CreateNetFuncs(ctx)
 			actual := fmap["net"].(func() any)
 
@@ -32,14 +31,14 @@ func TestCreateNetFuncs(t *testing.T) {
 func TestNetLookupIP(t *testing.T) {
 	t.Parallel()
 
-	n := NetFuncs{}
+	n := testNetNS(t)
 	assert.Equal(t, "127.0.0.1", must(n.LookupIP("localhost")))
 }
 
 func TestParseAddr(t *testing.T) {
 	t.Parallel()
 
-	n := testNetNS()
+	n := testNetNS(t)
 	_, err := n.ParseAddr("not an IP")
 	require.Error(t, err)
 
@@ -56,7 +55,7 @@ func TestParseAddr(t *testing.T) {
 func TestParsePrefix(t *testing.T) {
 	t.Parallel()
 
-	n := testNetNS()
+	n := testNetNS(t)
 	_, err := n.ParsePrefix("not an IP")
 	require.Error(t, err)
 
@@ -71,7 +70,7 @@ func TestParsePrefix(t *testing.T) {
 func TestParseRange(t *testing.T) {
 	t.Parallel()
 
-	n := testNetNS()
+	n := testNetNS(t)
 	_, err := n.ParseRange("not an IP")
 	require.Error(t, err)
 
@@ -83,12 +82,14 @@ func TestParseRange(t *testing.T) {
 	assert.Equal(t, "192.168.0.2-192.168.23.255", iprange.String())
 }
 
-func testNetNS() *NetFuncs {
-	return &NetFuncs{ctx: config.SetExperimental(context.Background())}
+func testNetNS(t *testing.T) *NetFuncs {
+	t.Helper()
+
+	return &NetFuncs{ctx: config.SetExperimental(t.Context())}
 }
 
 func TestCIDRHost(t *testing.T) {
-	n := testNetNS()
+	n := testNetNS(t)
 
 	// net.IPNet
 	_, netIP, _ := stdnet.ParseCIDR("10.12.127.0/20")
@@ -124,7 +125,7 @@ func TestCIDRHost(t *testing.T) {
 }
 
 func TestCIDRNetmask(t *testing.T) {
-	n := testNetNS()
+	n := testNetNS(t)
 
 	ip, err := n.CIDRNetmask("10.0.0.0/12")
 	require.NoError(t, err)
@@ -136,7 +137,7 @@ func TestCIDRNetmask(t *testing.T) {
 }
 
 func TestCIDRSubnets(t *testing.T) {
-	n := testNetNS()
+	n := testNetNS(t)
 	network := netip.MustParsePrefix("10.0.0.0/16")
 
 	subnets, err := n.CIDRSubnets(-1, network)
@@ -153,7 +154,7 @@ func TestCIDRSubnets(t *testing.T) {
 }
 
 func TestCIDRSubnetSizes(t *testing.T) {
-	n := testNetNS()
+	n := testNetNS(t)
 
 	subnets, err := n.CIDRSubnetSizes(netip.MustParsePrefix("10.1.0.0/16"))
 	require.Error(t, err)

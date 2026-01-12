@@ -13,12 +13,13 @@ import (
 )
 
 func main() {
-	descVer, err := describedVersion(context.Background())
+	ctx := context.Background()
+	descVer, err := describedVersion(ctx)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	latest, err := latestTag()
+	latest, err := latestTag(ctx)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -78,9 +79,9 @@ func version(descVer, latest *semver.Version) *semver.Version {
 	return &ver
 }
 
-func latestTag() (*semver.Version, error) {
+func latestTag(ctx context.Context) (*semver.Version, error) {
 	// get the latest tag
-	tags, err := runCmd(context.Background(), "git tag --list v*")
+	tags, err := runCmd(ctx, "git tag --list v*")
 	if err != nil {
 		return nil, fmt.Errorf("git tag failed: %w", err)
 	}

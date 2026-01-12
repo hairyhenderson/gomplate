@@ -25,9 +25,9 @@ type ClientOptions struct {
 	Timeout time.Duration
 }
 
-// GetClientOptions - Centralised reading of AWS_TIMEOUT
+// getClientOptions - Centralised reading of AWS_TIMEOUT
 // ... but cannot use in vault/auth.go as different strconv.Atoi error handling
-func GetClientOptions() ClientOptions {
+func getClientOptions() ClientOptions {
 	coInit.Do(func() {
 		timeout := env.Getenv("AWS_TIMEOUT")
 		if timeout == "" {
@@ -45,9 +45,9 @@ func GetClientOptions() ClientOptions {
 }
 
 // SDKConfig -
-func SDKConfig(region ...string) aws.Config {
+func SDKConfig(ctx context.Context, region ...string) aws.Config {
 	sdkConfigInit.Do(func() {
-		options := GetClientOptions()
+		options := getClientOptions()
 		timeout := options.Timeout
 		if timeout == 0 {
 			timeout = 500 * time.Millisecond
@@ -65,7 +65,7 @@ func SDKConfig(region ...string) aws.Config {
 			opts = append(opts, config.WithRegion(region[0]))
 		}
 
-		cfg, err := config.LoadDefaultConfig(context.Background(), opts...)
+		cfg, err := config.LoadDefaultConfig(ctx, opts...)
 		if err != nil {
 			panic(fmt.Errorf("failed to load config: %w", err))
 		}

@@ -19,7 +19,7 @@ const (
 type Ec2Meta struct {
 	metadataCache       map[string]string
 	dynamicdataCache    map[string]string
-	ec2MetadataProvider func() (EC2Metadata, error)
+	ec2MetadataProvider func(context.Context) (EC2Metadata, error)
 	nonAWS              bool
 }
 
@@ -30,14 +30,14 @@ type EC2Metadata interface {
 }
 
 // NewEc2Meta -
-func NewEc2Meta(_ ClientOptions) *Ec2Meta {
+func NewEc2Meta() *Ec2Meta {
 	return &Ec2Meta{
 		metadataCache:    make(map[string]string),
 		dynamicdataCache: make(map[string]string),
-		ec2MetadataProvider: func() (EC2Metadata, error) {
-			client := imds.NewFromConfig(SDKConfig(), func(o *imds.Options) {
+		ec2MetadataProvider: func(ctx context.Context) (EC2Metadata, error) {
+			client := imds.NewFromConfig(SDKConfig(ctx), func(o *imds.Options) {
 				if endpoint := env.Getenv("AWS_META_ENDPOINT"); endpoint != "" {
-					deprecated.WarnDeprecated(context.Background(), "Use AWS_EC2_METADATA_SERVICE_ENDPOINT instead of AWS_META_ENDPOINT")
+					deprecated.WarnDeprecated(ctx, "Use AWS_EC2_METADATA_SERVICE_ENDPOINT instead of AWS_META_ENDPOINT")
 					o.Endpoint = endpoint
 				}
 			})
@@ -65,7 +65,7 @@ func unreachable(err error) bool {
 	return false
 }
 
-func (e *Ec2Meta) retrieveMetadata(key string, def ...string) (string, error) {
+func (e *Ec2Meta) retrieveMetadata(ctx context.Context, key string, def ...string) (string, error) {
 	if value, ok := e.metadataCache[key]; ok {
 		return value, nil
 	}
@@ -74,12 +74,12 @@ func (e *Ec2Meta) retrieveMetadata(key string, def ...string) (string, error) {
 		return returnDefault(def), nil
 	}
 
-	emd, err := e.ec2MetadataProvider()
+	emd, err := e.ec2MetadataProvider(ctx)
 	if err != nil {
 		return "", err
 	}
 
-	output, err := emd.GetMetadata(context.Background(), &imds.GetMetadataInput{Path: key})
+	output, err := emd.GetMetadata(ctx, &imds.GetMetadataInput{Path: key})
 	if err != nil {
 		if unreachable(err) {
 			e.nonAWS = true
@@ -100,7 +100,7 @@ func (e *Ec2Meta) retrieveMetadata(key string, def ...string) (string, error) {
 	return value, nil
 }
 
-func (e *Ec2Meta) retrieveDynamicdata(key string, def ...string) (string, error) {
+func (e *Ec2Meta) retrieveDynamicdata(ctx context.Context, key string, def ...string) (string, error) {
 	if value, ok := e.dynamicdataCache[key]; ok {
 		return value, nil
 	}
@@ -109,12 +109,12 @@ func (e *Ec2Meta) retrieveDynamicdata(key string, def ...string) (string, error)
 		return returnDefault(def), nil
 	}
 
-	emd, err := e.ec2MetadataProvider()
+	emd, err := e.ec2MetadataProvider(ctx)
 	if err != nil {
 		return "", err
 	}
 
-	output, err := emd.GetDynamicData(context.Background(), &imds.GetDynamicDataInput{Path: key})
+	output, err := emd.GetDynamicData(ctx, &imds.GetDynamicDataInput{Path: key})
 	if err != nil {
 		if unreachable(err) {
 			e.nonAWS = true
@@ -136,17 +136,17 @@ func (e *Ec2Meta) retrieveDynamicdata(key string, def ...string) (string, error)
 }
 
 // Meta -
-func (e *Ec2Meta) Meta(key string, def ...string) (string, error) {
-	return e.retrieveMetadata(key, def...)
+func (e *Ec2Meta) Meta(ctx context.Context, key string, def ...string) (string, error) {
+	return e.retrieveMetadata(ctx, key, def...)
 }
 
 // Dynamic -
-func (e *Ec2Meta) Dynamic(key string, def ...string) (string, error) {
-	return e.retrieveDynamicdata(key, def...)
+func (e *Ec2Meta) Dynamic(ctx context.Context, key string, def ...string) (string, error) {
+	return e.retrieveDynamicdata(ctx, key, def...)
 }
 
 // Region -
-func (e *Ec2Meta) Region(def ...string) (string, error) {
+func (e *Ec2Meta) Region(ctx context.Context, def ...string) (string, error) {
 	defaultRegion := returnDefault(def)
 	if defaultRegion == "" {
 		defaultRegion = unknown
@@ -156,12 +156,12 @@ func (e *Ec2Meta) Region(def ...string) (string, error) {
 		return defaultRegion, nil
 	}
 
-	emd, err := e.ec2MetadataProvider()
+	emd, err := e.ec2MetadataProvider(ctx)
 	if err != nil {
 		return "", err
 	}
 
-	output, err := emd.GetRegion(context.Background(), &imds.GetRegionInput{})
+	output, err := emd.GetRegion(ctx, &imds.GetRegionInput{})
 	if err != nil || output.Region == "" {
 		return defaultRegion, nil
 	}
