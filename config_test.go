@@ -23,24 +23,6 @@ func TestParseConfigFile(t *testing.T) {
 	require.NoError(t, err)
 	assert.Equal(t, expected, cf)
 
-	// legacy array form for templates (will be removed in v4.1.0 or so)
-	in = `in: hello world
-templates:
-  - foo=bar
-  - baz=https://example.com/baz.yaml
-`
-
-	expected = &Config{
-		Input: "hello world",
-		Templates: map[string]DataSource{
-			"foo": {URL: mustURL("bar")},
-			"baz": {URL: mustURL("https://example.com/baz.yaml")},
-		},
-	}
-	cf, err = Parse(strings.NewReader(in))
-	require.NoError(t, err)
-	assert.Equal(t, expected, cf)
-
 	in = `in: hello world
 outputFiles: [out.txt]
 chmod: 644
@@ -479,8 +461,10 @@ rightDelim: R
 templates:
   foo:
     url: https://www.example.com/foo.tmpl
+    header: {}
   bar:
     url: file:///tmp/bar.t
+    header: {}
 `
 		assert.YAMLEq(t, expected, c.String())
 	})
@@ -504,8 +488,10 @@ rightDelim: R
 templates:
   foo:
     url: https://www.example.com/foo.tmpl
+    header: {}
   bar:
     url: file:///tmp/bar.t
+    header: {}
 `
 		assert.YAMLEq(t, expected, c.String())
 	})
