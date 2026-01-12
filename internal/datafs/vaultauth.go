@@ -7,7 +7,6 @@ import (
 	"os"
 
 	"github.com/hairyhenderson/go-fsimpl/vaultfs/vaultauth"
-	"github.com/hairyhenderson/gomplate/v4/internal/deprecated"
 	"github.com/hairyhenderson/gomplate/v4/internal/iohelpers"
 	"github.com/hashicorp/vault/api"
 	"github.com/hashicorp/vault/api/auth/aws"
@@ -32,14 +31,6 @@ func envEC2AuthAdapter(envFS fs.FS) api.AuthMethod {
 	nonce := GetenvFsys(envFS, "VAULT_AUTH_AWS_NONCE")
 	role := GetenvFsys(envFS, "VAULT_AUTH_AWS_ROLE")
 
-	// temporary workaround while we wait to deprecate AWS_META_ENDPOINT
-	if endpoint := os.Getenv("AWS_META_ENDPOINT"); endpoint != "" {
-		deprecated.WarnDeprecated(context.Background(), "Use AWS_EC2_METADATA_SERVICE_ENDPOINT instead of AWS_META_ENDPOINT")
-		if os.Getenv("AWS_EC2_METADATA_SERVICE_ENDPOINT") == "" {
-			os.Setenv("AWS_EC2_METADATA_SERVICE_ENDPOINT", endpoint)
-		}
-	}
-
 	awsauth, err := aws.NewAWSAuth(
 		aws.WithEC2Auth(),
 		aws.WithMountPath(mountPath),
@@ -63,14 +54,6 @@ func envEC2AuthAdapter(envFS fs.FS) api.AuthMethod {
 func envIAMAuthAdapter(envFS fs.FS) api.AuthMethod {
 	mountPath := GetenvFsys(envFS, "VAULT_AUTH_AWS_MOUNT", "aws")
 	role := GetenvFsys(envFS, "VAULT_AUTH_AWS_ROLE")
-
-	// temporary workaround while we wait to deprecate AWS_META_ENDPOINT
-	if endpoint := os.Getenv("AWS_META_ENDPOINT"); endpoint != "" {
-		deprecated.WarnDeprecated(context.Background(), "Use AWS_EC2_METADATA_SERVICE_ENDPOINT instead of AWS_META_ENDPOINT")
-		if os.Getenv("AWS_EC2_METADATA_SERVICE_ENDPOINT") == "" {
-			os.Setenv("AWS_EC2_METADATA_SERVICE_ENDPOINT", endpoint)
-		}
-	}
 
 	awsauth, err := aws.NewAWSAuth(
 		aws.WithIAMAuth(),

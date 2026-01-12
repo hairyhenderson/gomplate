@@ -22,7 +22,6 @@ for details.
 | `AWS_PROFILE` | Profile name the SDK should use when loading shared config from the configuration files. If not provided `default` will be used as the profile name. |
 | `AWS_REGION` | Specifies where to send requests. See [this list](https://docs.aws.amazon.com/general/latest/gr/rande.html). Note that the region must be set for AWS functions to work correctly, either through this variable, through a configuration profile, or by running on an EC2 instance. |
 | `AWS_EC2_METADATA_SERVICE_ENDPOINT` | _(Default `http://169.254.169.254`)_ Sets the base address of the instance metadata service. |
-| `AWS_META_ENDPOINT` _(Deprecated)_ | _(Default `http://169.254.169.254`)_ Sets the base address of the instance metadata service. Use `AWS_EC2_METADATA_SERVICE_ENDPOINT` instead. |
 
 ## `aws.EC2Meta`
 
