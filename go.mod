@@ -44,6 +44,8 @@ require (
 // is merged
 require github.com/hairyhenderson/yaml v0.0.0-20220618171115-2d35fca545ce
 
+require github.com/openwall/yescrypt-go v1.0.0
+
 require (
 	cel.dev/expr v0.24.0 // indirect
 	cloud.google.com/go v0.121.6 // indirect
