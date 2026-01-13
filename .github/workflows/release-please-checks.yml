@@ -17,9 +17,9 @@ jobs:
         run: |
           echo "Skipping - not a release-please PR"
           exit 0
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         if: github.head_ref == 'release-please--branches--main'
-      - uses: actions/setup-go@v5
+      - uses: actions/setup-go@v6
         if: github.head_ref == 'release-please--branches--main'
         with:
           go-version-file: go.mod
