@@ -6,7 +6,7 @@ import (
 	"os"
 	"runtime"
 
-	"github.com/hairyhenderson/gomplate/v4/env"
+	"github.com/hairyhenderson/gomplate/v5/env"
 	"github.com/lmittmann/tint"
 	"golang.org/x/term"
 )

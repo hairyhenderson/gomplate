@@ -6,9 +6,9 @@ import (
 	"strconv"
 	"unicode/utf8"
 
-	"github.com/hairyhenderson/gomplate/v4/conv"
-	iconv "github.com/hairyhenderson/gomplate/v4/internal/conv"
-	"github.com/hairyhenderson/gomplate/v4/random"
+	"github.com/hairyhenderson/gomplate/v5/conv"
+	iconv "github.com/hairyhenderson/gomplate/v5/internal/conv"
+	"github.com/hairyhenderson/gomplate/v5/random"
 )
 
 // CreateRandomFuncs -

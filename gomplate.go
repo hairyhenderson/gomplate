@@ -12,7 +12,7 @@ import (
 	"text/template"
 	"time"
 
-	"github.com/hairyhenderson/gomplate/v4/internal/datafs"
+	"github.com/hairyhenderson/gomplate/v5/internal/datafs"
 )
 
 // Run all gomplate templates specified by the given configuration

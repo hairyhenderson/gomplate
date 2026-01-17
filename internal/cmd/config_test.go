@@ -14,8 +14,8 @@ import (
 	"time"
 
 	"github.com/hairyhenderson/go-fsimpl"
-	"github.com/hairyhenderson/gomplate/v4"
-	"github.com/hairyhenderson/gomplate/v4/internal/datafs"
+	"github.com/hairyhenderson/gomplate/v5"
+	"github.com/hairyhenderson/gomplate/v5/internal/datafs"
 
 	"github.com/spf13/cobra"
 	"github.com/stretchr/testify/assert"

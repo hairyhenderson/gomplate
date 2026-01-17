@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"reflect"
 
-	"github.com/hairyhenderson/gomplate/v4/conv"
-	"github.com/hairyhenderson/gomplate/v4/internal/texttemplate"
+	"github.com/hairyhenderson/gomplate/v5/conv"
+	"github.com/hairyhenderson/gomplate/v5/internal/texttemplate"
 
-	"github.com/hairyhenderson/gomplate/v4/coll"
+	"github.com/hairyhenderson/gomplate/v5/coll"
 )
 
 // CreateCollFuncs -

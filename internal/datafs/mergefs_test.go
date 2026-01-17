@@ -14,8 +14,8 @@ import (
 	"testing/fstest"
 
 	"github.com/hairyhenderson/go-fsimpl"
-	"github.com/hairyhenderson/gomplate/v4/internal/config"
-	"github.com/hairyhenderson/gomplate/v4/internal/iohelpers"
+	"github.com/hairyhenderson/gomplate/v5/internal/config"
+	"github.com/hairyhenderson/gomplate/v5/internal/iohelpers"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )

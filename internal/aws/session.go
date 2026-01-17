@@ -10,7 +10,7 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
-	"github.com/hairyhenderson/gomplate/v4/env"
+	"github.com/hairyhenderson/gomplate/v5/env"
 )
 
 var (

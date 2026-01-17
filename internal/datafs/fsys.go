@@ -9,7 +9,7 @@ import (
 
 	"github.com/hairyhenderson/go-fsimpl"
 	"github.com/hairyhenderson/go-fsimpl/vaultfs/vaultauth"
-	"github.com/hairyhenderson/gomplate/v4/internal/urlhelpers"
+	"github.com/hairyhenderson/gomplate/v5/internal/urlhelpers"
 )
 
 type fsProviderCtxKey struct{}

@@ -12,9 +12,9 @@ import (
 	"text/template"
 
 	"github.com/hack-pad/hackpadfs"
-	"github.com/hairyhenderson/gomplate/v4/internal/datafs"
-	"github.com/hairyhenderson/gomplate/v4/internal/iohelpers"
-	"github.com/hairyhenderson/gomplate/v4/tmpl"
+	"github.com/hairyhenderson/gomplate/v5/internal/datafs"
+	"github.com/hairyhenderson/gomplate/v5/internal/iohelpers"
+	"github.com/hairyhenderson/gomplate/v5/tmpl"
 
 	// TODO: switch back if/when fs.FS support gets merged upstream
 	"github.com/hairyhenderson/xignore"

@@ -5,8 +5,8 @@ import (
 	"maps"
 	"text/template"
 
-	"github.com/hairyhenderson/gomplate/v4/internal/config"
-	"github.com/hairyhenderson/gomplate/v4/internal/funcs"
+	"github.com/hairyhenderson/gomplate/v5/internal/config"
+	"github.com/hairyhenderson/gomplate/v5/internal/funcs"
 )
 
 // CreateFuncs - function mappings are created here

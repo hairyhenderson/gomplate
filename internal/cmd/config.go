@@ -12,11 +12,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/hairyhenderson/gomplate/v4"
-	"github.com/hairyhenderson/gomplate/v4/conv"
-	"github.com/hairyhenderson/gomplate/v4/env"
-	"github.com/hairyhenderson/gomplate/v4/internal/datafs"
-	"github.com/hairyhenderson/gomplate/v4/internal/urlhelpers"
+	"github.com/hairyhenderson/gomplate/v5"
+	"github.com/hairyhenderson/gomplate/v5/conv"
+	"github.com/hairyhenderson/gomplate/v5/env"
+	"github.com/hairyhenderson/gomplate/v5/internal/datafs"
+	"github.com/hairyhenderson/gomplate/v5/internal/urlhelpers"
 
 	"github.com/spf13/cobra"
 )

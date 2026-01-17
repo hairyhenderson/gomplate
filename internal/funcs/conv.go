@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"text/template"
 
-	"github.com/hairyhenderson/gomplate/v4/conv"
+	"github.com/hairyhenderson/gomplate/v5/conv"
 )
 
 // CreateConvFuncs -

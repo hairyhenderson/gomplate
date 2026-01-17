@@ -14,8 +14,8 @@ import (
 	"unicode/utf8"
 
 	"github.com/Masterminds/goutils"
-	"github.com/hairyhenderson/gomplate/v4/conv"
-	gompstrings "github.com/hairyhenderson/gomplate/v4/strings"
+	"github.com/hairyhenderson/gomplate/v5/conv"
+	gompstrings "github.com/hairyhenderson/gomplate/v5/strings"
 
 	"github.com/gosimple/slug"
 	"golang.org/x/text/cases"

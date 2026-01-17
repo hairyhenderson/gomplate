@@ -5,8 +5,8 @@ import (
 	"os"
 	"strings"
 
-	"github.com/hairyhenderson/gomplate/v4/internal/datafs"
-	"github.com/hairyhenderson/gomplate/v4/internal/parsers"
+	"github.com/hairyhenderson/gomplate/v5/internal/datafs"
+	"github.com/hairyhenderson/gomplate/v5/internal/parsers"
 )
 
 // context for templates

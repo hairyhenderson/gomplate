@@ -4,7 +4,7 @@ import (
 	"context"
 	"path/filepath"
 
-	"github.com/hairyhenderson/gomplate/v4/conv"
+	"github.com/hairyhenderson/gomplate/v5/conv"
 )
 
 // CreateFilePathFuncs -

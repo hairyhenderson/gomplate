@@ -5,7 +5,7 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/hairyhenderson/gomplate/v4/internal/aws"
+	"github.com/hairyhenderson/gomplate/v5/internal/aws"
 	"github.com/stretchr/testify/assert"
 )
 

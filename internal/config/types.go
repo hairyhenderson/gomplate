@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"net/url"
 
-	"github.com/hairyhenderson/gomplate/v4/internal/urlhelpers"
+	"github.com/hairyhenderson/gomplate/v5/internal/urlhelpers"
 	"github.com/hairyhenderson/yaml"
 )
 

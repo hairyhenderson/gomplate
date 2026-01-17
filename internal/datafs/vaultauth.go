@@ -7,7 +7,7 @@ import (
 	"os"
 
 	"github.com/hairyhenderson/go-fsimpl/vaultfs/vaultauth"
-	"github.com/hairyhenderson/gomplate/v4/internal/iohelpers"
+	"github.com/hairyhenderson/gomplate/v5/internal/iohelpers"
 	"github.com/hashicorp/vault/api"
 	"github.com/hashicorp/vault/api/auth/aws"
 )

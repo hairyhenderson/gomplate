@@ -6,9 +6,9 @@ import (
 	"path/filepath"
 
 	osfs "github.com/hack-pad/hackpadfs/os"
-	"github.com/hairyhenderson/gomplate/v4/conv"
-	"github.com/hairyhenderson/gomplate/v4/internal/datafs"
-	"github.com/hairyhenderson/gomplate/v4/internal/iohelpers"
+	"github.com/hairyhenderson/gomplate/v5/conv"
+	"github.com/hairyhenderson/gomplate/v5/internal/datafs"
+	"github.com/hairyhenderson/gomplate/v5/internal/iohelpers"
 )
 
 // CreateFileFuncs -
