@@ -3,7 +3,7 @@ package env
 
 import (
 	osfs "github.com/hack-pad/hackpadfs/os"
-	"github.com/hairyhenderson/gomplate/v4/internal/datafs"
+	"github.com/hairyhenderson/gomplate/v5/internal/datafs"
 )
 
 // Getenv - retrieves the value of the environment variable named by the key.

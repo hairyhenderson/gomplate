@@ -7,9 +7,9 @@ import (
 	stdnet "net"
 	"net/netip"
 
-	"github.com/hairyhenderson/gomplate/v4/conv"
-	"github.com/hairyhenderson/gomplate/v4/internal/cidr"
-	"github.com/hairyhenderson/gomplate/v4/net"
+	"github.com/hairyhenderson/gomplate/v5/conv"
+	"github.com/hairyhenderson/gomplate/v5/internal/cidr"
+	"github.com/hairyhenderson/gomplate/v5/net"
 	"go4.org/netipx"
 )
 

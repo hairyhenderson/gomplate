@@ -10,7 +10,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/hairyhenderson/gomplate/v4/env"
+	"github.com/hairyhenderson/gomplate/v5/env"
 )
 
 // DefaultEndpoint is the DNS name for the default GCP compute instance metadata service.

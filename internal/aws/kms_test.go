@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	"github.com/aws/aws-sdk-go-v2/service/kms"
-	b64 "github.com/hairyhenderson/gomplate/v4/base64"
+	b64 "github.com/hairyhenderson/gomplate/v5/base64"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )

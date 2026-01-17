@@ -7,9 +7,9 @@ import (
 	"slices"
 	"strconv"
 
-	"github.com/hairyhenderson/gomplate/v4/conv"
+	"github.com/hairyhenderson/gomplate/v5/conv"
 
-	"github.com/hairyhenderson/gomplate/v4/math"
+	"github.com/hairyhenderson/gomplate/v5/math"
 )
 
 // CreateMathFuncs -

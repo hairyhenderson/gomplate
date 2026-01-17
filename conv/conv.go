@@ -8,7 +8,7 @@ import (
 	"strconv"
 	"strings"
 
-	iconv "github.com/hairyhenderson/gomplate/v4/internal/conv"
+	iconv "github.com/hairyhenderson/gomplate/v5/internal/conv"
 )
 
 // ToBool converts an arbitrary input into a boolean.

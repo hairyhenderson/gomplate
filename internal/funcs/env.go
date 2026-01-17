@@ -3,8 +3,8 @@ package funcs
 import (
 	"context"
 
-	"github.com/hairyhenderson/gomplate/v4/conv"
-	"github.com/hairyhenderson/gomplate/v4/env"
+	"github.com/hairyhenderson/gomplate/v5/conv"
+	"github.com/hairyhenderson/gomplate/v5/env"
 )
 
 // CreateEnvFuncs -

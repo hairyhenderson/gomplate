@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/hairyhenderson/gomplate/v4/internal/iohelpers"
+	"github.com/hairyhenderson/gomplate/v5/internal/iohelpers"
 	"github.com/hairyhenderson/yaml"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
