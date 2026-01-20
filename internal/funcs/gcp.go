@@ -4,7 +4,7 @@ import (
 	"context"
 	"sync"
 
-	"github.com/hairyhenderson/gomplate/v4/gcp"
+	"github.com/hairyhenderson/gomplate/v5/gcp"
 )
 
 // CreateGCPFuncs -

@@ -15,7 +15,7 @@ import (
 	"cuelang.org/go/cue/format"
 	"github.com/Shopify/ejson"
 	ejsonJson "github.com/Shopify/ejson/json"
-	"github.com/hairyhenderson/gomplate/v4/conv"
+	"github.com/hairyhenderson/gomplate/v5/conv"
 	"github.com/joho/godotenv"
 
 	// XXX: replace once https://github.com/BurntSushi/toml/pull/179 is merged

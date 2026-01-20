@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/hairyhenderson/gomplate/v4/conv"
-	"github.com/hairyhenderson/gomplate/v4/regexp"
+	"github.com/hairyhenderson/gomplate/v5/conv"
+	"github.com/hairyhenderson/gomplate/v5/regexp"
 )
 
 // CreateReFuncs -

@@ -15,11 +15,11 @@ import (
 	"time"
 
 	"github.com/hairyhenderson/go-fsimpl"
-	"github.com/hairyhenderson/gomplate/v4/coll"
-	"github.com/hairyhenderson/gomplate/v4/internal/config"
-	"github.com/hairyhenderson/gomplate/v4/internal/iohelpers"
-	"github.com/hairyhenderson/gomplate/v4/internal/parsers"
-	"github.com/hairyhenderson/gomplate/v4/internal/urlhelpers"
+	"github.com/hairyhenderson/gomplate/v5/coll"
+	"github.com/hairyhenderson/gomplate/v5/internal/config"
+	"github.com/hairyhenderson/gomplate/v5/internal/iohelpers"
+	"github.com/hairyhenderson/gomplate/v5/internal/parsers"
+	"github.com/hairyhenderson/gomplate/v5/internal/urlhelpers"
 )
 
 // newMergeFS returns a new filesystem that merges the contents of multiple

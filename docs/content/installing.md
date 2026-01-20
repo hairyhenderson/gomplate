@@ -124,7 +124,7 @@ $ gomplate --help
 If you're a Go developer, sometimes it's faster to just use `go install` to install `gomplate`:
 
 ```console
-$ go install github.com/hairyhenderson/gomplate/v4/cmd/gomplate@latest
+$ go install github.com/hairyhenderson/gomplate/v5/cmd/gomplate@latest
 $ gomplate --help
 ...
 ```

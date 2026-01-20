@@ -15,8 +15,8 @@ import (
 
 	"golang.org/x/crypto/bcrypt"
 
-	"github.com/hairyhenderson/gomplate/v4/conv"
-	"github.com/hairyhenderson/gomplate/v4/crypto"
+	"github.com/hairyhenderson/gomplate/v5/conv"
+	"github.com/hairyhenderson/gomplate/v5/crypto"
 )
 
 // CreateCryptoFuncs -

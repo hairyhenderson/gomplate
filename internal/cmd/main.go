@@ -9,10 +9,10 @@ import (
 	"os/exec"
 	"os/signal"
 
-	"github.com/hairyhenderson/gomplate/v4"
-	"github.com/hairyhenderson/gomplate/v4/env"
-	"github.com/hairyhenderson/gomplate/v4/internal/datafs"
-	"github.com/hairyhenderson/gomplate/v4/version"
+	"github.com/hairyhenderson/gomplate/v5"
+	"github.com/hairyhenderson/gomplate/v5/env"
+	"github.com/hairyhenderson/gomplate/v5/internal/datafs"
+	"github.com/hairyhenderson/gomplate/v5/version"
 
 	"github.com/spf13/cobra"
 )

@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"log/slog"
 
-	"github.com/hairyhenderson/gomplate/v4/internal/config"
-	"github.com/hairyhenderson/gomplate/v4/internal/datafs"
-	"github.com/hairyhenderson/gomplate/v4/internal/parsers"
-	"github.com/hairyhenderson/gomplate/v4/internal/urlhelpers"
+	"github.com/hairyhenderson/gomplate/v5/internal/config"
+	"github.com/hairyhenderson/gomplate/v5/internal/datafs"
+	"github.com/hairyhenderson/gomplate/v5/internal/parsers"
+	"github.com/hairyhenderson/gomplate/v5/internal/urlhelpers"
 )
 
 // CreateDataSourceFuncs -

@@ -3,7 +3,7 @@ package parsers
 import (
 	"fmt"
 
-	"github.com/hairyhenderson/gomplate/v4/internal/iohelpers"
+	"github.com/hairyhenderson/gomplate/v5/internal/iohelpers"
 )
 
 func ParseData(mimeType, s string) (out any, err error) {
