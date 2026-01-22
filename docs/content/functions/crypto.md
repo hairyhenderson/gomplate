@@ -64,12 +64,6 @@ crypto.YescryptMCF [cost] [blockSize] [salt] input
 ```
 input | crypto.YescryptMCF [cost] [blockSize] [salt]
 ```
-```
-crypto.YescryptMCF [cost] [blockSize] input # salt is randomly generated
-```
-```
-input | crypto.YescryptMCF [cost] [blockSize] # salt is randomly generated
-```
 
 ### Arguments
 
@@ -89,6 +83,14 @@ $y$jB5$YZZJoNING3pMhVIKFhIJJ/$n.9CRZ17bqvvDKyrAWqvghg7k5rq9M9F4rpWntnpeV0
 ```console
 $ gomplate -i '{{ crypto.YescryptMCF 10 1 "mysalt" "foo" }}'
 $y$j7.$hZrQVl4R$y2MSQDqiVCS0Q7PsGv7f8b4O7s/O0Kmgw.2hvgxbqL1
+```
+```console
+$ gomplate -i '{{ "pass" | crypto.YescryptMCF 16 4 }}'
+$y$jD1$g/5AI/JEAR1KV7bFkJqIu/$zRk92xeixtHGp8Mq6weG2tPlsQPDZ6ybweLJd6jv1w6
+```
+```console
+$ gomplate -i '{{ crypto.YescryptMCF 16 4 "pass" }}'
+$y$jD1$F7IQJtaHnk4Bo3HSYNIAi/$ttB6RTXx2SnSJIn1xsUPlaQmH056JdgejJlZmHyCtq1
 ```
 
 ## `crypto.Yescrypt`_(unreleased)_ _(experimental)_
