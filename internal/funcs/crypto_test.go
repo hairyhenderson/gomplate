@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/hairyhenderson/gomplate/v5/internal/config"
+	"github.com/openwall/yescrypt-go"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -117,6 +118,83 @@ func TestBcrypt(t *testing.T) {
 		_, err := c.Bcrypt()
 		require.Error(t, err)
 	})
+}
+
+func TestYescryptMCF(t *testing.T) {
+	t.Parallel()
+	c := testCryptoNS()
+
+	in := "foo"
+
+	t.Run("no arg default", func(t *testing.T) {
+		t.Parallel()
+		actual, err := c.YescryptMCF(in)
+		require.NoError(t, err)
+		assert.True(t, strings.HasPrefix(actual, "$y$jB5$"))
+	})
+
+	t.Run("cost less than min", func(t *testing.T) {
+		t.Parallel()
+		_, err := c.YescryptMCF(9, 8, "salt", in)
+		require.ErrorContains(t, err, "N out of supported range")
+	})
+
+	t.Run("blockSize less than min", func(t *testing.T) {
+		t.Parallel()
+		_, err := c.YescryptMCF(14, 0, "salt", in)
+		require.ErrorContains(t, err, "r out of supported range")
+	})
+
+	t.Run("custom salt appears", func(t *testing.T) {
+		t.Parallel()
+		salt := "abc123"
+		actual, err := c.YescryptMCF(14, 8, salt, in)
+		require.NoError(t, err)
+		assert.Contains(t, actual, string(yescryptEncode64([]byte(salt))))
+	})
+
+	t.Run("wrong arg count", func(t *testing.T) {
+		t.Parallel()
+		_, err := c.YescryptMCF()
+		require.Error(t, err)
+		_, err = c.YescryptMCF(14, in) // 2 args
+		require.Error(t, err)
+	})
+
+	t.Run("hash changes with different salts", func(t *testing.T) {
+		t.Parallel()
+		a1, _ := c.YescryptMCF(in)
+		a2, _ := c.YescryptMCF(in)
+		assert.NotEqual(t, a1, a2)
+	})
+
+	t.Run("hash verifies", func(t *testing.T) {
+		t.Parallel()
+		hash, err := c.YescryptMCF(14, 8, "salt", in)
+		require.NoError(t, err)
+		parts := strings.Split(hash, "$")
+		require.GreaterOrEqual(t, len(parts), 4)
+		settings := strings.Join(parts[:4], "$") // "$y$jF7$<salt-b64>"
+		verify, err := yescrypt.Hash([]byte(in), []byte(settings))
+		require.NoError(t, err)
+		assert.Equal(t, hash, string(verify))
+	})
+}
+
+func TestYescrypt(t *testing.T) {
+	t.Parallel()
+
+	c := testCryptoNS()
+	dk, err := c.Yescrypt("password", []byte("IEEE"), "4096", 32, 10)
+	assert.Equal(t, "9621ff00097f2a429e12", dk)
+	require.NoError(t, err)
+
+	dk, err = c.Yescrypt([]byte("password"), "IEEE", 4096, "64", 32)
+	assert.Equal(t, "9da1f71c7307e5d5a323834d44d7df8631c7d93ee7e23f93f778470724c0bbcb", dk)
+	require.NoError(t, err)
+
+	_, err = c.Yescrypt(nil, nil, nil, nil, "bogus")
+	require.Error(t, err)
 }
 
 func TestRSAGenerateKey(t *testing.T) {
