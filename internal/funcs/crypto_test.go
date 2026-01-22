@@ -3,6 +3,8 @@ package funcs
 import (
 	"context"
 	"encoding/base64"
+	"encoding/hex"
+	"fmt"
 	"strconv"
 	"strings"
 	"testing"
@@ -44,6 +46,35 @@ func TestPBKDF2(t *testing.T) {
 	require.NoError(t, err)
 
 	_, err = c.PBKDF2(nil, nil, nil, nil, "bogus")
+	require.Error(t, err)
+}
+
+func TestPBKDF2MCF(t *testing.T) {
+	t.Parallel()
+
+	c := testCryptoNS()
+	password := "password"
+	salt := []byte("IEEE")
+	iter := 4096
+	keylen := 32
+
+	// Expected derived key (from PBKDF2 test)
+	expectedHex := "f42c6fc52df0ebef9ebb4b90b38a5f902e83fe1b135a70e23aed762e9710a12e"
+	expectedDK, _ := hex.DecodeString(expectedHex)
+	expectedDKB64 := cryptBase64Encode(expectedDK)
+	expectedSaltB64 := cryptBase64Encode(salt)
+
+	mcf, err := c.PBKDF2MCF(password, salt, iter, keylen, "SHA1")
+	require.NoError(t, err)
+
+	expectedMCF := fmt.Sprintf("$pbkdf2-sha1$%d$%s$%s", iter, expectedSaltB64, expectedDKB64)
+	assert.Equal(t, expectedMCF, mcf)
+
+	mcf512, err := c.PBKDF2MCF(password, salt, iter, 64, "SHA-512")
+	require.NoError(t, err)
+	assert.True(t, strings.HasPrefix(mcf512, "$pbkdf2-sha512$4096$"))
+
+	_, err = c.PBKDF2MCF(password, salt, iter, keylen, "bogus")
 	require.Error(t, err)
 }
 
