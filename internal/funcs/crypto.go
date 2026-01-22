@@ -21,7 +21,7 @@ import (
 
 func cryptBase64Encode(src []byte) (dst string) {
 	dst = base64.RawStdEncoding.EncodeToString(src)
-	dst = strings.Replace(dst, "+", ".", -1)
+	dst = strings.ReplaceAll(dst, "+", ".")
 	return
 }
 
