@@ -130,7 +130,7 @@ func TestYescryptMCF(t *testing.T) {
 		t.Parallel()
 		actual, err := c.YescryptMCF(in)
 		require.NoError(t, err)
-		assert.True(t, strings.HasPrefix(actual, "$y$jF7$"))
+		assert.True(t, strings.HasPrefix(actual, "$y$jB5$"))
 	})
 
 	t.Run("cost less than min", func(t *testing.T) {
@@ -170,10 +170,11 @@ func TestYescryptMCF(t *testing.T) {
 
 	t.Run("hash verifies", func(t *testing.T) {
 		t.Parallel()
-		hash, _ := c.YescryptMCF(14, 8, "salt", in)
+		hash, err := c.YescryptMCF(14, 8, "salt", in)
+		require.NoError(t, err)
 		parts := strings.Split(hash, "$")
 		require.GreaterOrEqual(t, len(parts), 4)
-		settings := strings.Join(parts[:3], "$") // "$y$jF7$<salt-b64>"
+		settings := strings.Join(parts[:4], "$") // "$y$jF7$<salt-b64>"
 		verify, err := yescrypt.Hash([]byte(in), []byte(settings))
 		require.NoError(t, err)
 		assert.Equal(t, hash, string(verify))
