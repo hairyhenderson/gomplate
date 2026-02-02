@@ -64,7 +64,7 @@ input | strings.Contains substr
 
 _`input.tmpl`:_
 ```
-{{ if (.Env.FOO | strings.Contains "f") }}yes{{else}}no{{end}}
+{{ if (env.Getenv "FOO" | strings.Contains "f") }}yes{{else}}no{{end}}
 ```
 
 ```console
@@ -98,9 +98,9 @@ input | strings.HasPrefix prefix
 ### Examples
 
 ```console
-$ URL=http://example.com gomplate -i '{{if .Env.URL | strings.HasPrefix "https"}}foo{{else}}bar{{end}}'
+$ URL=http://example.com gomplate -i '{{if env.Env.URL | strings.HasPrefix "https"}}foo{{else}}bar{{end}}'
 bar
-$ URL=https://example.com gomplate -i '{{if .Env.URL | strings.HasPrefix "https"}}foo{{else}}bar{{end}}'
+$ URL=https://example.com gomplate -i '{{if env.Env.URL | strings.HasPrefix "https"}}foo{{else}}bar{{end}}'
 foo
 ```
 
@@ -129,7 +129,7 @@ input | strings.HasSuffix suffix
 
 _`input.tmpl`:_
 ```
-{{.Env.URL}}{{if not (.Env.URL | strings.HasSuffix ":80")}}:80{{end}}
+{{env.Env.URL}}{{if not (env.Env.URL | strings.HasSuffix ":80")}}:80{{end}}
 ```
 
 ```console

@@ -112,7 +112,7 @@ input | regexp.Match expression
 ### Examples
 
 ```console
-$ gomplate -i '{{ if (.Env.USER | regexp.Match `^h`) }}username ({{.Env.USER}}) starts with h!{{end}}'
+$ gomplate -i '{{ $u := env.Env.USER }}{{if ($u | regexp.Match `^h`) }}username ({{ $u }}) starts with h!{{end}}'
 username (hairyhenderson) starts with h!
 ```
 

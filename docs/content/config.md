@@ -183,7 +183,7 @@ argument, there are no shell-imposed length limits.
 
 A simple example:
 ```yaml
-in: hello to {{ .Env.USER }}
+in: hello to {{ env.Env.USER }}
 ```
 
 A multi-line example (see https://yaml-multiline.info/ for more about multi-line
