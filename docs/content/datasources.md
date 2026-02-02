@@ -62,6 +62,7 @@ Gomplate supports a number of datasources, each specified with a particular URL 
 | [Environment](#using-env-datasources) | `env` | Environment variables can be used as datasources - useful for testing |
 | [File](#using-file-datasources) | `file` | Files can be read in any of the [supported formats](#mime-types), including by piping through standard input (`Stdin`). [Directories](#directory-datasources) are also supported. |
 | [Git](#using-git-datasources) | `git`, `git+file`, `git+http`, `git+https`, `git+ssh` | Files can be read from a local or remote git repository, at specific branches or tags. [Directory semantics](#directory-datasources) are also supported. |
+| [GCP Compute Instance Metadata](#using-gcpmeta-datasources) | `gcp+meta` | Provides access to the [GCP VM Metadata Service][], including instance and project metadata. |
 | [Google Cloud Storage](#using-google-cloud-storage-gs-datasources) | `gs` | [Google Cloud Storage][] is the object storage service available on GCP, comparable to AWS S3. |
 | [HTTP](#using-http-datasources) | `http`, `https` | Data can be sourced from HTTP/HTTPS sites in many different formats. Arbitrary HTTP headers can be set with the [`--datasource-header`/`-H`][] flag |
 | [Merged Datasources](#using-merge-datasources) | `merge` | Merge two or more datasources together to produce the final value - useful for resolving defaults. Uses [`coll.Merge`][] for merging. |
@@ -561,6 +562,82 @@ bar.json
 baz.txt
 ```
 
+## Using `gcp+meta` datasources
+
+The `gcp+meta://` scheme provides access to the [GCP VM Metadata Service][], which is available to Google Cloud Platform VM instances. This service provides information about the instance, project, and custom metadata.
+
+This datasource can be used as an alternative to the [`gcp.Meta`][] function, and provides [directory](#directory-datasources) semantics for exploring metadata hierarchies.
+
+**Note:** This datasource is only functional when running on a GCP Compute Engine VM (or in an environment where the metadata service is available, such as Cloud Run or GKE).
+
+### URL Considerations
+
+The _scheme_ and _path_ URL components are used by this datasource.
+
+- the _scheme_ must be `gcp+meta`
+- the _path_ component is used to specify the root of the metadata hierarchy. The two main categories are:
+  - `/instance`: instance metadata specific to the VM (e.g., id, hostname, zone, network-interfaces)
+  - `/project`: project metadata shared across all VMs in the project (e.g., project-id, attributes)
+
+[Directory](#directory-datasources) semantics are available when the path ends with a `/` character.
+
+### Environment Variables
+
+The following optional environment variables are understood by the `gcp+meta` datasource:
+
+| name | usage |
+|------|-------|
+| `GCP_META_ENDPOINT` | _(Default `http://metadata.google.internal`)_ Sets the base address of the instance metadata service. Useful for testing or in non-standard environments. |
+
+### Examples
+
+Reading instance metadata:
+
+```console
+$ gomplate -d meta=gcp+meta:/// -i 'The instance ID is: {{ include "meta" "instance/id" }}'
+The instance ID is: 1234567890123456789
+
+$ gomplate -d meta=gcp+meta:/// -i 'The hostname is: {{ include "meta" "instance/hostname" }}'
+The hostname is: my-instance.c.my-project.internal
+
+$ gomplate -d meta=gcp+meta:/// -i 'The zone is: {{ include "meta" "instance/zone" }}'
+The zone is: projects/1234567890/zones/us-central1-a
+```
+
+Reading project metadata:
+
+```console
+$ gomplate -d meta=gcp+meta:/// -i 'The project ID is: {{ include "meta" "project/project-id" }}'
+The project ID is: my-gcp-project
+
+$ gomplate -d meta=gcp+meta:/// -i 'Project numeric ID: {{ include "meta" "project/numeric-project-id" }}'
+Project numeric ID: 1234567890
+```
+
+Reading custom project attributes:
+
+```console
+$ gomplate -d meta=gcp+meta:/// -i 'My attribute: {{ include "meta" "project/attributes/my-custom-attribute" }}'
+My attribute: some-value
+```
+
+Using directory semantics to explore available metadata:
+
+```console
+$ gomplate -d meta=gcp+meta:/// -i '{{ ds "meta" }}'
+[instance project]
+
+$ gomplate -d meta=gcp+meta:///instance/ -i '{{ ds "meta" }}'
+[attributes cpu-platform description disks hostname id ...]
+```
+
+Reading network interface information:
+
+```console
+$ gomplate -d meta=gcp+meta:/// -i 'IP: {{ include "meta" "instance/network-interfaces/0/ip" }}'
+IP: 10.128.0.2
+```
+
 ## Using `http` datasources
 
 To access datasources from HTTP sites or APIs, simply use a `http` or `https` URL:
@@ -768,6 +845,8 @@ The file `/tmp/vault-aws-nonce` will be created if it didn't already exist, and 
 
 [AWS SMP]: https://docs.aws.amazon.com/systems-manager/latest/userguide/systems-manager-parameter-store.html
 [AWS Secrets Manager]: https://aws.amazon.com/secrets-manager
+[GCP VM Metadata Service]: https://cloud.google.com/compute/docs/metadata/overview
+[`gcp.Meta`]: ../functions/gcp/#gcpmeta
 [HashiCorp Consul]: https://consul.io
 [HashiCorp Vault]: https://vaultproject.io
 [JSON]: https://json.org
