@@ -73,7 +73,7 @@ funcs:
         description: The input to test
     examples:
       - |
-        $ gomplate -i '{{ if (.Env.USER | regexp.Match `^h`) }}username ({{.Env.USER}}) starts with h!{{end}}'
+        $ gomplate -i '{{ $u := env.Env.USER }}{{if ($u | regexp.Match `^h`) }}username ({{ $u }}) starts with h!{{end}}'
         username (hairyhenderson) starts with h!
   - name: regexp.QuoteMeta
     released: v3.7.0

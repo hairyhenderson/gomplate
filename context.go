@@ -2,10 +2,9 @@ package gomplate
 
 import (
 	"context"
-	"os"
-	"strings"
 
 	"github.com/hairyhenderson/gomplate/v5/internal/datafs"
+	"github.com/hairyhenderson/gomplate/v5/internal/funcs"
 	"github.com/hairyhenderson/gomplate/v5/internal/parsers"
 )
 
@@ -14,12 +13,7 @@ type tmplctx map[string]any
 
 // Env - Map environment variables for use in a template
 func (c *tmplctx) Env() map[string]string {
-	env := make(map[string]string)
-	for _, i := range os.Environ() {
-		sep := strings.Index(i, "=")
-		env[i[0:sep]] = i[sep+1:]
-	}
-	return env
+	return funcs.EnvFuncs{}.Env()
 }
 
 // createTmplContext reads the datasources for the given aliases

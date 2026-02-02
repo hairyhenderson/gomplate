@@ -40,7 +40,7 @@ funcs:
       - |
         _`input.tmpl`:_
         ```
-        {{ if (.Env.FOO | strings.Contains "f") }}yes{{else}}no{{end}}
+        {{ if (env.Getenv "FOO" | strings.Contains "f") }}yes{{else}}no{{end}}
         ```
 
         ```console
@@ -63,9 +63,9 @@ funcs:
         description: the input to search
     examples:
       - |
-        $ URL=http://example.com gomplate -i '{{if .Env.URL | strings.HasPrefix "https"}}foo{{else}}bar{{end}}'
+        $ URL=http://example.com gomplate -i '{{if env.Env.URL | strings.HasPrefix "https"}}foo{{else}}bar{{end}}'
         bar
-        $ URL=https://example.com gomplate -i '{{if .Env.URL | strings.HasPrefix "https"}}foo{{else}}bar{{end}}'
+        $ URL=https://example.com gomplate -i '{{if env.Env.URL | strings.HasPrefix "https"}}foo{{else}}bar{{end}}'
         foo
   - name: strings.HasSuffix
     released: v1.9.0
@@ -83,7 +83,7 @@ funcs:
       - |
         _`input.tmpl`:_
         ```
-        {{.Env.URL}}{{if not (.Env.URL | strings.HasSuffix ":80")}}:80{{end}}
+        {{env.Env.URL}}{{if not (env.Env.URL | strings.HasSuffix ":80")}}:80{{end}}
         ```
 
         ```console

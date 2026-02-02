@@ -55,6 +55,76 @@ $ gomplate -i 'Your secret is {{getenv "SECRET"}}'
 Your secret is safe
 ```
 
+## `env.Env`
+
+Returns a map of all environment variables. This is equivalent to [`.Env`](/syntax/#env),
+but accessible via the `env` namespace.
+
+Unlike [`env.Getenv`](#envgetenv), this does not read `_FILE` variants, and will
+fail when accessing a missing key.
+
+This is useful when you want strict environment variable access without the
+`_FILE` fallback behavior.
+
+_Added in gomplate [v5.1.0](https://github.com/hairyhenderson/gomplate/releases/tag/v5.1.0)_
+### Usage
+
+```
+env.Env
+```
+
+
+### Examples
+
+```console
+$ gomplate -i 'Hello, {{env.Env.USER}}'
+Hello, hairyhenderson
+```
+```console
+$ gomplate -i '{{ env.Env.HOME }}'
+/home/hairyhenderson
+```
+
+## `env.HasEnv`
+
+Returns `true` if the environment variable is set, `false` otherwise.
+This wraps the [`os.LookupEnv`](https://pkg.go.dev/os/#LookupEnv) function.
+
+Note that a variable set to an empty string is still considered "set".
+
+_Added in gomplate [v5.1.0](https://github.com/hairyhenderson/gomplate/releases/tag/v5.1.0)_
+### Usage
+
+```
+env.HasEnv var
+```
+```
+var | env.HasEnv
+```
+
+### Arguments
+
+| name | description |
+|------|-------------|
+| `var` | _(required)_ the environment variable name |
+
+### Examples
+
+```console
+$ gomplate -i '{{if env.HasEnv "FOO"}}FOO is set{{else}}FOO is not set{{end}}'
+FOO is not set
+$ FOO=bar gomplate -i '{{if env.HasEnv "FOO"}}FOO is set{{else}}FOO is not set{{end}}'
+FOO is set
+```
+```console
+$ EMPTY= gomplate -i '{{if env.HasEnv "EMPTY"}}EMPTY is set{{end}}'
+EMPTY is set
+```
+```console
+$ gomplate -i '{{ "USER" | env.HasEnv }}'
+true
+```
+
 ## `env.ExpandEnv`
 
 Exposes the [os.ExpandEnv](https://pkg.go.dev/os/#ExpandEnv) function.
