@@ -28,16 +28,16 @@ funcs:
       - |
         $ gomplate -i '{{ crypto.Bcrypt 4 "foo" }}
         $2a$04$zjba3N38sjyYsw0Y7IRCme1H4gD0MJxH8Ixai0/sgsrf7s1MFUK1C
-  - name: crypto.DecryptAES
-    experimental: true
+  - name: crypto.AESDecrypt
     released: v3.11.0
+    alias: crypto.DecryptAES (deprecated)
     description: |
       Decrypts the given input using the given key. By default,
       uses AES-256-CBC, but supports 128- and 192-bit keys as well.
 
       This function prints the output as a string. Note that this may result in
       unreadable text if the decrypted payload is binary. See
-      [`crypto.DecryptAESBytes`](#cryptodecryptaesbytes-_experimental_) for another method.
+      [`crypto.AESDecryptBytes`](#cryptoaesdecryptbytes) for another method.
 
       This function is suitable for decrypting data that was encrypted by
       Helm's `encryptAES` function, when the input is base64-decoded, and when
@@ -55,11 +55,11 @@ funcs:
         description: the input to decrypt
     examples:
       - |
-        $ gomplate -i '{{ base64.Decode "Gp2WG/fKOUsVlhcpr3oqgR+fRUNBcO1eZJ9CW+gDI18=" | crypto.DecryptAES "swordfish" 128 }}'
+        $ gomplate -i '{{ base64.Decode "Gp2WG/fKOUsVlhcpr3oqgR+fRUNBcO1eZJ9CW+gDI18=" | crypto.AESDecrypt "swordfish" 128 }}'
         hello world
-  - name: crypto.DecryptAESBytes
-    experimental: true
+  - name: crypto.AESDecryptBytes
     released: v3.11.0
+    alias: crypto.DecryptAESBytes (deprecated)
     description: |
       Decrypts the given input using the given key. By default,
       uses AES-256-CBC, but supports 128- and 192-bit keys as well.
@@ -83,11 +83,11 @@ funcs:
         description: the input to decrypt
     examples:
       - |
-        $ gomplate -i '{{ base64.Decode "Gp2WG/fKOUsVlhcpr3oqgR+fRUNBcO1eZJ9CW+gDI18=" | crypto.DecryptAES "swordfish" 128 }}'
+        $ gomplate -i '{{ base64.Decode "Gp2WG/fKOUsVlhcpr3oqgR+fRUNBcO1eZJ9CW+gDI18=" | crypto.AESDecryptBytes "swordfish" 128 }}'
         hello world
-  - name: crypto.EncryptAES
-    experimental: true
+  - name: crypto.AESEncrypt
     released: v3.11.0
+    alias: crypto.EncryptAES (deprecated)
     description: |
       Encrypts the given input using the given key. By default,
       uses AES-256-CBC, but supports 128- and 192-bit keys as well.
@@ -108,7 +108,7 @@ funcs:
         description: the input to encrypt
     examples:
       - |
-        $ gomplate -i '{{ "hello world" | crypto.EncryptAES "swordfish" 128 | base64.Encode }}'
+        $ gomplate -i '{{ "hello world" | crypto.AESEncrypt "swordfish" 128 | base64.Encode }}'
         MnRutHovsh/9JN3YrJtBVjZtI6xXZh33bCQS2iZ4SDI=
   - name: crypto.DerivePublicKey
     released: v5.1.0
