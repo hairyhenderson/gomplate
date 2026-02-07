@@ -59,6 +59,13 @@ func TestCrypto_RSACrypt(t *testing.T) {
 	assertSuccess(t, o, e, err, "hello\nhello\n")
 }
 
+func TestCrypto_AESCrypt(t *testing.T) {
+	o, e, err := cmd(t,
+		"-i", `{{ $enc := "hello" | crypto.AESEncrypt "swordfish" 128 -}}
+{{ crypto.AESDecrypt "swordfish" 128 $enc }}`).run()
+	assertSuccess(t, o, e, err, "hello")
+}
+
 func TestCrypto_DerivePublicKey(t *testing.T) {
 	// Test unified DerivePublicKey with RSA
 	o, e, err := cmd(t,

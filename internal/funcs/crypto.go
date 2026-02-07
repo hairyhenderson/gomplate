@@ -17,6 +17,7 @@ import (
 
 	"github.com/hairyhenderson/gomplate/v5/conv"
 	"github.com/hairyhenderson/gomplate/v5/crypto"
+	"github.com/hairyhenderson/gomplate/v5/internal/deprecated"
 )
 
 // CreateCryptoFuncs -
@@ -305,13 +306,8 @@ func (f *CryptoFuncs) DerivePublicKey(privateKey string) (string, error) {
 	return string(out), err
 }
 
-// EncryptAES -
-// Experimental!
-func (f *CryptoFuncs) EncryptAES(key string, args ...any) ([]byte, error) {
-	if err := checkExperimental(f.ctx); err != nil {
-		return nil, err
-	}
-
+// AESEncrypt encrypts content using AES-CBC with 128, 192, or 256 bit keys.
+func (f *CryptoFuncs) AESEncrypt(key string, args ...any) ([]byte, error) {
 	k, msg, err := parseAESArgs(key, args...)
 	if err != nil {
 		return nil, err
@@ -320,30 +316,44 @@ func (f *CryptoFuncs) EncryptAES(key string, args ...any) ([]byte, error) {
 	return crypto.EncryptAESCBC(k, msg)
 }
 
-// DecryptAES -
-// Experimental!
-func (f *CryptoFuncs) DecryptAES(key string, args ...any) (string, error) {
-	if err := checkExperimental(f.ctx); err != nil {
-		return "", err
-	}
-
-	out, err := f.DecryptAESBytes(key, args...)
+// AESDecrypt decrypts AES-CBC encrypted content, returning a string.
+func (f *CryptoFuncs) AESDecrypt(key string, args ...any) (string, error) {
+	out, err := f.AESDecryptBytes(key, args...)
 	return conv.ToString(out), err
 }
 
-// DecryptAESBytes -
-// Experimental!
-func (f *CryptoFuncs) DecryptAESBytes(key string, args ...any) ([]byte, error) {
-	if err := checkExperimental(f.ctx); err != nil {
-		return nil, err
-	}
-
+// AESDecryptBytes decrypts AES-CBC encrypted content, returning raw bytes.
+func (f *CryptoFuncs) AESDecryptBytes(key string, args ...any) ([]byte, error) {
 	k, msg, err := parseAESArgs(key, args...)
 	if err != nil {
 		return nil, err
 	}
 
 	return crypto.DecryptAESCBC(k, msg)
+}
+
+// EncryptAES encrypts content using AES-CBC.
+//
+// Deprecated: Use AESEncrypt instead.
+func (f *CryptoFuncs) EncryptAES(key string, args ...any) ([]byte, error) {
+	deprecated.WarnDeprecated(f.ctx, "crypto.EncryptAES is deprecated - use crypto.AESEncrypt instead")
+	return f.AESEncrypt(key, args...)
+}
+
+// DecryptAES decrypts AES-CBC encrypted content.
+//
+// Deprecated: Use AESDecrypt instead.
+func (f *CryptoFuncs) DecryptAES(key string, args ...any) (string, error) {
+	deprecated.WarnDeprecated(f.ctx, "crypto.DecryptAES is deprecated - use crypto.AESDecrypt instead")
+	return f.AESDecrypt(key, args...)
+}
+
+// DecryptAESBytes decrypts AES-CBC encrypted content, returning raw bytes.
+//
+// Deprecated: Use AESDecryptBytes instead.
+func (f *CryptoFuncs) DecryptAESBytes(key string, args ...any) ([]byte, error) {
+	deprecated.WarnDeprecated(f.ctx, "crypto.DecryptAESBytes is deprecated - use crypto.AESDecryptBytes instead")
+	return f.AESDecryptBytes(key, args...)
 }
 
 func parseAESArgs(key string, args ...any) ([]byte, []byte, error) {

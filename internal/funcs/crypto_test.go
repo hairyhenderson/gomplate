@@ -296,31 +296,38 @@ func TestAESCrypt(t *testing.T) {
 	key := "0123456789012345"
 	in := "hello world"
 
-	_, err := c.EncryptAES(key, 1, 2, 3, 4)
+	_, err := c.AESEncrypt(key, 1, 2, 3, 4)
 	require.Error(t, err)
 
-	_, err = c.DecryptAES(key, 1, 2, 3, 4)
+	_, err = c.AESDecrypt(key, 1, 2, 3, 4)
 	require.Error(t, err)
 
-	enc, err := c.EncryptAES(key, in)
+	enc, err := c.AESEncrypt(key, in)
 	require.NoError(t, err)
 
-	dec, err := c.DecryptAES(key, enc)
+	dec, err := c.AESDecrypt(key, enc)
 	require.NoError(t, err)
 	assert.Equal(t, in, dec)
 
-	b, err := c.DecryptAESBytes(key, enc)
+	b, err := c.AESDecryptBytes(key, enc)
 	require.NoError(t, err)
 	assert.Equal(t, dec, string(b))
 
-	enc, err = c.EncryptAES(key, 128, in)
+	enc, err = c.AESEncrypt(key, 128, in)
 	require.NoError(t, err)
 
-	dec, err = c.DecryptAES(key, 128, enc)
+	dec, err = c.AESDecrypt(key, 128, enc)
 	require.NoError(t, err)
 	assert.Equal(t, in, dec)
 
-	b, err = c.DecryptAESBytes(key, 128, enc)
+	b, err = c.AESDecryptBytes(key, 128, enc)
 	require.NoError(t, err)
 	assert.Equal(t, dec, string(b))
+
+	// Test deprecated aliases still work
+	enc2, err := c.EncryptAES(key, in)
+	require.NoError(t, err)
+	dec2, err := c.DecryptAES(key, enc2)
+	require.NoError(t, err)
+	assert.Equal(t, in, dec2)
 }

@@ -46,17 +46,16 @@ $ gomplate -i '{{ crypto.Bcrypt 4 "foo" }}
 $2a$04$zjba3N38sjyYsw0Y7IRCme1H4gD0MJxH8Ixai0/sgsrf7s1MFUK1C
 ```
 
-## `crypto.DecryptAES` _(experimental)_
-**Experimental:** This function is [_experimental_][experimental] and may be enabled with the [`--experimental`][experimental] flag.
+## `crypto.AESDecrypt`
 
-[experimental]: ../config/#experimental
+**Alias:** `crypto.DecryptAES (deprecated)`
 
 Decrypts the given input using the given key. By default,
 uses AES-256-CBC, but supports 128- and 192-bit keys as well.
 
 This function prints the output as a string. Note that this may result in
 unreadable text if the decrypted payload is binary. See
-[`crypto.DecryptAESBytes`](#cryptodecryptaesbytes-_experimental_) for another method.
+[`crypto.AESDecryptBytes`](#cryptoaesdecryptbytes) for another method.
 
 This function is suitable for decrypting data that was encrypted by
 Helm's `encryptAES` function, when the input is base64-decoded, and when
@@ -66,10 +65,10 @@ _Added in gomplate [v3.11.0](https://github.com/hairyhenderson/gomplate/releases
 ### Usage
 
 ```
-crypto.DecryptAES key [keyBits] input
+crypto.AESDecrypt key [keyBits] input
 ```
 ```
-input | crypto.DecryptAES key [keyBits]
+input | crypto.AESDecrypt key [keyBits]
 ```
 
 ### Arguments
@@ -83,14 +82,13 @@ input | crypto.DecryptAES key [keyBits]
 ### Examples
 
 ```console
-$ gomplate -i '{{ base64.Decode "Gp2WG/fKOUsVlhcpr3oqgR+fRUNBcO1eZJ9CW+gDI18=" | crypto.DecryptAES "swordfish" 128 }}'
+$ gomplate -i '{{ base64.Decode "Gp2WG/fKOUsVlhcpr3oqgR+fRUNBcO1eZJ9CW+gDI18=" | crypto.AESDecrypt "swordfish" 128 }}'
 hello world
 ```
 
-## `crypto.DecryptAESBytes` _(experimental)_
-**Experimental:** This function is [_experimental_][experimental] and may be enabled with the [`--experimental`][experimental] flag.
+## `crypto.AESDecryptBytes`
 
-[experimental]: ../config/#experimental
+**Alias:** `crypto.DecryptAESBytes (deprecated)`
 
 Decrypts the given input using the given key. By default,
 uses AES-256-CBC, but supports 128- and 192-bit keys as well.
@@ -106,10 +104,10 @@ _Added in gomplate [v3.11.0](https://github.com/hairyhenderson/gomplate/releases
 ### Usage
 
 ```
-crypto.DecryptAESBytes key [keyBits] input
+crypto.AESDecryptBytes key [keyBits] input
 ```
 ```
-input | crypto.DecryptAESBytes key [keyBits]
+input | crypto.AESDecryptBytes key [keyBits]
 ```
 
 ### Arguments
@@ -123,14 +121,13 @@ input | crypto.DecryptAESBytes key [keyBits]
 ### Examples
 
 ```console
-$ gomplate -i '{{ base64.Decode "Gp2WG/fKOUsVlhcpr3oqgR+fRUNBcO1eZJ9CW+gDI18=" | crypto.DecryptAES "swordfish" 128 }}'
+$ gomplate -i '{{ base64.Decode "Gp2WG/fKOUsVlhcpr3oqgR+fRUNBcO1eZJ9CW+gDI18=" | crypto.AESDecryptBytes "swordfish" 128 }}'
 hello world
 ```
 
-## `crypto.EncryptAES` _(experimental)_
-**Experimental:** This function is [_experimental_][experimental] and may be enabled with the [`--experimental`][experimental] flag.
+## `crypto.AESEncrypt`
 
-[experimental]: ../config/#experimental
+**Alias:** `crypto.EncryptAES (deprecated)`
 
 Encrypts the given input using the given key. By default,
 uses AES-256-CBC, but supports 128- and 192-bit keys as well.
@@ -143,10 +140,10 @@ _Added in gomplate [v3.11.0](https://github.com/hairyhenderson/gomplate/releases
 ### Usage
 
 ```
-crypto.EncryptAES key [keyBits] input
+crypto.AESEncrypt key [keyBits] input
 ```
 ```
-input | crypto.EncryptAES key [keyBits]
+input | crypto.AESEncrypt key [keyBits]
 ```
 
 ### Arguments
@@ -160,7 +157,7 @@ input | crypto.EncryptAES key [keyBits]
 ### Examples
 
 ```console
-$ gomplate -i '{{ "hello world" | crypto.EncryptAES "swordfish" 128 | base64.Encode }}'
+$ gomplate -i '{{ "hello world" | crypto.AESEncrypt "swordfish" 128 | base64.Encode }}'
 MnRutHovsh/9JN3YrJtBVjZtI6xXZh33bCQS2iZ4SDI=
 ```
 
