@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"net/http"
+	"net/http/httptest"
 	"net/url"
 	"os"
 	"strings"
@@ -140,24 +142,33 @@ func ExampleRenderer_manyTemplates() {
 	// three.tmpl: 1 + 1 = 2
 }
 
+func fakeJSONServer() *httptest.Server {
+	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = w.Write([]byte(`{"name":"Luna","breed":"Siberian Husky","age":4}`))
+	}))
+}
+
 func ExampleRenderer_datasources() {
 	ctx := context.Background()
 
-	// a datasource that retrieves JSON from a public API
-	u, _ := url.Parse("https://ipinfo.io/1.1.1.1")
+	srv := fakeJSONServer()
+	defer srv.Close()
+
+	u, _ := url.Parse(srv.URL)
 	tr := NewRenderer(RenderOptions{
 		Context: map[string]DataSource{
-			"info": {URL: u},
+			"pet": {URL: u},
 		},
 	})
 
 	err := tr.Render(ctx, "jsontest",
-		`{{"\U0001F30E"}} {{ .info.hostname }} is served by {{ .info.org }}`,
+		`{{ .pet.name }} is a {{ .pet.age }} year old {{ .pet.breed }}`,
 		os.Stdout)
 	if err != nil {
 		panic(err)
 	}
 
 	// Output:
-	// 🌎 one.one.one.one is served by AS13335 Cloudflare, Inc.
+	// Luna is a 4 year old Siberian Husky
 }
