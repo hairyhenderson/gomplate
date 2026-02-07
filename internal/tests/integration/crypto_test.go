@@ -43,14 +43,12 @@ func setupCryptoTest(t *testing.T) *fs.Dir {
 func TestCrypto_RSACrypt(t *testing.T) {
 	tmpDir := setupCryptoTest(t)
 	o, e, err := cmd(t,
-		"--experimental",
 		"-i", `{{ crypto.RSAGenerateKey 2048 -}}`,
 		"-o", `key.pem`).
 		withDir(tmpDir.Path()).run()
 	assertSuccess(t, o, e, err, "")
 
 	o, e, err = cmd(t,
-		"--experimental",
 		"-c", "privKey=./key.pem?type=text/plain",
 		"-i", `{{ $pub := crypto.RSADerivePublicKey .privKey -}}
 {{ $enc := "hello" | crypto.RSAEncrypt $pub -}}

@@ -198,44 +198,27 @@ func (CryptoFuncs) Bcrypt(args ...any) (string, error) {
 }
 
 // RSAEncrypt -
-// Experimental!
 func (f *CryptoFuncs) RSAEncrypt(key string, in any) ([]byte, error) {
-	if err := checkExperimental(f.ctx); err != nil {
-		return nil, err
-	}
 	msg := toBytes(in)
 	return crypto.RSAEncrypt(key, msg)
 }
 
 // RSADecrypt -
-// Experimental!
 func (f *CryptoFuncs) RSADecrypt(key string, in []byte) (string, error) {
-	if err := checkExperimental(f.ctx); err != nil {
-		return "", err
-	}
 	out, err := crypto.RSADecrypt(key, in)
 	return string(out), err
 }
 
 // RSADecryptBytes -
-// Experimental!
 func (f *CryptoFuncs) RSADecryptBytes(key string, in []byte) ([]byte, error) {
-	if err := checkExperimental(f.ctx); err != nil {
-		return nil, err
-	}
 	out, err := crypto.RSADecrypt(key, in)
 	return out, err
 }
 
 // RSAGenerateKey -
-// Experimental!
 func (f *CryptoFuncs) RSAGenerateKey(args ...any) (string, error) {
-	err := checkExperimental(f.ctx)
-	if err != nil {
-		return "", err
-	}
-
 	bits := 4096
+	var err error
 	if len(args) == 1 {
 		bits, err = conv.ToInt(args[0])
 		if err != nil {
@@ -250,22 +233,13 @@ func (f *CryptoFuncs) RSAGenerateKey(args ...any) (string, error) {
 }
 
 // RSADerivePublicKey -
-// Experimental!
 func (f *CryptoFuncs) RSADerivePublicKey(privateKey string) (string, error) {
-	if err := checkExperimental(f.ctx); err != nil {
-		return "", err
-	}
 	out, err := crypto.RSADerivePublicKey([]byte(privateKey))
 	return string(out), err
 }
 
 // ECDSAGenerateKey -
-// Experimental!
 func (f *CryptoFuncs) ECDSAGenerateKey(args ...any) (string, error) {
-	if err := checkExperimental(f.ctx); err != nil {
-		return "", err
-	}
-
 	curve := elliptic.P256()
 	if len(args) == 1 {
 		c := conv.ToString(args[0])
@@ -285,32 +259,19 @@ func (f *CryptoFuncs) ECDSAGenerateKey(args ...any) (string, error) {
 }
 
 // ECDSADerivePublicKey -
-// Experimental!
 func (f *CryptoFuncs) ECDSADerivePublicKey(privateKey string) (string, error) {
-	if err := checkExperimental(f.ctx); err != nil {
-		return "", err
-	}
-
 	out, err := crypto.ECDSADerivePublicKey([]byte(privateKey))
 	return string(out), err
 }
 
 // Ed25519GenerateKey -
-// Experimental!
 func (f *CryptoFuncs) Ed25519GenerateKey() (string, error) {
-	if err := checkExperimental(f.ctx); err != nil {
-		return "", err
-	}
 	out, err := crypto.Ed25519GenerateKey()
 	return string(out), err
 }
 
 // Ed25519GenerateKeyFromSeed -
-// Experimental!
 func (f *CryptoFuncs) Ed25519GenerateKeyFromSeed(encoding, seed string) (string, error) {
-	if err := checkExperimental(f.ctx); err != nil {
-		return "", err
-	}
 	if !utf8.ValidString(seed) {
 		return "", fmt.Errorf("given seed is not valid UTF-8") // Don't print out seed (private).
 	}
@@ -332,11 +293,7 @@ func (f *CryptoFuncs) Ed25519GenerateKeyFromSeed(encoding, seed string) (string,
 }
 
 // Ed25519DerivePublicKey -
-// Experimental!
 func (f *CryptoFuncs) Ed25519DerivePublicKey(privateKey string) (string, error) {
-	if err := checkExperimental(f.ctx); err != nil {
-		return "", err
-	}
 	out, err := crypto.Ed25519DerivePublicKey([]byte(privateKey))
 	return string(out), err
 }
