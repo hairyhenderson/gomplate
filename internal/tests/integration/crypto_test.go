@@ -58,3 +58,26 @@ func TestCrypto_RSACrypt(t *testing.T) {
 		withDir(tmpDir.Path()).run()
 	assertSuccess(t, o, e, err, "hello\nhello\n")
 }
+
+func TestCrypto_DerivePublicKey(t *testing.T) {
+	// Test unified DerivePublicKey with RSA
+	o, e, err := cmd(t,
+		"-i", `{{ $key := crypto.RSAGenerateKey 2048 -}}
+{{ $pub := crypto.DerivePublicKey $key -}}
+{{ $pub | strings.HasPrefix "-----BEGIN PUBLIC KEY-----" }}`).run()
+	assertSuccess(t, o, e, err, "true")
+
+	// Test unified DerivePublicKey with ECDSA
+	o, e, err = cmd(t,
+		"-i", `{{ $key := crypto.ECDSAGenerateKey -}}
+{{ $pub := crypto.DerivePublicKey $key -}}
+{{ $pub | strings.HasPrefix "-----BEGIN PUBLIC KEY-----" }}`).run()
+	assertSuccess(t, o, e, err, "true")
+
+	// Test unified DerivePublicKey with Ed25519
+	o, e, err = cmd(t,
+		"-i", `{{ $key := crypto.Ed25519GenerateKey -}}
+{{ $pub := crypto.DerivePublicKey $key -}}
+{{ $pub | strings.HasPrefix "-----BEGIN PUBLIC KEY-----" }}`).run()
+	assertSuccess(t, o, e, err, "true")
+}

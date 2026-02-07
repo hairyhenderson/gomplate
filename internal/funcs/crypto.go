@@ -298,6 +298,13 @@ func (f *CryptoFuncs) Ed25519DerivePublicKey(privateKey string) (string, error) 
 	return string(out), err
 }
 
+// DerivePublicKey derives a public key from any supported private key type
+// (RSA, ECDSA, or Ed25519). The key type is auto-detected from the PEM header.
+func (f *CryptoFuncs) DerivePublicKey(privateKey string) (string, error) {
+	out, err := crypto.DerivePublicKey([]byte(privateKey))
+	return string(out), err
+}
+
 // EncryptAES -
 // Experimental!
 func (f *CryptoFuncs) EncryptAES(key string, args ...any) ([]byte, error) {
