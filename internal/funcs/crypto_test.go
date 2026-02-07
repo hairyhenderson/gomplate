@@ -243,6 +243,54 @@ func TestRSACrypt(t *testing.T) {
 	assert.Equal(t, dec, string(b))
 }
 
+func TestDerivePublicKey(t *testing.T) {
+	t.Parallel()
+
+	c := testCryptoNS()
+
+	t.Run("RSA key", func(t *testing.T) {
+		t.Parallel()
+		key, err := c.RSAGenerateKey(2048)
+		require.NoError(t, err)
+
+		pub, err := c.DerivePublicKey(key)
+		require.NoError(t, err)
+		assert.True(t, strings.HasPrefix(pub, "-----BEGIN PUBLIC KEY-----"))
+	})
+
+	t.Run("ECDSA key", func(t *testing.T) {
+		t.Parallel()
+		key, err := c.ECDSAGenerateKey("P-256")
+		require.NoError(t, err)
+
+		pub, err := c.DerivePublicKey(key)
+		require.NoError(t, err)
+		assert.True(t, strings.HasPrefix(pub, "-----BEGIN PUBLIC KEY-----"))
+	})
+
+	t.Run("Ed25519 key", func(t *testing.T) {
+		t.Parallel()
+		key, err := c.Ed25519GenerateKey()
+		require.NoError(t, err)
+
+		pub, err := c.DerivePublicKey(key)
+		require.NoError(t, err)
+		assert.True(t, strings.HasPrefix(pub, "-----BEGIN PUBLIC KEY-----"))
+	})
+
+	t.Run("invalid key", func(t *testing.T) {
+		t.Parallel()
+		_, err := c.DerivePublicKey("not a valid key")
+		require.Error(t, err)
+	})
+
+	t.Run("unknown key type", func(t *testing.T) {
+		t.Parallel()
+		_, err := c.DerivePublicKey("-----BEGIN UNKNOWN KEY-----\nYWJj\n-----END UNKNOWN KEY-----\n")
+		require.Error(t, err)
+	})
+}
+
 func TestAESCrypt(t *testing.T) {
 	c := testCryptoNS()
 	key := "0123456789012345"

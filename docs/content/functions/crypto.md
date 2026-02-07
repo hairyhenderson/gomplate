@@ -164,6 +164,50 @@ $ gomplate -i '{{ "hello world" | crypto.EncryptAES "swordfish" 128 | base64.Enc
 MnRutHovsh/9JN3YrJtBVjZtI6xXZh33bCQS2iZ4SDI=
 ```
 
+## `crypto.DerivePublicKey`
+
+Derive a public key from any supported private key type (RSA, ECDSA, or
+Ed25519) and output in PKIX ASN.1 DER form. The key type is auto-detected
+from the PEM block type.
+
+This is a unified function that can replace the algorithm-specific
+`crypto.RSADerivePublicKey`, `crypto.ECDSADerivePublicKey`, and
+`crypto.Ed25519DerivePublicKey` functions.
+
+_Added in gomplate [v5.1.0](https://github.com/hairyhenderson/gomplate/releases/tag/v5.1.0)_
+### Usage
+
+```
+crypto.DerivePublicKey key
+```
+```
+key | crypto.DerivePublicKey
+```
+
+### Arguments
+
+| name | description |
+|------|-------------|
+| `key` | _(required)_ the private key to derive a public key from |
+
+### Examples
+
+```console
+$ gomplate -i '{{ crypto.RSAGenerateKey | crypto.DerivePublicKey }}'
+-----BEGIN PUBLIC KEY-----
+...
+```
+```console
+$ gomplate -i '{{ crypto.ECDSAGenerateKey | crypto.DerivePublicKey }}'
+-----BEGIN PUBLIC KEY-----
+...
+```
+```console
+$ gomplate -i '{{ crypto.Ed25519GenerateKey | crypto.DerivePublicKey }}'
+-----BEGIN PUBLIC KEY-----
+...
+```
+
 ## `crypto.ECDSAGenerateKey`
 
 Generate a new Elliptic Curve Private Key and output in

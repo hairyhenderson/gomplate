@@ -110,6 +110,34 @@ funcs:
       - |
         $ gomplate -i '{{ "hello world" | crypto.EncryptAES "swordfish" 128 | base64.Encode }}'
         MnRutHovsh/9JN3YrJtBVjZtI6xXZh33bCQS2iZ4SDI=
+  - name: crypto.DerivePublicKey
+    released: v5.1.0
+    description: |
+      Derive a public key from any supported private key type (RSA, ECDSA, or
+      Ed25519) and output in PKIX ASN.1 DER form. The key type is auto-detected
+      from the PEM block type.
+
+      This is a unified function that can replace the algorithm-specific
+      `crypto.RSADerivePublicKey`, `crypto.ECDSADerivePublicKey`, and
+      `crypto.Ed25519DerivePublicKey` functions.
+    pipeline: true
+    arguments:
+      - name: key
+        required: true
+        description: the private key to derive a public key from
+    examples:
+      - |
+        $ gomplate -i '{{ crypto.RSAGenerateKey | crypto.DerivePublicKey }}'
+        -----BEGIN PUBLIC KEY-----
+        ...
+      - |
+        $ gomplate -i '{{ crypto.ECDSAGenerateKey | crypto.DerivePublicKey }}'
+        -----BEGIN PUBLIC KEY-----
+        ...
+      - |
+        $ gomplate -i '{{ crypto.Ed25519GenerateKey | crypto.DerivePublicKey }}'
+        -----BEGIN PUBLIC KEY-----
+        ...
   - name: crypto.ECDSAGenerateKey
     released: v3.11.0
     description: |
