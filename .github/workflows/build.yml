@@ -12,18 +12,26 @@ concurrency:
 
 jobs:
   linux-build:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.runner }}
     container:
       image: ghcr.io/hairyhenderson/gomplate-ci-build
     strategy:
       fail-fast: false
       matrix:
-        goarch: [ '386', 'amd64', 'arm', 'arm64' ]
         include:
+          - goarch: '386'
+            runner: ubuntu-latest
+          - goarch: 'amd64'
+            runner: ubuntu-latest
           - goarch: 'arm'
             goarm: '7'
+            runner: ubuntu-latest
+          - goarch: 'arm64'
+            runner: ubuntu-24.04-arm
     steps:
+      # Only needed for arm (32-bit) running on an amd64 host; arm64 uses a native runner
       - name: Set up QEMU
+        if: matrix.goarch == 'arm'
         uses: docker/setup-qemu-action@v3.7.0
       - run: |
           git config --global user.email "bogus@example.com"
@@ -32,6 +40,14 @@ jobs:
       - uses: actions/checkout@v6
         with:
           fetch-depth: 0
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/go/pkg/mod
+            ~/.cache/go-build
+          key: ${{ runner.os }}-${{ runner.arch }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-${{ runner.arch }}-go-
       - run: make build GOARCH=${{ matrix.goarch }} GOARM=${{ matrix.goarm }}
       - run: make test GOARCH=${{ matrix.goarch }} GOARM=${{ matrix.goarm }}
       - run: make integration GOARCH=${{ matrix.goarch }} GOARM=${{ matrix.goarm }}
