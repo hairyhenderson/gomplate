@@ -87,14 +87,14 @@ func TestItem(t *testing.T) {
 	assert.Equal(t, "foo", i)
 
 	in := []any{"foo", "bar"}
-	got := ""
-	for range 10 {
+	seen := map[any]bool{}
+	for range 30 {
 		i, err = Item(in)
 		require.NoError(t, err)
-		got += i.(string)
+		seen[i] = true
 	}
-	assert.NotEqual(t, "foofoofoofoofoofoofoofoofoofoo", got)
-	assert.NotEqual(t, "barbarbarbarbarbarbarbarbarbar", got)
+	assert.True(t, seen["foo"], "expected \"foo\" to appear in 30 random picks")
+	assert.True(t, seen["bar"], "expected \"bar\" to appear in 30 random picks")
 }
 
 func TestNumber(t *testing.T) {

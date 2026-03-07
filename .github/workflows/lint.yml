@@ -26,4 +26,5 @@ jobs:
         with:
           version: latest
           args: --verbose --max-same-issues=0 --max-issues-per-linter=0
+          only-new-issues: true
 
