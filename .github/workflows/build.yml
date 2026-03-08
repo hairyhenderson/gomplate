@@ -50,7 +50,10 @@ jobs:
             ${{ runner.os }}-${{ runner.arch }}-${{ matrix.goarch }}-go-
       - run: make build GOARCH=${{ matrix.goarch }} GOARM=${{ matrix.goarm }}
       - run: make test GOARCH=${{ matrix.goarch }} GOARM=${{ matrix.goarm }}
+      # Skip integration on arm: tests run under QEMU and take ~5m; integration
+      # tests are architecture-independent and are covered by amd64 and arm64
       - run: make integration GOARCH=${{ matrix.goarch }} GOARM=${{ matrix.goarm }}
+        if: matrix.goarch != 'arm'
   windows-build:
     runs-on: windows-latest
     env:

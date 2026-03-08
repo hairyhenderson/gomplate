@@ -150,13 +150,22 @@ build: $(PREFIX)/bin/$(PKG_NAME)_$(GOOS)-$(GOARCH)$(TARGETVARIANT)$(call extensi
 # test with race detector on supported platforms
 # windows/amd64 is supported in theory, but in practice it requires a C compiler
 race_platforms := 'linux/amd64' 'darwin/amd64' 'darwin/arm64'
+
+# In CI, skip -coverprofile so Go can cache test results between runs.
+# c.out is not consumed anywhere in CI so there's no loss.
+ifeq ("$(CI)","true")
+COVER_FLAGS :=
+else
+COVER_FLAGS := -coverprofile=c.out
+endif
+
 ifeq (,$(findstring '$(GOOS)/$(GOARCH)',$(race_platforms)))
 export CGO_ENABLED=0
 test:
-	$(GO) test -coverprofile=c.out ./...
+	$(GO) test $(COVER_FLAGS) ./...
 else
 test:
-	$(GO) test -race -coverprofile=c.out ./...
+	$(GO) test -race $(COVER_FLAGS) ./...
 endif
 
 bench.txt: go.mod go.sum $(GO_FILES)
