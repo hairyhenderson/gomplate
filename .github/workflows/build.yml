@@ -61,11 +61,6 @@ jobs:
       - uses: actions/setup-go@v6
         with:
           go-version-file: go.mod
-      - uses: actions/cache@v4
-        with:
-          path: ${{ env.GOCACHE }}
-          key: windows-go-build-${{ hashFiles('**/go.sum') }}
-          restore-keys: windows-go-build-
       - run: |
           git config --global user.email "bogus@example.com"
           git config --global user.name "Someone"
