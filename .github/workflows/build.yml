@@ -25,11 +25,11 @@ jobs:
             runner: ubuntu-latest
           - goarch: 'arm'
             goarm: '7'
-            runner: ubuntu-latest
+            runner: ubuntu-24.04-arm
           - goarch: 'arm64'
             runner: ubuntu-24.04-arm
     steps:
-      # Only needed for arm (32-bit) running on an amd64 host; arm64 uses a native runner
+      # QEMU may be needed for arm (32-bit) if the runner doesn't support AArch32 natively
       - name: Set up QEMU
         if: matrix.goarch == 'arm'
         uses: docker/setup-qemu-action@v3.7.0
