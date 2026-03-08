@@ -154,7 +154,7 @@ jobs:
             make bin/gomplate_windows-amd64.zip VERSION=$VERSION
           fi
       - name: Save Artifacts
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: build-${{ matrix.goos }}-${{ matrix.goarch }}${{ matrix.variant }}
           path: bin/*
@@ -171,7 +171,7 @@ jobs:
         with:
           app-id: ${{ vars.APP_ID }}
           private-key: ${{ secrets.PRIVATE_KEY }}
-      - uses: actions/download-artifact@v7
+      - uses: actions/download-artifact@v8
       - name: Organize Artifacts
         run: |
           mv build*/* .
