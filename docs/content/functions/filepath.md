@@ -19,7 +19,7 @@ Returns the last element of path. Trailing path separators are removed before ex
 
 A wrapper for Go's [`filepath.Base`](https://pkg.go.dev/path/filepath/#Base) function.
 
-_Added in gomplate [v2.7.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.7.0)_
+_<span class="release-check" data-tag="v2.7.0">Added in gomplate v2.7.0</span>_
 ### Usage
 
 ```
@@ -48,7 +48,7 @@ Clean returns the shortest path name equivalent to path by purely lexical proces
 
 A wrapper for Go's [`filepath.Clean`](https://pkg.go.dev/path/filepath/#Clean) function.
 
-_Added in gomplate [v2.7.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.7.0)_
+_<span class="release-check" data-tag="v2.7.0">Added in gomplate v2.7.0</span>_
 ### Usage
 
 ```
@@ -77,7 +77,7 @@ Returns all but the last element of path, typically the path's directory.
 
 A wrapper for Go's [`filepath.Dir`](https://pkg.go.dev/path/filepath/#Dir) function.
 
-_Added in gomplate [v2.7.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.7.0)_
+_<span class="release-check" data-tag="v2.7.0">Added in gomplate v2.7.0</span>_
 ### Usage
 
 ```
@@ -106,7 +106,7 @@ Returns the file name extension used by path.
 
 A wrapper for Go's [`filepath.Ext`](https://pkg.go.dev/path/filepath/#Ext) function.
 
-_Added in gomplate [v2.7.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.7.0)_
+_<span class="release-check" data-tag="v2.7.0">Added in gomplate v2.7.0</span>_
 ### Usage
 
 ```
@@ -135,7 +135,7 @@ Returns the result of replacing each slash (`/`) character in the path with the 
 
 A wrapper for Go's [`filepath.FromSlash`](https://pkg.go.dev/path/filepath/#FromSlash) function.
 
-_Added in gomplate [v2.7.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.7.0)_
+_<span class="release-check" data-tag="v2.7.0">Added in gomplate v2.7.0</span>_
 ### Usage
 
 ```
@@ -166,7 +166,7 @@ Reports whether the path is absolute.
 
 A wrapper for Go's [`filepath.IsAbs`](https://pkg.go.dev/path/filepath/#IsAbs) function.
 
-_Added in gomplate [v2.7.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.7.0)_
+_<span class="release-check" data-tag="v2.7.0">Added in gomplate v2.7.0</span>_
 ### Usage
 
 ```
@@ -197,7 +197,7 @@ Joins any number of path elements into a single path, adding a separator if nece
 
 A wrapper for Go's [`filepath.Join`](https://pkg.go.dev/path/filepath/#Join) function.
 
-_Added in gomplate [v2.7.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.7.0)_
+_<span class="release-check" data-tag="v2.7.0">Added in gomplate v2.7.0</span>_
 ### Usage
 
 ```
@@ -225,7 +225,7 @@ Reports whether name matches the shell file name pattern.
 
 A wrapper for Go's [`filepath.Match`](https://pkg.go.dev/path/filepath/#Match) function.
 
-_Added in gomplate [v2.7.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.7.0)_
+_<span class="release-check" data-tag="v2.7.0">Added in gomplate v2.7.0</span>_
 ### Usage
 
 ```
@@ -252,7 +252,7 @@ Returns a relative path that is lexically equivalent to targetpath when joined t
 
 A wrapper for Go's [`filepath.Rel`](https://pkg.go.dev/path/filepath/#Rel) function.
 
-_Added in gomplate [v2.7.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.7.0)_
+_<span class="release-check" data-tag="v2.7.0">Added in gomplate v2.7.0</span>_
 ### Usage
 
 ```
@@ -281,7 +281,7 @@ The function returns an array with two values, the first being the directory, an
 
 A wrapper for Go's [`filepath.Split`](https://pkg.go.dev/path/filepath/#Split) function.
 
-_Added in gomplate [v2.7.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.7.0)_
+_<span class="release-check" data-tag="v2.7.0">Added in gomplate v2.7.0</span>_
 ### Usage
 
 ```
@@ -312,7 +312,7 @@ Returns the result of replacing each separator character in path with a slash (`
 
 A wrapper for Go's [`filepath.ToSlash`](https://pkg.go.dev/path/filepath/#ToSlash) function.
 
-_Added in gomplate [v2.7.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.7.0)_
+_<span class="release-check" data-tag="v2.7.0">Added in gomplate v2.7.0</span>_
 ### Usage
 
 ```
@@ -343,7 +343,7 @@ Returns the leading volume name. Given `C:\foo\bar` it returns `C:` on Windows. 
 
 A wrapper for Go's [`filepath.VolumeName`](https://pkg.go.dev/path/filepath/#VolumeName) function.
 
-_Added in gomplate [v2.7.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.7.0)_
+_<span class="release-check" data-tag="v2.7.0">Added in gomplate v2.7.0</span>_
 ### Usage
 
 ```

@@ -19,7 +19,7 @@ calculations.
 Resolve an IPv4 address for a given host name. When multiple IP addresses
 are resolved, the first one is returned.
 
-_Added in gomplate [v1.9.0](https://github.com/hairyhenderson/gomplate/releases/tag/v1.9.0)_
+_<span class="release-check" data-tag="v1.9.0">Added in gomplate v1.9.0</span>_
 ### Usage
 
 ```
@@ -46,7 +46,7 @@ $ gomplate -i '{{ net.LookupIP "example.com" }}'
 
 Resolve all IPv4 addresses for a given host name. Returns an array of strings.
 
-_Added in gomplate [v1.9.0](https://github.com/hairyhenderson/gomplate/releases/tag/v1.9.0)_
+_<span class="release-check" data-tag="v1.9.0">Added in gomplate v1.9.0</span>_
 ### Usage
 
 ```
@@ -75,7 +75,7 @@ Resolve the canonical name for a given host name. This does a DNS lookup for the
 `CNAME` record type. If no `CNAME` is present, a canonical form of the given name
 is returned -- e.g. `net.LookupCNAME "localhost"` will return `"localhost."`.
 
-_Added in gomplate [v1.9.0](https://github.com/hairyhenderson/gomplate/releases/tag/v1.9.0)_
+_<span class="release-check" data-tag="v1.9.0">Added in gomplate v1.9.0</span>_
 ### Usage
 
 ```
@@ -113,7 +113,7 @@ following properties are available:
 - `Port` - _(uint16)_ the service's port
 - `Priority`, `Weight` - see [RFC2782](https://tools.ietf.org/html/rfc2782) for details
 
-_Added in gomplate [v1.9.0](https://github.com/hairyhenderson/gomplate/releases/tag/v1.9.0)_
+_<span class="release-check" data-tag="v1.9.0">Added in gomplate v1.9.0</span>_
 ### Usage
 
 ```
@@ -156,7 +156,7 @@ returned. For each element, the following properties are available:
 - `Port` - _(uint16)_ the service's port
 - `Priority`, `Weight` - see [RFC2782](https://tools.ietf.org/html/rfc2782) for details
 
-_Added in gomplate [v1.9.0](https://github.com/hairyhenderson/gomplate/releases/tag/v1.9.0)_
+_<span class="release-check" data-tag="v1.9.0">Added in gomplate v1.9.0</span>_
 ### Usage
 
 ```
@@ -193,7 +193,7 @@ Resolve a DNS [`TXT` record](https://en.wikipedia.org/wiki/SRV_record).
 
 This function returns all available TXT records as an array of strings.
 
-_Added in gomplate [v1.9.0](https://github.com/hairyhenderson/gomplate/releases/tag/v1.9.0)_
+_<span class="release-check" data-tag="v1.9.0">Added in gomplate v1.9.0</span>_
 ### Usage
 
 ```
@@ -226,7 +226,7 @@ Parse the given string as an IP address (a
 Any of `netip.Addr`'s methods may be called on the resulting value. See
 [the docs](https://pkg.go.dev/net/netip#Addr) for details.
 
-_Added in gomplate [v4.0.0](https://github.com/hairyhenderson/gomplate/releases/tag/v4.0.0)_
+_<span class="release-check" data-tag="v4.0.0">Added in gomplate v4.0.0</span>_
 ### Usage
 
 ```
@@ -263,7 +263,7 @@ the CIDR notations defined in [RFC 4632][] and [RFC 4291][].
 Any of `netip.Prefix`'s methods may be called on the resulting value. See
 [the docs](https://pkg.go.dev/net/netip#Prefix) for details.
 
-_Added in gomplate [v4.0.0](https://github.com/hairyhenderson/gomplate/releases/tag/v4.0.0)_
+_<span class="release-check" data-tag="v4.0.0">Added in gomplate v4.0.0</span>_
 ### Usage
 
 ```
@@ -301,7 +301,7 @@ The string must contain a hyphen (`-`).
 Any of `netipx.IPRange`'s methods may be called on the resulting value.
 See [the docs](https://pkg.go.dev/go4.org/netipx#IPRange) for details.
 
-_Added in gomplate [v4.0.0](https://github.com/hairyhenderson/gomplate/releases/tag/v4.0.0)_
+_<span class="release-check" data-tag="v4.0.0">Added in gomplate v4.0.0</span>_
 ### Usage
 
 ```
@@ -340,7 +340,7 @@ the CIDR notations defined in [RFC 4632][] and [RFC 4291][].
 Any of `netip.Addr`'s methods may be called on the resulting value. See
 [the docs](https://pkg.go.dev/net/netip#Addr) for details.
 
-_Added in gomplate [v3.11.0](https://github.com/hairyhenderson/gomplate/releases/tag/v3.11.0)_
+_<span class="release-check" data-tag="v3.11.0">Added in gomplate v3.11.0</span>_
 ### Usage
 
 ```
@@ -374,7 +374,7 @@ The result is a subnet address formatted in the conventional dotted-decimal IPv4
 Any of `netip.Addr`'s methods may be called on the resulting value. See
 [the docs](https://pkg.go.dev/net/netip#Addr) for details.
 
-_Added in gomplate [v3.11.0](https://github.com/hairyhenderson/gomplate/releases/tag/v3.11.0)_
+_<span class="release-check" data-tag="v3.11.0">Added in gomplate v3.11.0</span>_
 ### Usage
 
 ```
@@ -409,7 +409,7 @@ Calculates a subnet address within given IP network address prefix.
 Any of `netip.Prefix`'s methods may be called on the resulting values. See
 [the docs](https://pkg.go.dev/net/netip#Prefix) for details.
 
-_Added in gomplate [v3.11.0](https://github.com/hairyhenderson/gomplate/releases/tag/v3.11.0)_
+_<span class="release-check" data-tag="v3.11.0">Added in gomplate v3.11.0</span>_
 ### Usage
 
 ```
@@ -445,7 +445,7 @@ Calculates a sequence of consecutive IP address ranges within a particular CIDR 
 Any of `netip.Prefix`'s methods may be called on the resulting values. See
 [the docs](https://pkg.go.dev/net/netip#Prefix) for details.
 
-_Added in gomplate [v3.11.0](https://github.com/hairyhenderson/gomplate/releases/tag/v3.11.0)_
+_<span class="release-check" data-tag="v3.11.0">Added in gomplate v3.11.0</span>_
 ### Usage
 
 ```

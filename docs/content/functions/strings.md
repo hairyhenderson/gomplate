@@ -12,7 +12,7 @@ Abbreviates a string using `...` (ellipses). Takes an optional offset from the b
 
 _Also see [`strings.Trunc`](#stringstrunc)._
 
-_Added in gomplate [v2.6.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.6.0)_
+_<span class="release-check" data-tag="v2.6.0">Added in gomplate v2.6.0</span>_
 ### Usage
 
 ```
@@ -43,7 +43,7 @@ $ gomplate -i '{{ "foobarbazquxquux" | strings.Abbrev 6 9 }}'
 
 Reports whether a substring is contained within a string.
 
-_Added in gomplate [v1.9.0](https://github.com/hairyhenderson/gomplate/releases/tag/v1.9.0)_
+_<span class="release-check" data-tag="v1.9.0">Added in gomplate v1.9.0</span>_
 ### Usage
 
 ```
@@ -78,7 +78,7 @@ no
 
 Tests whether a string begins with a certain prefix.
 
-_Added in gomplate [v1.9.0](https://github.com/hairyhenderson/gomplate/releases/tag/v1.9.0)_
+_<span class="release-check" data-tag="v1.9.0">Added in gomplate v1.9.0</span>_
 ### Usage
 
 ```
@@ -108,7 +108,7 @@ foo
 
 Tests whether a string ends with a certain suffix.
 
-_Added in gomplate [v1.9.0](https://github.com/hairyhenderson/gomplate/releases/tag/v1.9.0)_
+_<span class="release-check" data-tag="v1.9.0">Added in gomplate v1.9.0</span>_
 ### Usage
 
 ```
@@ -145,7 +145,7 @@ Indents a string. If the input string has multiple lines, each line will be inde
 
 As of v4.0.0, this function will error if the `width` or `indent` arguments are invalid.
 
-_Added in gomplate [v1.9.0](https://github.com/hairyhenderson/gomplate/releases/tag/v1.9.0)_
+_<span class="release-check" data-tag="v1.9.0">Added in gomplate v1.9.0</span>_
 ### Usage
 
 ```
@@ -195,7 +195,7 @@ remainder.
 If `skip` is greater than the number of lines in `in`, an empty string is
 returned.
 
-_Added in gomplate [v4.0.0](https://github.com/hairyhenderson/gomplate/releases/tag/v4.0.0)_
+_<span class="release-check" data-tag="v4.0.0">Added in gomplate v4.0.0</span>_
 ### Usage
 
 ```
@@ -240,7 +240,7 @@ of `-1`.
 
 Note that the delimiter is not included in the resulting elements.
 
-_Added in gomplate [v1.9.0](https://github.com/hairyhenderson/gomplate/releases/tag/v1.9.0)_
+_<span class="release-check" data-tag="v1.9.0">Added in gomplate v1.9.0</span>_
 ### Usage
 
 ```
@@ -289,7 +289,7 @@ The `count` determines the number of substrings to return:
 
 See [`strings.Split`](#stringssplit) for more details.
 
-_Added in gomplate [v1.9.0](https://github.com/hairyhenderson/gomplate/releases/tag/v1.9.0)_
+_<span class="release-check" data-tag="v1.9.0">Added in gomplate v1.9.0</span>_
 ### Usage
 
 ```
@@ -330,7 +330,7 @@ This is a convenience function which is equivalent to:
 {{ print "%q" "input string" }}
 ```
 
-_Added in gomplate [v3.1.0](https://github.com/hairyhenderson/gomplate/releases/tag/v3.1.0)_
+_<span class="release-check" data-tag="v3.1.0">Added in gomplate v3.1.0</span>_
 ### Usage
 
 ```
@@ -363,7 +363,7 @@ It errors if `count` is negative or if the length of `input` multiplied by `coun
 
 This wraps Go's [`strings.Repeat`](https://pkg.go.dev/strings/#Repeat).
 
-_Added in gomplate [v2.6.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.6.0)_
+_<span class="release-check" data-tag="v2.6.0">Added in gomplate v2.6.0</span>_
 ### Usage
 
 ```
@@ -393,7 +393,7 @@ hello hello hello hello hello
 
 Replaces all occurrences of a given string with another.
 
-_Added in gomplate [v1.9.0](https://github.com/hairyhenderson/gomplate/releases/tag/v1.9.0)_
+_<span class="release-check" data-tag="v1.9.0">Added in gomplate v1.9.0</span>_
 ### Usage
 
 ```
@@ -424,7 +424,7 @@ $ gomplate -i '{{ "172.21.1.42" | strings.ReplaceAll "." "-" }}'
 
 Creates a a "slug" from a given string - supports Unicode correctly. This wraps the [github.com/gosimple/slug](https://github.com/gosimple/slug) package. See [the github.com/gosimple/slug docs](https://pkg.go.dev/github.com/gosimple/slug) for more information.
 
-_Added in gomplate [v2.6.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.6.0)_
+_<span class="release-check" data-tag="v2.6.0">Added in gomplate v2.6.0</span>_
 ### Usage
 
 ```
@@ -459,7 +459,7 @@ Given a string, emits a version of that string that will evaluate to its literal
 
 Given an array or slice, emit a single string which will evaluate to a series of shell words, one per item in that array or slice.
 
-_Added in gomplate [v3.6.0](https://github.com/hairyhenderson/gomplate/releases/tag/v3.6.0)_
+_<span class="release-check" data-tag="v3.6.0">Added in gomplate v3.6.0</span>_
 ### Usage
 
 ```
@@ -494,7 +494,7 @@ Surrounds an input string with a single-quote (apostrophe) character (`'`). If t
 
 `'` characters in the input are first escaped in the YAML-style (by repetition: `''`).
 
-_Added in gomplate [v3.1.0](https://github.com/hairyhenderson/gomplate/releases/tag/v3.1.0)_
+_<span class="release-check" data-tag="v3.1.0">Added in gomplate v3.1.0</span>_
 ### Usage
 
 ```
@@ -527,7 +527,7 @@ $ gomplate -i "{{ strings.Squote \"it's a banana\" }}"
 
 Convert to title-case.
 
-_Added in gomplate [v1.9.0](https://github.com/hairyhenderson/gomplate/releases/tag/v1.9.0)_
+_<span class="release-check" data-tag="v1.9.0">Added in gomplate v1.9.0</span>_
 ### Usage
 
 ```
@@ -556,7 +556,7 @@ Hello, World!
 
 Convert to lower-case.
 
-_Added in gomplate [v1.9.0](https://github.com/hairyhenderson/gomplate/releases/tag/v1.9.0)_
+_<span class="release-check" data-tag="v1.9.0">Added in gomplate v1.9.0</span>_
 ### Usage
 
 ```
@@ -585,7 +585,7 @@ hello, world!
 
 Convert to upper-case.
 
-_Added in gomplate [v1.9.0](https://github.com/hairyhenderson/gomplate/releases/tag/v1.9.0)_
+_<span class="release-check" data-tag="v1.9.0">Added in gomplate v1.9.0</span>_
 ### Usage
 
 ```
@@ -613,7 +613,7 @@ HELLO, WORLD!
 Trims a string by removing the given characters from the beginning and end of
 the string.
 
-_Added in gomplate [v1.9.0](https://github.com/hairyhenderson/gomplate/releases/tag/v1.9.0)_
+_<span class="release-check" data-tag="v1.9.0">Added in gomplate v1.9.0</span>_
 ### Usage
 
 ```
@@ -642,7 +642,7 @@ foo
 Trims a string by removing the given characters from the beginning of the string.
 This wraps Go's [`strings.TrimLeft`](https://pkg.go.dev/strings#TrimLeft).
 
-_Added in gomplate [v4.1.0](https://github.com/hairyhenderson/gomplate/releases/tag/v4.1.0)_
+_<span class="release-check" data-tag="v4.1.0">Added in gomplate v4.1.0</span>_
 ### Usage
 
 ```
@@ -672,7 +672,7 @@ Returns a string without the provided leading prefix string, if the prefix is pr
 
 This wraps Go's [`strings.TrimPrefix`](https://pkg.go.dev/strings/#TrimPrefix).
 
-_Added in gomplate [v2.5.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.5.0)_
+_<span class="release-check" data-tag="v2.5.0">Added in gomplate v2.5.0</span>_
 ### Usage
 
 ```
@@ -701,7 +701,7 @@ world
 Trims a string by removing the given characters from the end of the string.
 This wraps Go's [`strings.TrimRight`](https://pkg.go.dev/strings#TrimRight).
 
-_Added in gomplate [v4.1.0](https://github.com/hairyhenderson/gomplate/releases/tag/v4.1.0)_
+_<span class="release-check" data-tag="v4.1.0">Added in gomplate v4.1.0</span>_
 ### Usage
 
 ```
@@ -732,7 +732,7 @@ hello, world!
 Trims a string by removing whitespace from the beginning and end of
 the string.
 
-_Added in gomplate [v1.9.0](https://github.com/hairyhenderson/gomplate/releases/tag/v1.9.0)_
+_<span class="release-check" data-tag="v1.9.0">Added in gomplate v1.9.0</span>_
 ### Usage
 
 ```
@@ -761,7 +761,7 @@ Returns a string without the provided trailing suffix string, if the suffix is p
 
 This wraps Go's [`strings.TrimSuffix`](https://pkg.go.dev/strings/#TrimSuffix).
 
-_Added in gomplate [v2.6.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.6.0)_
+_<span class="release-check" data-tag="v2.6.0">Added in gomplate v2.6.0</span>_
 ### Usage
 
 ```
@@ -791,7 +791,7 @@ Returns a string truncated to the given length.
 
 _Also see [`strings.Abbrev`](#stringsabbrev)._
 
-_Added in gomplate [v2.6.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.6.0)_
+_<span class="release-check" data-tag="v2.6.0">Added in gomplate v2.6.0</span>_
 ### Usage
 
 ```
@@ -823,7 +823,7 @@ All non-alphanumeric characters are stripped, and the beginnings of words are up
 
 See [CamelCase on Wikipedia](https://en.wikipedia.org/wiki/Camel_case) for more details.
 
-_Added in gomplate [v3.3.0](https://github.com/hairyhenderson/gomplate/releases/tag/v3.3.0)_
+_<span class="release-check" data-tag="v3.3.0">Added in gomplate v3.3.0</span>_
 ### Usage
 
 ```
@@ -858,7 +858,7 @@ All non-alphanumeric characters are stripped, and spaces are replaced with an un
 
 See [Snake Case on Wikipedia](https://en.wikipedia.org/wiki/Snake_case) for more details.
 
-_Added in gomplate [v3.3.0](https://github.com/hairyhenderson/gomplate/releases/tag/v3.3.0)_
+_<span class="release-check" data-tag="v3.3.0">Added in gomplate v3.3.0</span>_
 ### Usage
 
 ```
@@ -893,7 +893,7 @@ All non-alphanumeric characters are stripped, and spaces are replaced with a hyp
 
 See [Kebab Case on Wikipedia](https://en.wikipedia.org/wiki/Kebab_case) for more details.
 
-_Added in gomplate [v3.3.0](https://github.com/hairyhenderson/gomplate/releases/tag/v3.3.0)_
+_<span class="release-check" data-tag="v3.3.0">Added in gomplate v3.3.0</span>_
 ### Usage
 
 ```
@@ -930,7 +930,7 @@ When words that are longer than the desired width are encountered (e.g. long URL
 
 The line-break sequence defaults to `\n` (i.e. the LF/Line Feed character), regardless of OS.
 
-_Added in gomplate [v3.3.0](https://github.com/hairyhenderson/gomplate/releases/tag/v3.3.0)_
+_<span class="release-check" data-tag="v3.3.0">Added in gomplate v3.3.0</span>_
 ### Usage
 
 ```
@@ -977,7 +977,7 @@ concatenated.
 This wraps Go's [`utf8.RuneCountInString`](https://pkg.go.dev/unicode/utf8/#RuneCountInString)
 function.
 
-_Added in gomplate [v3.4.0](https://github.com/hairyhenderson/gomplate/releases/tag/v3.4.0)_
+_<span class="release-check" data-tag="v3.4.0">Added in gomplate v3.4.0</span>_
 ### Usage
 
 ```

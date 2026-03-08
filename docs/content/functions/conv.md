@@ -16,7 +16,7 @@ to another - generally from a `string` to something else, and vice-versa.
 
 Converts a true-ish string to a boolean. Can be used to simplify conditional statements based on environment variables or other text input.
 
-_Added in gomplate [v0.2.0](https://github.com/hairyhenderson/gomplate/releases/tag/v0.2.0)_
+_<span class="release-check" data-tag="v0.2.0">Added in gomplate v0.2.0</span>_
 ### Usage
 
 ```
@@ -57,7 +57,7 @@ Note that this will not provide a default for the case where the input is undefi
 (i.e. referencing things like `.foo` where there is no `foo` field of `.`), but
 [`coll.Has`](../coll/#collhas) can be used for that.
 
-_Added in gomplate [v2.5.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.5.0)_
+_<span class="release-check" data-tag="v2.5.0">Added in gomplate v2.5.0</span>_
 ### Usage
 
 ```
@@ -87,7 +87,7 @@ foo bar
 
 Concatenates the elements of an array to create a string. The separator string `sep` is placed between elements in the resulting string.
 
-_Added in gomplate [v0.4.0](https://github.com/hairyhenderson/gomplate/releases/tag/v0.4.0)_
+_<span class="release-check" data-tag="v0.4.0">Added in gomplate v0.4.0</span>_
 ### Usage
 
 ```
@@ -116,7 +116,7 @@ Parses a string as a URL for later use. Equivalent to [url.Parse](https://pkg.go
 
 Any of `url.URL`'s methods can be called on the result.
 
-_Added in gomplate [v2.0.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.0.0)_
+_<span class="release-check" data-tag="v2.0.0">Added in gomplate v2.0.0</span>_
 ### Usage
 
 ```
@@ -157,7 +157,7 @@ _**Note:**_ See [`conv.ToInt64`](#convtoint64) instead for a simpler and more fl
 
 Parses a string as an int64. Equivalent to [strconv.ParseInt](https://pkg.go.dev/strconv/#ParseInt)
 
-_Added in gomplate [v1.4.0](https://github.com/hairyhenderson/gomplate/releases/tag/v1.4.0)_
+_<span class="release-check" data-tag="v1.4.0">Added in gomplate v1.4.0</span>_
 ### Usage
 
 ```
@@ -185,7 +185,7 @@ _**Note:**_ See [`conv.ToFloat64`](#convtofloat64) instead for a simpler and mor
 
 Parses a string as an float64 for later use. Equivalent to [strconv.ParseFloat](https://pkg.go.dev/strconv/#ParseFloat)
 
-_Added in gomplate [v1.4.0](https://github.com/hairyhenderson/gomplate/releases/tag/v1.4.0)_
+_<span class="release-check" data-tag="v1.4.0">Added in gomplate v1.4.0</span>_
 ### Usage
 
 ```
@@ -212,7 +212,7 @@ pi is greater than 3
 
 Parses a string as an uint64 for later use. Equivalent to [strconv.ParseUint](https://pkg.go.dev/strconv/#ParseUint)
 
-_Added in gomplate [v1.4.0](https://github.com/hairyhenderson/gomplate/releases/tag/v1.4.0)_
+_<span class="release-check" data-tag="v1.4.0">Added in gomplate v1.4.0</span>_
 ### Usage
 
 ```
@@ -240,7 +240,7 @@ _**Note:**_ See [`conv.ToInt`](#convtoint) and [`conv.ToInt64`](#convtoint64) in
 
 Parses a string as an int for later use. Equivalent to [strconv.Atoi](https://pkg.go.dev/strconv/#Atoi)
 
-_Added in gomplate [v1.4.0](https://github.com/hairyhenderson/gomplate/releases/tag/v1.4.0)_
+_<span class="release-check" data-tag="v1.4.0">Added in gomplate v1.4.0</span>_
 ### Usage
 
 ```
@@ -271,7 +271,7 @@ Converts the input to a boolean value.
 Possible `true` values are: `1` or the strings `"t"`, `"true"`, or `"yes"`
 (any capitalizations). All other values are considered `false`.
 
-_Added in gomplate [v2.7.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.7.0)_
+_<span class="release-check" data-tag="v2.7.0">Added in gomplate v2.7.0</span>_
 ### Usage
 
 ```
@@ -302,7 +302,7 @@ Converts a list of inputs to an array of boolean values.
 Possible `true` values are: `1` or the strings `"t"`, `"true"`, or `"yes"`
 (any capitalizations). All other values are considered `false`.
 
-_Added in gomplate [v2.7.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.7.0)_
+_<span class="release-check" data-tag="v2.7.0">Added in gomplate v2.7.0</span>_
 ### Usage
 
 ```
@@ -338,7 +338,7 @@ Unconvertible inputs will result in errors.
 
 Floating-point numbers (with decimal points) are truncated.
 
-_Added in gomplate [v2.2.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.2.0)_
+_<span class="release-check" data-tag="v2.2.0">Added in gomplate v2.2.0</span>_
 ### Usage
 
 ```
@@ -382,7 +382,7 @@ the result is `-1`. This is done to protect against
 
 See also [`conv.ToInt64`](#convtoint64).
 
-_Added in gomplate [v2.2.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.2.0)_
+_<span class="release-check" data-tag="v2.2.0">Added in gomplate v2.2.0</span>_
 ### Usage
 
 ```
@@ -418,7 +418,7 @@ Unconvertible inputs will result in errors.
 
 This delegates to [`conv.ToInt64`](#convtoint64) for each input argument.
 
-_Added in gomplate [v2.2.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.2.0)_
+_<span class="release-check" data-tag="v2.2.0">Added in gomplate v2.2.0</span>_
 ### Usage
 
 ```
@@ -446,7 +446,7 @@ Unconvertible inputs will result in errors.
 
 This delegates to [`conv.ToInt`](#convtoint) for each input argument.
 
-_Added in gomplate [v2.2.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.2.0)_
+_<span class="release-check" data-tag="v2.2.0">Added in gomplate v2.2.0</span>_
 ### Usage
 
 ```
@@ -475,7 +475,7 @@ and booleans).
 
 Unconvertible inputs will result in errors.
 
-_Added in gomplate [v2.2.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.2.0)_
+_<span class="release-check" data-tag="v2.2.0">Added in gomplate v2.2.0</span>_
 ### Usage
 
 ```
@@ -505,7 +505,7 @@ Unconvertible inputs will result in errors.
 
 This delegates to [`conv.ToFloat64`](#convtofloat64) for each input argument.
 
-_Added in gomplate [v2.2.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.2.0)_
+_<span class="release-check" data-tag="v2.2.0">Added in gomplate v2.2.0</span>_
 ### Usage
 
 ```
@@ -531,7 +531,7 @@ Converts the input (of any type) to a `string`.
 
 The input will always be represented in _some_ way.
 
-_Added in gomplate [v2.5.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.5.0)_
+_<span class="release-check" data-tag="v2.5.0">Added in gomplate v2.5.0</span>_
 ### Usage
 
 ```
@@ -561,7 +561,7 @@ Converts the inputs (of any type) to an array of `string`s
 
 This delegates to [`conv.ToString`](#convtostring) for each input argument.
 
-_Added in gomplate [v2.5.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.5.0)_
+_<span class="release-check" data-tag="v2.5.0">Added in gomplate v2.5.0</span>_
 ### Usage
 
 ```

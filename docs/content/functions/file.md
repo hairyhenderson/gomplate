@@ -11,7 +11,7 @@ Functions for working with files.
 
 Reports whether a file or directory exists at the given path.
 
-_Added in gomplate [v2.4.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.4.0)_
+_<span class="release-check" data-tag="v2.4.0">Added in gomplate v2.4.0</span>_
 ### Usage
 
 ```
@@ -46,7 +46,7 @@ yes
 
 Reports whether a given path is a directory.
 
-_Added in gomplate [v2.4.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.4.0)_
+_<span class="release-check" data-tag="v2.4.0">Added in gomplate v2.4.0</span>_
 ### Usage
 
 ```
@@ -84,7 +84,7 @@ yes
 
 Reads a given file _as text_. Note that this will succeed if the given file is binary, but the output may be gibberish.
 
-_Added in gomplate [v2.4.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.4.0)_
+_<span class="release-check" data-tag="v2.4.0">Added in gomplate v2.4.0</span>_
 ### Usage
 
 ```
@@ -112,7 +112,7 @@ hello world
 
 Reads a directory and lists the files and directories contained within.
 
-_Added in gomplate [v2.4.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.4.0)_
+_<span class="release-check" data-tag="v2.4.0">Added in gomplate v2.4.0</span>_
 ### Usage
 
 ```
@@ -147,7 +147,7 @@ Returns a [`os.FileInfo`](https://pkg.go.dev/os/#FileInfo) describing the named 
 
 Essentially a wrapper for Go's [`os.Stat`](https://pkg.go.dev/os/#Stat) function.
 
-_Added in gomplate [v2.4.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.4.0)_
+_<span class="release-check" data-tag="v2.4.0">Added in gomplate v2.4.0</span>_
 ### Usage
 
 ```
@@ -181,7 +181,7 @@ Walk does not follow symbolic links.
 
 Similar to Go's [`filepath.Walk`](https://pkg.go.dev/path/filepath/#Walk) function.
 
-_Added in gomplate [v2.6.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.6.0)_
+_<span class="release-check" data-tag="v2.6.0">Added in gomplate v2.6.0</span>_
 ### Usage
 
 ```
@@ -228,7 +228,7 @@ Non-existing directories in the output path will be created.
 
 If the data is a byte array (`[]byte`), it will be written as-is. Otherwise, it will be converted to a string before being written.
 
-_Added in gomplate [v2.4.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.4.0)_
+_<span class="release-check" data-tag="v2.4.0">Added in gomplate v2.4.0</span>_
 ### Usage
 
 ```

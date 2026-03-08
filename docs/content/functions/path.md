@@ -19,7 +19,7 @@ Returns the last element of path. Trailing slashes are removed before extracting
 
 A wrapper for Go's [`path.Base`](https://pkg.go.dev/path/#Base) function.
 
-_Added in gomplate [v2.7.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.7.0)_
+_<span class="release-check" data-tag="v2.7.0">Added in gomplate v2.7.0</span>_
 ### Usage
 
 ```
@@ -48,7 +48,7 @@ Clean returns the shortest path name equivalent to path by purely lexical proces
 
 A wrapper for Go's [`path.Clean`](https://pkg.go.dev/path/#Clean) function.
 
-_Added in gomplate [v2.7.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.7.0)_
+_<span class="release-check" data-tag="v2.7.0">Added in gomplate v2.7.0</span>_
 ### Usage
 
 ```
@@ -77,7 +77,7 @@ Returns all but the last element of path, typically the path's directory.
 
 A wrapper for Go's [`path.Dir`](https://pkg.go.dev/path/#Dir) function.
 
-_Added in gomplate [v2.7.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.7.0)_
+_<span class="release-check" data-tag="v2.7.0">Added in gomplate v2.7.0</span>_
 ### Usage
 
 ```
@@ -106,7 +106,7 @@ Returns the file name extension used by path.
 
 A wrapper for Go's [`path.Ext`](https://pkg.go.dev/path/#Ext) function.
 
-_Added in gomplate [v2.7.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.7.0)_
+_<span class="release-check" data-tag="v2.7.0">Added in gomplate v2.7.0</span>_
 ### Usage
 
 ```
@@ -135,7 +135,7 @@ Reports whether the path is absolute.
 
 A wrapper for Go's [`path.IsAbs`](https://pkg.go.dev/path/#IsAbs) function.
 
-_Added in gomplate [v2.7.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.7.0)_
+_<span class="release-check" data-tag="v2.7.0">Added in gomplate v2.7.0</span>_
 ### Usage
 
 ```
@@ -166,7 +166,7 @@ Joins any number of path elements into a single path, adding a separating slash 
 
 A wrapper for Go's [`path.Join`](https://pkg.go.dev/path/#Join) function.
 
-_Added in gomplate [v2.7.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.7.0)_
+_<span class="release-check" data-tag="v2.7.0">Added in gomplate v2.7.0</span>_
 ### Usage
 
 ```
@@ -192,7 +192,7 @@ Reports whether name matches the shell file name pattern.
 
 A wrapper for Go's [`path.Match`](https://pkg.go.dev/path/#Match) function.
 
-_Added in gomplate [v2.7.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.7.0)_
+_<span class="release-check" data-tag="v2.7.0">Added in gomplate v2.7.0</span>_
 ### Usage
 
 ```
@@ -221,7 +221,7 @@ The function returns an array with two values, the first being the directory, an
 
 A wrapper for Go's [`path.Split`](https://pkg.go.dev/path/#Split) function.
 
-_Added in gomplate [v2.7.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.7.0)_
+_<span class="release-check" data-tag="v2.7.0">Added in gomplate v2.7.0</span>_
 ### Usage
 
 ```

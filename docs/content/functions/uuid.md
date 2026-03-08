@@ -23,7 +23,7 @@ Create a version 1 UUID (based on the current MAC address and the current date/t
 
 Use [`uuid.V4`](#uuidv4) instead in most cases.
 
-_Added in gomplate [v3.4.0](https://github.com/hairyhenderson/gomplate/releases/tag/v3.4.0)_
+_<span class="release-check" data-tag="v3.4.0">Added in gomplate v3.4.0</span>_
 ### Usage
 
 ```
@@ -44,7 +44,7 @@ Create a version 4 UUID (randomly generated).
 
 This function consumes entropy.
 
-_Added in gomplate [v3.4.0](https://github.com/hairyhenderson/gomplate/releases/tag/v3.4.0)_
+_<span class="release-check" data-tag="v3.4.0">Added in gomplate v3.4.0</span>_
 ### Usage
 
 ```
@@ -64,7 +64,7 @@ $ gomplate -i '{{ uuid.V4 }}'
 Returns the _nil_ UUID, that is, `00000000-0000-0000-0000-000000000000`,
 mostly for testing scenarios.
 
-_Added in gomplate [v3.4.0](https://github.com/hairyhenderson/gomplate/releases/tag/v3.4.0)_
+_<span class="release-check" data-tag="v3.4.0">Added in gomplate v3.4.0</span>_
 ### Usage
 
 ```
@@ -84,7 +84,7 @@ $ gomplate -i '{{ uuid.Nil }}'
 Checks that the given UUID is in the correct format. It does not validate
 whether the version or variant are correct.
 
-_Added in gomplate [v3.4.0](https://github.com/hairyhenderson/gomplate/releases/tag/v3.4.0)_
+_<span class="release-check" data-tag="v3.4.0">Added in gomplate v3.4.0</span>_
 ### Usage
 
 ```
@@ -122,7 +122,7 @@ Both the standard UUID forms of `xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx` and
 Microsoft encoding `{xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx}` and the raw hex
 encoding (`xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx`).
 
-_Added in gomplate [v3.4.0](https://github.com/hairyhenderson/gomplate/releases/tag/v3.4.0)_
+_<span class="release-check" data-tag="v3.4.0">Added in gomplate v3.4.0</span>_
 ### Usage
 
 ```

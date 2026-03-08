@@ -53,8 +53,8 @@ menu:
 {{ $f.description }}
 {{ end -}}
 
-{{ if has . "released" -}}
-_Added in gomplate [{{ $f.released }}](https://github.com/hairyhenderson/gomplate/releases/tag/{{ $f.released }})_
+{{ if has $f "released" -}}
+_<span class="release-check" data-tag="{{ $f.released }}">Added in gomplate {{ $f.released }}</span>_
 {{ end -}}
 
 {{ template "usage" $f }}

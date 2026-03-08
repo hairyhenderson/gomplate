@@ -45,7 +45,7 @@ the result as an array of `IfAddr`.
 
 Should be piped through a further function to refine and extract attributes.
 
-_Added in gomplate [v2.4.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.4.0)_
+_<span class="release-check" data-tag="v2.4.0">Added in gomplate v2.4.0</span>_
 ### Usage
 
 ```
@@ -59,7 +59,7 @@ Returns `IfAddrs` of the addresses attached to the default route.
 
 Should be piped through a further function to refine and extract attributes.
 
-_Added in gomplate [v2.4.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.4.0)_
+_<span class="release-check" data-tag="v2.4.0">Added in gomplate v2.4.0</span>_
 ### Usage
 
 ```
@@ -80,7 +80,7 @@ address also excludes non-forwardable IP addresses (as defined by the IETF).
 
 Should be piped through a further function to refine and extract attributes.
 
-_Added in gomplate [v2.4.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.4.0)_
+_<span class="release-check" data-tag="v2.4.0">Added in gomplate v2.4.0</span>_
 ### Usage
 
 ```
@@ -95,7 +95,7 @@ are attached to the default route, and are forwardable.
 
 Should be piped through a further function to refine and extract attributes.
 
-_Added in gomplate [v2.4.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.4.0)_
+_<span class="release-check" data-tag="v2.4.0">Added in gomplate v2.4.0</span>_
 ### Usage
 
 ```
@@ -128,7 +128,7 @@ to make explicit that the sort is ascending.
 `IfAddr`s that are not comparable will be at the end of the list and in a
 non-deterministic order.
 
-_Added in gomplate [v2.4.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.4.0)_
+_<span class="release-check" data-tag="v2.4.0">Added in gomplate v2.4.0</span>_
 ### Usage
 
 ```
@@ -179,7 +179,7 @@ These flags are supported by the `flag` selector:
 `link-local multicast`, `link-local unicast`, `loopback`, `multicast`, `point-to-point`,
 `unspecified`, `up`
 
-_Added in gomplate [v2.4.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.4.0)_
+_<span class="release-check" data-tag="v2.4.0">Added in gomplate v2.4.0</span>_
 ### Usage
 
 ```
@@ -211,7 +211,7 @@ selector's value.
 
 This is the inverse of `sockaddr.Exclude`. See [`sockaddr.Exclude`](#sockaddrexclude) for details.
 
-_Added in gomplate [v2.4.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.4.0)_
+_<span class="release-check" data-tag="v2.4.0">Added in gomplate v2.4.0</span>_
 ### Usage
 
 ```
@@ -233,7 +233,7 @@ sockaddr.Include selector value <array-of-IfAddrs>
 
 Returns the named attribute as a string.
 
-_Added in gomplate [v2.4.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.4.0)_
+_<span class="release-check" data-tag="v2.4.0">Added in gomplate v2.4.0</span>_
 ### Usage
 
 ```
@@ -262,7 +262,7 @@ lo0 en0
 Selects the given attribute from each `IfAddr` in the source array, and joins
 the results with the given separator.
 
-_Added in gomplate [v2.4.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.4.0)_
+_<span class="release-check" data-tag="v2.4.0">Added in gomplate v2.4.0</span>_
 ### Usage
 
 ```
@@ -291,7 +291,7 @@ lo0,lo0,lo0,en0,en0
 
 Returns a slice of `IfAddr`s based on the specified limit.
 
-_Added in gomplate [v2.4.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.4.0)_
+_<span class="release-check" data-tag="v2.4.0">Added in gomplate v2.4.0</span>_
 ### Usage
 
 ```
@@ -319,7 +319,7 @@ lo0|lo0
 
 Returns a slice of `IfAddr`s based on the specified offset.
 
-_Added in gomplate [v2.4.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.4.0)_
+_<span class="release-check" data-tag="v2.4.0">Added in gomplate v2.4.0</span>_
 ### Usage
 
 ```
@@ -348,7 +348,7 @@ $ gomplate -i '{{ sockaddr.GetAllInterfaces | sockaddr.Limit 2 | sockaddr.Offset
 Creates a unique array of `IfAddr`s based on the matching selector. Assumes the input has
 already been sorted.
 
-_Added in gomplate [v2.4.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.4.0)_
+_<span class="release-check" data-tag="v2.4.0">Added in gomplate v2.4.0</span>_
 ### Usage
 
 ```
@@ -379,7 +379,7 @@ Applies a math operation to each `IfAddr` in the input. Any failure will result 
 See [the source code](https://github.com/hashicorp/go-sockaddr/blob/master/ifaddrs.go#L725)
 for details.
 
-_Added in gomplate [v2.4.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.4.0)_
+_<span class="release-check" data-tag="v2.4.0">Added in gomplate v2.4.0</span>_
 ### Usage
 
 ```
@@ -410,7 +410,7 @@ Returns a string with a single IP address that is part of [RFC 6890][] and has a
 default route. If the system can't determine its IP address or find an [RFC 6890][]
 IP address, an empty string will be returned instead.
 
-_Added in gomplate [v2.4.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.4.0)_
+_<span class="release-check" data-tag="v2.4.0">Added in gomplate v2.4.0</span>_
 ### Usage
 
 ```
@@ -432,7 +432,7 @@ Returns a space-separated string with all IP addresses that are part of [RFC 689
 If the system can't find any [RFC 6890][] IP addresses, an empty string will be
 returned instead.
 
-_Added in gomplate [v2.4.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.4.0)_
+_<span class="release-check" data-tag="v2.4.0">Added in gomplate v2.4.0</span>_
 ### Usage
 
 ```
@@ -453,7 +453,7 @@ Returns a string with a single IP address that is NOT part of [RFC 6890][] and
 has a default route. If the system can't determine its IP address or find a
 non-[RFC 6890][] IP address, an empty string will be returned instead.
 
-_Added in gomplate [v2.4.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.4.0)_
+_<span class="release-check" data-tag="v2.4.0">Added in gomplate v2.4.0</span>_
 ### Usage
 
 ```
@@ -475,7 +475,7 @@ Returns a space-separated string with all IP addresses that are NOT part of
 `GetPublicIP`). If the system can't find any non-[RFC 6890][] IP addresses, an
 empty string will be returned instead.
 
-_Added in gomplate [v2.4.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.4.0)_
+_<span class="release-check" data-tag="v2.4.0">Added in gomplate v2.4.0</span>_
 ### Usage
 
 ```
@@ -495,7 +495,7 @@ $ gomplate -i '{{ sockaddr.GetPublicIPs }}'
 Returns a string with a single IP address sorted by the size of the network
 (i.e. IP addresses with a smaller netmask, larger network size, are sorted first).
 
-_Added in gomplate [v2.4.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.4.0)_
+_<span class="release-check" data-tag="v2.4.0">Added in gomplate v2.4.0</span>_
 ### Usage
 
 ```
@@ -521,7 +521,7 @@ Returns a string with all IPs, sorted by the size of the network (i.e. IP
 addresses with a smaller netmask, larger network size, are sorted first), on a
 named interface.
 
-_Added in gomplate [v2.4.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.4.0)_
+_<span class="release-check" data-tag="v2.4.0">Added in gomplate v2.4.0</span>_
 ### Usage
 
 ```

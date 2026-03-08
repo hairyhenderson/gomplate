@@ -25,7 +25,7 @@ Queries GCP [Instance Metadata](https://cloud.google.com/compute/docs/storing-re
 
 For times when running outside GCP, or when the metadata API can't be reached, a `default` value can be provided.
 
-_Added in gomplate [v3.8.0](https://github.com/hairyhenderson/gomplate/releases/tag/v3.8.0)_
+_<span class="release-check" data-tag="v3.8.0">Added in gomplate v3.8.0</span>_
 ### Usage
 
 ```

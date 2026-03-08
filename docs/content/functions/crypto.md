@@ -18,7 +18,7 @@ before using gomplate for critical security infrastructure!_
 
 Uses the [bcrypt](https://en.wikipedia.org/wiki/Bcrypt) password hashing algorithm to generate the hash of a given string. Wraps the [`golang.org/x/crypto/brypt`](https://pkg.go.dev/golang.org/x/crypto/bcrypt) package.
 
-_Added in gomplate [v2.6.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.6.0)_
+_<span class="release-check" data-tag="v2.6.0">Added in gomplate v2.6.0</span>_
 ### Usage
 
 ```
@@ -61,7 +61,7 @@ This function is suitable for decrypting data that was encrypted by
 Helm's `encryptAES` function, when the input is base64-decoded, and when
 using 256-bit keys.
 
-_Added in gomplate [v3.11.0](https://github.com/hairyhenderson/gomplate/releases/tag/v3.11.0)_
+_<span class="release-check" data-tag="v3.11.0">Added in gomplate v3.11.0</span>_
 ### Usage
 
 ```
@@ -100,7 +100,7 @@ This function is suitable for decrypting data that was encrypted by
 Helm's `encryptAES` function, when the input is base64-decoded, and when
 using 256-bit keys.
 
-_Added in gomplate [v3.11.0](https://github.com/hairyhenderson/gomplate/releases/tag/v3.11.0)_
+_<span class="release-check" data-tag="v3.11.0">Added in gomplate v3.11.0</span>_
 ### Usage
 
 ```
@@ -136,7 +136,7 @@ This function is suitable for encrypting data that will be decrypted by
 Helm's `decryptAES` function, when the output is base64-encoded, and when
 using 256-bit keys.
 
-_Added in gomplate [v3.11.0](https://github.com/hairyhenderson/gomplate/releases/tag/v3.11.0)_
+_<span class="release-check" data-tag="v3.11.0">Added in gomplate v3.11.0</span>_
 ### Usage
 
 ```
@@ -171,7 +171,7 @@ This is a unified function that can replace the algorithm-specific
 `crypto.RSADerivePublicKey`, `crypto.ECDSADerivePublicKey`, and
 `crypto.Ed25519DerivePublicKey` functions.
 
-_Added in gomplate [v5.1.0](https://github.com/hairyhenderson/gomplate/releases/tag/v5.1.0)_
+_<span class="release-check" data-tag="v5.1.0">Added in gomplate v5.1.0</span>_
 ### Usage
 
 ```
@@ -216,7 +216,7 @@ supported.
 Default curve is P-256 and can be overridden with the optional `curve`
 parameter.
 
-_Added in gomplate [v3.11.0](https://github.com/hairyhenderson/gomplate/releases/tag/v3.11.0)_
+_<span class="release-check" data-tag="v3.11.0">Added in gomplate v3.11.0</span>_
 ### Usage
 
 ```
@@ -247,7 +247,7 @@ $ gomplate -i '{{ crypto.ECDSAGenerateKey }}'
 Derive a public key from an elliptic curve private key and output in PKIX
 ASN.1 DER form.
 
-_Added in gomplate [v3.11.0](https://github.com/hairyhenderson/gomplate/releases/tag/v3.11.0)_
+_<span class="release-check" data-tag="v3.11.0">Added in gomplate v3.11.0</span>_
 ### Usage
 
 ```
@@ -285,7 +285,7 @@ aztsmrD79OXXnhUlURI=
 Generate a new Ed25519 Private Key and output in
 PEM-encoded PKCS#8 ASN.1 DER form.
 
-_Added in gomplate [v4.0.0](https://github.com/hairyhenderson/gomplate/releases/tag/v4.0.0)_
+_<span class="release-check" data-tag="v4.0.0">Added in gomplate v4.0.0</span>_
 ### Usage
 
 ```
@@ -306,7 +306,7 @@ $ gomplate -i '{{ crypto.Ed25519GenerateKey }}'
 Generate a new Ed25519 Private Key from a random seed and output in
 PEM-encoded PKCS#8 ASN.1 DER form.
 
-_Added in gomplate [v4.0.0](https://github.com/hairyhenderson/gomplate/releases/tag/v4.0.0)_
+_<span class="release-check" data-tag="v4.0.0">Added in gomplate v4.0.0</span>_
 ### Usage
 
 ```
@@ -336,7 +336,7 @@ $ gomplate -i '{{ crypto.Ed25519GenerateKeyFromSeed "base64" "MDAwMDAwMDAwMDAwMD
 Derive a public key from an Ed25519 private key and output in PKIX
 ASN.1 DER form.
 
-_Added in gomplate [v4.0.0](https://github.com/hairyhenderson/gomplate/releases/tag/v4.0.0)_
+_<span class="release-check" data-tag="v4.0.0">Added in gomplate v4.0.0</span>_
 ### Usage
 
 ```
@@ -372,7 +372,7 @@ Run the Password-Based Key Derivation Function &num;2 as defined in
 
 This function outputs the binary result as a hexadecimal string.
 
-_Added in gomplate [v2.3.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.3.0)_
+_<span class="release-check" data-tag="v2.3.0">Added in gomplate v2.3.0</span>_
 ### Usage
 
 ```
@@ -410,7 +410,7 @@ convertible to a byte array. To decrypt base64-encoded input, you must
 first decode with the [`base64.DecodeBytes`](../base64/#base64decodebytes)
 function.
 
-_Added in gomplate [v3.8.0](https://github.com/hairyhenderson/gomplate/releases/tag/v3.8.0)_
+_<span class="release-check" data-tag="v3.8.0">Added in gomplate v3.8.0</span>_
 ### Usage
 
 ```
@@ -457,7 +457,7 @@ function.
 See [`crypto.RSADecrypt`](#cryptorsadecrypt) for a function that outputs
 a string.
 
-_Added in gomplate [v3.8.0](https://github.com/hairyhenderson/gomplate/releases/tag/v3.8.0)_
+_<span class="release-check" data-tag="v3.8.0">Added in gomplate v3.8.0</span>_
 ### Usage
 
 ```
@@ -510,7 +510,7 @@ _Warning:_ Using this function may not be safe. See the warning on Go's
 [`rsa.EncryptPKCS1v15`](https://pkg.go.dev/crypto/rsa/#EncryptPKCS1v15)
 documentation.
 
-_Added in gomplate [v3.8.0](https://github.com/hairyhenderson/gomplate/releases/tag/v3.8.0)_
+_<span class="release-check" data-tag="v3.8.0">Added in gomplate v3.8.0</span>_
 ### Usage
 
 ```
@@ -555,7 +555,7 @@ keys shorter than `2048` bits may not be generated.
 The output is a string, suitable for use with the other `crypto.RSA*`
 functions.
 
-_Added in gomplate [v3.8.0](https://github.com/hairyhenderson/gomplate/releases/tag/v3.8.0)_
+_<span class="release-check" data-tag="v3.8.0">Added in gomplate v3.8.0</span>_
 ### Usage
 
 ```
@@ -594,7 +594,7 @@ form.
 The output is a string, suitable for use with other `crypto.RSA*`
 functions.
 
-_Added in gomplate [v3.8.0](https://github.com/hairyhenderson/gomplate/releases/tag/v3.8.0)_
+_<span class="release-check" data-tag="v3.8.0">Added in gomplate v3.8.0</span>_
 ### Usage
 
 ```
@@ -633,7 +633,7 @@ These functions output the binary result as a hexadecimal string.
 
 _Warning: SHA-1 is cryptographically broken and should not be used for secure applications._
 
-_Added in gomplate [v2.3.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.3.0)_
+_<span class="release-check" data-tag="v2.3.0">Added in gomplate v2.3.0</span>_
 ### Usage
 ```
 crypto.SHA1 input
@@ -670,7 +670,7 @@ These functions output the raw binary result, suitable for piping to other funct
 
 _Warning: SHA-1 is cryptographically broken and should not be used for secure applications._
 
-_Added in gomplate [v3.11.0](https://github.com/hairyhenderson/gomplate/releases/tag/v3.11.0)_
+_<span class="release-check" data-tag="v3.11.0">Added in gomplate v3.11.0</span>_
 ### Usage
 ```
 crypto.SHA1Bytes input
@@ -702,7 +702,7 @@ values necessary to convert ASCII passphrases to the WPA pre-shared keys for use
 
 This can be used, for example, to help generate a configuration for [wpa_supplicant](http://w1.fi/wpa_supplicant/).
 
-_Added in gomplate [v2.3.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.3.0)_
+_<span class="release-check" data-tag="v2.3.0">Added in gomplate v2.3.0</span>_
 ### Usage
 
 ```

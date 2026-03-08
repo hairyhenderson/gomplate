@@ -29,7 +29,7 @@ For creating more complex maps, see [`data.JSON`](../data/#datajson) or [`data.Y
 
 For creating arrays, see [`coll.Slice`](#collslice).
 
-_Added in gomplate [v3.2.0](https://github.com/hairyhenderson/gomplate/releases/tag/v3.2.0)_
+_<span class="release-check" data-tag="v3.2.0">Added in gomplate v3.2.0</span>_
 ### Usage
 
 ```
@@ -65,7 +65,7 @@ Hello everybody!
 
 Creates a slice (like an array or list). Useful when needing to `range` over a bunch of variables.
 
-_Added in gomplate [v3.2.0](https://github.com/hairyhenderson/gomplate/releases/tag/v3.2.0)_
+_<span class="release-check" data-tag="v3.2.0">Added in gomplate v3.2.0</span>_
 ### Usage
 
 ```
@@ -106,7 +106,7 @@ is x[1:2:3]. The first argument must be a string, slice, or array.
 See the [Go language spec](https://go.dev/ref/spec#Slice_expressions) for
 more details.
 
-_Added in gomplate [v4.0.0](https://github.com/hairyhenderson/gomplate/releases/tag/v4.0.0)_
+_<span class="release-check" data-tag="v4.0.0">Added in gomplate v4.0.0</span>_
 ### Usage
 
 ```
@@ -133,7 +133,7 @@ lo wo
 
 Reports whether a given object has a property with the given key, or whether a given array/slice contains the given value. Can be used with `if` to prevent the template from trying to access a non-existent property in an object.
 
-_Added in gomplate [v3.2.0](https://github.com/hairyhenderson/gomplate/releases/tag/v3.2.0)_
+_<span class="release-check" data-tag="v3.2.0">Added in gomplate v3.2.0</span>_
 ### Usage
 
 ```
@@ -176,7 +176,7 @@ non-existent map key.
 
 Multiple indexes may be given, for nested indexing.
 
-_Added in gomplate [v4.0.0](https://github.com/hairyhenderson/gomplate/releases/tag/v4.0.0)_
+_<span class="release-check" data-tag="v4.0.0">Added in gomplate v4.0.0</span>_
 ### Usage
 
 ```
@@ -221,7 +221,7 @@ JSONPath expressions can be validated at https://jsonpath.com
 
 [JSONPath]: https://goessner.net/articles/JsonPath
 
-_Added in gomplate [v3.4.0](https://github.com/hairyhenderson/gomplate/releases/tag/v3.4.0)_
+_<span class="release-check" data-tag="v3.4.0">Added in gomplate v3.4.0</span>_
 ### Usage
 
 ```
@@ -262,7 +262,7 @@ See also:
 - [jq manual](https://stedolan.github.io/jq/manual/)
 - [gojq differences to jq](https://github.com/itchyny/gojq#difference-to-jq)
 
-_Added in gomplate [v4.0.0](https://github.com/hairyhenderson/gomplate/releases/tag/v4.0.0)_
+_<span class="release-check" data-tag="v4.0.0">Added in gomplate v4.0.0</span>_
 ### Usage
 
 ```
@@ -299,7 +299,7 @@ then alphabetically.
 
 See also [`coll.Values`](#collvalues).
 
-_Added in gomplate [v3.2.0](https://github.com/hairyhenderson/gomplate/releases/tag/v3.2.0)_
+_<span class="release-check" data-tag="v3.2.0">Added in gomplate v3.2.0</span>_
 ### Usage
 
 ```
@@ -335,7 +335,7 @@ then alphabetically by key.
 
 See also [`coll.Keys`](#collkeys).
 
-_Added in gomplate [v3.2.0](https://github.com/hairyhenderson/gomplate/releases/tag/v3.2.0)_
+_<span class="release-check" data-tag="v3.2.0">Added in gomplate v3.2.0</span>_
 ### Usage
 
 ```
@@ -370,7 +370,7 @@ _Note that this function does not change the given list; it always produces a ne
 
 See also [`coll.Prepend`](#collprepend).
 
-_Added in gomplate [v3.2.0](https://github.com/hairyhenderson/gomplate/releases/tag/v3.2.0)_
+_<span class="release-check" data-tag="v3.2.0">Added in gomplate v3.2.0</span>_
 ### Usage
 
 ```
@@ -404,7 +404,7 @@ _Note that this function does not change the given list; it always produces a ne
 
 See also [`coll.Append`](#collappend).
 
-_Added in gomplate [v3.2.0](https://github.com/hairyhenderson/gomplate/releases/tag/v3.2.0)_
+_<span class="release-check" data-tag="v3.2.0">Added in gomplate v3.2.0</span>_
 ### Usage
 
 ```
@@ -436,7 +436,7 @@ Remove any duplicate values from the list, without changing order.
 
 _Note that this function does not change the given list; it always produces a new one._
 
-_Added in gomplate [v3.2.0](https://github.com/hairyhenderson/gomplate/releases/tag/v3.2.0)_
+_<span class="release-check" data-tag="v3.2.0">Added in gomplate v3.2.0</span>_
 ### Usage
 
 ```
@@ -468,7 +468,7 @@ but can be limited with `depth`.
 
 _Note that this function does not change the given list; it always produces a new one._
 
-_Added in gomplate [v3.6.0](https://github.com/hairyhenderson/gomplate/releases/tag/v3.6.0)_
+_<span class="release-check" data-tag="v3.6.0">Added in gomplate v3.6.0</span>_
 ### Usage
 
 ```
@@ -504,7 +504,7 @@ Reverse a list.
 
 _Note that this function does not change the given list; it always produces a new one._
 
-_Added in gomplate [v3.2.0](https://github.com/hairyhenderson/gomplate/releases/tag/v3.2.0)_
+_<span class="release-check" data-tag="v3.2.0">Added in gomplate v3.2.0</span>_
 ### Usage
 
 ```
@@ -539,7 +539,7 @@ Maps and structs can be sorted by a named key.
 
 _Note that this function does not modify the input._
 
-_Added in gomplate [v3.2.0](https://github.com/hairyhenderson/gomplate/releases/tag/v3.2.0)_
+_<span class="release-check" data-tag="v3.2.0">Added in gomplate v3.2.0</span>_
 ### Usage
 
 ```
@@ -589,7 +589,7 @@ Many source maps can be provided. Precedence is in left-to-right order.
 
 _Note that this function does not modify the input._
 
-_Added in gomplate [v3.2.0](https://github.com/hairyhenderson/gomplate/releases/tag/v3.2.0)_
+_<span class="release-check" data-tag="v3.2.0">Added in gomplate v3.2.0</span>_
 ### Usage
 
 ```
@@ -632,7 +632,7 @@ This is the inverse of [`coll.Omit`](#collomit).
 
 _Note that this function does not modify the input._
 
-_Added in gomplate [v3.7.0](https://github.com/hairyhenderson/gomplate/releases/tag/v3.7.0)_
+_<span class="release-check" data-tag="v3.7.0">Added in gomplate v3.7.0</span>_
 ### Usage
 
 ```
@@ -673,7 +673,7 @@ This is the inverse of [`coll.Pick`](#collpick).
 
 _Note that this function does not modify the input._
 
-_Added in gomplate [v3.7.0](https://github.com/hairyhenderson/gomplate/releases/tag/v3.7.0)_
+_<span class="release-check" data-tag="v3.7.0">Added in gomplate v3.7.0</span>_
 ### Usage
 
 ```
@@ -712,7 +712,7 @@ Sets the given key to the given value in the given map.
 
 The map is modified in place, and the modified map is returned.
 
-_Added in gomplate [v4.0.0](https://github.com/hairyhenderson/gomplate/releases/tag/v4.0.0)_
+_<span class="release-check" data-tag="v4.0.0">Added in gomplate v4.0.0</span>_
 ### Usage
 
 ```
@@ -750,7 +750,7 @@ Deletes the element with the specified key in the given map. If there is no such
 
 The map is modified in place, and the modified map is returned.
 
-_Added in gomplate [v4.0.0](https://github.com/hairyhenderson/gomplate/releases/tag/v4.0.0)_
+_<span class="release-check" data-tag="v4.0.0">Added in gomplate v4.0.0</span>_
 ### Usage
 
 ```

@@ -20,7 +20,7 @@ Generates a random string of a desired length, containing the set of
 printable characters from the 7-bit [ASCII](https://en.wikipedia.org/wiki/ASCII)
 set. This includes _space_ (' '), but no other whitespace characters.
 
-_Added in gomplate [v3.4.0](https://github.com/hairyhenderson/gomplate/releases/tag/v3.4.0)_
+_<span class="release-check" data-tag="v3.4.0">Added in gomplate v3.4.0</span>_
 ### Usage
 
 ```
@@ -44,7 +44,7 @@ _woJ%D&K
 
 Generates a random alphabetical (`A-Z`, `a-z`) string of a desired length.
 
-_Added in gomplate [v3.4.0](https://github.com/hairyhenderson/gomplate/releases/tag/v3.4.0)_
+_<span class="release-check" data-tag="v3.4.0">Added in gomplate v3.4.0</span>_
 ### Usage
 
 ```
@@ -68,7 +68,7 @@ oAqHKxHiytYicMxTMGHnUnAfltPVZDhFkVkgDvatJK
 
 Generates a random alphanumeric (`0-9`, `A-Z`, `a-z`) string of a desired length.
 
-_Added in gomplate [v3.4.0](https://github.com/hairyhenderson/gomplate/releases/tag/v3.4.0)_
+_<span class="release-check" data-tag="v3.4.0">Added in gomplate v3.4.0</span>_
 ### Usage
 
 ```
@@ -107,7 +107,7 @@ smaller set of possible characters than intended, so check
 the [Unicode character code charts](http://www.unicode.org/charts/) to
 verify the correct code-points.
 
-_Added in gomplate [v3.4.0](https://github.com/hairyhenderson/gomplate/releases/tag/v3.4.0)_
+_<span class="release-check" data-tag="v3.4.0">Added in gomplate v3.4.0</span>_
 ### Usage
 
 ```
@@ -154,7 +154,7 @@ Poker time! 🂼🂺🂳🃅🂪
 
 Pick an element at a random from a given slice or array.
 
-_Added in gomplate [v3.4.0](https://github.com/hairyhenderson/gomplate/releases/tag/v3.4.0)_
+_<span class="release-check" data-tag="v3.4.0">Added in gomplate v3.4.0</span>_
 ### Usage
 
 ```
@@ -191,7 +191,7 @@ Note that the difference between `min` and `max` can not be larger than a
 63-bit integer (i.e. the unsigned portion of a 64-bit signed integer).
 The result is given as an `int64`.
 
-_Added in gomplate [v3.4.0](https://github.com/hairyhenderson/gomplate/releases/tag/v3.4.0)_
+_<span class="release-check" data-tag="v3.4.0">Added in gomplate v3.4.0</span>_
 ### Usage
 
 ```
@@ -228,7 +228,7 @@ can be overridden.
 
 The result is given as a `float64`.
 
-_Added in gomplate [v3.4.0](https://github.com/hairyhenderson/gomplate/releases/tag/v3.4.0)_
+_<span class="release-check" data-tag="v3.4.0">Added in gomplate v3.4.0</span>_
 ### Usage
 
 ```

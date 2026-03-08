@@ -80,7 +80,7 @@ Returns the current local time, as a `time.Time`. This wraps [`time.Now`](https:
 
 Usually, further functions are called using the value returned by `Now`.
 
-_Added in gomplate [v2.1.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.1.0)_
+_<span class="release-check" data-tag="v2.1.0">Added in gomplate v2.1.0</span>_
 ### Usage
 
 ```
@@ -126,7 +126,7 @@ other functions.
 
 _Note: In the absence of a time zone indicator, `time.Parse` returns a time in UTC._
 
-_Added in gomplate [v2.1.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.1.0)_
+_<span class="release-check" data-tag="v2.1.0">Added in gomplate v2.1.0</span>_
 ### Usage
 
 ```
@@ -159,7 +159,7 @@ A duration string is a possibly signed sequence of decimal numbers, each with
 optional fraction and a unit suffix, such as `300ms`, `-1.5h` or `2h45m`. Valid
 time units are `ns`, `us` (or `µs`), `ms`, `s`, `m`, `h`.
 
-_Added in gomplate [v2.1.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.1.0)_
+_<span class="release-check" data-tag="v2.1.0">Added in gomplate v2.1.0</span>_
 ### Usage
 
 ```
@@ -189,7 +189,7 @@ $ gomplate -i '{{ (time.Now).Format time.Kitchen }}
 Same as [`time.Parse`](#timeparse), except that in the absence of a time zone
 indicator, the timestamp will be parsed in the local timezone.
 
-_Added in gomplate [v2.2.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.2.0)_
+_<span class="release-check" data-tag="v2.2.0">Added in gomplate v2.2.0</span>_
 ### Usage
 
 ```
@@ -220,7 +220,7 @@ Same as [`time.Parse`](#timeparse), except that the time is parsed in the given 
 
 This wraps [`time.ParseInLocation`](https://pkg.go.dev/time/#ParseInLocation).
 
-_Added in gomplate [v2.2.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.2.0)_
+_<span class="release-check" data-tag="v2.2.0">Added in gomplate v2.2.0</span>_
 ### Usage
 
 ```
@@ -252,7 +252,7 @@ Returns the time elapsed since a given time. This wraps [`time.Since`](https://p
 
 It is shorthand for `time.Now.Sub t`.
 
-_Added in gomplate [v2.5.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.5.0)_
+_<span class="release-check" data-tag="v2.5.0">Added in gomplate v2.5.0</span>_
 ### Usage
 
 ```
@@ -281,7 +281,7 @@ Returns the local `Time` corresponding to the given Unix time, in seconds since
 January 1, 1970 UTC. Note that fractional seconds can be used to denote
 milliseconds, but must be specified as a string, not a floating point number.
 
-_Added in gomplate [v2.1.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.1.0)_
+_<span class="release-check" data-tag="v2.1.0">Added in gomplate v2.1.0</span>_
 ### Usage
 
 ```
@@ -317,7 +317,7 @@ Returns the duration until a given time. This wraps [`time.Until`](https://pkg.g
 
 It is shorthand for `$t.Sub time.Now`.
 
-_Added in gomplate [v2.5.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.5.0)_
+_<span class="release-check" data-tag="v2.5.0">Added in gomplate v2.5.0</span>_
 ### Usage
 
 ```
@@ -350,7 +350,7 @@ only 14923h0m0s to go...
 
 Return the local system's time zone's name.
 
-_Added in gomplate [v2.1.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.1.0)_
+_<span class="release-check" data-tag="v2.1.0">Added in gomplate v2.1.0</span>_
 ### Usage
 
 ```
@@ -369,7 +369,7 @@ EDT
 
 Return the local system's time zone offset, in seconds east of UTC.
 
-_Added in gomplate [v2.2.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.2.0)_
+_<span class="release-check" data-tag="v2.2.0">Added in gomplate v2.2.0</span>_
 ### Usage
 
 ```
