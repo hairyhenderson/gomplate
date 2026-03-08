@@ -45,9 +45,9 @@ jobs:
           path: |
             ~/go/pkg/mod
             ~/.cache/go-build
-          key: ${{ runner.os }}-${{ runner.arch }}-go-${{ hashFiles('**/go.sum') }}
+          key: ${{ runner.os }}-${{ runner.arch }}-${{ matrix.goarch }}-go-${{ hashFiles('**/go.sum') }}
           restore-keys: |
-            ${{ runner.os }}-${{ runner.arch }}-go-
+            ${{ runner.os }}-${{ runner.arch }}-${{ matrix.goarch }}-go-
       - run: make build GOARCH=${{ matrix.goarch }} GOARM=${{ matrix.goarm }}
       - run: make test GOARCH=${{ matrix.goarch }} GOARM=${{ matrix.goarm }}
       - run: make integration GOARCH=${{ matrix.goarch }} GOARM=${{ matrix.goarm }}
