@@ -59,6 +59,8 @@ jobs:
             --exclude="https://json\.org.*" \
             --exclude="https://goessner\.net.*" \
             --exclude="http://opensource\.org.*" \
-            --exclude="https://en.wikipedia\.org.*"
+            --exclude="https://en.wikipedia\.org.*" \
+            --exclude="https://developer\.hashicorp\.com.*" \
+            --exclude="https://helm\.sh.*"
 
           kill %1
