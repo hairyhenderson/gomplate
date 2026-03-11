@@ -31,21 +31,23 @@
   });
 
   // Fetch only the unknown tags, then update all spans.
+  // results: 'released' | 'unreleased' | undefined (leave original on error)
   const results = {};
   const checks = Array.from(toCheck).map(tag =>
-    fetch(`https://api.github.com/repos/hairyhenderson/gomplate/releases/tags/${tag}`)
-      .then(res => { results[tag] = res.ok; })
-      .catch(() => { results[tag] = false; })
+    fetch(`https://api.github.com/repos/hairyhenderson/gomplate/releases/tags/${encodeURIComponent(tag)}`)
+      .then(res => { results[tag] = res.ok ? 'released' : res.status === 404 ? 'unreleased' : undefined; })
+      .catch(() => { results[tag] = undefined; })
   );
 
   Promise.all(checks).then(() => {
     spans.forEach(el => {
       const tag = el.dataset.tag;
-      if (semverLte(tag, LATEST_RELEASE) || results[tag]) {
+      if (semverLte(tag, LATEST_RELEASE) || results[tag] === 'released') {
         renderLink(el, tag);
-      } else {
+      } else if (results[tag] === 'unreleased') {
         renderUnreleased(el, tag);
       }
+      // undefined (rate-limited, network error, etc.) - leave original text
     });
   });
 })();
