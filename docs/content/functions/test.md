@@ -15,7 +15,7 @@ assumptions and can cause template generation to fail in specific cases.
 Asserts that the given expression or value is `true`. If it is not, causes
 template generation to fail immediately with an optional message.
 
-_Added in gomplate [v2.7.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.7.0)_
+_<span class="release-check" data-tag="v2.7.0">Added in gomplate v2.7.0</span>_
 ### Usage
 
 ```
@@ -47,7 +47,7 @@ template: <arg>:1:3: executing "<arg>" at <assert "something ho...>: error calli
 
 Cause template generation to fail immediately, with an optional message.
 
-_Added in gomplate [v2.7.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.7.0)_
+_<span class="release-check" data-tag="v2.7.0">Added in gomplate v2.7.0</span>_
 ### Usage
 
 ```
@@ -96,7 +96,7 @@ This is useful when the specific numeric type is unknown.
 
 See also [`test.Kind`](#testkind).
 
-_Added in gomplate [v3.8.0](https://github.com/hairyhenderson/gomplate/releases/tag/v3.8.0)_
+_<span class="release-check" data-tag="v3.8.0">Added in gomplate v3.8.0</span>_
 ### Usage
 
 ```
@@ -148,7 +148,7 @@ If you need to know the precise type of a value, use `printf "%T" $value`.
 
 See also [`test.IsKind`](#testiskind).
 
-_Added in gomplate [v3.8.0](https://github.com/hairyhenderson/gomplate/releases/tag/v3.8.0)_
+_<span class="release-check" data-tag="v3.8.0">Added in gomplate v3.8.0</span>_
 ### Usage
 
 ```
@@ -191,7 +191,7 @@ but has slightly different behaviour. Notably, gomplate will always fail in
 cases where a referenced _key_ is missing, and this function will have no
 effect.
 
-_Added in gomplate [v3.0.0](https://github.com/hairyhenderson/gomplate/releases/tag/v3.0.0)_
+_<span class="release-check" data-tag="v3.0.0">Added in gomplate v3.0.0</span>_
 ### Usage
 
 ```
@@ -243,7 +243,7 @@ This is effectively a short-form of the following template:
 
 Keep in mind that using an explicit `if`/`else` block is often easier to understand than ternary expressions!
 
-_Added in gomplate [v3.1.0](https://github.com/hairyhenderson/gomplate/releases/tag/v3.1.0)_
+_<span class="release-check" data-tag="v3.1.0">Added in gomplate v3.1.0</span>_
 ### Usage
 
 ```

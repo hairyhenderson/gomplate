@@ -33,7 +33,7 @@ $ gomplate -i '{{ add 2.5 2.5 }}'
 
 Returns the absolute value of a given number. When the input is an integer, the result will be an `int64`, otherwise it will be a `float64`.
 
-_Added in gomplate [v2.6.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.6.0)_
+_<span class="release-check" data-tag="v2.6.0">Added in gomplate v2.6.0</span>_
 ### Usage
 
 ```
@@ -59,7 +59,7 @@ $ gomplate -i '{{ math.Abs -3.5 }} {{ math.Abs 3.5 }} {{ math.Abs -42 }}'
 
 Adds all given operators. When one of the inputs is a floating-point number, the result will be a `float64`, otherwise it will be an `int64`.
 
-_Added in gomplate [v2.2.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.2.0)_
+_<span class="release-check" data-tag="v2.2.0">Added in gomplate v2.2.0</span>_
 ### Usage
 
 ```
@@ -85,7 +85,7 @@ Returns the least integer value greater than or equal to a given floating-point 
 
 **Note:** the return value of this function is a `float64` so that the special-cases `NaN` and `Inf` can be returned appropriately.
 
-_Added in gomplate [v2.6.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.6.0)_
+_<span class="release-check" data-tag="v2.6.0">Added in gomplate v2.6.0</span>_
 ### Usage
 
 ```
@@ -117,7 +117,7 @@ ceil "-0" = 0
 
 Divide the first number by the second. Division by zero is disallowed. The result will be a `float64`.
 
-_Added in gomplate [v2.2.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.2.0)_
+_<span class="release-check" data-tag="v2.2.0">Added in gomplate v2.2.0</span>_
 ### Usage
 
 ```
@@ -147,7 +147,7 @@ Returns the greatest integer value less than or equal to a given floating-point 
 
 **Note:** the return value of this function is a `float64` so that the special-cases `NaN` and `Inf` can be returned appropriately.
 
-_Added in gomplate [v2.6.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.6.0)_
+_<span class="release-check" data-tag="v2.6.0">Added in gomplate v2.6.0</span>_
 ### Usage
 
 ```
@@ -179,7 +179,7 @@ Returns whether or not the given number can be interpreted as a floating-point l
 
 **Note:** If a decimal point is part of the input number, it will be considered a floating-point number, even if the decimal is `0`.
 
-_Added in gomplate [v2.6.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.6.0)_
+_<span class="release-check" data-tag="v2.6.0">Added in gomplate v2.6.0</span>_
 ### Usage
 
 ```
@@ -208,7 +208,7 @@ Inf is a float
 
 Returns whether or not the given number is an integer.
 
-_Added in gomplate [v2.6.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.6.0)_
+_<span class="release-check" data-tag="v2.6.0">Added in gomplate v2.6.0</span>_
 ### Usage
 
 ```
@@ -234,7 +234,7 @@ $ gomplate -i '{{ range (coll.Slice 1.0 "-1.0" 5.1 42 "3.14" "foo" "0xFF" "NaN" 
 
 Returns whether the given input is a number. Useful for `if` conditions.
 
-_Added in gomplate [v2.6.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.6.0)_
+_<span class="release-check" data-tag="v2.6.0">Added in gomplate v2.6.0</span>_
 ### Usage
 
 ```
@@ -258,7 +258,7 @@ false true
 
 Returns the largest number provided. If any values are floating-point numbers, a `float64` is returned, otherwise an `int64` is returned. The same special-cases as Go's [`math.Max`](https://pkg.go.dev/math/#Max) are followed.
 
-_Added in gomplate [v2.6.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.6.0)_
+_<span class="release-check" data-tag="v2.6.0">Added in gomplate v2.6.0</span>_
 ### Usage
 
 ```
@@ -282,7 +282,7 @@ $ gomplate -i '{{ math.Max 0 8.0 4.5 "-1.5e-11" }}'
 
 Returns the smallest number provided. If any values are floating-point numbers, a `float64` is returned, otherwise an `int64` is returned. The same special-cases as Go's [`math.Min`](https://pkg.go.dev/math/#Min) are followed.
 
-_Added in gomplate [v2.6.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.6.0)_
+_<span class="release-check" data-tag="v2.6.0">Added in gomplate v2.6.0</span>_
 ### Usage
 
 ```
@@ -308,7 +308,7 @@ $ gomplate -i '{{ math.Min 0 8 4.5 "-1.5e-11" }}'
 
 Multiply all given operators together.
 
-_Added in gomplate [v2.2.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.2.0)_
+_<span class="release-check" data-tag="v2.2.0">Added in gomplate v2.2.0</span>_
 ### Usage
 
 ```
@@ -334,7 +334,7 @@ $ gomplate -i '{{ math.Mul 8 8 2 }}'
 
 Calculate an exponent - _b<sup>n</sup>_. This wraps Go's [`math.Pow`](https://pkg.go.dev/math/#Pow). If any values are floating-point numbers, a `float64` is returned, otherwise an `int64` is returned.
 
-_Added in gomplate [v2.2.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.2.0)_
+_<span class="release-check" data-tag="v2.2.0">Added in gomplate v2.2.0</span>_
 ### Usage
 
 ```
@@ -365,7 +365,7 @@ $ gomplate -i '{{ math.Pow 1.5 2 }}'
 
 Return the remainder from an integer division operation.
 
-_Added in gomplate [v2.2.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.2.0)_
+_<span class="release-check" data-tag="v2.2.0">Added in gomplate v2.2.0</span>_
 ### Usage
 
 ```
@@ -397,7 +397,7 @@ Returns the nearest integer, rounding half away from zero.
 
 **Note:** the return value of this function is a `float64` so that the special-cases `NaN` and `Inf` can be returned appropriately.
 
-_Added in gomplate [v2.6.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.6.0)_
+_<span class="release-check" data-tag="v2.6.0">Added in gomplate v2.6.0</span>_
 ### Usage
 
 ```
@@ -430,7 +430,7 @@ down as well as up, including with negative numbers.
 
 Note that the sequence _may_ not end at `end`, if `end` is not divisible by `step`.
 
-_Added in gomplate [v2.2.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.2.0)_
+_<span class="release-check" data-tag="v2.2.0">Added in gomplate v2.2.0</span>_
 ### Usage
 
 ```
@@ -462,7 +462,7 @@ $ gomplate -i '{{ conv.Join (math.Seq 10 -3 2) ", " }}'
 
 Subtract the second from the first of the given operators.  When one of the inputs is a floating-point number, the result will be a `float64`, otherwise it will be an `int64`.
 
-_Added in gomplate [v2.2.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.2.0)_
+_<span class="release-check" data-tag="v2.2.0">Added in gomplate v2.2.0</span>_
 ### Usage
 
 ```

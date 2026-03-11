@@ -39,6 +39,8 @@ title = "gomplate documentation"
   [markup.highlight]
     guessSyntax = false
     noClasses = false
+  [markup.goldmark.renderer]
+    unsafe = true
 
 [outputs]
   home = [ "HTML", "RSS", "SEARCH", "SEARCHPAGE"]
