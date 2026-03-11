@@ -174,15 +174,7 @@ The _scheme_ and _path_ URL components are used by this datasource. This may be 
 
 ### Output
 
-The output will be a single `Parameter` object from the
-[AWS SDK for Go](https://docs.aws.amazon.com/sdk-for-go/api/service/ssm/#Parameter):
-
-| name   | description |
-|--------|-------|
-| `Name` | full Parameter name |
-| `Type` | `String`, `StringList` or `SecureString` |
-| `Value` | textual value, comma-separated single string if StringList |
-| `Version` | incrementing integer version |
+The output will be the value of the parameter as a string. For `StringList` parameters, the value will be a comma-separated string.
 
 If the Parameter key specified is not found (or not allowed to be read due to missing permissions) an error will be generated. There is no default.
 
@@ -197,24 +189,21 @@ Given your AWS account's Parameter Store has the following data:
 
 ```console
 $ echo '{{ ds "foo" }}' | gomplate -d foo=aws+smp:///foo/first/password
-map[Name:/foo/first/password Type:SecureString Value:super-secret Version:1]
-
-$ echo '{{ (ds "foo").Value }}' | gomplate -d foo=aws+smp:///foo/first/password
 super-secret
 
-$ echo '{{ (ds "foo" "/foo/first/others").Value }}' | gomplate -d foo=aws+smp:
+$ echo '{{ ds "foo" "/foo/first/others" }}' | gomplate -d foo=aws+smp:
 Bill,Ben
 
-$ echo '{{ (ds "foo" "/second/p1").Value }}' | gomplate -d foo=aws+smp:///foo/
+$ echo '{{ ds "foo" "/second/p1" }}' | gomplate -d foo=aws+smp:///foo/
 aaa
 
 $ gomplate -d foo=aws+smp:///foo/first/ -i '{{ range (ds "foo") }}
-{{ . }}: {{ (ds "foo" .).Value }}
+{{ . }}: {{ ds "foo" . }}
 {{- end }}'
 others: Bill,Ben
 password: super-secret
 
-$ gomplate -d foo=aws+smp:myparameter -i '{{ (ds "foo").Value }}
+$ gomplate -d foo=aws+smp:myparameter -i '{{ ds "foo" }}'
 bar
 ```
 
