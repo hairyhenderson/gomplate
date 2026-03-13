@@ -200,7 +200,11 @@ func (CryptoFuncs) Bcrypt(args ...any) (string, error) {
 }
 
 // Yescrypt -
-func (CryptoFuncs) Yescrypt(password, salt, cost, blockSize, keylen any) (string, error) {
+func (f CryptoFuncs) Yescrypt(password, salt, cost, blockSize, keylen any) (string, error) {
+	if err := checkExperimental(f.ctx); err != nil {
+		return "", err
+	}
+
 	N, err := conv.ToInt(cost)
 	if err != nil {
 		return "", fmt.Errorf("cost must be an integer: %w", err)
@@ -219,12 +223,20 @@ func (CryptoFuncs) Yescrypt(password, salt, cost, blockSize, keylen any) (string
 }
 
 // YescryptMCF -
-func (CryptoFuncs) YescryptMCF(args ...any) (string, error) {
+func (f CryptoFuncs) YescryptMCF(args ...any) (string, error) {
+	if err := checkExperimental(f.ctx); err != nil {
+		return "", err
+	}
+
+	
 	cost := 14
 	blockSize := 8
-	salt, _ := RandomFuncs{}.AlphaNum(16)
 	input := ""
 	var err error
+	salt, err := RandomFuncs{}.AlphaNum(16)
+	if err != nil {
+		return "", fmt.Errorf("failed to generate salt: %w", err)
+	}
 
 	switch len(args) {
 	case 1:
@@ -255,7 +267,7 @@ func (CryptoFuncs) YescryptMCF(args ...any) (string, error) {
 		salt = conv.ToString(args[2])
 		input = conv.ToString(args[3])
 	default:
-		return "", fmt.Errorf("wrong number of args: want 1 or 4, got %d", len(args))
+		return "", fmt.Errorf("wrong number of args: want 1, 3, or 4, got %d", len(args))
 	}
 
 	// yescrypt requires

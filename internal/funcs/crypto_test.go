@@ -153,6 +153,13 @@ func TestYescryptMCF(t *testing.T) {
 		assert.Contains(t, actual, string(yescryptEncode64([]byte(salt))))
 	})
 
+	t.Run("custom cost and blockSize appears", func(t *testing.T) {
+		t.Parallel()
+		actual, err := c.YescryptMCF(10, 9, in)
+		require.NoError(t, err)
+		assert.Contains(t, actual, "$y$j76") // 10 => j7 ; 9 => 6
+	})
+
 	t.Run("wrong arg count", func(t *testing.T) {
 		t.Parallel()
 		_, err := c.YescryptMCF()

@@ -71,7 +71,7 @@ input | crypto.YescryptMCF [cost] [blockSize] [salt]
 |------|-------------|
 | `cost` | _(optional)_ the cost parameter (log₂ of the iteration count) - integer from `10` to `18` - defaults to `14` |
 | `blockSize` | _(optional)_ the block size parameter (`r`) - integer from `1` to `32` - defaults to `8` |
-| `salt` | _(optional)_ the salt string used in hashing - defaults to a random alphanumeric string of length 10 |
+| `salt` | _(optional)_ the salt string used in hashing - defaults to a random alphanumeric string of length 16 |
 | `input` | _(required)_ the input to hash, usually a password |
 
 ### Examples
