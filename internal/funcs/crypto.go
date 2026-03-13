@@ -46,16 +46,20 @@ type CryptoFuncs struct {
 // RFC 2898 (PKCS #5 v2.0). This function outputs the binary result in hex
 // format.
 func (CryptoFuncs) PBKDF2(password, salt, iter, keylen any, hashFunc ...string) (k string, err error) {
-	dk, _, err := PBKDF2Raw(password, salt, iter, keylen, hashFunc...)
+	dk, _, err := rawPBKDF2(password, salt, iter, keylen, hashFunc...)
 	if err != nil {
 		return "", err
 	}
-	return fmt.Sprintf("%02x", dk), err
+	return fmt.Sprintf("%02x", dk), nil
 }
 
 // PBKDF2MCF - Generate PBKDF2 hash in Modular Crypt Format (MCF)
 func (f CryptoFuncs) PBKDF2MCF(password, salt, iter, keylen any, hashFunc ...string) (string, error) {
-	dk, h, err := PBKDF2Raw(password, salt, iter, keylen, hashFunc...)
+	if err := checkExperimental(f.ctx); err != nil {
+		return "", err
+	}
+
+	dk, h, err := rawPBKDF2(password, salt, iter, keylen, hashFunc...)
 	if err != nil {
 		return "", err
 	}
@@ -69,7 +73,10 @@ func (f CryptoFuncs) PBKDF2MCF(password, salt, iter, keylen any, hashFunc ...str
 	b64DK := cryptBase64Encode(dk)
 
 	// Format: $pbkdf2-<algo>$<iter>$<b64salt>$<b64dk>
-	i, _ := conv.ToInt(iter)
+	i, err := conv.ToInt(iter)
+	if err != nil {
+		return "", err
+	}
 	return fmt.Sprintf("$pbkdf2-%s$%d$%s$%s", algo, i, b64Salt, b64DK), nil
 }
 
@@ -94,7 +101,7 @@ func hashToMCFName(h gcrypto.Hash) (string, error) {
 	}
 }
 
-func PBKDF2Raw(password, salt, iter, keylen any, hashFunc ...string) (k []byte, h gcrypto.Hash, err error) {
+func rawPBKDF2(password, salt, iter, keylen any, hashFunc ...string) (k []byte, h gcrypto.Hash, err error) {
 	if len(hashFunc) == 0 {
 		h = gcrypto.SHA1
 	} else {
