@@ -29,6 +29,7 @@ require (
 	github.com/johannesboyne/gofakes3 v0.0.0-20250106100439-5c39aecd6999
 	github.com/joho/godotenv v1.5.1
 	github.com/lmittmann/tint v1.1.3
+	github.com/openwall/yescrypt-go v1.0.0
 	github.com/spf13/cobra v1.10.2
 	github.com/stretchr/testify v1.11.1
 	github.com/ugorji/go/codec v1.3.1
@@ -46,7 +47,6 @@ require (
 // is merged
 require github.com/hairyhenderson/yaml v0.0.0-20220618171115-2d35fca545ce
 
-require github.com/openwall/yescrypt-go v1.0.0
 
 require (
 	cel.dev/expr v0.25.1 // indirect
