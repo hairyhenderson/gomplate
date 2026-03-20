@@ -2,6 +2,8 @@ module github.com/hairyhenderson/gomplate/v5
 
 go 1.25.6
 
+toolchain go1.26.1
+
 require (
 	cuelang.org/go v0.16.0
 	github.com/Masterminds/goutils v1.1.1
