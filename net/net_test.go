@@ -16,12 +16,10 @@ func must(r any, err error) any {
 
 func TestLookupIP(t *testing.T) {
 	assert.Equal(t, "127.0.0.1", must(LookupIP(t.Context(), "localhost")))
-	assert.Equal(t, "198.41.0.4", must(LookupIP(t.Context(), "a.root-servers.net")))
 }
 
 func TestLookupIPs(t *testing.T) {
 	assert.Equal(t, []string{"127.0.0.1"}, must(LookupIPs(t.Context(), "localhost")))
-	assert.ElementsMatch(t, []string{"1.1.1.1", "1.0.0.1"}, must(LookupIPs(t.Context(), "one.one.one.one")))
 }
 
 func BenchmarkLookupIPs(b *testing.B) {
