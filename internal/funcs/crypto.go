@@ -227,8 +227,6 @@ func (f CryptoFuncs) YescryptMCF(args ...any) (string, error) {
 	if err := checkExperimental(f.ctx); err != nil {
 		return "", err
 	}
-
-	
 	cost := 14
 	blockSize := 8
 	input := ""
