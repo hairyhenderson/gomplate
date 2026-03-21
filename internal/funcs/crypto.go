@@ -250,6 +250,7 @@ func (f CryptoFuncs) YescryptMCF(args ...any) (string, error) {
 			return "", fmt.Errorf("yescrypt blockSize must be an integer: %w", err)
 		}
 
+		//nolint:gosec
 		input = conv.ToString(args[2])
 	case 4:
 		cost, err = conv.ToInt(args[0])
@@ -262,7 +263,9 @@ func (f CryptoFuncs) YescryptMCF(args ...any) (string, error) {
 			return "", fmt.Errorf("yescrypt blockSize must be an integer: %w", err)
 		}
 
+		//nolint:gosec
 		salt = conv.ToString(args[2])
+		//nolint:gosec
 		input = conv.ToString(args[3])
 	default:
 		return "", fmt.Errorf("wrong number of args: want 1, 3, or 4, got %d", len(args))
