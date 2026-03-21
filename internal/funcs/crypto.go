@@ -73,7 +73,7 @@ func (f CryptoFuncs) PBKDF2MCF(password, salt, iter, keylen any, hashFunc ...str
 	b64DK := cryptBase64Encode(dk)
 
 	// Format: $pbkdf2-<algo>$<iter>$<b64salt>$<b64dk>
-	return fmt.Sprintf("$pbkdf2-%s$%s$%s$%s", algo, iter, b64Salt, b64DK), nil
+	return fmt.Sprintf("$pbkdf2-%s$%d$%s$%s", algo, iter, b64Salt, b64DK), nil
 }
 
 func hashToMCFName(h gcrypto.Hash) (string, error) {
