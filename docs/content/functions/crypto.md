@@ -80,7 +80,6 @@ input | crypto.YescryptMCF [cost] [blockSize] [salt]
 $ gomplate -i '{{ "foo" | crypto.YescryptMCF }}'
 $y$jB5$YZZJoNING3pMhVIKFhIJJ/$n.9CRZ17bqvvDKyrAWqvghg7k5rq9M9F4rpWntnpeV0
 ```
-
 ```console
 $ gomplate -i '{{ crypto.YescryptMCF 10 1 "mysalt" "foo" }}'
 $y$j7.$hZrQVl4R$y2MSQDqiVCS0Q7PsGv7f8b4O7s/O0Kmgw.2hvgxbqL1
