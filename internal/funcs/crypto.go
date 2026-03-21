@@ -13,6 +13,7 @@ import (
 	"strings"
 	"unicode/utf8"
 
+	"github.com/openwall/yescrypt-go"
 	"golang.org/x/crypto/bcrypt"
 
 	"github.com/hairyhenderson/gomplate/v5/conv"
@@ -196,6 +197,110 @@ func (CryptoFuncs) Bcrypt(args ...any) (string, error) {
 
 	hash, err := bcrypt.GenerateFromPassword([]byte(input), cost)
 	return string(hash), err
+}
+
+// Yescrypt -
+func (f CryptoFuncs) Yescrypt(password, salt, cost, blockSize, keylen any) (string, error) {
+	if err := checkExperimental(f.ctx); err != nil {
+		return "", err
+	}
+
+	N, err := conv.ToInt(cost)
+	if err != nil {
+		return "", fmt.Errorf("cost must be an integer: %w", err)
+	}
+	r, err := conv.ToInt(blockSize)
+	if err != nil {
+		return "", fmt.Errorf("blockSize must be an integer: %w", err)
+	}
+	k, err := conv.ToInt(keylen)
+	if err != nil {
+		return "", fmt.Errorf("keylen must be an integer: %w", err)
+	}
+
+	key, err := yescrypt.Key(toBytes(password), toBytes(salt), N, r, 1, k)
+	return fmt.Sprintf("%02x", key), err
+}
+
+// YescryptMCF -
+func (f CryptoFuncs) YescryptMCF(args ...any) (string, error) {
+	if err := checkExperimental(f.ctx); err != nil {
+		return "", err
+	}
+	cost := 14
+	blockSize := 8
+	input := ""
+	var err error
+	salt, err := RandomFuncs{}.AlphaNum(16)
+	if err != nil {
+		return "", fmt.Errorf("failed to generate salt: %w", err)
+	}
+
+	switch len(args) {
+	case 1:
+		input = conv.ToString(args[0])
+	case 3:
+		cost, err = conv.ToInt(args[0])
+		if err != nil {
+			return "", fmt.Errorf("yescrypt cost must be an integer: %w", err)
+		}
+
+		blockSize, err = conv.ToInt(args[1])
+		if err != nil {
+			return "", fmt.Errorf("yescrypt blockSize must be an integer: %w", err)
+		}
+
+		//nolint:gosec
+		input = conv.ToString(args[2])
+	case 4:
+		cost, err = conv.ToInt(args[0])
+		if err != nil {
+			return "", fmt.Errorf("yescrypt cost must be an integer: %w", err)
+		}
+
+		blockSize, err = conv.ToInt(args[1])
+		if err != nil {
+			return "", fmt.Errorf("yescrypt blockSize must be an integer: %w", err)
+		}
+
+		//nolint:gosec
+		salt = conv.ToString(args[2])
+		//nolint:gosec
+		input = conv.ToString(args[3])
+	default:
+		return "", fmt.Errorf("wrong number of args: want 1, 3, or 4, got %d", len(args))
+	}
+
+	// yescrypt requires
+	// - cost 		∈ [10, 18]
+	// - blockSize 	∈ [1, 32]
+	N := yescryptItoa64[(cost-1)&0x3f]
+	r := yescryptItoa64[(blockSize-1)&0x3f]
+	saltB64 := yescryptEncode64([]byte(salt))
+	settings := fmt.Sprintf("$y$j%c%c$%s", N, r, saltB64)
+
+	hash, err := yescrypt.Hash([]byte(input), []byte(settings))
+	return string(hash), err
+}
+
+// Vendored from yescrypt_wrapper.go
+const yescryptItoa64 = "./0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
+
+// Vendored from yescrypt_wrapper.go
+func yescryptEncode64(src []byte) []byte {
+	dst := make([]byte, 0, (len(src)*8+5)/6)
+	for i := 0; i < len(src); {
+		value, bits := uint32(0), 0
+		for ; bits < 24 && i < len(src); bits += 8 {
+			value |= uint32(src[i]) << bits
+			i++
+		}
+		for ; bits > 0; bits -= 6 {
+			dst = append(dst, yescryptItoa64[value&0x3f])
+			value >>= 6
+		}
+	}
+	return dst
 }
 
 // RSAEncrypt -
