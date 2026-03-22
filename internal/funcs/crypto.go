@@ -21,6 +21,12 @@ import (
 	"github.com/hairyhenderson/gomplate/v5/internal/deprecated"
 )
 
+func cryptBase64Encode(src []byte) (dst string) {
+	dst = base64.RawStdEncoding.EncodeToString(src)
+	dst = strings.ReplaceAll(dst, "+", ".")
+	return
+}
+
 // CreateCryptoFuncs -
 func CreateCryptoFuncs(ctx context.Context) map[string]any {
 	f := map[string]any{}
@@ -40,13 +46,66 @@ type CryptoFuncs struct {
 // RFC 2898 (PKCS #5 v2.0). This function outputs the binary result in hex
 // format.
 func (CryptoFuncs) PBKDF2(password, salt, iter, keylen any, hashFunc ...string) (k string, err error) {
-	var h gcrypto.Hash
+	dk, _, err := rawPBKDF2(password, salt, iter, keylen, hashFunc...)
+	if err != nil {
+		return "", err
+	}
+	return fmt.Sprintf("%02x", dk), nil
+}
+
+// PBKDF2MCF - Generate PBKDF2 hash in Modular Crypt Format (MCF)
+func (f CryptoFuncs) PBKDF2MCF(password, salt, iter, keylen any, hashFunc ...string) (string, error) {
+	if err := checkExperimental(f.ctx); err != nil {
+		return "", err
+	}
+
+	dk, h, err := rawPBKDF2(password, salt, iter, keylen, hashFunc...)
+	if err != nil {
+		return "", err
+	}
+
+	algo, err := hashToMCFName(h)
+	if err != nil {
+		return "", err
+	}
+
+	b64Salt := cryptBase64Encode(toBytes(salt))
+	b64DK := cryptBase64Encode(dk)
+
+	it, _ := conv.ToInt(iter)
+
+	// Format: $pbkdf2-<algo>$<iter>$<b64salt>$<b64dk>
+	return fmt.Sprintf("$pbkdf2-%s$%d$%s$%s", algo, it, b64Salt, b64DK), nil
+}
+
+func hashToMCFName(h gcrypto.Hash) (string, error) {
+	switch h {
+	case gcrypto.SHA1:
+		return "sha1", nil
+	case gcrypto.SHA224:
+		return "sha224", nil
+	case gcrypto.SHA256:
+		return "sha256", nil
+	case gcrypto.SHA384:
+		return "sha384", nil
+	case gcrypto.SHA512:
+		return "sha512", nil
+	case gcrypto.SHA512_224:
+		return "sha512-224", nil
+	case gcrypto.SHA512_256:
+		return "sha512-256", nil
+	default:
+		return "", fmt.Errorf("unsupported hash: %v", h)
+	}
+}
+
+func rawPBKDF2(password, salt, iter, keylen any, hashFunc ...string) (k []byte, h gcrypto.Hash, err error) {
 	if len(hashFunc) == 0 {
 		h = gcrypto.SHA1
 	} else {
 		h, err = crypto.StrToHash(hashFunc[0])
 		if err != nil {
-			return "", err
+			return nil, 0, err
 		}
 	}
 	pw := toBytes(password)
@@ -54,16 +113,16 @@ func (CryptoFuncs) PBKDF2(password, salt, iter, keylen any, hashFunc ...string) 
 
 	i, err := conv.ToInt(iter)
 	if err != nil {
-		return "", fmt.Errorf("iter must be an integer: %w", err)
+		return nil, 0, fmt.Errorf("iter must be an integer: %w", err)
 	}
 
 	kl, err := conv.ToInt(keylen)
 	if err != nil {
-		return "", fmt.Errorf("keylen must be an integer: %w", err)
+		return nil, 0, fmt.Errorf("keylen must be an integer: %w", err)
 	}
 
 	dk, err := crypto.PBKDF2(pw, s, i, kl, h)
-	return fmt.Sprintf("%02x", dk), err
+	return dk, h, err
 }
 
 // WPAPSK - Convert an ASCII passphrase to WPA PSK for a given SSID
