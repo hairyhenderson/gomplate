@@ -208,7 +208,30 @@ func (CollFuncs) Pick(args ...any) (map[string]any, error) {
 }
 
 // Omit -
-func (CollFuncs) Omit(args ...any) (map[string]any, error) {
+func (CollFuncs) Omit(args ...any) (any, error) {
+	if len(args) <= 1 {
+		return nil, fmt.Errorf("wrong number of args: wanted 2 or more, got %d", len(args))
+	}
+
+	last := args[len(args)-1]
+	if t := reflect.TypeOf(last); t != nil && (t.Kind() == reflect.Slice || t.Kind() == reflect.Array) {
+		values := args[0 : len(args)-1]
+
+		// special-case - if there's only one value and it's a slice/array, expand it
+		if len(values) == 1 {
+			if vt := reflect.TypeOf(values[0]); vt != nil && (vt.Kind() == reflect.Slice || vt.Kind() == reflect.Array) {
+				sl := reflect.ValueOf(values[0])
+				expanded := make([]any, sl.Len())
+				for i := range sl.Len() {
+					expanded[i] = sl.Index(i).Interface()
+				}
+				values = expanded
+			}
+		}
+
+		return coll.OmitSlice(last, values...)
+	}
+
 	m, keys, err := pickOmitArgs(args...)
 	if err != nil {
 		return nil, err
