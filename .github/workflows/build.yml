@@ -46,6 +46,9 @@ jobs:
             ${{ runner.os }}-${{ runner.arch }}-${{ matrix.goarch }}-go-
       - run: make build GOARCH=${{ matrix.goarch }} GOARM=${{ matrix.goarm }}
       - run: make test GOARCH=${{ matrix.goarch }} GOARM=${{ matrix.goarm }}
+      - name: Check schema is up to date
+        if: matrix.goarch == 'amd64'
+        run: make -B schema/gomplate-config.json && git diff --exit-code schema/
       - run: make integration GOARCH=${{ matrix.goarch }} GOARM=${{ matrix.goarm }}
   windows-build:
     runs-on: windows-latest
