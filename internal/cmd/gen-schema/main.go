@@ -130,6 +130,7 @@ func pluginConfigSchema() *jsonschema.Schema {
 				Type:                 "object",
 				Description:          "Plugin configuration",
 				Properties:           props,
+				Required:             []string{"cmd"},
 				AdditionalProperties: jsonschema.FalseSchema,
 			},
 		},

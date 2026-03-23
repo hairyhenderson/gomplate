@@ -104,6 +104,9 @@
             },
             "additionalProperties": false,
             "type": "object",
+            "required": [
+              "cmd"
+            ],
             "description": "Plugin configuration"
           }
         ]

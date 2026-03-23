@@ -274,6 +274,11 @@ outputMap: 'out/{{ .in }}'
 			yaml:    "plugins:\n  p:\n    cmd: /bin/foo\n    timout: 1s\n",
 			wantErr: true,
 		},
+		{
+			name:    "plugin map missing cmd",
+			yaml:    "plugins:\n  p:\n    pipe: true\n",
+			wantErr: true,
+		},
 	}
 
 	for _, tc := range cases {
