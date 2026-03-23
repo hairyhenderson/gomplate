@@ -666,8 +666,9 @@ map[baz:3 foo:1]
 ## `coll.Omit`
 
 Given a map, returns a new map without any entries that have the given keys.
+Given a list, returns a new list without any elements equal to the given values (since v5.1.0).
 
-The keys can either be separate arguments, or a slice (since v4.0.0).
+The keys/values can either be separate arguments, or a slice (since v4.0.0).
 
 This is the inverse of [`coll.Pick`](#collpick).
 
@@ -677,18 +678,18 @@ _<span class="release-check" data-tag="v3.7.0">Added in gomplate v3.7.0</span>_
 ### Usage
 
 ```
-coll.Omit keys... map
+coll.Omit keys/values... map or list
 ```
 ```
-map | coll.Omit keys...
+map or list | coll.Omit keys/values...
 ```
 
 ### Arguments
 
 | name | description |
 |------|-------------|
-| `keys...` | _(required)_ the keys (strings) to match |
-| `map` | _(required)_ the map to omit from |
+| `keys/values...` | _(required)_ the keys (strings) to omit from a map, or values to omit from a list |
+| `map or list` | _(required)_ the map or list to omit from |
 
 ### Examples
 
@@ -702,6 +703,10 @@ $ gomplate -i '{{ $data := dict "foo" 1 "bar" 2 "baz" 3 }}
 {{ $keys := coll.Slice "foo" "baz" }}
 {{ coll.Omit $keys $data }}'
 map[bar:2]
+```
+```console
+$ gomplate -i '{{ coll.Slice "a" "b" "c" | coll.Omit "b" }}'
+[a c]
 ```
 
 ## `coll.Set`

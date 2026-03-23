@@ -599,6 +599,29 @@ func TestOmit(t *testing.T) {
 	assert.Equal(t, map[string]any{}, Omit(in, "foo", "bar", ""))
 }
 
+func TestOmitSlice(t *testing.T) {
+	testdata := []struct {
+		in       any
+		values   []any
+		expected []any
+	}{
+		{in: []any{"a", "b", "c"}, values: []any{"b"}, expected: []any{"a", "c"}},
+		{in: []any{"a", "b", "c"}, values: []any{"b", "c"}, expected: []any{"a"}},
+		{in: []any{"a", "b", "c"}, expected: []any{"a", "b", "c"}},
+		{in: []string{"a", "b", "c"}, values: []any{"b"}, expected: []any{"a", "c"}},
+		{in: [3]string{"a", "b", "c"}, values: []any{"b"}, expected: []any{"a", "c"}},
+	}
+
+	for _, d := range testdata {
+		out, err := OmitSlice(d.in, d.values...)
+		require.NoError(t, err)
+		assert.Equal(t, d.expected, out)
+	}
+
+	_, err := OmitSlice("not a slice")
+	require.Error(t, err)
+}
+
 func TestPick(t *testing.T) {
 	in := map[string]any{
 		"foo": "bar",
