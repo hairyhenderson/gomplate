@@ -453,7 +453,7 @@ $ gomplate -d key=priv.pem -i '{{ crypto.Ed25519DerivePublicKey (include "key") 
 ## `crypto.PBKDF2`
 
 Run the Password-Based Key Derivation Function &num;2 as defined in
-[RFC 8018 (PKCS &num;5 v2.1)](https://tools.ietf.org/html/rfc8018#section-5.2).
+[RFC 8018 (PKCS &num;5 v2.1)](https://www.rfc-editor.org/rfc/rfc8018#section-5.2).
 
 This function outputs the binary result as a hexadecimal string.
 
@@ -488,7 +488,7 @@ $ gomplate -i '{{ crypto.PBKDF2 "foo" "bar" 1024 8 }}'
 [experimental]: ../config/#experimental
 
 Run the Password-Based Key Derivation Function &num;2 as defined in
-[RFC 8018 (PKCS &num;5 v2.1)](https://tools.ietf.org/html/rfc8018#section-5.2).
+[RFC 8018 (PKCS &num;5 v2.1)](https://www.rfc-editor.org/rfc/rfc8018#section-5.2).
 
 This function outputs a Modular Crypt Format (MCF) result string.
 
