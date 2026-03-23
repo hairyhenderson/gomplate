@@ -116,6 +116,7 @@ func handleGCPMetadataRequest(metafsys fstest.MapFS) http.HandlerFunc {
 			if len(entries) == 0 {
 				// Directory not found
 				w.WriteHeader(http.StatusNotFound)
+				//nolint:gosec // G705 — test stub; plain text 404, path is only used with %q
 				fmt.Fprintf(w, "GCE metadata %q not defined", path)
 				return
 			}
@@ -131,6 +132,7 @@ func handleGCPMetadataRequest(metafsys fstest.MapFS) http.HandlerFunc {
 
 		// File not found
 		w.WriteHeader(http.StatusNotFound)
+		//nolint:gosec // G705 — test stub; plain text 404, path is only used with %q
 		fmt.Fprintf(w, "GCE metadata %q not defined", path)
 	}
 }

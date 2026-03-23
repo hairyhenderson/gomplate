@@ -36,11 +36,13 @@ func (ReFuncs) FindAll(args ...any) ([]string, error) {
 	case 2:
 		n = -1
 		re = conv.ToString(args[0])
+		//nolint:gosec // G602 — false positive: len(args)==2 from switch
 		input = conv.ToString(args[1])
 	case 3:
 		re = conv.ToString(args[0])
 
 		var err error
+		//nolint:gosec // G602 — false positive: len(args)==3 from switch
 		n, err = conv.ToInt(args[1])
 		if err != nil {
 			return nil, fmt.Errorf("n must be an integer: %w", err)
@@ -87,10 +89,12 @@ func (ReFuncs) Split(args ...any) ([]string, error) {
 	switch len(args) {
 	case 2:
 		re = conv.ToString(args[0])
+		//nolint:gosec // G602 — false positive: len(args)==2 from switch
 		input = conv.ToString(args[1])
 	case 3:
 		re = conv.ToString(args[0])
 		var err error
+		//nolint:gosec // G602 — false positive: len(args)==3 from switch
 		n, err = conv.ToInt(args[1])
 		if err != nil {
 			return nil, fmt.Errorf("n must be an integer: %w", err)

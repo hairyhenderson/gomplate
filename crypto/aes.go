@@ -33,6 +33,7 @@ func EncryptAESCBC(key []byte, in []byte) ([]byte, error) {
 	pl := bs - len(in)%bs
 
 	// pad with pl, repeated pl times
+	//nolint:gosec // G115 — pl is PKCS#7 length in [1, bs] and bs is the cipher block size
 	in = append(in, bytes.Repeat([]byte{byte(pl)}, pl)...)
 
 	out := make([]byte, bs+len(in))

@@ -130,8 +130,6 @@ func (f *NetFuncs) CIDRNetmask(prefix any) (netip.Addr, error) {
 	// fill an appropriately sized byte slice with as many 1s as prefix bits
 	b := make([]byte, p.Addr().BitLen()/8)
 	for i := range p.Bits() {
-		//nolint:gosec // G115 is not applicable, the value was checked at parse
-		// time
 		b[i/8] |= 1 << uint(7-i%8)
 	}
 
