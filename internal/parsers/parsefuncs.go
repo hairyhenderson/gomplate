@@ -85,6 +85,7 @@ func getenv(key string, def ...string) string {
 
 	p := os.Getenv(key + "_FILE")
 	if p != "" {
+		//nolint:gosec // G703 — path comes from operator-controlled *_FILE env (same pattern as Docker/K8s secrets)
 		b, err := os.ReadFile(p)
 		if err != nil {
 			return ""

@@ -113,6 +113,7 @@ func (t *Template) parseArgs(args ...any) (name, in string, ctx any, err error) 
 		if !ok {
 			return "", "", nil, fmt.Errorf("wrong input: second arg (in) must be string, got %T", args[0])
 		}
+		//nolint:gosec // G602 — false positive: len(args)==3 from switch
 		ctx = args[2]
 	}
 

@@ -66,6 +66,7 @@ func (StringFuncs) Abbrev(args ...any) (string, error) {
 			return "", fmt.Errorf("width must be an integer: %w", err)
 		}
 
+		//nolint:gosec // G602 — false positive: len(args)==2 from switch
 		str = conv.ToString(args[1])
 	case 3:
 		offset, err = conv.ToInt(args[0])
@@ -73,6 +74,7 @@ func (StringFuncs) Abbrev(args ...any) (string, error) {
 			return "", fmt.Errorf("offset must be an integer: %w", err)
 		}
 
+		//nolint:gosec // G602 — false positive: len(args)==3 from switch
 		width, err = conv.ToInt(args[1])
 		if err != nil {
 			return "", fmt.Errorf("width must be an integer: %w", err)

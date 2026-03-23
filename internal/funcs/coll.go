@@ -157,6 +157,7 @@ func (CollFuncs) Flatten(args ...any) ([]any, error) {
 			return nil, fmt.Errorf("wrong depth type: must be int, got %T (%+v)", list, list)
 		}
 
+		//nolint:gosec // G602 — false positive: len(args)==2 guarantees args[1]
 		list = args[1]
 	}
 

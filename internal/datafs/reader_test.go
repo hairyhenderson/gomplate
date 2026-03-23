@@ -99,6 +99,7 @@ func TestResolveURL(t *testing.T) {
 }
 
 func BenchmarkResolveURL(b *testing.B) {
+	//nolint:govet
 	args := []struct {
 		url url.URL
 		rel string
