@@ -1,0 +1,192 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/hairyhenderson/gomplate/main/schema/gomplate-config.json",
+  "properties": {
+    "datasources": {
+      "additionalProperties": {
+        "properties": {
+          "url": {
+            "type": "string",
+            "description": "URL for the datasource (e.g. file:///data.json, https://example.com/data, env:FOO)"
+          },
+          "header": {
+            "additionalProperties": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "type": "object",
+            "description": "HTTP headers (header name → list of values)"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "description": "Data source configuration"
+      },
+      "type": "object"
+    },
+    "context": {
+      "additionalProperties": {
+        "properties": {
+          "url": {
+            "type": "string",
+            "description": "URL for the datasource (e.g. file:///data.json, https://example.com/data, env:FOO)"
+          },
+          "header": {
+            "additionalProperties": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "type": "object",
+            "description": "HTTP headers (header name → list of values)"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "description": "Data source configuration"
+      },
+      "type": "object"
+    },
+    "templates": {
+      "additionalProperties": {
+        "properties": {
+          "url": {
+            "type": "string",
+            "description": "URL for the datasource (e.g. file:///data.json, https://example.com/data, env:FOO)"
+          },
+          "header": {
+            "additionalProperties": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "type": "object",
+            "description": "HTTP headers (header name → list of values)"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "description": "Data source configuration"
+      },
+      "type": "object"
+    },
+    "plugins": {
+      "additionalProperties": {
+        "oneOf": [
+          {
+            "type": "string",
+            "description": "Path to the plugin command"
+          },
+          {
+            "properties": {
+              "cmd": {
+                "type": "string",
+                "description": "Path to the plugin command"
+              },
+              "args": {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              "timeout": {
+                "type": "string",
+                "description": "Plugin execution timeout, e.g. 30s, 5m"
+              },
+              "pipe": {
+                "type": "boolean",
+                "description": "Pipe gomplate's stdin to the plugin"
+              }
+            },
+            "additionalProperties": false,
+            "type": "object",
+            "required": [
+              "cmd"
+            ],
+            "description": "Plugin configuration"
+          }
+        ]
+      },
+      "type": "object"
+    },
+    "in": {
+      "type": "string"
+    },
+    "inputDir": {
+      "type": "string"
+    },
+    "inputFiles": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "excludes": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "excludeProcessing": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "outputDir": {
+      "type": "string"
+    },
+    "outputMap": {
+      "type": "string"
+    },
+    "outputFiles": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "chmod": {
+      "type": "string"
+    },
+    "leftDelim": {
+      "type": "string"
+    },
+    "rightDelim": {
+      "type": "string"
+    },
+    "missingKey": {
+      "type": "string",
+      "enum": [
+        "",
+        "error",
+        "zero",
+        "default",
+        "invalid"
+      ]
+    },
+    "postExec": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "pluginTimeout": {
+      "type": "string",
+      "description": "timeout for all plugins, e.g. 500ms, 5s (default 5s)"
+    },
+    "execPipe": {
+      "type": "boolean"
+    },
+    "experimental": {
+      "type": "boolean"
+    }
+  },
+  "additionalProperties": false,
+  "type": "object",
+  "title": "gomplate configuration",
+  "description": "Configuration file for gomplate (.gomplate.yaml / .gomplate.yml)"
+}
