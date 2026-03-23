@@ -61,6 +61,7 @@ jobs:
             --exclude="http://opensource\.org.*" \
             --exclude="https://en.wikipedia\.org.*" \
             --exclude="https://developer\.hashicorp\.com.*" \
-            --exclude="https://helm\.sh.*"
+            --exclude="https://helm\.sh.*" \
+            --exclude="https://pkg\.go\.dev.*"
 
           kill %1

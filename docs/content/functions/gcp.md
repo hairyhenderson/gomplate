@@ -21,7 +21,7 @@ with GCP APIs.
 
 ## `gcp.Meta`
 
-Queries GCP [Instance Metadata](https://cloud.google.com/compute/docs/storing-retrieving-metadata) for information.
+Queries GCP [Instance Metadata](https://docs.cloud.google.com/compute/docs/metadata/overview) for information.
 
 For times when running outside GCP, or when the metadata API can't be reached, a `default` value can be provided.
 

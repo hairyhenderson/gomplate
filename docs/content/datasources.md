@@ -528,7 +528,7 @@ The _scheme_, _authority_, _path_, and _query_ URL components are used by this d
 
 All `gs` datasources need credentials, provided by the `GOOGLE_APPLICATION_CREDENTIALS` environment variable. This should point to an authentication configuration JSON file.
 
-See Google Cloud's [Getting Started with Authentication](https://cloud.google.com/docs/authentication/getting-started) documentation for details.
+See Google Cloud's [Getting Started with Authentication](https://docs.cloud.google.com/docs/authentication/getting-started) documentation for details.
 
 ### Output
 
@@ -834,7 +834,7 @@ The file `/tmp/vault-aws-nonce` will be created if it didn't already exist, and 
 
 [AWS SMP]: https://docs.aws.amazon.com/systems-manager/latest/userguide/systems-manager-parameter-store.html
 [AWS Secrets Manager]: https://aws.amazon.com/secrets-manager
-[GCP VM Metadata Service]: https://cloud.google.com/compute/docs/metadata/overview
+[GCP VM Metadata Service]: https://docs.cloud.google.com/compute/docs/metadata/overview
 [`gcp.Meta`]: ../functions/gcp/#gcpmeta
 [HashiCorp Consul]: https://consul.io
 [HashiCorp Vault]: https://vaultproject.io
