@@ -63,6 +63,7 @@ Gomplate supports a number of datasources, each specified with a particular URL 
 | [File](#using-file-datasources) | `file` | Files can be read in any of the [supported formats](#mime-types), including by piping through standard input (`Stdin`). [Directories](#directory-datasources) are also supported. |
 | [Git](#using-git-datasources) | `git`, `git+file`, `git+http`, `git+https`, `git+ssh` | Files can be read from a local or remote git repository, at specific branches or tags. [Directory semantics](#directory-datasources) are also supported. |
 | [GCP Compute Instance Metadata](#using-gcpmeta-datasources) | `gcp+meta` | Provides access to the [GCP VM Metadata Service][], including instance and project metadata. |
+| [GCP Secret Manager](#using-gcpsm-datasources) | `gcp+sm` | [GCP Secret Manager][] stores named secrets; each read returns one secret’s latest payload (often text or JSON). |
 | [Google Cloud Storage](#using-google-cloud-storage-gs-datasources) | `gs` | [Google Cloud Storage][] is the object storage service available on GCP, comparable to AWS S3. |
 | [HTTP](#using-http-datasources) | `http`, `https` | Data can be sourced from HTTP/HTTPS sites in many different formats. Arbitrary HTTP headers can be set with the [`--datasource-header`/`-H`][] flag |
 | [Merged Datasources](#using-merge-datasources) | `merge` | Merge two or more datasources together to produce the final value - useful for resolving defaults. Uses [`coll.Merge`][] for merging. |
@@ -627,6 +628,45 @@ $ gomplate -d meta=gcp+meta:/// -i 'IP: {{ include "meta" "instance/network-inte
 IP: 10.128.0.2
 ```
 
+## Using `gcp+sm` datasources
+
+The `gcp+sm://` scheme provides access to [GCP Secret Manager][]. Each secret holds a payload (commonly a string or JSON document). Accessing a datasource reads the **latest** enabled version of that secret.
+
+### URL Considerations
+
+The _scheme_ and _path_ URL components are used by this datasource.
+
+- the _scheme_ must be `gcp+sm`
+- the _path_ must identify the secret using Secret Manager’s resource form: `projects/PROJECT_ID/secrets/SECRET_ID` (for example `gcp+sm:///projects/my-project/secrets/my-secret`)
+
+[Directory](#directory-datasources) semantics are not supported.
+
+### Authentication
+
+The Secret Manager client uses [Application Default Credentials](https://cloud.google.com/docs/authentication/application-default-credentials) (for example `gcloud auth application-default login`, a service account key via `GOOGLE_APPLICATION_CREDENTIALS`, or credentials from the metadata server on GCE, GKE, or Cloud Run).
+
+See Google Cloud’s [authentication overview](https://docs.cloud.google.com/docs/authentication/getting-started) for details.
+
+### Output
+
+The output will be the secret payload, parsed based on the discovered [MIME type](#mime-types).
+
+### Examples
+
+Given a secret `my-secret` in project `my-project` whose payload is JSON `{"foo":"bar","baz":"qux"}`:
+
+```console
+$ gomplate -c cfg=gcp+sm:///projects/my-project/secrets/my-secret -i 'Hello {{ .cfg.foo }}'
+Hello bar
+```
+
+Reading a secret as a datasource (non-JSON or when you want the raw body):
+
+```console
+$ gomplate -d pw=gcp+sm:///projects/my-project/secrets/db-password -i '{{ include "pw" }}'
+hunter2
+```
+
 ## Using `http` datasources
 
 To access datasources from HTTP sites or APIs, simply use a `http` or `https` URL:
@@ -835,6 +875,7 @@ The file `/tmp/vault-aws-nonce` will be created if it didn't already exist, and 
 [AWS SMP]: https://docs.aws.amazon.com/systems-manager/latest/userguide/systems-manager-parameter-store.html
 [AWS Secrets Manager]: https://aws.amazon.com/secrets-manager
 [GCP VM Metadata Service]: https://docs.cloud.google.com/compute/docs/metadata/overview
+[GCP Secret Manager]: https://cloud.google.com/secret-manager
 [`gcp.Meta`]: ../functions/gcp/#gcpmeta
 [HashiCorp Consul]: https://consul.io
 [HashiCorp Vault]: https://vaultproject.io
