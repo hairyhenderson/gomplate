@@ -1,10 +1,11 @@
 # syntax=docker/dockerfile:1
-FROM --platform=linux/amd64 golang:1.26-alpine AS build
+FROM --platform=$BUILDPLATFORM golang:1.26-alpine AS build
 
 ARG TARGETOS
 ARG TARGETARCH
 ARG TARGETVARIANT
-ENV GOOS=$TARGETOS GOARCH=$TARGETARCH
+ARG VERSION
+ENV GOOS=$TARGETOS GOARCH=$TARGETARCH VERSION=$VERSION
 
 RUN apk add --no-cache make git
 

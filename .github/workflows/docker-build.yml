@@ -1,0 +1,86 @@
+name: Docker Build
+
+on:
+  push:
+    branches: [ main ]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  version:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+      - id: version
+        run: echo "version=$(go run ./internal/version/gen/vgen.go)" >> $GITHUB_OUTPUT
+
+  docker-latest:
+    needs: version
+    uses: docker/github-builder/.github/workflows/build.yml@v1
+    permissions:
+      contents: read
+      id-token: write
+      packages: write
+    with:
+      output: image
+      push: true
+      platforms: linux/amd64,linux/arm64,linux/arm/v6,linux/arm/v7,linux/ppc64le,linux/s390x,windows/amd64
+      target: gomplate
+      cache: true
+      build-args: |
+        VCS_REF=${{ github.sha }}
+        VERSION=${{ needs.version.outputs.version }}
+      meta-images: |
+        ghcr.io/hairyhenderson/gomplate
+        gomplate/gomplate
+        hairyhenderson/gomplate
+      meta-tags: type=raw,value=latest
+    secrets:
+      registry-auths: |
+        - registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+        - registry: docker.io
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+  docker-alpine:
+    needs: version
+    uses: docker/github-builder/.github/workflows/build.yml@v1
+    permissions:
+      contents: read
+      id-token: write
+      packages: write
+    with:
+      output: image
+      push: true
+      platforms: linux/amd64,linux/arm64,linux/arm/v6,linux/arm/v7,linux/ppc64le,linux/s390x
+      target: gomplate-alpine
+      cache: true
+      build-args: |
+        VCS_REF=${{ github.sha }}
+        VERSION=${{ needs.version.outputs.version }}
+      meta-images: |
+        ghcr.io/hairyhenderson/gomplate
+        gomplate/gomplate
+        hairyhenderson/gomplate
+      meta-tags: type=raw,value=alpine
+    secrets:
+      registry-auths: |
+        - registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+        - registry: docker.io
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
