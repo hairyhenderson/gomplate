@@ -266,7 +266,8 @@ The context is foo
 Templates rendered by gomplate always have a _default_ context. You can populate
 the default context from data sources with the [`--context`/`c`](../usage/#--context-c)
 flag. The special context item [`.Env`](#env) is available for referencing the
-system's environment variables.
+system's environment variables _(unless overridden with `--context .=...` - see
+[`env.Env`](../functions/env/#envenv) for an alternative)._
 
 _Note:_ The initial context (`.`) is always available as the variable `$`,
 so the initial context is always available, even when shadowed with `range`
@@ -330,6 +331,8 @@ Hello World! Hello hairyhenderson!
 ```
 
 ## `.Env`
+
+_**Note:** Consider using [`env.Env`](../functions/env/#envenv) instead, which will continue to work even if the context is overridden (e.g. with `--context .=...`)._
 
 You can easily access environment variables with `.Env`, but there's a catch:
 if you try to reference an environment variable that doesn't exist, parsing

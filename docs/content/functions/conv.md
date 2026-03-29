@@ -16,7 +16,7 @@ to another - generally from a `string` to something else, and vice-versa.
 
 Converts a true-ish string to a boolean. Can be used to simplify conditional statements based on environment variables or other text input.
 
-_Added in gomplate [v0.2.0](https://github.com/hairyhenderson/gomplate/releases/tag/v0.2.0)_
+_<span class="release-check" data-tag="v0.2.0">Added in gomplate v0.2.0</span>_
 ### Usage
 
 ```
@@ -57,7 +57,7 @@ Note that this will not provide a default for the case where the input is undefi
 (i.e. referencing things like `.foo` where there is no `foo` field of `.`), but
 [`coll.Has`](../coll/#collhas) can be used for that.
 
-_Added in gomplate [v2.5.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.5.0)_
+_<span class="release-check" data-tag="v2.5.0">Added in gomplate v2.5.0</span>_
 ### Usage
 
 ```
@@ -81,133 +81,13 @@ $ gomplate -i '{{ "" | default "foo" }} {{ "bar" | default "baz" }}'
 foo bar
 ```
 
-## `conv.Dict` _(deprecated)_
-**Deprecation Notice:** Renamed to [`coll.Dict`](../coll/#colldict)
-
-**Alias:** `dict`
-
-Dict is a convenience function that creates a map with string keys.
-Provide arguments as key/value pairs. If an odd number of arguments
-is provided, the last is used as the key, and an empty string is
-set as the value.
-
-All keys are converted to strings.
-
-This function is equivalent to [Sprig's `dict`](http://masterminds.github.io/sprig/dicts.html#dict)
-function, as used in [Helm templates](https://helm.sh/docs/chart_template_guide/functions_and_pipelines/).
-
-For creating more complex maps, see [`data.JSON`](../data/#datajson) or [`data.YAML`](../data/#datayaml).
-
-For creating arrays, see [`coll.Slice`](../coll/#collslice-_deprecated_).
-
-_Added in gomplate [v3.0.0](https://github.com/hairyhenderson/gomplate/releases/tag/v3.0.0)_
-### Usage
-
-```
-conv.Dict in...
-```
-
-### Arguments
-
-| name | description |
-|------|-------------|
-| `in...` | _(required)_ The key/value pairs |
-
-### Examples
-
-```console
-$ gomplate -i '{{ conv.Dict "name" "Frank" "age" 42 | data.ToYAML }}'
-age: 42
-name: Frank
-$ gomplate -i '{{ dict 1 2 3 | toJSON }}'
-{"1":2,"3":""}
-```
-```console
-$ cat <<EOF| gomplate
-{{ define "T1" }}Hello {{ .thing }}!{{ end -}}
-{{ template "T1" (dict "thing" "world")}}
-{{ template "T1" (dict "thing" "everybody")}}
-EOF
-Hello world!
-Hello everybody!
-```
-
-## `conv.Slice` _(deprecated)_
-**Deprecation Notice:** Renamed to [`coll.Slice`](../coll/#collslice-_deprecated_)
-
-**Alias:** `slice`
-
-Creates a slice (like an array or list). Useful when needing to `range` over a bunch of variables.
-
-_Added in gomplate [v0.3.0](https://github.com/hairyhenderson/gomplate/releases/tag/v0.3.0)_
-### Usage
-
-```
-conv.Slice in...
-```
-
-### Arguments
-
-| name | description |
-|------|-------------|
-| `in...` | _(required)_ the elements of the slice |
-
-### Examples
-
-```console
-$ gomplate -i '{{ range coll.Slice "Bart" "Lisa" "Maggie" }}Hello, {{ . }}{{ end }}'
-Hello, Bart
-Hello, Lisa
-Hello, Maggie
-```
-
-## `conv.Has` _(deprecated)_
-**Deprecation Notice:** Renamed to [`coll.Has`](../coll/#collhas)
-
-**Alias:** `has`
-
-Reports whether a given object has a property with the given key, or whether a given array/slice contains the given value. Can be used with `if` to prevent the template from trying to access a non-existent property in an object.
-
-_Added in gomplate [v1.5.0](https://github.com/hairyhenderson/gomplate/releases/tag/v1.5.0)_
-### Usage
-
-```
-conv.Has in item
-```
-
-### Arguments
-
-| name | description |
-|------|-------------|
-| `in` | _(required)_ The object or list to search |
-| `item` | _(required)_ The item to search for |
-
-### Examples
-
-```console
-$ gomplate -i '{{ $l := coll.Slice "foo" "bar" "baz" }}there is {{ if has $l "bar" }}a{{else}}no{{end}} bar'
-there is a bar
-```
-```console
-$ export DATA='{"foo": "bar"}'
-$ gomplate -i '{{ $o := data.JSON (getenv "DATA") -}}
-{{ if (has $o "foo") }}{{ $o.foo }}{{ else }}THERE IS NO FOO{{ end }}'
-bar
-```
-```console
-$ export DATA='{"baz": "qux"}'
-$ gomplate -i '{{ $o := data.JSON (getenv "DATA") -}}
-{{ if (has $o "foo") }}{{ $o.foo }}{{ else }}THERE IS NO FOO{{ end }}'
-THERE IS NO FOO
-```
-
 ## `conv.Join`
 
 **Alias:** `join`
 
 Concatenates the elements of an array to create a string. The separator string `sep` is placed between elements in the resulting string.
 
-_Added in gomplate [v0.4.0](https://github.com/hairyhenderson/gomplate/releases/tag/v0.4.0)_
+_<span class="release-check" data-tag="v0.4.0">Added in gomplate v0.4.0</span>_
 ### Usage
 
 ```
@@ -236,7 +116,7 @@ Parses a string as a URL for later use. Equivalent to [url.Parse](https://pkg.go
 
 Any of `url.URL`'s methods can be called on the result.
 
-_Added in gomplate [v2.0.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.0.0)_
+_<span class="release-check" data-tag="v2.0.0">Added in gomplate v2.0.0</span>_
 ### Usage
 
 ```
@@ -277,7 +157,7 @@ _**Note:**_ See [`conv.ToInt64`](#convtoint64) instead for a simpler and more fl
 
 Parses a string as an int64. Equivalent to [strconv.ParseInt](https://pkg.go.dev/strconv/#ParseInt)
 
-_Added in gomplate [v1.4.0](https://github.com/hairyhenderson/gomplate/releases/tag/v1.4.0)_
+_<span class="release-check" data-tag="v1.4.0">Added in gomplate v1.4.0</span>_
 ### Usage
 
 ```
@@ -305,7 +185,7 @@ _**Note:**_ See [`conv.ToFloat64`](#convtofloat64) instead for a simpler and mor
 
 Parses a string as an float64 for later use. Equivalent to [strconv.ParseFloat](https://pkg.go.dev/strconv/#ParseFloat)
 
-_Added in gomplate [v1.4.0](https://github.com/hairyhenderson/gomplate/releases/tag/v1.4.0)_
+_<span class="release-check" data-tag="v1.4.0">Added in gomplate v1.4.0</span>_
 ### Usage
 
 ```
@@ -332,7 +212,7 @@ pi is greater than 3
 
 Parses a string as an uint64 for later use. Equivalent to [strconv.ParseUint](https://pkg.go.dev/strconv/#ParseUint)
 
-_Added in gomplate [v1.4.0](https://github.com/hairyhenderson/gomplate/releases/tag/v1.4.0)_
+_<span class="release-check" data-tag="v1.4.0">Added in gomplate v1.4.0</span>_
 ### Usage
 
 ```
@@ -360,7 +240,7 @@ _**Note:**_ See [`conv.ToInt`](#convtoint) and [`conv.ToInt64`](#convtoint64) in
 
 Parses a string as an int for later use. Equivalent to [strconv.Atoi](https://pkg.go.dev/strconv/#Atoi)
 
-_Added in gomplate [v1.4.0](https://github.com/hairyhenderson/gomplate/releases/tag/v1.4.0)_
+_<span class="release-check" data-tag="v1.4.0">Added in gomplate v1.4.0</span>_
 ### Usage
 
 ```
@@ -391,7 +271,7 @@ Converts the input to a boolean value.
 Possible `true` values are: `1` or the strings `"t"`, `"true"`, or `"yes"`
 (any capitalizations). All other values are considered `false`.
 
-_Added in gomplate [v2.7.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.7.0)_
+_<span class="release-check" data-tag="v2.7.0">Added in gomplate v2.7.0</span>_
 ### Usage
 
 ```
@@ -422,7 +302,7 @@ Converts a list of inputs to an array of boolean values.
 Possible `true` values are: `1` or the strings `"t"`, `"true"`, or `"yes"`
 (any capitalizations). All other values are considered `false`.
 
-_Added in gomplate [v2.7.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.7.0)_
+_<span class="release-check" data-tag="v2.7.0">Added in gomplate v2.7.0</span>_
 ### Usage
 
 ```
@@ -458,7 +338,7 @@ Unconvertible inputs will result in errors.
 
 Floating-point numbers (with decimal points) are truncated.
 
-_Added in gomplate [v2.2.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.2.0)_
+_<span class="release-check" data-tag="v2.2.0">Added in gomplate v2.2.0</span>_
 ### Usage
 
 ```
@@ -502,7 +382,7 @@ the result is `-1`. This is done to protect against
 
 See also [`conv.ToInt64`](#convtoint64).
 
-_Added in gomplate [v2.2.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.2.0)_
+_<span class="release-check" data-tag="v2.2.0">Added in gomplate v2.2.0</span>_
 ### Usage
 
 ```
@@ -538,7 +418,7 @@ Unconvertible inputs will result in errors.
 
 This delegates to [`conv.ToInt64`](#convtoint64) for each input argument.
 
-_Added in gomplate [v2.2.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.2.0)_
+_<span class="release-check" data-tag="v2.2.0">Added in gomplate v2.2.0</span>_
 ### Usage
 
 ```
@@ -566,7 +446,7 @@ Unconvertible inputs will result in errors.
 
 This delegates to [`conv.ToInt`](#convtoint) for each input argument.
 
-_Added in gomplate [v2.2.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.2.0)_
+_<span class="release-check" data-tag="v2.2.0">Added in gomplate v2.2.0</span>_
 ### Usage
 
 ```
@@ -595,7 +475,7 @@ and booleans).
 
 Unconvertible inputs will result in errors.
 
-_Added in gomplate [v2.2.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.2.0)_
+_<span class="release-check" data-tag="v2.2.0">Added in gomplate v2.2.0</span>_
 ### Usage
 
 ```
@@ -625,7 +505,7 @@ Unconvertible inputs will result in errors.
 
 This delegates to [`conv.ToFloat64`](#convtofloat64) for each input argument.
 
-_Added in gomplate [v2.2.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.2.0)_
+_<span class="release-check" data-tag="v2.2.0">Added in gomplate v2.2.0</span>_
 ### Usage
 
 ```
@@ -651,7 +531,7 @@ Converts the input (of any type) to a `string`.
 
 The input will always be represented in _some_ way.
 
-_Added in gomplate [v2.5.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.5.0)_
+_<span class="release-check" data-tag="v2.5.0">Added in gomplate v2.5.0</span>_
 ### Usage
 
 ```
@@ -681,7 +561,7 @@ Converts the inputs (of any type) to an array of `string`s
 
 This delegates to [`conv.ToString`](#convtostring) for each input argument.
 
-_Added in gomplate [v2.5.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.5.0)_
+_<span class="release-check" data-tag="v2.5.0">Added in gomplate v2.5.0</span>_
 ### Usage
 
 ```

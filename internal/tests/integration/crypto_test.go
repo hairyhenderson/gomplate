@@ -43,14 +43,12 @@ func setupCryptoTest(t *testing.T) *fs.Dir {
 func TestCrypto_RSACrypt(t *testing.T) {
 	tmpDir := setupCryptoTest(t)
 	o, e, err := cmd(t,
-		"--experimental",
 		"-i", `{{ crypto.RSAGenerateKey 2048 -}}`,
 		"-o", `key.pem`).
 		withDir(tmpDir.Path()).run()
 	assertSuccess(t, o, e, err, "")
 
 	o, e, err = cmd(t,
-		"--experimental",
 		"-c", "privKey=./key.pem?type=text/plain",
 		"-i", `{{ $pub := crypto.RSADerivePublicKey .privKey -}}
 {{ $enc := "hello" | crypto.RSAEncrypt $pub -}}
@@ -59,4 +57,34 @@ func TestCrypto_RSACrypt(t *testing.T) {
 `).
 		withDir(tmpDir.Path()).run()
 	assertSuccess(t, o, e, err, "hello\nhello\n")
+}
+
+func TestCrypto_AESCrypt(t *testing.T) {
+	o, e, err := cmd(t,
+		"-i", `{{ $enc := "hello" | crypto.AESEncrypt "swordfish" 128 -}}
+{{ crypto.AESDecrypt "swordfish" 128 $enc }}`).run()
+	assertSuccess(t, o, e, err, "hello")
+}
+
+func TestCrypto_DerivePublicKey(t *testing.T) {
+	// Test unified DerivePublicKey with RSA
+	o, e, err := cmd(t,
+		"-i", `{{ $key := crypto.RSAGenerateKey 2048 -}}
+{{ $pub := crypto.DerivePublicKey $key -}}
+{{ $pub | strings.HasPrefix "-----BEGIN PUBLIC KEY-----" }}`).run()
+	assertSuccess(t, o, e, err, "true")
+
+	// Test unified DerivePublicKey with ECDSA
+	o, e, err = cmd(t,
+		"-i", `{{ $key := crypto.ECDSAGenerateKey -}}
+{{ $pub := crypto.DerivePublicKey $key -}}
+{{ $pub | strings.HasPrefix "-----BEGIN PUBLIC KEY-----" }}`).run()
+	assertSuccess(t, o, e, err, "true")
+
+	// Test unified DerivePublicKey with Ed25519
+	o, e, err = cmd(t,
+		"-i", `{{ $key := crypto.Ed25519GenerateKey -}}
+{{ $pub := crypto.DerivePublicKey $key -}}
+{{ $pub | strings.HasPrefix "-----BEGIN PUBLIC KEY-----" }}`).run()
+	assertSuccess(t, o, e, err, "true")
 }

@@ -12,7 +12,7 @@ Abbreviates a string using `...` (ellipses). Takes an optional offset from the b
 
 _Also see [`strings.Trunc`](#stringstrunc)._
 
-_Added in gomplate [v2.6.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.6.0)_
+_<span class="release-check" data-tag="v2.6.0">Added in gomplate v2.6.0</span>_
 ### Usage
 
 ```
@@ -43,7 +43,7 @@ $ gomplate -i '{{ "foobarbazquxquux" | strings.Abbrev 6 9 }}'
 
 Reports whether a substring is contained within a string.
 
-_Added in gomplate [v1.9.0](https://github.com/hairyhenderson/gomplate/releases/tag/v1.9.0)_
+_<span class="release-check" data-tag="v1.9.0">Added in gomplate v1.9.0</span>_
 ### Usage
 
 ```
@@ -64,7 +64,7 @@ input | strings.Contains substr
 
 _`input.tmpl`:_
 ```
-{{ if (.Env.FOO | strings.Contains "f") }}yes{{else}}no{{end}}
+{{ if (env.Getenv "FOO" | strings.Contains "f") }}yes{{else}}no{{end}}
 ```
 
 ```console
@@ -78,7 +78,7 @@ no
 
 Tests whether a string begins with a certain prefix.
 
-_Added in gomplate [v1.9.0](https://github.com/hairyhenderson/gomplate/releases/tag/v1.9.0)_
+_<span class="release-check" data-tag="v1.9.0">Added in gomplate v1.9.0</span>_
 ### Usage
 
 ```
@@ -98,9 +98,9 @@ input | strings.HasPrefix prefix
 ### Examples
 
 ```console
-$ URL=http://example.com gomplate -i '{{if .Env.URL | strings.HasPrefix "https"}}foo{{else}}bar{{end}}'
+$ URL=http://example.com gomplate -i '{{if env.Env.URL | strings.HasPrefix "https"}}foo{{else}}bar{{end}}'
 bar
-$ URL=https://example.com gomplate -i '{{if .Env.URL | strings.HasPrefix "https"}}foo{{else}}bar{{end}}'
+$ URL=https://example.com gomplate -i '{{if env.Env.URL | strings.HasPrefix "https"}}foo{{else}}bar{{end}}'
 foo
 ```
 
@@ -108,7 +108,7 @@ foo
 
 Tests whether a string ends with a certain suffix.
 
-_Added in gomplate [v1.9.0](https://github.com/hairyhenderson/gomplate/releases/tag/v1.9.0)_
+_<span class="release-check" data-tag="v1.9.0">Added in gomplate v1.9.0</span>_
 ### Usage
 
 ```
@@ -129,7 +129,7 @@ input | strings.HasSuffix suffix
 
 _`input.tmpl`:_
 ```
-{{.Env.URL}}{{if not (.Env.URL | strings.HasSuffix ":80")}}:80{{end}}
+{{env.Env.URL}}{{if not (env.Env.URL | strings.HasSuffix ":80")}}:80{{end}}
 ```
 
 ```console
@@ -145,7 +145,7 @@ Indents a string. If the input string has multiple lines, each line will be inde
 
 As of v4.0.0, this function will error if the `width` or `indent` arguments are invalid.
 
-_Added in gomplate [v1.9.0](https://github.com/hairyhenderson/gomplate/releases/tag/v1.9.0)_
+_<span class="release-check" data-tag="v1.9.0">Added in gomplate v1.9.0</span>_
 ### Usage
 
 ```
@@ -187,34 +187,6 @@ foo:
     quuz: 42
 ```
 
-## `strings.Sort` _(deprecated)_
-**Deprecation Notice:** Use [`coll.Sort`](../coll/#collsort) instead
-
-Returns an alphanumerically-sorted copy of a given string list.
-
-_Added in gomplate [v2.7.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.7.0)_
-### Usage
-
-```
-strings.Sort list
-```
-```
-list | strings.Sort
-```
-
-### Arguments
-
-| name | description |
-|------|-------------|
-| `list` | _(required)_ The list to sort |
-
-### Examples
-
-```console
-$ gomplate -i '{{ (coll.Slice "foo" "bar" "baz") | strings.Sort }}'
-[bar baz foo]
-```
-
 ## `strings.SkipLines`
 
 Skips the given number of lines (each ending in a `\n`), returning the
@@ -223,7 +195,7 @@ remainder.
 If `skip` is greater than the number of lines in `in`, an empty string is
 returned.
 
-_Added in gomplate [v4.0.0](https://github.com/hairyhenderson/gomplate/releases/tag/v4.0.0)_
+_<span class="release-check" data-tag="v4.0.0">Added in gomplate v4.0.0</span>_
 ### Usage
 
 ```
@@ -254,8 +226,6 @@ baz
 
 ## `strings.Split`
 
-_Not to be confused with [`split`](#split-_deprecated_), which is deprecated._
-
 Slices `input` into the substrings separated by `separator`, returning a
 slice of the substrings between those separators. If `input` does not
 contain `separator` and `separator` is not empty, returns a single-element
@@ -270,7 +240,7 @@ of `-1`.
 
 Note that the delimiter is not included in the resulting elements.
 
-_Added in gomplate [v1.9.0](https://github.com/hairyhenderson/gomplate/releases/tag/v1.9.0)_
+_<span class="release-check" data-tag="v1.9.0">Added in gomplate v1.9.0</span>_
 ### Usage
 
 ```
@@ -305,8 +275,6 @@ Three
 
 ## `strings.SplitN`
 
-_Not to be confused with [`splitN`](#splitn-_deprecated_), which is deprecated._
-
 Slices `input` into the substrings separated by `separator`, returning a
 slice of the substrings between those separators. If `input` does not
 contain `separator` and `separator` is not empty, returns a single-element
@@ -321,7 +289,7 @@ The `count` determines the number of substrings to return:
 
 See [`strings.Split`](#stringssplit) for more details.
 
-_Added in gomplate [v1.9.0](https://github.com/hairyhenderson/gomplate/releases/tag/v1.9.0)_
+_<span class="release-check" data-tag="v1.9.0">Added in gomplate v1.9.0</span>_
 ### Usage
 
 ```
@@ -362,7 +330,7 @@ This is a convenience function which is equivalent to:
 {{ print "%q" "input string" }}
 ```
 
-_Added in gomplate [v3.1.0](https://github.com/hairyhenderson/gomplate/releases/tag/v3.1.0)_
+_<span class="release-check" data-tag="v3.1.0">Added in gomplate v3.1.0</span>_
 ### Usage
 
 ```
@@ -395,7 +363,7 @@ It errors if `count` is negative or if the length of `input` multiplied by `coun
 
 This wraps Go's [`strings.Repeat`](https://pkg.go.dev/strings/#Repeat).
 
-_Added in gomplate [v2.6.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.6.0)_
+_<span class="release-check" data-tag="v2.6.0">Added in gomplate v2.6.0</span>_
 ### Usage
 
 ```
@@ -425,7 +393,7 @@ hello hello hello hello hello
 
 Replaces all occurrences of a given string with another.
 
-_Added in gomplate [v1.9.0](https://github.com/hairyhenderson/gomplate/releases/tag/v1.9.0)_
+_<span class="release-check" data-tag="v1.9.0">Added in gomplate v1.9.0</span>_
 ### Usage
 
 ```
@@ -454,9 +422,9 @@ $ gomplate -i '{{ "172.21.1.42" | strings.ReplaceAll "." "-" }}'
 
 ## `strings.Slug`
 
-Creates a a "slug" from a given string - supports Unicode correctly. This wraps the [github.com/gosimple/slug](https://github.com/gosimple/slug) package. See [the github.com/gosimple/slug docs](https://godoc.org/github.com/gosimple/slug) for more information.
+Creates a a "slug" from a given string - supports Unicode correctly. This wraps the [github.com/gosimple/slug](https://github.com/gosimple/slug) package. See [the github.com/gosimple/slug docs](https://pkg.go.dev/github.com/gosimple/slug) for more information.
 
-_Added in gomplate [v2.6.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.6.0)_
+_<span class="release-check" data-tag="v2.6.0">Added in gomplate v2.6.0</span>_
 ### Usage
 
 ```
@@ -491,7 +459,7 @@ Given a string, emits a version of that string that will evaluate to its literal
 
 Given an array or slice, emit a single string which will evaluate to a series of shell words, one per item in that array or slice.
 
-_Added in gomplate [v3.6.0](https://github.com/hairyhenderson/gomplate/releases/tag/v3.6.0)_
+_<span class="release-check" data-tag="v3.6.0">Added in gomplate v3.6.0</span>_
 ### Usage
 
 ```
@@ -526,7 +494,7 @@ Surrounds an input string with a single-quote (apostrophe) character (`'`). If t
 
 `'` characters in the input are first escaped in the YAML-style (by repetition: `''`).
 
-_Added in gomplate [v3.1.0](https://github.com/hairyhenderson/gomplate/releases/tag/v3.1.0)_
+_<span class="release-check" data-tag="v3.1.0">Added in gomplate v3.1.0</span>_
 ### Usage
 
 ```
@@ -559,7 +527,7 @@ $ gomplate -i "{{ strings.Squote \"it's a banana\" }}"
 
 Convert to title-case.
 
-_Added in gomplate [v1.9.0](https://github.com/hairyhenderson/gomplate/releases/tag/v1.9.0)_
+_<span class="release-check" data-tag="v1.9.0">Added in gomplate v1.9.0</span>_
 ### Usage
 
 ```
@@ -588,7 +556,7 @@ Hello, World!
 
 Convert to lower-case.
 
-_Added in gomplate [v1.9.0](https://github.com/hairyhenderson/gomplate/releases/tag/v1.9.0)_
+_<span class="release-check" data-tag="v1.9.0">Added in gomplate v1.9.0</span>_
 ### Usage
 
 ```
@@ -617,7 +585,7 @@ hello, world!
 
 Convert to upper-case.
 
-_Added in gomplate [v1.9.0](https://github.com/hairyhenderson/gomplate/releases/tag/v1.9.0)_
+_<span class="release-check" data-tag="v1.9.0">Added in gomplate v1.9.0</span>_
 ### Usage
 
 ```
@@ -645,7 +613,7 @@ HELLO, WORLD!
 Trims a string by removing the given characters from the beginning and end of
 the string.
 
-_Added in gomplate [v1.9.0](https://github.com/hairyhenderson/gomplate/releases/tag/v1.9.0)_
+_<span class="release-check" data-tag="v1.9.0">Added in gomplate v1.9.0</span>_
 ### Usage
 
 ```
@@ -674,7 +642,7 @@ foo
 Trims a string by removing the given characters from the beginning of the string.
 This wraps Go's [`strings.TrimLeft`](https://pkg.go.dev/strings#TrimLeft).
 
-_Added in gomplate [v4.1.0](https://github.com/hairyhenderson/gomplate/releases/tag/v4.1.0)_
+_<span class="release-check" data-tag="v4.1.0">Added in gomplate v4.1.0</span>_
 ### Usage
 
 ```
@@ -704,7 +672,7 @@ Returns a string without the provided leading prefix string, if the prefix is pr
 
 This wraps Go's [`strings.TrimPrefix`](https://pkg.go.dev/strings/#TrimPrefix).
 
-_Added in gomplate [v2.5.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.5.0)_
+_<span class="release-check" data-tag="v2.5.0">Added in gomplate v2.5.0</span>_
 ### Usage
 
 ```
@@ -733,7 +701,7 @@ world
 Trims a string by removing the given characters from the end of the string.
 This wraps Go's [`strings.TrimRight`](https://pkg.go.dev/strings#TrimRight).
 
-_Added in gomplate [v4.1.0](https://github.com/hairyhenderson/gomplate/releases/tag/v4.1.0)_
+_<span class="release-check" data-tag="v4.1.0">Added in gomplate v4.1.0</span>_
 ### Usage
 
 ```
@@ -764,7 +732,7 @@ hello, world!
 Trims a string by removing whitespace from the beginning and end of
 the string.
 
-_Added in gomplate [v1.9.0](https://github.com/hairyhenderson/gomplate/releases/tag/v1.9.0)_
+_<span class="release-check" data-tag="v1.9.0">Added in gomplate v1.9.0</span>_
 ### Usage
 
 ```
@@ -793,7 +761,7 @@ Returns a string without the provided trailing suffix string, if the suffix is p
 
 This wraps Go's [`strings.TrimSuffix`](https://pkg.go.dev/strings/#TrimSuffix).
 
-_Added in gomplate [v2.6.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.6.0)_
+_<span class="release-check" data-tag="v2.6.0">Added in gomplate v2.6.0</span>_
 ### Usage
 
 ```
@@ -823,7 +791,7 @@ Returns a string truncated to the given length.
 
 _Also see [`strings.Abbrev`](#stringsabbrev)._
 
-_Added in gomplate [v2.6.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.6.0)_
+_<span class="release-check" data-tag="v2.6.0">Added in gomplate v2.6.0</span>_
 ### Usage
 
 ```
@@ -855,7 +823,7 @@ All non-alphanumeric characters are stripped, and the beginnings of words are up
 
 See [CamelCase on Wikipedia](https://en.wikipedia.org/wiki/Camel_case) for more details.
 
-_Added in gomplate [v3.3.0](https://github.com/hairyhenderson/gomplate/releases/tag/v3.3.0)_
+_<span class="release-check" data-tag="v3.3.0">Added in gomplate v3.3.0</span>_
 ### Usage
 
 ```
@@ -890,7 +858,7 @@ All non-alphanumeric characters are stripped, and spaces are replaced with an un
 
 See [Snake Case on Wikipedia](https://en.wikipedia.org/wiki/Snake_case) for more details.
 
-_Added in gomplate [v3.3.0](https://github.com/hairyhenderson/gomplate/releases/tag/v3.3.0)_
+_<span class="release-check" data-tag="v3.3.0">Added in gomplate v3.3.0</span>_
 ### Usage
 
 ```
@@ -925,7 +893,7 @@ All non-alphanumeric characters are stripped, and spaces are replaced with a hyp
 
 See [Kebab Case on Wikipedia](https://en.wikipedia.org/wiki/Kebab_case) for more details.
 
-_Added in gomplate [v3.3.0](https://github.com/hairyhenderson/gomplate/releases/tag/v3.3.0)_
+_<span class="release-check" data-tag="v3.3.0">Added in gomplate v3.3.0</span>_
 ### Usage
 
 ```
@@ -962,7 +930,7 @@ When words that are longer than the desired width are encountered (e.g. long URL
 
 The line-break sequence defaults to `\n` (i.e. the LF/Line Feed character), regardless of OS.
 
-_Added in gomplate [v3.3.0](https://github.com/hairyhenderson/gomplate/releases/tag/v3.3.0)_
+_<span class="release-check" data-tag="v3.3.0">Added in gomplate v3.3.0</span>_
 ### Usage
 
 ```
@@ -1009,7 +977,7 @@ concatenated.
 This wraps Go's [`utf8.RuneCountInString`](https://pkg.go.dev/unicode/utf8/#RuneCountInString)
 function.
 
-_Added in gomplate [v3.4.0](https://github.com/hairyhenderson/gomplate/releases/tag/v3.4.0)_
+_<span class="release-check" data-tag="v3.4.0">Added in gomplate v3.4.0</span>_
 ### Usage
 
 ```
@@ -1032,208 +1000,4 @@ $ gomplate -i '{{ range (coll.Slice "\u03a9" "\u0030" "\u1430") }}{{ printf "%s 
 Ω is 2 bytes and 1 runes
 0 is 1 bytes and 1 runes
 ᐰ is 3 bytes and 1 runes
-```
-
-## `contains` _(deprecated)_
-**Deprecation Notice:** Use [`strings.Contains`](#stringscontains) instead
-
-**See [`strings.Contains`](#stringscontains) for a pipeline-compatible version**
-
-Contains reports whether the second string is contained within the first. Equivalent to
-[strings.Contains](https://pkg.go.dev/strings#Contains)
-
-_Added in gomplate [v1.4.0](https://github.com/hairyhenderson/gomplate/releases/tag/v1.4.0)_
-### Usage
-
-```
-contains input substring
-```
-
-### Arguments
-
-| name | description |
-|------|-------------|
-| `input` | _(required)_ the string to search |
-| `substring` | _(required)_ the string to search for |
-
-### Examples
-
-_`input.tmpl`:_
-```
-{{if contains .Env.FOO "f"}}yes{{else}}no{{end}}
-```
-
-```console
-$ FOO=foo gomplate < input.tmpl
-yes
-$ FOO=bar gomplate < input.tmpl
-no
-```
-
-## `hasPrefix` _(deprecated)_
-**Deprecation Notice:** Use [`strings.HasPrefix`](#stringshasprefix) instead
-
-**See [`strings.HasPrefix`](#stringshasprefix) for a pipeline-compatible version**
-
-Tests whether the string begins with a certain substring. Equivalent to
-[strings.HasPrefix](https://pkg.go.dev/strings#HasPrefix)
-
-_Added in gomplate [v1.4.0](https://github.com/hairyhenderson/gomplate/releases/tag/v1.4.0)_
-### Usage
-
-```
-hasPrefix input prefix
-```
-
-### Arguments
-
-| name | description |
-|------|-------------|
-| `input` | _(required)_ the string to search |
-| `prefix` | _(required)_ the prefix to search for |
-
-### Examples
-
-_`input.tmpl`:_
-```
-{{if hasPrefix .Env.URL "https"}}foo{{else}}bar{{end}}
-```
-
-```console
-$ URL=http://example.com gomplate < input.tmpl
-bar
-$ URL=https://example.com gomplate < input.tmpl
-foo
-```
-
-## `hasSuffix` _(deprecated)_
-**Deprecation Notice:** Use [`strings.HasSuffix`](#stringshassuffix) instead
-
-**See [`strings.HasSuffix`](#stringshassuffix) for a pipeline-compatible version**
-
-Tests whether the string ends with a certain substring. Equivalent to
-[strings.HasSuffix](https://pkg.go.dev/strings#HasSuffix)
-
-_Added in gomplate [v1.4.0](https://github.com/hairyhenderson/gomplate/releases/tag/v1.4.0)_
-### Usage
-
-```
-hasSuffix input suffix
-```
-
-### Arguments
-
-| name | description |
-|------|-------------|
-| `input` | _(required)_ the input to search |
-| `suffix` | _(required)_ the suffix to search for |
-
-### Examples
-
-_`input.tmpl`:_
-```
-{{.Env.URL}}{{if not (hasSuffix .Env.URL ":80")}}:80{{end}}
-```
-
-```console
-$ URL=http://example.com gomplate < input.tmpl
-http://example.com:80
-```
-
-## `split` _(deprecated)_
-**Deprecation Notice:** Use [`strings.Split`](#stringssplit) instead
-
-**See [`strings.Split`](#stringssplit) for a pipeline-compatible version**
-
-Creates a slice by splitting a string on a given delimiter. Equivalent to
-[strings.Split](https://pkg.go.dev/strings#Split)
-
-_Added in gomplate [v1.4.0](https://github.com/hairyhenderson/gomplate/releases/tag/v1.4.0)_
-### Usage
-
-```
-split input separator
-```
-
-### Arguments
-
-| name | description |
-|------|-------------|
-| `input` | _(required)_ the input string |
-| `separator` | _(required)_ the string sequence to split |
-
-### Examples
-
-```console
-$ gomplate -i '{{range split "Bart,Lisa,Maggie" ","}}Hello, {{.}}
-{{end}}'
-Hello, Bart
-Hello, Lisa
-Hello, Maggie
-```
-
-## `splitN` _(deprecated)_
-**Deprecation Notice:** Use [`strings.SplitN`](#stringssplitn) instead
-
-**See [`strings.SplitN`](#stringssplitn) for a pipeline-compatible version**
-
-Creates a slice by splitting a string on a given delimiter. The count determines
-the number of substrings to return. Equivalent to [strings.SplitN](https://pkg.go.dev/strings#SplitN)
-
-_Added in gomplate [v1.7.0](https://github.com/hairyhenderson/gomplate/releases/tag/v1.7.0)_
-### Usage
-
-```
-splitN input separator count
-```
-
-### Arguments
-
-| name | description |
-|------|-------------|
-| `input` | _(required)_ the input string |
-| `separator` | _(required)_ the string sequence to split |
-| `count` | _(required)_ the maximum number of substrings to return |
-
-### Examples
-
-```console
-$ gomplate -i '{{ range splitN "foo:bar:baz" ":" 2 }}{{.}}
-{{end}}'
-foo
-bar:baz
-```
-
-## `trim` _(deprecated)_
-**Deprecation Notice:** Use [`strings.Trim`](#stringstrim) instead
-
-**See [`strings.Trim`](#stringstrim) for a pipeline-compatible version**
-
-Trims a string by removing the given characters from the beginning and end of
-the string. Equivalent to [strings.Trim](https://pkg.go.dev/strings/#Trim)
-
-_Added in gomplate [v1.4.0](https://github.com/hairyhenderson/gomplate/releases/tag/v1.4.0)_
-### Usage
-
-```
-trim input cutset
-```
-
-### Arguments
-
-| name | description |
-|------|-------------|
-| `input` | _(required)_ the input |
-| `cutset` | _(required)_ the set of characters to cut |
-
-### Examples
-
-_`input.tmpl`:_
-```
-Hello, {{trim .Env.FOO " "}}!
-```
-
-```console
-$ FOO="  world " | gomplate < input.tmpl
-Hello, world!
 ```

@@ -22,7 +22,7 @@ Here are some hands-on examples of how `gomplate` works:
 
 ```console
 $ # at its most basic, gomplate can be used with environment variables...
-$ echo 'Hello, {{ .Env.USER }}' | gomplate
+$ echo 'Hello, {{ env.Getenv "USER" }}' | gomplate
 Hello, hairyhenderson
 
 $ # but that's kind of boring. gomplate has tons of functions to do useful stuff, too

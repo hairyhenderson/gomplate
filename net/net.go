@@ -2,13 +2,14 @@
 package net
 
 import (
+	"context"
 	"net"
 	"slices"
 )
 
 // LookupIP -
-func LookupIP(name string) (string, error) {
-	i, err := LookupIPs(name)
+func LookupIP(ctx context.Context, name string) (string, error) {
+	i, err := LookupIPs(ctx, name)
 	if err != nil {
 		return "", err
 	}
@@ -19,18 +20,19 @@ func LookupIP(name string) (string, error) {
 }
 
 // LookupIPs -
-func LookupIPs(name string) ([]string, error) {
-	srcIPs, err := net.LookupIP(name)
+func LookupIPs(ctx context.Context, name string) ([]string, error) {
+	resolver := &net.Resolver{}
+	srcIPs, err := resolver.LookupIPAddr(ctx, name)
 	if err != nil {
 		return nil, err
 	}
 
 	// perf note: this slice is not really worth pre-allocating - srcIPs tends
-	// to be very small, and net.LookupIP is relatively expensive
+	// to be very small, and LookupIPAddr is relatively expensive
 	var ips []string
 	for _, v := range srcIPs {
-		if v.To4() != nil {
-			s := v.String()
+		if v.IP.To4() != nil {
+			s := v.IP.String()
 			if !slices.Contains(ips, s) {
 				ips = append(ips, s)
 			}
@@ -40,16 +42,24 @@ func LookupIPs(name string) ([]string, error) {
 }
 
 // LookupCNAME -
+//
+// Deprecated: use [net.Resolver.LookupCNAME] instead
 func LookupCNAME(name string) (string, error) {
-	return net.LookupCNAME(name)
+	resolver := &net.Resolver{}
+	return resolver.LookupCNAME(context.Background(), name)
 }
 
 // LookupTXT -
+//
+// Deprecated: use [net.Resolver.LookupTXT] instead
 func LookupTXT(name string) ([]string, error) {
-	return net.LookupTXT(name)
+	resolver := &net.Resolver{}
+	return resolver.LookupTXT(context.Background(), name)
 }
 
 // LookupSRV -
+//
+// Deprecated: use [net.Resolver#LookupSRV] instead
 func LookupSRV(name string) (*net.SRV, error) {
 	srvs, err := LookupSRVs(name)
 	if err != nil {
@@ -59,8 +69,11 @@ func LookupSRV(name string) (*net.SRV, error) {
 }
 
 // LookupSRVs -
+//
+// Deprecated: use [net.Resolver#LookupSRV] instead
 func LookupSRVs(name string) ([]*net.SRV, error) {
-	_, addrs, err := net.LookupSRV("", "", name)
+	resolver := &net.Resolver{}
+	_, addrs, err := resolver.LookupSRV(context.Background(), "", "", name)
 	if err != nil {
 		return nil, err
 	}

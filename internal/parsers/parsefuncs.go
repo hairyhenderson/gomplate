@@ -15,7 +15,7 @@ import (
 	"cuelang.org/go/cue/format"
 	"github.com/Shopify/ejson"
 	ejsonJson "github.com/Shopify/ejson/json"
-	"github.com/hairyhenderson/gomplate/v4/conv"
+	"github.com/hairyhenderson/gomplate/v5/conv"
 	"github.com/joho/godotenv"
 
 	// XXX: replace once https://github.com/BurntSushi/toml/pull/179 is merged
@@ -85,6 +85,7 @@ func getenv(key string, def ...string) string {
 
 	p := os.Getenv(key + "_FILE")
 	if p != "" {
+		//nolint:gosec // G703 — path comes from operator-controlled *_FILE env (same pattern as Docker/K8s secrets)
 		b, err := os.ReadFile(p)
 		if err != nil {
 			return ""

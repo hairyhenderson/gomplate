@@ -16,9 +16,9 @@ before using gomplate for critical security infrastructure!_
 
 ## `crypto.Bcrypt`
 
-Uses the [bcrypt](https://en.wikipedia.org/wiki/Bcrypt) password hashing algorithm to generate the hash of a given string. Wraps the [`golang.org/x/crypto/brypt`](https://godoc.org/golang.org/x/crypto/bcrypt) package.
+Uses the [bcrypt](https://en.wikipedia.org/wiki/Bcrypt) password hashing algorithm to generate the hash of a given string. Wraps the [`golang.org/x/crypto/brypt`](https://pkg.go.dev/golang.org/x/crypto/bcrypt) package.
 
-_Added in gomplate [v2.6.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.6.0)_
+_<span class="release-check" data-tag="v2.6.0">Added in gomplate v2.6.0</span>_
 ### Usage
 
 ```
@@ -46,30 +46,114 @@ $ gomplate -i '{{ crypto.Bcrypt 4 "foo" }}
 $2a$04$zjba3N38sjyYsw0Y7IRCme1H4gD0MJxH8Ixai0/sgsrf7s1MFUK1C
 ```
 
-## `crypto.DecryptAES` _(experimental)_
+## `crypto.YescryptMCF`_(unreleased)_ _(experimental)_
+**Unreleased:** _This function is in development, and not yet available in released builds of gomplate._
 **Experimental:** This function is [_experimental_][experimental] and may be enabled with the [`--experimental`][experimental] flag.
 
 [experimental]: ../config/#experimental
+
+Uses the [Yescrypt](https://www.openwall.com/yescrypt/) password hashing algorithm to generate the hash of a given string.
+Wraps the [`github.com/openwall/yescrypt-go`](https://pkg.go.dev/github.com/openwall/yescrypt-go) package.
+Yescrypt is a modern, memory-hard key derivation function designed as an extension of scrypt, providing resistance to GPU/ASIC attacks.
+
+### Usage
+
+```
+crypto.YescryptMCF [cost] [blockSize] [salt] input
+```
+```
+input | crypto.YescryptMCF [cost] [blockSize] [salt]
+```
+
+### Arguments
+
+| name | description |
+|------|-------------|
+| `cost` | _(optional)_ the cost parameter (log₂ of the iteration count) - integer from `10` to `18` - defaults to `14` |
+| `blockSize` | _(optional)_ the block size parameter (`r`) - integer from `1` to `32` - defaults to `8` |
+| `salt` | _(optional)_ the salt string used in hashing - defaults to a random alphanumeric string of length 16 |
+| `input` | _(required)_ the input to hash, usually a password |
+
+### Examples
+
+```console
+$ gomplate -i '{{ "foo" | crypto.YescryptMCF }}'
+$y$jB5$YZZJoNING3pMhVIKFhIJJ/$n.9CRZ17bqvvDKyrAWqvghg7k5rq9M9F4rpWntnpeV0
+```
+```console
+$ gomplate -i '{{ crypto.YescryptMCF 10 1 "mysalt" "foo" }}'
+$y$j7.$hZrQVl4R$y2MSQDqiVCS0Q7PsGv7f8b4O7s/O0Kmgw.2hvgxbqL1
+```
+```console
+$ gomplate -i '{{ "pass" | crypto.YescryptMCF 16 4 }}'
+$y$jD1$g/5AI/JEAR1KV7bFkJqIu/$zRk92xeixtHGp8Mq6weG2tPlsQPDZ6ybweLJd6jv1w6
+```
+```console
+$ gomplate -i '{{ crypto.YescryptMCF 16 4 "pass" }}'
+$y$jD1$F7IQJtaHnk4Bo3HSYNIAi/$ttB6RTXx2SnSJIn1xsUPlaQmH056JdgejJlZmHyCtq1
+```
+
+## `crypto.Yescrypt`_(unreleased)_ _(experimental)_
+**Unreleased:** _This function is in development, and not yet available in released builds of gomplate._
+**Experimental:** This function is [_experimental_][experimental] and may be enabled with the [`--experimental`][experimental] flag.
+
+[experimental]: ../config/#experimental
+
+Uses the [Yescrypt](https://www.openwall.com/yescrypt/) password hashing algorithm to generate the hash of a given string.
+Wraps the [`github.com/openwall/yescrypt-go`](https://pkg.go.dev/github.com/openwall/yescrypt-go) package.
+Yescrypt is a modern, memory-hard key derivation function designed as an extension of scrypt, providing resistance to GPU/ASIC attacks.
+
+This function outputs the binary result as a hexadecimal string.
+
+### Usage
+
+```
+crypto.Yescrypt input salt cost blockSize keyLen
+```
+```
+keyLen | crypto.Yescrypt input salt cost blockSize
+```
+
+### Arguments
+
+| name | description |
+|------|-------------|
+| `input` | _(required)_ the input to hash, usually a password |
+| `salt` | _(required)_ the salt string used in hashing |
+| `cost` | _(required)_ the cost parameter, integer > 1 and a power of 2 |
+| `blockSize` | _(required)_ the block size parameter (`r`) - integer > 0 |
+| `keyLen` | _(required)_ desired length of derived key |
+
+### Examples
+
+```console
+$ gomplate -i '{{ crypto.Yescrypt "foo" "mysalt" 32768 8 32 }}'
+8d967e29526ea6b57b914e7df477cd2c2b6804816ba68d47284d1f75aa2a617e
+```
+
+## `crypto.AESDecrypt`
+
+**Alias:** `crypto.DecryptAES (deprecated)`
 
 Decrypts the given input using the given key. By default,
 uses AES-256-CBC, but supports 128- and 192-bit keys as well.
 
 This function prints the output as a string. Note that this may result in
 unreadable text if the decrypted payload is binary. See
-[`crypto.DecryptAESBytes`](#cryptodecryptaesbytes-_experimental_) for another method.
+[`crypto.AESDecryptBytes`](#cryptoaesdecryptbytes) for another method.
 
 This function is suitable for decrypting data that was encrypted by
 Helm's `encryptAES` function, when the input is base64-decoded, and when
 using 256-bit keys.
 
-_Added in gomplate [v3.11.0](https://github.com/hairyhenderson/gomplate/releases/tag/v3.11.0)_
+_<span class="release-check" data-tag="v3.11.0">Added in gomplate v3.11.0</span>_
 ### Usage
 
 ```
-crypto.DecryptAES key [keyBits] input
+crypto.AESDecrypt key [keyBits] input
 ```
 ```
-input | crypto.DecryptAES key [keyBits]
+input | crypto.AESDecrypt key [keyBits]
 ```
 
 ### Arguments
@@ -83,14 +167,13 @@ input | crypto.DecryptAES key [keyBits]
 ### Examples
 
 ```console
-$ gomplate -i '{{ base64.Decode "Gp2WG/fKOUsVlhcpr3oqgR+fRUNBcO1eZJ9CW+gDI18=" | crypto.DecryptAES "swordfish" 128 }}'
+$ gomplate -i '{{ base64.Decode "Gp2WG/fKOUsVlhcpr3oqgR+fRUNBcO1eZJ9CW+gDI18=" | crypto.AESDecrypt "swordfish" 128 }}'
 hello world
 ```
 
-## `crypto.DecryptAESBytes` _(experimental)_
-**Experimental:** This function is [_experimental_][experimental] and may be enabled with the [`--experimental`][experimental] flag.
+## `crypto.AESDecryptBytes`
 
-[experimental]: ../config/#experimental
+**Alias:** `crypto.DecryptAESBytes (deprecated)`
 
 Decrypts the given input using the given key. By default,
 uses AES-256-CBC, but supports 128- and 192-bit keys as well.
@@ -102,14 +185,14 @@ This function is suitable for decrypting data that was encrypted by
 Helm's `encryptAES` function, when the input is base64-decoded, and when
 using 256-bit keys.
 
-_Added in gomplate [v3.11.0](https://github.com/hairyhenderson/gomplate/releases/tag/v3.11.0)_
+_<span class="release-check" data-tag="v3.11.0">Added in gomplate v3.11.0</span>_
 ### Usage
 
 ```
-crypto.DecryptAESBytes key [keyBits] input
+crypto.AESDecryptBytes key [keyBits] input
 ```
 ```
-input | crypto.DecryptAESBytes key [keyBits]
+input | crypto.AESDecryptBytes key [keyBits]
 ```
 
 ### Arguments
@@ -123,14 +206,13 @@ input | crypto.DecryptAESBytes key [keyBits]
 ### Examples
 
 ```console
-$ gomplate -i '{{ base64.Decode "Gp2WG/fKOUsVlhcpr3oqgR+fRUNBcO1eZJ9CW+gDI18=" | crypto.DecryptAES "swordfish" 128 }}'
+$ gomplate -i '{{ base64.Decode "Gp2WG/fKOUsVlhcpr3oqgR+fRUNBcO1eZJ9CW+gDI18=" | crypto.AESDecryptBytes "swordfish" 128 }}'
 hello world
 ```
 
-## `crypto.EncryptAES` _(experimental)_
-**Experimental:** This function is [_experimental_][experimental] and may be enabled with the [`--experimental`][experimental] flag.
+## `crypto.AESEncrypt`
 
-[experimental]: ../config/#experimental
+**Alias:** `crypto.EncryptAES (deprecated)`
 
 Encrypts the given input using the given key. By default,
 uses AES-256-CBC, but supports 128- and 192-bit keys as well.
@@ -139,14 +221,14 @@ This function is suitable for encrypting data that will be decrypted by
 Helm's `decryptAES` function, when the output is base64-encoded, and when
 using 256-bit keys.
 
-_Added in gomplate [v3.11.0](https://github.com/hairyhenderson/gomplate/releases/tag/v3.11.0)_
+_<span class="release-check" data-tag="v3.11.0">Added in gomplate v3.11.0</span>_
 ### Usage
 
 ```
-crypto.EncryptAES key [keyBits] input
+crypto.AESEncrypt key [keyBits] input
 ```
 ```
-input | crypto.EncryptAES key [keyBits]
+input | crypto.AESEncrypt key [keyBits]
 ```
 
 ### Arguments
@@ -160,14 +242,55 @@ input | crypto.EncryptAES key [keyBits]
 ### Examples
 
 ```console
-$ gomplate -i '{{ "hello world" | crypto.EncryptAES "swordfish" 128 | base64.Encode }}'
+$ gomplate -i '{{ "hello world" | crypto.AESEncrypt "swordfish" 128 | base64.Encode }}'
 MnRutHovsh/9JN3YrJtBVjZtI6xXZh33bCQS2iZ4SDI=
 ```
 
-## `crypto.ECDSAGenerateKey` _(experimental)_
-**Experimental:** This function is [_experimental_][experimental] and may be enabled with the [`--experimental`][experimental] flag.
+## `crypto.DerivePublicKey`
 
-[experimental]: ../config/#experimental
+Derive a public key from any supported private key type (RSA, ECDSA, or
+Ed25519) and output in PKIX ASN.1 DER form. The key type is auto-detected
+from the PEM block type.
+
+This is a unified function that can replace the algorithm-specific
+`crypto.RSADerivePublicKey`, `crypto.ECDSADerivePublicKey`, and
+`crypto.Ed25519DerivePublicKey` functions.
+
+_<span class="release-check" data-tag="v5.1.0">Added in gomplate v5.1.0</span>_
+### Usage
+
+```
+crypto.DerivePublicKey key
+```
+```
+key | crypto.DerivePublicKey
+```
+
+### Arguments
+
+| name | description |
+|------|-------------|
+| `key` | _(required)_ the private key to derive a public key from |
+
+### Examples
+
+```console
+$ gomplate -i '{{ crypto.RSAGenerateKey | crypto.DerivePublicKey }}'
+-----BEGIN PUBLIC KEY-----
+...
+```
+```console
+$ gomplate -i '{{ crypto.ECDSAGenerateKey | crypto.DerivePublicKey }}'
+-----BEGIN PUBLIC KEY-----
+...
+```
+```console
+$ gomplate -i '{{ crypto.Ed25519GenerateKey | crypto.DerivePublicKey }}'
+-----BEGIN PUBLIC KEY-----
+...
+```
+
+## `crypto.ECDSAGenerateKey`
 
 Generate a new Elliptic Curve Private Key and output in
 PEM-encoded PKCS#1 ASN.1 DER form.
@@ -178,7 +301,7 @@ supported.
 Default curve is P-256 and can be overridden with the optional `curve`
 parameter.
 
-_Added in gomplate [v3.11.0](https://github.com/hairyhenderson/gomplate/releases/tag/v3.11.0)_
+_<span class="release-check" data-tag="v3.11.0">Added in gomplate v3.11.0</span>_
 ### Usage
 
 ```
@@ -204,15 +327,12 @@ $ gomplate -i '{{ crypto.ECDSAGenerateKey }}'
 ...
 ```
 
-## `crypto.ECDSADerivePublicKey` _(experimental)_
-**Experimental:** This function is [_experimental_][experimental] and may be enabled with the [`--experimental`][experimental] flag.
-
-[experimental]: ../config/#experimental
+## `crypto.ECDSADerivePublicKey`
 
 Derive a public key from an elliptic curve private key and output in PKIX
 ASN.1 DER form.
 
-_Added in gomplate [v3.11.0](https://github.com/hairyhenderson/gomplate/releases/tag/v3.11.0)_
+_<span class="release-check" data-tag="v3.11.0">Added in gomplate v3.11.0</span>_
 ### Usage
 
 ```
@@ -245,15 +365,12 @@ aztsmrD79OXXnhUlURI=
 -----END PUBLIC KEY-----
 ```
 
-## `crypto.Ed25519GenerateKey` _(experimental)_
-**Experimental:** This function is [_experimental_][experimental] and may be enabled with the [`--experimental`][experimental] flag.
-
-[experimental]: ../config/#experimental
+## `crypto.Ed25519GenerateKey`
 
 Generate a new Ed25519 Private Key and output in
 PEM-encoded PKCS#8 ASN.1 DER form.
 
-_Added in gomplate [v4.0.0](https://github.com/hairyhenderson/gomplate/releases/tag/v4.0.0)_
+_<span class="release-check" data-tag="v4.0.0">Added in gomplate v4.0.0</span>_
 ### Usage
 
 ```
@@ -269,15 +386,12 @@ $ gomplate -i '{{ crypto.Ed25519GenerateKey }}'
 ...
 ```
 
-## `crypto.Ed25519GenerateKeyFromSeed` _(experimental)_
-**Experimental:** This function is [_experimental_][experimental] and may be enabled with the [`--experimental`][experimental] flag.
-
-[experimental]: ../config/#experimental
+## `crypto.Ed25519GenerateKeyFromSeed`
 
 Generate a new Ed25519 Private Key from a random seed and output in
 PEM-encoded PKCS#8 ASN.1 DER form.
 
-_Added in gomplate [v4.0.0](https://github.com/hairyhenderson/gomplate/releases/tag/v4.0.0)_
+_<span class="release-check" data-tag="v4.0.0">Added in gomplate v4.0.0</span>_
 ### Usage
 
 ```
@@ -302,15 +416,12 @@ $ gomplate -i '{{ crypto.Ed25519GenerateKeyFromSeed "base64" "MDAwMDAwMDAwMDAwMD
 ...
 ```
 
-## `crypto.Ed25519DerivePublicKey` _(experimental)_
-**Experimental:** This function is [_experimental_][experimental] and may be enabled with the [`--experimental`][experimental] flag.
-
-[experimental]: ../config/#experimental
+## `crypto.Ed25519DerivePublicKey`
 
 Derive a public key from an Ed25519 private key and output in PKIX
 ASN.1 DER form.
 
-_Added in gomplate [v4.0.0](https://github.com/hairyhenderson/gomplate/releases/tag/v4.0.0)_
+_<span class="release-check" data-tag="v4.0.0">Added in gomplate v4.0.0</span>_
 ### Usage
 
 ```
@@ -342,11 +453,11 @@ $ gomplate -d key=priv.pem -i '{{ crypto.Ed25519DerivePublicKey (include "key") 
 ## `crypto.PBKDF2`
 
 Run the Password-Based Key Derivation Function &num;2 as defined in
-[RFC 8018 (PKCS &num;5 v2.1)](https://tools.ietf.org/html/rfc8018#section-5.2).
+[RFC 8018 (PKCS &num;5 v2.1)](https://www.rfc-editor.org/rfc/rfc8018#section-5.2).
 
 This function outputs the binary result as a hexadecimal string.
 
-_Added in gomplate [v2.3.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.3.0)_
+_<span class="release-check" data-tag="v2.3.0">Added in gomplate v2.3.0</span>_
 ### Usage
 
 ```
@@ -370,14 +481,45 @@ $ gomplate -i '{{ crypto.PBKDF2 "foo" "bar" 1024 8 }}'
 32c4907c3c80792b
 ```
 
-## `crypto.RSADecrypt` _(experimental)_
+## `crypto.PBKDF2MCF`_(unreleased)_ _(experimental)_
+**Unreleased:** _This function is in development, and not yet available in released builds of gomplate._
 **Experimental:** This function is [_experimental_][experimental] and may be enabled with the [`--experimental`][experimental] flag.
 
 [experimental]: ../config/#experimental
 
+Run the Password-Based Key Derivation Function &num;2 as defined in
+[RFC 8018 (PKCS &num;5 v2.1)](https://www.rfc-editor.org/rfc/rfc8018#section-5.2).
+
+This function outputs a Modular Crypt Format (MCF) result string.
+
+### Usage
+
+```
+crypto.PBKDF2MCF password salt iter keylen [hashfunc]
+```
+
+### Arguments
+
+| name | description |
+|------|-------------|
+| `password` | _(required)_ the password to use to derive the key |
+| `salt` | _(required)_ the salt |
+| `iter` | _(required)_ iteration count |
+| `keylen` | _(required)_ desired length of derived key |
+| `hashfunc` | _(optional)_ the hash function to use - must be one of the allowed functions (either in the SHA-1 or SHA-2 sets). Defaults to `SHA-1` |
+
+### Examples
+
+```console
+$ gomplate -i '{{ crypto.PBKDF2MCF "foo" "bar" 1024 8 }}'
+$pbkdf2-sha1$1024$YmFy$MsSQfDyAeSs
+```
+
+## `crypto.RSADecrypt`
+
 Decrypt an RSA-encrypted input and print the output as a string. Note that
 this may result in unreadable text if the decrypted payload is binary. See
-[`crypto.RSADecryptBytes`](#cryptorsadecryptbytes-_experimental_) for a safer method.
+[`crypto.RSADecryptBytes`](#cryptorsadecryptbytes) for a safer method.
 
 The private key must be a PEM-encoded RSA private key in PKCS#1, ASN.1 DER
 form, which typically begins with `-----BEGIN RSA PRIVATE KEY-----`.
@@ -387,7 +529,7 @@ convertible to a byte array. To decrypt base64-encoded input, you must
 first decode with the [`base64.DecodeBytes`](../base64/#base64decodebytes)
 function.
 
-_Added in gomplate [v3.8.0](https://github.com/hairyhenderson/gomplate/releases/tag/v3.8.0)_
+_<span class="release-check" data-tag="v3.8.0">Added in gomplate v3.8.0</span>_
 ### Usage
 
 ```
@@ -419,10 +561,7 @@ $ gomplate -c ciphertext=env:///ENCRYPTED -c privKey=./testPrivKey \
 hello
 ```
 
-## `crypto.RSADecryptBytes` _(experimental)_
-**Experimental:** This function is [_experimental_][experimental] and may be enabled with the [`--experimental`][experimental] flag.
-
-[experimental]: ../config/#experimental
+## `crypto.RSADecryptBytes`
 
 Decrypt an RSA-encrypted input and output the decrypted byte array.
 
@@ -434,10 +573,10 @@ convertible to a byte array. To decrypt base64-encoded input, you must
 first decode with the [`base64.DecodeBytes`](../base64/#base64decodebytes)
 function.
 
-See [`crypto.RSADecrypt`](#cryptorsadecrypt-_experimental_) for a function that outputs
+See [`crypto.RSADecrypt`](#cryptorsadecrypt) for a function that outputs
 a string.
 
-_Added in gomplate [v3.8.0](https://github.com/hairyhenderson/gomplate/releases/tag/v3.8.0)_
+_<span class="release-check" data-tag="v3.8.0">Added in gomplate v3.8.0</span>_
 ### Usage
 
 ```
@@ -469,10 +608,7 @@ $ gomplate -c pubKey=./testPubKey -c privKey=./testPrivKey \
 hello
 ```
 
-## `crypto.RSAEncrypt` _(experimental)_
-**Experimental:** This function is [_experimental_][experimental] and may be enabled with the [`--experimental`][experimental] flag.
-
-[experimental]: ../config/#experimental
+## `crypto.RSAEncrypt`
 
 Encrypt the input with RSA and the padding scheme from PKCS#1 v1.5.
 
@@ -493,7 +629,7 @@ _Warning:_ Using this function may not be safe. See the warning on Go's
 [`rsa.EncryptPKCS1v15`](https://pkg.go.dev/crypto/rsa/#EncryptPKCS1v15)
 documentation.
 
-_Added in gomplate [v3.8.0](https://github.com/hairyhenderson/gomplate/releases/tag/v3.8.0)_
+_<span class="release-check" data-tag="v3.8.0">Added in gomplate v3.8.0</span>_
 ### Usage
 
 ```
@@ -524,10 +660,7 @@ $ gomplate -c pubKey=./testPubKey \
 71729b87cccabb248b9e0e5173f0b12c01d9d2a0565bad18aef9d332ce984bde06acb8bb69334a01446f7f6430077f269e6fbf2ccacd972fe5856dd4719252ebddf599948d937d96ea41540dad291b868f6c0cf647dffdb5acb22cd33557f9a1ddd0ee6c1ad2bbafc910ba8f817b66ea0569afc06e5c7858fd9dc2638861fe7c97391b2f190e4c682b4aa2c9b0050081efe18b10aa8c2b2b5f5b68a42dcc06c9da35b37fca9b1509fddc940eb99f516a2e0195405bcb3993f0fa31bc038d53d2e7231dff08cc39448105ed2d0ac52d375cb543ca8a399f807cc5d007e2c44c69876d189667eee66361a393c4916826af77479382838cd4e004b8baa05636805a
 ```
 
-## `crypto.RSAGenerateKey` _(experimental)_
-**Experimental:** This function is [_experimental_][experimental] and may be enabled with the [`--experimental`][experimental] flag.
-
-[experimental]: ../config/#experimental
+## `crypto.RSAGenerateKey`
 
 Generate a new RSA Private Key and output in PEM-encoded PKCS#1 ASN.1 DER
 form.
@@ -541,7 +674,7 @@ keys shorter than `2048` bits may not be generated.
 The output is a string, suitable for use with the other `crypto.RSA*`
 functions.
 
-_Added in gomplate [v3.8.0](https://github.com/hairyhenderson/gomplate/releases/tag/v3.8.0)_
+_<span class="release-check" data-tag="v3.8.0">Added in gomplate v3.8.0</span>_
 ### Usage
 
 ```
@@ -572,10 +705,7 @@ $ gomplate -i '{{ $key := crypto.RSAGenerateKey 2048 -}}
 hello
 ```
 
-## `crypto.RSADerivePublicKey` _(experimental)_
-**Experimental:** This function is [_experimental_][experimental] and may be enabled with the [`--experimental`][experimental] flag.
-
-[experimental]: ../config/#experimental
+## `crypto.RSADerivePublicKey`
 
 Derive a public key from an RSA private key and output in PKIX ASN.1 DER
 form.
@@ -583,7 +713,7 @@ form.
 The output is a string, suitable for use with other `crypto.RSA*`
 functions.
 
-_Added in gomplate [v3.8.0](https://github.com/hairyhenderson/gomplate/releases/tag/v3.8.0)_
+_<span class="release-check" data-tag="v3.8.0">Added in gomplate v3.8.0</span>_
 ### Usage
 
 ```
@@ -614,7 +744,7 @@ $ gomplate -c privKey=./privKey.pem \
 hello
 ```
 
-## `crypto.SHA1`, `crypto.SHA224`, `crypto.SHA256`, `crypto.SHA384`, `crypto.SHA512`, `crypto.SHA512_224`, `crypto.SHA512_256`
+## `crypto.SHA*`
 
 Compute a checksum with a SHA-1 or SHA-2 algorithm as defined in [RFC 3174](https://tools.ietf.org/html/rfc3174) (SHA-1) and [FIPS 180-4](http://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.180-4.pdf) (SHA-2).
 
@@ -622,7 +752,7 @@ These functions output the binary result as a hexadecimal string.
 
 _Warning: SHA-1 is cryptographically broken and should not be used for secure applications._
 
-_Added in gomplate [v2.3.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.3.0)_
+_<span class="release-check" data-tag="v2.3.0">Added in gomplate v2.3.0</span>_
 ### Usage
 ```
 crypto.SHA1 input
@@ -651,7 +781,7 @@ $ gomplate -i '{{ crypto.SHA512 "bar" }}'
 cc06808cbbee0510331aa97974132e8dc296aeb795be229d064bae784b0a87a5cf4281d82e8c99271b75db2148f08a026c1a60ed9cabdb8cac6d24242dac4063
 ```
 
-## `crypto.SHA1Bytes`, `crypto.SHA224Bytes`, `crypto.SHA256Bytes`, `crypto.SHA384Bytes`, `crypto.SHA512Bytes`, `crypto.SHA512_224Bytes`, `crypto.SHA512_256Bytes`
+## `crypto.SHA*Bytes`
 
 Compute a checksum with a SHA-1 or SHA-2 algorithm as defined in [RFC 3174](https://tools.ietf.org/html/rfc3174) (SHA-1) and [FIPS 180-4](http://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.180-4.pdf) (SHA-2).
 
@@ -659,7 +789,7 @@ These functions output the raw binary result, suitable for piping to other funct
 
 _Warning: SHA-1 is cryptographically broken and should not be used for secure applications._
 
-_Added in gomplate [v3.11.0](https://github.com/hairyhenderson/gomplate/releases/tag/v3.11.0)_
+_<span class="release-check" data-tag="v3.11.0">Added in gomplate v3.11.0</span>_
 ### Usage
 ```
 crypto.SHA1Bytes input
@@ -691,7 +821,7 @@ values necessary to convert ASCII passphrases to the WPA pre-shared keys for use
 
 This can be used, for example, to help generate a configuration for [wpa_supplicant](http://w1.fi/wpa_supplicant/).
 
-_Added in gomplate [v2.3.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.3.0)_
+_<span class="release-check" data-tag="v2.3.0">Added in gomplate v2.3.0</span>_
 ### Usage
 
 ```

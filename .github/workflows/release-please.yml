@@ -22,7 +22,7 @@ jobs:
       version: ${{ steps.release.outputs.version }}
       html_url: ${{ steps.release.outputs.html_url }}
     steps:
-      - uses: actions/create-github-app-token@v2
+      - uses: actions/create-github-app-token@v3
         id: app-token
         with:
           app-id: ${{ vars.APP_ID }}
@@ -132,13 +132,13 @@ jobs:
             goarch: '386'
             extension: .exe
     steps:
-      - uses: actions/create-github-app-token@v2
+      - uses: actions/create-github-app-token@v3
         id: app-token
         with:
           app-id: ${{ vars.APP_ID }}
           private-key: ${{ secrets.PRIVATE_KEY }}
-      - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
+      - uses: actions/checkout@v6
+      - uses: actions/setup-go@v6
         with:
           go-version-file: go.mod
       - name: Build Artifacts for ${{ matrix.goos }}-${{ matrix.goarch }}${{ matrix.variant }}
@@ -154,7 +154,7 @@ jobs:
             make bin/gomplate_windows-amd64.zip VERSION=$VERSION
           fi
       - name: Save Artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: build-${{ matrix.goos }}-${{ matrix.goarch }}${{ matrix.variant }}
           path: bin/*
@@ -166,12 +166,12 @@ jobs:
       VERSION: ${{ needs.build-artifacts.outputs.version }}
       TAG_NAME: ${{ needs.build-artifacts.outputs.tag_name }}
     steps:
-      - uses: actions/create-github-app-token@v2
+      - uses: actions/create-github-app-token@v3
         id: app-token
         with:
           app-id: ${{ vars.APP_ID }}
           private-key: ${{ secrets.PRIVATE_KEY }}
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
       - name: Organize Artifacts
         run: |
           mv build*/* .

@@ -18,7 +18,7 @@ LINT_PROCS ?= $(shell nproc)
 endif
 
 COMMIT ?= `git rev-parse --short HEAD 2>/dev/null`
-VERSION ?= $(shell $(GO) run ./version/gen/vgen.go)
+VERSION ?= $(shell $(GO) run ./internal/version/gen/vgen.go)
 
 VERSION_PATH ?= `$(GO) list ./version`
 COMMIT_FLAG ?= -X $(VERSION_PATH).GitCommit=$(COMMIT)
@@ -150,13 +150,22 @@ build: $(PREFIX)/bin/$(PKG_NAME)_$(GOOS)-$(GOARCH)$(TARGETVARIANT)$(call extensi
 # test with race detector on supported platforms
 # windows/amd64 is supported in theory, but in practice it requires a C compiler
 race_platforms := 'linux/amd64' 'darwin/amd64' 'darwin/arm64'
+
+# In CI, skip -coverprofile so Go can cache test results between runs.
+# c.out is not consumed anywhere in CI so there's no loss.
+ifeq ("$(CI)","true")
+COVER_FLAGS :=
+else
+COVER_FLAGS := -coverprofile=c.out
+endif
+
 ifeq (,$(findstring '$(GOOS)/$(GOARCH)',$(race_platforms)))
 export CGO_ENABLED=0
 test:
-	$(GO) test -coverprofile=c.out ./...
+	$(GO) test $(COVER_FLAGS) ./...
 else
 test:
-	$(GO) test -race -coverprofile=c.out ./...
+	$(GO) test -race $(COVER_FLAGS) ./...
 endif
 
 bench.txt: go.mod go.sum $(GO_FILES)
@@ -226,6 +235,10 @@ docs/content/functions/%.md: docs-src/content/functions/%.yml docs-src/content/f
 
 # run the above target for all files found in docs-src/content/functions/*.yml
 gen-func-docs: $(shell find docs-src/content/functions -name "*.yml" | sed -e 's#docs-src#docs#' -e 's#\.yml#\.md#')
+
+# Regenerate JSON schema for .gomplate.yaml
+schema/gomplate-config.json: config.go internal/config/types.go internal/cmd/gen-schema/main.go
+	go run ./internal/cmd/gen-schema -out $@
 
 # this target doesn't usually get used - it's mostly here as a reminder to myself
 # hint: make sure CLOUDCONVERT_API_KEY is set ;)

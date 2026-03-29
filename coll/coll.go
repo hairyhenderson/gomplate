@@ -12,8 +12,8 @@ import (
 	"slices"
 	"sort"
 
-	"github.com/hairyhenderson/gomplate/v4/conv"
-	iconv "github.com/hairyhenderson/gomplate/v4/internal/conv"
+	"github.com/hairyhenderson/gomplate/v5/conv"
+	iconv "github.com/hairyhenderson/gomplate/v5/internal/conv"
 )
 
 // Slice creates a slice from a bunch of arguments
@@ -174,6 +174,25 @@ func Omit(in map[string]any, keys ...string) map[string]any {
 		}
 	}
 	return out
+}
+
+// OmitSlice returns a new slice without any elements equal to the given values.
+// It always returns a new []any, regardless of the input slice or array type.
+func OmitSlice(list any, values ...any) ([]any, error) {
+	l, err := iconv.InterfaceSlice(list)
+	if err != nil {
+		return nil, err
+	}
+
+	out := []any{}
+	for _, v := range l {
+		if !slices.ContainsFunc(values, func(val any) bool {
+			return reflect.DeepEqual(v, val)
+		}) {
+			out = append(out, v)
+		}
+	}
+	return out, nil
 }
 
 // Pick returns a new map with any entries that have the

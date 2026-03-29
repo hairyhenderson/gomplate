@@ -13,7 +13,7 @@ Execute (render) the named template. This is equivalent to using the [`template`
 
 This allows for post-processing of templates.
 
-_Added in gomplate [v3.3.0](https://github.com/hairyhenderson/gomplate/releases/tag/v3.3.0)_
+_<span class="release-check" data-tag="v3.3.0">Added in gomplate v3.3.0</span>_
 ### Usage
 
 ```
@@ -51,7 +51,7 @@ If the template is given a name (see `name` argument below), it can be re-used l
 
 A context can be provided, otherwise the default gomplate context will be used.
 
-_Added in gomplate [v3.3.0](https://github.com/hairyhenderson/gomplate/releases/tag/v3.3.0)_
+_<span class="release-check" data-tag="v3.3.0">Added in gomplate v3.3.0</span>_
 ### Usage
 
 ```
@@ -91,7 +91,7 @@ inline templates, this will be an empty string.
 Note that if this function is called from a nested template, the path
 of the main template will be returned instead.
 
-_Added in gomplate [v3.11.0](https://github.com/hairyhenderson/gomplate/releases/tag/v3.11.0)_
+_<span class="release-check" data-tag="v3.11.0">Added in gomplate v3.11.0</span>_
 ### Usage
 
 ```
@@ -119,7 +119,7 @@ be an empty string.
 Note that if this function is called from a nested template, the path
 of the main template will be used instead.
 
-_Added in gomplate [v3.11.0](https://github.com/hairyhenderson/gomplate/releases/tag/v3.11.0)_
+_<span class="release-check" data-tag="v3.11.0">Added in gomplate v3.11.0</span>_
 ### Usage
 
 ```

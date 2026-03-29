@@ -6,9 +6,9 @@ import (
 	"strconv"
 	"unicode/utf8"
 
-	"github.com/hairyhenderson/gomplate/v4/conv"
-	iconv "github.com/hairyhenderson/gomplate/v4/internal/conv"
-	"github.com/hairyhenderson/gomplate/v4/random"
+	"github.com/hairyhenderson/gomplate/v5/conv"
+	iconv "github.com/hairyhenderson/gomplate/v5/internal/conv"
+	"github.com/hairyhenderson/gomplate/v5/random"
 )
 
 // CreateRandomFuncs -
@@ -73,8 +73,8 @@ func (RandomFuncs) String(count any, args ...any) (string, error) {
 		m = conv.ToString(args[0])
 	case 2:
 		var l, u rune
-		if isString(args[0]) && isString(args[1]) {
-			l, u, err = toCodePoints(args[0].(string), args[1].(string))
+		if isString(args[0]) && isString(args[1]) { //nolint:gosec // G602 — false positive: len(args)==2 from switch
+			l, u, err = toCodePoints(args[0].(string), args[1].(string)) //nolint:gosec // G602
 			if err != nil {
 				return "", err
 			}
@@ -84,12 +84,12 @@ func (RandomFuncs) String(count any, args ...any) (string, error) {
 				return "", fmt.Errorf("lower must be an integer: %w", err)
 			}
 
-			nu, err := conv.ToInt(args[1])
+			nu, err := conv.ToInt(args[1]) //nolint:gosec // G602 — false positive: len(args)==2 from switch
 			if err != nil {
 				return "", fmt.Errorf("upper must be an integer: %w", err)
 			}
 
-			l, u = rune(nl), rune(nu)
+			l, u = rune(nl), rune(nu) //nolint:gosec // G115 — values originate from template numeric args
 		}
 
 		return random.StringBounds(c, l, u)
@@ -159,7 +159,7 @@ func (RandomFuncs) Number(args ...any) (int64, error) {
 			return 0, fmt.Errorf("min must be a number: %w", err)
 		}
 
-		nMax, err = conv.ToInt64(args[1])
+		nMax, err = conv.ToInt64(args[1]) //nolint:gosec // G602 — false positive: len(args)==2 from switch
 		if err != nil {
 			return 0, fmt.Errorf("max must be a number: %w", err)
 		}
@@ -188,7 +188,7 @@ func (RandomFuncs) Float(args ...any) (float64, error) {
 			return 0, fmt.Errorf("min must be a number: %w", err)
 		}
 
-		nMax, err = conv.ToFloat64(args[1])
+		nMax, err = conv.ToFloat64(args[1]) //nolint:gosec // G602 — false positive: len(args)==2 from switch
 		if err != nil {
 			return 0, fmt.Errorf("max must be a number: %w", err)
 		}

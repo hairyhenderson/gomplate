@@ -277,22 +277,6 @@ templates:
 	assertSuccess(t, o, e, err, "12345")
 }
 
-func TestConfig_ConfigTemplatesSupportsArray(t *testing.T) {
-	tmpDir := setupConfigTest(t)
-
-	// TODO: remove this test once the array format is no longer supported
-	writeConfig(t, tmpDir, `in: '{{ template "t1" (dict "testValue" "12345") }}'
-templates:
-  - t1=t1.tmpl
-`)
-	writeFile(t, tmpDir, "t1.tmpl", `{{ .testValue }}`)
-
-	o, e, err := cmd(t).withDir(tmpDir.Path()).run()
-	assert.Contains(t, e, "Deprecated: config: the YAML array form for 'templates' is deprecated")
-	assert.Equal(t, "12345", o)
-	require.NoError(t, err)
-}
-
 func TestConfig_MissingKeyDefault(t *testing.T) {
 	tmpDir := setupConfigTest(t)
 	writeConfig(t, tmpDir, `inputFiles: [in]

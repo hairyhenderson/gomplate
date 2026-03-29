@@ -18,7 +18,7 @@ of the regular expression `expression`.
 This function provides the same behaviour as Go's
 [`regexp.FindString`](https://pkg.go.dev/regexp/#Regexp.FindString) function.
 
-_Added in gomplate [v3.1.0](https://github.com/hairyhenderson/gomplate/releases/tag/v3.1.0)_
+_<span class="release-check" data-tag="v3.1.0">Added in gomplate v3.1.0</span>_
 ### Usage
 
 ```
@@ -57,7 +57,7 @@ to be returned.
 This function provides the same behaviour as Go's
 [`regexp.FindAllString`](https://pkg.go.dev/regexp#Regexp.FindAllString) function.
 
-_Added in gomplate [v3.1.0](https://github.com/hairyhenderson/gomplate/releases/tag/v3.1.0)_
+_<span class="release-check" data-tag="v3.1.0">Added in gomplate v3.1.0</span>_
 ### Usage
 
 ```
@@ -92,7 +92,7 @@ Returns `true` if a given regular expression matches a given input.
 
 This returns a boolean which can be used in an `if` condition, for example.
 
-_Added in gomplate [v1.9.0](https://github.com/hairyhenderson/gomplate/releases/tag/v1.9.0)_
+_<span class="release-check" data-tag="v1.9.0">Added in gomplate v1.9.0</span>_
 ### Usage
 
 ```
@@ -112,7 +112,7 @@ input | regexp.Match expression
 ### Examples
 
 ```console
-$ gomplate -i '{{ if (.Env.USER | regexp.Match `^h`) }}username ({{.Env.USER}}) starts with h!{{end}}'
+$ gomplate -i '{{ $u := env.Env.USER }}{{if ($u | regexp.Match `^h`) }}username ({{ $u }}) starts with h!{{end}}'
 username (hairyhenderson) starts with h!
 ```
 
@@ -123,7 +123,7 @@ Escapes all regular expression metacharacters in the input. The returned string 
 This function provides the same behaviour as Go's
 [`regexp.QuoteMeta`](https://pkg.go.dev/regexp#QuoteMeta) function.
 
-_Added in gomplate [v3.7.0](https://github.com/hairyhenderson/gomplate/releases/tag/v3.7.0)_
+_<span class="release-check" data-tag="v3.7.0">Added in gomplate v3.7.0</span>_
 ### Usage
 
 ```
@@ -155,7 +155,7 @@ The replacement is substituted after expanding variables beginning with `$`.
 This function provides the same behaviour as Go's
 [`regexp.ReplaceAllString`](https://pkg.go.dev/regexp/#Regexp.ReplaceAllString) function.
 
-_Added in gomplate [v1.9.0](https://github.com/hairyhenderson/gomplate/releases/tag/v1.9.0)_
+_<span class="release-check" data-tag="v1.9.0">Added in gomplate v1.9.0</span>_
 ### Usage
 
 ```
@@ -194,7 +194,7 @@ beginning with `$`.
 This function provides the same behaviour as Go's
 [`regexp.ReplaceAllLiteralString`](https://pkg.go.dev/regexp/#Regexp.ReplaceAllLiteralString) function.
 
-_Added in gomplate [v3.1.0](https://github.com/hairyhenderson/gomplate/releases/tag/v3.1.0)_
+_<span class="release-check" data-tag="v3.1.0">Added in gomplate v3.1.0</span>_
 ### Usage
 
 ```
@@ -237,7 +237,7 @@ except that regular expressions are supported.
 This function provides the same behaviour as Go's
 [`regexp.Split`](https://pkg.go.dev/regexp/#Regexp.Split) function.
 
-_Added in gomplate [v3.1.0](https://github.com/hairyhenderson/gomplate/releases/tag/v3.1.0)_
+_<span class="release-check" data-tag="v3.1.0">Added in gomplate v3.1.0</span>_
 ### Usage
 
 ```

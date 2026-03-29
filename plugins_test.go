@@ -63,7 +63,7 @@ func TestRun(t *testing.T) {
 	stderr := &bytes.Buffer{}
 	p := &plugin{
 		ctx:     ctx,
-		timeout: 500 * time.Millisecond,
+		timeout: 5 * time.Second,
 		stderr:  stderr,
 		path:    "echo",
 	}
@@ -74,7 +74,7 @@ func TestRun(t *testing.T) {
 
 	p = &plugin{
 		ctx:     ctx,
-		timeout: 500 * time.Millisecond,
+		timeout: 5 * time.Second,
 		stderr:  stderr,
 		path:    "echo",
 		args:    []string{"foo", "bar"},
@@ -86,7 +86,7 @@ func TestRun(t *testing.T) {
 
 	p = &plugin{
 		ctx:     ctx,
-		timeout: 500 * time.Millisecond,
+		timeout: 5 * time.Second,
 		stderr:  stderr,
 		path:    "echo",
 		args:    []string{"foo", "bar"},

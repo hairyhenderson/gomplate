@@ -182,6 +182,54 @@ func TestOmit(t *testing.T) {
 		require.NoError(t, err)
 		assert.Equal(t, map[string]any{"": "baz"}, out)
 	})
+
+	t.Run("filters a slice", func(t *testing.T) {
+		t.Parallel()
+
+		out, err := c.Omit("b", []any{"a", "b", "c"})
+		require.NoError(t, err)
+		assert.Equal(t, []any{"a", "c"}, out)
+	})
+
+	t.Run("filters a slice with multiple values", func(t *testing.T) {
+		t.Parallel()
+
+		out, err := c.Omit("b", "c", []any{"a", "b", "c"})
+		require.NoError(t, err)
+		assert.Equal(t, []any{"a"}, out)
+	})
+
+	t.Run("filters a typed slice", func(t *testing.T) {
+		t.Parallel()
+
+		out, err := c.Omit("b", []string{"a", "b", "c"})
+		require.NoError(t, err)
+		assert.Equal(t, []any{"a", "c"}, out)
+	})
+
+	t.Run("filters an array", func(t *testing.T) {
+		t.Parallel()
+
+		out, err := c.Omit("b", [3]string{"a", "b", "c"})
+		require.NoError(t, err)
+		assert.Equal(t, []any{"a", "c"}, out)
+	})
+
+	t.Run("filters a slice with slice of values", func(t *testing.T) {
+		t.Parallel()
+
+		out, err := c.Omit([]any{"b", "c"}, []any{"a", "b", "c"})
+		require.NoError(t, err)
+		assert.Equal(t, []any{"a"}, out)
+	})
+
+	t.Run("filters a slice with typed slice of values", func(t *testing.T) {
+		t.Parallel()
+
+		out, err := c.Omit([]string{"b", "c"}, []any{"a", "b", "c"})
+		require.NoError(t, err)
+		assert.Equal(t, []any{"a"}, out)
+	})
 }
 
 func TestGoSlice(t *testing.T) {

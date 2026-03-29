@@ -12,7 +12,7 @@ funcs:
   - name: crypto.Bcrypt
     released: v2.6.0
     description: |
-      Uses the [bcrypt](https://en.wikipedia.org/wiki/Bcrypt) password hashing algorithm to generate the hash of a given string. Wraps the [`golang.org/x/crypto/brypt`](https://godoc.org/golang.org/x/crypto/bcrypt) package.
+      Uses the [bcrypt](https://en.wikipedia.org/wiki/Bcrypt) password hashing algorithm to generate the hash of a given string. Wraps the [`golang.org/x/crypto/brypt`](https://pkg.go.dev/golang.org/x/crypto/bcrypt) package.
     pipeline: true
     arguments:
       - name: cost
@@ -28,16 +28,78 @@ funcs:
       - |
         $ gomplate -i '{{ crypto.Bcrypt 4 "foo" }}
         $2a$04$zjba3N38sjyYsw0Y7IRCme1H4gD0MJxH8Ixai0/sgsrf7s1MFUK1C
-  - name: crypto.DecryptAES
+  - name: crypto.YescryptMCF
     experimental: true
+    description: |
+      Uses the [Yescrypt](https://www.openwall.com/yescrypt/) password hashing algorithm to generate the hash of a given string.
+      Wraps the [`github.com/openwall/yescrypt-go`](https://pkg.go.dev/github.com/openwall/yescrypt-go) package.
+      Yescrypt is a modern, memory-hard key derivation function designed as an extension of scrypt, providing resistance to GPU/ASIC attacks.
+    pipeline: true
+    arguments:
+      - name: cost
+        required: false
+        description: the cost parameter (log₂ of the iteration count) - integer from `10` to `18` - defaults to `14`
+      - name: blockSize
+        required: false
+        description: the block size parameter (`r`) - integer from `1` to `32` - defaults to `8`
+      - name: salt
+        required: false
+        description: the salt string used in hashing - defaults to a random alphanumeric string of length 16
+      - name: input
+        required: true
+        description: the input to hash, usually a password
+    examples:
+      - |
+        $ gomplate -i '{{ "foo" | crypto.YescryptMCF }}'
+        $y$jB5$YZZJoNING3pMhVIKFhIJJ/$n.9CRZ17bqvvDKyrAWqvghg7k5rq9M9F4rpWntnpeV0
+      - |
+        $ gomplate -i '{{ crypto.YescryptMCF 10 1 "mysalt" "foo" }}'
+        $y$j7.$hZrQVl4R$y2MSQDqiVCS0Q7PsGv7f8b4O7s/O0Kmgw.2hvgxbqL1
+      - |
+        $ gomplate -i '{{ "pass" | crypto.YescryptMCF 16 4 }}'
+        $y$jD1$g/5AI/JEAR1KV7bFkJqIu/$zRk92xeixtHGp8Mq6weG2tPlsQPDZ6ybweLJd6jv1w6
+      - |
+        $ gomplate -i '{{ crypto.YescryptMCF 16 4 "pass" }}'
+        $y$jD1$F7IQJtaHnk4Bo3HSYNIAi/$ttB6RTXx2SnSJIn1xsUPlaQmH056JdgejJlZmHyCtq1
+  - name: crypto.Yescrypt
+    experimental: true
+    description: |
+      Uses the [Yescrypt](https://www.openwall.com/yescrypt/) password hashing algorithm to generate the hash of a given string.
+      Wraps the [`github.com/openwall/yescrypt-go`](https://pkg.go.dev/github.com/openwall/yescrypt-go) package.
+      Yescrypt is a modern, memory-hard key derivation function designed as an extension of scrypt, providing resistance to GPU/ASIC attacks.
+
+      This function outputs the binary result as a hexadecimal string.
+    pipeline: true
+    arguments:
+      - name: input
+        required: true
+        description: the input to hash, usually a password
+      - name: salt
+        required: true
+        description: the salt string used in hashing
+      - name: cost
+        required: true
+        description: the cost parameter, integer > 1 and a power of 2
+      - name: blockSize
+        required: true
+        description: the block size parameter (`r`) - integer > 0
+      - name: keyLen
+        required: true
+        description: desired length of derived key
+    examples:
+      - |
+        $ gomplate -i '{{ crypto.Yescrypt "foo" "mysalt" 32768 8 32 }}'
+        8d967e29526ea6b57b914e7df477cd2c2b6804816ba68d47284d1f75aa2a617e
+  - name: crypto.AESDecrypt
     released: v3.11.0
+    alias: crypto.DecryptAES (deprecated)
     description: |
       Decrypts the given input using the given key. By default,
       uses AES-256-CBC, but supports 128- and 192-bit keys as well.
 
       This function prints the output as a string. Note that this may result in
       unreadable text if the decrypted payload is binary. See
-      [`crypto.DecryptAESBytes`](#cryptodecryptaesbytes-_experimental_) for another method.
+      [`crypto.AESDecryptBytes`](#cryptoaesdecryptbytes) for another method.
 
       This function is suitable for decrypting data that was encrypted by
       Helm's `encryptAES` function, when the input is base64-decoded, and when
@@ -55,11 +117,11 @@ funcs:
         description: the input to decrypt
     examples:
       - |
-        $ gomplate -i '{{ base64.Decode "Gp2WG/fKOUsVlhcpr3oqgR+fRUNBcO1eZJ9CW+gDI18=" | crypto.DecryptAES "swordfish" 128 }}'
+        $ gomplate -i '{{ base64.Decode "Gp2WG/fKOUsVlhcpr3oqgR+fRUNBcO1eZJ9CW+gDI18=" | crypto.AESDecrypt "swordfish" 128 }}'
         hello world
-  - name: crypto.DecryptAESBytes
-    experimental: true
+  - name: crypto.AESDecryptBytes
     released: v3.11.0
+    alias: crypto.DecryptAESBytes (deprecated)
     description: |
       Decrypts the given input using the given key. By default,
       uses AES-256-CBC, but supports 128- and 192-bit keys as well.
@@ -83,11 +145,11 @@ funcs:
         description: the input to decrypt
     examples:
       - |
-        $ gomplate -i '{{ base64.Decode "Gp2WG/fKOUsVlhcpr3oqgR+fRUNBcO1eZJ9CW+gDI18=" | crypto.DecryptAES "swordfish" 128 }}'
+        $ gomplate -i '{{ base64.Decode "Gp2WG/fKOUsVlhcpr3oqgR+fRUNBcO1eZJ9CW+gDI18=" | crypto.AESDecryptBytes "swordfish" 128 }}'
         hello world
-  - name: crypto.EncryptAES
-    experimental: true
+  - name: crypto.AESEncrypt
     released: v3.11.0
+    alias: crypto.EncryptAES (deprecated)
     description: |
       Encrypts the given input using the given key. By default,
       uses AES-256-CBC, but supports 128- and 192-bit keys as well.
@@ -108,10 +170,37 @@ funcs:
         description: the input to encrypt
     examples:
       - |
-        $ gomplate -i '{{ "hello world" | crypto.EncryptAES "swordfish" 128 | base64.Encode }}'
+        $ gomplate -i '{{ "hello world" | crypto.AESEncrypt "swordfish" 128 | base64.Encode }}'
         MnRutHovsh/9JN3YrJtBVjZtI6xXZh33bCQS2iZ4SDI=
+  - name: crypto.DerivePublicKey
+    released: v5.1.0
+    description: |
+      Derive a public key from any supported private key type (RSA, ECDSA, or
+      Ed25519) and output in PKIX ASN.1 DER form. The key type is auto-detected
+      from the PEM block type.
+
+      This is a unified function that can replace the algorithm-specific
+      `crypto.RSADerivePublicKey`, `crypto.ECDSADerivePublicKey`, and
+      `crypto.Ed25519DerivePublicKey` functions.
+    pipeline: true
+    arguments:
+      - name: key
+        required: true
+        description: the private key to derive a public key from
+    examples:
+      - |
+        $ gomplate -i '{{ crypto.RSAGenerateKey | crypto.DerivePublicKey }}'
+        -----BEGIN PUBLIC KEY-----
+        ...
+      - |
+        $ gomplate -i '{{ crypto.ECDSAGenerateKey | crypto.DerivePublicKey }}'
+        -----BEGIN PUBLIC KEY-----
+        ...
+      - |
+        $ gomplate -i '{{ crypto.Ed25519GenerateKey | crypto.DerivePublicKey }}'
+        -----BEGIN PUBLIC KEY-----
+        ...
   - name: crypto.ECDSAGenerateKey
-    experimental: true
     released: v3.11.0
     description: |
       Generate a new Elliptic Curve Private Key and output in
@@ -135,7 +224,6 @@ funcs:
         -----BEGIN EC PRIVATE KEY-----
         ...
   - name: crypto.ECDSADerivePublicKey
-    experimental: true
     released: v3.11.0
     description: |
       Derive a public key from an elliptic curve private key and output in PKIX
@@ -159,7 +247,6 @@ funcs:
         aztsmrD79OXXnhUlURI=
         -----END PUBLIC KEY-----
   - name: crypto.Ed25519GenerateKey
-    experimental: true
     released: v4.0.0
     description: |
       Generate a new Ed25519 Private Key and output in
@@ -170,7 +257,6 @@ funcs:
         -----BEGIN PRIVATE KEY-----
         ...
   - name: crypto.Ed25519GenerateKeyFromSeed
-    experimental: true
     released: v4.0.0
     description: |
       Generate a new Ed25519 Private Key from a random seed and output in
@@ -189,7 +275,6 @@ funcs:
         -----BEGIN PRIVATE KEY-----
         ...
   - name: crypto.Ed25519DerivePublicKey
-    experimental: true
     released: v4.0.0
     description: |
       Derive a public key from an Ed25519 private key and output in PKIX
@@ -212,7 +297,7 @@ funcs:
     released: v2.3.0
     description: |
       Run the Password-Based Key Derivation Function &num;2 as defined in
-      [RFC 8018 (PKCS &num;5 v2.1)](https://tools.ietf.org/html/rfc8018#section-5.2).
+      [RFC 8018 (PKCS &num;5 v2.1)](https://www.rfc-editor.org/rfc/rfc8018#section-5.2).
 
       This function outputs the binary result as a hexadecimal string.
     pipeline: false
@@ -236,13 +321,40 @@ funcs:
       - |
         $ gomplate -i '{{ crypto.PBKDF2 "foo" "bar" 1024 8 }}'
         32c4907c3c80792b
-  - name: crypto.RSADecrypt
+  - name: crypto.PBKDF2MCF
     experimental: true
+    description: |
+      Run the Password-Based Key Derivation Function &num;2 as defined in
+      [RFC 8018 (PKCS &num;5 v2.1)](https://www.rfc-editor.org/rfc/rfc8018#section-5.2).
+
+      This function outputs a Modular Crypt Format (MCF) result string.
+    pipeline: false
+    arguments:
+      - name: password
+        required: true
+        description: the password to use to derive the key
+      - name: salt
+        required: true
+        description: the salt
+      - name: iter
+        required: true
+        description: iteration count
+      - name: keylen
+        required: true
+        description: desired length of derived key
+      - name: hashfunc
+        required: false
+        description: the hash function to use - must be one of the allowed functions (either in the SHA-1 or SHA-2 sets). Defaults to `SHA-1`
+    examples:
+      - |
+        $ gomplate -i '{{ crypto.PBKDF2MCF "foo" "bar" 1024 8 }}'
+        $pbkdf2-sha1$1024$YmFy$MsSQfDyAeSs
+  - name: crypto.RSADecrypt
     released: v3.8.0
     description: |
       Decrypt an RSA-encrypted input and print the output as a string. Note that
       this may result in unreadable text if the decrypted payload is binary. See
-      [`crypto.RSADecryptBytes`](#cryptorsadecryptbytes-_experimental_) for a safer method.
+      [`crypto.RSADecryptBytes`](#cryptorsadecryptbytes) for a safer method.
 
       The private key must be a PEM-encoded RSA private key in PKCS#1, ASN.1 DER
       form, which typically begins with `-----BEGIN RSA PRIVATE KEY-----`.
@@ -271,7 +383,6 @@ funcs:
           -i '{{ base64.DecodeBytes .ciphertext | crypto.RSADecrypt .privKey }}'
         hello
   - name: crypto.RSADecryptBytes
-    experimental: true
     released: v3.8.0
     description: |
       Decrypt an RSA-encrypted input and output the decrypted byte array.
@@ -284,7 +395,7 @@ funcs:
       first decode with the [`base64.DecodeBytes`](../base64/#base64decodebytes)
       function.
 
-      See [`crypto.RSADecrypt`](#cryptorsadecrypt-_experimental_) for a function that outputs
+      See [`crypto.RSADecrypt`](#cryptorsadecrypt) for a function that outputs
       a string.
     pipeline: true
     arguments:
@@ -306,7 +417,6 @@ funcs:
           {{ crypto.RSADecryptBytes .privKey $enc | conv.ToString }}'
         hello
   - name: crypto.RSAEncrypt
-    experimental: true
     released: v3.8.0
     description: |
       Encrypt the input with RSA and the padding scheme from PKCS#1 v1.5.
@@ -346,7 +456,6 @@ funcs:
           Ciphertext in hex: {{ printf "%x" $enc }}'
         71729b87cccabb248b9e0e5173f0b12c01d9d2a0565bad18aef9d332ce984bde06acb8bb69334a01446f7f6430077f269e6fbf2ccacd972fe5856dd4719252ebddf599948d937d96ea41540dad291b868f6c0cf647dffdb5acb22cd33557f9a1ddd0ee6c1ad2bbafc910ba8f817b66ea0569afc06e5c7858fd9dc2638861fe7c97391b2f190e4c682b4aa2c9b0050081efe18b10aa8c2b2b5f5b68a42dcc06c9da35b37fca9b1509fddc940eb99f516a2e0195405bcb3993f0fa31bc038d53d2e7231dff08cc39448105ed2d0ac52d375cb543ca8a399f807cc5d007e2c44c69876d189667eee66361a393c4916826af77479382838cd4e004b8baa05636805a
   - name: crypto.RSAGenerateKey
-    experimental: true
     released: v3.8.0
     description: |
       Generate a new RSA Private Key and output in PEM-encoded PKCS#1 ASN.1 DER
@@ -377,7 +486,6 @@ funcs:
           {{ crypto.RSADecrypt $key $enc }}'
         hello
   - name: crypto.RSADerivePublicKey
-    experimental: true
     released: v3.8.0
     description: |
       Derive a public key from an RSA private key and output in PKIX ASN.1 DER
@@ -401,7 +509,7 @@ funcs:
           {{ $enc := "hello" | crypto.RSAEncrypt $pub -}}
           {{ crypto.RSADecrypt .privKey $enc }}'
         hello
-  - rawName: "`crypto.SHA1`, `crypto.SHA224`, `crypto.SHA256`, `crypto.SHA384`, `crypto.SHA512`, `crypto.SHA512_224`, `crypto.SHA512_256`"
+  - rawName: "`crypto.SHA*`"
     released: v2.3.0
     description: |
       Compute a checksum with a SHA-1 or SHA-2 algorithm as defined in [RFC 3174](https://tools.ietf.org/html/rfc3174) (SHA-1) and [FIPS 180-4](http://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.180-4.pdf) (SHA-2).
@@ -431,7 +539,7 @@ funcs:
       - |
         $ gomplate -i '{{ crypto.SHA512 "bar" }}'
         cc06808cbbee0510331aa97974132e8dc296aeb795be229d064bae784b0a87a5cf4281d82e8c99271b75db2148f08a026c1a60ed9cabdb8cac6d24242dac4063
-  - rawName: "`crypto.SHA1Bytes`, `crypto.SHA224Bytes`, `crypto.SHA256Bytes`, `crypto.SHA384Bytes`, `crypto.SHA512Bytes`, `crypto.SHA512_224Bytes`, `crypto.SHA512_256Bytes`"
+  - rawName: "`crypto.SHA*Bytes`"
     released: v3.11.0
     description: |
       Compute a checksum with a SHA-1 or SHA-2 algorithm as defined in [RFC 3174](https://tools.ietf.org/html/rfc3174) (SHA-1) and [FIPS 180-4](http://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.180-4.pdf) (SHA-2).

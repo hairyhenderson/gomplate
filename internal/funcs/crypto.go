@@ -13,11 +13,19 @@ import (
 	"strings"
 	"unicode/utf8"
 
+	"github.com/openwall/yescrypt-go"
 	"golang.org/x/crypto/bcrypt"
 
-	"github.com/hairyhenderson/gomplate/v4/conv"
-	"github.com/hairyhenderson/gomplate/v4/crypto"
+	"github.com/hairyhenderson/gomplate/v5/conv"
+	"github.com/hairyhenderson/gomplate/v5/crypto"
+	"github.com/hairyhenderson/gomplate/v5/internal/deprecated"
 )
+
+func cryptBase64Encode(src []byte) (dst string) {
+	dst = base64.RawStdEncoding.EncodeToString(src)
+	dst = strings.ReplaceAll(dst, "+", ".")
+	return
+}
 
 // CreateCryptoFuncs -
 func CreateCryptoFuncs(ctx context.Context) map[string]any {
@@ -38,13 +46,66 @@ type CryptoFuncs struct {
 // RFC 2898 (PKCS #5 v2.0). This function outputs the binary result in hex
 // format.
 func (CryptoFuncs) PBKDF2(password, salt, iter, keylen any, hashFunc ...string) (k string, err error) {
-	var h gcrypto.Hash
+	dk, _, err := rawPBKDF2(password, salt, iter, keylen, hashFunc...)
+	if err != nil {
+		return "", err
+	}
+	return fmt.Sprintf("%02x", dk), nil
+}
+
+// PBKDF2MCF - Generate PBKDF2 hash in Modular Crypt Format (MCF)
+func (f CryptoFuncs) PBKDF2MCF(password, salt, iter, keylen any, hashFunc ...string) (string, error) {
+	if err := checkExperimental(f.ctx); err != nil {
+		return "", err
+	}
+
+	dk, h, err := rawPBKDF2(password, salt, iter, keylen, hashFunc...)
+	if err != nil {
+		return "", err
+	}
+
+	algo, err := hashToMCFName(h)
+	if err != nil {
+		return "", err
+	}
+
+	b64Salt := cryptBase64Encode(toBytes(salt))
+	b64DK := cryptBase64Encode(dk)
+
+	it, _ := conv.ToInt(iter)
+
+	// Format: $pbkdf2-<algo>$<iter>$<b64salt>$<b64dk>
+	return fmt.Sprintf("$pbkdf2-%s$%d$%s$%s", algo, it, b64Salt, b64DK), nil
+}
+
+func hashToMCFName(h gcrypto.Hash) (string, error) {
+	switch h {
+	case gcrypto.SHA1:
+		return "sha1", nil
+	case gcrypto.SHA224:
+		return "sha224", nil
+	case gcrypto.SHA256:
+		return "sha256", nil
+	case gcrypto.SHA384:
+		return "sha384", nil
+	case gcrypto.SHA512:
+		return "sha512", nil
+	case gcrypto.SHA512_224:
+		return "sha512-224", nil
+	case gcrypto.SHA512_256:
+		return "sha512-256", nil
+	default:
+		return "", fmt.Errorf("unsupported hash: %v", h)
+	}
+}
+
+func rawPBKDF2(password, salt, iter, keylen any, hashFunc ...string) (k []byte, h gcrypto.Hash, err error) {
 	if len(hashFunc) == 0 {
 		h = gcrypto.SHA1
 	} else {
 		h, err = crypto.StrToHash(hashFunc[0])
 		if err != nil {
-			return "", err
+			return nil, 0, err
 		}
 	}
 	pw := toBytes(password)
@@ -52,16 +113,16 @@ func (CryptoFuncs) PBKDF2(password, salt, iter, keylen any, hashFunc ...string) 
 
 	i, err := conv.ToInt(iter)
 	if err != nil {
-		return "", fmt.Errorf("iter must be an integer: %w", err)
+		return nil, 0, fmt.Errorf("iter must be an integer: %w", err)
 	}
 
 	kl, err := conv.ToInt(keylen)
 	if err != nil {
-		return "", fmt.Errorf("keylen must be an integer: %w", err)
+		return nil, 0, fmt.Errorf("keylen must be an integer: %w", err)
 	}
 
 	dk, err := crypto.PBKDF2(pw, s, i, kl, h)
-	return fmt.Sprintf("%02x", dk), err
+	return dk, h, err
 }
 
 // WPAPSK - Convert an ASCII passphrase to WPA PSK for a given SSID
@@ -197,45 +258,132 @@ func (CryptoFuncs) Bcrypt(args ...any) (string, error) {
 	return string(hash), err
 }
 
-// RSAEncrypt -
-// Experimental!
-func (f *CryptoFuncs) RSAEncrypt(key string, in any) ([]byte, error) {
+// Yescrypt -
+func (f CryptoFuncs) Yescrypt(password, salt, cost, blockSize, keylen any) (string, error) {
 	if err := checkExperimental(f.ctx); err != nil {
-		return nil, err
+		return "", err
 	}
+
+	N, err := conv.ToInt(cost)
+	if err != nil {
+		return "", fmt.Errorf("cost must be an integer: %w", err)
+	}
+	r, err := conv.ToInt(blockSize)
+	if err != nil {
+		return "", fmt.Errorf("blockSize must be an integer: %w", err)
+	}
+	k, err := conv.ToInt(keylen)
+	if err != nil {
+		return "", fmt.Errorf("keylen must be an integer: %w", err)
+	}
+
+	key, err := yescrypt.Key(toBytes(password), toBytes(salt), N, r, 1, k)
+	return fmt.Sprintf("%02x", key), err
+}
+
+// YescryptMCF -
+func (f CryptoFuncs) YescryptMCF(args ...any) (string, error) {
+	if err := checkExperimental(f.ctx); err != nil {
+		return "", err
+	}
+	cost := 14
+	blockSize := 8
+	input := ""
+	var err error
+	salt, err := RandomFuncs{}.AlphaNum(16)
+	if err != nil {
+		return "", fmt.Errorf("failed to generate salt: %w", err)
+	}
+
+	switch len(args) {
+	case 1:
+		input = conv.ToString(args[0])
+	case 3:
+		cost, err = conv.ToInt(args[0])
+		if err != nil {
+			return "", fmt.Errorf("yescrypt cost must be an integer: %w", err)
+		}
+
+		blockSize, err = conv.ToInt(args[1])
+		if err != nil {
+			return "", fmt.Errorf("yescrypt blockSize must be an integer: %w", err)
+		}
+
+		//nolint:gosec
+		input = conv.ToString(args[2])
+	case 4:
+		cost, err = conv.ToInt(args[0])
+		if err != nil {
+			return "", fmt.Errorf("yescrypt cost must be an integer: %w", err)
+		}
+
+		blockSize, err = conv.ToInt(args[1])
+		if err != nil {
+			return "", fmt.Errorf("yescrypt blockSize must be an integer: %w", err)
+		}
+
+		//nolint:gosec
+		salt = conv.ToString(args[2])
+		//nolint:gosec
+		input = conv.ToString(args[3])
+	default:
+		return "", fmt.Errorf("wrong number of args: want 1, 3, or 4, got %d", len(args))
+	}
+
+	// yescrypt requires
+	// - cost 		∈ [10, 18]
+	// - blockSize 	∈ [1, 32]
+	N := yescryptItoa64[(cost-1)&0x3f]
+	r := yescryptItoa64[(blockSize-1)&0x3f]
+	saltB64 := yescryptEncode64([]byte(salt))
+	settings := fmt.Sprintf("$y$j%c%c$%s", N, r, saltB64)
+
+	hash, err := yescrypt.Hash([]byte(input), []byte(settings))
+	return string(hash), err
+}
+
+// Vendored from yescrypt_wrapper.go
+const yescryptItoa64 = "./0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
+
+// Vendored from yescrypt_wrapper.go
+func yescryptEncode64(src []byte) []byte {
+	dst := make([]byte, 0, (len(src)*8+5)/6)
+	for i := 0; i < len(src); {
+		value, bits := uint32(0), 0
+		for ; bits < 24 && i < len(src); bits += 8 {
+			value |= uint32(src[i]) << bits
+			i++
+		}
+		for ; bits > 0; bits -= 6 {
+			dst = append(dst, yescryptItoa64[value&0x3f])
+			value >>= 6
+		}
+	}
+	return dst
+}
+
+// RSAEncrypt -
+func (f *CryptoFuncs) RSAEncrypt(key string, in any) ([]byte, error) {
 	msg := toBytes(in)
 	return crypto.RSAEncrypt(key, msg)
 }
 
 // RSADecrypt -
-// Experimental!
 func (f *CryptoFuncs) RSADecrypt(key string, in []byte) (string, error) {
-	if err := checkExperimental(f.ctx); err != nil {
-		return "", err
-	}
 	out, err := crypto.RSADecrypt(key, in)
 	return string(out), err
 }
 
 // RSADecryptBytes -
-// Experimental!
 func (f *CryptoFuncs) RSADecryptBytes(key string, in []byte) ([]byte, error) {
-	if err := checkExperimental(f.ctx); err != nil {
-		return nil, err
-	}
 	out, err := crypto.RSADecrypt(key, in)
 	return out, err
 }
 
 // RSAGenerateKey -
-// Experimental!
 func (f *CryptoFuncs) RSAGenerateKey(args ...any) (string, error) {
-	err := checkExperimental(f.ctx)
-	if err != nil {
-		return "", err
-	}
-
 	bits := 4096
+	var err error
 	if len(args) == 1 {
 		bits, err = conv.ToInt(args[0])
 		if err != nil {
@@ -250,22 +398,13 @@ func (f *CryptoFuncs) RSAGenerateKey(args ...any) (string, error) {
 }
 
 // RSADerivePublicKey -
-// Experimental!
 func (f *CryptoFuncs) RSADerivePublicKey(privateKey string) (string, error) {
-	if err := checkExperimental(f.ctx); err != nil {
-		return "", err
-	}
 	out, err := crypto.RSADerivePublicKey([]byte(privateKey))
 	return string(out), err
 }
 
 // ECDSAGenerateKey -
-// Experimental!
 func (f *CryptoFuncs) ECDSAGenerateKey(args ...any) (string, error) {
-	if err := checkExperimental(f.ctx); err != nil {
-		return "", err
-	}
-
 	curve := elliptic.P256()
 	if len(args) == 1 {
 		c := conv.ToString(args[0])
@@ -285,32 +424,19 @@ func (f *CryptoFuncs) ECDSAGenerateKey(args ...any) (string, error) {
 }
 
 // ECDSADerivePublicKey -
-// Experimental!
 func (f *CryptoFuncs) ECDSADerivePublicKey(privateKey string) (string, error) {
-	if err := checkExperimental(f.ctx); err != nil {
-		return "", err
-	}
-
 	out, err := crypto.ECDSADerivePublicKey([]byte(privateKey))
 	return string(out), err
 }
 
 // Ed25519GenerateKey -
-// Experimental!
 func (f *CryptoFuncs) Ed25519GenerateKey() (string, error) {
-	if err := checkExperimental(f.ctx); err != nil {
-		return "", err
-	}
 	out, err := crypto.Ed25519GenerateKey()
 	return string(out), err
 }
 
 // Ed25519GenerateKeyFromSeed -
-// Experimental!
 func (f *CryptoFuncs) Ed25519GenerateKeyFromSeed(encoding, seed string) (string, error) {
-	if err := checkExperimental(f.ctx); err != nil {
-		return "", err
-	}
 	if !utf8.ValidString(seed) {
 		return "", fmt.Errorf("given seed is not valid UTF-8") // Don't print out seed (private).
 	}
@@ -332,22 +458,20 @@ func (f *CryptoFuncs) Ed25519GenerateKeyFromSeed(encoding, seed string) (string,
 }
 
 // Ed25519DerivePublicKey -
-// Experimental!
 func (f *CryptoFuncs) Ed25519DerivePublicKey(privateKey string) (string, error) {
-	if err := checkExperimental(f.ctx); err != nil {
-		return "", err
-	}
 	out, err := crypto.Ed25519DerivePublicKey([]byte(privateKey))
 	return string(out), err
 }
 
-// EncryptAES -
-// Experimental!
-func (f *CryptoFuncs) EncryptAES(key string, args ...any) ([]byte, error) {
-	if err := checkExperimental(f.ctx); err != nil {
-		return nil, err
-	}
+// DerivePublicKey derives a public key from any supported private key type
+// (RSA, ECDSA, or Ed25519). The key type is auto-detected from the PEM header.
+func (f *CryptoFuncs) DerivePublicKey(privateKey string) (string, error) {
+	out, err := crypto.DerivePublicKey([]byte(privateKey))
+	return string(out), err
+}
 
+// AESEncrypt encrypts content using AES-CBC with 128, 192, or 256 bit keys.
+func (f *CryptoFuncs) AESEncrypt(key string, args ...any) ([]byte, error) {
 	k, msg, err := parseAESArgs(key, args...)
 	if err != nil {
 		return nil, err
@@ -356,30 +480,44 @@ func (f *CryptoFuncs) EncryptAES(key string, args ...any) ([]byte, error) {
 	return crypto.EncryptAESCBC(k, msg)
 }
 
-// DecryptAES -
-// Experimental!
-func (f *CryptoFuncs) DecryptAES(key string, args ...any) (string, error) {
-	if err := checkExperimental(f.ctx); err != nil {
-		return "", err
-	}
-
-	out, err := f.DecryptAESBytes(key, args...)
+// AESDecrypt decrypts AES-CBC encrypted content, returning a string.
+func (f *CryptoFuncs) AESDecrypt(key string, args ...any) (string, error) {
+	out, err := f.AESDecryptBytes(key, args...)
 	return conv.ToString(out), err
 }
 
-// DecryptAESBytes -
-// Experimental!
-func (f *CryptoFuncs) DecryptAESBytes(key string, args ...any) ([]byte, error) {
-	if err := checkExperimental(f.ctx); err != nil {
-		return nil, err
-	}
-
+// AESDecryptBytes decrypts AES-CBC encrypted content, returning raw bytes.
+func (f *CryptoFuncs) AESDecryptBytes(key string, args ...any) ([]byte, error) {
 	k, msg, err := parseAESArgs(key, args...)
 	if err != nil {
 		return nil, err
 	}
 
 	return crypto.DecryptAESCBC(k, msg)
+}
+
+// EncryptAES encrypts content using AES-CBC.
+//
+// Deprecated: Use AESEncrypt instead.
+func (f *CryptoFuncs) EncryptAES(key string, args ...any) ([]byte, error) {
+	deprecated.WarnDeprecated(f.ctx, "crypto.EncryptAES is deprecated - use crypto.AESEncrypt instead")
+	return f.AESEncrypt(key, args...)
+}
+
+// DecryptAES decrypts AES-CBC encrypted content.
+//
+// Deprecated: Use AESDecrypt instead.
+func (f *CryptoFuncs) DecryptAES(key string, args ...any) (string, error) {
+	deprecated.WarnDeprecated(f.ctx, "crypto.DecryptAES is deprecated - use crypto.AESDecrypt instead")
+	return f.AESDecrypt(key, args...)
+}
+
+// DecryptAESBytes decrypts AES-CBC encrypted content, returning raw bytes.
+//
+// Deprecated: Use AESDecryptBytes instead.
+func (f *CryptoFuncs) DecryptAESBytes(key string, args ...any) ([]byte, error) {
+	deprecated.WarnDeprecated(f.ctx, "crypto.DecryptAESBytes is deprecated - use crypto.AESDecryptBytes instead")
+	return f.AESDecryptBytes(key, args...)
 }
 
 func parseAESArgs(key string, args ...any) ([]byte, []byte, error) {

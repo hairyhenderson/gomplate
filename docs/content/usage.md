@@ -5,15 +5,15 @@ menu: main
 ---
 
 The simplest usage of `gomplate` is to just replace environment
-variables. All environment variables are available by referencing [`.Env`](../syntax/#env)
-(or [`getenv`](../functions/env/#envgetenv)) in the template.
+variables. All environment variables are available by referencing [`env.Env`](../functions/env/#envenv)
+(or [`env.Getenv`](../functions/env/#envgetenv)) in the template.
 
 The template is read from standard in, and written to standard out.
 
 Use it like this:
 
 ```console
-$ echo "Hello, {{ .Env.USER }}" | gomplate
+$ echo "Hello, {{ env.Env.USER }}" | gomplate
 Hello, hairyhenderson
 ```
 

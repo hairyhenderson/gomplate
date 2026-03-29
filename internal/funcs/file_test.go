@@ -12,7 +12,7 @@ import (
 
 	"github.com/hack-pad/hackpadfs"
 	osfs "github.com/hack-pad/hackpadfs/os"
-	"github.com/hairyhenderson/gomplate/v4/internal/datafs"
+	"github.com/hairyhenderson/gomplate/v5/internal/datafs"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	tfs "gotest.tools/v3/fs"
@@ -75,7 +75,7 @@ func TestFileWalk(t *testing.T) {
 	ff := &FileFuncs{fs: datafs.WrapWdFS(fsys)}
 
 	expectedLists := [][]string{{"tmp"}, {"tmp", "bar"}, {"tmp", "bar", "baz"}, {"tmp", "bar", "baz", "foo"}}
-	expectedPaths := make([]string, 0)
+	expectedPaths := make([]string, 0, len(expectedLists))
 	for _, path := range expectedLists {
 		expectedPaths = append(expectedPaths, string(filepath.Separator)+filepath.Join(path...))
 	}

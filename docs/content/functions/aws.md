@@ -22,7 +22,6 @@ for details.
 | `AWS_PROFILE` | Profile name the SDK should use when loading shared config from the configuration files. If not provided `default` will be used as the profile name. |
 | `AWS_REGION` | Specifies where to send requests. See [this list](https://docs.aws.amazon.com/general/latest/gr/rande.html). Note that the region must be set for AWS functions to work correctly, either through this variable, through a configuration profile, or by running on an EC2 instance. |
 | `AWS_EC2_METADATA_SERVICE_ENDPOINT` | _(Default `http://169.254.169.254`)_ Sets the base address of the instance metadata service. |
-| `AWS_META_ENDPOINT` _(Deprecated)_ | _(Default `http://169.254.169.254`)_ Sets the base address of the instance metadata service. Use `AWS_EC2_METADATA_SERVICE_ENDPOINT` instead. |
 
 ## `aws.EC2Meta`
 
@@ -32,7 +31,7 @@ Queries AWS [EC2 Instance Metadata](https://docs.aws.amazon.com/AWSEC2/latest/Us
 
 For times when running outside EC2, or when the metadata API can't be reached, a `default` value can be provided.
 
-_Added in gomplate [v1.8.0](https://github.com/hairyhenderson/gomplate/releases/tag/v1.8.0)_
+_<span class="release-check" data-tag="v1.8.0">Added in gomplate v1.8.0</span>_
 ### Usage
 
 ```
@@ -61,7 +60,7 @@ Queries AWS [EC2 Instance Dynamic Metadata](https://docs.aws.amazon.com/AWSEC2/l
 
 For times when running outside EC2, or when the metadata API can't be reached, a `default` value can be provided.
 
-_Added in gomplate [v1.8.0](https://github.com/hairyhenderson/gomplate/releases/tag/v1.8.0)_
+_<span class="release-check" data-tag="v1.8.0">Added in gomplate v1.8.0</span>_
 ### Usage
 
 ```
@@ -89,7 +88,7 @@ us-east-1
 Queries AWS to get the region. An optional default can be provided, or returns
 `unknown` if it can't be determined for some reason.
 
-_Added in gomplate [v1.8.0](https://github.com/hairyhenderson/gomplate/releases/tag/v1.8.0)_
+_<span class="release-check" data-tag="v1.8.0">Added in gomplate v1.8.0</span>_
 ### Usage
 
 ```
@@ -124,7 +123,7 @@ foo
 Queries the AWS EC2 API to find the value of the given [user-defined tag](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/Using_Tags.html). An optional default
 can be provided.
 
-_Added in gomplate [v3.8.0](https://github.com/hairyhenderson/gomplate/releases/tag/v3.8.0)_
+_<span class="release-check" data-tag="v3.8.0">Added in gomplate v3.8.0</span>_
 ### Usage
 
 ```
@@ -155,7 +154,7 @@ I am a meat popsicle.
 
 Queries the AWS EC2 API to find all the tags/values [user-defined tag](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/Using_Tags.html).
 
-_Added in gomplate [v3.8.0](https://github.com/hairyhenderson/gomplate/releases/tag/v3.8.0)_
+_<span class="release-check" data-tag="v3.8.0">Added in gomplate v3.8.0</span>_
 ### Usage
 
 ```
@@ -199,7 +198,7 @@ for more details.
 
 See also [`aws.KMSDecrypt`](#awskmsdecrypt).
 
-_Added in gomplate [v4.0.0](https://github.com/hairyhenderson/gomplate/releases/tag/v4.0.0)_
+_<span class="release-check" data-tag="v4.0.0">Added in gomplate v4.0.0</span>_
 ### Usage
 
 ```
@@ -235,7 +234,7 @@ for more details.
 
 See also [`aws.KMSEncrypt`](#awskmsencrypt).
 
-_Added in gomplate [v3.4.0](https://github.com/hairyhenderson/gomplate/releases/tag/v3.4.0)_
+_<span class="release-check" data-tag="v3.4.0">Added in gomplate v3.4.0</span>_
 ### Usage
 
 ```
@@ -266,7 +265,7 @@ Wraps the [STS GetCallerIdentity API](https://docs.aws.amazon.com/STS/latest/API
 
 See also [`aws.UserID`](#awsuserid) and [`aws.ARN`](#awsarn).
 
-_Added in gomplate [v3.4.0](https://github.com/hairyhenderson/gomplate/releases/tag/v3.4.0)_
+_<span class="release-check" data-tag="v3.4.0">Added in gomplate v3.4.0</span>_
 ### Usage
 
 ```
@@ -289,7 +288,7 @@ Wraps the [STS GetCallerIdentity API](https://docs.aws.amazon.com/STS/latest/API
 
 See also [`aws.UserID`](#awsuserid) and [`aws.Account`](#awsaccount).
 
-_Added in gomplate [v3.4.0](https://github.com/hairyhenderson/gomplate/releases/tag/v3.4.0)_
+_<span class="release-check" data-tag="v3.4.0">Added in gomplate v3.4.0</span>_
 ### Usage
 
 ```
@@ -315,7 +314,7 @@ Wraps the [STS GetCallerIdentity API](https://docs.aws.amazon.com/STS/latest/API
 
 See also [`aws.ARN`](#awsarn) and [`aws.Account`](#awsaccount).
 
-_Added in gomplate [v3.4.0](https://github.com/hairyhenderson/gomplate/releases/tag/v3.4.0)_
+_<span class="release-check" data-tag="v3.4.0">Added in gomplate v3.4.0</span>_
 ### Usage
 
 ```

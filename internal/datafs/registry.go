@@ -5,7 +5,7 @@ import (
 	"sort"
 	"sync"
 
-	"github.com/hairyhenderson/gomplate/v4/internal/config"
+	"github.com/hairyhenderson/gomplate/v5/internal/config"
 )
 
 // Registry - a registry of datasources

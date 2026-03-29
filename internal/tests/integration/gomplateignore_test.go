@@ -37,7 +37,7 @@ func executeOpts(t *testing.T, ignoreContent string, opts []string, inFileOps ..
 	inFileOps = append(inFileOps, tfs.WithFile(".gomplateignore", ignoreContent))
 	tmpDir := inBuilder(inFileOps...)
 
-	argv := []string{}
+	argv := make([]string, 0, len(opts)+4)
 	argv = append(argv, opts...)
 	argv = append(argv,
 		"--input-dir", tmpDir.Join("in"),

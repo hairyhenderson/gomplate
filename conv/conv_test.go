@@ -9,37 +9,6 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestBool(t *testing.T) {
-	testdata := []struct {
-		in  string
-		out bool
-	}{
-		{"", false},
-		{"asdf", false},
-		{"1234", false},
-		{"False", false},
-		{"0", false},
-		{"false", false},
-		{"F", false},
-		{"f", false},
-		{"true", true},
-		{"True", true},
-		{"t", true},
-		{"T", true},
-		{"1", true},
-	}
-	for _, d := range testdata {
-		assert.Equal(t, d.out, Bool(d.in))
-	}
-}
-
-func TestSlice(t *testing.T) {
-	expected := []string{"foo", "bar"}
-	actual := Slice("foo", "bar")
-	assert.Equal(t, expected[0], actual[0])
-	assert.Equal(t, expected[1], actual[1])
-}
-
 func TestJoin(t *testing.T) {
 	testdata := []struct {
 		in  any
@@ -459,46 +428,5 @@ func TestToBool(t *testing.T) {
 	for _, d := range falseData {
 		out := ToBool(d)
 		assert.False(t, out)
-	}
-}
-
-func TestDict(t *testing.T) {
-	testdata := []struct {
-		expected map[string]any
-		args     []any
-	}{
-		{expected: map[string]any{}},
-		{
-			args:     []any{},
-			expected: map[string]any{},
-		},
-		{
-			args:     []any{"foo"},
-			expected: map[string]any{"foo": ""},
-		},
-		{
-			args:     []any{42},
-			expected: map[string]any{"42": ""},
-		},
-		{
-			args:     []any{"foo", nil},
-			expected: map[string]any{"foo": nil},
-		},
-		{
-			args:     []any{"foo", "bar"},
-			expected: map[string]any{"foo": "bar"},
-		},
-		{
-			args: []any{"foo", "bar", "baz", true},
-			expected: map[string]any{
-				"foo": "bar",
-				"baz": true,
-			},
-		},
-	}
-
-	for _, d := range testdata {
-		actual, _ := Dict(d.args...)
-		assert.Equal(t, d.expected, actual)
 	}
 }

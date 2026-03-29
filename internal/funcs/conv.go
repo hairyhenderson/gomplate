@@ -6,8 +6,7 @@ import (
 	"strconv"
 	"text/template"
 
-	"github.com/hairyhenderson/gomplate/v4/conv"
-	"github.com/hairyhenderson/gomplate/v4/internal/deprecated"
+	"github.com/hairyhenderson/gomplate/v5/conv"
 )
 
 // CreateConvFuncs -
@@ -18,7 +17,6 @@ func CreateConvFuncs(ctx context.Context) map[string]any {
 	f["conv"] = func() any { return ns }
 
 	f["urlParse"] = ns.URL
-	f["bool"] = ns.Bool
 	f["join"] = ns.Join
 	f["default"] = ns.Default
 	return f
@@ -27,14 +25,6 @@ func CreateConvFuncs(ctx context.Context) map[string]any {
 // ConvFuncs -
 type ConvFuncs struct {
 	ctx context.Context
-}
-
-// Bool -
-//
-// Deprecated: use [ToBool] instead
-func (f *ConvFuncs) Bool(s any) bool {
-	deprecated.WarnDeprecated(f.ctx, "conv.Bool is deprecated - use conv.ToBool instead")
-	return conv.Bool(conv.ToString(s))
 }
 
 // ToBool -

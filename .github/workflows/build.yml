@@ -12,28 +12,43 @@ concurrency:
 
 jobs:
   linux-build:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.runner }}
     container:
       image: ghcr.io/hairyhenderson/gomplate-ci-build
     strategy:
       fail-fast: false
       matrix:
-        goarch: [ '386', 'amd64', 'arm', 'arm64' ]
         include:
+          - goarch: '386'
+            runner: ubuntu-latest
+          - goarch: 'amd64'
+            runner: ubuntu-latest
           - goarch: 'arm'
             goarm: '7'
+            runner: ubuntu-24.04-arm
+          - goarch: 'arm64'
+            runner: ubuntu-24.04-arm
     steps:
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3.6.0
       - run: |
           git config --global user.email "bogus@example.com"
           git config --global user.name "Someone"
           git config --global --add safe.directory /__w/gomplate/gomplate
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
+      - uses: actions/cache@v5
+        with:
+          path: |
+            ~/go/pkg/mod
+            ~/.cache/go-build
+          key: ${{ runner.os }}-${{ runner.arch }}-${{ matrix.goarch }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-${{ runner.arch }}-${{ matrix.goarch }}-go-
       - run: make build GOARCH=${{ matrix.goarch }} GOARM=${{ matrix.goarm }}
       - run: make test GOARCH=${{ matrix.goarch }} GOARM=${{ matrix.goarm }}
+      - name: Check schema is up to date
+        if: matrix.goarch == 'amd64'
+        run: make -B schema/gomplate-config.json && git diff --exit-code schema/
       - run: make integration GOARCH=${{ matrix.goarch }} GOARM=${{ matrix.goarm }}
   windows-build:
     runs-on: windows-latest
@@ -43,10 +58,10 @@ jobs:
       TMP: C:\tmp
     steps:
       - run: pwd
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
-      - uses: actions/setup-go@v5
+      - uses: actions/setup-go@v6
         with:
           go-version-file: go.mod
       - run: |

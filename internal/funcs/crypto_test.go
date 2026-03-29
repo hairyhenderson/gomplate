@@ -3,11 +3,14 @@ package funcs
 import (
 	"context"
 	"encoding/base64"
+	"encoding/hex"
+	"fmt"
 	"strconv"
 	"strings"
 	"testing"
 
-	"github.com/hairyhenderson/gomplate/v4/internal/config"
+	"github.com/hairyhenderson/gomplate/v5/internal/config"
+	"github.com/openwall/yescrypt-go"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -44,6 +47,35 @@ func TestPBKDF2(t *testing.T) {
 	require.NoError(t, err)
 
 	_, err = c.PBKDF2(nil, nil, nil, nil, "bogus")
+	require.Error(t, err)
+}
+
+func TestPBKDF2MCF(t *testing.T) {
+	t.Parallel()
+
+	c := testCryptoNS()
+	password := "password"
+	salt := []byte("IEEE")
+	iter := 4096
+	keylen := 32
+
+	// Expected derived key (from PBKDF2 test)
+	expectedHex := "f42c6fc52df0ebef9ebb4b90b38a5f902e83fe1b135a70e23aed762e9710a12e"
+	expectedDK, _ := hex.DecodeString(expectedHex)
+	expectedDKB64 := cryptBase64Encode(expectedDK)
+	expectedSaltB64 := cryptBase64Encode(salt)
+
+	mcf, err := c.PBKDF2MCF(password, salt, iter, keylen, "SHA1")
+	require.NoError(t, err)
+
+	expectedMCF := fmt.Sprintf("$pbkdf2-sha1$%d$%s$%s", iter, expectedSaltB64, expectedDKB64)
+	assert.Equal(t, expectedMCF, mcf)
+
+	mcf512, err := c.PBKDF2MCF(password, salt, iter, 64, "SHA-512")
+	require.NoError(t, err)
+	assert.True(t, strings.HasPrefix(mcf512, "$pbkdf2-sha512$4096$"))
+
+	_, err = c.PBKDF2MCF(password, salt, iter, keylen, "bogus")
 	require.Error(t, err)
 }
 
@@ -117,6 +149,90 @@ func TestBcrypt(t *testing.T) {
 		_, err := c.Bcrypt()
 		require.Error(t, err)
 	})
+}
+
+func TestYescryptMCF(t *testing.T) {
+	t.Parallel()
+	c := testCryptoNS()
+
+	in := "foo"
+
+	t.Run("no arg default", func(t *testing.T) {
+		t.Parallel()
+		actual, err := c.YescryptMCF(in)
+		require.NoError(t, err)
+		assert.True(t, strings.HasPrefix(actual, "$y$jB5$"))
+	})
+
+	t.Run("cost less than min", func(t *testing.T) {
+		t.Parallel()
+		_, err := c.YescryptMCF(9, 8, "salt", in)
+		require.ErrorContains(t, err, "N out of supported range")
+	})
+
+	t.Run("blockSize less than min", func(t *testing.T) {
+		t.Parallel()
+		_, err := c.YescryptMCF(14, 0, "salt", in)
+		require.ErrorContains(t, err, "r out of supported range")
+	})
+
+	t.Run("custom salt appears", func(t *testing.T) {
+		t.Parallel()
+		salt := "abc123"
+		actual, err := c.YescryptMCF(14, 8, salt, in)
+		require.NoError(t, err)
+		assert.Contains(t, actual, string(yescryptEncode64([]byte(salt))))
+	})
+
+	t.Run("custom cost and blockSize appears", func(t *testing.T) {
+		t.Parallel()
+		actual, err := c.YescryptMCF(10, 9, in)
+		require.NoError(t, err)
+		assert.Contains(t, actual, "$y$j76") // 10 => j7 ; 9 => 6
+	})
+
+	t.Run("wrong arg count", func(t *testing.T) {
+		t.Parallel()
+		_, err := c.YescryptMCF()
+		require.Error(t, err)
+		_, err = c.YescryptMCF(14, in) // 2 args
+		require.Error(t, err)
+	})
+
+	t.Run("hash changes with different salts", func(t *testing.T) {
+		t.Parallel()
+		a1, _ := c.YescryptMCF(in)
+		a2, _ := c.YescryptMCF(in)
+		assert.NotEqual(t, a1, a2)
+	})
+
+	t.Run("hash verifies", func(t *testing.T) {
+		t.Parallel()
+		hash, err := c.YescryptMCF(14, 8, "salt", in)
+		require.NoError(t, err)
+		parts := strings.Split(hash, "$")
+		require.GreaterOrEqual(t, len(parts), 4)
+		settings := strings.Join(parts[:4], "$") // "$y$jF7$<salt-b64>"
+		verify, err := yescrypt.Hash([]byte(in), []byte(settings))
+		require.NoError(t, err)
+		assert.Equal(t, hash, string(verify))
+	})
+}
+
+func TestYescrypt(t *testing.T) {
+	t.Parallel()
+
+	c := testCryptoNS()
+	dk, err := c.Yescrypt("password", []byte("IEEE"), "4096", 32, 10)
+	assert.Equal(t, "9621ff00097f2a429e12", dk)
+	require.NoError(t, err)
+
+	dk, err = c.Yescrypt([]byte("password"), "IEEE", 4096, "64", 32)
+	assert.Equal(t, "9da1f71c7307e5d5a323834d44d7df8631c7d93ee7e23f93f778470724c0bbcb", dk)
+	require.NoError(t, err)
+
+	_, err = c.Yescrypt(nil, nil, nil, nil, "bogus")
+	require.Error(t, err)
 }
 
 func TestRSAGenerateKey(t *testing.T) {
@@ -243,36 +359,91 @@ func TestRSACrypt(t *testing.T) {
 	assert.Equal(t, dec, string(b))
 }
 
+func TestDerivePublicKey(t *testing.T) {
+	t.Parallel()
+
+	c := testCryptoNS()
+
+	t.Run("RSA key", func(t *testing.T) {
+		t.Parallel()
+		key, err := c.RSAGenerateKey(2048)
+		require.NoError(t, err)
+
+		pub, err := c.DerivePublicKey(key)
+		require.NoError(t, err)
+		assert.True(t, strings.HasPrefix(pub, "-----BEGIN PUBLIC KEY-----"))
+	})
+
+	t.Run("ECDSA key", func(t *testing.T) {
+		t.Parallel()
+		key, err := c.ECDSAGenerateKey("P-256")
+		require.NoError(t, err)
+
+		pub, err := c.DerivePublicKey(key)
+		require.NoError(t, err)
+		assert.True(t, strings.HasPrefix(pub, "-----BEGIN PUBLIC KEY-----"))
+	})
+
+	t.Run("Ed25519 key", func(t *testing.T) {
+		t.Parallel()
+		key, err := c.Ed25519GenerateKey()
+		require.NoError(t, err)
+
+		pub, err := c.DerivePublicKey(key)
+		require.NoError(t, err)
+		assert.True(t, strings.HasPrefix(pub, "-----BEGIN PUBLIC KEY-----"))
+	})
+
+	t.Run("invalid key", func(t *testing.T) {
+		t.Parallel()
+		_, err := c.DerivePublicKey("not a valid key")
+		require.Error(t, err)
+	})
+
+	t.Run("unknown key type", func(t *testing.T) {
+		t.Parallel()
+		_, err := c.DerivePublicKey("-----BEGIN UNKNOWN KEY-----\nYWJj\n-----END UNKNOWN KEY-----\n")
+		require.Error(t, err)
+	})
+}
+
 func TestAESCrypt(t *testing.T) {
 	c := testCryptoNS()
 	key := "0123456789012345"
 	in := "hello world"
 
-	_, err := c.EncryptAES(key, 1, 2, 3, 4)
+	_, err := c.AESEncrypt(key, 1, 2, 3, 4)
 	require.Error(t, err)
 
-	_, err = c.DecryptAES(key, 1, 2, 3, 4)
+	_, err = c.AESDecrypt(key, 1, 2, 3, 4)
 	require.Error(t, err)
 
-	enc, err := c.EncryptAES(key, in)
+	enc, err := c.AESEncrypt(key, in)
 	require.NoError(t, err)
 
-	dec, err := c.DecryptAES(key, enc)
+	dec, err := c.AESDecrypt(key, enc)
 	require.NoError(t, err)
 	assert.Equal(t, in, dec)
 
-	b, err := c.DecryptAESBytes(key, enc)
+	b, err := c.AESDecryptBytes(key, enc)
 	require.NoError(t, err)
 	assert.Equal(t, dec, string(b))
 
-	enc, err = c.EncryptAES(key, 128, in)
+	enc, err = c.AESEncrypt(key, 128, in)
 	require.NoError(t, err)
 
-	dec, err = c.DecryptAES(key, 128, enc)
+	dec, err = c.AESDecrypt(key, 128, enc)
 	require.NoError(t, err)
 	assert.Equal(t, in, dec)
 
-	b, err = c.DecryptAESBytes(key, 128, enc)
+	b, err = c.AESDecryptBytes(key, 128, enc)
 	require.NoError(t, err)
 	assert.Equal(t, dec, string(b))
+
+	// Test deprecated aliases still work
+	enc2, err := c.EncryptAES(key, in)
+	require.NoError(t, err)
+	dec2, err := c.DecryptAES(key, enc2)
+	require.NoError(t, err)
+	assert.Equal(t, in, dec2)
 }

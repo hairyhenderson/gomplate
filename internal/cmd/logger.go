@@ -3,18 +3,22 @@ package cmd
 import (
 	"io"
 	"log/slog"
+	"math"
 	"os"
 	"runtime"
 
-	"github.com/hairyhenderson/gomplate/v4/env"
+	"github.com/hairyhenderson/gomplate/v5/env"
 	"github.com/lmittmann/tint"
 	"golang.org/x/term"
 )
 
 func logFormat(out io.Writer) string {
 	defaultFormat := "json"
-	if f, ok := out.(*os.File); ok && term.IsTerminal(int(f.Fd())) {
-		defaultFormat = "console"
+	if f, ok := out.(*os.File); ok {
+		fd := f.Fd()
+		if fd <= uintptr(math.MaxInt) && term.IsTerminal(int(fd)) {
+			defaultFormat = "console"
+		}
 	}
 	return env.Getenv("GOMPLATE_LOG_FORMAT", defaultFormat)
 }
@@ -28,8 +32,11 @@ func createLogHandler(format string, out io.Writer, level slog.Level) slog.Handl
 		// logFormat() already checks if this is a terminal, but we need to
 		// check again because the format may be overridden with `GOMPLATE_LOG_FORMAT`
 		useColour := false
-		if f, ok := out.(*os.File); ok && term.IsTerminal(int(f.Fd())) && runtime.GOOS != "windows" {
-			useColour = true
+		if f, ok := out.(*os.File); ok && runtime.GOOS != "windows" {
+			fd := f.Fd()
+			if fd <= uintptr(math.MaxInt) && term.IsTerminal(int(fd)) {
+				useColour = true
+			}
 		}
 		handler = tint.NewHandler(out, &tint.Options{
 			Level:      level,

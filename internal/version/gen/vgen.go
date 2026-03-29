@@ -3,6 +3,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"os/exec"
@@ -12,12 +13,13 @@ import (
 )
 
 func main() {
-	descVer, err := describedVersion()
+	ctx := context.Background()
+	descVer, err := describedVersion(ctx)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	latest, err := latestTag()
+	latest, err := latestTag(ctx)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -27,9 +29,9 @@ func main() {
 	fmt.Println(ver.String())
 }
 
-func describedVersion() (*semver.Version, error) {
+func describedVersion(ctx context.Context) (*semver.Version, error) {
 	// --tags ensures we get the most recent tag, whether lightweight or annotated
-	desc, err := runCmd("git describe --tags --always")
+	desc, err := runCmd(ctx, "git describe --tags --always")
 	if err != nil {
 		return nil, fmt.Errorf("git describe failed: %w", err)
 	}
@@ -77,9 +79,9 @@ func version(descVer, latest *semver.Version) *semver.Version {
 	return &ver
 }
 
-func latestTag() (*semver.Version, error) {
+func latestTag(ctx context.Context) (*semver.Version, error) {
 	// get the latest tag
-	tags, err := runCmd("git tag --list v*")
+	tags, err := runCmd(ctx, "git tag --list v*")
 	if err != nil {
 		return nil, fmt.Errorf("git tag failed: %w", err)
 	}
@@ -104,10 +106,11 @@ func latestTag() (*semver.Version, error) {
 	return latest, nil
 }
 
-func runCmd(c string) (string, error) {
+func runCmd(ctx context.Context, c string) (string, error) {
 	parts := strings.Split(c, " ")
 	//nolint:gosec
-	cmd := exec.Command(parts[0], parts[1:]...)
+	cmd := exec.CommandContext(ctx, parts[0], parts[1:]...)
+
 	out, err := cmd.CombinedOutput()
 	return strings.TrimSpace(string(out)), err
 }

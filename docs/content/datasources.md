@@ -62,6 +62,8 @@ Gomplate supports a number of datasources, each specified with a particular URL 
 | [Environment](#using-env-datasources) | `env` | Environment variables can be used as datasources - useful for testing |
 | [File](#using-file-datasources) | `file` | Files can be read in any of the [supported formats](#mime-types), including by piping through standard input (`Stdin`). [Directories](#directory-datasources) are also supported. |
 | [Git](#using-git-datasources) | `git`, `git+file`, `git+http`, `git+https`, `git+ssh` | Files can be read from a local or remote git repository, at specific branches or tags. [Directory semantics](#directory-datasources) are also supported. |
+| [GCP Compute Instance Metadata](#using-gcpmeta-datasources) | `gcp+meta` | Provides access to the [GCP VM Metadata Service][], including instance and project metadata. |
+| [GCP Secret Manager](#using-gcpsm-datasources) | `gcp+sm` | [GCP Secret Manager][] stores named secrets; each read returns one secret’s latest payload (often text or JSON). |
 | [Google Cloud Storage](#using-google-cloud-storage-gs-datasources) | `gs` | [Google Cloud Storage][] is the object storage service available on GCP, comparable to AWS S3. |
 | [HTTP](#using-http-datasources) | `http`, `https` | Data can be sourced from HTTP/HTTPS sites in many different formats. Arbitrary HTTP headers can be set with the [`--datasource-header`/`-H`][] flag |
 | [Merged Datasources](#using-merge-datasources) | `merge` | Merge two or more datasources together to produce the final value - useful for resolving defaults. Uses [`coll.Merge`][] for merging. |
@@ -173,15 +175,7 @@ The _scheme_ and _path_ URL components are used by this datasource. This may be 
 
 ### Output
 
-The output will be a single `Parameter` object from the
-[AWS SDK for Go](https://docs.aws.amazon.com/sdk-for-go/api/service/ssm/#Parameter):
-
-| name   | description |
-|--------|-------|
-| `Name` | full Parameter name |
-| `Type` | `String`, `StringList` or `SecureString` |
-| `Value` | textual value, comma-separated single string if StringList |
-| `Version` | incrementing integer version |
+The output will be the value of the parameter as a string. For `StringList` parameters, the value will be a comma-separated string.
 
 If the Parameter key specified is not found (or not allowed to be read due to missing permissions) an error will be generated. There is no default.
 
@@ -196,24 +190,21 @@ Given your AWS account's Parameter Store has the following data:
 
 ```console
 $ echo '{{ ds "foo" }}' | gomplate -d foo=aws+smp:///foo/first/password
-map[Name:/foo/first/password Type:SecureString Value:super-secret Version:1]
-
-$ echo '{{ (ds "foo").Value }}' | gomplate -d foo=aws+smp:///foo/first/password
 super-secret
 
-$ echo '{{ (ds "foo" "/foo/first/others").Value }}' | gomplate -d foo=aws+smp:
+$ echo '{{ ds "foo" "/foo/first/others" }}' | gomplate -d foo=aws+smp:
 Bill,Ben
 
-$ echo '{{ (ds "foo" "/second/p1").Value }}' | gomplate -d foo=aws+smp:///foo/
+$ echo '{{ ds "foo" "/second/p1" }}' | gomplate -d foo=aws+smp:///foo/
 aaa
 
 $ gomplate -d foo=aws+smp:///foo/first/ -i '{{ range (ds "foo") }}
-{{ . }}: {{ (ds "foo" .).Value }}
+{{ . }}: {{ ds "foo" . }}
 {{- end }}'
 others: Bill,Ben
 password: super-secret
 
-$ gomplate -d foo=aws+smp:myparameter -i '{{ (ds "foo").Value }}
+$ gomplate -d foo=aws+smp:myparameter -i '{{ ds "foo" }}'
 bar
 ```
 
@@ -530,15 +521,15 @@ The _scheme_, _authority_, _path_, and _query_ URL components are used by this d
 - the _authority_ component is used to specify the bucket name
 - the _path_ component is used to specify the path to the object. [Directory](#directory-datasources) semantics are available when the path ends with a `/` character.
 - the _query_ component can be used to provide parameters to configure the connection:
-  - `access_id`: (optional) Usually unnecessary. Sets the GoogleAccessID (see https://godoc.org/cloud.google.com/go/storage#SignedURLOptions)
-  - `private_key_path`: (optional) Usually unnecessary. Sets the path to the Google service account private key (see https://godoc.org/cloud.google.com/go/storage#SignedURLOptions)
+  - `access_id`: (optional) Usually unnecessary. Sets the GoogleAccessID (see https://pkg.go.dev/cloud.google.com/go/storage#SignedURLOptions)
+  - `private_key_path`: (optional) Usually unnecessary. Sets the path to the Google service account private key (see https://pkg.go.dev/cloud.google.com/go/storage#SignedURLOptions)
   - `type`: can be used to [override the MIME type](#overriding-mime-types)
 
 ### Authentication
 
 All `gs` datasources need credentials, provided by the `GOOGLE_APPLICATION_CREDENTIALS` environment variable. This should point to an authentication configuration JSON file.
 
-See Google Cloud's [Getting Started with Authentication](https://cloud.google.com/docs/authentication/getting-started) documentation for details.
+See Google Cloud's [Getting Started with Authentication](https://docs.cloud.google.com/docs/authentication/getting-started) documentation for details.
 
 ### Output
 
@@ -559,6 +550,121 @@ $ gomplate -c foo=gs://my-bucket/foo/ -i 'my-bucket/foo contains:{{ range .foo }
 my-bucket/foo contains:
 bar.json
 baz.txt
+```
+
+## Using `gcp+meta` datasources
+
+The `gcp+meta://` scheme provides access to the [GCP VM Metadata Service][], which is available to Google Cloud Platform VM instances. This service provides information about the instance, project, and custom metadata.
+
+This datasource can be used as an alternative to the [`gcp.Meta`][] function, and provides [directory](#directory-datasources) semantics for exploring metadata hierarchies.
+
+**Note:** This datasource is only functional when running on a GCP Compute Engine VM (or in an environment where the metadata service is available, such as Cloud Run or GKE).
+
+### URL Considerations
+
+The _scheme_ and _path_ URL components are used by this datasource.
+
+- the _scheme_ must be `gcp+meta`
+- the _path_ component is used to specify the root of the metadata hierarchy. The two main categories are:
+  - `/instance`: instance metadata specific to the VM (e.g., id, hostname, zone, network-interfaces)
+  - `/project`: project metadata shared across all VMs in the project (e.g., project-id, attributes)
+
+[Directory](#directory-datasources) semantics are available when the path ends with a `/` character.
+
+### Environment Variables
+
+The following optional environment variables are understood by the `gcp+meta` datasource:
+
+| name | usage |
+|------|-------|
+| `GCP_META_ENDPOINT` | _(Default `http://metadata.google.internal`)_ Sets the base address of the instance metadata service. Useful for testing or in non-standard environments. |
+
+### Examples
+
+Reading instance metadata:
+
+```console
+$ gomplate -d meta=gcp+meta:/// -i 'The instance ID is: {{ include "meta" "instance/id" }}'
+The instance ID is: 1234567890123456789
+
+$ gomplate -d meta=gcp+meta:/// -i 'The hostname is: {{ include "meta" "instance/hostname" }}'
+The hostname is: my-instance.c.my-project.internal
+
+$ gomplate -d meta=gcp+meta:/// -i 'The zone is: {{ include "meta" "instance/zone" }}'
+The zone is: projects/1234567890/zones/us-central1-a
+```
+
+Reading project metadata:
+
+```console
+$ gomplate -d meta=gcp+meta:/// -i 'The project ID is: {{ include "meta" "project/project-id" }}'
+The project ID is: my-gcp-project
+
+$ gomplate -d meta=gcp+meta:/// -i 'Project numeric ID: {{ include "meta" "project/numeric-project-id" }}'
+Project numeric ID: 1234567890
+```
+
+Reading custom project attributes:
+
+```console
+$ gomplate -d meta=gcp+meta:/// -i 'My attribute: {{ include "meta" "project/attributes/my-custom-attribute" }}'
+My attribute: some-value
+```
+
+Using directory semantics to explore available metadata:
+
+```console
+$ gomplate -d meta=gcp+meta:/// -i '{{ ds "meta" }}'
+[instance project]
+
+$ gomplate -d meta=gcp+meta:///instance/ -i '{{ ds "meta" }}'
+[attributes cpu-platform description disks hostname id ...]
+```
+
+Reading network interface information:
+
+```console
+$ gomplate -d meta=gcp+meta:/// -i 'IP: {{ include "meta" "instance/network-interfaces/0/ip" }}'
+IP: 10.128.0.2
+```
+
+## Using `gcp+sm` datasources
+
+The `gcp+sm://` scheme provides access to [GCP Secret Manager][]. Each secret holds a payload (commonly a string or JSON document). Accessing a datasource reads the **latest** enabled version of that secret.
+
+### URL Considerations
+
+The _scheme_ and _path_ URL components are used by this datasource.
+
+- the _scheme_ must be `gcp+sm`
+- the _path_ must identify the secret using Secret Manager’s resource form: `projects/PROJECT_ID/secrets/SECRET_ID` (for example `gcp+sm:///projects/my-project/secrets/my-secret`)
+
+[Directory](#directory-datasources) semantics are not supported.
+
+### Authentication
+
+The Secret Manager client uses [Application Default Credentials](https://cloud.google.com/docs/authentication/application-default-credentials) (for example `gcloud auth application-default login`, a service account key via `GOOGLE_APPLICATION_CREDENTIALS`, or credentials from the metadata server on GCE, GKE, or Cloud Run).
+
+See Google Cloud’s [authentication overview](https://docs.cloud.google.com/docs/authentication/getting-started) for details.
+
+### Output
+
+The output will be the secret payload, parsed based on the discovered [MIME type](#mime-types).
+
+### Examples
+
+Given a secret `my-secret` in project `my-project` whose payload is JSON `{"foo":"bar","baz":"qux"}`:
+
+```console
+$ gomplate -c cfg=gcp+sm:///projects/my-project/secrets/my-secret -i 'Hello {{ .cfg.foo }}'
+Hello bar
+```
+
+Reading a secret as a datasource (non-JSON or when you want the raw body):
+
+```console
+$ gomplate -d pw=gcp+sm:///projects/my-project/secrets/db-password -i '{{ include "pw" }}'
+hunter2
 ```
 
 ## Using `http` datasources
@@ -768,6 +874,9 @@ The file `/tmp/vault-aws-nonce` will be created if it didn't already exist, and 
 
 [AWS SMP]: https://docs.aws.amazon.com/systems-manager/latest/userguide/systems-manager-parameter-store.html
 [AWS Secrets Manager]: https://aws.amazon.com/secrets-manager
+[GCP VM Metadata Service]: https://docs.cloud.google.com/compute/docs/metadata/overview
+[GCP Secret Manager]: https://cloud.google.com/secret-manager
+[`gcp.Meta`]: ../functions/gcp/#gcpmeta
 [HashiCorp Consul]: https://consul.io
 [HashiCorp Vault]: https://vaultproject.io
 [JSON]: https://json.org

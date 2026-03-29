@@ -5,11 +5,10 @@ import (
 	"fmt"
 	"reflect"
 
-	"github.com/hairyhenderson/gomplate/v4/conv"
-	"github.com/hairyhenderson/gomplate/v4/internal/deprecated"
-	"github.com/hairyhenderson/gomplate/v4/internal/texttemplate"
+	"github.com/hairyhenderson/gomplate/v5/conv"
+	"github.com/hairyhenderson/gomplate/v5/internal/texttemplate"
 
-	"github.com/hairyhenderson/gomplate/v4/coll"
+	"github.com/hairyhenderson/gomplate/v5/coll"
 )
 
 // CreateCollFuncs -
@@ -20,7 +19,6 @@ func CreateCollFuncs(ctx context.Context) map[string]any {
 	f["coll"] = func() any { return ns }
 
 	f["has"] = ns.Has
-	f["slice"] = ns.deprecatedSlice
 	f["dict"] = ns.Dict
 	f["keys"] = ns.Keys
 	f["values"] = ns.Values
@@ -45,13 +43,6 @@ type CollFuncs struct {
 
 // Slice -
 func (CollFuncs) Slice(args ...any) []any {
-	return coll.Slice(args...)
-}
-
-// deprecatedSlice -
-// Deprecated: use coll.Slice instead
-func (f *CollFuncs) deprecatedSlice(args ...any) []any {
-	deprecated.WarnDeprecated(f.ctx, "the 'slice' alias for coll.Slice is deprecated - use coll.Slice instead")
 	return coll.Slice(args...)
 }
 
@@ -166,6 +157,7 @@ func (CollFuncs) Flatten(args ...any) ([]any, error) {
 			return nil, fmt.Errorf("wrong depth type: must be int, got %T (%+v)", list, list)
 		}
 
+		//nolint:gosec // G602 — false positive: len(args)==2 guarantees args[1]
 		list = args[1]
 	}
 
@@ -216,7 +208,30 @@ func (CollFuncs) Pick(args ...any) (map[string]any, error) {
 }
 
 // Omit -
-func (CollFuncs) Omit(args ...any) (map[string]any, error) {
+func (CollFuncs) Omit(args ...any) (any, error) {
+	if len(args) <= 1 {
+		return nil, fmt.Errorf("wrong number of args: wanted 2 or more, got %d", len(args))
+	}
+
+	last := args[len(args)-1]
+	if t := reflect.TypeOf(last); t != nil && (t.Kind() == reflect.Slice || t.Kind() == reflect.Array) {
+		values := args[0 : len(args)-1]
+
+		// special-case - if there's only one value and it's a slice/array, expand it
+		if len(values) == 1 {
+			if vt := reflect.TypeOf(values[0]); vt != nil && (vt.Kind() == reflect.Slice || vt.Kind() == reflect.Array) {
+				sl := reflect.ValueOf(values[0])
+				expanded := make([]any, sl.Len())
+				for i := range sl.Len() {
+					expanded[i] = sl.Index(i).Interface()
+				}
+				values = expanded
+			}
+		}
+
+		return coll.OmitSlice(last, values...)
+	}
+
 	m, keys, err := pickOmitArgs(args...)
 	if err != nil {
 		return nil, err

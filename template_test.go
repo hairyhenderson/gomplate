@@ -13,8 +13,8 @@ import (
 
 	"github.com/hack-pad/hackpadfs"
 	"github.com/hack-pad/hackpadfs/mem"
-	"github.com/hairyhenderson/gomplate/v4/internal/datafs"
-	"github.com/hairyhenderson/gomplate/v4/internal/iohelpers"
+	"github.com/hairyhenderson/gomplate/v5/internal/datafs"
+	"github.com/hairyhenderson/gomplate/v5/internal/iohelpers"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -175,7 +175,9 @@ func TestCreateOutFile(t *testing.T) {
 
 	_, err := createOutFile(ctx, "in", 0o755, 0o644, false)
 	require.Error(t, err)
-	assert.IsType(t, &fs.PathError{}, err)
+
+	var pathErr *fs.PathError
+	assert.ErrorAs(t, err, &pathErr)
 }
 
 func TestParseNestedTemplates(t *testing.T) {

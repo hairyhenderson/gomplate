@@ -150,17 +150,6 @@ func TestSlug(t *testing.T) {
 	assert.Equal(t, "100", s)
 }
 
-func TestSort(t *testing.T) {
-	t.Parallel()
-	sf := &StringFuncs{ctx: context.Background()}
-
-	in := []string{"foo", "bar", "baz"}
-	out := []string{"bar", "baz", "foo"}
-	assert.Equal(t, out, must(sf.Sort(in)))
-
-	assert.Equal(t, out, must(sf.Sort([]any{"foo", "bar", "baz"})))
-}
-
 func TestQuote(t *testing.T) {
 	t.Parallel()
 

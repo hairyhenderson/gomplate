@@ -26,7 +26,7 @@ The `_FILE` fallback is especially useful for use with [12-factor][]-style
 applications configurable only by environment variables, and especially in
 conjunction with features like [Docker Secrets][].
 
-_Added in gomplate [v0.2.0](https://github.com/hairyhenderson/gomplate/releases/tag/v0.2.0)_
+_<span class="release-check" data-tag="v0.2.0">Added in gomplate v0.2.0</span>_
 ### Usage
 
 ```
@@ -55,6 +55,76 @@ $ gomplate -i 'Your secret is {{getenv "SECRET"}}'
 Your secret is safe
 ```
 
+## `env.Env`
+
+Returns a map of all environment variables. This is equivalent to [`.Env`](/syntax/#env),
+but accessible via the `env` namespace.
+
+Unlike [`env.Getenv`](#envgetenv), this does not read `_FILE` variants, and will
+fail when accessing a missing key.
+
+This is useful when you want strict environment variable access without the
+`_FILE` fallback behavior.
+
+_<span class="release-check" data-tag="v5.1.0">Added in gomplate v5.1.0</span>_
+### Usage
+
+```
+env.Env
+```
+
+
+### Examples
+
+```console
+$ gomplate -i 'Hello, {{env.Env.USER}}'
+Hello, hairyhenderson
+```
+```console
+$ gomplate -i '{{ env.Env.HOME }}'
+/home/hairyhenderson
+```
+
+## `env.HasEnv`
+
+Returns `true` if the environment variable is set, `false` otherwise.
+This wraps the [`os.LookupEnv`](https://pkg.go.dev/os/#LookupEnv) function.
+
+Note that a variable set to an empty string is still considered "set".
+
+_<span class="release-check" data-tag="v5.1.0">Added in gomplate v5.1.0</span>_
+### Usage
+
+```
+env.HasEnv var
+```
+```
+var | env.HasEnv
+```
+
+### Arguments
+
+| name | description |
+|------|-------------|
+| `var` | _(required)_ the environment variable name |
+
+### Examples
+
+```console
+$ gomplate -i '{{if env.HasEnv "FOO"}}FOO is set{{else}}FOO is not set{{end}}'
+FOO is not set
+$ FOO=bar gomplate -i '{{if env.HasEnv "FOO"}}FOO is set{{else}}FOO is not set{{end}}'
+FOO is set
+```
+```console
+$ EMPTY= gomplate -i '{{if env.HasEnv "EMPTY"}}EMPTY is set{{end}}'
+EMPTY is set
+```
+```console
+$ gomplate -i '{{ "USER" | env.HasEnv }}'
+true
+```
+
 ## `env.ExpandEnv`
 
 Exposes the [os.ExpandEnv](https://pkg.go.dev/os/#ExpandEnv) function.
@@ -64,7 +134,7 @@ current environment variables. References to undefined variables are replaced by
 
 Like [`env.Getenv`](#envgetenv), the `_FILE` variant of a variable is used.
 
-_Added in gomplate [v2.5.0](https://github.com/hairyhenderson/gomplate/releases/tag/v2.5.0)_
+_<span class="release-check" data-tag="v2.5.0">Added in gomplate v2.5.0</span>_
 ### Usage
 
 ```

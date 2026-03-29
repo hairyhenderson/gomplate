@@ -14,8 +14,8 @@ import (
 	"time"
 
 	"github.com/hairyhenderson/go-fsimpl"
-	"github.com/hairyhenderson/gomplate/v4/internal/datafs"
-	"github.com/hairyhenderson/gomplate/v4/internal/funcs"
+	"github.com/hairyhenderson/gomplate/v5/internal/datafs"
+	"github.com/hairyhenderson/gomplate/v5/internal/funcs"
 )
 
 // RenderOptions - options for controlling how templates are rendered, and
@@ -107,7 +107,7 @@ func newRenderer(opts RenderOptions) *renderer {
 	// this should be the only place where this registry is created
 	reg := datafs.NewRegistry()
 
-	tctxAliases := []string{}
+	tctxAliases := make([]string, 0, len(opts.Context))
 
 	for alias, ds := range opts.Context {
 		tctxAliases = append(tctxAliases, alias)

@@ -183,7 +183,7 @@ argument, there are no shell-imposed length limits.
 
 A simple example:
 ```yaml
-in: hello to {{ .Env.USER }}
+in: hello to {{ env.Env.USER }}
 ```
 
 A multi-line example (see https://yaml-multiline.info/ for more about multi-line
@@ -461,7 +461,39 @@ templates:
       Authorization: ["Basic aGF4MHI6c3dvcmRmaXNoCg=="]
 ```
 
+## IDE integration
+
+gomplate ships a [JSON Schema][] for `.gomplate.yaml`, usable with any editor
+that supports the [YAML Language Server][].
+
+Add a modeline to a specific file:
+```yaml
+# yaml-language-server: $schema=https://raw.githubusercontent.com/hairyhenderson/gomplate/main/schema/gomplate-config.json
+```
+
+Or configure your editor to apply it automatically to all gomplate config files.
+
+**VS Code / Cursor** — add to `settings.json`:
+```json
+"yaml.schemas": {
+  "https://raw.githubusercontent.com/hairyhenderson/gomplate/main/schema/gomplate-config.json": [
+    ".gomplate.yaml", ".gomplate.yml", "gomplate.yaml", "gomplate.yml"
+  ]
+}
+```
+
+**Neovim** — add to your `yamlls` setup:
+```lua
+yaml.schemas = {
+  ['https://raw.githubusercontent.com/hairyhenderson/gomplate/main/schema/gomplate-config.json'] = {
+    '.gomplate.yaml', '.gomplate.yml', 'gomplate.yaml', 'gomplate.yml',
+  },
+}
+```
+
 [command-line arguments]: ../usage
 [file an issue]: https://github.com/hairyhenderson/gomplate/issues/new
 [YAML]: http://yaml.org
 [duration]: ../functions/time/#timeparseduration
+[JSON Schema]: https://json-schema.org
+[YAML Language Server]: https://github.com/redhat-developer/yaml-language-server

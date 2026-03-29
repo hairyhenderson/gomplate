@@ -11,7 +11,7 @@ jobs:
   check-func-docs:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Install gomplate
         run: |
           docker create --name gomplate hairyhenderson/gomplate
@@ -33,7 +33,7 @@ jobs:
         with:
           # keep this in sync with netlify.toml
           hugo-version: '0.128.0'
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Install muffet
         env:
           GH_TOKEN: ${{ github.token }}
@@ -58,6 +58,10 @@ jobs:
             --exclude="https://jqplay\.org.*" \
             --exclude="https://json\.org.*" \
             --exclude="https://goessner\.net.*" \
-            --exclude="http://opensource\.org.*"
+            --exclude="http://opensource\.org.*" \
+            --exclude="https://en.wikipedia\.org.*" \
+            --exclude="https://developer\.hashicorp\.com.*" \
+            --exclude="https://helm\.sh.*" \
+            --exclude="https://pkg\.go\.dev.*"
 
           kill %1
