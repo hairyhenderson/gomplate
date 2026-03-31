@@ -26,7 +26,7 @@ func TestInterfaceSlice(t *testing.T) {
 	}
 
 	_, err := InterfaceSlice(42)
-	assert.ErrorContains(t, err, "")
+	assert.ErrorContains(t, err, "int")
 }
 
 func BenchmarkInterfaceSlice(b *testing.B) {
