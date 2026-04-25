@@ -1,34 +1,6 @@
 {
-  "extends": ["schedule:weekends"],
-  "separatePatchReleases": false,
-  "prCreation": "immediate",
-  "branchPrefix": "renovate/",
-  "minor": {
-    "automerge": true
-  },
-  "patch": {
-    "automerge": true
-  },
-  "pin": {
-    "automerge": true
-  },
-  "lockFileMaintenance": {
-    "automerge": true
-  },
-  "docker": {
-    "fileMatch": ["(^|/)Dockerfile.*$"],
-    "major": {
-      "enabled": true
-    }
-  },
-  "ignorePaths": [
-    "vendor/**"
-  ],
-  "rangeStrategy": "auto",
-  "rebaseStalePrs": true,
-  "prConcurrentLimit": 20,
-  "prHourlyLimit": 4,
-  "labels": [
-    "dependencies"
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:recommended"
   ]
 }
