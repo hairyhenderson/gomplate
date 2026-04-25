@@ -25,7 +25,7 @@ require (
 	github.com/hashicorp/go-sockaddr v1.0.7
 	github.com/hashicorp/vault/api v1.23.0
 	github.com/hashicorp/vault/api/auth/aws v0.12.0
-	github.com/invopop/jsonschema v0.13.0
+	github.com/invopop/jsonschema v0.14.0
 	github.com/itchyny/gojq v0.12.19
 	github.com/johannesboyne/gofakes3 v0.0.0-20260208201424-4c385a1f6a73
 	github.com/joho/godotenv v1.5.1
@@ -151,6 +151,7 @@ require (
 	github.com/mitchellh/go-homedir v1.1.0 // indirect
 	github.com/mitchellh/go-wordwrap v1.0.1 // indirect
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
+	github.com/pb33f/ordered-map/v2 v2.3.1 // indirect
 	github.com/pelletier/go-toml/v2 v2.2.4 // indirect
 	github.com/pjbgf/sha1cd v0.3.2 // indirect
 	github.com/pkg/browser v0.0.0-20240102092130-5ac0b6a4141c // indirect
@@ -177,6 +178,7 @@ require (
 	go.opentelemetry.io/otel/trace v1.43.0 // indirect
 	go.shabbyrobe.org/gocovmerge v0.0.0-20230507111327-fa4f82cfbf4d // indirect
 	go.yaml.in/yaml/v3 v3.0.4 // indirect
+	go.yaml.in/yaml/v4 v4.0.0-rc.2 // indirect
 	gocloud.dev v0.45.0 // indirect
 	golang.org/x/exp v0.0.0-20260218203240-3dfff04db8fa // indirect
 	golang.org/x/net v0.52.0 // indirect
