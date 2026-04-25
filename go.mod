@@ -2,7 +2,7 @@ module github.com/hairyhenderson/gomplate/v5
 
 go 1.25.8
 
-toolchain go1.26.1
+toolchain go1.26.2
 
 require (
 	cuelang.org/go v0.16.0
