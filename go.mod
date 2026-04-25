@@ -1,6 +1,6 @@
 module github.com/hairyhenderson/gomplate/v5
 
-go 1.26
+go 1.26.0
 
 toolchain go1.26.2
 
@@ -41,7 +41,7 @@ require (
 	golang.org/x/term v0.42.0
 	golang.org/x/text v0.36.0
 	gotest.tools/v3 v3.5.2
-	k8s.io/client-go v0.35.4
+	k8s.io/client-go v0.36.0
 )
 
 // TODO: replace with gopkg.in/yaml.v3 after https://github.com/go-yaml/yaml/pull/862
@@ -192,7 +192,7 @@ require (
 	google.golang.org/genproto/googleapis/api v0.0.0-20260401024825-9d38bb4040a9 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20260401024825-9d38bb4040a9 // indirect
 	google.golang.org/grpc v1.80.0 // indirect
-	google.golang.org/protobuf v1.36.11 // indirect
+	google.golang.org/protobuf v1.36.12-0.20260120151049-f2248ac996af // indirect
 	gopkg.in/warnings.v0 v0.1.2 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
