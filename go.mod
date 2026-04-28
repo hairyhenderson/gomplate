@@ -46,7 +46,7 @@ require (
 
 // TODO: replace with gopkg.in/yaml.v3 after https://github.com/go-yaml/yaml/pull/862
 // is merged
-require github.com/hairyhenderson/yaml v0.0.0-20220618171115-2d35fca545ce
+require github.com/hairyhenderson/yaml v2.1.0+incompatible
 
 require (
 	cel.dev/expr v0.25.1 // indirect
@@ -145,7 +145,6 @@ require (
 	github.com/jmespath/go-jmespath v0.4.0 // indirect
 	github.com/kevinburke/ssh_config v1.2.0 // indirect
 	github.com/kylelemons/godebug v1.1.0 // indirect
-	github.com/mailru/easyjson v0.7.7 // indirect
 	github.com/mattn/go-colorable v0.1.14 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/mitchellh/go-homedir v1.1.0 // indirect
@@ -165,7 +164,6 @@ require (
 	github.com/skeema/knownhosts v1.3.1 // indirect
 	github.com/spf13/pflag v1.0.10 // indirect
 	github.com/spiffe/go-spiffe/v2 v2.6.0 // indirect
-	github.com/wk8/go-ordered-map/v2 v2.1.8 // indirect
 	github.com/xanzy/ssh-agent v0.3.3 // indirect
 	go.opentelemetry.io/auto/sdk v1.2.1 // indirect
 	go.opentelemetry.io/contrib/detectors/gcp v1.39.0 // indirect
