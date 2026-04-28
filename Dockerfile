@@ -1,10 +1,11 @@
 # syntax=docker/dockerfile:1
-FROM --platform=linux/amd64 golang:1.26-alpine AS build
+FROM --platform=$BUILDPLATFORM golang:1.26-alpine AS build
 
 ARG TARGETOS
 ARG TARGETARCH
 ARG TARGETVARIANT
-ENV GOOS=$TARGETOS GOARCH=$TARGETARCH
+ARG VERSION
+ENV GOOS=$TARGETOS GOARCH=$TARGETARCH VERSION=$VERSION
 
 RUN apk add --no-cache make git
 
@@ -47,9 +48,6 @@ ARG TARGETVARIANT
 
 LABEL org.opencontainers.image.revision=$VCS_REF \
 	org.opencontainers.image.source="https://github.com/hairyhenderson/gomplate"
-
-# Upgrade zlib to avoid CVE-2026-22184 until alpine:3.23 base image is updated
-RUN apk upgrade --no-cache zlib
 
 COPY --from=build /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
 COPY --from=build /bin/gomplate_${TARGETOS}-${TARGETARCH}${TARGETVARIANT} /bin/gomplate
