@@ -1,5 +1,5 @@
 module github.com/hairyhenderson/gomplate/docs
 
-go 1.22.4
+go 1.26.2
 
-require github.com/McShelby/hugo-theme-relearn v0.0.0-20231029175538-7ae1435626d7 // 0.53.0
+require github.com/McShelby/hugo-theme-relearn v0.0.0-20260310200521-93d7f257d1a3 // 0.53.0
