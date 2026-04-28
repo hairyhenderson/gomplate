@@ -889,5 +889,5 @@ The file `/tmp/vault-aws-nonce` will be created if it didn't already exist, and 
 [Google Cloud Storage]: https://cloud.google.com/storage/
 
 [Minio]: https://min.io
-[Zenko CloudServer]: https://www.zenko.io/cloudserver/
+[Zenko CloudServer]: https://github.com/scality/cloudserver
 [gofakes3]: https://github.com/johannesboyne/gofakes3
