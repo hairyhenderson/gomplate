@@ -7,7 +7,7 @@ title = "gomplate documentation"
   alwaysopen = false
   editURL = "https://github.com/hairyhenderson/gomplate/edit/main/docs/content/"
   showVisitedLinks = false
-  disableSearch = false
+  search.disable = false
   disableSearchHiddenPages = false
   disableSeoHiddenPages = false
   disableTagHiddenPages = false
@@ -19,8 +19,8 @@ title = "gomplate documentation"
   disableLanguageSwitchingButton = false
   disableBreadcrumb = false
   disableToc = false
-  disableMathJax = true
-  disableMermaid = true
+  math.disable = true
+  mermaid = false
   disableSwagger = true
   disableNextPrev = false
   ordersectionsby = "weight"
@@ -43,7 +43,7 @@ title = "gomplate documentation"
     unsafe = true
 
 [outputs]
-  home = [ "HTML", "RSS", "SEARCH", "SEARCHPAGE"]
+  home = [ "HTML", "RSS"]
 
 [module]
   [[module.imports]]
