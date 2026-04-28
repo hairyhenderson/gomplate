@@ -309,6 +309,8 @@ github.com/hairyhenderson/go-fsimpl v0.4.0 h1:f71mqJv7/Rh6TkobGy8OIzrOC5HwPGkFC8
 github.com/hairyhenderson/go-fsimpl v0.4.0/go.mod h1:9kx6MzuGrbhutCq5Vz1/GY8+3HSpJPmvZ2TSdds5h8s=
 github.com/hairyhenderson/go-fsimpl v0.4.1 h1:wYWMU58YwXejAnGmMmTY5tV+K7fV5CVHDwkr4PB3DgY=
 github.com/hairyhenderson/go-fsimpl v0.4.1/go.mod h1:ywOnXIc4id9F2+/U+oPJSALXZV5lD2BsfldWXsA7Si0=
+github.com/hairyhenderson/go-fsimpl v0.4.2 h1:N1L43Q54MBNEiiOwDkQSYnqnUZdPFyudywLzeAMAxYw=
+github.com/hairyhenderson/go-fsimpl v0.4.2/go.mod h1:ywOnXIc4id9F2+/U+oPJSALXZV5lD2BsfldWXsA7Si0=
 github.com/hairyhenderson/toml v0.4.2-0.20210923231440-40456b8e66cf h1:I1sbT4ZbIt9i+hB1zfKw2mE8C12TuGxPiW7YmtLbPa4=
 github.com/hairyhenderson/toml v0.4.2-0.20210923231440-40456b8e66cf/go.mod h1:jDHmWDKZY6MIIYltYYfW4Rs7hQ50oS4qf/6spSiZAxY=
 github.com/hairyhenderson/xignore v0.3.3-0.20230403012150-95fe86932830 h1:f+VnmDFJqYgkq1PRraUsYEzJ7bFr36CmzOb/xfV5Q9s=
