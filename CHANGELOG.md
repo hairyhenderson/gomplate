@@ -1,5 +1,84 @@
 # Change Log
 
+## [5.1.0](https://github.com/hairyhenderson/gomplate/compare/v5.0.0...v5.1.0) (2026-04-28)
+
+
+### Features
+
+* **coll:** support slices in coll.Omit ([#2546](https://github.com/hairyhenderson/gomplate/issues/2546)) ([be0844b](https://github.com/hairyhenderson/gomplate/commit/be0844ba9120701bbb6c9c7c4d2b096498b9cfdb))
+* **crypto:** add unified crypto.DerivePublicKey function ([#2500](https://github.com/hairyhenderson/gomplate/issues/2500)) ([2706cb6](https://github.com/hairyhenderson/gomplate/commit/2706cb672b75b1a13689c00900f4f4fdac95b7dc))
+* **crypto:** finalize experimental crypto functions ([#2498](https://github.com/hairyhenderson/gomplate/issues/2498)) ([45255b6](https://github.com/hairyhenderson/gomplate/commit/45255b668d13c03efbd8cc855de6db861db8a737)), closes [#1416](https://github.com/hairyhenderson/gomplate/issues/1416)
+* **crypto:** New experimental crypto.PBKDF2MCF function ([#2429](https://github.com/hairyhenderson/gomplate/issues/2429)) ([0aa7c9c](https://github.com/hairyhenderson/gomplate/commit/0aa7c9cf38a8038982be783478079f175fa04579))
+* **crypto:** New Yescrypt and YescryptMCF functions ([#2421](https://github.com/hairyhenderson/gomplate/issues/2421)) ([616260b](https://github.com/hairyhenderson/gomplate/commit/616260b14c2bb4d9008c21fde72de159fb2cdd21))
+* **crypto:** Rename AES functions for consistent naming ([#2501](https://github.com/hairyhenderson/gomplate/issues/2501)) ([8881837](https://github.com/hairyhenderson/gomplate/commit/8881837ba5de9479ea3298cfaa0a8d1445ee8ba7))
+* **datasources:** New gcp+meta filesystem support ([#2493](https://github.com/hairyhenderson/gomplate/issues/2493)) ([fcbd14f](https://github.com/hairyhenderson/gomplate/commit/fcbd14fcf1b874b047d0a7896cedcb4deac681b0))
+* **env:** New functions env.Env and env.HasEnv ([#2492](https://github.com/hairyhenderson/gomplate/issues/2492)) ([41b4ea7](https://github.com/hairyhenderson/gomplate/commit/41b4ea74d3cd5f7388aaf3d61f50d3d7b9e413d4))
+* **schema:** add JSON Schema for .gomplate.yaml config files ([#2541](https://github.com/hairyhenderson/gomplate/issues/2541)) ([114fe8b](https://github.com/hairyhenderson/gomplate/commit/114fe8b3cbd692c47a436e76ce27092f76e3cea5))
+
+
+### Bug Fixes
+
+* **conv:** Print actual argument type in InterfaceSlice error ([#2553](https://github.com/hairyhenderson/gomplate/issues/2553)) ([b29effa](https://github.com/hairyhenderson/gomplate/commit/b29effa961602ecc1d283e878b2424c3c69276d0))
+* **deps:** update aws-sdk-go-v2 monorepo ([#2586](https://github.com/hairyhenderson/gomplate/issues/2586)) ([958f3d0](https://github.com/hairyhenderson/gomplate/commit/958f3d025c3b14d761c9717b959a247acc610fbe))
+* **deps:** update module github.com/hairyhenderson/go-fsimpl to v0.4.1 ([#2585](https://github.com/hairyhenderson/gomplate/issues/2585)) ([15d7573](https://github.com/hairyhenderson/gomplate/commit/15d75731f77bc2279338fb56327e2fc32ecf399c))
+* **deps:** update module github.com/invopop/jsonschema to v0.14.0 ([#2587](https://github.com/hairyhenderson/gomplate/issues/2587)) ([0b3239d](https://github.com/hairyhenderson/gomplate/commit/0b3239d8c027c32b0ce8ef1d052af682416024ee))
+* **deps:** update module k8s.io/client-go to v0.36.0 ([#2592](https://github.com/hairyhenderson/gomplate/issues/2592)) ([900cf17](https://github.com/hairyhenderson/gomplate/commit/900cf17bf2246a03b66ca6cc602fdcce7185cf36))
+* **flake:** remove flakey LookupIPs tests ([#2540](https://github.com/hairyhenderson/gomplate/issues/2540)) ([167f91a](https://github.com/hairyhenderson/gomplate/commit/167f91a6465e6cb8dae1fae7c63f0665619cf201))
+* **lint:** resolve golangci gosec, nolintlint, and fieldalignment issues ([#2542](https://github.com/hairyhenderson/gomplate/issues/2542)) ([45aa9e0](https://github.com/hairyhenderson/gomplate/commit/45aa9e0029b005fc32563bc020277634a01e008a))
+* **random:** fix flaky TestItem by checking both items appear ([#2525](https://github.com/hairyhenderson/gomplate/issues/2525)) ([1be45f6](https://github.com/hairyhenderson/gomplate/commit/1be45f6510cf95d6b6b0eccd217ea53bd6115dfc))
+* **test:** increase plugin timeout to avoid flakes on slow Windows runners ([#2543](https://github.com/hairyhenderson/gomplate/issues/2543)) ([0ef47a6](https://github.com/hairyhenderson/gomplate/commit/0ef47a6e47230b483356a0b9425cd2b78e5f0f9d))
+
+
+### Documentation
+
+* **crypto:** shorten SHA function group headings to fix TOC overflow ([#2547](https://github.com/hairyhenderson/gomplate/issues/2547)) ([94ce42f](https://github.com/hairyhenderson/gomplate/commit/94ce42f255d2f235ba83e5805e7cc9a398a73ea6)), closes [#1734](https://github.com/hairyhenderson/gomplate/issues/1734)
+* **datasources:** Correct aws+smp documentation to reflect changes made in v4 ([#2531](https://github.com/hairyhenderson/gomplate/issues/2531)) ([0af83bd](https://github.com/hairyhenderson/gomplate/commit/0af83bdc354efd2ba65832a290eadd422c22a649))
+* dynamically resolve release links via GitHub API ([#2528](https://github.com/hairyhenderson/gomplate/issues/2528)) ([7734992](https://github.com/hairyhenderson/gomplate/commit/77349921a733996c2bddc4e53b52dafa322ffeb5))
+* **fix:** update broken Zenko Cloudserver link ([#2599](https://github.com/hairyhenderson/gomplate/issues/2599)) ([67757db](https://github.com/hairyhenderson/gomplate/commit/67757db41a78b6d318ed24f61d0a411c847b9b03))
+* Upgrade hugo and theme ([#2596](https://github.com/hairyhenderson/gomplate/issues/2596)) ([1f84e10](https://github.com/hairyhenderson/gomplate/commit/1f84e10725789a5ec446caa0799704fe3c66d7ed))
+
+
+### Dependencies
+
+* **actions:** bump actions/create-github-app-token in the actions group ([#2534](https://github.com/hairyhenderson/gomplate/issues/2534)) ([d6a8368](https://github.com/hairyhenderson/gomplate/commit/d6a8368726673b68be9c5bd5e5ca3c414431b673))
+* **actions:** bump docker/login-action from 3.4.0 to 3.7.0 ([#2491](https://github.com/hairyhenderson/gomplate/issues/2491)) ([0eade6c](https://github.com/hairyhenderson/gomplate/commit/0eade6cbea9e5f65d628df46fb8ddc0694f9b1c6))
+* **actions:** bump docker/login-action from 3.7.0 to 4.0.0 ([#2521](https://github.com/hairyhenderson/gomplate/issues/2521)) ([655b154](https://github.com/hairyhenderson/gomplate/commit/655b154d94f6bf1bab7c68320eebae5c0b4b1370))
+* **actions:** bump docker/login-action from 4.0.0 to 4.1.0 ([#2555](https://github.com/hairyhenderson/gomplate/issues/2555)) ([7e6c1d1](https://github.com/hairyhenderson/gomplate/commit/7e6c1d114f97409164a8e177d32e1c912ce1d29a))
+* **actions:** bump docker/setup-buildx-action from 3.12.0 to 4.0.0 ([#2524](https://github.com/hairyhenderson/gomplate/issues/2524)) ([7dc7b3e](https://github.com/hairyhenderson/gomplate/commit/7dc7b3e4fa9a9f71616a814ae1e555c83ba1ca68))
+* **actions:** bump docker/setup-qemu-action from 3.7.0 to 4.0.0 ([#2522](https://github.com/hairyhenderson/gomplate/issues/2522)) ([36ae69e](https://github.com/hairyhenderson/gomplate/commit/36ae69e4b21747de3738de8c4cd1a15d2ccaef55))
+* **actions:** bump the actions group across 1 directory with 3 updates ([#2527](https://github.com/hairyhenderson/gomplate/issues/2527)) ([17dd554](https://github.com/hairyhenderson/gomplate/commit/17dd554900ae7d752d8d4d3ec80510668807cd69))
+* **actions:** bump webiny/action-conventional-commits ([#2488](https://github.com/hairyhenderson/gomplate/issues/2488)) ([cfddb9f](https://github.com/hairyhenderson/gomplate/commit/cfddb9f7930d708b639cd5db627b3c98d2c87426))
+* **actions:** bump webiny/action-conventional-commits ([#2573](https://github.com/hairyhenderson/gomplate/issues/2573)) ([ea8bcd3](https://github.com/hairyhenderson/gomplate/commit/ea8bcd3a250f8a2cf97cfc747e60bb50f6282bfc))
+* **docker:** bump golang from 1.25-alpine to 1.26-alpine ([#2507](https://github.com/hairyhenderson/gomplate/issues/2507)) ([cc806e4](https://github.com/hairyhenderson/gomplate/commit/cc806e404bdf77aae0e02fa1ed6d873bb3970dbb))
+* **go:** bump cuelang.org/go from 0.15.3 to 0.15.4 ([#2490](https://github.com/hairyhenderson/gomplate/issues/2490)) ([3713efb](https://github.com/hairyhenderson/gomplate/commit/3713efbef3a006f86ec8de258b53871d7348aeb6))
+* **go:** bump cuelang.org/go from 0.15.4 to 0.16.0 ([#2520](https://github.com/hairyhenderson/gomplate/issues/2520)) ([f6b1099](https://github.com/hairyhenderson/gomplate/commit/f6b1099edfaf39bf6c6f50c0bd0e9c65d94539b1))
+* **go:** bump cuelang.org/go from 0.16.0 to 0.16.1 ([#2561](https://github.com/hairyhenderson/gomplate/issues/2561)) ([e4574f1](https://github.com/hairyhenderson/gomplate/commit/e4574f1d2a10ff4b48fdb3bef04d8ff0abc0d8a6))
+* **go:** bump github.com/aws/aws-sdk-go-v2/service/ec2 ([#2489](https://github.com/hairyhenderson/gomplate/issues/2489)) ([05eb3aa](https://github.com/hairyhenderson/gomplate/commit/05eb3aa726779c2b00abca9cae8d0300d318e566))
+* **go:** bump github.com/buger/jsonparser from 1.1.1 to 1.1.2 ([#2545](https://github.com/hairyhenderson/gomplate/issues/2545)) ([a622590](https://github.com/hairyhenderson/gomplate/commit/a622590b61e4844cefc9cd0afe029878d2e592c1))
+* **go:** bump github.com/cloudflare/circl from 1.6.1 to 1.6.3 ([#2516](https://github.com/hairyhenderson/gomplate/issues/2516)) ([6bdc4c7](https://github.com/hairyhenderson/gomplate/commit/6bdc4c7e4598ea8289d708d4761cc821a8de1402))
+* **go:** bump github.com/go-git/go-git/v5 from 5.16.4 to 5.16.5 ([#2503](https://github.com/hairyhenderson/gomplate/issues/2503)) ([a28f44f](https://github.com/hairyhenderson/gomplate/commit/a28f44f4c1fff63c1c14555edcda971c0108ba5d))
+* **go:** bump github.com/go-git/go-git/v5 from 5.17.0 to 5.18.0 ([#2571](https://github.com/hairyhenderson/gomplate/issues/2571)) ([1299e3f](https://github.com/hairyhenderson/gomplate/commit/1299e3fd1ea37f5b6a9a0123b08e03a7d1e428b7))
+* **go:** bump github.com/go-jose/go-jose/v4 from 4.1.3 to 4.1.4 ([#2556](https://github.com/hairyhenderson/gomplate/issues/2556)) ([d487382](https://github.com/hairyhenderson/gomplate/commit/d48738254bec64bb4fe4f8fa0abd028b337cd0d2))
+* **go:** bump github.com/hairyhenderson/go-fsimpl from 0.3.3 to 0.3.4 ([#2496](https://github.com/hairyhenderson/gomplate/issues/2496)) ([8b9f003](https://github.com/hairyhenderson/gomplate/commit/8b9f003834cf4fd5d42e681693d420bf45e4adfd))
+* **go:** bump github.com/hairyhenderson/go-fsimpl from 0.4.1 to 0.4.2 ([#2598](https://github.com/hairyhenderson/gomplate/issues/2598)) ([a01bff9](https://github.com/hairyhenderson/gomplate/commit/a01bff9dd6afe75a440f2e1f87e8b84db9b33f18))
+* **go:** Bump github.com/hairyhenderson/go-fsimpl to v0.4.0 and document support for gcp+sm URLs ([#2549](https://github.com/hairyhenderson/gomplate/issues/2549)) ([15e2800](https://github.com/hairyhenderson/gomplate/commit/15e280073b1da4ca1f1d9cf8994700da738d206c))
+* **go:** bump github.com/hashicorp/vault/api in the hashicorp group ([#2548](https://github.com/hairyhenderson/gomplate/issues/2548)) ([b5e8b83](https://github.com/hairyhenderson/gomplate/commit/b5e8b83826481ec412a10e39db3e33961121ed1e))
+* **go:** bump github.com/itchyny/gojq from 0.12.18 to 0.12.19 ([#2554](https://github.com/hairyhenderson/gomplate/issues/2554)) ([d4f8d0b](https://github.com/hairyhenderson/gomplate/commit/d4f8d0b9382c711ca3e1fece92b4444b15aae438))
+* **go:** bump github.com/lmittmann/tint from 1.1.2 to 1.1.3 ([#2495](https://github.com/hairyhenderson/gomplate/issues/2495)) ([79837a3](https://github.com/hairyhenderson/gomplate/commit/79837a3ebc59bce15cc1bd391b7970d15afd0b93))
+* **go:** bump go.opentelemetry.io/otel/sdk from 1.42.0 to 1.43.0 ([#2562](https://github.com/hairyhenderson/gomplate/issues/2562)) ([64b28e2](https://github.com/hairyhenderson/gomplate/commit/64b28e202c887f1e1c4822ef781f710366068a4c))
+* **go:** bump golang.org/x/crypto in the golang-x group ([#2532](https://github.com/hairyhenderson/gomplate/issues/2532)) ([f71a14a](https://github.com/hairyhenderson/gomplate/commit/f71a14aa8072261107a2238c6896cc63a645c876))
+* **go:** bump golang.org/x/sys in the golang-x group ([#2529](https://github.com/hairyhenderson/gomplate/issues/2529)) ([8eb4a0c](https://github.com/hairyhenderson/gomplate/commit/8eb4a0c370ce565f054369fd95ef14c6ced09384))
+* **go:** bump google.golang.org/grpc from 1.78.0 to 1.79.3 ([#2536](https://github.com/hairyhenderson/gomplate/issues/2536)) ([60d1408](https://github.com/hairyhenderson/gomplate/commit/60d140815b016932a89e02787255b7e4409c55eb))
+* **go:** bump k8s.io/client-go from 0.35.0 to 0.35.2 ([#2519](https://github.com/hairyhenderson/gomplate/issues/2519)) ([b37c732](https://github.com/hairyhenderson/gomplate/commit/b37c73240856353d5175b5a4a927d105cec8d029))
+* **go:** bump k8s.io/client-go from 0.35.2 to 0.35.3 ([#2537](https://github.com/hairyhenderson/gomplate/issues/2537)) ([aedc4f8](https://github.com/hairyhenderson/gomplate/commit/aedc4f8ce02a53e439fb494cac356772d078b79c))
+* **go:** bump k8s.io/client-go from 0.35.3 to 0.35.4 ([#2569](https://github.com/hairyhenderson/gomplate/issues/2569)) ([5b18d08](https://github.com/hairyhenderson/gomplate/commit/5b18d088a14af69f814836c7fa75d03f9e8143e5))
+* **go:** bump the aws-sdk group across 1 directory with 6 updates ([#2515](https://github.com/hairyhenderson/gomplate/issues/2515)) ([ea272d2](https://github.com/hairyhenderson/gomplate/commit/ea272d277fbf3e94ffd6dc8cf021cae6e8b31b3c))
+* **go:** bump the aws-sdk group across 1 directory with 6 updates ([#2570](https://github.com/hairyhenderson/gomplate/issues/2570)) ([d8301e1](https://github.com/hairyhenderson/gomplate/commit/d8301e1091bc789f8083bda27ec783087a2053c4))
+* **go:** bump the aws-sdk group with 6 updates ([#2535](https://github.com/hairyhenderson/gomplate/issues/2535)) ([0fc8c9a](https://github.com/hairyhenderson/gomplate/commit/0fc8c9ac21232fbff45af359c24ea1f4754f9174))
+* **go:** bump the aws-sdk group with 6 updates ([#2551](https://github.com/hairyhenderson/gomplate/issues/2551)) ([d09b206](https://github.com/hairyhenderson/gomplate/commit/d09b2062e6765aff1347411f260a99dd385603cf))
+* **go:** bump the golang-x group with 2 updates ([#2530](https://github.com/hairyhenderson/gomplate/issues/2530)) ([fa8ab92](https://github.com/hairyhenderson/gomplate/commit/fa8ab9206e636d163663e6127a7022e13f31abac))
+* **go:** bump the golang-x group with 4 updates ([#2502](https://github.com/hairyhenderson/gomplate/issues/2502)) ([aa13e63](https://github.com/hairyhenderson/gomplate/commit/aa13e63f0d80a4a46e23455658566d9d7ef2b584))
+
 ## [5.0.0](https://github.com/hairyhenderson/gomplate/compare/v4.3.3...v5.0.0) (2026-01-20)
 
 
