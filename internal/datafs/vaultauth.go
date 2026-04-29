@@ -69,23 +69,26 @@ func envIAMAuthAdapter(envFS fs.FS) api.AuthMethod {
 	return awsauth
 }
 
+// envKubernetesAuthAdapter builds a Kubernetes authentication method from
+// environment variables (VAULT_AUTH_K8S_ROLE, VAULT_AUTH_K8S_MOUNT, and
+// VAULT_AUTH_K8S_JWT_PATH), for use only with [compositeVaultAuthMethod]
 func envKubernetesAuthAdapter(envFS fs.FS) api.AuthMethod {
-    role := GetenvFsys(envFS, "VAULT_AUTH_K8S_ROLE")
-    if role == "" {
-        return nil
-    }
-    mount := GetenvFsys(envFS, "VAULT_AUTH_K8S_MOUNT", "kubernetes")
-    jwtPath := GetenvFsys(envFS, "VAULT_AUTH_K8S_JWT_PATH", "/var/run/secrets/kubernetes.io/serviceaccount/token")
+	role := GetenvFsys(envFS, "VAULT_AUTH_K8S_ROLE")
+	if role == "" {
+		return nil
+	}
+	mount := GetenvFsys(envFS, "VAULT_AUTH_K8S_MOUNT", "kubernetes")
+	jwtPath := GetenvFsys(envFS, "VAULT_AUTH_K8S_JWT_PATH", "/var/run/secrets/kubernetes.io/serviceaccount/token")
 
-    k8sAuth, err := authk8s.NewKubernetesAuth(
-        role,
-        authk8s.WithMountPath(mount),
-        authk8s.WithServiceAccountTokenPath(jwtPath),
-    )
-    if err != nil {
-        return nil
-    }
-    return k8sAuth
+	k8sAuth, err := authk8s.NewKubernetesAuth(
+		role,
+		authk8s.WithMountPath(mount),
+		authk8s.WithServiceAccountTokenPath(jwtPath),
+	)
+	if err != nil {
+		return nil
+	}
+	return k8sAuth
 }
 
 // ec2AuthNonceWriter - wraps an AWSAuth, and writes the nonce to the nonce
