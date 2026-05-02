@@ -45,7 +45,7 @@ jobs:
               github-release \
               --draft | tee rp-out.log
 
-          # parse the js object and store it - this is brittle!
+          # parse the js object and store it
           cat rp-out.log | sed -n '/^\[/,$p' > rp-out.js
 
           # if it's just "[]" assume no-op
@@ -53,19 +53,27 @@ jobs:
             exit 0
           fi
 
-          # convert js object to json - assumes there's only one release
-          # this'll have to be refactored if there are multiple releases
-          node -e "console.log(JSON.stringify($(cat rp-out.js)))" | jq '.[0]' > rp-out.json
-        
+          # convert js object to json - use a heredoc so node reads the file
+          # from disk rather than having bash expand it into the command string.
+          # Direct bash interpolation breaks when release notes contain special
+          # characters (newlines, quotes, $, etc.). Assumes one release.
+          node << 'NODEOF' | jq '.[0]' > rp-out.json
+          const data = eval(require('fs').readFileSync('rp-out.js', 'utf8'));
+          console.log(JSON.stringify(data));
+          NODEOF
+
           echo "json output: $(cat rp-out.json)"
 
-          # now set outputs
-          echo "release_created=true"                      >> "$GITHUB_OUTPUT"
+          # now set outputs - release_created is set last so any jq failure
+          # above causes the step to fail before marking a release as created
           echo "id=$(        jq -r '.id'        rp-out.json)" >> "$GITHUB_OUTPUT"
           echo "name=$(      jq -r '.name'      rp-out.json)" >> "$GITHUB_OUTPUT"
           echo "tag_name=$(  jq -r '.tagName'   rp-out.json)" >> "$GITHUB_OUTPUT"
           echo "sha=$(       jq -r '.sha'       rp-out.json)" >> "$GITHUB_OUTPUT"
-          echo "notes=$(     jq   '.notes'     rp-out.json)" >> "$GITHUB_OUTPUT"
+          { echo 'notes<<NOTES_EOF'
+            jq -r '.notes' rp-out.json
+            echo 'NOTES_EOF'
+          } >> "$GITHUB_OUTPUT"
           echo "html_url=$(  jq -r '.url'       rp-out.json)" >> "$GITHUB_OUTPUT"
           echo "draft=$(     jq -r '.draft'     rp-out.json)" >> "$GITHUB_OUTPUT"
           echo "upload_url=$(jq -r '.uploadUrl' rp-out.json)" >> "$GITHUB_OUTPUT"
@@ -74,6 +82,7 @@ jobs:
           echo "major=$(     jq -r '.major'     rp-out.json)" >> "$GITHUB_OUTPUT"
           echo "minor=$(     jq -r '.minor'     rp-out.json)" >> "$GITHUB_OUTPUT"
           echo "patch=$(     jq -r '.patch'     rp-out.json)" >> "$GITHUB_OUTPUT"
+          echo "release_created=true"                         >> "$GITHUB_OUTPUT"
       - name: release-please release-pr
         id: release-pr
         if: ${{ ! steps.release.outputs.release_created }}
@@ -92,9 +101,12 @@ jobs:
           fi
 
           # set outputs
-          echo "prs_created=true"                      >> "$GITHUB_OUTPUT"
-          node -e "console.log('pr=' +JSON.stringify($(cat rp-out.js)[0]))" >> "$GITHUB_OUTPUT"
-          node -e "console.log('prs='+JSON.stringify($(cat rp-out.js)   ))" >> "$GITHUB_OUTPUT"
+          echo "prs_created=true" >> "$GITHUB_OUTPUT"
+          node << 'NODEOF' >> "$GITHUB_OUTPUT"
+          const data = eval(require('fs').readFileSync('rp-out.js', 'utf8'));
+          console.log('pr=' +JSON.stringify(data[0]));
+          console.log('prs='+JSON.stringify(data));
+          NODEOF
   build-artifacts:
     runs-on: ubuntu-latest
     needs: release-please
