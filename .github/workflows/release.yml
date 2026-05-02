@@ -24,7 +24,7 @@ jobs:
       - uses: actions/create-github-app-token@v3
         id: app-token
         with:
-          app-id: ${{ vars.APP_ID }}
+          client-id: ${{ vars.APP_ID }}
           private-key: ${{ secrets.PRIVATE_KEY }}
       - uses: actions/checkout@v6
       - name: install lab
@@ -87,63 +87,84 @@ jobs:
           ../../../lab mr create --allow-collaboration \
             -m "community/gomplate: upgrade to ${VERSION}" \
             -m "https://github.com/${{ github.repository }}/releases/tag/${TAG_NAME}"
-  deploy-docker:
+  version:
     runs-on: ubuntu-latest
-    env:
-      TAG_NAME: ${{ github.event.release.tag_name }}
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      major: ${{ steps.version.outputs.major }}
     steps:
-    - name: Set up QEMU
-      uses: docker/setup-qemu-action@v4.0.0
-    - name: Set up Docker Buildx
-      id: buildx
-      uses: docker/setup-buildx-action@v4.0.0
-      with:
-        version: v0.19.3
-        driver-opts: |
-          image=moby/buildkit:buildx-stable-1
-          network=host
-    - uses: actions/checkout@v6
-      with:
-        fetch-depth: 0
-    - name: Login to GHCR
-      uses: docker/login-action@v4.1.0
-      with:
-          registry: ghcr.io
+      - id: version
+        env:
+          TAG_NAME: ${{ github.event.release.tag_name }}
+        run: |
+          version=${TAG_NAME#v}
+          echo "version=${version}" >> $GITHUB_OUTPUT
+          echo "major=v${version%%.*}" >> $GITHUB_OUTPUT
+
+  docker-latest:
+    needs: version
+    uses: docker/github-builder/.github/workflows/build.yml@v1
+    permissions:
+      contents: read
+      id-token: write
+      packages: write
+    with:
+      output: image
+      push: true
+      platforms: linux/amd64,linux/arm64,linux/arm/v6,linux/arm/v7,linux/ppc64le,linux/s390x,windows/amd64
+      target: gomplate
+      cache: true
+      build-args: |
+        VCS_REF=${{ github.sha }}
+        VERSION=${{ needs.version.outputs.version }}
+      meta-images: |
+        ghcr.io/hairyhenderson/gomplate
+        gomplate/gomplate
+        hairyhenderson/gomplate
+      meta-tags: |
+        type=raw,value=latest
+        type=raw,value=stable
+        type=raw,value=${{ github.event.release.tag_name }}
+        type=raw,value=${{ needs.version.outputs.major }}
+    secrets:
+      registry-auths: |
+        - registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-    - name: Login to DockerHub
-      uses: docker/login-action@v4.1.0
-      with:
-          # NOTE: DOCKERHUB_TOKEN and DOCKERHUB_USERNAME must be present in https://github.com/hairyhenderson/gomplate/settings
+        - registry: docker.io
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
-    - name: Build & Push
-      run: |
-        set -ex
 
-        # seed from the last ghcr.io image(s)
-        docker pull ghcr.io/hairyhenderson/gomplate:latest
-        docker pull ghcr.io/hairyhenderson/gomplate:alpine
-
-        export srcrepo=ghcr.io/${{ github.repository}}
-        export COMMIT=${{ github.sha }}
-
-        make docker-multi COMMIT=${COMMIT} DOCKER_REPO=${srcrepo} BUILDX_ACTION=--push
-
-        set -x
-        export git_tag=${TAG_NAME}
-        export major_version=${git_tag%\.*}
-        
-        # Push tags first to GHCR, then to DockerHub (last in case of rate-limiting)
-        for repo in "${srcrepo}" "gomplate/gomplate" "hairyhenderson/gomplate"; do
-          for tag in "stable" "${git_tag}" "${major_version}"; do
-            docker buildx imagetools create -t ${repo}:${tag} ${srcrepo}:latest
-            docker buildx imagetools create -t ${repo}:${tag}-alpine ${srcrepo}:alpine
-          done
-        done
-
-        # also push latest and alpine tags to the other repos
-        for repo in "gomplate/gomplate" "hairyhenderson/gomplate"; do
-          docker buildx imagetools create -t ${repo}:latest ${srcrepo}:latest
-          docker buildx imagetools create -t ${repo}:alpine ${srcrepo}:alpine
-        done
+  docker-alpine:
+    needs: version
+    uses: docker/github-builder/.github/workflows/build.yml@v1
+    permissions:
+      contents: read
+      id-token: write
+      packages: write
+    with:
+      output: image
+      push: true
+      platforms: linux/amd64,linux/arm64,linux/arm/v6,linux/arm/v7,linux/ppc64le,linux/s390x
+      target: gomplate-alpine
+      cache: true
+      build-args: |
+        VCS_REF=${{ github.sha }}
+        VERSION=${{ needs.version.outputs.version }}
+      meta-images: |
+        ghcr.io/hairyhenderson/gomplate
+        gomplate/gomplate
+        hairyhenderson/gomplate
+      meta-tags: |
+        type=raw,value=alpine
+        type=raw,value=stable-alpine
+        type=raw,value=${{ github.event.release.tag_name }}-alpine
+        type=raw,value=${{ needs.version.outputs.major }}-alpine
+    secrets:
+      registry-auths: |
+        - registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+        - registry: docker.io
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
