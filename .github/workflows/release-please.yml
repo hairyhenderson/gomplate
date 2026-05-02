@@ -101,12 +101,8 @@ jobs:
           fi
 
           # set outputs
+          # (pr/prs outputs are not referenced by any downstream job)
           echo "prs_created=true" >> "$GITHUB_OUTPUT"
-          node << 'NODEOF' >> "$GITHUB_OUTPUT"
-          const data = eval(require('fs').readFileSync('rp-out.js', 'utf8'));
-          console.log('pr=' +JSON.stringify(data[0]));
-          console.log('prs='+JSON.stringify(data));
-          NODEOF
   build-artifacts:
     runs-on: ubuntu-latest
     needs: release-please
