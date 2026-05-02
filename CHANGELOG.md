@@ -1,5 +1,14 @@
 # Change Log
 
+## [5.1.1](https://github.com/hairyhenderson/gomplate/compare/v5.1.0...v5.1.1) (2026-05-02)
+
+
+### Bug Fixes
+
+* **ci:** fix release-please JS parsing for large release notes ([#2605](https://github.com/hairyhenderson/gomplate/issues/2605)) ([99d67d8](https://github.com/hairyhenderson/gomplate/commit/99d67d8fa839885882c017b78c38be1bb9245e63))
+* **ci:** remove unparseable release-pr node output block ([#2606](https://github.com/hairyhenderson/gomplate/issues/2606)) ([998384d](https://github.com/hairyhenderson/gomplate/commit/998384de22b20bcf2f46c92fc2f62718eaebe4e6))
+* **ci:** use regex to extract release fields instead of eval() ([#2607](https://github.com/hairyhenderson/gomplate/issues/2607)) ([eb6a87b](https://github.com/hairyhenderson/gomplate/commit/eb6a87b1c2f2285a5d9c5b61ae683d0ff81f1541))
+
 ## [5.1.0](https://github.com/hairyhenderson/gomplate/compare/v5.0.0...v5.1.0) (2026-04-28)
 
 
