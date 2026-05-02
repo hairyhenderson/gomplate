@@ -7,7 +7,7 @@ toolchain go1.26.2
 require (
 	cuelang.org/go v0.16.1
 	github.com/Masterminds/goutils v1.1.1
-	github.com/Masterminds/semver/v3 v3.4.0
+	github.com/Masterminds/semver/v3 v3.5.0
 	github.com/Shopify/ejson v1.5.4
 	github.com/aws/aws-sdk-go-v2 v1.41.6
 	github.com/aws/aws-sdk-go-v2/config v1.32.16
