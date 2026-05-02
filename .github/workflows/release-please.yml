@@ -53,36 +53,20 @@ jobs:
             exit 0
           fi
 
-          # convert js object to json - use a heredoc so node reads the file
-          # from disk rather than having bash expand it into the command string.
-          # Direct bash interpolation breaks when release notes contain special
-          # characters (newlines, quotes, $, etc.). Assumes one release.
-          node << 'NODEOF' | jq '.[0]' > rp-out.json
-          const data = eval(require('fs').readFileSync('rp-out.js', 'utf8'));
-          console.log(JSON.stringify(data));
+          # extract only the fields we need via regex - avoids eval() which
+          # fails when release notes contain JS spread syntax or other constructs
+          # that node can't eval. Only tag_name and version are used downstream.
+          node << 'NODEOF' >> "$GITHUB_OUTPUT"
+          const c = require('fs').readFileSync('rp-out.js', 'utf8');
+          const tagMatch = c.match(/tagName:\s*'([^']+)'/);
+          const verMatch = c.match(/\bversion:\s*'(\d[^']+)'/);
+          if (!tagMatch) { process.stderr.write('tagName not found in release-please output\n'); process.exit(1); }
+          if (!verMatch) { process.stderr.write('version not found in release-please output\n'); process.exit(1); }
+          process.stdout.write('tag_name=' + tagMatch[1] + '\n');
+          process.stdout.write('version=' + verMatch[1] + '\n');
           NODEOF
 
-          echo "json output: $(cat rp-out.json)"
-
-          # now set outputs - release_created is set last so any jq failure
-          # above causes the step to fail before marking a release as created
-          echo "id=$(        jq -r '.id'        rp-out.json)" >> "$GITHUB_OUTPUT"
-          echo "name=$(      jq -r '.name'      rp-out.json)" >> "$GITHUB_OUTPUT"
-          echo "tag_name=$(  jq -r '.tagName'   rp-out.json)" >> "$GITHUB_OUTPUT"
-          echo "sha=$(       jq -r '.sha'       rp-out.json)" >> "$GITHUB_OUTPUT"
-          { echo 'notes<<NOTES_EOF'
-            jq -r '.notes' rp-out.json
-            echo 'NOTES_EOF'
-          } >> "$GITHUB_OUTPUT"
-          echo "html_url=$(  jq -r '.url'       rp-out.json)" >> "$GITHUB_OUTPUT"
-          echo "draft=$(     jq -r '.draft'     rp-out.json)" >> "$GITHUB_OUTPUT"
-          echo "upload_url=$(jq -r '.uploadUrl' rp-out.json)" >> "$GITHUB_OUTPUT"
-          echo "path=$(      jq -r '.path'      rp-out.json)" >> "$GITHUB_OUTPUT"
-          echo "version=$(   jq -r '.version'   rp-out.json)" >> "$GITHUB_OUTPUT"
-          echo "major=$(     jq -r '.major'     rp-out.json)" >> "$GITHUB_OUTPUT"
-          echo "minor=$(     jq -r '.minor'     rp-out.json)" >> "$GITHUB_OUTPUT"
-          echo "patch=$(     jq -r '.patch'     rp-out.json)" >> "$GITHUB_OUTPUT"
-          echo "release_created=true"                         >> "$GITHUB_OUTPUT"
+          echo "release_created=true" >> "$GITHUB_OUTPUT"
       - name: release-please release-pr
         id: release-pr
         if: ${{ ! steps.release.outputs.release_created }}
