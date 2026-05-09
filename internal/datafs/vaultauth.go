@@ -14,8 +14,8 @@ import (
 )
 
 // compositeVaultAuthMethod configures the auth method based on environment
-// variables. It extends [vaultfs.EnvAuthMethod] by falling back to AWS EC2
-// authentication if the other methods fail.
+// variables. It tries [vaultauth.EnvAuthMethod] first, then falls back to
+// Kubernetes, AWS EC2, and AWS IAM auth methods one-by-one.
 func compositeVaultAuthMethod(envFsys fs.FS) api.AuthMethod {
 	return vaultauth.CompositeAuthMethod(
 		vaultauth.EnvAuthMethod(),
