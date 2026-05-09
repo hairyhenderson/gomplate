@@ -25,6 +25,7 @@ require (
 	github.com/hashicorp/go-sockaddr v1.0.7
 	github.com/hashicorp/vault/api v1.23.0
 	github.com/hashicorp/vault/api/auth/aws v0.12.0
+	github.com/hashicorp/vault/api/auth/kubernetes v0.12.0
 	github.com/invopop/jsonschema v0.14.0
 	github.com/itchyny/gojq v0.12.19
 	github.com/johannesboyne/gofakes3 v0.0.0-20260208201424-4c385a1f6a73
@@ -47,8 +48,6 @@ require (
 // TODO: replace with gopkg.in/yaml.v3 after https://github.com/go-yaml/yaml/pull/862
 // is merged
 require github.com/hairyhenderson/yaml v0.0.0-20220618171115-2d35fca545ce
-
-require github.com/hashicorp/vault/api/auth/kubernetes v0.12.0
 
 require (
 	cel.dev/expr v0.25.1 // indirect
