@@ -29,7 +29,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Hugo setup
-        uses: peaceiris/actions-hugo@v3.0.0
+        uses: peaceiris/actions-hugo@v3.2.1
         with:
           # keep this in sync with netlify.toml
           hugo-version: '0.160.1'
