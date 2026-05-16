@@ -11,7 +11,7 @@ jobs:
   check-func-docs:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       - name: Install gomplate
         run: |
           docker create --name gomplate hairyhenderson/gomplate
@@ -29,11 +29,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Hugo setup
-        uses: peaceiris/actions-hugo@v3.2.1
+        uses: peaceiris/actions-hugo@2752ce1d29631191ea3f27c23495fa06139a5b78 # v3.2.1
         with:
           # keep this in sync with netlify.toml
           hugo-version: '0.160.1'
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       - name: Install muffet
         env:
           GH_TOKEN: ${{ github.token }}

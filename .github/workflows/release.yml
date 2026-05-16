@@ -21,12 +21,12 @@ jobs:
     env:
       TAG_NAME: ${{ github.event.release.tag_name }}
     steps:
-      - uses: actions/create-github-app-token@v3
+      - uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3
         id: app-token
         with:
           client-id: ${{ vars.APP_ID }}
           private-key: ${{ secrets.PRIVATE_KEY }}
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       - name: install lab
         env:
           GH_TOKEN: ${{ steps.app-token.outputs.token }}
@@ -103,7 +103,7 @@ jobs:
 
   docker-latest:
     needs: version
-    uses: docker/github-builder/.github/workflows/build.yml@v1
+    uses: docker/github-builder/.github/workflows/build.yml@c2782c55efa56a01b9c30021db8f5ec3993228a3 # v1
     permissions:
       contents: read
       id-token: write
@@ -137,7 +137,7 @@ jobs:
 
   docker-alpine:
     needs: version
-    uses: docker/github-builder/.github/workflows/build.yml@v1
+    uses: docker/github-builder/.github/workflows/build.yml@c2782c55efa56a01b9c30021db8f5ec3993228a3 # v1
     permissions:
       contents: read
       id-token: write

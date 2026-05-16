@@ -16,10 +16,10 @@ jobs:
     outputs:
       version: ${{ steps.version.outputs.version }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           fetch-depth: 0
-      - uses: actions/setup-go@v6
+      - uses: actions/setup-go@4a3601121dd01d1626a1e23e37211e3254c1c06c # v6
         with:
           go-version-file: go.mod
       - id: version
@@ -27,7 +27,7 @@ jobs:
 
   docker-latest:
     needs: version
-    uses: docker/github-builder/.github/workflows/build.yml@v1
+    uses: docker/github-builder/.github/workflows/build.yml@c2782c55efa56a01b9c30021db8f5ec3993228a3 # v1
     permissions:
       contents: read
       id-token: write
@@ -57,7 +57,7 @@ jobs:
 
   docker-alpine:
     needs: version
-    uses: docker/github-builder/.github/workflows/build.yml@v1
+    uses: docker/github-builder/.github/workflows/build.yml@c2782c55efa56a01b9c30021db8f5ec3993228a3 # v1
     permissions:
       contents: read
       id-token: write
