@@ -14,7 +14,7 @@ jobs:
   linux-build:
     runs-on: ${{ matrix.runner }}
     container:
-      image: ghcr.io/hairyhenderson/gomplate-ci-build
+      image: ghcr.io/hairyhenderson/gomplate-ci-build@sha256:3c7f50d2c3439cbce7954a257227bf8a6d28236b645cf7542ab912b70d317c63
     strategy:
       fail-fast: false
       matrix:
@@ -33,10 +33,10 @@ jobs:
           git config --global user.email "bogus@example.com"
           git config --global user.name "Someone"
           git config --global --add safe.directory /__w/gomplate/gomplate
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           fetch-depth: 0
-      - uses: actions/cache@v5
+      - uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5
         with:
           path: |
             ~/go/pkg/mod
@@ -58,10 +58,10 @@ jobs:
       TMP: C:\tmp
     steps:
       - run: pwd
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           fetch-depth: 0
-      - uses: actions/setup-go@v6
+      - uses: actions/setup-go@4a3601121dd01d1626a1e23e37211e3254c1c06c # v6
         with:
           go-version-file: go.mod
       - run: |
