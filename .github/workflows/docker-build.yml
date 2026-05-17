@@ -43,8 +43,6 @@ jobs:
         VERSION=${{ needs.version.outputs.version }}
       meta-images: |
         ghcr.io/hairyhenderson/gomplate
-        gomplate/gomplate
-        hairyhenderson/gomplate
       meta-tags: type=raw,value=latest
     secrets:
       registry-auths: |
@@ -73,8 +71,6 @@ jobs:
         VERSION=${{ needs.version.outputs.version }}
       meta-images: |
         ghcr.io/hairyhenderson/gomplate
-        gomplate/gomplate
-        hairyhenderson/gomplate
       meta-tags: type=raw,value=alpine
     secrets:
       registry-auths: |
