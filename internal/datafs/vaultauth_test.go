@@ -18,18 +18,16 @@ func TestEnvKubernetesAuthAdapter_NoRole(t *testing.T) {
 }
 
 func TestEnvKubernetesAuthAdapter_WithRole(t *testing.T) {
+	tempFile := "/tmp/test-jwt.token"
+	defer os.Remove(tempFile)
+
+	realFs := os.DirFS("/")
 	t.Setenv("VAULT_AUTH_K8S_ROLE", "test-role")
 	t.Setenv("VAULT_AUTH_K8S_MOUNT", "myk8s")
-	tempFile := "/tmp/test-jwt.token"
 	t.Setenv("VAULT_AUTH_K8S_JWT_PATH", tempFile)
+	os.WriteFile(tempFile, []byte("dummy-jwt"), 0o600)
 
-	fsys := &fstest.MapFS{
-		tempFile: {
-			Data: []byte("dummy-jwt"),
-			Mode: 0o600,
-		},
-	}
-	method := envKubernetesAuthAdapter(fsys)
+	method := envKubernetesAuthAdapter(realFs)
 	if method == nil {
 		t.Fatal("Expected non-nil adapter when VAULT_AUTH_K8S_ROLE is set")
 	}
