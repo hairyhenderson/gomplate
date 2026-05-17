@@ -2,5 +2,11 @@
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
     "config:best-practices"
+  ],
+  "packageRules": [
+    {
+      "matchSourceUrls": ["https://github.com/hairyhenderson/**"],
+      "minimumReleaseAge": "0 days"
+    }
   ]
 }
