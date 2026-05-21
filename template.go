@@ -57,6 +57,17 @@ type Template struct {
 	// If any other function type is used, an error will be returned.
 	// Opt to CelEnvs for those cases.
 	Functions map[string]any `yaml:"-" json:"-"`
+
+	// CacheKey, when non-empty, is used as the program-cache key for this
+	// template, bypassing the IsCacheable() heuristic. The caller asserts that
+	// any two templates sharing this key may share the compiled cel.Program
+	// (same expression semantics, same env shape, same function semantics).
+	CacheKey string `yaml:"-" json:"-"`
+
+	// CacheTime controls how long the compiled program/template is retained
+	// in the cache. Zero means use the cache's default TTL; a positive value
+	// is an explicit TTL; a negative value means no expiration.
+	CacheTime time.Duration `yaml:"-" json:"-"`
 }
 
 func (t Template) String() string {
@@ -103,7 +114,9 @@ func short(v string) string {
 	return fmt.Sprintf("%s .. %d more lines", lines[0], len(lines)-1)
 }
 
-func (t Template) CacheKey(env map[string]any) string {
+// autoCacheKey derives a cache key from the template fields and the env shape.
+// Used when the caller has not supplied an explicit CacheKey.
+func (t Template) autoCacheKey(env map[string]any) string {
 	envVars := make([]string, 0, len(env)+1)
 	for k := range env {
 		envVars = append(envVars, k)
@@ -119,7 +132,22 @@ func (t Template) CacheKey(env map[string]any) string {
 		t.Template
 }
 
+// cacheKey returns the key to use for the program/template cache. If the caller
+// supplied CacheKey, it is used verbatim; otherwise the auto-derived key is used.
+func (t Template) cacheKey(env map[string]any) string {
+	if t.CacheKey != "" {
+		return t.CacheKey
+	}
+	return t.autoCacheKey(env)
+}
+
 func (t Template) IsCacheable() bool {
+	// An explicit CacheKey is the caller asserting the program is reusable
+	// regardless of Functions/CelEnvs identity.
+	if t.CacheKey != "" {
+		return true
+	}
+
 	// Note: If custom functions are provided then we don't cache the template
 	// because it's not possible to uniquely identify a function to be used as a cache key.
 	// Pointers don't work well because different functions, that are behaviourly different,
@@ -170,7 +198,7 @@ func RunExpressionContext(ctx commonsContext.Context, _environment map[string]an
 
 	var prg cel.Program
 	if template.IsCacheable() {
-		cached, ok := celExpressionCache.Get(template.CacheKey(_environment))
+		cached, ok := celExpressionCache.Get(template.cacheKey(_environment))
 		if ok {
 			if cachedPrg, ok := cached.(*cel.Program); ok {
 				prg = *cachedPrg
@@ -189,12 +217,14 @@ func RunExpressionContext(ctx commonsContext.Context, _environment map[string]an
 			return "", oops.With("template", template.Expression).Errorf("issues: %s", issues.String())
 		}
 
-		prg, err = env.Program(ast, cel.Globals(data))
+		prg, err = env.Program(ast)
 		if err != nil {
 			return "", err
 		}
 
-		celExpressionCache.SetDefault(template.CacheKey(_environment), &prg)
+		if template.IsCacheable() {
+			celExpressionCache.Set(template.cacheKey(_environment), &prg, template.CacheTime)
+		}
 	}
 
 	out, _, err := prg.Eval(data)
@@ -277,7 +307,7 @@ func goTemplate(ctx commonsContext.Context, template Template, environment map[s
 	var tpl *gotemplate.Template
 
 	if template.IsCacheable() {
-		cached, ok := goTemplateCache.Get(template.CacheKey(nil))
+		cached, ok := goTemplateCache.Get(template.cacheKey(nil))
 		if ok {
 			if cachedTpl, ok := cached.(*gotemplate.Template); ok {
 				if ctx.Logger != nil && properties.On(false, "gomplate.log") {
@@ -312,7 +342,9 @@ func goTemplate(ctx commonsContext.Context, template Template, environment map[s
 			return "", oops.With("template", template.Template).Wrap(err)
 		}
 
-		goTemplateCache.SetDefault(template.CacheKey(nil), tpl)
+		if template.IsCacheable() {
+			goTemplateCache.Set(template.cacheKey(nil), tpl, template.CacheTime)
+		}
 	}
 
 	data, err := Serialize(environment)
