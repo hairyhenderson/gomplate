@@ -47,6 +47,19 @@ type Template struct {
 	RightDelim string `yaml:"-" json:"-"`
 	LeftDelim  string `yaml:"-" json:"-"`
 
+	// DelimSets, when non-empty, runs the gotemplate over the input once per
+	// delimiter pair, feeding the output of each pass into the next. Useful for
+	// inputs that mix delimiter styles (e.g. {{ }} and $( )).
+	// A header (# gotemplate: left-delim=… right-delim=…) overrides DelimSets to
+	// a single pass. Falls back to LeftDelim/RightDelim if both are set, otherwise
+	// to the default {{ }}.
+	DelimSets []Delims `yaml:"-" json:"-"`
+
+	// ValueFunctions, when true, exposes each key in the environment as a
+	// zero-arg function in addition to dot-access. Enables {{ foo }} alongside
+	// the standard {{ .foo }}.
+	ValueFunctions bool `yaml:"-" json:"-"`
+
 	// Pass in additional cel-env options like functions
 	// that aren't simple enough to be included in Functions
 	CelEnvs []cel.EnvOption `yaml:"-" json:"-"`
@@ -285,7 +298,7 @@ func RunTemplateContext(ctx commonsContext.Context, environment map[string]any, 
 
 	// gotemplate
 	if template.Template != "" {
-		return goTemplate(ctx, template, environment)
+		return runGoTemplate(ctx, template, environment)
 	}
 
 	// cel-go
@@ -301,6 +314,57 @@ func RunTemplateContext(ctx commonsContext.Context, environment map[string]any, 
 	}
 
 	return "", nil
+}
+
+func runGoTemplate(ctx commonsContext.Context, template Template, environment map[string]any) (string, error) {
+	// Parse the gotemplate header once up-front so we can detect whether the
+	// header set delimiters (which overrides DelimSets to a single pass).
+	origLeft, origRight := template.LeftDelim, template.RightDelim
+	parsed, err := parseAndStripTemplateHeader(template)
+	if err != nil {
+		return "", err
+	}
+	template = parsed
+	headerSetDelims := template.LeftDelim != origLeft || template.RightDelim != origRight
+
+	if template.ValueFunctions {
+		funcs := make(map[string]any, len(template.Functions)+len(environment))
+		for k, v := range template.Functions {
+			funcs[k] = v
+		}
+		for k, v := range environment {
+			_v := v
+			funcs[k] = func() any { return _v }
+		}
+		template.Functions = funcs
+	}
+
+	var delimSets []Delims
+	switch {
+	case headerSetDelims:
+		delimSets = []Delims{{Left: template.LeftDelim, Right: template.RightDelim}}
+	case len(template.DelimSets) > 0:
+		delimSets = template.DelimSets
+	case template.LeftDelim != "" && template.RightDelim != "":
+		delimSets = []Delims{{Left: template.LeftDelim, Right: template.RightDelim}}
+	default:
+		delimSets = []Delims{{Left: "{{", Right: "}}"}}
+	}
+
+	val := template.Template
+	for _, d := range delimSets {
+		pass := template
+		pass.Template = val
+		pass.LeftDelim = d.Left
+		pass.RightDelim = d.Right
+		pass.DelimSets = nil
+		out, err := goTemplate(ctx, pass, environment)
+		if err != nil {
+			return out, err
+		}
+		val = out
+	}
+	return val, nil
 }
 
 func goTemplate(ctx commonsContext.Context, template Template, environment map[string]any) (string, error) {

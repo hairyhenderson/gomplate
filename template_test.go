@@ -154,6 +154,154 @@ func TestCacheTime(t *testing.T) {
 
 }
 
+func TestRunTemplate_ValueFunctions(t *testing.T) {
+	out, err := RunTemplate(map[string]any{"msg": "world"}, Template{
+		Template:       "hello {{ msg }}",
+		ValueFunctions: true,
+	})
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if out != "hello world" {
+		t.Errorf("got %q, want %q", out, "hello world")
+	}
+}
+
+func TestRunTemplate_ValueFunctionsCoexistWithDotAccess(t *testing.T) {
+	out, err := RunTemplate(map[string]any{"msg": "world"}, Template{
+		Template:       "{{ msg }}-{{ .msg }}",
+		ValueFunctions: true,
+	})
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if out != "world-world" {
+		t.Errorf("got %q, want %q", out, "world-world")
+	}
+}
+
+func TestRunTemplate_ValueFunctionsOffKeepsDotOnly(t *testing.T) {
+	out, err := RunTemplate(map[string]any{"msg": "world"}, Template{
+		Template: "{{ .msg }}",
+	})
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if out != "world" {
+		t.Errorf("got %q, want %q", out, "world")
+	}
+
+	if _, err := RunTemplate(map[string]any{"msg": "world"}, Template{
+		Template: "{{ msg }}",
+	}); err == nil {
+		t.Error("expected error calling bare {{ msg }} without ValueFunctions, got nil")
+	}
+}
+
+func TestRunTemplate_ValueFunctionsDoNotMutateCallerFuncs(t *testing.T) {
+	callerFuncs := map[string]any{}
+	_, err := RunTemplate(map[string]any{"msg": "world"}, Template{
+		Template:       "{{ msg }}",
+		Functions:      callerFuncs,
+		ValueFunctions: true,
+	})
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if len(callerFuncs) != 0 {
+		t.Errorf("caller Functions map was mutated: %v", callerFuncs)
+	}
+}
+
+func TestRunTemplate_DelimSetsMultiPass(t *testing.T) {
+	out, err := RunTemplate(map[string]any{"msg": "world"}, Template{
+		Template: "hello $(msg)",
+		DelimSets: []Delims{
+			{Left: "{{", Right: "}}"},
+			{Left: "$(", Right: ")"},
+		},
+		ValueFunctions: true,
+	})
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if out != "hello world" {
+		t.Errorf("got %q, want %q", out, "hello world")
+	}
+}
+
+func TestRunTemplate_DelimSetsFeedsOutputForward(t *testing.T) {
+	// First pass replaces $(inner) with "msg", producing "{{ msg }}";
+	// second pass then resolves the {{ msg }}.
+	out, err := RunTemplate(
+		map[string]any{"inner": "msg", "msg": "world"},
+		Template{
+			Template: "{{ $(inner) }}",
+			DelimSets: []Delims{
+				{Left: "$(", Right: ")"},
+				{Left: "{{", Right: "}}"},
+			},
+			ValueFunctions: true,
+		},
+	)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if out != "world" {
+		t.Errorf("got %q, want %q", out, "world")
+	}
+}
+
+func TestRunTemplate_HeaderOverridesDelimSets(t *testing.T) {
+	// Header sets [[ ]] so DelimSets should be ignored and $(...) left literal.
+	out, err := RunTemplate(map[string]any{"msg": "world"}, Template{
+		Template: "# gotemplate: left-delim=[[ right-delim=]]\n[[ .msg ]] $(msg)",
+		DelimSets: []Delims{
+			{Left: "{{", Right: "}}"},
+			{Left: "$(", Right: ")"},
+		},
+	})
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if out != "world $(msg)" {
+		t.Errorf("got %q, want %q", out, "world $(msg)")
+	}
+}
+
+func TestRunTemplate_DelimSetsPreferredOverSingleDelimPair(t *testing.T) {
+	// Both DelimSets and LeftDelim/RightDelim set — DelimSets wins.
+	out, err := RunTemplate(map[string]any{"msg": "world"}, Template{
+		Template:   "$(msg)",
+		LeftDelim:  "[[",
+		RightDelim: "]]",
+		DelimSets: []Delims{
+			{Left: "$(", Right: ")"},
+		},
+		ValueFunctions: true,
+	})
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if out != "world" {
+		t.Errorf("got %q, want %q", out, "world")
+	}
+}
+
+func TestRunTemplate_SingleDelimPairStillWorks(t *testing.T) {
+	out, err := RunTemplate(map[string]any{"msg": "world"}, Template{
+		Template:   "[[ .msg ]]",
+		LeftDelim:  "[[",
+		RightDelim: "]]",
+	})
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if out != "world" {
+		t.Errorf("got %q, want %q", out, "world")
+	}
+}
+
 func TestRunExpressionReusesProgramAcrossDifferentData(t *testing.T) {
 	tpl := Template{
 		Expression: "name + age",
