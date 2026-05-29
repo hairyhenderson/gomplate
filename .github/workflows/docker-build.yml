@@ -27,7 +27,7 @@ jobs:
 
   docker-latest:
     needs: version
-    uses: docker/github-builder/.github/workflows/build.yml@073833262a23a17675c95c4541ab063b7646756b # v1
+    uses: docker/github-builder/.github/workflows/build.yml@17bd7d64200cae4ba58ffc099934e8012ae320f2 # v1
     permissions:
       contents: read
       id-token: write
@@ -55,7 +55,7 @@ jobs:
 
   docker-alpine:
     needs: version
-    uses: docker/github-builder/.github/workflows/build.yml@073833262a23a17675c95c4541ab063b7646756b # v1
+    uses: docker/github-builder/.github/workflows/build.yml@17bd7d64200cae4ba58ffc099934e8012ae320f2 # v1
     permissions:
       contents: read
       id-token: write
