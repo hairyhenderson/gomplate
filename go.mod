@@ -41,7 +41,7 @@ require (
 	golang.org/x/term v0.43.0
 	golang.org/x/text v0.37.0
 	gotest.tools/v3 v3.5.2
-	k8s.io/client-go v0.36.1
+	k8s.io/client-go v0.36.2
 )
 
 // TODO: replace with gopkg.in/yaml.v3 after https://github.com/go-yaml/yaml/pull/862
@@ -121,7 +121,6 @@ require (
 	github.com/googleapis/enterprise-certificate-proxy v0.3.15 // indirect
 	github.com/googleapis/gax-go/v2 v2.22.0 // indirect
 	github.com/gosimple/unidecode v1.0.1 // indirect
-	github.com/hashicorp/consul/api v1.34.2 // indirect
 	github.com/hashicorp/consul/api/v2 v2.0.0 // indirect
 	github.com/hashicorp/errwrap v1.1.0 // indirect
 	github.com/hashicorp/go-cleanhttp v0.5.2 // indirect
