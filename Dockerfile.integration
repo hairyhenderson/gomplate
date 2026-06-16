@@ -2,7 +2,7 @@ FROM vault:1.13.3@sha256:f98ac9dd97b0612746630033771bc7a8c86408a44a056f3f4be47fc
 
 FROM consul:1.15.4@sha256:10084bbbed746968b0b9f8edab2f8552e44f117e35b88153a5e0a3ad1e15aa1a AS consul
 
-FROM golang:1.26-alpine@sha256:91eda9776261207ea25fd06b5b7fed8d397dd2c0a283e77f2ab6e91bfa71079d
+FROM golang:1.26-alpine@sha256:f1ddd9fe14fffc091dd98cb4bfa999f32c5fc77d2f2305ea9f0e2595c5437c14
 
 COPY --from=vault /bin/vault /bin/vault
 COPY --from=consul /bin/consul /bin/consul
