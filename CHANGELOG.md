@@ -1,5 +1,27 @@
 # Change Log
 
+## [5.1.1](https://github.com/hairyhenderson/gomplate/compare/v5.1.0...v5.1.1) (2026-06-17)
+
+
+### Bug Fixes
+
+* **ci:** fix release-please JS parsing for large release notes ([#2605](https://github.com/hairyhenderson/gomplate/issues/2605)) ([99d67d8](https://github.com/hairyhenderson/gomplate/commit/99d67d8fa839885882c017b78c38be1bb9245e63))
+* **ci:** remove unparseable release-pr node output block ([#2606](https://github.com/hairyhenderson/gomplate/issues/2606)) ([998384d](https://github.com/hairyhenderson/gomplate/commit/998384de22b20bcf2f46c92fc2f62718eaebe4e6))
+* **ci:** use regex to extract release fields instead of eval() ([#2607](https://github.com/hairyhenderson/gomplate/issues/2607)) ([eb6a87b](https://github.com/hairyhenderson/gomplate/commit/eb6a87b1c2f2285a5d9c5b61ae683d0ff81f1541))
+* **deps:** update aws-sdk-go-v2 monorepo ([#2602](https://github.com/hairyhenderson/gomplate/issues/2602)) ([a77138a](https://github.com/hairyhenderson/gomplate/commit/a77138ad3bfc49dd293d40883bbb2390c7199b9c))
+* **deps:** update aws-sdk-go-v2 monorepo ([#2632](https://github.com/hairyhenderson/gomplate/issues/2632)) ([fed9785](https://github.com/hairyhenderson/gomplate/commit/fed97856faed246956d7de77eb0218b8fec961c7))
+* **deps:** update aws-sdk-go-v2 monorepo ([#2668](https://github.com/hairyhenderson/gomplate/issues/2668)) ([516a8c3](https://github.com/hairyhenderson/gomplate/commit/516a8c3502bada2dc4f1e45991e1a35b652df3f7))
+* **deps:** update module github.com/aws/aws-sdk-go-v2/service/ec2 to v1.302.0 ([#2625](https://github.com/hairyhenderson/gomplate/issues/2625)) ([c0958f4](https://github.com/hairyhenderson/gomplate/commit/c0958f41f9639e0848147aab859f56d85026ffe6))
+* **deps:** update module github.com/hairyhenderson/go-fsimpl to v0.4.3 ([#2630](https://github.com/hairyhenderson/gomplate/issues/2630)) ([004c775](https://github.com/hairyhenderson/gomplate/commit/004c77539d1900fba0054932091d9a2284863284))
+* **deps:** update module github.com/hairyhenderson/go-fsimpl to v0.4.4 ([#2649](https://github.com/hairyhenderson/gomplate/issues/2649)) ([9a97d20](https://github.com/hairyhenderson/gomplate/commit/9a97d205887e6c505e7b67d5553d6de66775369a))
+* **deps:** update module github.com/masterminds/semver/v3 to v3.5.0 ([#2604](https://github.com/hairyhenderson/gomplate/issues/2604)) ([217fdbc](https://github.com/hairyhenderson/gomplate/commit/217fdbccc4e8ee82b2c3c65306bbfbc46c710225))
+* **deps:** update module golang.org/x/crypto to v0.51.0 ([#2618](https://github.com/hairyhenderson/gomplate/issues/2618)) ([7fd211e](https://github.com/hairyhenderson/gomplate/commit/7fd211e545d153439f03995ea0548945fcb0690d))
+* **deps:** update module golang.org/x/crypto to v0.52.0 ([#2644](https://github.com/hairyhenderson/gomplate/issues/2644)) ([5dfb30d](https://github.com/hairyhenderson/gomplate/commit/5dfb30d6442748f9d311577abb20d1128ea1e4fb))
+* **deps:** update module golang.org/x/crypto to v0.53.0 ([#2664](https://github.com/hairyhenderson/gomplate/issues/2664)) ([e7b17d9](https://github.com/hairyhenderson/gomplate/commit/e7b17d900cf8197a3f7151f060cc40ae64d4d879))
+* **deps:** update module golang.org/x/sys to v0.45.0 ([#2642](https://github.com/hairyhenderson/gomplate/issues/2642)) ([8f37ac4](https://github.com/hairyhenderson/gomplate/commit/8f37ac4f6bc8b184fd38a20232da549f94e431ff))
+* **deps:** update module golang.org/x/sys to v0.46.0 ([#2663](https://github.com/hairyhenderson/gomplate/issues/2663)) ([4820054](https://github.com/hairyhenderson/gomplate/commit/482005413e6fbe1a621d32386abdc01ee5b28576))
+* **deps:** update module k8s.io/client-go to v0.36.1 ([#2623](https://github.com/hairyhenderson/gomplate/issues/2623)) ([3dbff93](https://github.com/hairyhenderson/gomplate/commit/3dbff93d88f9c29adacd14145cbb2347eb4e5a4b))
+
 ## [5.1.0](https://github.com/hairyhenderson/gomplate/compare/v5.0.0...v5.1.0) (2026-04-28)
 
 
