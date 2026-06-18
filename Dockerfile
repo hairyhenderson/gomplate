@@ -54,7 +54,7 @@ COPY --from=build /bin/gomplate_${TARGETOS}-${TARGETARCH}${TARGETVARIANT} /bin/g
 
 ENTRYPOINT [ "/bin/gomplate" ]
 
-FROM --platform=windows/amd64 mcr.microsoft.com/windows/nanoserver:ltsc2022@sha256:3ca7daac9e971bd440920e408a29d46545b717775794c71561d57ac2f9354a48 AS gomplate-windows
+FROM --platform=windows/amd64 mcr.microsoft.com/windows/nanoserver:ltsc2022@sha256:7644d94e806b07c22d7e276a8cdbcbffac1d02bf3d5170884302d0e9b0a519e9 AS gomplate-windows
 ARG TARGETOS
 ARG TARGETARCH
 ARG TARGETVARIANT
