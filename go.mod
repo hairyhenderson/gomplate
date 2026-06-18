@@ -41,7 +41,7 @@ require (
 	golang.org/x/term v0.44.0
 	golang.org/x/text v0.38.0
 	gotest.tools/v3 v3.5.2
-	k8s.io/client-go v0.36.1
+	k8s.io/client-go v0.36.2
 )
 
 // TODO: replace with gopkg.in/yaml.v3 after https://github.com/go-yaml/yaml/pull/862
