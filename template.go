@@ -187,28 +187,11 @@ func RunExpressionContext(ctx commonsContext.Context, _environment map[string]an
 		return "", err
 	}
 
-	envOptions := GetCelEnv(data)
-	for name, fn := range template.Functions {
-		_name := name
-		_fn := fn
-		envOptions = append(envOptions, cel.Function(_name, cel.Overload(
-			_name,
-			nil,
-			cel.AnyType,
-			cel.FunctionBinding(func(values ...ref.Val) ref.Val {
-				ogFunc, ok := _fn.(func() any)
-				if !ok {
-					return types.WrapErr(fmt.Errorf("%s is expected to be of type func() any", _name))
-				}
-
-				out := ogFunc()
-				return types.DefaultTypeAdapter.NativeToValue(out)
-			}),
-		)))
-	}
-
-	envOptions = append(envOptions, template.CelEnvs...)
-
+	// Look up the compiled-program cache BEFORE constructing the CEL env options.
+	// GetCelEnv (notably kubernetes.Library()) is the dominant allocation on the CEL
+	// path. On the overwhelmingly common cache hit it would be built and then
+	// immediately discarded, since cel.NewEnv is only needed to compile a new
+	// program. Build env options only when we actually need to compile.
 	var prg cel.Program
 	if template.IsCacheable() {
 		cached, ok := celExpressionCache.Get(template.cacheKey(_environment))
@@ -220,6 +203,28 @@ func RunExpressionContext(ctx commonsContext.Context, _environment map[string]an
 	}
 
 	if prg == nil {
+		envOptions := GetCelEnv(data)
+		for name, fn := range template.Functions {
+			_name := name
+			_fn := fn
+			envOptions = append(envOptions, cel.Function(_name, cel.Overload(
+				_name,
+				nil,
+				cel.AnyType,
+				cel.FunctionBinding(func(values ...ref.Val) ref.Val {
+					ogFunc, ok := _fn.(func() any)
+					if !ok {
+						return types.WrapErr(fmt.Errorf("%s is expected to be of type func() any", _name))
+					}
+
+					out := ogFunc()
+					return types.DefaultTypeAdapter.NativeToValue(out)
+				}),
+			)))
+		}
+
+		envOptions = append(envOptions, template.CelEnvs...)
+
 		env, err := cel.NewEnv(envOptions...)
 		if err != nil {
 			return "", err
