@@ -70,17 +70,18 @@ jobs:
         run: |
           mkdir -p .bench
           git worktree add .bench/base "${{ github.event.pull_request.base.sha }}"
-          # Override the base's bench file with HEAD's so both runs execute
+          # Override the base's bench files with HEAD's so both runs execute
           # the same benchmark suite — only the implementation under test differs.
           cp serialize_bench_test.go .bench/base/serialize_bench_test.go
+          cp run_expression_bench_test.go .bench/base/run_expression_bench_test.go
       - name: Benchmark base
         run: |
           cd .bench/base
-          go test -run=^$ -bench=BenchmarkSerialize -count=6 -timeout 20m \
+          go test -run=^$ -bench='BenchmarkSerialize|BenchmarkRunExpressionContext' -count=6 -timeout 20m \
             github.com/flanksource/gomplate/v3 | tee "$GITHUB_WORKSPACE/bench-base.txt"
       - name: Benchmark head
         run: |
-          go test -run=^$ -bench=BenchmarkSerialize -count=6 -timeout 20m \
+          go test -run=^$ -bench='BenchmarkSerialize|BenchmarkRunExpressionContext' -count=6 -timeout 20m \
             github.com/flanksource/gomplate/v3 | tee bench-head.txt
       - name: Compare
         run: |
