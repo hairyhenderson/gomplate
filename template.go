@@ -203,7 +203,20 @@ func RunExpressionContext(ctx commonsContext.Context, _environment map[string]an
 	}
 
 	if prg == nil {
-		envOptions := GetCelEnv(data)
+		base, err := baseCelEnv()
+		if err != nil {
+			return "", err
+		}
+
+		// Only the per-call options are layered on top of the cached base env: the
+		// heavy, environment-independent libraries already live in base. This keeps
+		// the dominant CEL setup cost (kubernetes.Library and declaration
+		// validation) off the compile path.
+		envOptions := make([]cel.EnvOption, 0, len(typeAdapters)+len(data)+len(template.Functions)+len(template.CelEnvs))
+		envOptions = append(envOptions, typeAdapters...)
+		for k := range data {
+			envOptions = append(envOptions, cel.Variable(k, cel.AnyType))
+		}
 		for name, fn := range template.Functions {
 			_name := name
 			_fn := fn
@@ -225,7 +238,7 @@ func RunExpressionContext(ctx commonsContext.Context, _environment map[string]an
 
 		envOptions = append(envOptions, template.CelEnvs...)
 
-		env, err := cel.NewEnv(envOptions...)
+		env, err := base.Extend(envOptions...)
 		if err != nil {
 			return "", err
 		}

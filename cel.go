@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"reflect"
 	"regexp"
+	"sync"
 
 	"github.com/flanksource/commons/context"
 	"github.com/flanksource/commons/logger"
@@ -26,19 +27,59 @@ func RegisterType(i any) {
 	typeAdapters = append(typeAdapters, ext.NativeTypes(reflect.TypeOf(i)))
 }
 
-func GetCelEnv(environment map[string]any) []cel.EnvOption {
-	// Generated functions
-	var opts = funcs.CelEnvOption
+// staticCelEnvOptions returns the environment-independent CEL options: the
+// generated functions, the kubernetes library, the cel-go extensions, the
+// standard library and gomplate's own custom functions. They are identical on
+// every call, so they are built once into the cached base environment (see
+// baseCelEnv) instead of being reconstructed for every expression compile.
+//
+// Built once into the cached base env (see baseCelEnv), so this is not sized for
+// speed. Starting from a nil slice also guarantees the first append copies
+// funcs.CelEnvOption rather than aliasing its backing array.
+func staticCelEnvOptions() []cel.EnvOption {
+	var opts []cel.EnvOption //nolint:prealloc
+	opts = append(opts, funcs.CelEnvOption...)
 	opts = append(opts, kubernetes.Library()...)
 	opts = append(opts, ext.Strings(), ext.Encoders(), ext.Lists(), ext.Math(), ext.Sets())
 	opts = append(opts, cel.StdLib())
 	opts = append(opts, cel.OptionalTypes(cel.OptionalTypesVersion(1)))
 	opts = append(opts, nilsafe.Library(nilsafe.WithZeroValues()))
 	opts = append(opts, strings.Library...)
-	opts = append(opts, typeAdapters...)
 	opts = append(opts, getGoTemplateCelFunction())
 	opts = append(opts, getDebugCelFunction())
 	opts = append(opts, getFoldCelLibrary())
+	return opts
+}
+
+// baseCelEnv builds, exactly once, a CEL environment that holds only the static,
+// environment-independent options. RunExpressionContext layers the per-call
+// variables, registered native types and caller-provided functions on top with
+// Env.Extend.
+//
+// This is the dominant CEL allocation/CPU saving: kubernetes.Library() and the
+// validation of its declarations are paid once for the lifetime of the process
+// instead of on every compile. EagerlyValidateDeclarations forces the base env
+// to validate its declarations up front so Extend reuses them and only validates
+// the small per-call delta.
+//
+// Env.Extend deep-copies the environment and never mutates the receiver, so the
+// cached base env is safe to share across goroutines.
+var baseCelEnv = sync.OnceValues(func() (*cel.Env, error) {
+	opts := staticCelEnvOptions()
+	opts = append(opts, cel.EagerlyValidateDeclarations(true))
+	return cel.NewEnv(opts...)
+})
+
+// GetCelEnv returns the full set of CEL env options: the static options, any
+// types registered via RegisterType, and one variable per environment key.
+//
+// RunExpressionContext no longer uses this on the hot path; it compiles against
+// the cached base environment (baseCelEnv) and layers the per-call options with
+// Env.Extend. GetCelEnv is retained for external callers and shares the static
+// option set via staticCelEnvOptions.
+func GetCelEnv(environment map[string]any) []cel.EnvOption {
+	opts := staticCelEnvOptions()
+	opts = append(opts, typeAdapters...)
 
 	// Load input as variables
 	for k := range environment {

@@ -26,6 +26,9 @@ package gomplate
 import (
 	"fmt"
 	"testing"
+
+	"github.com/google/cel-go/cel"
+	"github.com/google/cel-go/common/types/ref"
 )
 
 // benchExprEnv returns an env map shaped like a Kubernetes Pod config item as the
@@ -120,6 +123,49 @@ func BenchmarkRunExpressionContext(b *testing.B) {
 			b.ResetTimer()
 			for i := 0; i < b.N; i++ {
 				out, err := RunExpression(env, tmpl)
+				if err != nil {
+					b.Fatal(err)
+				}
+				exprBenchSink = out
+			}
+		})
+	}
+}
+
+// BenchmarkRunExpressionContextCompile measures the CEL compile path
+// (RunExpressionContext cache MISS). Production expressions that reference a
+// context-capturing function such as catalog.query attach a CelEnv, which makes
+// the compiled program non-cacheable (IsCacheable() is false when len(CelEnvs)
+// != 0), so they pay the full env-build + compile cost on EVERY call. This is the
+// path that previously rebuilt kubernetes.Library() and revalidated all of its
+// declarations every time; it is now served by extending the cached base env.
+func BenchmarkRunExpressionContextCompile(b *testing.B) {
+	const expression = `config_type == "Kubernetes::Pod"`
+
+	// A trivial CelEnv: its only purpose is to make the template non-cacheable so
+	// every iteration goes through the compile path (mirrors catalog.query & co.).
+	noopFn := cel.Function("bench_noop",
+		cel.Overload("bench_noop_string",
+			[]*cel.Type{cel.StringType}, cel.StringType,
+			cel.UnaryBinding(func(v ref.Val) ref.Val { return v }),
+		),
+	)
+
+	for _, withConfig := range []bool{false, true} {
+		name := "compile/smallEnv"
+		if withConfig {
+			name = "compile/largeEnv"
+		}
+		b.Run(name, func(b *testing.B) {
+			env := benchExprEnv(withConfig)
+
+			b.ReportAllocs()
+			b.ResetTimer()
+			for i := 0; i < b.N; i++ {
+				out, err := RunExpression(env, Template{
+					Expression: expression,
+					CelEnvs:    []cel.EnvOption{noopFn},
+				})
 				if err != nil {
 					b.Fatal(err)
 				}
