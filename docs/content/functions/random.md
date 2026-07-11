@@ -9,7 +9,7 @@ Functions for generating random values.
 
 ### About randomness
 
-`gomplate` uses Go's [`math/rand`](https://pkg.go.dev/math/rand/) package
+`gomplate` uses Go's [`math/rand/v2`](https://pkg.go.dev/math/rand/v2/) package
 to generate pseudo-random numbers. Note that these functions are not suitable
 for use in security-sensitive applications, such as cryptography. However,
 these functions will not deplete system entropy.
