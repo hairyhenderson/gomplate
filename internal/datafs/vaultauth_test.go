@@ -2,38 +2,30 @@ package datafs
 
 import (
 	"os"
+	"path/filepath"
 	"testing"
 	"testing/fstest"
 
 	authk8s "github.com/hashicorp/vault/api/auth/kubernetes"
+	"github.com/stretchr/testify/require"
 )
 
 func TestEnvKubernetesAuthAdapter_NoRole(t *testing.T) {
 	t.Setenv("VAULT_AUTH_K8S_ROLE", "") // Make env var recoverable after test
 	os.Unsetenv("VAULT_AUTH_K8S_ROLE")  // Force `os.Unsetenv` as there is no `t.Unsetenv`
-	method := envKubernetesAuthAdapter(fstest.MapFS{})
-	if method != nil {
-		t.Fatal("Expected nil adapter when VAULT_AUTH_K8S_ROLE is unset")
-	}
+
+	require.Nil(t, envKubernetesAuthAdapter(fstest.MapFS{}), "Expected nil adapter when VAULT_AUTH_K8S_ROLE is unset")
 }
 
 func TestEnvKubernetesAuthAdapter_WithRole(t *testing.T) {
-	tempFile := "/tmp/test-jwt.token"
-	defer os.Remove(tempFile)
+	tempFile := filepath.Join(t.TempDir(), "test-jwt.token")
 
 	realFs := os.DirFS("/")
 	t.Setenv("VAULT_AUTH_K8S_ROLE", "test-role")
 	t.Setenv("VAULT_AUTH_K8S_MOUNT", "myk8s")
 	t.Setenv("VAULT_AUTH_K8S_JWT_PATH", tempFile)
-	os.WriteFile(tempFile, []byte("dummy-jwt"), 0o600)
 
-	method := envKubernetesAuthAdapter(realFs)
-	if method == nil {
-		t.Fatal("Expected non-nil adapter when VAULT_AUTH_K8S_ROLE is set")
-	}
+	require.NoError(t, os.WriteFile(tempFile, []byte("dummy-jwt"), 0o600))
 
-	_, ok := method.(*authk8s.KubernetesAuth)
-	if !ok {
-		t.Fatalf("Expected KubernetesAuth type got %T", method)
-	}
+	require.IsType(t, &authk8s.KubernetesAuth{}, envKubernetesAuthAdapter(realFs))
 }
