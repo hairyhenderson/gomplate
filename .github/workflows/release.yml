@@ -67,6 +67,9 @@ jobs:
           git rebase upstream/master
           git push
       - name: upgrade gomplate in aports
+        env:
+          LAB_CORE_HOST: https://gitlab.alpinelinux.org
+          LAB_CORE_TOKEN: ${{ secrets.GITLAB_ACCESS_TOKEN }}
         run: |
           set -ex
           export VERSION=${TAG_NAME#v}
