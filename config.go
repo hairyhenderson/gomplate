@@ -191,6 +191,9 @@ func (c *Config) MergeFrom(o *Config) *Config {
 		c.OutputFiles = o.OutputFiles
 		c.OutputMap = ""
 	}
+	if !isZero(o.PostExec) {
+		c.PostExec = o.PostExec
+	}
 	if !isZero(o.ExecPipe) {
 		c.ExecPipe = o.ExecPipe
 		c.PostExec = o.PostExec
@@ -211,6 +214,15 @@ func (c *Config) MergeFrom(o *Config) *Config {
 	if !isZero(o.RDelim) {
 		c.RDelim = o.RDelim
 	}
+	if !isZero(o.MissingKey) {
+		c.MissingKey = o.MissingKey
+	}
+	if !isZero(o.Experimental) {
+		c.Experimental = o.Experimental
+	}
+	if !isZero(o.PluginTimeout) {
+		c.PluginTimeout = o.PluginTimeout
+	}
 	if c.Templates == nil {
 		c.Templates = o.Templates
 	} else {
@@ -227,7 +239,16 @@ func (c *Config) MergeFrom(o *Config) *Config {
 		c.Context = mergeDataSourceMaps(c.Context, o.Context)
 	}
 	if len(o.Plugins) > 0 {
+		if c.Plugins == nil {
+			c.Plugins = map[string]PluginConfig{}
+		}
 		maps.Copy(c.Plugins, o.Plugins)
+	}
+	if len(o.ExtraHeaders) > 0 {
+		if c.ExtraHeaders == nil {
+			c.ExtraHeaders = map[string]http.Header{}
+		}
+		maps.Copy(c.ExtraHeaders, o.ExtraHeaders)
 	}
 
 	return c
@@ -325,6 +346,8 @@ func isZero(value any) bool {
 		return len(v) == 0
 	case bool:
 		return !v
+	case time.Duration:
+		return v == 0
 	default:
 		return false
 	}
