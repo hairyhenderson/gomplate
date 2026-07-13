@@ -3,6 +3,7 @@ package gomplate
 import (
 	"net/http"
 	"net/url"
+	"reflect"
 	"strings"
 	"testing"
 	"time"
@@ -424,6 +425,58 @@ func TestMergeFrom(t *testing.T) {
 	}
 
 	assert.Equal(t, expected, cfg.MergeFrom(other))
+}
+
+func TestMergeFromCoversAllFields(t *testing.T) {
+	t.Parallel()
+
+	// these fields can't be merged (overrides that can't be set in the config file)
+	notMergeable := map[string]bool{
+		"Stdin":  true,
+		"Stdout": true,
+		"Stderr": true,
+	}
+
+	cfg := Config{
+		DataSources:           map[string]DataSource{"sample": {URL: mustURL("stdin:///")}},
+		Context:               map[string]DataSource{"sample": {URL: mustURL("stdin:///")}},
+		Templates:             map[string]DataSource{"sample": {URL: mustURL("stdin:///")}},
+		Plugins:               map[string]PluginConfig{"sample": {Cmd: "echo"}},
+		ExtraHeaders:          map[string]http.Header{"sample": {"Accept": {"application/json"}}},
+		Input:                 "sample",
+		InputDir:              "sample",
+		InputFiles:            []string{"sample"},
+		ExcludeGlob:           []string{"sample"},
+		ExcludeProcessingGlob: []string{"sample"},
+		OutputDir:             "sample",
+		OutputMap:             "sample",
+		OutputFiles:           []string{"sample"},
+		OutMode:               "sample",
+		LDelim:                "sample",
+		RDelim:                "sample",
+		MissingKey:            "sample",
+		PostExec:              []string{"sample"},
+		PluginTimeout:         time.Second,
+		ExecPipe:              true,
+		Experimental:          true,
+	}
+	cfgVal := reflect.ValueOf(cfg)
+
+	configType := reflect.TypeFor[Config]()
+	for i := range configType.NumField() {
+		f := configType.Field(i)
+		if notMergeable[f.Name] {
+			continue
+		}
+
+		other := reflect.New(configType)
+		other.Elem().Field(i).Set(cfgVal.Field(i))
+
+		merged := (&Config{}).MergeFrom(other.Interface().(*Config))
+
+		got := reflect.ValueOf(merged).Elem().Field(i)
+		assert.NotZero(t, got.Interface(), "Config.%s expected to be set but is not", f.Name)
+	}
 }
 
 func TestConfig_String(t *testing.T) {
