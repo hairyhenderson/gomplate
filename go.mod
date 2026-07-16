@@ -5,7 +5,7 @@ go 1.26.0
 toolchain go1.26.5
 
 require (
-	cuelang.org/go v0.17.0
+	cuelang.org/go v0.17.1
 	github.com/Masterminds/goutils v1.1.1
 	github.com/Masterminds/semver/v3 v3.5.0
 	github.com/Shopify/ejson v1.5.4
