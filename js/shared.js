@@ -37,5 +37,5 @@ function endsWith(s, search) {
   if (s == null) {
     return false;
   }
-  return s.substring(s.length - search.length) === search;
+  return search.length <= s.length && s.substring(s.length - search.length) === search;
 }
