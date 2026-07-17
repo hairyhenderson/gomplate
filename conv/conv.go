@@ -222,7 +222,7 @@ func ToInt(in interface{}) int {
 	// Protect against CWE-190 and CWE-681
 	// https://cwe.mitre.org/data/definitions/190.html
 	// https://cwe.mitre.org/data/definitions/681.html
-	if i := ToInt64(in); i <= math.MaxInt || i >= math.MinInt {
+	if i := ToInt64(in); i >= math.MinInt && i <= math.MaxInt {
 		return int(i)
 	}
 
