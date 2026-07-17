@@ -3,6 +3,7 @@ package conv
 import (
 	"fmt"
 	"math"
+	"strconv"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -166,6 +167,11 @@ func TestToInt(t *testing.T) {
 	assert.Equal(t, 8, ToInt("010"))
 	assert.Equal(t, 4096, ToInt("4,096"))
 	assert.Equal(t, -4096, ToInt("-4,096.00"))
+
+	if strconv.IntSize == 32 {
+		assert.Equal(t, -1, ToInt(int64(math.MaxInt32)+1))
+		assert.Equal(t, -1, ToInt(int64(math.MinInt32)-1))
+	}
 }
 
 func TestToInt64s(t *testing.T) {

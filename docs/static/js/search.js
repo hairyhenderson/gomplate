@@ -22,8 +22,8 @@ if (searchQuery) {
   $("#search-query").val(searchQuery)
   executeSearch(searchQuery)
 } else {
-  $("#search-string").replaceWith(searchQuery)
-  $("#search-results-length").replaceWith(0)
+  $("#search-string").text(searchQuery)
+  $("#search-results-length").text(0)
 }
 
 function executeSearch(searchQuery) {
@@ -32,8 +32,8 @@ function executeSearch(searchQuery) {
     var fuse = new Fuse(pages, fuseOptions)
     var result = fuse.search(searchQuery)
     console.log({ matches: result })
-    $("#search-string").replaceWith(searchQuery)
-    $("#search-results-length").replaceWith(result.length)
+    $("#search-string").text(searchQuery)
+    $("#search-results-length").text(result.length)
     if (result.length > 0) {
       populateResults(result)
     } else {
