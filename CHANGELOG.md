@@ -1,5 +1,22 @@
 # Change Log
 
+## [5.2.1](https://github.com/hairyhenderson/gomplate/compare/v5.2.0...v5.2.1) (2026-07-29)
+
+
+### Bug Fixes
+
+* **ci:** set LAB_CORE_HOST/LAB_CORE_TOKEN for lab mr create in aports deploy ([#2719](https://github.com/hairyhenderson/gomplate/issues/2719)) ([a7dd869](https://github.com/hairyhenderson/gomplate/commit/a7dd869ca8b671badbc852b018555a6db93189d0))
+* **config:** Merge missing fields in MergeFrom ([#2721](https://github.com/hairyhenderson/gomplate/issues/2721)) ([2d7fd56](https://github.com/hairyhenderson/gomplate/commit/2d7fd5618ac8103f19dc8bfc3561b725a3bb7260))
+* **deps:** update aws-sdk-go-v2 monorepo ([#2723](https://github.com/hairyhenderson/gomplate/issues/2723)) ([737b66b](https://github.com/hairyhenderson/gomplate/commit/737b66bdbcde8791300f11fab38f4e649a9e671d))
+* **deps:** update module cuelang.org/go to v0.17.1 ([#2730](https://github.com/hairyhenderson/gomplate/issues/2730)) ([a5a97fa](https://github.com/hairyhenderson/gomplate/commit/a5a97fa5834da595b14054cefc236284563d9bcd))
+* **deps:** update module github.com/hairyhenderson/go-fsimpl to v0.4.5 ([#2750](https://github.com/hairyhenderson/gomplate/issues/2750)) ([cb010e8](https://github.com/hairyhenderson/gomplate/commit/cb010e803f5a95140db9274ade2085de4c1f5370))
+* **deps:** update module k8s.io/client-go to v0.36.3 ([#2743](https://github.com/hairyhenderson/gomplate/issues/2743)) ([05689d3](https://github.com/hairyhenderson/gomplate/commit/05689d3525c1033a701f4b61c9f0a8c25f538daf))
+
+
+### Dependencies
+
+* **actions:** bump docker/github-builder/.github/workflows/build.yml ([#2727](https://github.com/hairyhenderson/gomplate/issues/2727)) ([49f1965](https://github.com/hairyhenderson/gomplate/commit/49f19657eb859811de4ef8989709c5a94a3c688b))
+
 ## [5.2.0](https://github.com/hairyhenderson/gomplate/compare/v5.1.0...v5.2.0) (2026-07-12)
 
 
