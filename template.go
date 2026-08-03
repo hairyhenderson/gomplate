@@ -182,6 +182,14 @@ func RunExpression(_environment map[string]any, template Template) (any, error) 
 }
 
 func RunExpressionContext(ctx commonsContext.Context, _environment map[string]any, template Template) (any, error) {
+	tracker := celTrackerFromContext(ctx)
+	if tracker != nil {
+		if err := tracker.begin(); err != nil {
+			return nil, err
+		}
+		defer tracker.abort()
+	}
+
 	data, err := Serialize(_environment)
 	if err != nil {
 		return "", err
@@ -193,7 +201,8 @@ func RunExpressionContext(ctx commonsContext.Context, _environment map[string]an
 	// immediately discarded, since cel.NewEnv is only needed to compile a new
 	// program. Build env options only when we actually need to compile.
 	var prg cel.Program
-	if template.IsCacheable() {
+	var ast *cel.Ast
+	if tracker == nil && template.IsCacheable() {
 		cached, ok := celExpressionCache.Get(template.cacheKey(_environment))
 		if ok {
 			if cachedPrg, ok := cached.(*cel.Program); ok {
@@ -243,22 +252,34 @@ func RunExpressionContext(ctx commonsContext.Context, _environment map[string]an
 			return "", err
 		}
 
-		ast, issues := env.Compile(strings.ReplaceAll(template.Expression, "\n", " "))
+		expression := strings.ReplaceAll(template.Expression, "\n", " ")
+		if tracker != nil {
+			expression = template.Expression
+		}
+		var issues *cel.Issues
+		ast, issues = env.Compile(expression)
 		if issues != nil && issues.Err() != nil {
 			return "", oops.With("template", template.Expression).Errorf("issues: %s", issues.String())
 		}
 
-		prg, err = env.Program(ast)
+		var programOptions []cel.ProgramOption
+		if tracker != nil {
+			programOptions = append(programOptions, cel.EvalOptions(cel.OptTrackState))
+		}
+		prg, err = env.Program(ast, programOptions...)
 		if err != nil {
 			return "", err
 		}
 
-		if template.IsCacheable() {
+		if tracker == nil && template.IsCacheable() {
 			celExpressionCache.Set(template.cacheKey(_environment), &prg, template.CacheTime)
 		}
 	}
 
-	out, _, err := prg.Eval(data)
+	out, details, err := prg.Eval(data)
+	if tracker != nil {
+		tracker.complete(ast, details, out)
+	}
 	if err != nil {
 		return nil, oops.With("template", template.Expression).Wrap(err)
 	}
