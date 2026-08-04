@@ -14,7 +14,7 @@ jobs:
   linux-build:
     runs-on: ${{ matrix.runner }}
     container:
-      image: ghcr.io/hairyhenderson/gomplate-ci-build@sha256:12a1db0def61cee80b3896a425c5ab6ec862b14f934f6d42f9846a6e32d5a081
+      image: ghcr.io/hairyhenderson/gomplate-ci-build@sha256:f5102b40d73c8111338ef31cec2a0dd98e364e6ba794f7f3bd08c916d5ecf450
     strategy:
       fail-fast: false
       matrix:
