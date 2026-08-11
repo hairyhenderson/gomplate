@@ -8,7 +8,7 @@ Flanksource Gomplate is a fork of [hairyhenderson/gomplate](https://github.com/h
 - **Go Text/Template** – Full [Go `text/template`](https://pkg.go.dev/text/template) support with an extended function library from gomplate (base64, collections, crypto, data formats, filepath, math, random, regexp, strings, time, and more)
 - **CEL (Common Expression Language)** – [CEL](https://cel.dev/) support with:
   - Standard CEL operators and built-ins
-  - [celext](https://github.com/google/cel-go/tree/master/ext) extensions (strings, encoders, lists, math, sets)
+  - [cel-go extensions](https://github.com/cel-expr/cel-go/tree/v0.31.0/ext) (strings, encoders, lists, math, sets)
   - Kubernetes-specific helpers (`k8s.*`)
   - AWS helpers (`aws.*`)
   - Many gomplate functions remapped into CEL (`base64`, `math`, `random`, `regexp`, `filepath`, `crypto`, `sets`, etc.)

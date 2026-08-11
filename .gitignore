@@ -1,5 +1,8 @@
 .git
 .bin
+.tmp
+__pycache__/
+.pytest_cache/
 bin
 report.xml
 ./gomplate

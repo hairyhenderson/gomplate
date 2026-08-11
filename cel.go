@@ -3,7 +3,6 @@ package gomplate
 import (
 	gocontext "context"
 	"fmt"
-	"reflect"
 	"regexp"
 	"sync"
 
@@ -21,11 +20,7 @@ import (
 	"github.com/flanksource/gomplate/v3/strings"
 )
 
-var typeAdapters = []cel.EnvOption{}
-
-func RegisterType(i any) {
-	typeAdapters = append(typeAdapters, ext.NativeTypes(reflect.TypeOf(i)))
-}
+const celRegexProgramSizeLimit = 10_000
 
 // staticCelEnvOptions returns the environment-independent CEL options: the
 // generated functions, the kubernetes library, the cel-go extensions, the
@@ -48,6 +43,7 @@ func staticCelEnvOptions() []cel.EnvOption {
 	opts = append(opts, getGoTemplateCelFunction())
 	opts = append(opts, getDebugCelFunction())
 	opts = append(opts, getFoldCelLibrary())
+	opts = append(opts, cel.RegexProgramSizeLimit(celRegexProgramSizeLimit))
 	return opts
 }
 
@@ -62,8 +58,8 @@ func staticCelEnvOptions() []cel.EnvOption {
 // to validate its declarations up front so Extend reuses them and only validates
 // the small per-call delta.
 //
-// Env.Extend deep-copies the environment and never mutates the receiver, so the
-// cached base env is safe to share across goroutines.
+// Env.Extend uses copy-on-write and never mutates the receiver, so the cached
+// base env is safe to share across goroutines.
 var baseCelEnv = sync.OnceValues(func() (*cel.Env, error) {
 	opts := staticCelEnvOptions()
 	opts = append(opts, cel.EagerlyValidateDeclarations(true))
@@ -79,7 +75,9 @@ var baseCelEnv = sync.OnceValues(func() (*cel.Env, error) {
 // option set via staticCelEnvOptions.
 func GetCelEnv(environment map[string]any) []cel.EnvOption {
 	opts := staticCelEnvOptions()
-	opts = append(opts, typeAdapters...)
+	if nativeTypes := currentNativeTypes(); nativeTypes.envOption != nil {
+		opts = append(opts, nativeTypes.envOption)
+	}
 
 	// Load input as variables
 	for k := range environment {

@@ -78,6 +78,21 @@ var _ = Describe("CELTracker", func() {
 		Expect(valueLines).To(ContainElement(2))
 	})
 
+	It("tracks optimized list, optional, and regex evaluation", func() {
+		tracker := NewCELTracker()
+		expression := `([1, 2] + [3, 4]).size() == 4 && optional.of(name).orValue("") == "Ada" && name.matches("^A.*")`
+
+		result, err := RunExpressionContext(newTrackedContext(tracker), map[string]any{"name": "Ada"}, Template{Expression: expression})
+
+		Expect(err).NotTo(HaveOccurred())
+		Expect(result).To(Equal(true))
+		Expect(tracker.Snapshot()).To(SatisfyAll(
+			WithTransform(func(snapshot CELTraceSnapshot) *cel.Ast { return snapshot.AST }, Not(BeNil())),
+			WithTransform(func(snapshot CELTraceSnapshot) *cel.EvalDetails { return snapshot.Details }, Not(BeNil())),
+			WithTransform(func(snapshot CELTraceSnapshot) any { return snapshot.Output.Value() }, Equal(true)),
+		))
+	})
+
 	It("rejects concurrent reuse and can be reused after evaluation", func() {
 		tracker := NewCELTracker()
 		started := make(chan struct{})

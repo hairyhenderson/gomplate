@@ -102,7 +102,7 @@ func TestCacheTime(t *testing.T) {
 		if _, err := RunExpression(nil, tpl); err != nil {
 			t.Fatalf("eval: %v", err)
 		}
-		_, exp, ok := celExpressionCache.GetWithExpiration(tpl.CacheKey)
+		_, exp, ok := celExpressionCache.GetWithExpiration(tpl.celCacheKey(nil, currentNativeTypes().generation))
 		if !ok {
 			t.Fatalf("entry not cached")
 		}
@@ -122,7 +122,7 @@ func TestCacheTime(t *testing.T) {
 		if _, err := RunExpression(nil, tpl); err != nil {
 			t.Fatalf("eval: %v", err)
 		}
-		_, exp, ok := celExpressionCache.GetWithExpiration(tpl.CacheKey)
+		_, exp, ok := celExpressionCache.GetWithExpiration(tpl.celCacheKey(nil, currentNativeTypes().generation))
 		if !ok {
 			t.Fatalf("entry not cached")
 		}
@@ -142,7 +142,7 @@ func TestCacheTime(t *testing.T) {
 		if _, err := RunExpression(nil, tpl); err != nil {
 			t.Fatalf("eval: %v", err)
 		}
-		_, exp, ok := celExpressionCache.GetWithExpiration(tpl.CacheKey)
+		_, exp, ok := celExpressionCache.GetWithExpiration(tpl.celCacheKey(nil, currentNativeTypes().generation))
 		if !ok {
 			t.Fatalf("entry not cached")
 		}

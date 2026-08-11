@@ -19,6 +19,27 @@ CEL expressions use the [Common Expression Language (CEL)](https://cel.dev/).
 | `null_type` | The value `null` |
 | `type` | Values representing the types above |
 
+### Native Go struct types
+
+Register a Go struct type to expose it directly to CEL instead of converting top-level values of that type to maps:
+
+```go
+type Person struct {
+    DisplayName string `json:"display_name"`
+}
+
+if err := gomplate.RegisterType(Person{}); err != nil {
+    return err
+}
+
+result, err := gomplate.RunExpression(
+    map[string]any{"person": Person{DisplayName: "Ada"}},
+    gomplate.Template{Expression: "person.display_name"},
+)
+```
+
+Registration is process-wide, concurrency-safe, and applies to subsequent CEL compilations. JSON field names are honored; a JSON tag containing only options, such as `json:",omitempty"`, retains the Go field name. When an expression returns a registered top-level value directly, the result is the original Go value. Unregistered values and Go-template evaluation retain the existing serialization behavior.
+
 ---
 
 ## Standard Operators
@@ -1299,6 +1320,8 @@ Determines if a string matches a regular expression pattern.
 "example@email.com".matches("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$") // true
 "12345".matches("^\\d+$")                                            // true
 ```
+
+Built-in CEL regex operations, including `.matches()`, reject regex programs larger than 10,000 instructions. This limit applies to both literal and dynamically supplied patterns. It does not apply to gomplate's separate `regexp.*` functions.
 
 ### .quote
 

@@ -38,11 +38,11 @@ func (*library) LibraryName() string             { return "cel.lib.ext.nilsafe" 
 func (*library) CompileOptions() []cel.EnvOption { return nil }
 
 func (l *library) ProgramOptions() []cel.ProgramOption {
-	return []cel.ProgramOption{cel.CustomDecorator(l.makeDecorator())}
+	return []cel.ProgramOption{cel.CustomDecoratorV2(l.makeDecorator())}
 }
 
-func (l *library) makeDecorator() interpreter.InterpretableDecorator {
-	return func(i interpreter.Interpretable) (interpreter.Interpretable, error) {
+func (l *library) makeDecorator() interpreter.InterpretableDecoratorV2 {
+	return func(i interpreter.InterpretableV2) (interpreter.InterpretableV2, error) {
 		if attr, ok := i.(interpreter.InterpretableAttribute); ok {
 			if attr.ID() != attr.Attr().ID() {
 				return i, nil
@@ -77,7 +77,14 @@ type nilSafeAttr struct {
 }
 
 func (a *nilSafeAttr) Eval(ctx interpreter.Activation) ref.Val {
-	val := a.InterpretableAttribute.Eval(ctx)
+	return nilSafeResolution(a.InterpretableAttribute.Eval(ctx))
+}
+
+func (a *nilSafeAttr) Exec(frame *interpreter.ExecutionFrame) ref.Val {
+	return nilSafeResolution(a.InterpretableAttribute.Exec(frame))
+}
+
+func nilSafeResolution(val ref.Val) ref.Val {
 	if types.IsError(val) && isResolutionError(val) {
 		return types.NullValue
 	}
@@ -100,10 +107,24 @@ type nilSafeCall struct {
 }
 
 func (c *nilSafeCall) Eval(ctx interpreter.Activation) ref.Val {
+	return c.eval(
+		func(arg interpreter.InterpretableV2) ref.Val { return arg.Eval(ctx) },
+		func() ref.Val { return c.InterpretableCall.Eval(ctx) },
+	)
+}
+
+func (c *nilSafeCall) Exec(frame *interpreter.ExecutionFrame) ref.Val {
+	return c.eval(
+		func(arg interpreter.InterpretableV2) ref.Val { return arg.Exec(frame) },
+		func() ref.Val { return c.InterpretableCall.Exec(frame) },
+	)
+}
+
+func (c *nilSafeCall) eval(evalArg func(interpreter.InterpretableV2) ref.Val, evalCall func() ref.Val) ref.Val {
 	for _, arg := range c.Args() {
-		if arg.Eval(ctx) == types.NullValue {
+		if evalArg(arg) == types.NullValue {
 			return types.NullValue
 		}
 	}
-	return c.InterpretableCall.Eval(ctx)
+	return evalCall()
 }

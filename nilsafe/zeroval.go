@@ -47,17 +47,31 @@ type zeroValueCall struct {
 }
 
 func (c *zeroValueCall) Eval(ctx interpreter.Activation) ref.Val {
+	return c.eval(
+		func(arg interpreter.InterpretableV2) ref.Val { return arg.Eval(ctx) },
+		func() ref.Val { return c.InterpretableCall.Eval(ctx) },
+	)
+}
+
+func (c *zeroValueCall) Exec(frame *interpreter.ExecutionFrame) ref.Val {
+	return c.eval(
+		func(arg interpreter.InterpretableV2) ref.Val { return arg.Exec(frame) },
+		func() ref.Val { return c.InterpretableCall.Exec(frame) },
+	)
+}
+
+func (c *zeroValueCall) eval(evalArg func(interpreter.InterpretableV2) ref.Val, evalCall func() ref.Val) ref.Val {
 	args := c.Args()
 	vals := make([]ref.Val, len(args))
 	hasNull := false
 	for i, arg := range args {
-		vals[i] = arg.Eval(ctx)
+		vals[i] = evalArg(arg)
 		if vals[i] == types.NullValue {
 			hasNull = true
 		}
 	}
 	if !hasNull {
-		return c.InterpretableCall.Eval(ctx)
+		return evalCall()
 	}
 
 	fn := c.Function()
@@ -78,13 +92,27 @@ type zeroValueEq struct {
 }
 
 func (c *zeroValueEq) Eval(ctx interpreter.Activation) ref.Val {
+	return c.eval(
+		func(arg interpreter.InterpretableV2) ref.Val { return arg.Eval(ctx) },
+		func() ref.Val { return c.InterpretableCall.Eval(ctx) },
+	)
+}
+
+func (c *zeroValueEq) Exec(frame *interpreter.ExecutionFrame) ref.Val {
+	return c.eval(
+		func(arg interpreter.InterpretableV2) ref.Val { return arg.Exec(frame) },
+		func() ref.Val { return c.InterpretableCall.Exec(frame) },
+	)
+}
+
+func (c *zeroValueEq) eval(evalArg func(interpreter.InterpretableV2) ref.Val, evalCall func() ref.Val) ref.Val {
 	args := c.Args()
-	lhs, rhs := args[0].Eval(ctx), args[1].Eval(ctx)
+	lhs, rhs := evalArg(args[0]), evalArg(args[1])
 
 	lNull := lhs == types.NullValue
 	rNull := rhs == types.NullValue
 	if !lNull && !rNull {
-		return c.InterpretableCall.Eval(ctx)
+		return evalCall()
 	}
 	if lNull && rNull {
 		return types.True
@@ -98,24 +126,32 @@ func (c *zeroValueEq) Eval(ctx interpreter.Activation) ref.Val {
 	return lhs.Equal(rhs)
 }
 
-func (c *zeroValueEq) Function() string   { return operators.Equals }
-func (c *zeroValueEq) OverloadID() string { return "" }
-func (c *zeroValueEq) Args() []interpreter.Interpretable {
-	return c.InterpretableCall.Args()
-}
-
 type zeroValueNe struct {
 	interpreter.InterpretableCall
 }
 
 func (c *zeroValueNe) Eval(ctx interpreter.Activation) ref.Val {
+	return c.eval(
+		func(arg interpreter.InterpretableV2) ref.Val { return arg.Eval(ctx) },
+		func() ref.Val { return c.InterpretableCall.Eval(ctx) },
+	)
+}
+
+func (c *zeroValueNe) Exec(frame *interpreter.ExecutionFrame) ref.Val {
+	return c.eval(
+		func(arg interpreter.InterpretableV2) ref.Val { return arg.Exec(frame) },
+		func() ref.Val { return c.InterpretableCall.Exec(frame) },
+	)
+}
+
+func (c *zeroValueNe) eval(evalArg func(interpreter.InterpretableV2) ref.Val, evalCall func() ref.Val) ref.Val {
 	args := c.Args()
-	lhs, rhs := args[0].Eval(ctx), args[1].Eval(ctx)
+	lhs, rhs := evalArg(args[0]), evalArg(args[1])
 
 	lNull := lhs == types.NullValue
 	rNull := rhs == types.NullValue
 	if !lNull && !rNull {
-		return c.InterpretableCall.Eval(ctx)
+		return evalCall()
 	}
 	if lNull && rNull {
 		return types.False
@@ -132,12 +168,6 @@ func (c *zeroValueNe) Eval(ctx interpreter.Activation) ref.Val {
 		return types.False
 	}
 	return types.True
-}
-
-func (c *zeroValueNe) Function() string   { return operators.NotEquals }
-func (c *zeroValueNe) OverloadID() string { return "" }
-func (c *zeroValueNe) Args() []interpreter.Interpretable {
-	return c.InterpretableCall.Args()
 }
 
 func isOperator(fn string) bool {

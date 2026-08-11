@@ -9,7 +9,7 @@ require (
 	github.com/flanksource/commons v1.53.1
 	github.com/flanksource/is-healthy v1.0.90
 	github.com/flanksource/kubectl-neat v1.0.4
-	github.com/google/cel-go v0.27.0
+	github.com/google/cel-go v0.31.0
 	github.com/google/go-cmp v0.7.0
 	github.com/google/uuid v1.6.0
 	github.com/gosimple/slug v1.15.0

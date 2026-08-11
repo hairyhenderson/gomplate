@@ -17,7 +17,7 @@ jobs:
       - name: Install Go
         uses: buildjet/setup-go@555ce355a95ff01018ffcf8fbbd9c44654db8374 # v5.0.2
         with:
-          go-version: 1.25.x
+          go-version: 1.26.x
           cache: false
       - name: Checkout code
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
@@ -66,29 +66,40 @@ jobs:
         run: |
           GOBIN="$PWD/.bin" go install golang.org/x/perf/cmd/benchstat@82a0b07e230d76fa1b3036c383d7a98172f87334
           echo "$PWD/.bin" >> "$GITHUB_PATH"
+      - name: Test benchmark summary
+        run: |
+          python3 -m pip install pytest==9.0.3
+          python3 -m pytest .github/scripts/benchstat-summary_test.py
       - name: Prepare base worktree
         run: |
-          mkdir -p .bench
-          git worktree add .bench/base "${{ github.event.pull_request.base.sha }}"
+          mkdir -p .tmp/bench
+          git worktree add .tmp/bench/base "${{ github.event.pull_request.base.sha }}"
           # Override the base's bench files with HEAD's so both runs execute
           # the same benchmark suite — only the implementation under test differs.
-          cp serialize_bench_test.go .bench/base/serialize_bench_test.go
-          cp run_expression_bench_test.go .bench/base/run_expression_bench_test.go
-      - name: Benchmark base
+          cp serialize_bench_test.go .tmp/bench/base/serialize_bench_test.go
+          cp run_expression_bench_test.go .tmp/bench/base/run_expression_bench_test.go
+      - name: Compile benchmark binaries
         run: |
-          cd .bench/base
-          go test -run=^$ -bench='BenchmarkSerialize|BenchmarkRunExpressionContext' -count=6 -timeout 20m \
-            github.com/flanksource/gomplate/v3 | tee "$GITHUB_WORKSPACE/bench-base.txt"
-      - name: Benchmark head
+          cd .tmp/bench/base
+          go test -c -o "$GITHUB_WORKSPACE/.tmp/bench/base.test" github.com/flanksource/gomplate/v3
+          cd "$GITHUB_WORKSPACE"
+          go test -c -o .tmp/bench/head.test github.com/flanksource/gomplate/v3
+      - name: Benchmark interleaved base and head
         run: |
-          go test -run=^$ -bench='BenchmarkSerialize|BenchmarkRunExpressionContext' -count=6 -timeout 20m \
-            github.com/flanksource/gomplate/v3 | tee bench-head.txt
+          : > bench-base.txt
+          : > bench-head.txt
+          for sample in {1..10}
+          do
+            echo "Running base sample ${sample}/10"
+            .tmp/bench/base.test -test.run=^$ -test.bench='Benchmark(Serialize|RunExpressionContext|CELEnvExtend|CELProgramEvaluation|RunExpressionNativeInput)' -test.benchmem=true -test.benchtime=1s -test.count=1 -test.timeout=20m >> bench-base.txt
+            echo "Running head sample ${sample}/10"
+            .tmp/bench/head.test -test.run=^$ -test.bench='Benchmark(Serialize|RunExpressionContext|CELEnvExtend|CELProgramEvaluation|RunExpressionNativeInput)' -test.benchmem=true -test.benchtime=1s -test.count=1 -test.timeout=20m >> bench-head.txt
+          done
       - name: Compare
         run: |
           benchstat bench-base.txt bench-head.txt > benchstat.txt
-
-          # Generate the summary (ignore exit code here; we check it in the next step)
-          python3 .github/scripts/benchstat-summary.py benchstat.txt > bench-summary.md || true
+          benchstat -format csv bench-base.txt bench-head.txt > benchstat.csv
+          python3 .github/scripts/benchstat-summary.py --no-fail benchstat.csv > bench-summary.md
 
           {
             echo "<!-- benchstat-report -->"
@@ -97,13 +108,19 @@ jobs:
             echo "Base: \`${{ github.event.pull_request.base.sha }}\`"
             echo "Head: \`${{ github.event.pull_request.head.sha }}\`"
             echo ""
-            cat bench-summary.md
+            while IFS= read -r line
+            do
+              echo "$line"
+            done < bench-summary.md
             echo ""
             echo '<details>'
             echo '<summary>Full benchstat output</summary>'
             echo ""
             echo '```text'
-            cat benchstat.txt
+            while IFS= read -r line
+            do
+              echo "$line"
+            done < benchstat.txt
             echo '```'
             echo ""
             echo '</details>'
@@ -116,6 +133,8 @@ jobs:
             bench-base.txt
             bench-head.txt
             benchstat.txt
+            benchstat.csv
+            bench-summary.md
             bench-report.md
           retention-days: 14
       - name: Post report to PR
@@ -151,4 +170,4 @@ jobs:
               });
             }
       - name: Check for regressions
-        run: python3 .github/scripts/benchstat-summary.py --threshold 5 benchstat.txt > /dev/null
+        run: python3 .github/scripts/benchstat-summary.py --threshold 5 benchstat.csv > /dev/null

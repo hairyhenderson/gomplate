@@ -17,8 +17,6 @@ import (
 	"github.com/flanksource/commons/properties"
 	_ "github.com/flanksource/gomplate/v3/js"
 	"github.com/google/cel-go/cel"
-	"github.com/google/cel-go/common/types"
-	"github.com/google/cel-go/common/types/ref"
 	"github.com/patrickmn/go-cache"
 	"github.com/robertkrimen/otto"
 	"github.com/robertkrimen/otto/registry"
@@ -31,8 +29,7 @@ var funcMap gotemplate.FuncMap
 
 var (
 	// keep the cache period low as lots of anonymous functions can pile up the cache.
-	goTemplateCache    = cache.New(time.Hour, time.Hour)
-	celExpressionCache = cache.New(time.Hour, time.Hour)
+	goTemplateCache = cache.New(time.Hour, time.Hour)
 )
 
 func init() {
@@ -175,119 +172,6 @@ func (t Template) IsCacheable() bool {
 
 func (t Template) IsEmpty() bool {
 	return t.Template == "" && t.JSONPath == "" && t.Expression == "" && t.Javascript == ""
-}
-
-func RunExpression(_environment map[string]any, template Template) (any, error) {
-	return RunExpressionContext(newContext(), _environment, template)
-}
-
-func RunExpressionContext(ctx commonsContext.Context, _environment map[string]any, template Template) (any, error) {
-	tracker := celTrackerFromContext(ctx)
-	if tracker != nil {
-		if err := tracker.begin(); err != nil {
-			return nil, err
-		}
-		defer tracker.abort()
-	}
-
-	data, err := Serialize(_environment)
-	if err != nil {
-		return "", err
-	}
-
-	// Look up the compiled-program cache BEFORE constructing the CEL env options.
-	// GetCelEnv (notably kubernetes.Library()) is the dominant allocation on the CEL
-	// path. On the overwhelmingly common cache hit it would be built and then
-	// immediately discarded, since cel.NewEnv is only needed to compile a new
-	// program. Build env options only when we actually need to compile.
-	var prg cel.Program
-	var ast *cel.Ast
-	if tracker == nil && template.IsCacheable() {
-		cached, ok := celExpressionCache.Get(template.cacheKey(_environment))
-		if ok {
-			if cachedPrg, ok := cached.(*cel.Program); ok {
-				prg = *cachedPrg
-			}
-		}
-	}
-
-	if prg == nil {
-		base, err := baseCelEnv()
-		if err != nil {
-			return "", err
-		}
-
-		// Only the per-call options are layered on top of the cached base env: the
-		// heavy, environment-independent libraries already live in base. This keeps
-		// the dominant CEL setup cost (kubernetes.Library and declaration
-		// validation) off the compile path.
-		envOptions := make([]cel.EnvOption, 0, len(typeAdapters)+len(data)+len(template.Functions)+len(template.CelEnvs))
-		envOptions = append(envOptions, typeAdapters...)
-		for k := range data {
-			envOptions = append(envOptions, cel.Variable(k, cel.AnyType))
-		}
-		for name, fn := range template.Functions {
-			_name := name
-			_fn := fn
-			envOptions = append(envOptions, cel.Function(_name, cel.Overload(
-				_name,
-				nil,
-				cel.AnyType,
-				cel.FunctionBinding(func(values ...ref.Val) ref.Val {
-					ogFunc, ok := _fn.(func() any)
-					if !ok {
-						return types.WrapErr(fmt.Errorf("%s is expected to be of type func() any", _name))
-					}
-
-					out := ogFunc()
-					return types.DefaultTypeAdapter.NativeToValue(out)
-				}),
-			)))
-		}
-
-		envOptions = append(envOptions, template.CelEnvs...)
-
-		env, err := base.Extend(envOptions...)
-		if err != nil {
-			return "", err
-		}
-
-		expression := strings.ReplaceAll(template.Expression, "\n", " ")
-		if tracker != nil {
-			expression = template.Expression
-		}
-		var issues *cel.Issues
-		ast, issues = env.Compile(expression)
-		if issues != nil && issues.Err() != nil {
-			return "", oops.With("template", template.Expression).Errorf("issues: %s", issues.String())
-		}
-
-		var programOptions []cel.ProgramOption
-		if tracker != nil {
-			programOptions = append(programOptions, cel.EvalOptions(cel.OptTrackState))
-		}
-		prg, err = env.Program(ast, programOptions...)
-		if err != nil {
-			return "", err
-		}
-
-		if tracker == nil && template.IsCacheable() {
-			celExpressionCache.Set(template.cacheKey(_environment), &prg, template.CacheTime)
-		}
-	}
-
-	out, details, err := prg.Eval(data)
-	if tracker != nil {
-		tracker.complete(ast, details, out)
-	}
-	if err != nil {
-		return nil, oops.With("template", template.Expression).Wrap(err)
-	}
-	if ctx.Logger != nil && out.Value() != template.Expression && properties.On(false, "gomplate.log") {
-		ctx.Logger.V(4).Infof("templated %s => %v", template.ShortString(), out)
-	}
-	return out.Value(), nil
-
 }
 
 func newContext() commonsContext.Context {

@@ -81,3 +81,39 @@ func Serialize(in map[string]any) (out map[string]any, err error) {
 	}
 	return out, nil
 }
+
+func serializeForCEL(in map[string]any, nativeTypes *nativeTypeSnapshot) (map[string]any, error) {
+	if in == nil || nativeTypes == nil || len(nativeTypes.reflectTypes) == 0 {
+		return Serialize(in)
+	}
+
+	preserved := 0
+	for _, value := range in {
+		if nativeTypes.preserves(value) {
+			preserved++
+		}
+	}
+	if preserved == 0 {
+		return Serialize(in)
+	}
+	if preserved == len(in) {
+		return in, nil
+	}
+
+	serializedInput := make(map[string]any, len(in)-preserved)
+	for key, value := range in {
+		if !nativeTypes.preserves(value) {
+			serializedInput[key] = value
+		}
+	}
+	out, err := Serialize(serializedInput)
+	if err != nil {
+		return nil, err
+	}
+	for key, value := range in {
+		if nativeTypes.preserves(value) {
+			out[key] = value
+		}
+	}
+	return out, nil
+}
