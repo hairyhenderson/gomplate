@@ -30,6 +30,7 @@ func TestCreateUUIDFuncs(t *testing.T) {
 const (
 	uuidV1Pattern = "^[[:xdigit:]]{8}-[[:xdigit:]]{4}-1[[:xdigit:]]{3}-[89ab][[:xdigit:]]{3}-[[:xdigit:]]{12}$"
 	uuidV4Pattern = "^[[:xdigit:]]{8}-[[:xdigit:]]{4}-4[[:xdigit:]]{3}-[89ab][[:xdigit:]]{3}-[[:xdigit:]]{12}$"
+	uuidV7Pattern = "^[[:xdigit:]]{8}-[[:xdigit:]]{4}-7[[:xdigit:]]{3}-[89ab][[:xdigit:]]{3}-[[:xdigit:]]{12}$"
 )
 
 func TestV1(t *testing.T) {
@@ -48,6 +49,15 @@ func TestV4(t *testing.T) {
 	i, err := u.V4()
 	require.NoError(t, err)
 	assert.Regexp(t, uuidV4Pattern, i)
+}
+
+func TestV7(t *testing.T) {
+	t.Parallel()
+
+	u := UUIDFuncs{ctx: t.Context()}
+	i, err := u.V7()
+	require.NoError(t, err)
+	assert.Regexp(t, uuidV7Pattern, i)
 }
 
 func TestNil(t *testing.T) {
