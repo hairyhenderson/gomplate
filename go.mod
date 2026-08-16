@@ -8,7 +8,7 @@ require (
 	cuelang.org/go v0.17.1
 	github.com/Masterminds/goutils v1.1.1
 	github.com/Masterminds/semver/v3 v3.5.0
-	github.com/Shopify/ejson v1.5.4
+	github.com/Shopify/ejson v1.5.5
 	github.com/aws/aws-sdk-go-v2 v1.43.0
 	github.com/aws/aws-sdk-go-v2/config v1.32.31
 	github.com/aws/aws-sdk-go-v2/feature/ec2/imds v1.18.31
