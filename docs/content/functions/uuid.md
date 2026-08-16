@@ -8,9 +8,9 @@ menu:
 Functions for generating, parsing, and manipulating UUIDs.
 
 A UUID is a 128 bit (16 byte) _Universal Unique IDentifier_ as defined
-in [RFC 4122][]. Only RFC 4112-variant UUIDs can be generated, but all variants
+in [RFC 4122][]. Only RFC 4122-variant UUIDs can be generated, but all variants
 (even invalid ones) can be parsed and manipulated. Also, gomplate only supports
-generating version 1 and 4 UUIDs (with 4 being the most commonly-used variety
+generating version 1, 4, and 7 UUIDs (with 4 being the most commonly-used variety
 these days). Versions 2, 3, and 5 are able to be supported: [log an issue][] if
 this is required for your use-case.
 
@@ -57,6 +57,30 @@ uuid.V4
 ```console
 $ gomplate -i '{{ uuid.V4 }}'
 40b3c2d2-e491-4b19-94cd-461e6fa35a60
+```
+
+## `uuid.V7`
+
+Create a version 7 UUID (time-ordered, with random data). Version 7 UUIDs
+are monotonically increasing, which makes them useful as database keys
+since they sort naturally and cause less index fragmentation than
+version 4 UUIDs.
+
+This function consumes entropy.
+
+_<span class="release-check" data-tag="v5.3.0">Added in gomplate v5.3.0</span>_
+### Usage
+
+```
+uuid.V7
+```
+
+
+### Examples
+
+```console
+$ gomplate -i '{{ uuid.V7 }}'
+018f5a3c-9e2a-7c3e-8b1a-2f6e6a1b2c3d
 ```
 
 ## `uuid.Nil`

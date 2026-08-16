@@ -40,6 +40,15 @@ func (UUIDFuncs) V4() (string, error) {
 	return u.String(), nil
 }
 
+// V7 - return a version 7 (time-ordered) UUID
+func (UUIDFuncs) V7() (string, error) {
+	u, err := uuid.NewV7()
+	if err != nil {
+		return "", err
+	}
+	return u.String(), nil
+}
+
 // Nil -
 func (UUIDFuncs) Nil() (string, error) {
 	return uuid.Nil.String(), nil
