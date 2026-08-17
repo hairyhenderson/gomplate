@@ -1,6 +1,6 @@
 (function () {
   // Update this when a new release ships.
-  const LATEST_RELEASE = 'v5.0.0';
+  const LATEST_RELEASE = 'v5.2.0';
 
   function semverLte(a, b) {
     const parse = v => v.replace(/^v/, '').split('.').map(Number);

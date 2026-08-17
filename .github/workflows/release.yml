@@ -104,6 +104,51 @@ jobs:
           echo "version=${version}" >> $GITHUB_OUTPUT
           echo "major=v${version%%.*}" >> $GITHUB_OUTPUT
 
+  update-release-check:
+    runs-on: ubuntu-latest
+    if: ${{ !github.event.release.prerelease }}
+    env:
+      TAG_NAME: ${{ github.event.release.tag_name }}
+    steps:
+      # use an app token (not GITHUB_TOKEN) so the opened PR triggers the
+      # required status checks - PRs opened with GITHUB_TOKEN don't
+      - uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3
+        id: app-token
+        with:
+          client-id: ${{ vars.APP_ID }}
+          private-key: ${{ secrets.PRIVATE_KEY }}
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          token: ${{ steps.app-token.outputs.token }}
+      - name: bump LATEST_RELEASE in docs/static/js/release-check.js
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: |
+          set -ex
+
+          sed -i "s/const LATEST_RELEASE = '.*';/const LATEST_RELEASE = '${TAG_NAME}';/" docs/static/js/release-check.js
+
+          if git diff --quiet docs/static/js/release-check.js; then
+            echo "already up to date, nothing to do"
+            exit 0
+          fi
+
+          git config --global user.name "${{ github.actor }}"
+          git config --global user.email "${{ github.actor_id }}+${{ github.actor }}@users.noreply.github.com"
+
+          branch="docs/release-check-${TAG_NAME}"
+          git checkout -b "${branch}"
+          git add docs/static/js/release-check.js
+          git commit -sm "docs(release-check): bump latest known release to ${TAG_NAME}"
+          git push -u origin "${branch}"
+
+          gh pr create --title "docs(release-check): bump latest known release to ${TAG_NAME}" \
+            --body "Automated update after releasing ${TAG_NAME}." \
+            --base main --head "${branch}"
+
+          # merges itself once the required status checks pass - no human action needed
+          gh pr merge --auto --squash "${branch}"
+
   docker-latest:
     needs: version
     uses: docker/github-builder/.github/workflows/build.yml@27ade872c1e2296e62ef15ab3b10d37665e57cf7 # v1
