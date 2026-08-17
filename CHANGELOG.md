@@ -1,5 +1,33 @@
 # Change Log
 
+## [5.3.0](https://github.com/hairyhenderson/gomplate/compare/v5.2.0...v5.3.0) (2026-08-17)
+
+
+### Features
+
+* **uuid:** add uuid.V7 for time-ordered UUID generation ([#2769](https://github.com/hairyhenderson/gomplate/issues/2769)) ([74761f8](https://github.com/hairyhenderson/gomplate/commit/74761f878832a1b007108b88ad19c362d1c6f0fe))
+
+
+### Bug Fixes
+
+* **ci:** set LAB_CORE_HOST/LAB_CORE_TOKEN for lab mr create in aports deploy ([#2719](https://github.com/hairyhenderson/gomplate/issues/2719)) ([a7dd869](https://github.com/hairyhenderson/gomplate/commit/a7dd869ca8b671badbc852b018555a6db93189d0))
+* **config:** Merge missing fields in MergeFrom ([#2721](https://github.com/hairyhenderson/gomplate/issues/2721)) ([2d7fd56](https://github.com/hairyhenderson/gomplate/commit/2d7fd5618ac8103f19dc8bfc3561b725a3bb7260))
+* **deps:** update aws-sdk-go-v2 monorepo ([#2723](https://github.com/hairyhenderson/gomplate/issues/2723)) ([737b66b](https://github.com/hairyhenderson/gomplate/commit/737b66bdbcde8791300f11fab38f4e649a9e671d))
+* **deps:** update aws-sdk-go-v2 monorepo ([#2737](https://github.com/hairyhenderson/gomplate/issues/2737)) ([566cb7d](https://github.com/hairyhenderson/gomplate/commit/566cb7d81a00261bcc9d9d94869acbcbdfb5f0b2))
+* **deps:** update module cuelang.org/go to v0.17.1 ([#2730](https://github.com/hairyhenderson/gomplate/issues/2730)) ([a5a97fa](https://github.com/hairyhenderson/gomplate/commit/a5a97fa5834da595b14054cefc236284563d9bcd))
+* **deps:** update module github.com/hairyhenderson/go-fsimpl to v0.4.5 ([#2750](https://github.com/hairyhenderson/gomplate/issues/2750)) ([cb010e8](https://github.com/hairyhenderson/gomplate/commit/cb010e803f5a95140db9274ade2085de4c1f5370))
+* **deps:** update module github.com/hairyhenderson/go-fsimpl to v0.4.6 ([#2772](https://github.com/hairyhenderson/gomplate/issues/2772)) ([fc29616](https://github.com/hairyhenderson/gomplate/commit/fc29616813f97c2a042fa83851aacfbf443d5c8b))
+* **deps:** update module github.com/santhosh-tekuri/jsonschema/v6 to v6.0.3 ([#2756](https://github.com/hairyhenderson/gomplate/issues/2756)) ([7f8f788](https://github.com/hairyhenderson/gomplate/commit/7f8f7881380837a79851e74098cb711b95622607))
+* **deps:** update module github.com/shopify/ejson to v1.5.5 ([#2758](https://github.com/hairyhenderson/gomplate/issues/2758)) ([05375c2](https://github.com/hairyhenderson/gomplate/commit/05375c2a7493f2ae51049f2cc86898466c50fff8))
+* **deps:** update module github.com/ugorji/go/codec to v1.3.2 ([#2754](https://github.com/hairyhenderson/gomplate/issues/2754)) ([42622a3](https://github.com/hairyhenderson/gomplate/commit/42622a3a90dd842f0bd4349f9e63982e4b1b81c0))
+* **deps:** update module golang.org/x/crypto to v0.55.0 ([#2766](https://github.com/hairyhenderson/gomplate/issues/2766)) ([983de72](https://github.com/hairyhenderson/gomplate/commit/983de727ed0a39773f8870c6ee766b7d016ef7ba))
+* **deps:** update module k8s.io/client-go to v0.36.3 ([#2743](https://github.com/hairyhenderson/gomplate/issues/2743)) ([05689d3](https://github.com/hairyhenderson/gomplate/commit/05689d3525c1033a701f4b61c9f0a8c25f538daf))
+
+
+### Dependencies
+
+* **actions:** bump docker/github-builder/.github/workflows/build.yml ([#2727](https://github.com/hairyhenderson/gomplate/issues/2727)) ([49f1965](https://github.com/hairyhenderson/gomplate/commit/49f19657eb859811de4ef8989709c5a94a3c688b))
+
 ## [5.2.0](https://github.com/hairyhenderson/gomplate/compare/v5.1.0...v5.2.0) (2026-07-12)
 
 
