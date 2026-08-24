@@ -2,10 +2,14 @@ package funcs
 
 import (
 	"context"
+	"crypto/sha256"
 	"fmt"
 	"math/big"
+	"math/rand/v2"
 	stdnet "net"
 	"net/netip"
+	"strconv"
+	"strings"
 
 	"github.com/hairyhenderson/gomplate/v5/conv"
 	"github.com/hairyhenderson/gomplate/v5/internal/cidr"
@@ -74,6 +78,71 @@ func (f NetFuncs) ParsePrefix(ipprefix any) (netip.Prefix, error) {
 // ParseRange -
 func (f NetFuncs) ParseRange(iprange any) (netipx.IPRange, error) {
 	return netipx.ParseIPRange(conv.ToString(iprange))
+}
+
+// GenerateMAC generates a MAC (hardware) address. It accepts up to two optional
+// arguments: a prefix and a seed.
+//
+// With no arguments a fully random address is returned, marked as a locally
+// administered unicast address. A prefix (a partial MAC such as "AA:BB:CC")
+// fixes the leading octets and randomises the rest. When a seed is also given
+// the trailing octets are derived from it, so the same prefix and seed always
+// produce the same address.
+func (f NetFuncs) GenerateMAC(args ...any) (string, error) {
+	if len(args) > 2 {
+		return "", fmt.Errorf("wrong number of args: want 0, 1, or 2, got %d", len(args))
+	}
+
+	var prefix, seed string
+	for i, arg := range args {
+		switch i {
+		case 0:
+			prefix = conv.ToString(arg)
+		case 1:
+			seed = conv.ToString(arg)
+		}
+	}
+
+	mac := make(stdnet.HardwareAddr, 6)
+
+	// copy any fixed leading octets from the prefix
+	fixed := 0
+	if prefix != "" {
+		octets := strings.FieldsFunc(prefix, func(r rune) bool {
+			return r == ':' || r == '-'
+		})
+		if len(octets) >= len(mac) {
+			return "", fmt.Errorf("prefix %q must be shorter than a full MAC address", prefix)
+		}
+		for i, o := range octets {
+			b, err := strconv.ParseUint(o, 16, 8)
+			if err != nil {
+				return "", fmt.Errorf("invalid prefix octet %q: %w", o, err)
+			}
+			mac[i] = byte(b)
+		}
+		fixed = len(octets)
+	}
+
+	rest := mac[fixed:]
+	if seed != "" {
+		// derive the remaining octets from the seed so the result is stable
+		sum := sha256.Sum256([]byte(seed))
+		copy(rest, sum[:])
+	} else {
+		for i := range rest {
+			//nolint:gosec
+			rest[i] = byte(rand.IntN(256))
+		}
+	}
+
+	// when no prefix is given we own the first octet, so flag the address as
+	// locally administered (U/L bit set) and unicast (I/G bit clear)
+	if fixed == 0 {
+		mac[0] = mac[0]&0xfe | 0x02
+	}
+
+	return mac.String(), nil
 }
 
 func (f *NetFuncs) parseNetipPrefix(prefix any) (netip.Prefix, error) {

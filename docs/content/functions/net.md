@@ -468,3 +468,41 @@ prefix | net.CIDRSubnetSizes newbits...
 $ gomplate -i '{{ net.CIDRSubnetSizes 4 4 8 4 "10.1.0.0/16" -}}'
 [10.1.0.0/20 10.1.16.0/20 10.1.32.0/24 10.1.48.0/20]
 ```
+
+## `net.GenerateMAC`
+
+Generate a MAC (hardware) address.
+
+With no arguments a fully random address is returned, marked as a locally
+administered unicast address. Providing a `prefix` (a partial MAC such as
+`"AA:BB:CC"`) fixes the leading octets and randomises the rest. Providing a
+`seed` as well derives the trailing octets from it, so the same prefix and
+seed always produce the same address.
+
+Octets in the prefix may be separated with either `:` or `-`.
+
+_<span class="release-check" data-tag="v5.3.0">Added in gomplate v5.3.0</span>_
+### Usage
+
+```
+net.GenerateMAC [prefix] [seed]
+```
+```
+seed | net.GenerateMAC [prefix]
+```
+
+### Arguments
+
+| name | description |
+|------|-------------|
+| `prefix` | _(optional)_ A partial MAC address used as the leading octets of the result. |
+| `seed` | _(optional)_ When set, the trailing octets are derived from this value so the result is stable. |
+
+### Examples
+
+```console
+$ gomplate -i '{{ net.GenerateMAC }}'
+9a:2f:6b:4c:7d:e1
+$ gomplate -i '{{ net.GenerateMAC "aa:bb:cc" "gomplate" }}'
+aa:bb:cc:96:41:27
+```

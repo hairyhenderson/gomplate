@@ -4,6 +4,7 @@ import (
 	stdnet "net"
 	"net/netip"
 	"strconv"
+	"strings"
 	"testing"
 
 	"github.com/hairyhenderson/gomplate/v5/internal/config"
@@ -201,4 +202,58 @@ func TestCIDRSubnetSizes(t *testing.T) {
 	assert.Equal(t, "2016:1234:5678:9abc:c400::/70", subnets[5].String())
 	assert.Equal(t, "2016:1234:5678:9abc:c800::/72", subnets[6].String())
 	assert.Equal(t, "2016:1234:5678:9abc:c900::/74", subnets[7].String())
+}
+
+func TestGenerateMAC(t *testing.T) {
+	t.Parallel()
+
+	n := testNetNS(t)
+
+	// no args: a random, locally administered unicast address
+	got, err := n.GenerateMAC()
+	require.NoError(t, err)
+	hw, err := stdnet.ParseMAC(got)
+	require.NoError(t, err)
+	assert.Len(t, hw, 6)
+	assert.Equal(t, byte(0x02), hw[0]&0x02, "should be locally administered")
+	assert.Equal(t, byte(0x00), hw[0]&0x01, "should be unicast")
+
+	// a prefix fixes the leading octets
+	got, err = n.GenerateMAC("aa:bb:cc")
+	require.NoError(t, err)
+	assert.True(t, strings.HasPrefix(got, "aa:bb:cc:"), "got %q", got)
+	_, err = stdnet.ParseMAC(got)
+	require.NoError(t, err)
+
+	// a seed makes the result stable
+	first, err := n.GenerateMAC("aa:bb:cc", "some-seed")
+	require.NoError(t, err)
+	second, err := n.GenerateMAC("aa:bb:cc", "some-seed")
+	require.NoError(t, err)
+	assert.Equal(t, first, second)
+
+	// a different seed gives a different address
+	other, err := n.GenerateMAC("aa:bb:cc", "another-seed")
+	require.NoError(t, err)
+	assert.NotEqual(t, first, other)
+
+	// hyphen-separated prefixes are accepted too
+	got, err = n.GenerateMAC("aa-bb")
+	require.NoError(t, err)
+	assert.True(t, strings.HasPrefix(got, "aa:bb:"), "got %q", got)
+}
+
+func TestGenerateMACErrors(t *testing.T) {
+	t.Parallel()
+
+	n := testNetNS(t)
+
+	_, err := n.GenerateMAC("aa:bb", "seed", "extra")
+	require.Error(t, err)
+
+	_, err = n.GenerateMAC("nothex")
+	require.Error(t, err)
+
+	_, err = n.GenerateMAC("aa:bb:cc:dd:ee:ff")
+	require.Error(t, err)
 }
