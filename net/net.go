@@ -3,9 +3,16 @@ package net
 
 import (
 	"context"
+	"crypto/rand"
+	"crypto/sha256"
+	"encoding/hex"
+	"fmt"
 	"net"
 	"slices"
+	"strings"
 )
+
+const macLen = 6
 
 // LookupIP -
 func LookupIP(ctx context.Context, name string) (string, error) {
@@ -39,6 +46,65 @@ func LookupIPs(ctx context.Context, name string) ([]string, error) {
 		}
 	}
 	return ips, nil
+}
+
+// GenerateMAC generates a 6-octet MAC (hardware) address, returned as a string
+// in the usual colon-separated form.
+//
+// prefix, when non-empty, fixes the leading octets of the address (for example
+// an OUI like "aa:bb:cc"); the remaining octets are filled in randomly. Colons,
+// hyphens, and dots in prefix are ignored, so "aa:bb", "aa-bb", and "aabb" are
+// all equivalent. When prefix is empty the whole address is generated, and the
+// local bit is set (and the multicast bit cleared) so the result is a locally
+// administered unicast address that won't collide with real vendor-assigned
+// hardware.
+//
+// When seed is non-nil the random octets are derived from it, so the same
+// prefix and seed always produce the same address. When seed is nil the address
+// is cryptographically random.
+func GenerateMAC(prefix string, seed []byte) (string, error) {
+	octets, err := parseMACPrefix(prefix)
+	if err != nil {
+		return "", err
+	}
+
+	mac := make(net.HardwareAddr, macLen)
+	copy(mac, octets)
+	fill := mac[len(octets):]
+
+	if seed == nil {
+		if _, err := rand.Read(fill); err != nil {
+			return "", fmt.Errorf("failed to read random bytes: %w", err)
+		}
+	} else {
+		sum := sha256.Sum256(seed)
+		copy(fill, sum[:])
+	}
+
+	// With no prefix the first octet is generated too, so make the address a
+	// locally administered unicast one to keep it out of real vendor ranges.
+	if len(octets) == 0 {
+		mac[0] = (mac[0] &^ 0x01) | 0x02
+	}
+
+	return mac.String(), nil
+}
+
+func parseMACPrefix(prefix string) ([]byte, error) {
+	cleaned := strings.NewReplacer(":", "", "-", "", ".", "").Replace(prefix)
+	if cleaned == "" {
+		return nil, nil
+	}
+
+	octets, err := hex.DecodeString(cleaned)
+	if err != nil {
+		return nil, fmt.Errorf("invalid MAC prefix %q: %w", prefix, err)
+	}
+	if len(octets) > macLen {
+		return nil, fmt.Errorf("MAC prefix %q is too long: want at most %d octets, got %d", prefix, macLen, len(octets))
+	}
+
+	return octets, nil
 }
 
 // LookupCNAME -
