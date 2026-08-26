@@ -218,6 +218,50 @@ $ gomplate -i '{{net.LookupTXT "example.com" | data.ToJSONPretty "  " }}'
 ]
 ```
 
+## `net.GenerateMAC`
+
+Generate a MAC (hardware) address, returned as a string in the usual
+colon-separated form (e.g. `aa:bb:cc:dd:ee:ff`).
+
+With no arguments a random locally administered unicast address is
+generated, so it won't collide with a real vendor-assigned address.
+
+An optional `prefix` fixes the leading octets of the address (such as an
+OUI); the rest are filled in randomly. Colons, hyphens, and dots in the
+prefix are ignored, so `aa:bb`, `aa-bb`, and `aabb` are all equivalent.
+
+An optional `seed` makes the output deterministic: the same prefix and
+seed always produce the same address. Use an empty prefix to seed the
+whole address.
+
+_<span class="release-check" data-tag="v5.3.0">Added in gomplate v5.3.0</span>_
+### Usage
+
+```
+net.GenerateMAC [prefix] [seed]
+```
+```
+seed | net.GenerateMAC [prefix]
+```
+
+### Arguments
+
+| name | description |
+|------|-------------|
+| `prefix` | _(optional)_ The fixed leading octets of the address. Defaults to empty (a fully-generated address). |
+| `seed` | _(optional)_ When provided, the address is derived deterministically from this value instead of being random. |
+
+### Examples
+
+```console
+$ gomplate -i '{{ net.GenerateMAC }}'
+4e:2d:8f:0b:1a:c7
+```
+```console
+$ gomplate -i '{{ net.GenerateMAC "aa:bb:cc" "some-seed" }}'
+aa:bb:cc:0a:d4:0e
+```
+
 ## `net.ParseAddr`
 
 Parse the given string as an IP address (a
