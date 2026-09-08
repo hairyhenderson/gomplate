@@ -61,6 +61,26 @@ func (f NetFuncs) LookupTXT(name any) ([]string, error) {
 	return stdnet.DefaultResolver.LookupTXT(f.ctx, conv.ToString(name))
 }
 
+// GenerateMAC -
+func (f NetFuncs) GenerateMAC(args ...any) (string, error) {
+	var prefix string
+	var seed []byte
+
+	switch len(args) {
+	case 0:
+	case 1:
+		prefix = conv.ToString(args[0])
+	case 2:
+		prefix = conv.ToString(args[0])
+		//nolint:gosec // G602 false positive: len(args)==2 from switch
+		seed = []byte(conv.ToString(args[1]))
+	default:
+		return "", fmt.Errorf("wrong number of args: want 0, 1, or 2, got %d", len(args))
+	}
+
+	return net.GenerateMAC(prefix, seed)
+}
+
 // ParseAddr -
 func (f NetFuncs) ParseAddr(ip any) (netip.Addr, error) {
 	return netip.ParseAddr(conv.ToString(ip))

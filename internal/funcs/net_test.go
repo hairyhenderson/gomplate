@@ -4,6 +4,7 @@ import (
 	stdnet "net"
 	"net/netip"
 	"strconv"
+	"strings"
 	"testing"
 
 	"github.com/hairyhenderson/gomplate/v5/internal/config"
@@ -33,6 +34,36 @@ func TestNetLookupIP(t *testing.T) {
 
 	n := testNetNS(t)
 	assert.Equal(t, "127.0.0.1", must(n.LookupIP("localhost")))
+}
+
+func TestGenerateMAC(t *testing.T) {
+	t.Parallel()
+
+	n := testNetNS(t)
+
+	// no args: a valid, locally administered address
+	mac, err := n.GenerateMAC()
+	require.NoError(t, err)
+	hw, err := stdnet.ParseMAC(mac)
+	require.NoError(t, err)
+	assert.Len(t, hw, 6)
+	assert.Equal(t, byte(0x02), hw[0]&0x02)
+
+	// one arg fixes the prefix
+	mac, err = n.GenerateMAC("aa:bb:cc")
+	require.NoError(t, err)
+	assert.True(t, strings.HasPrefix(mac, "aa:bb:cc:"))
+
+	// prefix plus seed is deterministic
+	a, err := n.GenerateMAC("aa:bb", "some-seed")
+	require.NoError(t, err)
+	b, err := n.GenerateMAC("aa:bb", "some-seed")
+	require.NoError(t, err)
+	assert.Equal(t, a, b)
+
+	// too many args is an error
+	_, err = n.GenerateMAC("a", "b", "c")
+	require.Error(t, err)
 }
 
 func TestParseAddr(t *testing.T) {
