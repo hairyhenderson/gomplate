@@ -6,6 +6,7 @@ toolchain go1.27.0
 
 require (
 	cuelang.org/go v0.17.1
+	github.com/BurntSushi/toml v1.6.0
 	github.com/Masterminds/goutils v1.1.1
 	github.com/Masterminds/semver/v3 v3.5.0
 	github.com/Shopify/ejson v1.5.5
@@ -20,7 +21,6 @@ require (
 	github.com/gosimple/slug v1.15.0
 	github.com/hack-pad/hackpadfs v0.2.4
 	github.com/hairyhenderson/go-fsimpl v0.4.6
-	github.com/hairyhenderson/toml v0.4.2-0.20210923231440-40456b8e66cf
 	github.com/hairyhenderson/xignore v0.3.3-0.20230403012150-95fe86932830 // iofs-port branch
 	github.com/hashicorp/go-sockaddr v1.0.7
 	github.com/hashicorp/vault/api v1.23.0

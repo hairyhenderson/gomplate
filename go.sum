@@ -70,6 +70,8 @@ github.com/AzureAD/microsoft-authentication-extensions-for-go/cache v0.1.1 h1:WJ
 github.com/AzureAD/microsoft-authentication-extensions-for-go/cache v0.1.1/go.mod h1:tCcJZ0uHAmvjsVYzEFivsRTN00oz5BEsRgQHu5JZ9WE=
 github.com/AzureAD/microsoft-authentication-library-for-go v1.7.2 h1:RHK7bS+HQMslb1sZpAokUt+zTVmue0hKSs2C791hhzU=
 github.com/AzureAD/microsoft-authentication-library-for-go v1.7.2/go.mod h1:HKpQxkWaGLJ+D/5H8QRpyQXA1eKjxkFlOMwck5+33Jk=
+github.com/BurntSushi/toml v1.6.0 h1:dRaEfpa2VI55EwlIW72hMRHdWouJeRF7TPYhI+AUQjk=
+github.com/BurntSushi/toml v1.6.0/go.mod h1:ukJfTF/6rtPPRCnwkur4qwRxa8vTRFBF0uk2lLoLwho=
 github.com/DataDog/datadog-go v3.2.0+incompatible/go.mod h1:LButxg5PwREeZtORoXG3tL4fMGNddJ+vMq1mwgfaqoQ=
 github.com/GoogleCloudPlatform/opentelemetry-operations-go/detectors/gcp v1.31.0 h1:DHa2U07rk8syqvCge0QIGMCE1WxGj9njT44GH7zNJLQ=
 github.com/GoogleCloudPlatform/opentelemetry-operations-go/detectors/gcp v1.31.0/go.mod h1:P4WPRUkOhJC13W//jWpyfJNDAIpvRbAUIYLX/4jtlE0=
@@ -483,8 +485,6 @@ github.com/hairyhenderson/go-fsimpl v0.4.5 h1:kZteoZkSMPqCxvrvolyEr5QLeVsvDXyzDE
 github.com/hairyhenderson/go-fsimpl v0.4.5/go.mod h1:xoOE4B2Kf7GUqNuV7sJhK5V6ozhU56RC4vtTW4bMyKQ=
 github.com/hairyhenderson/go-fsimpl v0.4.6 h1:KReezFCAf6a0dl5gLGEjGklKbaI7EmbloqLKd3SXDFc=
 github.com/hairyhenderson/go-fsimpl v0.4.6/go.mod h1:bT3MxCYFMkQraH3fwV5K22y3FP1IJUJSaDuT6gTB+Tw=
-github.com/hairyhenderson/toml v0.4.2-0.20210923231440-40456b8e66cf h1:I1sbT4ZbIt9i+hB1zfKw2mE8C12TuGxPiW7YmtLbPa4=
-github.com/hairyhenderson/toml v0.4.2-0.20210923231440-40456b8e66cf/go.mod h1:jDHmWDKZY6MIIYltYYfW4Rs7hQ50oS4qf/6spSiZAxY=
 github.com/hairyhenderson/xignore v0.3.3-0.20230403012150-95fe86932830 h1:f+VnmDFJqYgkq1PRraUsYEzJ7bFr36CmzOb/xfV5Q9s=
 github.com/hairyhenderson/xignore v0.3.3-0.20230403012150-95fe86932830/go.mod h1:UqUZ8CHnVcV2/rb26Ydn+PQO7bAI8kFONU/vaK1Q/WU=
 github.com/hairyhenderson/yaml v0.0.0-20220618171115-2d35fca545ce h1:cVkYhlWAxwuS2/Yp6qPtcl0fGpcWxuZNonywHZ6/I+s=

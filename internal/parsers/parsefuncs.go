@@ -13,16 +13,13 @@ import (
 	"cuelang.org/go/cue"
 	"cuelang.org/go/cue/cuecontext"
 	"cuelang.org/go/cue/format"
+	"github.com/BurntSushi/toml"
 	"github.com/Shopify/ejson"
 	ejsonJson "github.com/Shopify/ejson/json"
 	"github.com/hairyhenderson/gomplate/v5/conv"
-	"github.com/joho/godotenv"
-
-	// XXX: replace once https://github.com/BurntSushi/toml/pull/179 is merged
-	"github.com/hairyhenderson/toml"
-	"github.com/ugorji/go/codec"
-
 	"github.com/hairyhenderson/yaml"
+	"github.com/joho/godotenv"
+	"github.com/ugorji/go/codec"
 )
 
 func unmarshalObj(obj map[string]any, in string, f func([]byte, any) error) (map[string]any, error) {
@@ -460,6 +457,13 @@ func ToYAML(in any) (string, error) {
 
 // ToTOML - Stringify a struct as TOML
 func ToTOML(in any) (string, error) {
+	// BurntSushi/toml can't encode maps with non-string key types (e.g. the
+	// map[any]any values produced by YAML unmarshaling), so coerce those to
+	// map[string]any first.
+	if v, changed := stringifyMapKeys(in); changed {
+		in = v
+	}
+
 	buf := new(bytes.Buffer)
 	err := toml.NewEncoder(buf).Encode(in)
 	if err != nil {
