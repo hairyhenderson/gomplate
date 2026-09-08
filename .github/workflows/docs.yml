@@ -63,6 +63,7 @@ jobs:
             --exclude="https://developer\.hashicorp\.com.*" \
             --exclude="https://helm\.sh.*" \
             --exclude="https://pkg\.go\.dev.*" \
-            --exclude="https://invite.slack.golangbridge.org.*"
+            --exclude="https://invite.slack.golangbridge.org.*" \
+            --exclude="https://gophers\.slack\.com.*"
 
           kill %1
