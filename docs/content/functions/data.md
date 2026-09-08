@@ -364,7 +364,7 @@ Hello world
 Converts a [TOML](https://github.com/toml-lang/toml) document into an object.
 This can be used to access properties of TOML documents.
 
-Compatible with [TOML v0.4.0](https://github.com/toml-lang/toml/blob/master/versions/en/toml-v0.4.0.md).
+Compatible with [TOML v1.1.0](https://toml.io/en/v1.1.0).
 
 _<span class="release-check" data-tag="v2.0.0">Added in gomplate v2.0.0</span>_
 ### Usage
