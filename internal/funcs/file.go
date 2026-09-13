@@ -72,6 +72,23 @@ func (f *FileFuncs) ReadDir(path any) ([]string, error) {
 	return names, nil
 }
 
+// Glob -
+func (f *FileFuncs) Glob(pattern any) ([]string, error) {
+	matches, err := fs.Glob(f.fs, conv.ToString(pattern))
+	if err != nil {
+		return nil, err
+	}
+
+	// fs.Glob always uses slash-separated paths, even on Windows. We need to
+	// convert them to the OS-specific separator to match the behaviour of the
+	// other file functions.
+	for i, match := range matches {
+		matches[i] = filepath.FromSlash(match)
+	}
+
+	return matches, nil
+}
+
 // Walk -
 func (f *FileFuncs) Walk(path any) ([]string, error) {
 	files := make([]string, 0)
