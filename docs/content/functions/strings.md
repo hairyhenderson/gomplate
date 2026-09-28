@@ -422,7 +422,7 @@ $ gomplate -i '{{ "172.21.1.42" | strings.ReplaceAll "." "-" }}'
 
 ## `strings.Slug`
 
-Creates a a "slug" from a given string - supports Unicode correctly. This wraps the [github.com/gosimple/slug](https://github.com/gosimple/slug) package. See [the github.com/gosimple/slug docs](https://pkg.go.dev/github.com/gosimple/slug) for more information.
+Creates a "slug" from a given string - supports Unicode correctly. This wraps the [github.com/gosimple/slug](https://github.com/gosimple/slug) package. See [the github.com/gosimple/slug docs](https://pkg.go.dev/github.com/gosimple/slug) for more information.
 
 _<span class="release-check" data-tag="v2.6.0">Added in gomplate v2.6.0</span>_
 ### Usage
