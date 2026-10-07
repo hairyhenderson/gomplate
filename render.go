@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"github.com/hairyhenderson/go-fsimpl"
+	"github.com/hairyhenderson/gomplate/v5/coll"
 	"github.com/hairyhenderson/gomplate/v5/internal/datafs"
 	"github.com/hairyhenderson/gomplate/v5/internal/funcs"
 )
@@ -176,6 +177,8 @@ func (r *renderer) RenderTemplates(ctx context.Context, templates []Template) er
 		ctx = datafs.ContextWithFSProvider(ctx, DefaultFSProvider)
 	}
 
+	ctx = coll.ContextWithMissingKey(ctx, r.missingKey)
+
 	// configure the template context with the refreshed Data value
 	// only done here because the data context may have changed
 	tmplctx, err := createTmplContext(ctx, r.tctxAliases, r.sr)
@@ -187,6 +190,8 @@ func (r *renderer) RenderTemplates(ctx context.Context, templates []Template) er
 }
 
 func (r *renderer) renderTemplatesWithData(ctx context.Context, templates []Template, tmplctx any) error {
+	ctx = coll.ContextWithMissingKey(ctx, r.missingKey)
+
 	// update funcs with the current context
 	// only done here to ensure the context is properly set in func namespaces
 	f := CreateFuncs(ctx)

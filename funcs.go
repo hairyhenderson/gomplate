@@ -5,6 +5,7 @@ import (
 	"maps"
 	"text/template"
 
+	"github.com/hairyhenderson/gomplate/v5/coll"
 	"github.com/hairyhenderson/gomplate/v5/internal/config"
 	"github.com/hairyhenderson/gomplate/v5/internal/funcs"
 )
@@ -43,4 +44,9 @@ func SetExperimental(ctx context.Context) context.Context {
 	// This just calls the internal function. This is here to make experimental
 	// functions available to external packages.
 	return config.SetExperimental(ctx)
+}
+
+// SetMissingKey sets the missingKey policy in the given context.
+func SetMissingKey(ctx context.Context, missingKey string) context.Context {
+	return coll.ContextWithMissingKey(ctx, missingKey)
 }
