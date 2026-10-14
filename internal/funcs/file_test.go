@@ -48,6 +48,26 @@ func TestFileExists(t *testing.T) {
 	assert.False(t, ff.Exists("/tmp/bar"))
 }
 
+func TestFileGlob(t *testing.T) {
+	t.Parallel()
+
+	fsys := fstest.MapFS{
+		"tmp":       &fstest.MapFile{Mode: fs.ModeDir | 0o777},
+		"tmp/file1.txt": &fstest.MapFile{Data: []byte("foo")},
+		"tmp/file2.log": &fstest.MapFile{Data: []byte("bar")},
+	}
+	ff := &FileFuncs{fs: datafs.WrapWdFS(fsys)}
+
+	matches, err := ff.Glob("tmp/*.txt")
+	require.NoError(t, err)
+	assert.Equal(t, []string{"tmp/file1.txt"}, matches)
+
+	// Malformed pattern test
+	_, err = ff.Glob("[]")
+	assert.Error(t, err)
+}
+
+
 func TestFileIsDir(t *testing.T) {
 	t.Parallel()
 
