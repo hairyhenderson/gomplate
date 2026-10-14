@@ -359,11 +359,13 @@ func (w *wdFS) Sub(name string) (fs.FS, error) {
 	return fs.Sub(w.fsys, name)
 }
 
-func (w *wdFS) Glob(_ string) ([]string, error) {
-	// I'm not sure how to handle this, so I'm just going to error for now -
-	// I have no need of Glob anyway.
-	return nil, fmt.Errorf("glob not supported by wdFS: %w", fs.ErrInvalid)
+func (w *wdFS) Glob(pattern string) ([]string, error) {
+	if globFS, ok := w.fsys.(fs.GlobFS); ok {
+		return globFS.Glob(pattern)
+	}
+	return fs.Glob(w.fsys, pattern)
 }
+
 
 func (w *wdFS) Create(name string) (fs.File, error) {
 	root, resolved, err := resolveLocalPath(w.vol, name)
