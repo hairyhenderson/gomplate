@@ -110,3 +110,9 @@ func (f *FileFuncs) Write(path any, data any) (s string, err error) {
 
 	return "", err
 }
+
+// Glob -
+func (f *FileFuncs) Glob(pattern any) ([]string, error) {
+	return fs.Glob(f.fs, conv.ToString(pattern))
+}
+
