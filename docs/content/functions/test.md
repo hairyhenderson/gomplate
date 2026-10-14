@@ -136,6 +136,55 @@ Got a map:
 - "key2": foobar
 ```
 
+## `test.JSONSchema` _(experimental)_
+**Experimental:** This function is [_experimental_][experimental] and may be enabled with the [`--experimental`][experimental] flag.
+
+[experimental]: ../config/#experimental
+
+Validates the given value against a [JSON Schema](https://json-schema.org),
+and returns the value unchanged. If the value does not match the schema,
+template generation fails with a list of every failing location.
+
+The schema can be a JSON string, or already-parsed data such as a
+[datasource](../datasources/). Schemas without a `$schema` keyword are
+treated as draft 2020-12; drafts 4, 6, 7 and 2019-09 are also supported.
+
+References within the schema (e.g. `#/$defs/name`) are supported, but
+`$ref`s to other files or URLs are not loaded.
+
+_<span class="release-check" data-tag="v5.3.0">Added in gomplate v5.3.0</span>_
+### Usage
+
+```
+test.JSONSchema schema value
+```
+```
+value | test.JSONSchema schema
+```
+
+### Arguments
+
+| name | description |
+|------|-------------|
+| `schema` | _(required)_ the JSON Schema, as a JSON string or parsed data |
+| `value` | _(required)_ the value to validate |
+
+### Examples
+
+```console
+$ gomplate --experimental -i '{{ "hi" | test.JSONSchema `{"type": "string", "maxLength": 3}` }}'
+hi
+```
+```console
+$ cat config.yaml
+name: web
+replicas: 0
+$ gomplate --experimental -d config=config.yaml -d schema=schema.json \
+    -i '{{ $c := ds "config" | test.JSONSchema (ds "schema") }}{{ $c.name }}'
+template: <arg>:1:27: executing "<arg>" at <test.JSONSchema>: error calling JSONSchema: schema validation failed:
+- at '/replicas': minimum: got 0, want 1
+```
+
 ## `test.Kind`
 
 **Alias:** `kind`

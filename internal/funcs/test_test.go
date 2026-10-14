@@ -5,6 +5,7 @@ import (
 	"strconv"
 	"testing"
 
+	"github.com/hairyhenderson/gomplate/v5/internal/config"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -171,4 +172,34 @@ func TestIsKind(t *testing.T) {
 	for _, d := range falsedata {
 		assert.False(t, f.IsKind(d.kind, d.arg))
 	}
+}
+
+func TestJSONSchema(t *testing.T) {
+	t.Parallel()
+
+	schema := map[string]any{
+		"type":     "object",
+		"required": []any{"name"},
+		"properties": map[string]any{
+			"name": map[string]any{"type": "string"},
+		},
+	}
+	valid := map[string]any{"name": "foo"}
+
+	f := TestFuncs{ctx: context.Background()}
+	_, err := f.JSONSchema(schema, valid)
+	require.ErrorContains(t, err, "experimental")
+
+	f = TestFuncs{ctx: config.SetExperimental(context.Background())}
+	v, err := f.JSONSchema(schema, valid)
+	require.NoError(t, err)
+	assert.Equal(t, valid, v)
+
+	v, err = f.JSONSchema(`{"type": "string"}`, "foo")
+	require.NoError(t, err)
+	assert.Equal(t, "foo", v)
+
+	v, err = f.JSONSchema(schema, map[string]any{"name": 42})
+	require.ErrorContains(t, err, "schema validation failed")
+	assert.Nil(t, v)
 }
