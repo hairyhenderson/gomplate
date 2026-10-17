@@ -198,7 +198,7 @@ $ gomplate -c .=http://xkcd.com/info.0.json -i '<a href="{{ .img }}">{{ .title }
 
 ### `--missing-key`
 
-Control the behavior during execution if a map is indexed with a key that is not present in the map.
+Control the behavior during execution if a map is indexed with a key that is not present in the map, or if a [`coll.JSONPath`](../functions/coll/#colljsonpath) expression targets a missing path or index.
 
 Available values:
 - `error` (default): Execution stops immediately with an error.

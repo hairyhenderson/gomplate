@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"testing"
 
+	"github.com/hairyhenderson/gomplate/v5/coll"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -295,4 +296,77 @@ func TestCollFuncs_Unset(t *testing.T) {
 	out, err = c.Unset("bar", m)
 	require.NoError(t, err)
 	assert.Empty(t, out)
+}
+
+func TestCollFuncs_JSONPath(t *testing.T) {
+	t.Parallel()
+
+	data := map[string]any{
+		"store": map[string]any{
+			"book": []any{
+				map[string]any{"title": "Moby Dick"},
+			},
+			"color": "blue",
+		},
+	}
+
+	t.Run("missing-key=error", func(t *testing.T) {
+		t.Parallel()
+
+		ctx := coll.ContextWithMissingKey(context.Background(), "error")
+		c := &CollFuncs{ctx: ctx}
+
+		out, err := c.JSONPath(".store.color", data)
+		require.NoError(t, err)
+		assert.Equal(t, "blue", out)
+
+		_, err = c.JSONPath(".store.bogus", data)
+		require.Error(t, err)
+
+		_, err = c.JSONPath(".store.book[99]", data)
+		require.Error(t, err)
+	})
+
+	t.Run("missing-key=default", func(t *testing.T) {
+		t.Parallel()
+
+		ctx := coll.ContextWithMissingKey(context.Background(), "default")
+		c := &CollFuncs{ctx: ctx}
+
+		out, err := c.JSONPath(".store.color", data)
+		require.NoError(t, err)
+		assert.Equal(t, "blue", out)
+
+		out, err = c.JSONPath(".store.bogus", data)
+		require.NoError(t, err)
+		assert.Nil(t, out)
+
+		out, err = c.JSONPath(".store.book[99]", data)
+		require.NoError(t, err)
+		assert.Nil(t, out)
+	})
+
+	t.Run("missing-key=zero", func(t *testing.T) {
+		t.Parallel()
+
+		ctx := coll.ContextWithMissingKey(context.Background(), "zero")
+		c := &CollFuncs{ctx: ctx}
+
+		out, err := c.JSONPath(".store.bogus", data)
+		require.NoError(t, err)
+		assert.Nil(t, out)
+	})
+
+	t.Run("zero-value CollFuncs acts as error", func(t *testing.T) {
+		t.Parallel()
+
+		c := &CollFuncs{}
+
+		out, err := c.JSONPath(".store.color", data)
+		require.NoError(t, err)
+		assert.Equal(t, "blue", out)
+
+		_, err = c.JSONPath(".store.bogus", data)
+		require.Error(t, err)
+	})
 }
