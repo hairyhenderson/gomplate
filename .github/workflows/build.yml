@@ -36,7 +36,11 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           fetch-depth: 0
-      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6
+      # PRs only restore the Go caches; only main saves them. A PR-scoped cache
+      # can't be used by any other PR, and Renovate PRs (each with a different
+      # go.sum) were filling the repo's cache quota and evicting main's caches.
+      - uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6
+        id: go-cache
         with:
           path: |
             ~/go/pkg/mod
@@ -50,6 +54,13 @@ jobs:
         if: matrix.goarch == 'amd64'
         run: make -B schema/gomplate-config.json && git diff --exit-code schema/
       - run: make integration GOARCH=${{ matrix.goarch }} GOARM=${{ matrix.goarm }}
+      - uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6
+        if: github.ref == 'refs/heads/main' && steps.go-cache.outputs.cache-hit != 'true'
+        with:
+          path: |
+            ~/go/pkg/mod
+            ~/.cache/go-build
+          key: ${{ runner.os }}-${{ runner.arch }}-${{ matrix.goarch }}-go-${{ hashFiles('**/go.sum') }}
   windows-build:
     runs-on: windows-latest
     env:
