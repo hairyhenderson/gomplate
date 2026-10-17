@@ -8,6 +8,22 @@
   "semanticCommitType": "deps",
   "semanticCommitScope": "{{manager}}",
   "platformAutomerge": true,
+  "customManagers": [
+    {
+      "customType": "regex",
+      "description": "Keep Netlify's Hugo version in sync with docs.yml (same dependency, so they update together)",
+      "managerFilePatterns": [
+        "/^netlify\\.toml$/"
+      ],
+      "matchStrings": [
+        "HUGO_VERSION\\s*=\\s*\"(?<currentValue>[^\"]+)\""
+      ],
+      "depNameTemplate": "hugo",
+      "packageNameTemplate": "gohugoio/hugo",
+      "datasourceTemplate": "github-releases",
+      "extractVersionTemplate": "^v(?<version>.+)$"
+    }
+  ],
   "packageRules": [
     {
       "matchUpdateTypes": ["minor", "patch"],
