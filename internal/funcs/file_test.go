@@ -86,6 +86,26 @@ func TestFileWalk(t *testing.T) {
 	assert.Equal(t, expectedPaths, actualPaths)
 }
 
+func TestFileGlob(t *testing.T) {
+	t.Parallel()
+
+	fsys := fstest.MapFS{
+		"tmp":          &fstest.MapFile{Mode: fs.ModeDir | 0o777},
+		"tmp/foo.yaml": &fstest.MapFile{Data: []byte("foo")},
+		"tmp/bar.yaml": &fstest.MapFile{Data: []byte("bar")},
+		"tmp/baz.json": &fstest.MapFile{Data: []byte("baz")},
+	}
+
+	ff := &FileFuncs{fs: datafs.WrapWdFS(fsys)}
+
+	sep := string(filepath.Separator)
+	expected := []string{sep + filepath.Join("tmp", "bar.yaml"), sep + filepath.Join("tmp", "foo.yaml")}
+
+	actual, err := ff.Glob("/tmp/*.yaml")
+	require.NoError(t, err)
+	assert.Equal(t, expected, actual)
+}
+
 func TestReadDir(t *testing.T) {
 	fsys := fs.FS(fstest.MapFS{
 		"tmp":          &fstest.MapFile{Mode: fs.ModeDir | 0o777},

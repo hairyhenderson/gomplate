@@ -25,6 +25,25 @@ funcs:
         $ gomplate -f input.tmpl
         yes
         ```
+  - name: file.Glob
+    description: |
+      Returns a list of files and directories that match the given shell file name pattern, sorted in lexical order.
+
+      The pattern syntax is that of Go's [`path.Match`](https://pkg.go.dev/path#Match) function. A pattern with no matches returns an empty list and no error.
+
+      Similar to Go's [`fs.Glob`](https://pkg.go.dev/io/fs#Glob) function.
+    pipeline: true
+    arguments:
+      - name: pattern
+        required: true
+        description: The pattern to match
+    examples:
+      - |
+        $ mkdir -p /tmp/foo
+        $ touch /tmp/foo/one.yaml /tmp/foo/two.yaml /tmp/foo/three.json
+        $ gomplate -i '{{ range file.Glob "/tmp/foo/*.yaml" }}{{.}}{{"\n"}}{{end}}'
+        /tmp/foo/one.yaml
+        /tmp/foo/two.yaml
   - name: file.IsDir
     released: v2.4.0
     description: |
