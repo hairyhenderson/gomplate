@@ -68,14 +68,14 @@ func assertSuccess(t *testing.T, o, e string, err error, expected string) {
 }
 
 // filterAWSChecksumWarnings removes AWS SDK checksum warning messages from the
-// error output. These are a non-issue for our tests, since we use gofakes3 and
+// error output, whatever level the SDK logs them at (newer versions use DEBUG). These are a non-issue for our tests, since we use gofakes3 and
 // anonymous buckets.
 func filterAWSChecksumWarnings(e string) string {
 	lines := strings.Split(e, "\n")
 
 	filteredLines := make([]string, 0, len(lines))
 	for _, line := range lines {
-		if !strings.Contains(line, "WARN Response has no supported checksum. Not validating response payload.") {
+		if !strings.Contains(line, "Response has no supported checksum. Not validating response payload.") {
 			filteredLines = append(filteredLines, line)
 		}
 	}
