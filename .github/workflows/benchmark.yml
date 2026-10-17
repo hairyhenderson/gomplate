@@ -3,7 +3,23 @@ on:
   push:
     branches:
       - main
+    paths:
+      - '**.go'
+      - go.mod
+      - go.sum
+      - Makefile
+      - .github/workflows/benchmark.yml
   pull_request:
+    paths:
+      - '**.go'
+      - go.mod
+      - go.sum
+      - Makefile
+      - .github/workflows/benchmark.yml
+  schedule:
+    # nightly, to catch regressions from changes that didn't trigger a run
+    - cron: '17 6 * * *'
+  workflow_dispatch:
 
 permissions:
   pull-requests: write
@@ -16,6 +32,12 @@ concurrency:
 jobs:
   benchmark:
     name: benchmark regression check
+    # skip PRs opened by Renovate (they're frequent and use a lot of runner
+    # time); the push to main and the nightly run still cover them. Scheduled
+    # runs only make sense on the main repo, not forks.
+    if: >-
+      (github.event_name != 'pull_request' || github.event.pull_request.user.login != 'renovate[bot]') &&
+      (github.event_name != 'schedule' || github.repository == 'hairyhenderson/gomplate')
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
@@ -37,6 +59,7 @@ jobs:
           external-data-json-path: ./cache/benchmark-data.json
           fail-on-alert: true
           comment-on-alert: true
-          comment-always: true
+          # only comment on every PR run, not on pushes or the nightly run
+          comment-always: ${{ github.event_name == 'pull_request' }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
           alert-threshold: "200%"
