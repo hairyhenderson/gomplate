@@ -49,3 +49,22 @@ func TestTest_Required(t *testing.T) {
 		withStdin(`foo: false`).run()
 	assertSuccess(t, o, e, err, "false")
 }
+
+func TestTest_JSONSchema(t *testing.T) {
+	schema := `{"type": "object", "required": ["name"], "properties": {"name": {"type": "string"}}}`
+
+	_, _, err := cmd(t, "-d", "in=stdin:///?type=application/yaml",
+		"-i", `{{ (ds "in") | test.JSONSchema `+"`"+schema+"`"+` }}`).
+		withStdin(`name: foo`).run()
+	assert.ErrorContains(t, err, "experimental")
+
+	o, e, err := cmd(t, "--experimental", "-d", "in=stdin:///?type=application/yaml",
+		"-i", `{{ $in := ds "in" | test.JSONSchema `+"`"+schema+"`"+` }}{{ $in.name }}`).
+		withStdin(`name: foo`).run()
+	assertSuccess(t, o, e, err, "foo")
+
+	_, _, err = cmd(t, "--experimental", "-d", "in=stdin:///?type=application/yaml",
+		"-i", `{{ ds "in" | test.JSONSchema `+"`"+schema+"`"+` }}`).
+		withStdin(`name: 42`).run()
+	assert.ErrorContains(t, err, "at '/name': got number, want string")
+}

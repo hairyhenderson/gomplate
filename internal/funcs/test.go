@@ -22,6 +22,7 @@ func CreateTestFuncs(ctx context.Context) map[string]any {
 	f["ternary"] = ns.Ternary
 	f["kind"] = ns.Kind
 	f["isKind"] = ns.IsKind
+	f["jsonSchema"] = ns.JSONSchema
 	return f
 }
 
@@ -101,4 +102,18 @@ func (f TestFuncs) IsKind(kind string, arg any) bool {
 		}
 	}
 	return k == kind
+}
+
+// JSONSchema - validate the value against a JSON Schema, returning the value
+// unchanged so it can be used in a pipeline
+func (f TestFuncs) JSONSchema(schema, value any) (any, error) {
+	if err := checkExperimental(f.ctx); err != nil {
+		return nil, err
+	}
+
+	if err := test.JSONSchema(schema, value); err != nil {
+		return nil, err
+	}
+
+	return value, nil
 }
