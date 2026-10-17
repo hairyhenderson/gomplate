@@ -137,7 +137,7 @@ func walkDir(ctx context.Context, cfg *Config, dir string, outFileNamer outputNa
 		AfterPatterns: excludeProcessingGlob,
 	})
 	if err != nil {
-		return nil, fmt.Errorf("passthough matching failed for %s: %w", dir, err)
+		return nil, fmt.Errorf("passthrough matching failed for %s: %w", dir, err)
 	}
 
 	passthroughFiles := make(map[string]bool)
