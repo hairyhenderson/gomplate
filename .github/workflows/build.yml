@@ -52,6 +52,10 @@ jobs:
       - run: make test GOARCH=${{ matrix.goarch }} GOARM=${{ matrix.goarm }}
       - name: Check schema is up to date
         if: matrix.goarch == 'amd64'
+        # CGO_ENABLED=0 matches `make build`, so go run reuses its build cache
+        # instead of recompiling the dependency tree with cgo variants
+        env:
+          CGO_ENABLED: '0'
         run: make -B schema/gomplate-config.json && git diff --exit-code schema/
       - run: make integration GOARCH=${{ matrix.goarch }} GOARM=${{ matrix.goarm }}
       - uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6
