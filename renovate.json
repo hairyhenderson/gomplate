@@ -3,8 +3,27 @@
   "extends": [
     "config:best-practices"
   ],
+  "osvVulnerabilityAlerts": true,
+  "semanticCommits": "enabled",
+  "semanticCommitType": "deps",
+  "semanticCommitScope": "{{manager}}",
+  "platformAutomerge": true,
   "packageRules": [
     {
+      "matchUpdateTypes": ["minor", "patch"],
+      "minimumReleaseAge": "7 days",
+      "automerge": true
+    },
+    {
+      "matchUpdateTypes": ["digest"],
+      "automerge": true
+    },
+    {
+      "matchUpdateTypes": ["major"],
+      "minimumReleaseAge": "7 days"
+    },
+    {
+      "description": "Own modules: no release-age wait, we publish these ourselves",
       "matchSourceUrls": ["https://github.com/hairyhenderson/**"],
       "minimumReleaseAge": "0 days"
     }
