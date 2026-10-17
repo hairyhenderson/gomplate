@@ -3,6 +3,6 @@ command = "make gen-docs"
 publish = "docs/public/"
 
 [build.environment]
-HUGO_VERSION = "0.167.0"
+HUGO_VERSION = "0.168.0"
 NODE_VERSION = "24"
 GO_VERSION = "1.26.2"
