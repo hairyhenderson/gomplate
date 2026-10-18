@@ -2,6 +2,7 @@ package coll
 
 import (
 	"fmt"
+	"strconv"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -643,4 +644,37 @@ func TestPick(t *testing.T) {
 	assert.Equal(t, expected, Pick(in, "foo", "bar"))
 
 	assert.Equal(t, in, Pick(in, "foo", "bar", ""))
+}
+
+func BenchmarkUniq(b *testing.B) {
+	for _, size := range []int{10, 100, 1000} {
+		ints := make([]int, size)
+		strs := make([]string, size)
+		mixed := make([]any, size)
+		for i := range size {
+			// roughly half of the values are duplicates
+			ints[i] = i % (size / 2)
+			strs[i] = strconv.Itoa(i % (size / 2))
+			if i%2 == 0 {
+				mixed[i] = ints[i]
+			} else {
+				mixed[i] = map[string]any{"k": i % (size / 4)}
+			}
+		}
+
+		for _, d := range []struct {
+			in   any
+			name string
+		}{
+			{ints, "ints"},
+			{strs, "strings"},
+			{mixed, "mixed"},
+		} {
+			b.Run(fmt.Sprintf("%s/%d", d.name, size), func(b *testing.B) {
+				for b.Loop() {
+					_, _ = Uniq(d.in)
+				}
+			})
+		}
+	}
 }
