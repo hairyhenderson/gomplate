@@ -1,6 +1,6 @@
 # Maintainer: Dave Henderson <dhenderson@gmail.com>
 pkgname=gomplate
-pkgver={{.version}}
+pkgver={{ env.Getenv "VERSION" | required "set VERSION (without the leading v)" }}
 pkgrel=0
 pkgdesc="A versatile Go template processor"
 url="https://github.com/hairyhenderson/gomplate"
@@ -12,9 +12,6 @@ options="net"
 source="$pkgname-$pkgver.tar.gz::https://github.com/hairyhenderson/gomplate/archive/v$pkgver.tar.gz"
 
 export GOFLAGS="$GOFLAGS -trimpath -modcacherw"
-export GOCACHE="${GOCACHE:-"$srcdir/go-cache"}"
-export GOTMPDIR="${GOTMPDIR:-"$srcdir"}"
-export GOMODCACHE="${GOMODCACHE:-"$srcdir/go"}"
 
 build() {
 	# CGO needs to be able to be enabled for -buildmode=pie, setting it to an
@@ -35,4 +32,4 @@ package() {
 	install -D -m 755 bin/gomplate "$pkgdir"/usr/bin/gomplate
 }
 
-sha512sums="{{.sha512}}  gomplate-{{.version}}.tar.gz"
+sha512sums="{{ .sha512 | strings.TrimSpace }}  gomplate-{{ env.Getenv "VERSION" }}.tar.gz"
