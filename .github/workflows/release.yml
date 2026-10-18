@@ -63,10 +63,10 @@ jobs:
           branch="docs/release-check-${TAG_NAME}"
           git checkout -b "${branch}"
           git add docs/static/js/release-check.js
-          git commit -sm "docs(release-check): bump latest known release to ${TAG_NAME}"
+          git commit -sm "chore(release-check): bump latest known release to ${TAG_NAME}"
           git push -u origin "${branch}"
 
-          gh pr create --title "docs(release-check): bump latest known release to ${TAG_NAME}" \
+          gh pr create --title "chore(release-check): bump latest known release to ${TAG_NAME}" \
             --body "Automated update after releasing ${TAG_NAME}." \
             --base main --head "${branch}"
 
