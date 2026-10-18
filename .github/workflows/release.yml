@@ -60,13 +60,16 @@ jobs:
           git config --global user.name "${{ github.actor }}"
           git config --global user.email "${{ github.actor_id }}+${{ github.actor }}@users.noreply.github.com"
 
+          # chore (hidden in release-please-config.json), not docs: a visible
+          # type would make release-please open a new release PR after every
+          # release, which would in turn trigger this job again
           branch="docs/release-check-${TAG_NAME}"
           git checkout -b "${branch}"
           git add docs/static/js/release-check.js
-          git commit -sm "docs(release-check): bump latest known release to ${TAG_NAME}"
+          git commit -sm "chore(release-check): bump latest known release to ${TAG_NAME}"
           git push -u origin "${branch}"
 
-          gh pr create --title "docs(release-check): bump latest known release to ${TAG_NAME}" \
+          gh pr create --title "chore(release-check): bump latest known release to ${TAG_NAME}" \
             --body "Automated update after releasing ${TAG_NAME}." \
             --base main --head "${branch}"
 
