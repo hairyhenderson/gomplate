@@ -1,0 +1,136 @@
+name: Alpine aports
+
+# Submits a gomplate version bump to alpinelinux/aports for each release.
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag_name:
+        description: release tag to submit to aports (e.g. v5.3.0)
+        required: true
+        type: string
+      dry_run:
+        description: prepare the commit but don't push the branch or open the MR
+        required: true
+        type: boolean
+        default: true
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  deploy-alpine:
+    runs-on: ubuntu-latest
+    environment:
+      name: aports
+    env:
+      TAG_NAME: ${{ github.event.release.tag_name || inputs.tag_name }}
+      # only set for manual runs - release events always do the full run
+      DRY_RUN: ${{ inputs.dry_run && 'true' || 'false' }}
+    steps:
+      - uses: actions/create-github-app-token@64ab729a6294000f5aa4a4bc0b73d1f32bc45510 # v3
+        id: app-token
+        with:
+          client-id: ${{ vars.APP_ID }}
+          private-key: ${{ secrets.PRIVATE_KEY }}
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - name: install lab
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: |
+          gh release download --repo zaquestion/lab v0.25.1 -p lab_0.25.1_linux_amd64.tar.gz
+          tar -xzf lab_0.25.1_linux_amd64.tar.gz
+          ./lab --version
+      - name: Retrieve release artifacts
+        id: artifacts
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: |
+          # need the checksums
+          gh release download ${TAG_NAME} --skip-existing -p "${TAG_NAME}.sha*"
+
+          echo "sha256sum=$(cat ${TAG_NAME}.sha256)" >> $GITHUB_OUTPUT
+          echo "sha512sum=$(cat ${TAG_NAME}.sha512)" >> $GITHUB_OUTPUT
+
+          # need gomplate to template the APKBUILD!
+          gh release download ${TAG_NAME} --skip-existing -p gomplate_linux-amd64
+          chmod 755 gomplate_linux-amd64
+      # gitlab.alpinelinux.org sits behind a bot filter (go-away) that serves a
+      # "Checking you are not a bot" page (HTTP 418) to GitHub runners for all
+      # web/git-over-HTTPS requests, so git must go over SSH. The API
+      # (/api/v4, used by lab) is not challenged.
+      - name: configure SSH for gitlab.alpinelinux.org
+        env:
+          GITLAB_SSH_KEY: ${{ secrets.GITLAB_SSH_KEY }}
+        run: |
+          set -e
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$GITLAB_SSH_KEY" > ~/.ssh/gitlab_alpine
+          chmod 600 ~/.ssh/gitlab_alpine
+          cat >> ~/.ssh/known_hosts <<'EOF'
+          gitlab.alpinelinux.org ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBAd9h3xhLHSDvI7TFNhNV3W4dKDg1BHQtKE50nUgHJvcUy76qu2tJunRMAGZv4VvpJ9xwBnUvshtXOwn0zEAPKk=
+          gitlab.alpinelinux.org ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDPS0WhS8gSO/rgrluFQQLtNFeLse+B6dacw4FWV2WEpAhjFnQ68vm6YSwpRNZzz+QN8zMu0OfXlfZw5pTbCXyJlvS3RE+fANazaQVqUup4usZMUOMt5Cn1GKdm0Lus11dPOmHI0HE1KkQbpMAEYRyH1MerqUk21/0IYO8GJFIRFTF60uE5YdkXUZJqv4SfsVi2fCYiNS2dsfLwa39JOfivKGJgBMEsO20FXUDcrzO8mWQ970mVQgwcgx3bfDn4/BgA0UVN3fBLMJNFefSbgYHnf/tEjzEZ0ao0giYBR+eXJeJX3HEdDucjKEqDBMF8m0eYc8odAf8dlhRxHguGMf6rqt2bB10MhrxjbLanINYdQtrQw1OOXaVCnbYUUJn7q0and6/Xjq81js38A81x0fz2fB/1KtZIUG6JTZeYzojpk59NV7Lm5GW56wt/rOTPGd0CwvW7l6F/eDXvNXwB1GBY11G64G/YCzvxl38BKNfZVogrge/8SgViE2WGXni01JE=
+          gitlab.alpinelinux.org ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIA3AxnPM+Cquq/2QXWWmuHdgmfMIU+v/7kV/k3p+KpBd
+          EOF
+          cat >> ~/.ssh/config <<'EOF'
+          Host gitlab.alpinelinux.org
+            IdentityFile ~/.ssh/gitlab_alpine
+            IdentitiesOnly yes
+            StrictHostKeyChecking yes
+          EOF
+          ssh -T git@gitlab.alpinelinux.org
+      - name: checkout alpinelinux/aports
+        run: |
+          set -ex
+          git config --global user.name "${{ github.actor }}"
+          git config --global user.email "${{ github.actor_id }}+${{ github.actor }}@users.noreply.github.com"
+          git clone -v git@gitlab.alpinelinux.org:hairyhenderson/aports.git
+          cd aports
+          git remote add upstream git@gitlab.alpinelinux.org:alpine/aports.git
+          git checkout master
+      - name: update fork
+        run: |
+          set -ex
+          cd aports
+          git fetch -v upstream
+          git rebase upstream/master
+          git push
+      - name: upgrade gomplate in aports
+        env:
+          LAB_CORE_HOST: https://gitlab.alpinelinux.org
+          # note: this token expires, so needs to be rotated periodically
+          LAB_CORE_TOKEN: ${{ secrets.GITLAB_ACCESS_TOKEN }}
+        run: |
+          set -ex
+          export VERSION=${TAG_NAME#v}
+
+          cd aports/community/gomplate
+          git checkout -b upgrade-gomplate-aport-${VERSION}
+
+          export ENVJSON="{\"version\": \"${VERSION}\", \"sha512\": \"${{ steps.artifacts.outputs.sha512sum }}\" }"
+          ../../../gomplate_linux-amd64 -c .=env:///ENVJSON\?type=application/json \
+            -f ../../../packaging/alpine/APKBUILD.tmpl \
+            -o APKBUILD
+
+          git add APKBUILD
+          git commit -sm "community/gomplate: upgrade to ${VERSION}"
+
+          if [ "${DRY_RUN}" = "true" ]; then
+            echo "dry run: not pushing upgrade-gomplate-aport-${VERSION} or opening an MR"
+            git log --stat -1
+            exit 0
+          fi
+
+          git push -u origin upgrade-gomplate-aport-${VERSION}
+
+          # open a PR
+          ../../../lab mr create --allow-collaboration \
+            -m "community/gomplate: upgrade to ${VERSION}" \
+            -m "https://github.com/${{ github.repository }}/releases/tag/${TAG_NAME}"
