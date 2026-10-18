@@ -2,6 +2,7 @@ package coll
 
 import (
 	"fmt"
+	"math"
 	"strconv"
 	"testing"
 
@@ -180,6 +181,44 @@ func TestUniq(t *testing.T) {
 	out, err = Uniq([]string{"one", "two", "one", "three"})
 	require.NoError(t, err)
 	assert.Equal(t, []any{"one", "two", "three"}, out)
+
+	out, err = Uniq([]any{})
+	require.NoError(t, err)
+	assert.Equal(t, []any{}, out)
+
+	// values of different types are never equal, even if they look the same
+	type myString string
+	out, err = Uniq([]any{"a", myString("a"), int64(1), 1, uint8(1), 1.0, "a", int64(1)})
+	require.NoError(t, err)
+	assert.Equal(t, []any{"a", myString("a"), int64(1), 1, uint8(1), 1.0}, out)
+
+	out, err = Uniq([]any{nil, 1, nil})
+	require.NoError(t, err)
+	assert.Equal(t, []any{nil, 1}, out)
+
+	// NaN is never equal to itself
+	nan := math.NaN()
+	out, err = Uniq([]any{nan, nan})
+	require.NoError(t, err)
+	assert.Len(t, out, 2)
+
+	// maps and slices are compared deeply
+	out, err = Uniq([]any{
+		map[string]any{"a": 1},
+		[]int{1},
+		map[string]any{"a": 1},
+		[]int{1},
+		map[string]any{"a": 2},
+		1,
+	})
+	require.NoError(t, err)
+	assert.Equal(t, []any{map[string]any{"a": 1}, []int{1}, map[string]any{"a": 2}, 1}, out)
+
+	// pointers are compared by the values they point to
+	x, y := 1, 1
+	out, err = Uniq([]any{&x, &y})
+	require.NoError(t, err)
+	assert.Equal(t, []any{&x}, out)
 }
 
 func TestReverse(t *testing.T) {
