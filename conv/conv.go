@@ -86,6 +86,8 @@ func Join(in any, sep string) (out string, err error) {
 }
 
 // Has determines whether or not a given object has a property with the given key
+//
+// Deprecated: use [github.com/hairyhenderson/gomplate/v5/coll.Has] instead.
 func Has(in any, key any) bool {
 	av := reflect.ValueOf(in)
 
