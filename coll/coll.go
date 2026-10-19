@@ -23,23 +23,7 @@ func Slice(args ...any) []any {
 
 // Has determines whether or not a given object has a property with the given key
 func Has(in any, key any) bool {
-	av := reflect.ValueOf(in)
-
-	switch av.Kind() {
-	case reflect.Map:
-		kv := reflect.ValueOf(key)
-		return av.MapIndex(kv).IsValid()
-	case reflect.Slice, reflect.Array:
-		l := av.Len()
-		for i := range l {
-			v := av.Index(i).Interface()
-			if reflect.DeepEqual(v, key) {
-				return true
-			}
-		}
-	}
-
-	return false
+	return iconv.Has(in, key)
 }
 
 // Dict is a convenience function that creates a map with string keys.
