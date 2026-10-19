@@ -89,23 +89,7 @@ func Join(in any, sep string) (out string, err error) {
 //
 // Deprecated: use [github.com/hairyhenderson/gomplate/v5/coll.Has] instead.
 func Has(in any, key any) bool {
-	av := reflect.ValueOf(in)
-
-	switch av.Kind() {
-	case reflect.Map:
-		kv := reflect.ValueOf(key)
-		return av.MapIndex(kv).IsValid()
-	case reflect.Slice, reflect.Array:
-		l := av.Len()
-		for i := range l {
-			v := av.Index(i).Interface()
-			if reflect.DeepEqual(v, key) {
-				return true
-			}
-		}
-	}
-
-	return false
+	return iconv.Has(in, key)
 }
 
 // ToString -
