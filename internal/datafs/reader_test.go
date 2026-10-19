@@ -226,3 +226,32 @@ func TestDatasource(t *testing.T) {
 	_, _, err = d.ReadSource(ctx, "bar")
 	require.Error(t, err)
 }
+
+func TestReadSource_CacheKey(t *testing.T) {
+	// the cache key must distinguish the alias from the args, so that e.g.
+	// alias "a" with arg "bc" and alias "ab" with arg "c" don't collide
+	base := "/tmp/"
+	if runtime.GOOS == osWindows {
+		base = "C:/tmp/"
+	}
+
+	fsys := WrapWdFS(fstest.MapFS{
+		"tmp/a/bc": &fstest.MapFile{Data: []byte("from a")},
+		"tmp/ab/c": &fstest.MapFile{Data: []byte("from ab")},
+	})
+	ctx := ContextWithFSProvider(context.Background(), WrappedFSProvider(fsys, "file", ""))
+
+	reg := NewRegistry()
+	reg.Register("a", config.DataSource{URL: &url.URL{Scheme: "file", Path: base + "a/"}})
+	reg.Register("ab", config.DataSource{URL: &url.URL{Scheme: "file", Path: base + "ab/"}})
+
+	d := &dsReader{Registry: reg}
+
+	_, b, err := d.ReadSource(ctx, "a", "bc")
+	require.NoError(t, err)
+	assert.Equal(t, "from a", string(b))
+
+	_, b, err = d.ReadSource(ctx, "ab", "c")
+	require.NoError(t, err)
+	assert.Equal(t, "from ab", string(b))
+}

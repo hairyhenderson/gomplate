@@ -46,9 +46,16 @@ type DataSourceReader interface {
 }
 
 type dsReader struct {
-	cache map[string]*content
+	cache map[cacheKey]*content
 
 	Registry
+}
+
+// cacheKey identifies a read of a datasource. Only the first arg affects
+// what's read, so the rest are ignored.
+type cacheKey struct {
+	alias string
+	arg   string
 }
 
 // content type mainly for caching
@@ -76,21 +83,18 @@ func (d *dsReader) ReadSource(ctx context.Context, alias string, args ...string)
 		source, _ = d.Lookup(alias)
 	}
 
-	if d.cache == nil {
-		d.cache = make(map[string]*content)
-	}
-	cacheKey := alias
-	for _, v := range args {
-		cacheKey += v
-	}
-	cached, ok := d.cache[cacheKey]
-	if ok {
-		return cached.contentType, cached.b, nil
-	}
-
 	arg := ""
 	if len(args) > 0 {
 		arg = args[0]
+	}
+
+	if d.cache == nil {
+		d.cache = make(map[cacheKey]*content)
+	}
+	key := cacheKey{alias: alias, arg: arg}
+	cached, ok := d.cache[key]
+	if ok {
+		return cached.contentType, cached.b, nil
 	}
 	u, err := resolveURL(*source.URL, arg)
 	if err != nil {
@@ -101,7 +105,7 @@ func (d *dsReader) ReadSource(ctx context.Context, alias string, args ...string)
 	if err != nil {
 		return "", nil, fmt.Errorf("couldn't read datasource '%s' (%s): %w", alias, u, err)
 	}
-	d.cache[cacheKey] = fc
+	d.cache[key] = fc
 
 	return fc.contentType, fc.b, nil
 }
