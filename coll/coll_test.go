@@ -2,6 +2,8 @@ package coll
 
 import (
 	"fmt"
+	"math"
+	"strconv"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -179,6 +181,44 @@ func TestUniq(t *testing.T) {
 	out, err = Uniq([]string{"one", "two", "one", "three"})
 	require.NoError(t, err)
 	assert.Equal(t, []any{"one", "two", "three"}, out)
+
+	out, err = Uniq([]any{})
+	require.NoError(t, err)
+	assert.Equal(t, []any{}, out)
+
+	// values of different types are never equal, even if they look the same
+	type myString string
+	out, err = Uniq([]any{"a", myString("a"), int64(1), 1, uint8(1), 1.0, "a", int64(1)})
+	require.NoError(t, err)
+	assert.Equal(t, []any{"a", myString("a"), int64(1), 1, uint8(1), 1.0}, out)
+
+	out, err = Uniq([]any{nil, 1, nil})
+	require.NoError(t, err)
+	assert.Equal(t, []any{nil, 1}, out)
+
+	// NaN is never equal to itself
+	nan := math.NaN()
+	out, err = Uniq([]any{nan, nan})
+	require.NoError(t, err)
+	assert.Len(t, out, 2)
+
+	// maps and slices are compared deeply
+	out, err = Uniq([]any{
+		map[string]any{"a": 1},
+		[]int{1},
+		map[string]any{"a": 1},
+		[]int{1},
+		map[string]any{"a": 2},
+		1,
+	})
+	require.NoError(t, err)
+	assert.Equal(t, []any{map[string]any{"a": 1}, []int{1}, map[string]any{"a": 2}, 1}, out)
+
+	// pointers are compared by the values they point to
+	x, y := 1, 1
+	out, err = Uniq([]any{&x, &y})
+	require.NoError(t, err)
+	assert.Equal(t, []any{&x}, out)
 }
 
 func TestReverse(t *testing.T) {
@@ -643,4 +683,37 @@ func TestPick(t *testing.T) {
 	assert.Equal(t, expected, Pick(in, "foo", "bar"))
 
 	assert.Equal(t, in, Pick(in, "foo", "bar", ""))
+}
+
+func BenchmarkUniq(b *testing.B) {
+	for _, size := range []int{10, 100, 1000} {
+		ints := make([]int, size)
+		strs := make([]string, size)
+		mixed := make([]any, size)
+		for i := range size {
+			// roughly half of the values are duplicates
+			ints[i] = i % (size / 2)
+			strs[i] = strconv.Itoa(i % (size / 2))
+			if i%2 == 0 {
+				mixed[i] = ints[i]
+			} else {
+				mixed[i] = map[string]any{"k": i % (size / 4)}
+			}
+		}
+
+		for _, d := range []struct {
+			in   any
+			name string
+		}{
+			{ints, "ints"},
+			{strs, "strings"},
+			{mixed, "mixed"},
+		} {
+			b.Run(fmt.Sprintf("%s/%d", d.name, size), func(b *testing.B) {
+				for b.Loop() {
+					_, _ = Uniq(d.in)
+				}
+			})
+		}
+	}
 }

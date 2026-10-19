@@ -116,13 +116,55 @@ func Uniq(list any) ([]any, error) {
 		return nil, err
 	}
 
-	out := []any{}
+	out := make([]any, 0, len(l))
+
+	// scalar values can be compared with ==, which gives the same result as
+	// reflect.DeepEqual for them, so track those in a set. Everything else
+	// (maps, slices, pointers, structs, etc) is compared with reflect.DeepEqual.
+	// most lists are all scalars, so size the set for that, assuming about
+	// half are duplicates
+	seen := make(map[any]struct{}, len(l)/2)
+	others := []any{}
+
 	for _, v := range l {
-		if !Has(out, v) {
-			out = append(out, v)
+		if isScalar(v) {
+			if _, ok := seen[v]; ok {
+				continue
+			}
+
+			seen[v] = struct{}{}
+		} else {
+			if slices.ContainsFunc(others, func(o any) bool {
+				return reflect.DeepEqual(o, v)
+			}) {
+				continue
+			}
+
+			others = append(others, v)
 		}
+
+		out = append(out, v)
 	}
+
 	return out, nil
+}
+
+// isScalar returns true if v is nil, or a bool, number, or string.
+func isScalar(v any) bool {
+	switch v.(type) {
+	case nil, string, int, int64, float64, bool:
+		return true
+	}
+
+	switch reflect.TypeOf(v).Kind() {
+	case reflect.Bool, reflect.String,
+		reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64,
+		reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uintptr,
+		reflect.Float32, reflect.Float64, reflect.Complex64, reflect.Complex128:
+		return true
+	default:
+		return false
+	}
 }
 
 // Reverse the list. No matter what type of input slice or array list is, a new []any is always returned.
