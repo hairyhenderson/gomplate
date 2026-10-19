@@ -2,6 +2,9 @@
 package math
 
 // AddInt -
+//
+// Deprecated: this function is unused and will be removed in a future
+// release. Sum the values directly instead.
 func AddInt(n ...int64) int64 {
 	x := int64(0)
 	for _, i := range n {
@@ -11,6 +14,9 @@ func AddInt(n ...int64) int64 {
 }
 
 // MulInt -
+//
+// Deprecated: this function is unused and will be removed in a future
+// release. Multiply the values directly instead.
 func MulInt(n ...int64) int64 {
 	var x int64 = 1
 	for _, i := range n {
