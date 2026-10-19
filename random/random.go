@@ -6,18 +6,51 @@ import (
 	"math"
 	"math/rand/v2"
 	"regexp"
+	"slices"
+	"sync"
 	"unicode"
+	"unicode/utf8"
+
+	"github.com/puzpuzpuz/xsync/v4"
 )
 
 // Default set, matches "[a-zA-Z0-9_.-]"
 const defaultSet = "-.0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz"
+
+// graphicRunes returns every graphic rune in order, which are the candidates
+// that matchChars tests the pattern against. This is the same as
+// filterRange(0, unicode.MaxRune), but reading the Unicode tables directly is
+// much faster than testing every rune.
+var graphicRunes = sync.OnceValue(func() []rune {
+	out := []rune{}
+	for _, t := range unicode.GraphicRanges {
+		for _, r := range t.R16 {
+			for c := rune(r.Lo); c <= rune(r.Hi); c += rune(r.Stride) {
+				out = append(out, c)
+			}
+		}
+		for _, r := range t.R32 {
+			for c := rune(r.Lo); c <= rune(r.Hi); c += rune(r.Stride) {
+				out = append(out, c)
+			}
+		}
+	}
+	slices.Sort(out)
+
+	return out
+})
+
+// matchCache holds the result of matchChars for each pattern, since testing
+// a pattern against every graphic rune is slow. The cached slices are never
+// modified.
+var matchCache = xsync.NewMap[string, []rune]()
 
 // StringRE - Generate a random string that matches a given regular
 // expression. Defaults to "[a-zA-Z0-9_.-]"
 func StringRE(count int, match string) (r string, err error) {
 	chars := []rune(defaultSet)
 	if match != "" {
-		chars, err = matchChars(match)
+		chars, err = cachedMatchChars(match)
 		if err != nil {
 			return "", err
 		}
@@ -58,18 +91,36 @@ func filterRange(lower, upper rune) []rune {
 	return out
 }
 
+func cachedMatchChars(match string) ([]rune, error) {
+	if chars, ok := matchCache.Load(match); ok {
+		return chars, nil
+	}
+
+	chars, err := matchChars(match)
+	if err != nil {
+		return nil, err
+	}
+
+	matchCache.Store(match, chars)
+
+	return chars, nil
+}
+
 func matchChars(match string) ([]rune, error) {
 	r, err := regexp.Compile(match)
 	if err != nil {
 		return nil, err
 	}
-	candidates := filterRange(0, unicode.MaxRune)
+
 	out := []rune{}
-	for _, c := range candidates {
-		if r.MatchString(string(c)) {
+	buf := make([]byte, 0, utf8.UTFMax)
+	for _, c := range graphicRunes() {
+		buf = utf8.AppendRune(buf[:0], c)
+		if r.Match(buf) {
 			out = append(out, c)
 		}
 	}
+
 	return out, nil
 }
 

@@ -4,6 +4,7 @@ import (
 	"math"
 	"strconv"
 	"testing"
+	"unicode"
 	"unicode/utf8"
 
 	"github.com/stretchr/testify/assert"
@@ -37,6 +38,16 @@ func TestMatchChars(t *testing.T) {
 	}
 }
 
+func TestGraphicRunes(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping slow test")
+	}
+
+	t.Parallel()
+
+	assert.Equal(t, filterRange(0, unicode.MaxRune), graphicRunes())
+}
+
 func TestStringRE(t *testing.T) {
 	t.Parallel()
 
@@ -44,6 +55,19 @@ func TestStringRE(t *testing.T) {
 	require.NoError(t, err)
 	assert.Equal(t, 15, utf8.RuneCountInString(r))
 
+	_, err = StringRE(1, "[bogus")
+	require.Error(t, err)
+
+	// a second call with the same pattern uses the cached character set
+	r, err = StringRE(15, "[a-c]")
+	require.NoError(t, err)
+	assert.Regexp(t, "^[a-c]{15}$", r)
+
+	r, err = StringRE(15, "[a-c]")
+	require.NoError(t, err)
+	assert.Regexp(t, "^[a-c]{15}$", r)
+
+	// errors are not cached
 	_, err = StringRE(1, "[bogus")
 	require.Error(t, err)
 }
