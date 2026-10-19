@@ -144,3 +144,19 @@ func TestFloat(t *testing.T) {
 		assert.InDelta(t, d.expected, n, d.delta)
 	}
 }
+
+func BenchmarkStringRE(b *testing.B) {
+	for _, re := range []string{"", "[[:alpha:]]", "[[:alnum:]]", "[a-f0-9]"} {
+		b.Run(re, func(b *testing.B) {
+			for b.Loop() {
+				_, _ = StringRE(16, re)
+			}
+		})
+	}
+}
+
+func BenchmarkMatchChars(b *testing.B) {
+	for b.Loop() {
+		_, _ = matchChars("[[:alpha:]]")
+	}
+}
