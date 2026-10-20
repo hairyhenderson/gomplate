@@ -31,7 +31,7 @@ var _ fs.FS = (*envFS)(nil)
 func (f *envFS) Open(name string) (fs.File, error) {
 	if !fs.ValidPath(name) {
 		return nil, &fs.PathError{
-			Op:   "open",
+			Op:   opOpen,
 			Path: name,
 			Err:  fs.ErrInvalid,
 		}

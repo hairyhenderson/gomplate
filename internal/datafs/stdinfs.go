@@ -41,7 +41,7 @@ func (f stdinFS) WithContext(ctx context.Context) fs.FS {
 func (f *stdinFS) Open(name string) (fs.File, error) {
 	if !fs.ValidPath(name) {
 		return nil, &fs.PathError{
-			Op:   "open",
+			Op:   opOpen,
 			Path: name,
 			Err:  fs.ErrInvalid,
 		}
@@ -49,7 +49,7 @@ func (f *stdinFS) Open(name string) (fs.File, error) {
 
 	if err := f.readData(); err != nil {
 		return nil, &fs.PathError{
-			Op:   "open",
+			Op:   opOpen,
 			Path: name,
 			Err:  err,
 		}

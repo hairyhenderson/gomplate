@@ -53,7 +53,7 @@ func TestCreateContext(t *testing.T) {
 	require.NoError(t, err)
 	assert.IsType(t, &tmplctx{}, c)
 	tctx := c.(*tmplctx)
-	ds := ((*tctx)["foo"]).(map[string]any)
+	ds := (*tctx)["foo"].(map[string]any)
 	assert.Equal(t, "bar", ds["foo"])
 
 	t.Setenv("bar", "bar: baz")

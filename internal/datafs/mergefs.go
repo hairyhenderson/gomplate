@@ -94,7 +94,7 @@ func (f *mergeFS) Open(name string) (fs.File, error) {
 	parts := strings.Split(name, "|")
 	if len(parts) < 2 {
 		return nil, &fs.PathError{
-			Op: "open", Path: name,
+			Op: opOpen, Path: name,
 			Err: fmt.Errorf("need at least 2 datasources to merge"),
 		}
 	}
@@ -140,7 +140,7 @@ func (f *mergeFS) Open(name string) (fs.File, error) {
 		fsys, err := FSysForPath(f.ctx, fsURL.String())
 		if err != nil {
 			return nil, &fs.PathError{
-				Op: "open", Path: name,
+				Op: opOpen, Path: name,
 				Err: fmt.Errorf("lookup for %s: %w", u.String(), err),
 			}
 		}
@@ -154,7 +154,7 @@ func (f *mergeFS) Open(name string) (fs.File, error) {
 		f, err := fsys.Open(base)
 		if err != nil {
 			return nil, &fs.PathError{
-				Op: "open", Path: name,
+				Op: opOpen, Path: name,
 				Err: fmt.Errorf("opening merge part %q: %w", part, err),
 			}
 		}
