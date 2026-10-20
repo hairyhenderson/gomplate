@@ -123,6 +123,52 @@ func TestSameSkipper(t *testing.T) {
 	}
 }
 
+func TestSameSkipper_MultipleWrites(t *testing.T) {
+	// larger than the reader's 4KiB buffer, so some writes span its boundary
+	content := bytes.Repeat([]byte("0123456789"), 1000)
+
+	changed := bytes.Clone(content)
+	changed[len(changed)-1] = 'x'
+
+	testdata := []struct {
+		name string
+		out  []byte
+		same bool
+	}{
+		{"same", content, true},
+		{"different", changed, false},
+		{"shorter", content[:len(content)-1], false},
+		{"longer", append(bytes.Clone(content), 'x'), false},
+	}
+
+	for _, d := range testdata {
+		t.Run(d.name, func(t *testing.T) {
+			w := newBufferCloser(&bytes.Buffer{})
+			opened := false
+			f := SameSkipper(bytes.NewReader(d.out), func() (io.WriteCloser, error) {
+				opened = true
+				return w, nil
+			})
+
+			for chunk := range slices.Chunk(content, 1000) {
+				n, err := f.Write(chunk)
+				require.NoError(t, err)
+				assert.Equal(t, len(chunk), n)
+			}
+
+			require.NoError(t, f.Close())
+
+			if d.same {
+				assert.False(t, opened)
+				assert.Empty(t, w.Bytes())
+			} else {
+				assert.True(t, opened)
+				assert.Equal(t, content, w.Bytes())
+			}
+		})
+	}
+}
+
 func BenchmarkSameSkipper(b *testing.B) {
 	// 64KiB of output, written in 1000-byte chunks, so that writes span the
 	// reader's buffer boundaries

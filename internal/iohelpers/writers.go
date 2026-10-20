@@ -108,6 +108,7 @@ type sameSkipper struct {
 	r    *bufio.Reader
 	w    io.WriteCloser
 	buf  *bytes.Buffer
+	in   []byte // reused for reading the current output
 	diff bool
 }
 
@@ -129,12 +130,18 @@ func SameSkipper(r io.Reader, open func() (io.WriteCloser, error)) io.WriteClose
 // then flushes and writes to the wrapped writer.
 func (f *sameSkipper) Write(p []byte) (n int, err error) {
 	if !f.diff {
-		in := make([]byte, len(p))
-		_, err := f.r.Read(in)
-		if err != nil && err != io.EOF {
+		if cap(f.in) < len(p) {
+			f.in = make([]byte, len(p))
+		}
+
+		// a single Read may return less than len(p), so read until it's full
+		// or the current output ends
+		in := f.in[:len(p)]
+		rn, err := io.ReadFull(f.r, in)
+		if err != nil && !errors.Is(err, io.EOF) && !errors.Is(err, io.ErrUnexpectedEOF) {
 			return 0, fmt.Errorf("failed to read: %w", err)
 		}
-		if bytes.Equal(in, p) {
+		if bytes.Equal(in[:rn], p) {
 			return f.buf.Write(p)
 		}
 
@@ -167,7 +174,7 @@ func (f *sameSkipper) Close() error {
 	// Check to see if we missed anything in the reader
 	if !f.diff {
 		n, err := f.r.Peek(1)
-		if len(n) > 0 || err != io.EOF {
+		if len(n) > 0 || !errors.Is(err, io.EOF) {
 			err = f.flush()
 			if err != nil {
 				return fmt.Errorf("failed to flush on close: %w", err)
