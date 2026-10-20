@@ -5,6 +5,7 @@ package gomplate
 import (
 	"context"
 	"fmt"
+	"io/fs"
 	"testing"
 
 	"github.com/hack-pad/hackpadfs"
@@ -55,6 +56,46 @@ func TestWalkDir_UNIX(t *testing.T) {
 		assert.Equal(t, expected[i].Name, tmpl.Name)
 		assert.Equal(t, expected[i].Text, tmpl.Text)
 	}
+}
+
+func TestWalkDir_IncludeIgnored(t *testing.T) {
+	memfs, _ := mem.NewFS()
+	fsys := datafs.WrapWdFS(memfs)
+
+	ctx := datafs.ContextWithFSProvider(context.Background(), datafs.WrappedFSProvider(fsys, "file"))
+
+	require.NoError(t, hackpadfs.MkdirAll(fsys, "/indir/vendor", 0o777))
+	require.NoError(t, hackpadfs.WriteFullFile(fsys, "/indir/.gomplateignore", []byte("vendor/\n"), 0o644))
+	require.NoError(t, hackpadfs.WriteFullFile(fsys, "/indir/a.tmpl", []byte("a"), 0o644))
+	require.NoError(t, hackpadfs.WriteFullFile(fsys, "/indir/vendor/b.tmpl", []byte("b"), 0o644))
+
+	// with no negated patterns, files in the ignorefile are just excluded
+	templates, err := walkDir(ctx, &Config{}, "/indir", simpleNamer("/outdir"), nil, nil, 0, false)
+	require.NoError(t, err)
+	assert.Contains(t, templateNames(templates), "/indir/a.tmpl")
+	assert.NotContains(t, templateNames(templates), "/indir/vendor/b.tmpl")
+
+	_, err = hackpadfs.Stat(fsys, "/outdir/vendor/b.tmpl")
+	require.ErrorIs(t, err, fs.ErrNotExist)
+
+	// a file that the ignorefile excludes but --include brings back is copied
+	// without being rendered. This documents the current behaviour.
+	templates, err = walkDir(ctx, &Config{}, "/indir", simpleNamer("/outdir"), []string{"*", "!*.tmpl"}, nil, 0, false)
+	require.NoError(t, err)
+	assert.Equal(t, []string{"/indir/a.tmpl"}, templateNames(templates))
+
+	b, err := hackpadfs.ReadFile(fsys, "/outdir/vendor/b.tmpl")
+	require.NoError(t, err)
+	assert.Equal(t, "b", string(b))
+}
+
+func templateNames(templates []Template) []string {
+	names := make([]string, len(templates))
+	for i, t := range templates {
+		names[i] = t.Name
+	}
+
+	return names
 }
 
 var walkDirSink []Template

@@ -9,6 +9,8 @@ import (
 	"maps"
 	"os"
 	"path/filepath"
+	"slices"
+	"strings"
 	"text/template"
 
 	"github.com/hack-pad/hackpadfs"
@@ -130,21 +132,27 @@ func walkDir(ctx context.Context, cfg *Config, dir string, outFileNamer outputNa
 		return nil, fmt.Errorf("ignore matching failed for %s: %w", dir, err)
 	}
 
-	excludeProcessingMatches, err := matcher.Matches(".", &xignore.MatchesOptions{
-		// TODO: fix or replace xignore module so we can avoid attempting to read the .gomplateignore file for both exclude and excludeProcessing patterns
-		Ignorefile:    gomplateignore,
-		Nested:        true, // allow nested ignorefile
-		AfterPatterns: excludeProcessingGlob,
-	})
-	if err != nil {
-		return nil, fmt.Errorf("passthrough matching failed for %s: %w", dir, err)
-	}
-
 	passthroughFiles := make(map[string]bool)
 
-	for _, file := range excludeProcessingMatches.MatchedFiles {
-		// files that need to be directly copied
-		passthroughFiles[file] = true
+	// Without any exclude-processing patterns, the second match can only find
+	// files that the ignorefile matches. Those are already excluded, unless a
+	// negated exclude pattern (e.g. from --include) brings them back, so only
+	// walk the directory again when that's possible.
+	if len(excludeProcessingGlob) > 0 || hasNegatedPattern(excludeGlob) {
+		excludeProcessingMatches, err := matcher.Matches(".", &xignore.MatchesOptions{
+			// TODO: fix or replace xignore module so we can avoid attempting to read the .gomplateignore file for both exclude and excludeProcessing patterns
+			Ignorefile:    gomplateignore,
+			Nested:        true, // allow nested ignorefile
+			AfterPatterns: excludeProcessingGlob,
+		})
+		if err != nil {
+			return nil, fmt.Errorf("passthrough matching failed for %s: %w", dir, err)
+		}
+
+		for _, file := range excludeProcessingMatches.MatchedFiles {
+			// files that need to be directly copied
+			passthroughFiles[file] = true
+		}
 	}
 
 	// Unmatched ignorefile rules's files
@@ -187,6 +195,14 @@ func walkDir(ctx context.Context, cfg *Config, dir string, outFileNamer outputNa
 	}
 
 	return templates, nil
+}
+
+// hasNegatedPattern returns true if any of the patterns is negated (starts
+// with '!')
+func hasNegatedPattern(patterns []string) bool {
+	return slices.ContainsFunc(patterns, func(p string) bool {
+		return strings.HasPrefix(p, "!")
+	})
 }
 
 func readInFile(ctx context.Context, inFile string, mode os.FileMode) (source string, newmode os.FileMode, err error) {
