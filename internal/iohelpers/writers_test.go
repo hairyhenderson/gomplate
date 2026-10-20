@@ -6,6 +6,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"slices"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -119,6 +120,33 @@ func TestSameSkipper(t *testing.T) {
 				assert.Equal(t, d.in, w.Bytes())
 			}
 		})
+	}
+}
+
+func BenchmarkSameSkipper(b *testing.B) {
+	// 64KiB of output, written in 1000-byte chunks, so that writes span the
+	// reader's buffer boundaries
+	content := bytes.Repeat([]byte("0123456789"), 64*1024/10)
+
+	// the output file already exists with the same content, so it shouldn't
+	// need to be written again
+	name := filepath.Join(b.TempDir(), "out")
+	require.NoError(b, os.WriteFile(name, content, 0o600))
+
+	for b.Loop() {
+		r, err := os.Open(name)
+		require.NoError(b, err)
+
+		w := SameSkipper(r, func() (io.WriteCloser, error) {
+			return os.Create(name)
+		})
+
+		for chunk := range slices.Chunk(content, 1000) {
+			_, _ = w.Write(chunk)
+		}
+
+		_ = w.Close()
+		_ = r.Close()
 	}
 }
 
