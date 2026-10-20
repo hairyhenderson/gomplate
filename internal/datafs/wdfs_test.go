@@ -326,3 +326,19 @@ func TestWin32PathType(t *testing.T) {
 		})
 	}
 }
+
+var (
+	resolveSinkRoot string
+	resolveSinkPath string
+)
+
+func BenchmarkResolveLocalPath(b *testing.B) {
+	name := "/tmp/foo/bar.txt"
+	if runtime.GOOS == osWindows {
+		name = `C:\tmp\foo\bar.txt`
+	}
+
+	for b.Loop() {
+		resolveSinkRoot, resolveSinkPath, _ = ResolveLocalPath(nil, name)
+	}
+}
