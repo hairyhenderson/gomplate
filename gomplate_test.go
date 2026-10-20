@@ -8,6 +8,7 @@ import (
 	"testing"
 	"text/template"
 
+	"github.com/hairyhenderson/gomplate/v5/coll"
 	"github.com/hairyhenderson/gomplate/v5/conv"
 	"github.com/hairyhenderson/gomplate/v5/env"
 	"github.com/hairyhenderson/gomplate/v5/internal/aws"
@@ -118,7 +119,7 @@ func TestHasTemplate(t *testing.T) {
 	g := newRenderer(RenderOptions{
 		Funcs: template.FuncMap{
 			"yaml": parsers.YAML,
-			"has":  conv.Has,
+			"has":  coll.Has,
 		},
 	})
 	assert.Equal(t, "true", testTemplate(t, g, `{{has ("foo:\n  bar: true" | yaml) "foo"}}`))

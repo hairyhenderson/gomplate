@@ -17,6 +17,8 @@ import (
 	"github.com/invopop/jsonschema"
 )
 
+const schemaTypeString = "string"
+
 var (
 	typeDataSource   = reflect.TypeFor[config.DataSource]()
 	typePluginConfig = reflect.TypeFor[gomplate.PluginConfig]()
@@ -81,7 +83,7 @@ func typeMapper(t reflect.Type) *jsonschema.Schema {
 		return pluginConfigSchema()
 	case typeDuration:
 		return &jsonschema.Schema{
-			Type:        "string",
+			Type:        schemaTypeString,
 			Description: "duration string, e.g. 30s, 5m, 1h",
 		}
 	case typeHTTPHeader:
@@ -93,7 +95,7 @@ func typeMapper(t reflect.Type) *jsonschema.Schema {
 func dataSourceSchema() *jsonschema.Schema {
 	props := jsonschema.NewProperties()
 	props.Set("url", &jsonschema.Schema{
-		Type:        "string",
+		Type:        schemaTypeString,
 		Description: "URL for the datasource (e.g. file:///data.json, https://example.com/data, env:FOO)",
 	})
 	props.Set("header", httpHeaderSchema())
@@ -108,15 +110,15 @@ func dataSourceSchema() *jsonschema.Schema {
 func pluginConfigSchema() *jsonschema.Schema {
 	props := jsonschema.NewProperties()
 	props.Set("cmd", &jsonschema.Schema{
-		Type:        "string",
+		Type:        schemaTypeString,
 		Description: "Path to the plugin command",
 	})
 	props.Set("args", &jsonschema.Schema{
 		Type:  "array",
-		Items: &jsonschema.Schema{Type: "string"},
+		Items: &jsonschema.Schema{Type: schemaTypeString},
 	})
 	props.Set("timeout", &jsonschema.Schema{
-		Type:        "string",
+		Type:        schemaTypeString,
 		Description: "Plugin execution timeout, e.g. 30s, 5m",
 	})
 	props.Set("pipe", &jsonschema.Schema{
@@ -125,7 +127,7 @@ func pluginConfigSchema() *jsonschema.Schema {
 	})
 	return &jsonschema.Schema{
 		OneOf: []*jsonschema.Schema{
-			{Type: "string", Description: "Path to the plugin command"},
+			{Type: schemaTypeString, Description: "Path to the plugin command"},
 			{
 				Type:                 "object",
 				Description:          "Plugin configuration",
@@ -150,7 +152,7 @@ func httpHeaderSchema() *jsonschema.Schema {
 		Description: "HTTP headers (header name → list of values)",
 		AdditionalProperties: &jsonschema.Schema{
 			Type:  "array",
-			Items: &jsonschema.Schema{Type: "string"},
+			Items: &jsonschema.Schema{Type: schemaTypeString},
 		},
 	}
 }

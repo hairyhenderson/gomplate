@@ -144,7 +144,7 @@ func newRenderer(opts RenderOptions) *renderer {
 
 	missingKey := opts.MissingKey
 	if missingKey == "" {
-		missingKey = "error"
+		missingKey = defaultMissingKey
 	}
 
 	sr := datafs.NewSourceReader(reg)
@@ -246,7 +246,7 @@ func (r *renderer) parseTemplate(ctx context.Context, name, text string, funcs t
 
 	missingKey := r.missingKey
 	if missingKey == "" {
-		missingKey = "error"
+		missingKey = defaultMissingKey
 	}
 
 	missingKeyValues := []string{"error", "zero", "default", "invalid"}

@@ -34,6 +34,7 @@ func RSAEncrypt(key string, in []byte) ([]byte, error) {
 		return nil, fmt.Errorf("public key in wrong format, was %T", pub)
 	}
 
+	//nolint:staticcheck // SA1019: documented to use PKCS #1 v1.5, for compatibility with Terraform's rsadecrypt
 	out, err := rsa.EncryptPKCS1v15(rand.Reader, pubKey, in)
 	return out, err
 }

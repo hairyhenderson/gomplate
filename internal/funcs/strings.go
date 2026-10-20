@@ -287,7 +287,7 @@ func (StringFuncs) WordWrap(args ...any) (string, error) {
 
 	opts := gompstrings.WordWrapOpts{}
 	if len(args) == 2 {
-		switch a := (args[0]).(type) {
+		switch a := args[0].(type) {
 		case string:
 			opts.LBSeq = a
 		default:

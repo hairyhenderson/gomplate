@@ -52,7 +52,6 @@ func HostBig(base netip.Prefix, num *big.Int) (netip.Addr, error) {
 
 	maxHostNum := big.NewInt(int64(1))
 
-	//nolint:gosec // G115 doesn't apply here
 	maxHostNum.Lsh(maxHostNum, uint(hostLen))
 	maxHostNum.Sub(maxHostNum, big.NewInt(1))
 
@@ -97,7 +96,6 @@ func intToIP(ipInt *big.Int, bits int) netip.Addr {
 func insertNumIntoIP(ip netip.Addr, bigNum *big.Int, prefixLen int) netip.Addr {
 	ipInt, totalBits := ipToInt(ip)
 
-	//nolint:gosec // G115 isn't relevant here
 	bigNum.Lsh(bigNum, uint(totalBits-prefixLen))
 	ipInt.Or(ipInt, bigNum)
 	return intToIP(ipInt, totalBits)

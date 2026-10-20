@@ -62,7 +62,7 @@ func jqConvertType(in any) (any, error) {
 	value := reflect.ValueOf(in)
 
 	// pointers need to be dereferenced first
-	if inType.Kind() == reflect.Ptr {
+	if inType.Kind() == reflect.Pointer {
 		inType = inType.Elem()
 		value = value.Elem()
 	}

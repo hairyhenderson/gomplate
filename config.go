@@ -27,6 +27,9 @@ func Parse(in io.Reader) (*Config, error) {
 	return out, nil
 }
 
+// defaultMissingKey is the default value for the missingkey template option
+const defaultMissingKey = "error"
+
 // Config models gomplate's configuration file and command-line options. It
 // also contains some fields that can't be set in the config file.
 type Config struct {
@@ -382,7 +385,7 @@ func (c *Config) applyDefaults() {
 		c.RDelim = "}}"
 	}
 	if c.MissingKey == "" {
-		c.MissingKey = "error"
+		c.MissingKey = defaultMissingKey
 	}
 
 	if c.PluginTimeout == 0 {

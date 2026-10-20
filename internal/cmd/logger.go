@@ -38,13 +38,13 @@ func createLogHandler(format string, out io.Writer, level slog.Level) slog.Handl
 				useColour = true
 			}
 		}
-		handler = tint.NewHandler(out, &tint.Options{
+		handler = tint.NewTextHandler(out, &tint.Options{
 			Level:      level,
 			TimeFormat: "15:04:05",
 			NoColor:    !useColour,
 		})
 	case "simple":
-		handler = tint.NewHandler(out, &tint.Options{
+		handler = tint.NewTextHandler(out, &tint.Options{
 			Level:   level,
 			NoColor: true,
 			ReplaceAttr: func(_ []string, attr slog.Attr) slog.Attr {

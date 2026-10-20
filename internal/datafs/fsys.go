@@ -12,6 +12,9 @@ import (
 	"github.com/hairyhenderson/gomplate/v5/internal/urlhelpers"
 )
 
+// opOpen is the Op for errors returned when opening files
+const opOpen = "open"
+
 type fsProviderCtxKey struct{}
 
 // ContextWithFSProvider returns a context with the given FSProvider. Should
