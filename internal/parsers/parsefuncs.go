@@ -404,11 +404,19 @@ func marshalObj(obj any, f func(any) ([]byte, error)) (string, error) {
 	return string(b), nil
 }
 
-func toJSONBytes(in any) ([]byte, error) {
+// jsonHandle is shared by every call to toJSONBytes, so the codec can reuse
+// what it works out about each type. A handle is safe for concurrent use as
+// long as it isn't modified.
+var jsonHandle = func() *codec.JsonHandle {
 	h := &codec.JsonHandle{}
 	h.Canonical = true
+
+	return h
+}()
+
+func toJSONBytes(in any) ([]byte, error) {
 	buf := new(bytes.Buffer)
-	err := codec.NewEncoder(buf, h).Encode(in)
+	err := codec.NewEncoder(buf, jsonHandle).Encode(in)
 	if err != nil {
 		return nil, fmt.Errorf("unable to marshal %s: %w", in, err)
 	}
