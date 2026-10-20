@@ -326,3 +326,33 @@ func TestWin32PathType(t *testing.T) {
 		})
 	}
 }
+
+func TestWorkingVolume(t *testing.T) {
+	vol, err := workingVolume()
+	require.NoError(t, err)
+
+	if runtime.GOOS != osWindows {
+		assert.Equal(t, "/", vol)
+		return
+	}
+
+	wd, err := os.Getwd()
+	require.NoError(t, err)
+	assert.Equal(t, filepath.VolumeName(wd), vol)
+}
+
+var (
+	resolveSinkRoot string
+	resolveSinkPath string
+)
+
+func BenchmarkResolveLocalPath(b *testing.B) {
+	name := "/tmp/foo/bar.txt"
+	if runtime.GOOS == osWindows {
+		name = `C:\tmp\foo\bar.txt`
+	}
+
+	for b.Loop() {
+		resolveSinkRoot, resolveSinkPath, _ = ResolveLocalPath(nil, name)
+	}
+}
