@@ -4,6 +4,7 @@ package gomplate
 
 import (
 	"context"
+	"fmt"
 	"testing"
 
 	"github.com/hack-pad/hackpadfs"
@@ -53,5 +54,38 @@ func TestWalkDir_UNIX(t *testing.T) {
 	for i, tmpl := range templates {
 		assert.Equal(t, expected[i].Name, tmpl.Name)
 		assert.Equal(t, expected[i].Text, tmpl.Text)
+	}
+}
+
+var walkDirSink []Template
+
+func BenchmarkWalkDir(b *testing.B) {
+	memfs, _ := mem.NewFS()
+	fsys := datafs.WrapWdFS(memfs)
+
+	ctx := datafs.ContextWithFSProvider(context.Background(), datafs.WrappedFSProvider(fsys, "file"))
+
+	// 1000 files in 10 directories, with an ignorefile
+	require.NoError(b, hackpadfs.MkdirAll(fsys, "/indir", 0o777))
+	require.NoError(b, hackpadfs.WriteFullFile(fsys, "/indir/.gomplateignore", []byte("*.bak\n"), 0o644))
+
+	for d := range 10 {
+		dir := fmt.Sprintf("/indir/d%d", d)
+		require.NoError(b, hackpadfs.MkdirAll(fsys, dir, 0o777))
+
+		for f := range 100 {
+			name := fmt.Sprintf("%s/f%d.txt", dir, f)
+			require.NoError(b, hackpadfs.WriteFullFile(fsys, name, []byte("hello"), 0o644))
+		}
+	}
+
+	cfg := &Config{}
+
+	for b.Loop() {
+		var err error
+		walkDirSink, err = walkDir(ctx, cfg, "/indir", simpleNamer("/outdir"), nil, nil, 0, false)
+		if err != nil {
+			b.Fatal(err)
+		}
 	}
 }
