@@ -776,3 +776,18 @@ func TestToCUE(t *testing.T) {
 	require.NoError(t, err)
 	assert.Equal(t, `{}`, out)
 }
+
+var toJSONSink string
+
+func BenchmarkToJSON(b *testing.B) {
+	in := map[string]any{
+		"name":   "foo",
+		"list":   []any{1, 2, "three", map[string]any{"a": true}},
+		"n":      3.5,
+		"nested": map[string]any{"x": "y", "z": []any{"a", "b"}},
+	}
+
+	for b.Loop() {
+		toJSONSink, _ = ToJSON(in)
+	}
+}
