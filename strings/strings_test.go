@@ -82,6 +82,9 @@ func TestCaseFuncs(t *testing.T) {
 		{" baz\tqux  ", "baz_qux", "baz-qux", "bazQux"},
 		{"Hello, World!", "Hello_world", "Hello-world", "HelloWorld"},
 		{"grüne | Straße", "grüne_straße", "grüne-straße", "grüneStraße"},
+		{"", "", "", ""},
+		{" \t\n ", "", "", ""},
+		{"!?", "", "", ""},
 	}
 	for _, d := range testdata {
 		assert.Equal(t, d.s, SnakeCase(d.in))

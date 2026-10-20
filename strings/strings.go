@@ -79,6 +79,10 @@ func KebabCase(in string) string {
 
 func casePrepare(in string) string {
 	in = strings.TrimSpace(in)
+	if in == "" {
+		return ""
+	}
+
 	s := strings.ToLower(in)
 	// make sure the first letter remains lower- or upper-cased
 	s = strings.Replace(s, string(s[0]), string(in[0]), 1)
@@ -89,6 +93,10 @@ func casePrepare(in string) string {
 // CamelCase -
 func CamelCase(in string) string {
 	in = strings.TrimSpace(in)
+	if in == "" {
+		return ""
+	}
+
 	tag := language.Und
 	s := cases.Title(tag).String(conv.ToString(in))
 	// make sure the first letter remains lower- or upper-cased
