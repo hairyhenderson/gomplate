@@ -68,6 +68,7 @@ func optionsFromConfig(cfg *Config) RenderOptions {
 type renderer struct {
 	sr          datafs.DataSourceReader
 	nested      map[string]DataSource
+	nestedTmpls []nestedTemplate
 	funcs       template.FuncMap
 	lDelim      string
 	rDelim      string
@@ -275,9 +276,44 @@ func (r *renderer) parseTemplate(ctx context.Context, name, text string, funcs t
 }
 
 func (r *renderer) parseNestedTemplates(ctx context.Context, tmpl *template.Template) error {
+	nested, err := r.readNestedTemplates(ctx)
+	if err != nil {
+		return err
+	}
+
+	for _, n := range nested {
+		_, err = tmpl.New(n.alias).Parse(n.text)
+		if err != nil {
+			return fmt.Errorf("parse nested template %q: %w", n.fname, err)
+		}
+	}
+
+	return nil
+}
+
+// nestedTemplate is the contents of a nested template file
+type nestedTemplate struct {
+	alias string
+	fname string
+	text  string
+}
+
+// readNestedTemplates reads all the nested templates. They're only read once,
+// and the contents are reused for every template rendered afterwards.
+func (r *renderer) readNestedTemplates(ctx context.Context) ([]nestedTemplate, error) {
+	if r.nestedTmpls != nil {
+		return r.nestedTmpls, nil
+	}
+
 	fsp := datafs.FSProviderFromContext(ctx)
 
+	// directories can hold more than one template, so this may grow
+	out := make([]nestedTemplate, 0, len(r.nested))
 	for alias, n := range r.nested {
+		if err := ctx.Err(); err != nil {
+			return nil, err
+		}
+
 		u := *n.URL
 
 		fname := path.Base(u.Path)
@@ -289,19 +325,19 @@ func (r *renderer) parseNestedTemplates(ctx context.Context, tmpl *template.Temp
 
 		fsys, err := fsp.New(&u)
 		if err != nil {
-			return fmt.Errorf("filesystem provider for %q unavailable: %w", &u, err)
+			return nil, fmt.Errorf("filesystem provider for %q unavailable: %w", &u, err)
 		}
 
 		// TODO: maybe need to do something with root here?
 		_, reldir, err := datafs.ResolveLocalPath(fsys, u.Path)
 		if err != nil {
-			return fmt.Errorf("resolveLocalPath: %w", err)
+			return nil, fmt.Errorf("resolveLocalPath: %w", err)
 		}
 
 		if reldir != "" && reldir != "." {
 			fsys, err = fs.Sub(fsys, reldir)
 			if err != nil {
-				return fmt.Errorf("sub filesystem for %q unavailable: %w", &u, err)
+				return nil, fmt.Errorf("sub filesystem for %q unavailable: %w", &u, err)
 			}
 		}
 
@@ -317,57 +353,58 @@ func (r *renderer) parseNestedTemplates(ctx context.Context, tmpl *template.Temp
 		// need to load all the files in the directory (but not recursively)
 		fi, err := fs.Stat(fsys, fname)
 		if err != nil {
-			return fmt.Errorf("stat %q: %w", fname, err)
+			return nil, fmt.Errorf("stat %q: %w", fname, err)
 		}
 
 		if fi.IsDir() {
-			err = parseNestedTemplateDir(ctx, fsys, alias, fname, tmpl)
+			out, err = readNestedTemplateDir(ctx, fsys, alias, fname, out)
 		} else {
-			err = parseNestedTemplate(ctx, fsys, alias, fname, tmpl)
+			out, err = readNestedTemplate(fsys, alias, fname, out)
 		}
 
 		if err != nil {
-			return err
+			return nil, err
 		}
 	}
 
-	return nil
+	r.nestedTmpls = out
+
+	return out, nil
 }
 
-func parseNestedTemplateDir(ctx context.Context, fsys fs.FS, alias, fname string, tmpl *template.Template) error {
+func readNestedTemplateDir(ctx context.Context, fsys fs.FS, alias, fname string, out []nestedTemplate) ([]nestedTemplate, error) {
 	files, err := fs.ReadDir(fsys, fname)
 	if err != nil {
-		return fmt.Errorf("readDir %q: %w", fname, err)
+		return nil, fmt.Errorf("readDir %q: %w", fname, err)
 	}
 
 	for _, f := range files {
+		if err = ctx.Err(); err != nil {
+			return nil, err
+		}
+
 		if !f.IsDir() {
-			err = parseNestedTemplate(ctx, fsys,
+			out, err = readNestedTemplate(fsys,
 				path.Join(alias, f.Name()),
 				path.Join(fname, f.Name()),
-				tmpl,
+				out,
 			)
 			if err != nil {
-				return err
+				return nil, err
 			}
 		}
 	}
 
-	return nil
+	return out, nil
 }
 
-func parseNestedTemplate(_ context.Context, fsys fs.FS, alias, fname string, tmpl *template.Template) error {
+func readNestedTemplate(fsys fs.FS, alias, fname string, out []nestedTemplate) ([]nestedTemplate, error) {
 	b, err := fs.ReadFile(fsys, fname)
 	if err != nil {
-		return fmt.Errorf("readFile %q: %w", fname, err)
+		return nil, fmt.Errorf("readFile %q: %w", fname, err)
 	}
 
-	_, err = tmpl.New(alias).Parse(string(b))
-	if err != nil {
-		return fmt.Errorf("parse nested template %q: %w", fname, err)
-	}
-
-	return nil
+	return append(out, nestedTemplate{alias: alias, fname: fname, text: string(b)}), nil
 }
 
 // DefaultFSProvider is the default filesystem provider used by gomplate

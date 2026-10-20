@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"io/fs"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -80,6 +81,82 @@ func TestRenderTemplate(t *testing.T) {
 	tr = NewRenderer(RenderOptions{})
 	err = tr.Render(ctx, "foo", `{{ bogus }}`, &bytes.Buffer{})
 	assert.ErrorContains(t, err, "template: foo:")
+}
+
+// countingFS counts how many times each file is opened
+type countingFS struct {
+	fs.FS
+	opens map[string]int
+}
+
+func (c countingFS) Open(name string) (fs.File, error) {
+	c.opens[name]++
+	return c.FS.Open(name)
+}
+
+func TestRenderTemplates_NestedReadOnce(t *testing.T) {
+	// relative paths are resolved from the working directory
+	t.Chdir("/")
+
+	fsys := countingFS{
+		FS: fstest.MapFS{
+			"nested.tmpl": {Data: []byte(`{{ . | toUpper }}`)},
+		},
+		opens: map[string]int{},
+	}
+	ctx := datafs.ContextWithFSProvider(context.Background(),
+		datafs.WrappedFSProvider(fsys, "mem", ""))
+
+	nu, _ := url.Parse("nested.tmpl")
+	tr := NewRenderer(RenderOptions{
+		Templates: map[string]DataSource{"nested": {URL: nu}},
+	})
+
+	render := func(names ...string) {
+		t.Helper()
+
+		templates := make([]Template, len(names))
+		for i, name := range names {
+			templates[i] = Template{
+				Name:   name,
+				Text:   `{{ template "nested" "` + name + `" }}`,
+				Writer: &bytes.Buffer{},
+			}
+		}
+
+		require.NoError(t, tr.RenderTemplates(ctx, templates))
+
+		for i, name := range names {
+			assert.Equal(t, strings.ToUpper(name), templates[i].Writer.(*bytes.Buffer).String())
+		}
+	}
+
+	render("one")
+	opens := fsys.opens["nested.tmpl"]
+	require.NotZero(t, opens)
+
+	// more templates, and more calls, don't read the nested template again
+	render("two", "three", "four")
+	render("five")
+	assert.Equal(t, opens, fsys.opens["nested.tmpl"])
+}
+
+func TestReadNestedTemplates_Canceled(t *testing.T) {
+	t.Chdir("/")
+
+	fsys := fstest.MapFS{
+		"nested.tmpl": {Data: []byte(`hello`)},
+	}
+	ctx, cancel := context.WithCancel(datafs.ContextWithFSProvider(
+		context.Background(), datafs.WrappedFSProvider(fsys, "mem", "")))
+	cancel()
+
+	nu, _ := url.Parse("nested.tmpl")
+	r := &renderer{nested: map[string]DataSource{"nested": {URL: nu}}}
+
+	_, err := r.readNestedTemplates(ctx)
+	require.ErrorIs(t, err, context.Canceled)
+	assert.Nil(t, r.nestedTmpls)
 }
 
 //// examples
@@ -171,4 +248,37 @@ func ExampleRenderer_datasources() {
 
 	// Output:
 	// Luna is a 4 year old Siberian Husky
+}
+
+func BenchmarkRenderTemplates_nested(b *testing.B) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		_, _ = w.Write([]byte(`{{ . | toUpper }}`))
+	}))
+	defer srv.Close()
+
+	u, _ := url.Parse(srv.URL + "/nested.tmpl")
+	opts := RenderOptions{
+		Templates: map[string]DataSource{"nested": {URL: u}},
+	}
+
+	ctx := context.Background()
+	templates := make([]Template, 50)
+
+	for b.Loop() {
+		// a new renderer each time, as for a single gomplate run
+		tr := NewRenderer(opts)
+
+		for i := range templates {
+			templates[i] = Template{
+				Name:   fmt.Sprintf("t%d", i),
+				Text:   `{{ template "nested" "hello" }}`,
+				Writer: &bytes.Buffer{},
+			}
+		}
+
+		err := tr.RenderTemplates(ctx, templates)
+		if err != nil {
+			b.Fatal(err)
+		}
+	}
 }
