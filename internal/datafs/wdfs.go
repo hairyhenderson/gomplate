@@ -6,6 +6,7 @@ import (
 	"net/url"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 
 	"github.com/hack-pad/hackpadfs"
@@ -42,6 +43,12 @@ func ResolveLocalPath(fsys fs.FS, name string) (root, resolved string, err error
 // workingVolume - returns the current working directory's volume name, or "/" if
 // the current working directory has no volume name (e.g. on Unix).
 func workingVolume() (string, error) {
+	// only Windows has volume names, so there's no need to look up the working
+	// directory (which can take a couple of stat calls) anywhere else
+	if runtime.GOOS != osWindows {
+		return "/", nil
+	}
+
 	wd, err := os.Getwd()
 	if err != nil {
 		return "", fmt.Errorf("getwd: %w", err)

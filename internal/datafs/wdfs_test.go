@@ -327,6 +327,20 @@ func TestWin32PathType(t *testing.T) {
 	}
 }
 
+func TestWorkingVolume(t *testing.T) {
+	vol, err := workingVolume()
+	require.NoError(t, err)
+
+	if runtime.GOOS != osWindows {
+		assert.Equal(t, "/", vol)
+		return
+	}
+
+	wd, err := os.Getwd()
+	require.NoError(t, err)
+	assert.Equal(t, filepath.VolumeName(wd), vol)
+}
+
 var (
 	resolveSinkRoot string
 	resolveSinkPath string
