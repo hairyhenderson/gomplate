@@ -70,6 +70,10 @@ func TestStringRE(t *testing.T) {
 	// errors are not cached
 	_, err = StringRE(1, "[bogus")
 	require.Error(t, err)
+
+	// control characters aren't printable, so nothing matches
+	_, err = StringRE(1, `[\x00-\x1f]`)
+	require.ErrorContains(t, err, "no printable characters match")
 }
 
 func TestStringBounds(t *testing.T) {
