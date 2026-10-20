@@ -172,3 +172,36 @@ func ExampleRenderer_datasources() {
 	// Output:
 	// Luna is a 4 year old Siberian Husky
 }
+
+func BenchmarkRenderTemplates_nested(b *testing.B) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		_, _ = w.Write([]byte(`{{ . | toUpper }}`))
+	}))
+	defer srv.Close()
+
+	u, _ := url.Parse(srv.URL + "/nested.tmpl")
+	opts := RenderOptions{
+		Templates: map[string]DataSource{"nested": {URL: u}},
+	}
+
+	ctx := context.Background()
+	templates := make([]Template, 50)
+
+	for b.Loop() {
+		// a new renderer each time, as for a single gomplate run
+		tr := NewRenderer(opts)
+
+		for i := range templates {
+			templates[i] = Template{
+				Name:   fmt.Sprintf("t%d", i),
+				Text:   `{{ template "nested" "hello" }}`,
+				Writer: &bytes.Buffer{},
+			}
+		}
+
+		err := tr.RenderTemplates(ctx, templates)
+		if err != nil {
+			b.Fatal(err)
+		}
+	}
+}
