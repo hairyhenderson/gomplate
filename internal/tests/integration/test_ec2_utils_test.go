@@ -334,8 +334,18 @@ func setupDatasourcesVaultAWSTest(t *testing.T, accountID, user string) (*fs.Dir
 		t.Logf("IMDS request: %s %s", r.Method, r.URL)
 		w.Write([]byte("i-00000000"))
 	}))
-	mux.Handle("/sts/", stsHandler(t, accountID, user))
-	mux.Handle("/iam/", iamGetUserHandler(t, accountID))
+	// Vault 2.2+ sends requests to the bare endpoint path (e.g. "/sts") with no
+	// trailing slash, and the ServeMux redirects those to "/sts/", which Vault
+	// rejects. So register the bare paths too.
+	sts := stsHandler(t, accountID, user)
+	mux.Handle("/sts", sts)
+	mux.Handle("/sts/", sts)
+
+	iam := iamGetUserHandler(t, accountID)
+	mux.Handle("/iam", iam)
+	mux.Handle("/iam/", iam)
+
+	mux.HandleFunc("/ec2", ec2Handler)
 	mux.HandleFunc("/ec2/", ec2Handler)
 	mux.HandleFunc("/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		t.Logf("unhandled request: %s %s", r.Method, r.URL)
