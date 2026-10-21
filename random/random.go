@@ -54,6 +54,10 @@ func StringRE(count int, match string) (r string, err error) {
 		if err != nil {
 			return "", err
 		}
+
+		if len(chars) == 0 {
+			return "", fmt.Errorf("no printable characters match %q", match)
+		}
 	}
 
 	return rndString(count, chars)
