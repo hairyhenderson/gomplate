@@ -791,3 +791,44 @@ func BenchmarkToJSON(b *testing.B) {
 		toJSONSink, _ = ToJSON(in)
 	}
 }
+
+func TestCSVInvalidHeaderOrDelimiter(t *testing.T) {
+	// a header with fewer names than a record has fields
+	require.NotPanics(t, func() {
+		_, err := CSVByRow(",", "a,b", "1,2,3")
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "3 fields")
+	})
+	require.NotPanics(t, func() {
+		_, err := CSVByColumn("a,b", "1,2,3\n4,5,6")
+		require.Error(t, err)
+	})
+
+	// an empty delimiter
+	require.NotPanics(t, func() {
+		_, err := CSV("", "a,b", "1,2")
+		require.Error(t, err)
+	})
+	require.NotPanics(t, func() {
+		_, err := CSVByRow("", "a,b", "1,2")
+		require.Error(t, err)
+	})
+	require.NotPanics(t, func() {
+		_, err := ToCSV("", [][]string{{"a", "b"}})
+		require.Error(t, err)
+	})
+
+	// a delimiter that is a single character, but more than one byte
+	out, err := CSV("§", "x§y", "a§b\n1§2")
+	require.NoError(t, err)
+	assert.Equal(t, [][]string{{"x", "y"}, {"a", "b"}, {"1", "2"}}, out)
+
+	s, err := ToCSV("§", [][]string{{"a", "b"}})
+	require.NoError(t, err)
+	assert.Equal(t, "a§b\r\n", s)
+
+	// a header with at least as many names as the records have fields is fine
+	rows, err := CSVByRow(",", "a,b,c", "1,2")
+	require.NoError(t, err)
+	assert.Equal(t, []map[string]string{{"a": "1", "b": "2"}}, rows)
+}

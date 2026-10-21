@@ -5,10 +5,12 @@ import (
 	"bytes"
 	"encoding/csv"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"os"
 	"strings"
+	"unicode/utf8"
 
 	"cuelang.org/go/cue"
 	"cuelang.org/go/cue/cuecontext"
@@ -224,8 +226,12 @@ func DotEnv(in string) (any, error) {
 
 func parseCSV(args ...string) ([][]string, []string, error) {
 	in, delim, hdr := csvParseArgs(args...)
+	comma, err := csvDelim(delim)
+	if err != nil {
+		return nil, nil, err
+	}
 	c := csv.NewReader(strings.NewReader(in))
-	c.Comma = rune(delim[0])
+	c.Comma = comma
 	records, err := c.ReadAll()
 	if err != nil {
 		return nil, nil, err
@@ -242,6 +248,16 @@ func parseCSV(args ...string) ([][]string, []string, error) {
 		}
 	}
 	return records, hdr, nil
+}
+
+// csvDelim returns the first character of the given delimiter. The delimiter
+// is meant to be a single character, but it can be more than one byte long.
+func csvDelim(delim string) (rune, error) {
+	r, size := utf8.DecodeRuneInString(delim)
+	if size == 0 {
+		return 0, errors.New("CSV delimiter must not be empty")
+	}
+	return r, nil
 }
 
 func csvParseArgs(args ...string) (in, delim string, hdr []string) {
@@ -296,6 +312,10 @@ func CSV(args ...string) ([][]string, error) {
 	return records, nil
 }
 
+func csvShortHeaderErr(row, fields, names int) error {
+	return fmt.Errorf("CSV row %d has %d fields, but only %d column names were given", row, fields, names)
+}
+
 // CSVByRow - Unmarshal CSV in a row-oriented form
 // parameters:
 //
@@ -313,7 +333,10 @@ func CSVByRow(args ...string) (rows []map[string]string, err error) {
 	if err != nil {
 		return nil, err
 	}
-	for _, record := range records {
+	for n, record := range records {
+		if len(record) > len(hdr) {
+			return nil, csvShortHeaderErr(n+1, len(record), len(hdr))
+		}
 		m := make(map[string]string)
 		for i, v := range record {
 			m[hdr[i]] = v
@@ -341,7 +364,10 @@ func CSVByColumn(args ...string) (cols map[string][]string, err error) {
 		return nil, err
 	}
 	cols = make(map[string][]string)
-	for _, record := range records {
+	for n, record := range records {
+		if len(record) > len(hdr) {
+			return nil, csvShortHeaderErr(n+1, len(record), len(hdr))
+		}
 		for i, v := range record {
 			cols[hdr[i]] = append(cols[hdr[i]], v)
 		}
@@ -384,11 +410,15 @@ func ToCSV(args ...any) (string, error) {
 		}
 	}
 	b := &bytes.Buffer{}
+	comma, err := csvDelim(delim)
+	if err != nil {
+		return "", err
+	}
 	c := csv.NewWriter(b)
-	c.Comma = rune(delim[0])
+	c.Comma = comma
 	// We output RFC4180 CSV, so force this to CRLF
 	c.UseCRLF = true
-	err := c.WriteAll(in)
+	err = c.WriteAll(in)
 	if err != nil {
 		return "", err
 	}
