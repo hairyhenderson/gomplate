@@ -1,5 +1,27 @@
 # Change Log
 
+## [5.3.1](https://github.com/hairyhenderson/gomplate/compare/v5.3.0...v5.3.1) (2026-10-21)
+
+
+### Bug Fixes
+
+* **coll:** make Uniq O(n) for scalar values ([#2872](https://github.com/hairyhenderson/gomplate/issues/2872)) ([eae9ddc](https://github.com/hairyhenderson/gomplate/commit/eae9ddcc9f3bec8c640e9da5834da4976ce4b306))
+* **datafs:** make path lookups faster by not looking up the working directory on Unix ([#2880](https://github.com/hairyhenderson/gomplate/issues/2880)) ([445fa5f](https://github.com/hairyhenderson/gomplate/commit/445fa5f7abba43c1f0ad8bfd85f640c5b54a9422))
+* **datasources:** don't mix up cached reads of different datasources ([#2873](https://github.com/hairyhenderson/gomplate/issues/2873)) ([a053aa2](https://github.com/hairyhenderson/gomplate/commit/a053aa2110465bce465628dee1f6c096b92d4520))
+* **gomod:** update module github.com/hairyhenderson/go-fsimpl to v0.5.0 ([#2889](https://github.com/hairyhenderson/gomplate/issues/2889)) ([3027c8b](https://github.com/hairyhenderson/gomplate/commit/3027c8b420d4ab9557b44910c962efec0502b0a8))
+* **iohelpers:** don't rewrite unchanged output files larger than 4KiB ([#2882](https://github.com/hairyhenderson/gomplate/issues/2882)) ([aaad933](https://github.com/hairyhenderson/gomplate/commit/aaad933a794ef072064589562f2135b0d6bc4806))
+* **parsers:** make data.ToJSON faster by reusing the JSON codec handle ([#2883](https://github.com/hairyhenderson/gomplate/issues/2883)) ([a1c8b9c](https://github.com/hairyhenderson/gomplate/commit/a1c8b9c4c9ec8bb351c374f686c99d75f3764946))
+* **random:** make StringRE much faster by caching matched characters per pattern ([#2874](https://github.com/hairyhenderson/gomplate/issues/2874)) ([aa803b1](https://github.com/hairyhenderson/gomplate/commit/aa803b1e6a0d3624dbb84d127fde11e040070abd))
+* **random:** return an error when no characters match the pattern ([#2885](https://github.com/hairyhenderson/gomplate/issues/2885)) ([434e132](https://github.com/hairyhenderson/gomplate/commit/434e13245601faad21defabb645672faa8b09040))
+* **render:** make rendering faster by reading nested templates only once ([#2876](https://github.com/hairyhenderson/gomplate/issues/2876)) ([ffb82c2](https://github.com/hairyhenderson/gomplate/commit/ffb82c20a3e25f6a59d594b9896087846eb87459))
+* **strings:** don't panic on empty input in SnakeCase, KebabCase, and CamelCase ([#2884](https://github.com/hairyhenderson/gomplate/issues/2884)) ([4967736](https://github.com/hairyhenderson/gomplate/commit/4967736bf2c0c6db7510996f991f2f935d6636dd))
+* **template:** make --input-dir faster by walking the directory once when possible ([#2881](https://github.com/hairyhenderson/gomplate/issues/2881)) ([fe296d8](https://github.com/hairyhenderson/gomplate/commit/fe296d8dbcec523035f2162f12bffbc871e9e030))
+
+
+### Documentation
+
+* **release-check:** bump latest known release to v5.3.0 ([#2863](https://github.com/hairyhenderson/gomplate/issues/2863)) ([07c4be0](https://github.com/hairyhenderson/gomplate/commit/07c4be06c7acd77ed14b16b347358eba61a3ef07))
+
 ## [5.3.0](https://github.com/hairyhenderson/gomplate/compare/v5.2.0...v5.3.0) (2026-10-17)
 
 
