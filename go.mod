@@ -20,7 +20,7 @@ require (
 	github.com/google/uuid v1.6.0
 	github.com/gosimple/slug v1.15.0
 	github.com/hack-pad/hackpadfs v0.2.4
-	github.com/hairyhenderson/go-fsimpl v0.4.9
+	github.com/hairyhenderson/go-fsimpl v0.5.0
 	github.com/hairyhenderson/xignore v0.3.3-0.20230403012150-95fe86932830 // iofs-port branch
 	github.com/hashicorp/go-sockaddr v1.0.7
 	github.com/hashicorp/vault/api v1.23.0
@@ -121,7 +121,7 @@ require (
 	github.com/google/go-cmp v0.7.0 // indirect
 	github.com/google/s2a-go v0.1.11 // indirect
 	github.com/google/wire v0.7.0 // indirect
-	github.com/googleapis/enterprise-certificate-proxy v0.3.22 // indirect
+	github.com/googleapis/enterprise-certificate-proxy v0.3.23 // indirect
 	github.com/googleapis/gax-go/v2 v2.26.2 // indirect
 	github.com/gosimple/unidecode v1.0.1 // indirect
 	github.com/hashicorp/consul/api/v2 v2.0.0 // indirect
@@ -186,16 +186,16 @@ require (
 	go.yaml.in/yaml/v4 v4.0.0-rc.2 // indirect
 	gocloud.dev v0.46.0 // indirect
 	golang.org/x/exp v0.0.0-20260813180055-c1d0aacb2297 // indirect
-	golang.org/x/net v0.60.0 // indirect
+	golang.org/x/net v0.61.0 // indirect
 	golang.org/x/oauth2 v0.37.0 // indirect
 	golang.org/x/sync v0.24.0 // indirect
 	golang.org/x/time v0.16.0 // indirect
 	golang.org/x/tools v0.51.0 // indirect
 	golang.org/x/xerrors v0.0.0-20240903120638-7835f813f4da // indirect
-	google.golang.org/api v0.301.0 // indirect
+	google.golang.org/api v0.302.0 // indirect
 	google.golang.org/genproto v0.0.0-20260715232425-e75dac1f907d // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20260928230214-8a89bd6388cc // indirect
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20260928230214-8a89bd6388cc // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20261005182115-fad411399dd8 // indirect
 	google.golang.org/grpc v1.84.0 // indirect
 	google.golang.org/protobuf v1.36.12 // indirect
 	gopkg.in/warnings.v0 v0.1.2 // indirect
