@@ -823,6 +823,15 @@ func TestCSVInvalidHeaderOrDelimiter(t *testing.T) {
 	require.NoError(t, err)
 	assert.Equal(t, [][]string{{"x", "y"}, {"a", "b"}, {"1", "2"}}, out)
 
+	// and the same with the two argument form, where it must not be taken for a header
+	out, err = CSV("§", "a§b\n1§2")
+	require.NoError(t, err)
+	assert.Equal(t, [][]string{{"a", "b"}, {"1", "2"}}, out)
+
+	rows2, err := CSVByRow("§", "a§b\n1§2")
+	require.NoError(t, err)
+	assert.Equal(t, []map[string]string{{"a": "1", "b": "2"}}, rows2)
+
 	s, err := ToCSV("§", [][]string{{"a", "b"}})
 	require.NoError(t, err)
 	assert.Equal(t, "a§b\r\n", s)

@@ -267,7 +267,7 @@ func csvParseArgs(args ...string) (in, delim string, hdr []string) {
 		in = args[0]
 	case 2:
 		in = args[1]
-		switch len(args[0]) {
+		switch utf8.RuneCountInString(args[0]) {
 		case 1:
 			delim = args[0]
 		case 0:
