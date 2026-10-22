@@ -155,7 +155,7 @@ jobs:
       - name: Generate SBOM
         uses: anchore/sbom-action@66cbf4bc1f1c0d2edc94016e65bc221b6bb0ad6c # v0.24.3
         with:
-          path: bin/${{ env.BINARY }}
+          file: bin/${{ env.BINARY }}
           format: spdx-json
           output-file: bin/${{ env.BINARY }}.spdx.json
           upload-artifact: false
