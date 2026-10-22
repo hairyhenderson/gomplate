@@ -92,25 +92,31 @@ func TestDecryptAESCBCInvalidInput(t *testing.T) {
 
 	block := func(b byte) []byte { return bytes.Repeat([]byte{b}, aes.BlockSize) }
 
+	// a block of 'x' bytes with the given padding bytes at the end
+	padded := func(pad ...byte) []byte {
+		b := bytes.Repeat([]byte{'x'}, aes.BlockSize-len(pad))
+		return append(b, pad...)
+	}
+
 	// the last block is padded with the right number of bytes, but one of
 	// them has the wrong value
-	badPadContent := append(block('x')[:aes.BlockSize-4:aes.BlockSize-4], 4, 3, 4, 4)
+	badPadContent := padded(4, 3, 4, 4)
 
 	testdata := map[string][]byte{
 		"shorter than the IV":         valid[:aes.BlockSize-1],
 		"just the IV":                 valid[:aes.BlockSize],
 		"partial ciphertext block":    valid[:len(valid)-1],
 		"partial block after the IV":  valid[:aes.BlockSize+3],
-		"zero padding length":         encryptRawCBC(t, key, iv, append(block('x')[:aes.BlockSize-1:aes.BlockSize-1], 0)),
-		"padding longer than a block": encryptRawCBC(t, key, iv, append(block('x')[:aes.BlockSize-1:aes.BlockSize-1], aes.BlockSize+1)),
+		"zero padding length":         encryptRawCBC(t, key, iv, padded(0)),
+		"padding longer than a block": encryptRawCBC(t, key, iv, padded(aes.BlockSize+1)),
 		"mismatched padding bytes":    encryptRawCBC(t, key, iv, badPadContent),
 	}
 
 	for name, in := range testdata {
 		t.Run(name, func(t *testing.T) {
 			require.NotPanics(t, func() {
-				out, err := DecryptAESCBC(key, in)
-				require.Error(t, err)
+				out, decErr := DecryptAESCBC(key, in)
+				require.Error(t, decErr)
 				assert.Nil(t, out)
 			})
 		})
