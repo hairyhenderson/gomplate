@@ -11,7 +11,6 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-
 func TestCreateFilePathFuncs(t *testing.T) {
 	t.Parallel()
 
@@ -33,8 +32,8 @@ func TestFilePathGlob(t *testing.T) {
 	t.Parallel()
 
 	tmpDir := t.TempDir()
-	require.NoError(t, os.WriteFile(filepath.Join(tmpDir, "file1.txt"), []byte("test"), 0644))
-	require.NoError(t, os.WriteFile(filepath.Join(tmpDir, "file2.log"), []byte("test"), 0644))
+	require.NoError(t, os.WriteFile(filepath.Join(tmpDir, "file1.txt"), []byte("test"), 0o600))
+	require.NoError(t, os.WriteFile(filepath.Join(tmpDir, "file2.log"), []byte("test"), 0o600))
 
 	ff := &FilePathFuncs{ctx: context.Background()}
 
@@ -46,4 +45,3 @@ func TestFilePathGlob(t *testing.T) {
 	_, err = ff.Glob("[]")
 	assert.Error(t, err)
 }
-
