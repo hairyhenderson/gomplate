@@ -359,13 +359,15 @@ func (w *wdFS) Sub(name string) (fs.FS, error) {
 	return fs.Sub(w.fsys, name)
 }
 
-func (w *wdFS) Glob(pattern string) ([]string, error) {
-	if globFS, ok := w.fsys.(fs.GlobFS); ok {
-		return globFS.Glob(pattern)
-	}
-	return fs.Glob(w.fsys, pattern)
+// fsOnly is an fs.FS-only view that prevents recursive Glob calls while
+// ensuring lookups use the wrapper's working-directory resolution.
+type fsOnly struct {
+	fs.FS
 }
 
+func (w *wdFS) Glob(pattern string) ([]string, error) {
+	return fs.Glob(fsOnly{w}, pattern)
+}
 
 func (w *wdFS) Create(name string) (fs.File, error) {
 	root, resolved, err := resolveLocalPath(w.vol, name)

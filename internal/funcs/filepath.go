@@ -87,4 +87,3 @@ func (f *FilePathFuncs) VolumeName(in any) string {
 func (f *FilePathFuncs) Glob(pattern any) ([]string, error) {
 	return filepath.Glob(conv.ToString(pattern))
 }
-
