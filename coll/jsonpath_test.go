@@ -60,6 +60,10 @@ func TestJSONPath(t *testing.T) {
 	_, err = JSONPath(".store.bogus", in)
 	require.Error(t, err)
 
+	out, err = JSONPath("", nil)
+	require.NoError(t, err)
+	assert.Nil(t, out)
+
 	_, err = JSONPath("{.store.unclosed", in)
 	require.Error(t, err)
 

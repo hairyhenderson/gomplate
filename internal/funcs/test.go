@@ -33,6 +33,10 @@ type TestFuncs struct {
 
 // Assert -
 func (TestFuncs) Assert(args ...any) (string, error) {
+	if len(args) == 0 {
+		return "", fmt.Errorf("wrong number of args: want 1 or 2, got 0")
+	}
+
 	input := conv.ToBool(args[len(args)-1])
 	switch len(args) {
 	case 1:
