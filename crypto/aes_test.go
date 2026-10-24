@@ -127,3 +127,19 @@ func TestDecryptAESCBCInvalidInput(t *testing.T) {
 	require.NoError(t, err)
 	assert.Equal(t, block('x'), out)
 }
+
+func TestEncryptAESCBCDoesNotModifyInput(t *testing.T) {
+	key := bytes.Repeat([]byte{'k'}, 16)
+
+	// the input has spare capacity, which padding must not be written into
+	buf := []byte("0123456789abcdefXXXXXXXXXXXXXXXX")
+	in := buf[:10]
+
+	out, err := EncryptAESCBC(key, in)
+	require.NoError(t, err)
+	assert.Equal(t, []byte("0123456789abcdefXXXXXXXXXXXXXXXX"), buf)
+
+	dec, err := DecryptAESCBC(key, out)
+	require.NoError(t, err)
+	assert.Equal(t, []byte("0123456789"), dec)
+}
