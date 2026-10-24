@@ -180,7 +180,7 @@ FUZZ_PKGS ?= $(sort $(dir $(shell grep -rl --include='*_test.go' '^func Fuzz' .)
 fuzz:
 	@fail=0; \
 	for pkg in $(FUZZ_PKGS); do \
-		for t in $$(grep -ho '^func Fuzz[A-Za-z0-9_]*' $$pkg*_test.go | cut -c6-); do \
+		for t in $$(grep -ho '^func Fuzz[A-Za-z0-9_]*' $${pkg%/}/*_test.go | cut -c6-); do \
 			echo "==> $$pkg $$t"; \
 			$(GO) test -run '^$$' -fuzz "^$$t$$" -fuzztime $(FUZZTIME) $$pkg || fail=1; \
 		done; \
