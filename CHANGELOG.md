@@ -1,5 +1,14 @@
 # Change Log
 
+## [5.3.2](https://github.com/hairyhenderson/gomplate/compare/v5.3.1...v5.3.2) (2026-10-24)
+
+
+### Bug Fixes
+
+* **crypto:** return an error instead of panicking on bad AES-CBC input ([#2901](https://github.com/hairyhenderson/gomplate/issues/2901)) ([183ab88](https://github.com/hairyhenderson/gomplate/commit/183ab8847b9b64ed750c969c39a9011f6dd0cf7f))
+* **gomod:** update module github.com/aws/aws-sdk-go-v2/service/ec2 to v1.339.0 ([#2894](https://github.com/hairyhenderson/gomplate/issues/2894)) ([67029b3](https://github.com/hairyhenderson/gomplate/commit/67029b39d77aaa88db56b904662acbc559e81edb))
+* **parsers:** don't panic on an empty CSV delimiter or a short header ([#2902](https://github.com/hairyhenderson/gomplate/issues/2902)) ([baff1c2](https://github.com/hairyhenderson/gomplate/commit/baff1c23ee17f67f221d34419440c67a43ff04f9))
+
 ## [5.3.1](https://github.com/hairyhenderson/gomplate/compare/v5.3.0...v5.3.1) (2026-10-21)
 
 
