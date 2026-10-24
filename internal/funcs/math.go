@@ -202,6 +202,10 @@ func (f MathFuncs) Rem(a, b any) (any, error) {
 		return nil, fmt.Errorf("expected a number: %w", err)
 	}
 
+	if ib == 0 {
+		return 0, fmt.Errorf("error: division by 0")
+	}
+
 	return ia % ib, nil
 }
 

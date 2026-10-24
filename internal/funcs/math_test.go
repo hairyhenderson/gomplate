@@ -137,6 +137,9 @@ func TestRem(t *testing.T) {
 	require.NoError(t, err)
 	assert.Equal(t, int64(0), actual)
 
+	_, err = m.Rem(1, 0)
+	require.Error(t, err)
+
 	actual, err = m.Rem(5, 3.0)
 	require.NoError(t, err)
 	assert.Equal(t, int64(2), actual)
