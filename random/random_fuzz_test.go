@@ -1,6 +1,7 @@
 package random
 
 import (
+	"math"
 	"testing"
 	"unicode/utf8"
 
@@ -14,6 +15,7 @@ func FuzzStringRE(f *testing.F) {
 	f.Add(5, "[[:alpha:]]")
 	f.Add(3, `\x01`)
 	f.Add(0, ".")
+	f.Add(-1, "")
 
 	f.Fuzz(func(t *testing.T, count int, match string) {
 		// keep the output small - long strings only test the allocator
@@ -39,6 +41,8 @@ func FuzzStringBounds(f *testing.F) {
 	f.Add(10, int32(' '), int32('~'))
 	f.Add(1, int32(0), int32(31))
 	f.Add(1, int32('z'), int32('a'))
+	f.Add(-1, int32(' '), int32('~'))
+	f.Add(1, int32(0), int32(math.MaxInt32))
 
 	f.Fuzz(func(t *testing.T, count int, lower, upper int32) {
 		if count > 1000 {
