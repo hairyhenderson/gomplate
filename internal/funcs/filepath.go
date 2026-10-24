@@ -82,3 +82,8 @@ func (f *FilePathFuncs) ToSlash(in any) string {
 func (f *FilePathFuncs) VolumeName(in any) string {
 	return filepath.VolumeName(conv.ToString(in))
 }
+
+// Glob -
+func (f *FilePathFuncs) Glob(pattern any) ([]string, error) {
+	return filepath.Glob(filepath.ToSlash(conv.ToString(pattern)))
+}
