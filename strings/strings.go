@@ -49,7 +49,8 @@ func ShellQuote(s string) string {
 	return "'" + strings.ReplaceAll(s, "'", "'\"'\"'") + "'"
 }
 
-// Trunc - truncate a string to the given length
+// Trunc - truncate a string to the given length (in bytes). A multi-byte
+// character that doesn't fit is dropped instead of being cut in half.
 func Trunc(length int, s string) string {
 	if length < 0 {
 		return s
@@ -57,7 +58,17 @@ func Trunc(length int, s string) string {
 	if len(s) <= length {
 		return s
 	}
-	return s[0:length]
+
+	// cut at the start of the last character that begins at or before length
+	end := 0
+	for i := range s {
+		if i > length {
+			break
+		}
+		end = i
+	}
+
+	return s[:end]
 }
 
 var (
