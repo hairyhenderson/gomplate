@@ -8,6 +8,8 @@ package coll
 import (
 	"fmt"
 	"maps"
+	"math"
+	"math/big"
 	"reflect"
 	"slices"
 	"sort"
@@ -301,10 +303,11 @@ func lessThan(key string) func(left, right any) bool {
 		val := reflect.Indirect(reflect.ValueOf(left))
 		rval := reflect.Indirect(reflect.ValueOf(right))
 		if val.Kind() != rval.Kind() {
-			lf, lok := toFloat(val)
-			rf, rok := toFloat(rval)
+			lf, lok := toBigFloat(val)
+			rf, rok := toBigFloat(rval)
 			if lok && rok {
-				return lf < rf
+				// NaN isn't less or greater than anything
+				return lf != nil && rf != nil && lf.Cmp(rf) < 0
 			}
 			return val.Kind() < rval.Kind()
 		}
@@ -347,17 +350,21 @@ func keyedLess(left, right reflect.Value) bool {
 	return lessThan("")(left.Interface(), right.Interface())
 }
 
-// toFloat returns v as a float64, if it's a number.
-func toFloat(v reflect.Value) (float64, bool) {
+// toBigFloat returns v as an exact *big.Float, if it's a number. NaN can't be
+// represented, so it's returned as nil.
+func toBigFloat(v reflect.Value) (*big.Float, bool) {
 	switch v.Kind() {
 	case reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64, reflect.Int:
-		return float64(v.Int()), true
+		return new(big.Float).SetInt64(v.Int()), true
 	case reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint, reflect.Uint64:
-		return float64(v.Uint()), true
+		return new(big.Float).SetUint64(v.Uint()), true
 	case reflect.Float32, reflect.Float64:
-		return v.Float(), true
+		if math.IsNaN(v.Float()) {
+			return nil, true
+		}
+		return new(big.Float).SetFloat64(v.Float()), true
 	default:
-		return 0, false
+		return nil, false
 	}
 }
 
