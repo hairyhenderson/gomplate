@@ -9,3 +9,4 @@ report.xml
 .netlify
 docs/.hugo_build.lock
 bench.txt
+**/testdata/fuzz/
