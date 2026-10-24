@@ -502,6 +502,10 @@ true = true
 	out, err := ToTOML(in)
 	require.NoError(t, err)
 	assert.Equal(t, expected, out)
+
+	out, err = ToTOML(nil)
+	require.NoError(t, err)
+	assert.Empty(t, out)
 }
 
 func TestDecryptEJSON(t *testing.T) {

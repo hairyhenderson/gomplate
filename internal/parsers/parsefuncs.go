@@ -495,6 +495,12 @@ func ToYAML(in any) (string, error) {
 
 // ToTOML - Stringify a struct as TOML
 func ToTOML(in any) (string, error) {
+	// BurntSushi/toml panics on an untyped nil, and encodes a typed nil (like
+	// a nil map) as an empty string, so do the same here.
+	if in == nil {
+		return "", nil
+	}
+
 	// BurntSushi/toml can't encode maps with non-string key types (e.g. the
 	// map[any]any values produced by YAML unmarshaling), so coerce those to
 	// map[string]any first.
