@@ -69,15 +69,15 @@ func TestWDFS_ReadOps(t *testing.T) {
 }
 
 func TestWDFS_Glob(t *testing.T) {
-	wd, _ := os.Getwd()
+	wd, err := os.Getwd()
+	require.NoError(t, err)
+
+	tmpDir := tfs.NewDir(t, "gomplate-wdfs-glob-test")
 	t.Cleanup(func() {
 		_ = os.Chdir(wd)
 	})
 
-	tmpDir := tfs.NewDir(t, "gomplate-wdfs-glob-test")
-
 	var osfsys fs.FS
-	var err error
 	vol := filepath.VolumeName(tmpDir.Path())
 	if vol != "" {
 		osfsys, err = osfs.NewFS().SubVolume(vol)
@@ -107,6 +107,15 @@ func TestWDFS_Glob(t *testing.T) {
 		filepath.ToSlash(filepath.Join(dirPath, "b.txt")),
 	}, matches)
 
+	// Native path separator pattern
+	nativePattern := filepath.FromSlash(filepath.Join(dirPath, "*.txt"))
+	matches, err = fsys.Glob(nativePattern)
+	require.NoError(t, err)
+	assert.Equal(t, []string{
+		filepath.FromSlash(filepath.Join(dirPath, "a.txt")),
+		filepath.FromSlash(filepath.Join(dirPath, "b.txt")),
+	}, matches)
+
 	// Working-directory-relative pattern
 	require.NoError(t, os.Chdir(dirPath))
 	matches, err = fsys.Glob("*.txt")
@@ -126,6 +135,36 @@ func TestWDFS_Glob(t *testing.T) {
 	// Malformed pattern
 	_, err = fsys.Glob("[]")
 	assert.Error(t, err)
+}
+
+func TestAdaptVolumeRoot(t *testing.T) {
+	t.Parallel()
+
+	assert.Equal(t, "C:/", adaptVolumeRoot("C:"))
+	assert.Equal(t, "c:/", adaptVolumeRoot("c:"))
+	assert.Equal(t, "D:/", adaptVolumeRoot("D:"))
+	assert.Equal(t, "C:/foo", adaptVolumeRoot("C:/foo"))
+	assert.Equal(t, "/tmp", adaptVolumeRoot("/tmp"))
+	assert.Equal(t, ".", adaptVolumeRoot("."))
+}
+
+func TestWDFS_Glob_StatWithoutRead(t *testing.T) {
+	if runtime.GOOS == osWindows {
+		t.Skip("chmod 0200 does not restrict read on Windows")
+	}
+
+	dir := t.TempDir()
+	filePath := filepath.Join(dir, "secret.txt")
+	require.NoError(t, os.WriteFile(filePath, []byte("secret"), 0o200))
+
+	fsys := &wdFS{
+		vol:  "/",
+		fsys: osfs.NewFS(),
+	}
+
+	matches, err := fsys.Glob(filePath)
+	require.NoError(t, err)
+	assert.Equal(t, []string{filePath}, matches)
 }
 
 func TestWDFS_WriteOps(t *testing.T) {

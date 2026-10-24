@@ -68,12 +68,14 @@ func TestFileGlob(t *testing.T) {
 }
 
 func TestFileGlob_WorkingDir(t *testing.T) {
-	oldwd, _ := os.Getwd()
-	t.Cleanup(func() {
-		_ = os.Chdir(oldwd)
-	})
+	origWd, err := os.Getwd()
+	require.NoError(t, err)
 
 	dir := t.TempDir()
+	t.Cleanup(func() {
+		_ = os.Chdir(origWd)
+	})
+
 	require.NoError(t, os.WriteFile(filepath.Join(dir, "file1.txt"), []byte("test"), 0o600))
 	require.NoError(t, os.WriteFile(filepath.Join(dir, "file2.log"), []byte("test"), 0o600))
 
