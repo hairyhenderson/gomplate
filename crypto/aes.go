@@ -1,7 +1,6 @@
 package crypto
 
 import (
-	"bytes"
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/rand"
@@ -34,11 +33,15 @@ func EncryptAESCBC(key []byte, in []byte) ([]byte, error) {
 	bs := block.BlockSize()
 	pl := bs - len(in)%bs
 
-	// pad with pl, repeated pl times
-	//nolint:gosec // G115 — pl is PKCS#7 length in [1, bs] and bs is the cipher block size
-	in = append(in, bytes.Repeat([]byte{byte(pl)}, pl)...)
-
-	out := make([]byte, bs+len(in))
+	// Copy the content into the output slice after the IV, and pad it there
+	// with pl, repeated pl times. Padding in a copy means the caller's slice
+	// is never written to, even if it has spare capacity.
+	out := make([]byte, bs+len(in)+pl)
+	copy(out[bs:], in)
+	for i := bs + len(in); i < len(out); i++ {
+		//nolint:gosec // G115 — pl is PKCS#7 length in [1, bs] and bs is the cipher block size
+		out[i] = byte(pl)
+	}
 
 	// Generate a random IV. Must be the same length as the block size, and is
 	// stored at the beginning of the output slice unencrypted, so that it can
@@ -48,9 +51,9 @@ func EncryptAESCBC(key []byte, in []byte) ([]byte, error) {
 		return nil, err
 	}
 
-	// encrypt the content into the rest of the output slice
+	// encrypt the padded content in place
 	mode := cipher.NewCBCEncrypter(block, iv)
-	mode.CryptBlocks(out[bs:], in)
+	mode.CryptBlocks(out[bs:], out[bs:])
 
 	return out, nil
 }
