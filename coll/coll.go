@@ -174,6 +174,10 @@ func Reverse(list any) ([]any, error) {
 		return nil, err
 	}
 
+	// InterfaceSlice returns the input as-is when it's already a []any, so
+	// copy it to avoid reversing the caller's slice
+	l = slices.Clone(l)
+
 	// nifty trick from https://github.com/golang/go/wiki/SliceTricks#reversing
 	for left, right := 0, len(l)-1; left < right; left, right = left+1, right-1 {
 		l[left], l[right] = l[right], l[left]
@@ -289,11 +293,21 @@ func Sort(key string, list any) (out []any, err error) {
 	return ia, nil
 }
 
-// lessThan - compare two values of the same type
+// lessThan - compare two values. Values of different kinds are compared as
+// numbers if they're both numbers, and otherwise by kind, so that the order
+// is at least consistent.
 func lessThan(key string) func(left, right any) bool {
 	return func(left, right any) bool {
 		val := reflect.Indirect(reflect.ValueOf(left))
 		rval := reflect.Indirect(reflect.ValueOf(right))
+		if val.Kind() != rval.Kind() {
+			lf, lok := toFloat(val)
+			rf, rok := toFloat(rval)
+			if lok && rok {
+				return lf < rf
+			}
+			return val.Kind() < rval.Kind()
+		}
 		switch val.Kind() {
 		case reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64, reflect.Int:
 			return val.Int() < rval.Int()
@@ -303,24 +317,17 @@ func lessThan(key string) func(left, right any) bool {
 			return val.Float() < rval.Float()
 		case reflect.String:
 			return val.String() < rval.String()
-		case reflect.MapOf(
-			reflect.TypeOf(reflect.String),
-			reflect.TypeOf(reflect.Interface),
-		).Kind():
+		case reflect.Map:
+			if val.Type().Key().Kind() != reflect.String || rval.Type().Key().Kind() != reflect.String {
+				return false
+			}
 			kval := reflect.ValueOf(key)
-			if !val.MapIndex(kval).IsValid() {
-				return false
-			}
-			newleft := val.MapIndex(kval).Interface()
-			newright := rval.MapIndex(kval).Interface()
-			return lessThan("")(newleft, newright)
+			return keyedLess(
+				val.MapIndex(kval.Convert(val.Type().Key())),
+				rval.MapIndex(kval.Convert(rval.Type().Key())),
+			)
 		case reflect.Struct:
-			if !val.FieldByName(key).IsValid() {
-				return false
-			}
-			newleft := val.FieldByName(key).Interface()
-			newright := rval.FieldByName(key).Interface()
-			return lessThan("")(newleft, newright)
+			return keyedLess(val.FieldByName(key), rval.FieldByName(key))
 		default:
 			// it's not really comparable, so...
 			return false
@@ -328,13 +335,47 @@ func lessThan(key string) func(left, right any) bool {
 	}
 }
 
+// keyedLess compares two values found by a map key or field name. Missing
+// values sort after everything else.
+func keyedLess(left, right reflect.Value) bool {
+	if !left.IsValid() || !left.CanInterface() {
+		return false
+	}
+	if !right.IsValid() || !right.CanInterface() {
+		return true
+	}
+	return lessThan("")(left.Interface(), right.Interface())
+}
+
+// toFloat returns v as a float64, if it's a number.
+func toFloat(v reflect.Value) (float64, bool) {
+	switch v.Kind() {
+	case reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64, reflect.Int:
+		return float64(v.Int()), true
+	case reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint, reflect.Uint64:
+		return float64(v.Uint()), true
+	case reflect.Float32, reflect.Float64:
+		return v.Float(), true
+	default:
+		return 0, false
+	}
+}
+
 func sameTypes(a []any) bool {
-	var t reflect.Type
-	for _, v := range a {
-		if t == nil {
-			t = reflect.TypeOf(v)
+	if len(a) == 0 {
+		return true
+	}
+	t := reflect.TypeOf(a[0])
+	for _, v := range a[1:] {
+		vt := reflect.TypeOf(v)
+		// a nil value has no type, so only matches another nil
+		if t == nil || vt == nil {
+			if t != vt {
+				return false
+			}
+			continue
 		}
-		if reflect.ValueOf(v).Kind() != t.Kind() {
+		if vt.Kind() != t.Kind() {
 			return false
 		}
 	}

@@ -237,6 +237,13 @@ func TestReverse(t *testing.T) {
 	out, err = Reverse([]int{1, 2, 3, 4})
 	require.NoError(t, err)
 	assert.Equal(t, []any{4, 3, 2, 1}, out)
+
+	// the input isn't modified
+	in := []any{1, 2, 3}
+	out, err = Reverse(in)
+	require.NoError(t, err)
+	assert.Equal(t, []any{3, 2, 1}, out)
+	assert.Equal(t, []any{1, 2, 3}, in)
 }
 
 func TestMerge(t *testing.T) {
@@ -338,6 +345,8 @@ func TestSameTypes(t *testing.T) {
 		{[]any{true, false}, true},
 		{[]any{1, 3.0}, false},
 		{[]any{"a", nil}, false},
+		{[]any{nil, "a"}, false},
+		{[]any{nil, nil}, true},
 		{[]any{"a", true}, false},
 		{[]any{coords{2, 3}, coords{3, 4}}, true},
 		{[]any{coords{2, 3}, &coords{3, 4}}, false},
@@ -380,6 +389,29 @@ func TestLessThan(t *testing.T) {
 		{key: "Y", left: &coords{1, 1}, right: &coords{-1, 2}, out: true},
 		{left: &coords{1, 1}, right: &coords{-1, 2}},
 		{key: "foo", left: &coords{1, 1}, right: &coords{-1, 2}},
+		{left: 1, right: 1.5, out: true},
+		{left: 1.5, right: 1},
+		{left: uint(1), right: -1},
+		{left: 1, right: "a", out: true},
+		{left: "a", right: 1},
+		{
+			key:   "foo",
+			left:  map[string]any{"foo": 1},
+			right: map[string]any{"foo": 1.5},
+			out:   true,
+		},
+		{
+			key:   "foo",
+			left:  map[string]any{"foo": 1},
+			right: map[string]any{"bar": 2},
+			out:   true,
+		},
+		{
+			key:   "foo",
+			left:  map[string]any{"bar": 1},
+			right: map[string]any{"foo": 2},
+		},
+		{key: "foo", left: map[int]any{1: 1}, right: map[int]any{2: 2}},
 	}
 
 	for _, d := range data {
@@ -497,6 +529,16 @@ func TestSort(t *testing.T) {
 				&coords{2, 4},
 				&coords{3, 3},
 			},
+		},
+		{
+			key: "",
+			in:  []any{nil, 1},
+			out: []any{nil, 1},
+		},
+		{
+			key: "a",
+			in:  []any{map[string]any{"a": 2}, map[string]any{"b": 0}, map[string]any{"a": 1.5}},
+			out: []any{map[string]any{"a": 1.5}, map[string]any{"a": 2}, map[string]any{"b": 0}},
 		},
 	}
 
