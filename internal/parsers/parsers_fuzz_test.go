@@ -82,6 +82,7 @@ func FuzzCUE(f *testing.F) {
 	f.Add(`[1, 2, 3]`)
 	f.Add(`'bytes'`)
 	f.Add(`a: int | *1`)
+	f.Add(`null`)
 
 	f.Fuzz(func(_ *testing.T, in string) {
 		if out, err := CUE(in); err == nil {
