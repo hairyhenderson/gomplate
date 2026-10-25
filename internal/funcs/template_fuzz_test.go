@@ -5,6 +5,7 @@ import (
 	"errors"
 	"maps"
 	"math"
+	"math/cmplx"
 	"reflect"
 	"regexp"
 	"slices"
@@ -106,8 +107,8 @@ func bigNumber(s string) bool {
 }
 
 // bigArgs reports whether any of the parsed template's arguments holds a big
-// number. String arguments are checked after they're unquoted, so escapes
-// like "\x39\x39\x39\x39\x39" can't hide one.
+// number. Strings are checked after they're unquoted, so escapes like
+// "\x39\x39\x39\x39\x39" can't hide one.
 func bigArgs(tmpl *template.Template) bool {
 	for _, n := range tmpl.Root.Nodes {
 		action, ok := n.(*parse.ActionNode)
@@ -118,7 +119,9 @@ func bigArgs(tmpl *template.Template) bool {
 			for _, arg := range cmd.Args {
 				switch a := arg.(type) {
 				case *parse.NumberNode:
-					if bigNumber(a.Text) {
+					// check the value, since a character literal like
+					// '\U0010FFFF' is a number too
+					if math.Abs(a.Float64) > 9999 || cmplx.Abs(a.Complex128) > 9999 {
 						return true
 					}
 				case *parse.StringNode:
