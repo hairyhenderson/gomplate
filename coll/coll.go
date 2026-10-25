@@ -314,27 +314,39 @@ func lessThan(key string) func(left, right any) bool {
 		switch val.Kind() {
 		case reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64, reflect.Int:
 			return val.Int() < rval.Int()
-		case reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint, reflect.Uint64:
+		case reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint, reflect.Uint64, reflect.Uintptr:
 			return val.Uint() < rval.Uint()
 		case reflect.Float32, reflect.Float64:
 			return val.Float() < rval.Float()
 		case reflect.String:
 			return val.String() < rval.String()
 		case reflect.Map:
-			if val.Type().Key().Kind() != reflect.String || rval.Type().Key().Kind() != reflect.String {
+			lk, lok := mapKey(val, key)
+			rk, rok := mapKey(rval, key)
+			if !lok || !rok {
 				return false
 			}
-			kval := reflect.ValueOf(key)
-			return keyedLess(
-				val.MapIndex(kval.Convert(val.Type().Key())),
-				rval.MapIndex(kval.Convert(rval.Type().Key())),
-			)
+			return keyedLess(val.MapIndex(lk), rval.MapIndex(rk))
 		case reflect.Struct:
 			return keyedLess(val.FieldByName(key), rval.FieldByName(key))
 		default:
 			// it's not really comparable, so...
 			return false
 		}
+	}
+}
+
+// mapKey returns key as a value that can index m, if m's keys can be strings.
+func mapKey(m reflect.Value, key string) (reflect.Value, bool) {
+	kt := m.Type().Key()
+	kval := reflect.ValueOf(key)
+	switch {
+	case kt.Kind() == reflect.String:
+		return kval.Convert(kt), true
+	case kval.Type().AssignableTo(kt):
+		return kval, true
+	default:
+		return reflect.Value{}, false
 	}
 }
 
@@ -356,7 +368,7 @@ func toBigFloat(v reflect.Value) (*big.Float, bool) {
 	switch v.Kind() {
 	case reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64, reflect.Int:
 		return new(big.Float).SetInt64(v.Int()), true
-	case reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint, reflect.Uint64:
+	case reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint, reflect.Uint64, reflect.Uintptr:
 		return new(big.Float).SetUint64(v.Uint()), true
 	case reflect.Float32, reflect.Float64:
 		if math.IsNaN(v.Float()) {

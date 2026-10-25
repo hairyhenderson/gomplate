@@ -398,6 +398,12 @@ func TestLessThan(t *testing.T) {
 		{left: uint64(1 << 63), right: int64(math.MaxInt64)},
 		{left: 1, right: math.Inf(1), out: true},
 		{left: 1, right: math.NaN()},
+		{left: 1, right: uintptr(0)},
+		{left: uintptr(0), right: -1.0},
+		{left: -1.0, right: 1, out: true},
+		{key: "a", left: map[any]any{"a": 1}, right: map[any]any{"a": 2}, out: true},
+		{key: "a", left: map[any]any{"a": 2}, right: map[any]any{"a": 1}},
+		{key: "a", left: map[int]any{1: 1}, right: map[int]any{1: 2}},
 		{left: math.NaN(), right: 1},
 		{left: 1, right: "a", out: true},
 		{left: "a", right: 1},
@@ -551,6 +557,11 @@ func TestSort(t *testing.T) {
 			key: "a",
 			in:  []any{map[string]any{"a": int64(1<<53 + 1)}, map[string]any{"a": float64(1 << 53)}},
 			out: []any{map[string]any{"a": float64(1 << 53)}, map[string]any{"a": int64(1<<53 + 1)}},
+		},
+		{
+			key: "name",
+			in:  []map[any]any{{"name": "b"}, {"name": "a"}},
+			out: []any{map[any]any{"name": "a"}, map[any]any{"name": "b"}},
 		},
 	}
 
