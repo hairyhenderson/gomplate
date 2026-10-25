@@ -1,6 +1,7 @@
 package cidr
 
 import (
+	"math"
 	"math/big"
 	"net/netip"
 	"testing"
@@ -69,6 +70,7 @@ func FuzzSubnetBig(f *testing.F) {
 	f.Add("::/0", 64, []byte{1, 0, 0, 0, 0, 0, 0, 0, 0}, false)
 	f.Add("10.3.0.0/16", 8, []byte{1}, true)
 	f.Add("10.3.0.0/16", -8, []byte{0}, false)
+	f.Add("10.3.0.0/16", math.MaxInt, []byte{0}, false)
 
 	f.Fuzz(func(t *testing.T, prefix string, newBits int, b []byte, neg bool) {
 		base, err := netip.ParsePrefix(prefix)
@@ -79,8 +81,7 @@ func FuzzSubnetBig(f *testing.F) {
 		num := fuzzNum(b, neg)
 		orig := new(big.Int).Set(num)
 
-		newLen := base.Bits() + newBits
-		fits := newBits >= 0 && newLen <= base.Addr().BitLen() &&
+		fits := newBits >= 0 && newBits <= base.Addr().BitLen()-base.Bits() &&
 			num.Sign() >= 0 && num.BitLen() <= newBits
 
 		subnet, err := SubnetBig(base, newBits, num)
@@ -91,7 +92,7 @@ func FuzzSubnetBig(f *testing.F) {
 		}
 
 		require.NoError(t, err)
-		assert.Equal(t, newLen, subnet.Bits())
+		assert.Equal(t, base.Bits()+newBits, subnet.Bits())
 		assert.Equal(t, subnet.Masked(), subnet, "%s isn't a network address", subnet)
 		assert.True(t, base.Contains(subnet.Addr()), "%s isn't in %s", subnet, base)
 	})

@@ -22,6 +22,11 @@ func fuzzList(t *testing.T, in string) (list, orig []any) {
 	orig, err = parsers.YAMLArray(in)
 	require.NoError(t, err)
 
+	// NaN isn't equal to itself, so changes couldn't be detected
+	if !reflect.DeepEqual(list, orig) {
+		t.Skip()
+	}
+
 	return list, orig
 }
 
@@ -35,6 +40,7 @@ func FuzzListFuncs(f *testing.F) {
 	f.Add("[null, a]", "", 0)
 	f.Add(" ", "", 0)
 	f.Add("[{a: 1}, {a: 1.5}, {b: 2}]", "a", 0)
+	f.Add("[.nan, [.nan]]", "", 0)
 
 	f.Fuzz(func(t *testing.T, in, key string, depth int) {
 		list, orig := fuzzList(t, in)
@@ -82,6 +88,10 @@ func fuzzMap(t *testing.T, in string) (m, orig map[string]any) {
 	orig, err = parsers.YAML(in)
 	require.NoError(t, err)
 
+	if !reflect.DeepEqual(m, orig) {
+		t.Skip()
+	}
+
 	return m, orig
 }
 
@@ -89,6 +99,7 @@ func FuzzMapFuncs(f *testing.F) {
 	f.Add("a: 1\nb: {c: 2}\n", "b: {d: 3}\ne: 4\n", "a")
 	f.Add("a: {b: 1}\n", "a: 2\n", "b")
 	f.Add("a: 1\n", "a: {b: 1}\n", "a")
+	f.Add("a: .nan\n", "b: [.nan]\n", "a")
 
 	f.Fuzz(func(t *testing.T, dstIn, srcIn, key string) {
 		dst, dstOrig := fuzzMap(t, dstIn)
