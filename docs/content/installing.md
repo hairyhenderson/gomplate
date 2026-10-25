@@ -29,7 +29,7 @@ mise use -g gomplate@latest
 
 ## macOS with MacPorts
 
-On macOS, you can also install gomplate using [MacPorts](https://www.macports.org):
+On macOS, you can also install gomplate using [MacPorts](https://ports.macports.org/port/gomplate/):
 
 ```console
 $ sudo port install gomplate
