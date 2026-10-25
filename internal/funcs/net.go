@@ -183,7 +183,7 @@ func (f *NetFuncs) CIDRSubnets(newbits any, prefix any) ([]netip.Prefix, error) 
 	}
 
 	// check the size before allocating space for every subnet
-	if network.Bits()+nBits > network.Addr().BitLen() {
+	if nBits > network.Addr().BitLen()-network.Bits() {
 		return nil, fmt.Errorf("insufficient address space to extend prefix of %d by %d", network.Bits(), nBits)
 	}
 
