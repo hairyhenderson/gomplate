@@ -242,6 +242,9 @@ func Pick(in map[string]any, keys ...string) map[string]any {
 // Merges a default and override map
 func mergeValues(d map[string]any, o map[string]any) map[string]any {
 	def := maps.Clone(d)
+	if def == nil {
+		def = map[string]any{}
+	}
 	over := maps.Clone(o)
 	for k, v := range over {
 		// If the key doesn't exist already, then just set the key to that value

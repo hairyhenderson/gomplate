@@ -255,6 +255,10 @@ func TestMerge(t *testing.T) {
 	require.NoError(t, err)
 	assert.Equal(t, expected, out)
 
+	out, err = Merge(map[string]any{"a": 1}, nil)
+	require.NoError(t, err)
+	assert.Equal(t, map[string]any{"a": 1}, out)
+
 	dst = map[string]any{"a": 4, "c": 5}
 	src = map[string]any{"a": 1, "b": 2, "c": 3}
 	expected = map[string]any{
