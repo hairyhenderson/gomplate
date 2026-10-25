@@ -15,6 +15,7 @@ import (
 	"text/template"
 	"text/template/parse"
 
+	"github.com/hairyhenderson/gomplate/v5/conv"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -106,6 +107,18 @@ func bigNumber(s string) bool {
 	return false
 }
 
+// bigConv reports whether s converts to a big number, the same way functions
+// convert their arguments, so spellings like "0xAp26" can't hide one.
+func bigConv(s string) bool {
+	if i, err := conv.ToInt64(s); err == nil && (i > 9999 || i < -9999) {
+		return true
+	}
+	if f, err := conv.ToFloat64(s); err == nil && math.Abs(f) > 9999 {
+		return true
+	}
+	return false
+}
+
 // bigArgs reports whether any of the parsed template's arguments holds a big
 // number. Strings are checked after they're unquoted, so escapes like
 // "\x39\x39\x39\x39\x39" can't hide one.
@@ -125,7 +138,7 @@ func bigArgs(tmpl *template.Template) bool {
 						return true
 					}
 				case *parse.StringNode:
-					if bigNumber(a.Text) {
+					if bigNumber(a.Text) || bigConv(a.Text) {
 						return true
 					}
 				}
