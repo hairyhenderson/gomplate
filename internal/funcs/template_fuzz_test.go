@@ -2,7 +2,7 @@ package funcs
 
 import (
 	"context"
-	"errors"
+	"io"
 	"maps"
 	"math"
 	"math/cmplx"
@@ -39,8 +39,10 @@ func fuzzFuncs(panicked *atomic.Bool) (template.FuncMap, []string) {
 		maps.Copy(all, create(ctx))
 	}
 
-	// a jq program can loop forever by design
+	// a jq program can loop forever by design, and a CUE program can ask for
+	// as much memory as it likes
 	delete(all, "jq")
+	delete(all, "cue")
 
 	fm := template.FuncMap{}
 	names := []string{}
@@ -59,7 +61,7 @@ func fuzzFuncs(panicked *atomic.Bool) (template.FuncMap, []string) {
 		nv := reflect.ValueOf(ns())
 		for i := range nv.NumMethod() {
 			m := nv.Type().Method(i).Name
-			if k == "coll" && m == "JQ" {
+			if k == "coll" && m == "JQ" || k == "data" && m == "CUE" {
 				continue
 			}
 			add(k+"."+m, nv.Method(i))
@@ -148,17 +150,6 @@ func bigArgs(tmpl *template.Template) bool {
 	return false
 }
 
-// limitWriter fails writes past n bytes.
-type limitWriter struct{ n int }
-
-func (w *limitWriter) Write(p []byte) (int, error) {
-	w.n -= len(p)
-	if w.n < 0 {
-		return 0, errors.New("output too long")
-	}
-	return len(p), nil
-}
-
 func FuzzTemplateFuncs(f *testing.F) {
 	panicked := &atomic.Bool{}
 	fm, names := fuzzFuncs(panicked)
@@ -192,7 +183,9 @@ func FuzzTemplateFuncs(f *testing.F) {
 
 		name := names[int(fn)%len(names)]
 		call := strings.ReplaceAll(name, ".", "_") + " " + args
-		tmpl, err := template.New("fuzz").Funcs(fm).Parse("{{ " + call + " }}")
+		// the result is assigned, not printed, since printing a map that holds
+		// itself (from set, say) recurses until the stack overflows
+		tmpl, err := template.New("fuzz").Funcs(fm).Parse("{{ $_ := " + call + " }}")
 		if err != nil {
 			return
 		}
@@ -204,7 +197,7 @@ func FuzzTemplateFuncs(f *testing.F) {
 		data := map[string]any{"m": map[string]any{"a": 1, "b": []any{"c"}}}
 
 		panicked.Store(false)
-		err = tmpl.Execute(&limitWriter{n: 1 << 20}, data)
+		err = tmpl.Execute(io.Discard, data)
 		assert.False(t, panicked.Load(), "%s %s panicked: %v", name, args, err)
 	})
 }
