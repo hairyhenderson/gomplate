@@ -404,6 +404,8 @@ func TestLessThan(t *testing.T) {
 		{key: "a", left: map[any]any{"a": 1}, right: map[any]any{"a": 2}, out: true},
 		{key: "a", left: map[any]any{"a": 2}, right: map[any]any{"a": 1}},
 		{key: "a", left: map[int]any{1: 1}, right: map[int]any{1: 2}},
+		{key: "a", left: map[string]any{"a": 1}, right: map[int]any{1: 2}, out: true},
+		{key: "a", left: map[int]any{1: 2}, right: map[string]any{"a": 1}},
 		{left: math.NaN(), right: 1},
 		{left: 1, right: "a", out: true},
 		{left: "a", right: 1},
@@ -562,6 +564,11 @@ func TestSort(t *testing.T) {
 			key: "name",
 			in:  []map[any]any{{"name": "b"}, {"name": "a"}},
 			out: []any{map[any]any{"name": "a"}, map[any]any{"name": "b"}},
+		},
+		{
+			key: "a",
+			in:  []any{map[string]any{"a": 2}, map[int]any{0: 0}, map[string]any{"a": 1}},
+			out: []any{map[string]any{"a": 1}, map[string]any{"a": 2}, map[int]any{0: 0}},
 		},
 	}
 

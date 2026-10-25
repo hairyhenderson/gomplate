@@ -321,12 +321,7 @@ func lessThan(key string) func(left, right any) bool {
 		case reflect.String:
 			return val.String() < rval.String()
 		case reflect.Map:
-			lk, lok := mapKey(val, key)
-			rk, rok := mapKey(rval, key)
-			if !lok || !rok {
-				return false
-			}
-			return keyedLess(val.MapIndex(lk), rval.MapIndex(rk))
+			return keyedLess(mapIndex(val, key), mapIndex(rval, key))
 		case reflect.Struct:
 			return keyedLess(val.FieldByName(key), rval.FieldByName(key))
 		default:
@@ -336,17 +331,18 @@ func lessThan(key string) func(left, right any) bool {
 	}
 }
 
-// mapKey returns key as a value that can index m, if m's keys can be strings.
-func mapKey(m reflect.Value, key string) (reflect.Value, bool) {
+// mapIndex returns the value of key in m, or an invalid value if it's missing
+// or m's keys can't be strings.
+func mapIndex(m reflect.Value, key string) reflect.Value {
 	kt := m.Type().Key()
 	kval := reflect.ValueOf(key)
 	switch {
 	case kt.Kind() == reflect.String:
-		return kval.Convert(kt), true
+		return m.MapIndex(kval.Convert(kt))
 	case kval.Type().AssignableTo(kt):
-		return kval, true
+		return m.MapIndex(kval)
 	default:
-		return reflect.Value{}, false
+		return reflect.Value{}
 	}
 }
 
