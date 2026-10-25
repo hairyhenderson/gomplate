@@ -258,6 +258,12 @@ key`: map[string]any{
 	out, err := ToYAML(in)
 	require.NoError(t, err)
 	assert.Equal(t, expected, out)
+
+	_, err = ToYAML(complex(1, 2))
+	require.Error(t, err)
+
+	_, err = ToYAML(map[string]any{"a": make(chan int)})
+	require.Error(t, err)
 }
 
 func TestCSV(t *testing.T) {

@@ -482,6 +482,13 @@ func ToYAML(in any) (string, error) {
 	// I'd use yaml.Marshal, but between v2 and v3 the indent has changed from
 	// 2 to 4. This explicitly sets it back to 2.
 	marshal := func(in any) (out []byte, err error) {
+		// the encoder panics on types it can't marshal, like complex numbers
+		defer func() {
+			if r := recover(); r != nil {
+				err = fmt.Errorf("unable to marshal to YAML: %v", r)
+			}
+		}()
+
 		buf := &bytes.Buffer{}
 		e := yaml.NewEncoder(buf)
 		e.SetIndent(2)
