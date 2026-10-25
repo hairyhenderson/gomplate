@@ -12,6 +12,7 @@ import (
 	"sync/atomic"
 	"testing"
 	"text/template"
+	"text/template/parse"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -104,6 +105,33 @@ func bigNumber(s string) bool {
 	return false
 }
 
+// bigArgs reports whether any of the parsed template's arguments holds a big
+// number. String arguments are checked after they're unquoted, so escapes
+// like "\x39\x39\x39\x39\x39" can't hide one.
+func bigArgs(tmpl *template.Template) bool {
+	for _, n := range tmpl.Root.Nodes {
+		action, ok := n.(*parse.ActionNode)
+		if !ok {
+			continue
+		}
+		for _, cmd := range action.Pipe.Cmds {
+			for _, arg := range cmd.Args {
+				switch a := arg.(type) {
+				case *parse.NumberNode:
+					if bigNumber(a.Text) {
+						return true
+					}
+				case *parse.StringNode:
+					if bigNumber(a.Text) {
+						return true
+					}
+				}
+			}
+		}
+	}
+	return false
+}
+
 // limitWriter fails writes past n bytes.
 type limitWriter struct{ n int }
 
@@ -142,7 +170,7 @@ func FuzzTemplateFuncs(f *testing.F) {
 	f.Add(index("data.ToYAML"), `0i`)
 
 	f.Fuzz(func(t *testing.T, fn uint16, args string) {
-		if len(args) > 200 || notLiteral.MatchString(args) || bigNumber(args) {
+		if len(args) > 200 || notLiteral.MatchString(args) {
 			t.Skip()
 		}
 
@@ -151,6 +179,9 @@ func FuzzTemplateFuncs(f *testing.F) {
 		tmpl, err := template.New("fuzz").Funcs(fm).Parse("{{ " + call + " }}")
 		if err != nil {
 			return
+		}
+		if bigArgs(tmpl) {
+			t.Skip()
 		}
 
 		// a map for the functions that take one

@@ -95,5 +95,12 @@ func FuzzSubnetBig(f *testing.F) {
 		assert.Equal(t, base.Bits()+newBits, subnet.Bits())
 		assert.Equal(t, subnet.Masked(), subnet, "%s isn't a network address", subnet)
 		assert.True(t, base.Contains(subnet.Addr()), "%s isn't in %s", subnet, base)
+
+		// the subnet's offset from the start of base, in subnets, is the number
+		start, _ := ipToInt(base.Masked().Addr())
+		got, _ := ipToInt(subnet.Addr())
+		got.Sub(got, start)
+		got.Rsh(got, uint(subnet.Addr().BitLen()-subnet.Bits()))
+		assert.Zero(t, orig.Cmp(got), "%s is subnet %s of %s, not %s", subnet, got, base, orig)
 	})
 }
