@@ -138,6 +138,8 @@ func FuzzTemplateFuncs(f *testing.F) {
 	f.Add(index("coll.Omit"), `nil .m`)
 	f.Add(index("coll.JSONPath"), `"" .missing`)
 	f.Add(index("math.Rem"), `0 0`)
+	f.Add(index("merge"), `. nil`)
+	f.Add(index("data.ToYAML"), `0i`)
 
 	f.Fuzz(func(t *testing.T, fn uint16, args string) {
 		if len(args) > 200 || notLiteral.MatchString(args) || bigNumber(args) {
