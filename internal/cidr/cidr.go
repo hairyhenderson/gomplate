@@ -22,13 +22,11 @@ func SubnetBig(base netip.Prefix, newBits int, num *big.Int) (netip.Prefix, erro
 	parentLen := base.Bits()
 	addrLen := base.Addr().BitLen()
 
-	newPrefixLen := parentLen + newBits
-
 	if newBits < 0 {
 		return netip.Prefix{}, fmt.Errorf("can't extend prefix of %d by %d", parentLen, newBits)
 	}
 
-	if newPrefixLen > addrLen {
+	if newBits > addrLen-parentLen {
 		return netip.Prefix{}, fmt.Errorf("insufficient address space to extend prefix of %d by %d", parentLen, newBits)
 	}
 
@@ -37,6 +35,7 @@ func SubnetBig(base netip.Prefix, newBits int, num *big.Int) (netip.Prefix, erro
 		return netip.Prefix{}, fmt.Errorf("prefix extension of %d does not accommodate a subnet numbered %d", newBits, num)
 	}
 
+	newPrefixLen := parentLen + newBits
 	prefix := netip.PrefixFrom(insertNumIntoIP(base.Masked().Addr(), num, newPrefixLen), newPrefixLen)
 
 	return prefix, nil

@@ -2,6 +2,7 @@ package cidr
 
 import (
 	"fmt"
+	"math"
 	"math/big"
 	"net/netip"
 	"testing"
@@ -93,6 +94,12 @@ func TestSubnetBig(t *testing.T) {
 		{
 			base: "192.168.2.0/24",
 			bits: -4,
+			num:  big.NewInt(int64(0)),
+			err:  true,
+		},
+		{
+			base: "192.168.2.0/24",
+			bits: math.MaxInt,
 			num:  big.NewInt(int64(0)),
 			err:  true,
 		},
