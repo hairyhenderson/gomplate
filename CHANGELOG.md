@@ -1,5 +1,31 @@
 # Change Log
 
+## [5.3.2](https://github.com/hairyhenderson/gomplate/compare/v5.3.1...v5.3.2) (2026-10-30)
+
+
+### Bug Fixes
+
+* **coll:** don't panic in coll.Merge when a source map is nil ([#2917](https://github.com/hairyhenderson/gomplate/issues/2917)) ([c46cf23](https://github.com/hairyhenderson/gomplate/commit/c46cf23ab64120399ce02d4885eec80ecf679f36))
+* **coll:** don't panic in coll.Sort on mixed values, and don't modify the input to coll.Reverse ([#2912](https://github.com/hairyhenderson/gomplate/issues/2912)) ([cf6ac5f](https://github.com/hairyhenderson/gomplate/commit/cf6ac5fa2e2e95f36ce3e9ac3d9574f5e6d5a464))
+* **crypto:** don't write padding into the caller's slice in EncryptAESCBC ([#2911](https://github.com/hairyhenderson/gomplate/issues/2911)) ([ad686ff](https://github.com/hairyhenderson/gomplate/commit/ad686ffdf6a8674f1a39106fd1400f6e09952fd0))
+* **crypto:** return an error instead of panicking on bad AES-CBC input ([#2901](https://github.com/hairyhenderson/gomplate/issues/2901)) ([183ab88](https://github.com/hairyhenderson/gomplate/commit/183ab8847b9b64ed750c969c39a9011f6dd0cf7f))
+* **data:** don't panic in data.ToYAML on values YAML can't encode ([#2918](https://github.com/hairyhenderson/gomplate/issues/2918)) ([85af1dd](https://github.com/hairyhenderson/gomplate/commit/85af1ddfeefeb47af52285158ebe2ce09baa2dd6))
+* **funcs:** don't panic in assert, coll.Pick, coll.Omit, coll.JSONPath, or math.Rem ([#2914](https://github.com/hairyhenderson/gomplate/issues/2914)) ([def852f](https://github.com/hairyhenderson/gomplate/commit/def852f9577a49a7bbd5d35afa190ddd7e22924e))
+* **gomod:** update aws-sdk-go-v2 monorepo ([#2930](https://github.com/hairyhenderson/gomplate/issues/2930)) ([25a2a67](https://github.com/hairyhenderson/gomplate/commit/25a2a67811148bdc056386d0eb907f3cce441f6e))
+* **gomod:** update module github.com/aws/aws-sdk-go-v2/service/ec2 to v1.339.0 ([#2894](https://github.com/hairyhenderson/gomplate/issues/2894)) ([67029b3](https://github.com/hairyhenderson/gomplate/commit/67029b39d77aaa88db56b904662acbc559e81edb))
+* **gomod:** update module github.com/aws/aws-sdk-go-v2/service/ec2 to v1.340.0 ([#2927](https://github.com/hairyhenderson/gomplate/issues/2927)) ([76924f3](https://github.com/hairyhenderson/gomplate/commit/76924f360b11295be23b58e3ef6713fb61195366))
+* **gomod:** update module github.com/aws/aws-sdk-go-v2/service/kms to v1.61.5 ([#2921](https://github.com/hairyhenderson/gomplate/issues/2921)) ([f8a2332](https://github.com/hairyhenderson/gomplate/commit/f8a2332281e448f1baea50141296fb9df3fd8dc5))
+* **math:** don't overflow in math.Seq with very large or small bounds ([#2908](https://github.com/hairyhenderson/gomplate/issues/2908)) ([84b2b43](https://github.com/hairyhenderson/gomplate/commit/84b2b43fd96274a106a69b754a0f2fc9c59ddff0))
+* **net:** check the size in net.CIDRSubnets before allocating ([#2909](https://github.com/hairyhenderson/gomplate/issues/2909)) ([61babda](https://github.com/hairyhenderson/gomplate/commit/61babdac3da60ab6c882c7e5a75bfbabd80340b0))
+* **parsers:** don't panic on an empty CSV delimiter or a short header ([#2902](https://github.com/hairyhenderson/gomplate/issues/2902)) ([baff1c2](https://github.com/hairyhenderson/gomplate/commit/baff1c23ee17f67f221d34419440c67a43ff04f9))
+* **parsers:** don't panic when converting nil to TOML ([#2907](https://github.com/hairyhenderson/gomplate/issues/2907)) ([5e813f1](https://github.com/hairyhenderson/gomplate/commit/5e813f1970b40c16542c3657e2405c20e4383de8))
+* **random:** error on a negative count, and don't hang on a huge upper bound ([#2906](https://github.com/hairyhenderson/gomplate/issues/2906)) ([f6d6425](https://github.com/hairyhenderson/gomplate/commit/f6d64255b51cec7cc1d00fe9abbf1554a7dbe231))
+
+
+### Documentation
+
+* link to the gomplate port page on MacPorts ([#2919](https://github.com/hairyhenderson/gomplate/issues/2919)) ([f9623be](https://github.com/hairyhenderson/gomplate/commit/f9623be6abbf84df0fddafba64e8ae91882c218e))
+
 ## [5.3.1](https://github.com/hairyhenderson/gomplate/compare/v5.3.0...v5.3.1) (2026-10-21)
 
 
