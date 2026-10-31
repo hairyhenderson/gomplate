@@ -1,6 +1,7 @@
 package coll
 
 import (
+	"context"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -63,6 +64,11 @@ func TestJSONPath(t *testing.T) {
 	out, err = JSONPath("", nil)
 	require.NoError(t, err)
 	assert.Nil(t, out)
+
+	out, err = JSONPath(".items[*]", m{"items": ar{}})
+	require.NoError(t, err)
+	assert.Equal(t, ar{}, out)
+	assert.NotNil(t, out)
 
 	_, err = JSONPath("{.store.unclosed", in)
 	require.Error(t, err)
@@ -150,4 +156,186 @@ func TestJSONPath(t *testing.T) {
 
 	_, err = JSONPath(".*", structIn)
 	require.Error(t, err)
+}
+
+func TestMissingKeyFromContext(t *testing.T) {
+	assert.Equal(t, "error", MissingKeyFromContext(context.Background()))
+	assert.Equal(t, "error", MissingKeyFromContext(context.TODO()))
+	assert.Equal(t, "default", MissingKeyFromContext(ContextWithMissingKey(context.Background(), "default")))
+	assert.Equal(t, "zero", MissingKeyFromContext(ContextWithMissingKey(context.Background(), "zero")))
+	assert.Equal(t, "invalid", MissingKeyFromContext(ContextWithMissingKey(context.Background(), "invalid")))
+	assert.Equal(t, "error", MissingKeyFromContext(ContextWithMissingKey(context.Background(), "error")))
+	assert.Equal(t, "error", MissingKeyFromContext(ContextWithMissingKey(context.Background(), "")))
+}
+
+func TestJSONPathWithContext(t *testing.T) {
+	in := m{
+		"store": m{
+			"book": ar{
+				m{
+					"category": "reference",
+					"author":   "Nigel Rees",
+					"title":    "Sayings of the Century",
+					"price":    8.95,
+				},
+				m{
+					"category": "fiction",
+					"author":   "Evelyn Waugh",
+					"title":    "Sword of Honour",
+					"price":    12.99,
+				},
+			},
+			"bicycle": m{
+				"color": "red",
+				"price": 19.95,
+			},
+		},
+	}
+
+	type bicycleType struct {
+		Color string
+	}
+	type storeType struct {
+		Bicycle *bicycleType
+		safe    any
+	}
+	structIn := &storeType{
+		Bicycle: &bicycleType{
+			Color: "red",
+		},
+		safe: "hidden",
+	}
+
+	testCases := []struct {
+		name       string
+		missingKey string
+	}{
+		{"missing-key=default", "default"},
+		{"missing-key=zero", "zero"},
+		{"missing-key=invalid", "invalid"},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			ctx := ContextWithMissingKey(context.Background(), tc.missingKey)
+
+			out, err := JSONPathWithContext(ctx, ".store.bicycle.color", in)
+			require.NoError(t, err)
+			assert.Equal(t, "red", out)
+
+			out, err = JSONPathWithContext(ctx, ".Bicycle.Color", structIn)
+			require.NoError(t, err)
+			assert.Equal(t, "red", out)
+
+			out, err = JSONPathWithContext(ctx, ".bogus", in)
+			require.NoError(t, err)
+			assert.Nil(t, out)
+
+			out, err = JSONPathWithContext(ctx, ".store.bogus", in)
+			require.NoError(t, err)
+			assert.Nil(t, out)
+
+			out, err = JSONPathWithContext(ctx, ".store.bogus.nested.field", in)
+			require.NoError(t, err)
+			assert.Nil(t, out)
+
+			out, err = JSONPathWithContext(ctx, ".store.book[99]", in)
+			require.NoError(t, err)
+			assert.Nil(t, out)
+
+			out, err = JSONPathWithContext(ctx, ".store.book[99].title", in)
+			require.NoError(t, err)
+			assert.Nil(t, out)
+
+			out, err = JSONPathWithContext(ctx, ".store.bogus[0]", in)
+			require.NoError(t, err)
+			assert.Nil(t, out)
+
+			out, err = JSONPathWithContext(ctx, ".Bicycle.NonExistent", structIn)
+			require.NoError(t, err)
+			assert.Nil(t, out)
+
+			_, err = JSONPathWithContext(ctx, ".safe", structIn)
+			require.Error(t, err)
+
+			_, err = JSONPathWithContext(ctx, "{.store.unclosed", in)
+			require.Error(t, err)
+
+			// multi-branch query where one branch hits array index out of bounds preserves valid branch matches
+			multiBranchIn := ar{
+				ar{"keep"},
+				ar{},
+			}
+			out, err = JSONPathWithContext(ctx, "$[*][0]", multiBranchIn)
+			require.NoError(t, err)
+			assert.Equal(t, ar{"keep"}, out)
+
+			// multi-branch query where all branches hit bounds returns nil under permissive mode
+			multiBranchAllEmpty := ar{
+				ar{},
+				ar{},
+			}
+			out, err = JSONPathWithContext(ctx, "$[*][0]", multiBranchAllEmpty)
+			require.NoError(t, err)
+			assert.Nil(t, out)
+		})
+	}
+
+	t.Run("missing-key=error", func(t *testing.T) {
+		ctx := ContextWithMissingKey(context.Background(), "error")
+
+		out, err := JSONPathWithContext(ctx, ".store.bicycle.color", in)
+		require.NoError(t, err)
+		assert.Equal(t, "red", out)
+
+		_, err = JSONPathWithContext(ctx, ".store.bogus", in)
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "bogus is not found")
+
+		_, err = JSONPathWithContext(ctx, ".store.bogus.nested", in)
+		require.Error(t, err)
+
+		_, err = JSONPathWithContext(ctx, ".store.book[99]", in)
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "array index out of bounds")
+
+		_, err = JSONPathWithContext(ctx, ".Bicycle.NonExistent", structIn)
+		require.Error(t, err)
+
+		// strict mode returns non-nil empty slice for queries matching empty arrays
+		emptySliceIn := m{"items": ar{}}
+		out, err = JSONPathWithContext(ctx, ".items[*]", emptySliceIn)
+		require.NoError(t, err)
+		assert.Equal(t, ar{}, out)
+		assert.NotNil(t, out)
+
+		// multi-branch with out of bounds errors under strict mode
+		multiBranchIn := ar{
+			ar{"keep"},
+			ar{},
+		}
+		_, err = JSONPathWithContext(ctx, "$[*][0]", multiBranchIn)
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "array index out of bounds")
+	})
+
+	t.Run("default context acts as error", func(t *testing.T) {
+		ctx := context.Background()
+
+		out, err := JSONPathWithContext(ctx, ".store.bicycle.color", in)
+		require.NoError(t, err)
+		assert.Equal(t, "red", out)
+
+		_, err = JSONPathWithContext(ctx, ".store.bogus", in)
+		require.Error(t, err)
+
+		_, err = JSONPathWithContext(ctx, ".store.book[99]", in)
+		require.Error(t, err)
+
+		emptySliceIn := m{"items": ar{}}
+		out, err = JSONPathWithContext(ctx, ".items[*]", emptySliceIn)
+		require.NoError(t, err)
+		assert.Equal(t, ar{}, out)
+		assert.NotNil(t, out)
+	})
 }
