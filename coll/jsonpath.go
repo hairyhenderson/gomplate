@@ -45,6 +45,9 @@ func JSONPathWithContext(ctx context.Context, p string, in any) (any, error) {
 	results, err := jp.FindResults(in)
 	if err != nil {
 		if allowMissingKeys && strings.Contains(err.Error(), "array index out of bounds") {
+			if matches, ok := evalMultiBranchBounds(ctx, p, in); ok {
+				return matches, nil
+			}
 			return nil, nil
 		}
 		return nil, fmt.Errorf("executing JSONPath failed: %w", err)
@@ -64,8 +67,82 @@ func JSONPathWithContext(ctx context.Context, p string, in any) (any, error) {
 	return a, nil
 }
 
+func evalMultiBranchBounds(ctx context.Context, p string, in any) (any, bool) {
+	idx := strings.Index(p, "[*]")
+	if idx == -1 {
+		return nil, false
+	}
+	prefix := p[:idx]
+	subPath := p[idx+3:]
+	if subPath != "" && !strings.HasPrefix(subPath, ".") && !strings.HasPrefix(subPath, "[") {
+		subPath = "." + subPath
+	}
+
+	var items []any
+	if prefix == "" || prefix == "$" || prefix == "." {
+		items = toSlice(in)
+	} else {
+		prefixRes, err := JSONPathWithContext(ctx, prefix, in)
+		if err != nil || prefixRes == nil {
+			return nil, false
+		}
+		items = toSlice(prefixRes)
+	}
+
+	if items == nil {
+		return nil, false
+	}
+
+	var matches []any
+	for _, item := range items {
+		var res any
+		var err error
+		if subPath == "" {
+			res = item
+		} else {
+			res, err = JSONPathWithContext(ctx, subPath, item)
+		}
+		if err == nil && res != nil {
+			if s, ok := res.([]any); ok {
+				matches = append(matches, s...)
+			} else {
+				matches = append(matches, res)
+			}
+		}
+	}
+
+	if len(matches) == 0 {
+		return nil, true
+	}
+	return matches, true
+}
+
+func toSlice(in any) []any {
+	if in == nil {
+		return nil
+	}
+	if s, ok := in.([]any); ok {
+		return s
+	}
+	val := reflect.ValueOf(in)
+	for val.Kind() == reflect.Pointer || val.Kind() == reflect.Interface {
+		if val.IsNil() {
+			return nil
+		}
+		val = val.Elem()
+	}
+	if val.Kind() != reflect.Slice && val.Kind() != reflect.Array {
+		return nil
+	}
+	s := make([]any, val.Len())
+	for i := 0; i < val.Len(); i++ {
+		s[i] = val.Index(i).Interface()
+	}
+	return s
+}
+
 func collectResults(results [][]reflect.Value) ([]any, error) {
-	var a []any
+	a := make([]any, 0)
 	for _, r := range results {
 		for _, v := range r {
 			o, err := extractResult(v)

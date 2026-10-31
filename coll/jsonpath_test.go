@@ -65,6 +65,11 @@ func TestJSONPath(t *testing.T) {
 	require.NoError(t, err)
 	assert.Nil(t, out)
 
+	out, err = JSONPath(".items[*]", m{"items": ar{}})
+	require.NoError(t, err)
+	assert.Equal(t, ar{}, out)
+	assert.NotNil(t, out)
+
 	_, err = JSONPath("{.store.unclosed", in)
 	require.Error(t, err)
 
@@ -255,6 +260,24 @@ func TestJSONPathWithContext(t *testing.T) {
 
 			_, err = JSONPathWithContext(ctx, "{.store.unclosed", in)
 			require.Error(t, err)
+
+			// multi-branch query where one branch hits array index out of bounds preserves valid branch matches
+			multiBranchIn := ar{
+				ar{"keep"},
+				ar{},
+			}
+			out, err = JSONPathWithContext(ctx, "$[*][0]", multiBranchIn)
+			require.NoError(t, err)
+			assert.Equal(t, ar{"keep"}, out)
+
+			// multi-branch query where all branches hit bounds returns nil under permissive mode
+			multiBranchAllEmpty := ar{
+				ar{},
+				ar{},
+			}
+			out, err = JSONPathWithContext(ctx, "$[*][0]", multiBranchAllEmpty)
+			require.NoError(t, err)
+			assert.Nil(t, out)
 		})
 	}
 
@@ -278,6 +301,22 @@ func TestJSONPathWithContext(t *testing.T) {
 
 		_, err = JSONPathWithContext(ctx, ".Bicycle.NonExistent", structIn)
 		require.Error(t, err)
+
+		// strict mode returns non-nil empty slice for queries matching empty arrays
+		emptySliceIn := m{"items": ar{}}
+		out, err = JSONPathWithContext(ctx, ".items[*]", emptySliceIn)
+		require.NoError(t, err)
+		assert.Equal(t, ar{}, out)
+		assert.NotNil(t, out)
+
+		// multi-branch with out of bounds errors under strict mode
+		multiBranchIn := ar{
+			ar{"keep"},
+			ar{},
+		}
+		_, err = JSONPathWithContext(ctx, "$[*][0]", multiBranchIn)
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "array index out of bounds")
 	})
 
 	t.Run("default context acts as error", func(t *testing.T) {
@@ -292,5 +331,11 @@ func TestJSONPathWithContext(t *testing.T) {
 
 		_, err = JSONPathWithContext(ctx, ".store.book[99]", in)
 		require.Error(t, err)
+
+		emptySliceIn := m{"items": ar{}}
+		out, err = JSONPathWithContext(ctx, ".items[*]", emptySliceIn)
+		require.NoError(t, err)
+		assert.Equal(t, ar{}, out)
+		assert.NotNil(t, out)
 	})
 }
