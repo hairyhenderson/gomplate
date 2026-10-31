@@ -62,6 +62,109 @@ func TestWDFS_ReadOps(t *testing.T) {
 	b, err = fs.ReadFile(subfs, "bar")
 	require.NoError(t, err)
 	assert.Equal(t, "goodnight moon", string(b))
+
+	matches, err := fsys.Glob("/tmp/*.txt")
+	require.NoError(t, err)
+	assert.Equal(t, []string{"/tmp/one.txt", "/tmp/three.txt", "/tmp/two.txt"}, matches)
+}
+
+func TestWDFS_Glob(t *testing.T) {
+	wd, err := os.Getwd()
+	require.NoError(t, err)
+
+	tmpDir := tfs.NewDir(t, "gomplate-wdfs-glob-test")
+	t.Cleanup(func() {
+		_ = os.Chdir(wd)
+	})
+
+	var osfsys fs.FS
+	vol := filepath.VolumeName(tmpDir.Path())
+	if vol != "" {
+		osfsys, err = osfs.NewFS().SubVolume(vol)
+		require.NoError(t, err)
+	} else {
+		vol = "/"
+		osfsys = osfs.NewFS()
+	}
+
+	fsys := &wdFS{
+		vol:  vol,
+		fsys: osfsys,
+	}
+
+	dirPath := filepath.Join(tmpDir.Path(), "testdir")
+	require.NoError(t, os.MkdirAll(dirPath, 0o700))
+	require.NoError(t, os.WriteFile(filepath.Join(dirPath, "a.txt"), []byte("a"), 0o600))
+	require.NoError(t, os.WriteFile(filepath.Join(dirPath, "b.txt"), []byte("b"), 0o600))
+	require.NoError(t, os.WriteFile(filepath.Join(dirPath, "c.log"), []byte("c"), 0o600))
+
+	// Absolute path pattern
+	absPattern := filepath.ToSlash(filepath.Join(dirPath, "*.txt"))
+	matches, err := fsys.Glob(absPattern)
+	require.NoError(t, err)
+	assert.Equal(t, []string{
+		filepath.ToSlash(filepath.Join(dirPath, "a.txt")),
+		filepath.ToSlash(filepath.Join(dirPath, "b.txt")),
+	}, matches)
+
+	// Native path separator pattern
+	nativePattern := filepath.FromSlash(filepath.Join(dirPath, "*.txt"))
+	matches, err = fsys.Glob(nativePattern)
+	require.NoError(t, err)
+	assert.Equal(t, []string{
+		filepath.FromSlash(filepath.Join(dirPath, "a.txt")),
+		filepath.FromSlash(filepath.Join(dirPath, "b.txt")),
+	}, matches)
+
+	// Working-directory-relative pattern
+	require.NoError(t, os.Chdir(dirPath))
+	matches, err = fsys.Glob("*.txt")
+	require.NoError(t, err)
+	assert.Equal(t, []string{"a.txt", "b.txt"}, matches)
+
+	// Single file without wildcards
+	matches, err = fsys.Glob("a.txt")
+	require.NoError(t, err)
+	assert.Equal(t, []string{"a.txt"}, matches)
+
+	// Non-matching pattern
+	matches, err = fsys.Glob("*.nonexistent")
+	require.NoError(t, err)
+	assert.Empty(t, matches)
+
+	// Malformed pattern
+	_, err = fsys.Glob("[]")
+	assert.Error(t, err)
+}
+
+func TestAdaptVolumeRoot(t *testing.T) {
+	t.Parallel()
+
+	assert.Equal(t, "C:/", adaptVolumeRoot("C:"))
+	assert.Equal(t, "c:/", adaptVolumeRoot("c:"))
+	assert.Equal(t, "D:/", adaptVolumeRoot("D:"))
+	assert.Equal(t, "C:/foo", adaptVolumeRoot("C:/foo"))
+	assert.Equal(t, "/tmp", adaptVolumeRoot("/tmp"))
+	assert.Equal(t, ".", adaptVolumeRoot("."))
+}
+
+func TestWDFS_Glob_StatWithoutRead(t *testing.T) {
+	if runtime.GOOS == osWindows {
+		t.Skip("chmod 0200 does not restrict read on Windows")
+	}
+
+	dir := t.TempDir()
+	filePath := filepath.Join(dir, "secret.txt")
+	require.NoError(t, os.WriteFile(filePath, []byte("secret"), 0o200))
+
+	fsys := &wdFS{
+		vol:  "/",
+		fsys: osfs.NewFS(),
+	}
+
+	matches, err := fsys.Glob(filePath)
+	require.NoError(t, err)
+	assert.Equal(t, []string{filePath}, matches)
 }
 
 func TestWDFS_WriteOps(t *testing.T) {
