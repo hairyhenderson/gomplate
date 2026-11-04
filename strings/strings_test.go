@@ -82,6 +82,8 @@ func TestCaseFuncs(t *testing.T) {
 		{" baz\tqux  ", "baz_qux", "baz-qux", "bazQux"},
 		{"Hello, World!", "Hello_world", "Hello-world", "HelloWorld"},
 		{"grüne | Straße", "grüne_straße", "grüne-straße", "grüneStraße"},
+		{"élan vital", "élan_vital", "élan-vital", "élanVital"},
+		{"Éclair au chocolat", "Éclair_au_chocolat", "Éclair-au-chocolat", "ÉclairAuChocolat"},
 		{"", "", "", ""},
 		{" \t\n ", "", "", ""},
 		{"!?", "", "", ""},

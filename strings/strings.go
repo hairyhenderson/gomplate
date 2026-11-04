@@ -6,6 +6,7 @@ import (
 	"math"
 	"regexp"
 	"strings"
+	"unicode/utf8"
 
 	"github.com/Masterminds/goutils"
 	"github.com/hairyhenderson/gomplate/v5/conv"
@@ -77,15 +78,21 @@ func KebabCase(in string) string {
 	return spaces.ReplaceAllString(s, "-")
 }
 
+// keepFirstRune makes sure the first letter of s remains lower- or upper-cased
+// like the first letter of orig. Both must be non-empty.
+func keepFirstRune(s, orig string) string {
+	r, _ := utf8.DecodeRuneInString(orig)
+	_, size := utf8.DecodeRuneInString(s)
+	return string(r) + s[size:]
+}
+
 func casePrepare(in string) string {
 	in = strings.TrimSpace(in)
 	if in == "" {
 		return ""
 	}
 
-	s := strings.ToLower(in)
-	// make sure the first letter remains lower- or upper-cased
-	s = strings.Replace(s, string(s[0]), string(in[0]), 1)
+	s := keepFirstRune(strings.ToLower(in), in)
 	s = nonAlphaNum.ReplaceAllString(s, " ")
 	return strings.TrimSpace(s)
 }
@@ -98,9 +105,7 @@ func CamelCase(in string) string {
 	}
 
 	tag := language.Und
-	s := cases.Title(tag).String(conv.ToString(in))
-	// make sure the first letter remains lower- or upper-cased
-	s = strings.Replace(s, string(s[0]), string(in[0]), 1)
+	s := keepFirstRune(cases.Title(tag).String(conv.ToString(in)), in)
 	return nonAlphaNum.ReplaceAllString(s, "")
 }
 
