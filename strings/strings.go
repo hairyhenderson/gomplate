@@ -79,11 +79,18 @@ func KebabCase(in string) string {
 }
 
 // keepFirstRune makes sure the first letter of s remains lower- or upper-cased
-// like the first letter of orig. Both must be non-empty.
-func keepFirstRune(s, orig string) string {
+// like the first letter of orig. conv is the conversion that produced s from
+// orig. It may expand the first letter into several runes, so the whole
+// expansion is replaced, not just one rune. Both must be non-empty.
+func keepFirstRune(s, orig string, conv func(string) string) string {
 	r, _ := utf8.DecodeRuneInString(orig)
+	first := string(r)
+	if prefix := conv(first); strings.HasPrefix(s, prefix) {
+		return first + s[len(prefix):]
+	}
+
 	_, size := utf8.DecodeRuneInString(s)
-	return string(r) + s[size:]
+	return first + s[size:]
 }
 
 func casePrepare(in string) string {
@@ -92,7 +99,7 @@ func casePrepare(in string) string {
 		return ""
 	}
 
-	s := keepFirstRune(strings.ToLower(in), in)
+	s := keepFirstRune(strings.ToLower(in), in, strings.ToLower)
 	s = nonAlphaNum.ReplaceAllString(s, " ")
 	return strings.TrimSpace(s)
 }
@@ -104,8 +111,8 @@ func CamelCase(in string) string {
 		return ""
 	}
 
-	tag := language.Und
-	s := keepFirstRune(cases.Title(tag).String(conv.ToString(in)), in)
+	title := cases.Title(language.Und).String
+	s := keepFirstRune(title(conv.ToString(in)), in, title)
 	return nonAlphaNum.ReplaceAllString(s, "")
 }
 
