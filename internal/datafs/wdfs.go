@@ -359,10 +359,49 @@ func (w *wdFS) Sub(name string) (fs.FS, error) {
 	return fs.Sub(w.fsys, name)
 }
 
-func (w *wdFS) Glob(_ string) ([]string, error) {
-	// I'm not sure how to handle this, so I'm just going to error for now -
-	// I have no need of Glob anyway.
-	return nil, fmt.Errorf("glob not supported by wdFS: %w", fs.ErrInvalid)
+// noGlobFS wraps *wdFS to provide fs.StatFS and fs.ReadDirFS implementations
+// while suppressing fs.GlobFS to prevent recursive Glob dispatch. It also adapts
+// volume roots like "C:" (produced by io/fs.cleanGlobPath) to "C:/" so directory
+// lookups and stats succeed.
+type noGlobFS struct {
+	w *wdFS
+}
+
+func (n noGlobFS) Open(name string) (fs.File, error) {
+	return n.w.Open(adaptVolumeRoot(name))
+}
+
+func (n noGlobFS) Stat(name string) (fs.FileInfo, error) {
+	return n.w.Stat(adaptVolumeRoot(name))
+}
+
+func (n noGlobFS) ReadDir(name string) ([]fs.DirEntry, error) {
+	return n.w.ReadDir(adaptVolumeRoot(name))
+}
+
+func adaptVolumeRoot(name string) string {
+	if len(name) == 2 && name[1] == ':' && ((name[0] >= 'a' && name[0] <= 'z') || (name[0] >= 'A' && name[0] <= 'Z')) {
+		return name + "/"
+	}
+	return name
+}
+
+func (w *wdFS) Glob(pattern string) ([]string, error) {
+	hasBackslash := strings.Contains(pattern, `\`)
+	slashPattern := filepath.ToSlash(pattern)
+
+	matches, err := fs.Glob(noGlobFS{w: w}, slashPattern)
+	if err != nil {
+		return nil, err
+	}
+
+	if hasBackslash {
+		for i, match := range matches {
+			matches[i] = filepath.FromSlash(match)
+		}
+	}
+
+	return matches, nil
 }
 
 func (w *wdFS) Create(name string) (fs.File, error) {

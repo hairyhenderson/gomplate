@@ -48,6 +48,46 @@ func TestFileExists(t *testing.T) {
 	assert.False(t, ff.Exists("/tmp/bar"))
 }
 
+func TestFileGlob(t *testing.T) {
+	t.Parallel()
+
+	fsys := fstest.MapFS{
+		"tmp":           &fstest.MapFile{Mode: fs.ModeDir | 0o777},
+		"tmp/file1.txt": &fstest.MapFile{Data: []byte("foo")},
+		"tmp/file2.log": &fstest.MapFile{Data: []byte("bar")},
+	}
+	ff := &FileFuncs{fs: datafs.WrapWdFS(fsys)}
+
+	matches, err := ff.Glob("/tmp/*.txt")
+	require.NoError(t, err)
+	assert.Equal(t, []string{"/tmp/file1.txt"}, matches)
+
+	// Malformed pattern test
+	_, err = ff.Glob("[]")
+	assert.Error(t, err)
+}
+
+func TestFileGlob_WorkingDir(t *testing.T) {
+	origWd, err := os.Getwd()
+	require.NoError(t, err)
+
+	dir := t.TempDir()
+	t.Cleanup(func() {
+		_ = os.Chdir(origWd)
+	})
+
+	require.NoError(t, os.WriteFile(filepath.Join(dir, "file1.txt"), []byte("test"), 0o600))
+	require.NoError(t, os.WriteFile(filepath.Join(dir, "file2.log"), []byte("test"), 0o600))
+
+	require.NoError(t, os.Chdir(dir))
+
+	ff := &FileFuncs{fs: datafs.WrapWdFS(osfs.NewFS())}
+
+	matches, err := ff.Glob("*.txt")
+	require.NoError(t, err)
+	assert.Equal(t, []string{"file1.txt"}, matches)
+}
+
 func TestFileIsDir(t *testing.T) {
 	t.Parallel()
 
