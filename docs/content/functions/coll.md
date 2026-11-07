@@ -217,6 +217,8 @@ Extracts portions of an input object or list using a [JSONPath][] expression.
 
 Any object or list may be used as input. The output depends somewhat on the expression; if multiple items are matched, an array is returned.
 
+Honors the [`--missing-key`](../usage/#--missing-key) flag. When missing-key is `error` (default), missing paths or out-of-bounds indices return an error. When missing-key is `zero`, `default`, or `invalid`, missing paths return `nil`.
+
 JSONPath expressions can be validated at https://jsonpath.com
 
 [JSONPath]: https://goessner.net/articles/JsonPath
