@@ -69,12 +69,16 @@ func resolveLocalPath(wvol, name string) (root, resolved string, err error) {
 	}
 
 	// we want to assume a / separator regardless of the OS
-	name = filepath.ToSlash(name)
+	name = toSlash(name)
 
 	// special-case for (Windows) paths that start with '/' but have no volume
 	// name (e.g. "/foo/bar"). UNC paths (beginning with "//") are ignored.
 	if name[0] == '/' && (len(name) == 1 || (name[1] != '/' && name[1] != '?')) {
-		name = filepath.Join(wvol, name)
+		if wvol != "" && wvol != "/" {
+			name = wvol + "/" + strings.TrimPrefix(name, "/")
+		} else {
+			name = filepath.Join(wvol, name)
+		}
 	} else if !filepath.IsAbs(name) {
 		wd, _ := os.Getwd()
 		name = filepath.Join(wd, name)
@@ -85,17 +89,17 @@ func resolveLocalPath(wvol, name string) (root, resolved string, err error) {
 		return "", "", fmt.Errorf("normalize %q: %w", name, err)
 	}
 
-	vol := filepath.VolumeName(name)
+	vol, rest := splitVolume(name)
 	if vol != "" && name != vol {
 		root = vol
-		name = name[len(vol)+1:]
+		name = strings.TrimPrefix(rest, "/")
 	} else if name[0] == '/' {
 		root = "/"
 		name = name[1:]
 	}
 
 	// there may still be backslashes in the root
-	root = filepath.ToSlash(root)
+	root = toSlash(root)
 
 	// we might've emptied name, so return "." instead
 	if name == "" {
@@ -368,36 +372,201 @@ type noGlobFS struct {
 }
 
 func (n noGlobFS) Open(name string) (fs.File, error) {
-	return n.w.Open(adaptVolumeRoot(name))
+	return n.w.Open(n.adapt(name))
 }
 
 func (n noGlobFS) Stat(name string) (fs.FileInfo, error) {
-	return n.w.Stat(adaptVolumeRoot(name))
+	return n.w.Stat(n.adapt(name))
 }
 
 func (n noGlobFS) ReadDir(name string) ([]fs.DirEntry, error) {
-	return n.w.ReadDir(adaptVolumeRoot(name))
+	return n.w.ReadDir(n.adapt(name))
+}
+
+func (n noGlobFS) adapt(name string) string {
+	if n.w != nil && n.w.vol != "" && n.w.vol != "/" {
+		if name == "" || name == "." {
+			return "/"
+		}
+		if !strings.HasPrefix(name, "/") && !strings.Contains(name, ":") {
+			return "/" + name
+		}
+	}
+	return adaptVolumeRoot(name)
 }
 
 func adaptVolumeRoot(name string) string {
+	if name == "" {
+		return "/"
+	}
 	if len(name) == 2 && name[1] == ':' && ((name[0] >= 'a' && name[0] <= 'z') || (name[0] >= 'A' && name[0] <= 'Z')) {
 		return name + "/"
 	}
 	return name
 }
 
-func (w *wdFS) Glob(pattern string) ([]string, error) {
-	hasBackslash := strings.Contains(pattern, `\`)
-	slashPattern := filepath.ToSlash(pattern)
+func isSlash(c byte) bool {
+	return c == '/' || c == '\\'
+}
 
-	matches, err := fs.Glob(noGlobFS{w: w}, slashPattern)
-	if err != nil {
-		return nil, err
+// splitDevicePrefix extracts a supported Windows local device prefix (e.g. `\\?\`, `\\.\`, `//?/`, `//./`)
+// from path if present, returning the prefix and the remaining path.
+func splitDevicePrefix(path string) (devPrefix, rest string) {
+	if len(path) >= 4 && isSlash(path[0]) && isSlash(path[1]) && isSlash(path[3]) {
+		if path[2] == '?' || path[2] == '.' {
+			return path[:4], path[4:]
+		}
+	}
+	return "", path
+}
+
+// splitVolume separates the Windows volume (e.g. "C:" or UNC share "//server/share" / "\\server\share")
+// from the rest of the path.
+func splitVolume(path string) (vol, rest string) {
+	if len(path) < 2 {
+		return "", path
 	}
 
-	if hasBackslash {
+	// Drive letter: e.g. C: or C:/... or C:\...
+	c := path[0]
+	if path[1] == ':' && ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z')) {
+		return path[:2], path[2:]
+	}
+
+	// UNC: //server/share or \\server\share
+	if isSlash(path[0]) && isSlash(path[1]) && len(path) >= 5 && !isSlash(path[2]) && path[2] != '?' && path[2] != '.' {
+		// find slash separating server and share
+		i := 2
+		for i < len(path) && !isSlash(path[i]) {
+			i++
+		}
+		if i < len(path) {
+			// skip repeated slashes if any
+			shareStart := i
+			for shareStart < len(path) && isSlash(path[shareStart]) {
+				shareStart++
+			}
+			j := shareStart
+			for j < len(path) && !isSlash(path[j]) {
+				j++
+			}
+			if j > shareStart {
+				return path[:j], path[j:]
+			}
+		}
+	}
+
+	return "", path
+}
+
+func toSlash(path string) string {
+	return strings.ReplaceAll(path, `\`, "/")
+}
+
+func fromSlash(path string) string {
+	return strings.ReplaceAll(path, "/", `\`)
+}
+
+func (w *wdFS) Glob(pattern string) ([]string, error) {
+	hasBackslash := strings.Contains(pattern, `\`)
+
+	// 1. Strip supported Windows device prefix (\\.\, \\?\, //./, //?/) before glob expansion
+	// to prevent io/fs.Glob from treating '?' as a wildcard pattern.
+	devPrefix, patternNoDev := splitDevicePrefix(pattern)
+
+	// 2. Separate Windows volume (drive "C:" or UNC share "\\server\share" / "//server\share").
+	vol, rest := splitVolume(patternNoDev)
+
+	var (
+		matches []string
+		err     error
+	)
+
+	if vol != "" {
+		// Reject drive-relative patterns (e.g. C:foo\bar) consistent with normalizeWindowsPath
+		if len(rest) > 0 && !isSlash(rest[0]) {
+			return nil, fmt.Errorf("unsupported path %q: %w", pattern, fs.ErrInvalid)
+		}
+
+		volSlash := toSlash(vol)
+		volFSys, fsysErr := w.fsysFor(volSlash)
+		if fsysErr != nil {
+			return nil, fsysErr
+		}
+
+		volWdFS := &wdFS{
+			vol:  volSlash,
+			fsys: volFSys,
+		}
+
+		subPattern := toSlash(rest)
+		if subPattern == "" {
+			subPattern = "/"
+		} else if subPattern[0] != '/' {
+			subPattern = "/" + subPattern
+		}
+
+		matches, err = fs.Glob(noGlobFS{w: volWdFS}, subPattern)
+		if err != nil {
+			return nil, err
+		}
+
+		// Reattach volume and device prefix without path.Clean/path.Join collapsing
+		// the leading network UNC '//' or '\\' prefix.
 		for i, match := range matches {
-			matches[i] = filepath.FromSlash(match)
+			var formattedMatch string
+			if rest == "" && (match == "/" || match == ".") {
+				if hasBackslash {
+					formattedMatch = fromSlash(vol)
+				} else {
+					formattedMatch = toSlash(vol)
+				}
+			} else {
+				if hasBackslash {
+					formattedVol := fromSlash(vol)
+					cleanMatch := fromSlash(match)
+					if len(cleanMatch) > 0 && cleanMatch[0] != '\\' {
+						formattedMatch = formattedVol + `\` + cleanMatch
+					} else {
+						formattedMatch = formattedVol + cleanMatch
+					}
+				} else {
+					formattedVol := toSlash(vol)
+					cleanMatch := toSlash(match)
+					if len(cleanMatch) > 0 && cleanMatch[0] != '/' {
+						formattedMatch = formattedVol + "/" + cleanMatch
+					} else {
+						formattedMatch = formattedVol + cleanMatch
+					}
+				}
+			}
+
+			if devPrefix != "" {
+				formattedMatch = devPrefix + formattedMatch
+			}
+
+			matches[i] = formattedMatch
+		}
+	} else {
+		// Path without volume (relative or root-relative)
+		slashPattern := toSlash(patternNoDev)
+
+		matches, err = fs.Glob(noGlobFS{w: w}, slashPattern)
+		if err != nil {
+			return nil, err
+		}
+
+		if hasBackslash || devPrefix != "" {
+			for i, match := range matches {
+				formattedMatch := match
+				if hasBackslash {
+					formattedMatch = fromSlash(match)
+				}
+				if devPrefix != "" {
+					formattedMatch = devPrefix + formattedMatch
+				}
+				matches[i] = formattedMatch
+			}
 		}
 	}
 

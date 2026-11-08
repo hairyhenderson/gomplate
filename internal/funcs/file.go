@@ -4,6 +4,7 @@ import (
 	"context"
 	"io/fs"
 	"path/filepath"
+	"strings"
 
 	osfs "github.com/hack-pad/hackpadfs/os"
 	"github.com/hairyhenderson/gomplate/v5/conv"
@@ -113,5 +114,9 @@ func (f *FileFuncs) Write(path any, data any) (s string, err error) {
 
 // Glob -
 func (f *FileFuncs) Glob(pattern any) ([]string, error) {
-	return fs.Glob(f.fs, filepath.ToSlash(conv.ToString(pattern)))
+	patStr := conv.ToString(pattern)
+	if _, ok := f.fs.(fs.GlobFS); !ok {
+		patStr = strings.ReplaceAll(patStr, `\`, "/")
+	}
+	return fs.Glob(f.fs, patStr)
 }

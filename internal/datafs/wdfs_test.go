@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"runtime"
 	"testing"
+	"testing/fstest"
 
 	"github.com/hack-pad/hackpadfs"
 	"github.com/hack-pad/hackpadfs/mem"
@@ -140,12 +141,134 @@ func TestWDFS_Glob(t *testing.T) {
 func TestAdaptVolumeRoot(t *testing.T) {
 	t.Parallel()
 
+	assert.Equal(t, "/", adaptVolumeRoot(""))
 	assert.Equal(t, "C:/", adaptVolumeRoot("C:"))
 	assert.Equal(t, "c:/", adaptVolumeRoot("c:"))
 	assert.Equal(t, "D:/", adaptVolumeRoot("D:"))
 	assert.Equal(t, "C:/foo", adaptVolumeRoot("C:/foo"))
 	assert.Equal(t, "/tmp", adaptVolumeRoot("/tmp"))
 	assert.Equal(t, ".", adaptVolumeRoot("."))
+}
+
+func TestSplitDevicePrefix(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		input     string
+		expPrefix string
+		expRest   string
+	}{
+		{`\\?\C:\tmp\*.txt`, `\\?\`, `C:\tmp\*.txt`},
+		{`\\.\C:\tmp\*.txt`, `\\.\`, `C:\tmp\*.txt`},
+		{`//?/C:/tmp/*.txt`, `//?/`, `C:/tmp/*.txt`},
+		{`//./C:/tmp/*.txt`, `//./`, `C:/tmp/*.txt`},
+		{`\\server\share\foo`, "", `\\server\share\foo`},
+		{`/tmp/*.txt`, "", `/tmp/*.txt`},
+		{`*.txt`, "", `*.txt`},
+		{"", "", ""},
+	}
+
+	for _, tt := range tests {
+		prefix, rest := splitDevicePrefix(tt.input)
+		assert.Equal(t, tt.expPrefix, prefix, "input: %q", tt.input)
+		assert.Equal(t, tt.expRest, rest, "input: %q", tt.input)
+	}
+}
+
+func TestSplitVolume(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		input   string
+		expVol  string
+		expRest string
+	}{
+		{`C:\tmp\*.txt`, "C:", `\tmp\*.txt`},
+		{`C:/tmp/*.txt`, "C:", `/tmp/*.txt`},
+		{`c:\foo`, "c:", `\foo`},
+		{`C:`, "C:", ""},
+		{`C:*.txt`, "C:", "*.txt"},
+		{`\\server\share\dir\*.txt`, `\\server\share`, `\dir\*.txt`},
+		{`//server/share/dir/*.txt`, `//server/share`, `/dir/*.txt`},
+		{`\\server\share`, `\\server\share`, ""},
+		{`//server/share/`, `//server/share`, "/"},
+		{`/tmp/*.txt`, "", `/tmp/*.txt`},
+		{`*.txt`, "", `*.txt`},
+		{"", "", ""},
+	}
+
+	for _, tt := range tests {
+		vol, rest := splitVolume(tt.input)
+		assert.Equal(t, tt.expVol, vol, "input: %q", tt.input)
+		assert.Equal(t, tt.expRest, rest, "input: %q", tt.input)
+	}
+}
+
+func TestWDFS_Glob_WindowsDevicePrefix(t *testing.T) {
+	t.Parallel()
+
+	mockFS := fstest.MapFS{
+		"dir/file1.txt": &fstest.MapFile{Data: []byte("foo")},
+		"dir/file2.txt": &fstest.MapFile{Data: []byte("bar")},
+		"dir/other.log": &fstest.MapFile{Data: []byte("baz")},
+	}
+	fsys := WrapWdFS(mockFS)
+
+	globFS, ok := fsys.(fs.GlobFS)
+	require.True(t, ok)
+
+	// \\?\ prefix with backslashes
+	matches, err := globFS.Glob(`\\?\C:\dir\*.txt`)
+	require.NoError(t, err)
+	assert.Equal(t, []string{`\\?\C:\dir\file1.txt`, `\\?\C:\dir\file2.txt`}, matches)
+
+	// \\.\ prefix with backslashes
+	matches, err = globFS.Glob(`\\.\C:\dir\*.txt`)
+	require.NoError(t, err)
+	assert.Equal(t, []string{`\\.\C:\dir\file1.txt`, `\\.\C:\dir\file2.txt`}, matches)
+
+	// //?/ prefix with forward slashes
+	matches, err = globFS.Glob(`//?/C:/dir/*.txt`)
+	require.NoError(t, err)
+	assert.Equal(t, []string{`//?/C:/dir/file1.txt`, `//?/C:/dir/file2.txt`}, matches)
+
+	// //./ prefix with forward slashes
+	matches, err = globFS.Glob(`//./C:/dir/*.txt`)
+	require.NoError(t, err)
+	assert.Equal(t, []string{`//./C:/dir/file1.txt`, `//./C:/dir/file2.txt`}, matches)
+}
+
+func TestWDFS_Glob_WindowsUNCShare(t *testing.T) {
+	t.Parallel()
+
+	mockFS := fstest.MapFS{
+		"dir/file1.txt":   &fstest.MapFile{Data: []byte("foo")},
+		"dir/file2.txt":   &fstest.MapFile{Data: []byte("bar")},
+		"other/file3.txt": &fstest.MapFile{Data: []byte("baz")},
+	}
+	fsys := WrapWdFS(mockFS)
+
+	globFS, ok := fsys.(fs.GlobFS)
+	require.True(t, ok)
+
+	// Backslash UNC share
+	matches, err := globFS.Glob(`\\server\share\dir\*.txt`)
+	require.NoError(t, err)
+	assert.Equal(t, []string{`\\server\share\dir\file1.txt`, `\\server\share\dir\file2.txt`}, matches)
+
+	// Forward-slash UNC share
+	matches, err = globFS.Glob(`//server/share/dir/*.txt`)
+	require.NoError(t, err)
+	assert.Equal(t, []string{`//server/share/dir/file1.txt`, `//server/share/dir/file2.txt`}, matches)
+
+	// UNC share with directory wildcard traversal
+	matches, err = globFS.Glob(`\\server\share\*\file*.txt`)
+	require.NoError(t, err)
+	assert.Equal(t, []string{
+		`\\server\share\dir\file1.txt`,
+		`\\server\share\dir\file2.txt`,
+		`\\server\share\other\file3.txt`,
+	}, matches)
 }
 
 func TestWDFS_Glob_StatWithoutRead(t *testing.T) {

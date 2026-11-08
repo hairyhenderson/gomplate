@@ -88,6 +88,27 @@ func TestFileGlob_WorkingDir(t *testing.T) {
 	assert.Equal(t, []string{"file1.txt"}, matches)
 }
 
+func TestFileGlob_WindowsDeviceAndUNC(t *testing.T) {
+	t.Parallel()
+
+	fsys := fstest.MapFS{
+		"tmp":           &fstest.MapFile{Mode: fs.ModeDir | 0o777},
+		"tmp/file1.txt": &fstest.MapFile{Data: []byte("foo")},
+		"tmp/file2.txt": &fstest.MapFile{Data: []byte("bar")},
+	}
+	ff := &FileFuncs{fs: datafs.WrapWdFS(fsys)}
+
+	// UNC share prefix preservation
+	matches, err := ff.Glob(`\\server\share\tmp\*.txt`)
+	require.NoError(t, err)
+	assert.Equal(t, []string{`\\server\share\tmp\file1.txt`, `\\server\share\tmp\file2.txt`}, matches)
+
+	// Device prefix preservation
+	matches, err = ff.Glob(`\\?\C:\tmp\*.txt`)
+	require.NoError(t, err)
+	assert.Equal(t, []string{`\\?\C:\tmp\file1.txt`, `\\?\C:\tmp\file2.txt`}, matches)
+}
+
 func TestFileIsDir(t *testing.T) {
 	t.Parallel()
 
