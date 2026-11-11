@@ -26,15 +26,17 @@ preamble: |
   | Company and job | [`fake.CompanySuffix`](#fakecompanysuffix), [`fake.JobTitle`](#fakejobtitle), [`fake.BuzzWord`](#fakebuzzword), [`fake.BS`](#fakebs), [`fake.Slogan`](#fakeslogan) |
   | Internet | [`fake.DomainName`](#fakedomainname), [`fake.DomainSuffix`](#fakedomainsuffix), [`fake.URL`](#fakeurl), [`fake.IPv4Address`](#fakeipv4address), [`fake.IPv6Address`](#fakeipv6address), [`fake.HTTPMethod`](#fakehttpmethod), [`fake.UserAgent`](#fakeuseragent) |
   | Product and text | [`fake.ProductName`](#fakeproductname), [`fake.ProductCategory`](#fakeproductcategory), [`fake.ProductDescription`](#fakeproductdescription), [`fake.Word`](#fakeword), [`fake.Phrase`](#fakephrase) |
+  | Reproducible output | [`fake.Seeded`](#fakeseeded) |
 
   ### About randomness
 
   Values come from a [PCG](https://pkg.go.dev/math/rand/v2#PCG)
   pseudo-random number generator that is seeded from the operating system's
   cryptographic random number generator, so the output is different every
-  time gomplate runs. Like the [`random`](../random/) functions, these
-  functions are not suitable for security-sensitive uses, such as generating
-  passwords or keys.
+  time gomplate runs. For output that is the same on every run, use
+  [`fake.Seeded`](#fakeseeded). Like the [`random`](../random/) functions,
+  these functions are not suitable for security-sensitive uses, such as
+  generating passwords or keys.
 funcs:
   - name: fake.Name
     released: v5.4.0
@@ -385,3 +387,36 @@ funcs:
       - |
         $ gomplate -i '{{ fake.Phrase }}'
         stop the car
+  - name: fake.Seeded
+    released: v5.4.0
+    description: |
+      Returns a copy of the `fake` namespace whose output is determined by
+      `seed`, for fixtures and sample data that must be the same on every
+      run. Call the other `fake` functions on the result: the same seed
+      always produces the same sequence of values.
+
+      The seed can be any value. It is converted to a string first, so `42`
+      and `"42"` are the same seed.
+
+      To keep each record the same when others are added or removed, give
+      each record its own seed, such as its index or ID, instead of drawing
+      every record from one seeded namespace.
+
+      Seeded output is reproducible with the same version of gomplate, but
+      may change in a later release, for example when the underlying data
+      sets change.
+    pipeline: true
+    arguments:
+      - name: seed
+        required: true
+        description: the value that the generated values are derived from
+    examples:
+      - |
+        $ gomplate -i '{{ $f := fake.Seeded 42 }}{{ $f.Name }}, {{ $f.JobTitle }}'
+        Jaron Kling, Optometrist
+      - |
+        $ gomplate -i '{{ range $id := coll.Slice "a1" "b2" "c3" }}{{ $f := fake.Seeded $id }}{{ $id }}: {{ $f.Name }}, {{ $f.City }}
+        {{ end }}'
+        a1: Alexie Muller, Mesa
+        b2: Astrid Shields, Hialeah
+        c3: Declan Lane, Detroit

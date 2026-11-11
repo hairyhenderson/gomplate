@@ -2,8 +2,13 @@ package funcs
 
 import (
 	"context"
+	"crypto/sha256"
+	"encoding/binary"
+	"math/rand/v2"
 
 	"github.com/brianvoe/gofakeit/v7"
+
+	"github.com/hairyhenderson/gomplate/v5/conv"
 )
 
 // CreateFakeFuncs -
@@ -23,6 +28,22 @@ func CreateFakeFuncs(ctx context.Context) map[string]any {
 type FakeFuncs struct {
 	ctx   context.Context
 	faker *gofakeit.Faker
+}
+
+// Seeded returns a copy of the namespace whose values are derived from seed,
+// so the same seed always produces the same sequence of values.
+func (f *FakeFuncs) Seeded(seed any) *FakeFuncs {
+	return &FakeFuncs{ctx: f.ctx, faker: seededFaker(conv.ToString(seed))}
+}
+
+// seededFaker derives the source's state from a hash of seed, as
+// net.GenerateMAC does. It avoids gofakeit.New, which treats a zero seed as a
+// request for a random one, and Faker.Seed, which reseeds
+// gofakeit.GlobalFaker rather than its receiver.
+func seededFaker(seed string) *gofakeit.Faker {
+	sum := sha256.Sum256([]byte(seed))
+	src := rand.NewPCG(binary.LittleEndian.Uint64(sum[:8]), binary.LittleEndian.Uint64(sum[8:16]))
+	return gofakeit.NewFaker(src, true)
 }
 
 // Person

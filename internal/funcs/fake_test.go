@@ -93,18 +93,8 @@ func TestFakeFuncs(t *testing.T) {
 		"Phrase":             {f.Phrase, nil},
 	}
 
-	// Every no-argument string method is a template function, so each one
-	// must be covered above.
-	var methods []string
-	typ := reflect.TypeFor[*FakeFuncs]()
-	stringType := reflect.TypeFor[string]()
-	for i := range typ.NumMethod() {
-		m := typ.Method(i)
-		if m.Type.NumIn() == 1 && m.Type.NumOut() == 1 && m.Type.Out(0) == stringType {
-			methods = append(methods, m.Name)
-		}
-	}
-	assert.Equal(t, methods, slices.Sorted(maps.Keys(tests)))
+	// Every generator must be covered above.
+	assert.Equal(t, generatorNames(), slices.Sorted(maps.Keys(tests)))
 
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
@@ -135,6 +125,35 @@ func TestFakeFuncs_RandomlySeeded(t *testing.T) {
 	assert.NotEqual(t, as, bs)
 }
 
+func TestFakeFuncs_Seeded(t *testing.T) {
+	t.Parallel()
+
+	f := testFakeNS(t)
+
+	// Seeds are compared as strings, so 42 and "42" are the same seed.
+	a, b := f.Seeded(42), f.Seeded("42")
+	assert.Equal(t, f.ctx, a.ctx)
+	assert.NotSame(t, f.faker, a.faker)
+
+	// Run every generator, so that one whose output isn't fully determined
+	// by the source fails here.
+	va, vb := reflect.ValueOf(a), reflect.ValueOf(b)
+	for _, name := range generatorNames() {
+		for range 20 {
+			want := va.MethodByName(name).Call(nil)[0].String()
+			got := vb.MethodByName(name).Call(nil)[0].String()
+			require.Equal(t, want, got, name)
+		}
+	}
+
+	c, d := f.Seeded(1), f.Seeded(2)
+	cs, ds := make([]string, 10), make([]string, 10)
+	for i := range cs {
+		cs[i], ds[i] = c.Name(), d.Name()
+	}
+	assert.NotEqual(t, cs, ds)
+}
+
 func TestFakeFuncs_Concurrent(t *testing.T) {
 	t.Parallel()
 
@@ -153,6 +172,20 @@ func TestFakeFuncs_Concurrent(t *testing.T) {
 		})
 	}
 	wg.Wait()
+}
+
+// generatorNames returns the sorted names of the namespace's generators: its
+// methods that take no arguments and return a string.
+func generatorNames() []string {
+	var names []string
+	typ := reflect.TypeFor[*FakeFuncs]()
+	for i := range typ.NumMethod() {
+		m := typ.Method(i)
+		if m.Type.NumIn() == 1 && m.Type.NumOut() == 1 && m.Type.Out(0) == reflect.TypeFor[string]() {
+			names = append(names, m.Name)
+		}
+	}
+	return names
 }
 
 func matches(pattern string) func(*testing.T, string) {
