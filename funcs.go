@@ -32,6 +32,7 @@ func CreateFuncs(ctx context.Context) template.FuncMap {
 	maps.Copy(f, funcs.CreateCollFuncs(ctx))
 	maps.Copy(f, funcs.CreateUUIDFuncs(ctx))
 	maps.Copy(f, funcs.CreateRandomFuncs(ctx))
+	maps.Copy(f, funcs.CreateFakeFuncs(ctx))
 	maps.Copy(f, funcs.CreateSemverFuncs(ctx))
 	return f
 }

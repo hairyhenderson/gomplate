@@ -1,0 +1,387 @@
+ns: fake
+title: fake functions
+preamble: |
+  Functions for generating realistic fake data, such as names, email
+  addresses, street addresses, job titles, internet values, and product names.
+  These are useful for test fixtures, load tests, demos, and sample
+  configuration.
+
+  The values come from [gofakeit](https://github.com/brianvoe/gofakeit). Most
+  are picked at random from built-in English-language data sets, and the
+  address data is US-centric. Every call returns a new value, but values are
+  not guaranteed to be unique: the same name or email can come up twice.
+  Each call is also independent of the others, so values don't match each
+  other: [`fake.City`](#fakecity) and [`fake.StateAbr`](#fakestateabr) can
+  name a city and a state that don't go together.
+
+  For random strings and numbers, see the [`random`](../random/) namespace.
+  For UUIDs, see [`uuid.V4`](../uuid/#uuidv4), and for MAC addresses see
+  [`net.GenerateMAC`](../net/#netgeneratemac).
+
+  | Group | Functions |
+  |-------|-----------|
+  | Person | [`fake.Name`](#fakename), [`fake.FirstName`](#fakefirstname), [`fake.MiddleName`](#fakemiddlename), [`fake.LastName`](#fakelastname), [`fake.NamePrefix`](#fakenameprefix), [`fake.NameSuffix`](#fakenamesuffix), [`fake.Hobby`](#fakehobby) |
+  | Contact | [`fake.Email`](#fakeemail), [`fake.Phone`](#fakephone), [`fake.PhoneFormatted`](#fakephoneformatted) |
+  | Address | [`fake.Street`](#fakestreet), [`fake.City`](#fakecity), [`fake.State`](#fakestate), [`fake.StateAbr`](#fakestateabr), [`fake.Zip`](#fakezip), [`fake.Country`](#fakecountry), [`fake.CountryAbr`](#fakecountryabr), [`fake.TimeZoneRegion`](#faketimezoneregion) |
+  | Company and job | [`fake.CompanySuffix`](#fakecompanysuffix), [`fake.JobTitle`](#fakejobtitle), [`fake.BuzzWord`](#fakebuzzword), [`fake.BS`](#fakebs), [`fake.Slogan`](#fakeslogan) |
+  | Internet | [`fake.DomainName`](#fakedomainname), [`fake.DomainSuffix`](#fakedomainsuffix), [`fake.URL`](#fakeurl), [`fake.IPv4Address`](#fakeipv4address), [`fake.IPv6Address`](#fakeipv6address), [`fake.HTTPMethod`](#fakehttpmethod), [`fake.UserAgent`](#fakeuseragent) |
+  | Product and text | [`fake.ProductName`](#fakeproductname), [`fake.ProductCategory`](#fakeproductcategory), [`fake.ProductDescription`](#fakeproductdescription), [`fake.Word`](#fakeword), [`fake.Phrase`](#fakephrase) |
+
+  ### About randomness
+
+  Values come from a [PCG](https://pkg.go.dev/math/rand/v2#PCG)
+  pseudo-random number generator that is seeded from the operating system's
+  cryptographic random number generator, so the output is different every
+  time gomplate runs. Like the [`random`](../random/) functions, these
+  functions are not suitable for security-sensitive uses, such as generating
+  passwords or keys.
+funcs:
+  - name: fake.Name
+    released: v5.4.0
+    description: |
+      Generates a person's full name: a first name and a last name separated
+      by a space.
+    pipeline: false
+    examples:
+      - |
+        $ gomplate -i '{{ fake.Name }}'
+        Benton Stevens
+  - name: fake.FirstName
+    released: v5.4.0
+    description: |
+      Generates a person's first name.
+    pipeline: false
+    examples:
+      - |
+        $ gomplate -i '{{ fake.FirstName }}'
+        Katrina
+  - name: fake.MiddleName
+    released: v5.4.0
+    description: |
+      Generates a person's middle name.
+    pipeline: false
+    examples:
+      - |
+        $ gomplate -i '{{ fake.MiddleName }}'
+        Anastasia
+  - name: fake.LastName
+    released: v5.4.0
+    description: |
+      Generates a person's last name.
+    pipeline: false
+    examples:
+      - |
+        $ gomplate -i '{{ fake.LastName }}'
+        Hicks
+  - name: fake.NamePrefix
+    released: v5.4.0
+    description: |
+      Generates a name prefix or title, such as `Mr.`, `Ms.`, or `Dr.`.
+    pipeline: false
+    examples:
+      - |
+        $ gomplate -i '{{ fake.NamePrefix }} {{ fake.LastName }}'
+        Ms. Russell
+  - name: fake.NameSuffix
+    released: v5.4.0
+    description: |
+      Generates a name suffix, such as `Jr.`, `III`, or `MD`.
+    pipeline: false
+    examples:
+      - |
+        $ gomplate -i '{{ fake.Name }}, {{ fake.NameSuffix }}'
+        Tina Crawford, II
+  - name: fake.Hobby
+    released: v5.4.0
+    description: |
+      Generates the name of a hobby.
+    pipeline: false
+    examples:
+      - |
+        $ gomplate -i '{{ fake.Hobby }}'
+        Knitting
+  - name: fake.Email
+    released: v5.4.0
+    description: |
+      Generates an email address, built from a random first and last name.
+      The address is well-formed, but its domain is made up and may or may
+      not exist, so don't send mail to it.
+
+      The address isn't related to the output of any other function, such as
+      [`fake.Name`](#fakename). To build an address that matches a name, use
+      the reserved `example.com` domain, as in the second example.
+    pipeline: false
+    examples:
+      - |
+        $ gomplate -i '{{ fake.Email }}'
+        emilebird@flatley.io
+      - |
+        $ gomplate -i '{{ $first := fake.FirstName }}{{ $last := fake.LastName }}{{ $first }} {{ $last }} <{{ print $first "." $last "@example.com" | strings.ToLower }}>'
+        Nichole Gottlieb <nichole.gottlieb@example.com>
+  - name: fake.Phone
+    released: v5.4.0
+    description: |
+      Generates a 10-digit phone number with no formatting.
+
+      See [`fake.PhoneFormatted`](#fakephoneformatted) for a formatted number.
+    pipeline: false
+    examples:
+      - |
+        $ gomplate -i '{{ fake.Phone }}'
+        7488179788
+  - name: fake.PhoneFormatted
+    released: v5.4.0
+    description: |
+      Generates a North American-style phone number in one of several common
+      formats, such as `555-555-5555`, `(555)555-5555`, `1-555-555-5555`, or
+      `555.555.5555`.
+    pipeline: false
+    examples:
+      - |
+        $ gomplate -i '{{ fake.PhoneFormatted }}'
+        (056)965-7276
+  - name: fake.Street
+    released: v5.4.0
+    description: |
+      Generates a street address line: a house number followed by a street
+      name.
+    pipeline: false
+    examples:
+      - |
+        $ gomplate -i '{{ fake.Street }}'
+        34737 West Wellsport
+  - name: fake.City
+    released: v5.4.0
+    description: |
+      Generates the name of a US city.
+    pipeline: false
+    examples:
+      - |
+        $ gomplate -i '{{ fake.City }}'
+        Fremont
+  - name: fake.State
+    released: v5.4.0
+    description: |
+      Generates the full name of a US state.
+    pipeline: false
+    examples:
+      - |
+        $ gomplate -i '{{ fake.State }}'
+        Washington
+  - name: fake.StateAbr
+    released: v5.4.0
+    description: |
+      Generates the two-letter postal abbreviation of a US state.
+    pipeline: false
+    examples:
+      - |
+        $ gomplate -i '{{ fake.StateAbr }}'
+        FL
+  - name: fake.Zip
+    released: v5.4.0
+    description: |
+      Generates a five-digit US ZIP code.
+    pipeline: false
+    examples:
+      - |
+        $ gomplate -i '{{ fake.City }}, {{ fake.StateAbr }} {{ fake.Zip }}'
+        Santa Ana, NE 79443
+  - name: fake.Country
+    released: v5.4.0
+    description: |
+      Generates the name of a country.
+    pipeline: false
+    examples:
+      - |
+        $ gomplate -i '{{ fake.Country }}'
+        Uruguay
+  - name: fake.CountryAbr
+    released: v5.4.0
+    description: |
+      Generates a two-letter [ISO 3166-1 alpha-2](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2)
+      country code.
+    pipeline: false
+    examples:
+      - |
+        $ gomplate -i '{{ fake.CountryAbr }}'
+        LC
+  - name: fake.TimeZoneRegion
+    released: v5.4.0
+    description: |
+      Generates the name of a time zone from the
+      [IANA time zone database](https://www.iana.org/time-zones), such as
+      `America/Chicago`. These are the names that the `TZ` environment
+      variable and most software accept.
+    pipeline: false
+    examples:
+      - |
+        $ gomplate -i '{{ fake.TimeZoneRegion }}'
+        America/Jujuy
+  - name: fake.CompanySuffix
+    released: v5.4.0
+    description: |
+      Generates a company name suffix: `Inc`, `LLC`, `Group`, or `and Sons`.
+      Combine it with [`fake.LastName`](#fakelastname) for a fictional
+      company name.
+    pipeline: false
+    examples:
+      - |
+        $ gomplate -i '{{ fake.LastName }} {{ fake.CompanySuffix }}'
+        Swanson and Sons
+  - name: fake.JobTitle
+    released: v5.4.0
+    description: |
+      Generates a job title.
+    pipeline: false
+    examples:
+      - |
+        $ gomplate -i '{{ fake.JobTitle }}'
+        Stock Clerk
+  - name: fake.BuzzWord
+    released: v5.4.0
+    description: |
+      Generates a business buzzword.
+    pipeline: false
+    examples:
+      - |
+        $ gomplate -i '{{ fake.BuzzWord }}'
+        Reactive
+  - name: fake.BS
+    released: v5.4.0
+    description: |
+      Generates a word of business jargon.
+    pipeline: false
+    examples:
+      - |
+        $ gomplate -i '{{ fake.BS }}'
+        magnetic
+  - name: fake.Slogan
+    released: v5.4.0
+    description: |
+      Generates a short company slogan.
+    pipeline: false
+    examples:
+      - |
+        $ gomplate -i '{{ fake.Slogan }}'
+        Precision from the start.
+  - name: fake.DomainName
+    released: v5.4.0
+    description: |
+      Generates a domain name, such as `example.com`. The domain is made up
+      and may or may not exist.
+    pipeline: false
+    examples:
+      - |
+        $ gomplate -i '{{ fake.DomainName }}'
+        customerexpedite.biz
+  - name: fake.DomainSuffix
+    released: v5.4.0
+    description: |
+      Generates a top-level domain, without the leading dot, such as `com`
+      or `org`.
+    pipeline: false
+    examples:
+      - |
+        $ gomplate -i 'api.{{ fake.LastName | strings.ToLower }}.{{ fake.DomainSuffix }}'
+        api.mckenzie.info
+  - name: fake.URL
+    released: v5.4.0
+    description: |
+      Generates an `http` or `https` URL with a made-up domain name and a
+      path of one to four segments.
+    pipeline: false
+    examples:
+      - |
+        $ gomplate -i '{{ fake.URL }}'
+        https://www.executivenetworks.io/mesh
+  - name: fake.IPv4Address
+    released: v5.4.0
+    description: |
+      Generates an IPv4 address in dotted-decimal form. Each octet is picked
+      at random, so the address can fall in any range, including private,
+      loopback, and reserved ones.
+
+      For an address within a particular network, build one with
+      [`random.Number`](../random/#randomnumber) instead, for example
+      `{{ printf "10.0.%d.%d" (random.Number 0 255) (random.Number 1 254) }}`.
+    pipeline: false
+    examples:
+      - |
+        $ gomplate -i '{{ fake.IPv4Address }}'
+        97.11.41.53
+  - name: fake.IPv6Address
+    released: v5.4.0
+    description: |
+      Generates an IPv6 address, written as eight groups of hexadecimal digits
+      separated by colons. As with [`fake.IPv4Address`](#fakeipv4address), the
+      address can fall in any range.
+    pipeline: false
+    examples:
+      - |
+        $ gomplate -i '{{ fake.IPv6Address }}'
+        4eda:5f98:b628:a566:1e58:d6e4:b754:8990
+  - name: fake.HTTPMethod
+    released: v5.4.0
+    description: |
+      Generates an HTTP request method, such as `GET`, `POST`, or `DELETE`.
+    pipeline: false
+    examples:
+      - |
+        $ gomplate -i '{{ fake.HTTPMethod }}'
+        PUT
+  - name: fake.UserAgent
+    released: v5.4.0
+    description: |
+      Generates a web browser `User-Agent` string, in the style of Chrome,
+      Firefox, Safari, or Opera. The browser versions are not current, so
+      don't rely on these strings for browser detection.
+    pipeline: false
+    examples:
+      - |
+        $ gomplate -i '{{ fake.UserAgent }}'
+        Opera/10.68 (Macintosh; PPC Mac OS X 10_9_3; en-US) Presto/2.8.277 Version/10.00
+  - name: fake.ProductName
+    released: v5.4.0
+    description: |
+      Generates a product name.
+    pipeline: false
+    examples:
+      - |
+        $ gomplate -i '{{ fake.ProductName }}'
+        Tactical Wall Outlet Glide
+  - name: fake.ProductCategory
+    released: v5.4.0
+    description: |
+      Generates a product category, in lower case.
+    pipeline: false
+    examples:
+      - |
+        $ gomplate -i '{{ fake.ProductCategory }}'
+        video equipment
+  - name: fake.ProductDescription
+    released: v5.4.0
+    description: |
+      Generates a short product description.
+    pipeline: false
+    examples:
+      - |
+        $ gomplate -i '{{ fake.ProductDescription }}'
+        Whether you're using it at outdoor activities or on the go, this scenic Softwood Dice offers ultra-fast and ensures flexibility. Crafted from synthetic, it's perfect for tech enthusiasts.
+  - name: fake.Word
+    released: v5.4.0
+    description: |
+      Generates a single English word.
+    pipeline: false
+    examples:
+      - |
+        $ gomplate -i '{{ fake.Word }}'
+        up
+  - name: fake.Phrase
+    released: v5.4.0
+    description: |
+      Generates a common English phrase or saying, such as `time will tell`.
+    pipeline: false
+    examples:
+      - |
+        $ gomplate -i '{{ fake.Phrase }}'
+        stop the car
