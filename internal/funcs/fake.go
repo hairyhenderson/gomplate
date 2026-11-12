@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/sha256"
 	"encoding/binary"
+	"fmt"
 	"math/rand/v2"
 
 	"github.com/brianvoe/gofakeit/v7"
@@ -61,6 +62,21 @@ func (f *FakeFuncs) Hobby() string      { return f.faker.Hobby() }
 func (f *FakeFuncs) Email() string          { return f.faker.Email() }
 func (f *FakeFuncs) Phone() string          { return f.faker.Phone() }
 func (f *FakeFuncs) PhoneFormatted() string { return f.faker.PhoneFormatted() }
+
+// Identity and payment
+
+// SSN returns a US Social Security number formatted as AAA-GG-SSSS. It
+// doesn't use gofakeit's SSN, which in about one value in eight uses an area
+// number the SSA never issues (666 or 900-999), so it fails validation.
+func (f *FakeFuncs) SSN() string {
+	area := f.faker.IntRange(1, 898) // 001-899 without 666
+	if area >= 666 {
+		area++
+	}
+	return fmt.Sprintf("%03d-%02d-%04d", area, f.faker.IntRange(1, 99), f.faker.IntRange(1, 9999))
+}
+
+func (f *FakeFuncs) CreditCardNumber() string { return f.faker.CreditCardNumber(nil) }
 
 // Address
 

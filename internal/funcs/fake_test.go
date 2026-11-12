@@ -63,6 +63,9 @@ func TestFakeFuncs(t *testing.T) {
 		"Phone":          {f.Phone, matches(`^[0-9]{10}$`)},
 		"PhoneFormatted": {f.PhoneFormatted, matches(`^[0-9().-]{12,}$`)},
 
+		"SSN":              {f.SSN, isSSN},
+		"CreditCardNumber": {f.CreditCardNumber, isCardNumber},
+
 		"Street":         {f.Street, matches(`^[0-9]+ \S`)},
 		"City":           {f.City, nil},
 		"State":          {f.State, nil},
@@ -210,6 +213,39 @@ func isHTTPURL(t *testing.T, s string) {
 	require.NoError(t, err)
 	assert.Contains(t, []string{"http", "https"}, u.Scheme)
 	assert.NotEmpty(t, u.Host)
+}
+
+// isSSN checks that s could have been issued by the SSA: the area is never
+// 000, 666 or 900-999, the group never 00 and the serial never 0000.
+func isSSN(t *testing.T, s string) {
+	t.Helper()
+
+	require.Regexp(t, `^[0-9]{3}-[0-9]{2}-[0-9]{4}$`, s)
+	area, group, serial := s[:3], s[4:6], s[7:]
+	assert.NotContains(t, []string{"000", "666"}, area, s)
+	assert.Less(t, area, "900", s)
+	assert.NotEqual(t, "00", group, s)
+	assert.NotEqual(t, "0000", serial, s)
+}
+
+func isCardNumber(t *testing.T, s string) {
+	t.Helper()
+
+	require.Regexp(t, `^[0-9]{12,19}$`, s)
+
+	// Luhn check: double every second digit from the right.
+	sum := 0
+	for i := range len(s) {
+		d := int(s[len(s)-1-i] - '0')
+		if i%2 == 1 {
+			d *= 2
+			if d > 9 {
+				d -= 9
+			}
+		}
+		sum += d
+	}
+	assert.Zero(t, sum%10, "%s fails the Luhn check", s)
 }
 
 func isIPv4(t *testing.T, s string) {

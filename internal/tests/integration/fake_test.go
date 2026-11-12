@@ -15,6 +15,8 @@ func TestFake(t *testing.T) {
 	inOutTest(t, `{{ (net.ParseAddr fake.IPv4Address).Is4 }}`, "true")
 	inOutTest(t, `{{ (net.ParseAddr fake.IPv6Address).Is6 }}`, "true")
 	inOutTest(t, `{{ fake.Zip | regexp.Match "^[0-9]{5}$" }}`, "true")
+	inOutTest(t, `{{ fake.SSN | regexp.Match "^[0-9]{3}-[0-9]{2}-[0-9]{4}$" }}`, "true")
+	inOutTest(t, `{{ fake.CreditCardNumber | regexp.Match "^[0-9]{12,19}$" }}`, "true")
 	inOutTest(t, `{{ fake.URL | regexp.Match "^https?://" }}`, "true")
 	inOutTest(t, `{{ gt (len fake.ProductName) 0 }}`, "true")
 }

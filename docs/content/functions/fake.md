@@ -26,6 +26,7 @@ For UUIDs, see [`uuid.V4`](../uuid/#uuidv4), and for MAC addresses see
 |-------|-----------|
 | Person | [`fake.Name`](#fakename), [`fake.FirstName`](#fakefirstname), [`fake.MiddleName`](#fakemiddlename), [`fake.LastName`](#fakelastname), [`fake.NamePrefix`](#fakenameprefix), [`fake.NameSuffix`](#fakenamesuffix), [`fake.Hobby`](#fakehobby) |
 | Contact | [`fake.Email`](#fakeemail), [`fake.Phone`](#fakephone), [`fake.PhoneFormatted`](#fakephoneformatted) |
+| Identity and payment | [`fake.SSN`](#fakessn), [`fake.CreditCardNumber`](#fakecreditcardnumber) |
 | Address | [`fake.Street`](#fakestreet), [`fake.City`](#fakecity), [`fake.State`](#fakestate), [`fake.StateAbr`](#fakestateabr), [`fake.Zip`](#fakezip), [`fake.Country`](#fakecountry), [`fake.CountryAbr`](#fakecountryabr), [`fake.TimeZoneRegion`](#faketimezoneregion) |
 | Company and job | [`fake.CompanySuffix`](#fakecompanysuffix), [`fake.JobTitle`](#fakejobtitle), [`fake.BuzzWord`](#fakebuzzword), [`fake.BS`](#fakebs), [`fake.Slogan`](#fakeslogan) |
 | Internet | [`fake.DomainName`](#fakedomainname), [`fake.DomainSuffix`](#fakedomainsuffix), [`fake.URL`](#fakeurl), [`fake.IPv4Address`](#fakeipv4address), [`fake.IPv6Address`](#fakeipv6address), [`fake.HTTPMethod`](#fakehttpmethod), [`fake.UserAgent`](#fakeuseragent) |
@@ -245,6 +246,62 @@ fake.PhoneFormatted
 ```console
 $ gomplate -i '{{ fake.PhoneFormatted }}'
 (056)965-7276
+```
+
+## `fake.SSN`
+
+Generates a US Social Security number, formatted as `AAA-GG-SSSS`.
+
+The number follows the rules for numbers the Social Security
+Administration issues, so it passes format validation: the area is never
+`000`, `666`, or `900`-`999`, the group is never `00`, and the serial is
+never `0000`. It isn't checked against issued numbers, so it can match a
+real person's SSN. Use it only as test data.
+
+_<span class="release-check" data-tag="v5.4.0">Added in gomplate v5.4.0</span>_
+### Usage
+
+```
+fake.SSN
+```
+
+
+### Examples
+
+```console
+$ gomplate -i '{{ fake.SSN }}'
+584-05-4374
+```
+```console
+$ gomplate -i '{{ fake.SSN | strings.ReplaceAll "-" "" }}'
+278423774
+```
+
+## `fake.CreditCardNumber`
+
+Generates a credit card number, digits only, that passes the
+[Luhn check](https://en.wikipedia.org/wiki/Luhn_algorithm). The number
+is for one of Visa, Mastercard, American Express, Diners Club, Discover,
+JCB, UnionPay, Maestro, Elo, Hiper, or Hipercard, and is a length that
+network uses, from 12 to 19 digits.
+
+The number starts with a real network prefix, so it can match a real
+card. It isn't one of the networks' published test numbers, and payment
+provider sandboxes usually accept only their own test numbers.
+
+_<span class="release-check" data-tag="v5.4.0">Added in gomplate v5.4.0</span>_
+### Usage
+
+```
+fake.CreditCardNumber
+```
+
+
+### Examples
+
+```console
+$ gomplate -i '{{ fake.CreditCardNumber }}'
+6500768658362409
 ```
 
 ## `fake.Street`
