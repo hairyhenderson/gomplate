@@ -91,6 +91,27 @@ func jqConvertType(in any) (any, error) {
 		return m, nil
 	}
 
+	// other maps and slices, like map[string]string (.Env) or [][]string (CSV
+	// datasources), also need to become map[string]any or []any. Byte slices
+	// are passed through as strings.
+	switch inType.Kind() {
+	case reflect.Map, reflect.Slice, reflect.Array:
+		if inType.Elem().Kind() == reflect.Uint8 {
+			return in, nil
+		}
+
+		b, err := json.Marshal(in)
+		if err != nil {
+			return nil, fmt.Errorf("json marshal %T: %w", in, err)
+		}
+		var v any
+		err = json.Unmarshal(b, &v)
+		if err != nil {
+			return nil, fmt.Errorf("json unmarshal %T: %w", in, err)
+		}
+		return v, nil
+	}
+
 	// we maybe don't need to convert the value, so return it as-is
 	return in, nil
 }

@@ -206,6 +206,15 @@ func TestJQ_typeConversions(t *testing.T) {
 	out, err = JQ(ctx, ".", byteArrayType("hello"))
 	require.NoError(t, err)
 	assert.EqualValues(t, "hello", out)
+
+	// maps and slices of other types, like .Env and CSV datasources
+	out, err = JQ(ctx, ".HOME", map[string]string{"HOME": "/home/foo"})
+	require.NoError(t, err)
+	assert.Equal(t, "/home/foo", out)
+
+	out, err = JQ(ctx, ".[1][0]", [][]string{{"name"}, {"Alice"}})
+	require.NoError(t, err)
+	assert.Equal(t, "Alice", out)
 }
 
 func TestJQConvertType_passthroughTypes(t *testing.T) {
