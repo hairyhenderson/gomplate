@@ -2,6 +2,7 @@ package funcs
 
 import (
 	"context"
+	"fmt"
 	"maps"
 	"net/mail"
 	"net/netip"
@@ -11,6 +12,7 @@ import (
 	"strconv"
 	"sync"
 	"testing"
+	"time"
 
 	"github.com/brianvoe/gofakeit/v7"
 	"github.com/stretchr/testify/assert"
@@ -20,7 +22,13 @@ import (
 func testFakeNS(t *testing.T) *FakeFuncs {
 	t.Helper()
 
-	return CreateFakeFuncs(t.Context())["fake"].(func() any)().(*FakeFuncs)
+	f := CreateFakeFuncs(t.Context())["fake"].(func() any)().(*FakeFuncs)
+	f.now = fixedClock(2026)
+	return f
+}
+
+func fixedClock(year int) func() time.Time {
+	return func() time.Time { return time.Date(year, time.December, 31, 23, 59, 59, 0, time.UTC) }
 }
 
 func TestCreateFakeFuncs(t *testing.T) {
@@ -37,6 +45,7 @@ func TestCreateFakeFuncs(t *testing.T) {
 
 			assert.Equal(t, ctx, actual.ctx)
 			assert.NotSame(t, gofakeit.GlobalFaker, actual.faker)
+			assert.NotNil(t, actual.now)
 		})
 	}
 }
@@ -65,6 +74,7 @@ func TestFakeFuncs(t *testing.T) {
 
 		"SSN":              {f.SSN, isSSN},
 		"CreditCardNumber": {f.CreditCardNumber, isCardNumber},
+		"CreditCardExp":    {f.CreditCardExp, matches(`^(0[1-9]|1[0-2])/[0-9]{2}$`)},
 
 		"Street":         {f.Street, matches(`^[0-9]+ \S`)},
 		"City":           {f.City, nil},
@@ -109,6 +119,31 @@ func TestFakeFuncs(t *testing.T) {
 				if tt.check != nil {
 					tt.check(t, s)
 				}
+			}
+		})
+	}
+}
+
+func TestFakeFuncs_CreditCardExp(t *testing.T) {
+	t.Parallel()
+
+	// 2095 checks that the year wraps to two digits.
+	for _, year := range []int{2026, 2095} {
+		t.Run(strconv.Itoa(year), func(t *testing.T) {
+			t.Parallel()
+
+			f := testFakeNS(t)
+			f.now = fixedClock(year)
+
+			want := make([]string, 0, 10)
+			for offset := 1; offset <= 10; offset++ {
+				want = append(want, fmt.Sprintf("%02d", (year+offset)%100))
+			}
+
+			for range 200 {
+				exp := f.CreditCardExp()
+				require.Regexp(t, `^(0[1-9]|1[0-2])/[0-9]{2}$`, exp)
+				assert.Contains(t, want, exp[3:])
 			}
 		})
 	}

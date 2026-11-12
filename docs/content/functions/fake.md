@@ -26,7 +26,7 @@ For UUIDs, see [`uuid.V4`](../uuid/#uuidv4), and for MAC addresses see
 |-------|-----------|
 | Person | [`fake.Name`](#fakename), [`fake.FirstName`](#fakefirstname), [`fake.MiddleName`](#fakemiddlename), [`fake.LastName`](#fakelastname), [`fake.NamePrefix`](#fakenameprefix), [`fake.NameSuffix`](#fakenamesuffix), [`fake.Hobby`](#fakehobby) |
 | Contact | [`fake.Email`](#fakeemail), [`fake.Phone`](#fakephone), [`fake.PhoneFormatted`](#fakephoneformatted) |
-| Identity and payment | [`fake.SSN`](#fakessn), [`fake.CreditCardNumber`](#fakecreditcardnumber) |
+| Identity and payment | [`fake.SSN`](#fakessn), [`fake.CreditCardNumber`](#fakecreditcardnumber), [`fake.CreditCardExp`](#fakecreditcardexp) |
 | Address | [`fake.Street`](#fakestreet), [`fake.City`](#fakecity), [`fake.State`](#fakestate), [`fake.StateAbr`](#fakestateabr), [`fake.Zip`](#fakezip), [`fake.Country`](#fakecountry), [`fake.CountryAbr`](#fakecountryabr), [`fake.TimeZoneRegion`](#faketimezoneregion) |
 | Company and job | [`fake.CompanySuffix`](#fakecompanysuffix), [`fake.JobTitle`](#fakejobtitle), [`fake.BuzzWord`](#fakebuzzword), [`fake.BS`](#fakebs), [`fake.Slogan`](#fakeslogan) |
 | Internet | [`fake.DomainName`](#fakedomainname), [`fake.DomainSuffix`](#fakedomainsuffix), [`fake.URL`](#fakeurl), [`fake.IPv4Address`](#fakeipv4address), [`fake.IPv6Address`](#fakeipv6address), [`fake.HTTPMethod`](#fakehttpmethod), [`fake.UserAgent`](#fakeuseragent) |
@@ -302,6 +302,34 @@ fake.CreditCardNumber
 ```console
 $ gomplate -i '{{ fake.CreditCardNumber }}'
 6500768658362409
+```
+
+## `fake.CreditCardExp`
+
+Generates a credit card expiry date, formatted as `MM/YY`, in one of the
+next ten years, so the date is always in the future.
+
+The year counts from the current year. With [`fake.Seeded`](#fakeseeded),
+the same seed always gives the same month, but the year moves forward
+as the current year does.
+
+_<span class="release-check" data-tag="v5.4.0">Added in gomplate v5.4.0</span>_
+### Usage
+
+```
+fake.CreditCardExp
+```
+
+
+### Examples
+
+```console
+$ gomplate -i '{{ fake.CreditCardExp }}'
+05/35
+```
+```console
+$ gomplate -i '{{ fake.CreditCardNumber }} {{ fake.CreditCardExp }}'
+213138952106124098 10/32
 ```
 
 ## `fake.Street`
@@ -815,7 +843,9 @@ every record from one seeded namespace.
 
 Seeded output is reproducible with the same version of gomplate, but
 may change in a later release, for example when the underlying data
-sets change.
+sets change. The one value that also depends on the date is the year
+from [`fake.CreditCardExp`](#fakecreditcardexp), which counts from the
+current year.
 
 _<span class="release-check" data-tag="v5.4.0">Added in gomplate v5.4.0</span>_
 ### Usage

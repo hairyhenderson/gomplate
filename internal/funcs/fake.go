@@ -6,6 +6,7 @@ import (
 	"encoding/binary"
 	"fmt"
 	"math/rand/v2"
+	"time"
 
 	"github.com/brianvoe/gofakeit/v7"
 
@@ -14,7 +15,7 @@ import (
 
 // CreateFakeFuncs -
 func CreateFakeFuncs(ctx context.Context) map[string]any {
-	ns := &FakeFuncs{ctx: ctx, faker: gofakeit.New(0)}
+	ns := &FakeFuncs{ctx: ctx, faker: gofakeit.New(0), now: time.Now}
 	return map[string]any{
 		"fake": func() any { return ns },
 	}
@@ -29,12 +30,13 @@ func CreateFakeFuncs(ctx context.Context) map[string]any {
 type FakeFuncs struct {
 	ctx   context.Context
 	faker *gofakeit.Faker
+	now   func() time.Time
 }
 
 // Seeded returns a copy of the namespace whose values are derived from seed,
 // so the same seed always produces the same sequence of values.
 func (f *FakeFuncs) Seeded(seed any) *FakeFuncs {
-	return &FakeFuncs{ctx: f.ctx, faker: seededFaker(conv.ToString(seed))}
+	return &FakeFuncs{ctx: f.ctx, faker: seededFaker(conv.ToString(seed)), now: f.now}
 }
 
 // seededFaker derives the source's state from a hash of seed, as
@@ -77,6 +79,15 @@ func (f *FakeFuncs) SSN() string {
 }
 
 func (f *FakeFuncs) CreditCardNumber() string { return f.faker.CreditCardNumber(nil) }
+
+// CreditCardExp returns an expiry date formatted as MM/YY, in one of the next
+// ten years. It doesn't use gofakeit's CreditCardExp, which reads the clock
+// itself and prints a three-digit year from 2090 on.
+func (f *FakeFuncs) CreditCardExp() string {
+	month := f.faker.IntRange(1, 12)
+	year := f.now().Year() + f.faker.IntRange(1, 10)
+	return fmt.Sprintf("%02d/%02d", month, year%100)
+}
 
 // Address
 
