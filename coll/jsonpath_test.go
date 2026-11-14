@@ -270,12 +270,53 @@ func TestJSONPathWithContext(t *testing.T) {
 			require.NoError(t, err)
 			assert.Equal(t, ar{"keep"}, out)
 
+			// wildcard branching bounds recovery with equivalent $.*[0] expression preserves valid matches
+			out, err = JSONPathWithContext(ctx, "$.*[0]", multiBranchIn)
+			require.NoError(t, err)
+			assert.Equal(t, ar{"keep"}, out)
+
+			// bounds recovery preserves nested array structure without flattening
+			nestedArraysIn := ar{
+				ar{ar{"a", "b"}},
+				ar{ar{"c", "d"}},
+				ar{},
+			}
+			out, err = JSONPathWithContext(ctx, "$[*][0]", nestedArraysIn)
+			require.NoError(t, err)
+			assert.Equal(t, ar{ar{"a", "b"}, ar{"c", "d"}}, out)
+
+			out, err = JSONPathWithContext(ctx, "$.*[0]", nestedArraysIn)
+			require.NoError(t, err)
+			assert.Equal(t, ar{ar{"a", "b"}, ar{"c", "d"}}, out)
+
+			// suffix with multiple matches across branches is properly aggregated
+			out, err = JSONPathWithContext(ctx, "$[*][0][*]", nestedArraysIn)
+			require.NoError(t, err)
+			assert.Equal(t, ar{"a", "b", "c", "d"}, out)
+
+			// multi-branch query where a branch triggers bounds recovery and another branch fails with hard error
+			multiBranchUnexported := ar{
+				ar{structIn},
+				ar{},
+			}
+			_, err = JSONPathWithContext(ctx, "$[*][0].safe", multiBranchUnexported)
+			require.Error(t, err)
+			assert.Contains(t, err.Error(), "JSONPath couldn't access field")
+
+			_, err = JSONPathWithContext(ctx, "$.*[0].safe", multiBranchUnexported)
+			require.Error(t, err)
+			assert.Contains(t, err.Error(), "JSONPath couldn't access field")
+
 			// multi-branch query where all branches hit bounds returns nil under permissive mode
 			multiBranchAllEmpty := ar{
 				ar{},
 				ar{},
 			}
 			out, err = JSONPathWithContext(ctx, "$[*][0]", multiBranchAllEmpty)
+			require.NoError(t, err)
+			assert.Nil(t, out)
+
+			out, err = JSONPathWithContext(ctx, "$.*[0]", multiBranchAllEmpty)
 			require.NoError(t, err)
 			assert.Nil(t, out)
 		})
@@ -317,6 +358,10 @@ func TestJSONPathWithContext(t *testing.T) {
 		_, err = JSONPathWithContext(ctx, "$[*][0]", multiBranchIn)
 		require.Error(t, err)
 		assert.Contains(t, err.Error(), "array index out of bounds")
+
+		_, err = JSONPathWithContext(ctx, "$.*[0]", multiBranchIn)
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "array index out of bounds")
 	})
 
 	t.Run("default context acts as error", func(t *testing.T) {
@@ -337,5 +382,17 @@ func TestJSONPathWithContext(t *testing.T) {
 		require.NoError(t, err)
 		assert.Equal(t, ar{}, out)
 		assert.NotNil(t, out)
+
+		multiBranchIn := ar{
+			ar{"keep"},
+			ar{},
+		}
+		_, err = JSONPathWithContext(ctx, "$[*][0]", multiBranchIn)
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "array index out of bounds")
+
+		_, err = JSONPathWithContext(ctx, "$.*[0]", multiBranchIn)
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "array index out of bounds")
 	})
 }
