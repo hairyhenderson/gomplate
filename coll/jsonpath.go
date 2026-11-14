@@ -102,6 +102,9 @@ func evalMultiBranchBounds(ctx context.Context, p string, in any) (any, bool, er
 	if len(matches) == 0 {
 		return nil, true, nil
 	}
+	if len(matches) == 1 {
+		return matches[0], true, nil
+	}
 	return matches, true, nil
 }
 
@@ -159,21 +162,78 @@ func splitBranchNodes(p string) (prefixPath, suffixPath string, ok bool) {
 	prefixNodes := listNode.Nodes[:branchIdx+1]
 	suffixNodes := listNode.Nodes[branchIdx+1:]
 	if len(suffixNodes) == 0 {
-		return "", "", false
+		if _, isUnion := listNode.Nodes[branchIdx].(*jsonpath.UnionNode); !isUnion {
+			return "", "", false
+		}
 	}
 
 	prefixPath, err = formatNodes(prefixNodes)
 	if err != nil {
 		return "", "", false
 	}
-	suffixPath, err = formatNodes(suffixNodes)
-	if err != nil {
-		return "", "", false
+	if len(suffixNodes) > 0 {
+		suffixPath, err = formatNodes(suffixNodes)
+		if err != nil {
+			return "", "", false
+		}
 	}
 	return prefixPath, suffixPath, true
 }
 
 func evalPrefixBranches(in any, prefixPath string, allowMissingKeys bool) ([]any, error) {
+	parser, err := jsonpath.Parse("<jsonpath>", "{"+prefixPath+"}")
+	if err != nil || len(parser.Root.Nodes) == 0 {
+		return nil, nil
+	}
+	listNode, okType := parser.Root.Nodes[0].(*jsonpath.ListNode)
+	if !okType || len(listNode.Nodes) == 0 {
+		return nil, nil
+	}
+
+	lastIdx := len(listNode.Nodes) - 1
+	if unionNode, isUnion := listNode.Nodes[lastIdx].(*jsonpath.UnionNode); isUnion {
+		baseNodes := listNode.Nodes[:lastIdx]
+		basePath, err := formatNodes(baseNodes)
+		if err != nil {
+			return nil, err
+		}
+		if basePath == "$" || basePath == "." {
+			basePath = ""
+		}
+
+		var branchItems []any
+		for _, child := range unionNode.Nodes {
+			elemStr, err := formatUnionElement(child.Nodes)
+			if err != nil {
+				return nil, err
+			}
+			opPath := basePath + "[" + elemStr + "]"
+			opJp, err := parsePath(opPath, allowMissingKeys)
+			if err != nil {
+				return nil, err
+			}
+			opResults, err := opJp.FindResults(in)
+			if err != nil {
+				if allowMissingKeys && strings.Contains(err.Error(), "array index out of bounds") {
+					continue
+				}
+				return nil, err
+			}
+			for _, row := range opResults {
+				for _, v := range row {
+					if !v.IsValid() {
+						continue
+					}
+					if !v.CanInterface() {
+						return nil, fmt.Errorf("JSONPath couldn't access field")
+					}
+					branchItems = append(branchItems, v.Interface())
+				}
+			}
+		}
+		return branchItems, nil
+	}
+
 	prefixJp, err := parsePath(prefixPath, allowMissingKeys)
 	if err != nil {
 		return nil, nil
@@ -204,6 +264,10 @@ func evalPrefixBranches(in any, prefixPath string, allowMissingKeys bool) ([]any
 func evalBranch(ctx context.Context, suffixPath string, item any, allowMissingKeys bool) ([]reflect.Value, error) {
 	if ctx != nil && ctx.Err() != nil {
 		return nil, ctx.Err()
+	}
+
+	if suffixPath == "" {
+		return []reflect.Value{reflect.ValueOf(item)}, nil
 	}
 
 	subJp, err := parsePath(suffixPath, allowMissingKeys)
@@ -264,7 +328,7 @@ func formatNodes(nodes []jsonpath.Node) (string, error) {
 func formatNode(node jsonpath.Node) (string, error) {
 	switch n := node.(type) {
 	case *jsonpath.FieldNode:
-		return "." + n.Value, nil
+		return "." + escapeFieldName(n.Value), nil
 	case *jsonpath.WildcardNode:
 		return ".*", nil
 	case *jsonpath.RecursiveNode:
@@ -295,7 +359,7 @@ func formatNode(node jsonpath.Node) (string, error) {
 		}
 		return fmt.Sprintf("[?(%s %s %s)]", left, n.Operator, right), nil
 	case *jsonpath.TextNode:
-		return n.Text, nil
+		return strconv.Quote(n.Text), nil
 	case *jsonpath.IntNode:
 		return strconv.Itoa(n.Value), nil
 	case *jsonpath.FloatNode:
@@ -307,6 +371,20 @@ func formatNode(node jsonpath.Node) (string, error) {
 	default:
 		return "", fmt.Errorf("unsupported JSONPath node %v", node)
 	}
+}
+
+func escapeFieldName(name string) string {
+	var sb strings.Builder
+	for _, r := range name {
+		switch r {
+		case '\\', '.', ',', '[', ']', '$', '@', '{', '}', ' ', '\t', '\r', '\n', '*':
+			sb.WriteRune('\\')
+			sb.WriteRune(r)
+		default:
+			sb.WriteRune(r)
+		}
+	}
+	return sb.String()
 }
 
 func formatArrayNode(n *jsonpath.ArrayNode) string {
@@ -333,9 +411,10 @@ func formatUnionElement(nodes []jsonpath.Node) (string, error) {
 	if len(nodes) == 1 {
 		switch n := nodes[0].(type) {
 		case *jsonpath.FieldNode:
-			return "'" + n.Value + "'", nil
+			return "'" + escapeFieldName(n.Value) + "'", nil
 		case *jsonpath.ArrayNode:
-			return strconv.Itoa(n.Params[0].Value), nil
+			arrStr := formatArrayNode(n)
+			return strings.TrimSuffix(strings.TrimPrefix(arrStr, "["), "]"), nil
 		case *jsonpath.IntNode:
 			return strconv.Itoa(n.Value), nil
 		}
