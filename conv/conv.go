@@ -170,7 +170,16 @@ func ToInt64(v any) (int64, error) {
 
 		return int64(tv), nil
 	case reflect.Float32, reflect.Float64:
-		return int64(val.Float()), nil
+		fv := val.Float()
+
+		// Converting a float that's NaN or outside the int64 range is
+		// implementation-defined in Go, and gives different results on
+		// different architectures. -2^63 and 2^63 are both exact in a float64.
+		if math.IsNaN(fv) || fv < -(1<<63) || fv >= 1<<63 {
+			return 0, fmt.Errorf("could not convert %v to int64, out of range", fv)
+		}
+
+		return int64(fv), nil
 	case reflect.Bool:
 		if val.Bool() {
 			return 1, nil
