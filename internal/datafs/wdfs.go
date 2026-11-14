@@ -5,6 +5,7 @@ import (
 	"io/fs"
 	"net/url"
 	"os"
+	"path"
 	"path/filepath"
 	"runtime"
 	"strings"
@@ -74,10 +75,11 @@ func resolveLocalPath(wvol, name string) (root, resolved string, err error) {
 	// special-case for (Windows) paths that start with '/' but have no volume
 	// name (e.g. "/foo/bar"). UNC paths (beginning with "//") are ignored.
 	if name[0] == '/' && (len(name) == 1 || (name[1] != '/' && name[1] != '?')) {
+		cleanName := path.Clean(name)
 		if wvol != "" && wvol != "/" {
-			name = wvol + "/" + strings.TrimPrefix(name, "/")
+			name = strings.TrimRight(wvol, "/") + "/" + strings.TrimPrefix(cleanName, "/")
 		} else {
-			name = filepath.Join(wvol, name)
+			name = filepath.Join(wvol, cleanName)
 		}
 	} else if !filepath.IsAbs(name) {
 		wd, _ := os.Getwd()
@@ -368,7 +370,8 @@ func (w *wdFS) Sub(name string) (fs.FS, error) {
 // volume roots like "C:" (produced by io/fs.cleanGlobPath) to "C:/" so directory
 // lookups and stats succeed.
 type noGlobFS struct {
-	w *wdFS
+	w            *wdFS
+	isVolumeRoot bool
 }
 
 func (n noGlobFS) Open(name string) (fs.File, error) {
@@ -384,7 +387,7 @@ func (n noGlobFS) ReadDir(name string) ([]fs.DirEntry, error) {
 }
 
 func (n noGlobFS) adapt(name string) string {
-	if n.w != nil && n.w.vol != "" && n.w.vol != "/" {
+	if n.isVolumeRoot {
 		if name == "" || name == "." {
 			return "/"
 		}
@@ -468,105 +471,117 @@ func fromSlash(path string) string {
 }
 
 func (w *wdFS) Glob(pattern string) ([]string, error) {
-	hasBackslash := strings.Contains(pattern, `\`)
-
 	// 1. Strip supported Windows device prefix (\\.\, \\?\, //./, //?/) before glob expansion
 	// to prevent io/fs.Glob from treating '?' as a wildcard pattern.
 	devPrefix, patternNoDev := splitDevicePrefix(pattern)
 
 	// 2. Separate Windows volume (drive "C:" or UNC share "\\server\share" / "//server\share").
 	vol, rest := splitVolume(patternNoDev)
-
-	var (
-		matches []string
-		err     error
-	)
-
 	if vol != "" {
-		// Reject drive-relative patterns (e.g. C:foo\bar) consistent with normalizeWindowsPath
-		if len(rest) > 0 && !isSlash(rest[0]) {
-			return nil, fmt.Errorf("unsupported path %q: %w", pattern, fs.ErrInvalid)
-		}
+		return w.globVolume(pattern, devPrefix, vol, rest)
+	}
 
-		volSlash := toSlash(vol)
-		volFSys, fsysErr := w.fsysFor(volSlash)
-		if fsysErr != nil {
-			return nil, fsysErr
-		}
+	return w.globNoVolume(pattern, devPrefix, patternNoDev)
+}
 
-		volWdFS := &wdFS{
-			vol:  volSlash,
-			fsys: volFSys,
-		}
+func (w *wdFS) globVolume(originalPattern, devPrefix, vol, rest string) ([]string, error) {
+	// Reject drive-relative patterns (e.g. C:foo\bar) consistent with normalizeWindowsPath
+	if len(rest) > 0 && !isSlash(rest[0]) {
+		return nil, fmt.Errorf("unsupported path %q: %w", originalPattern, fs.ErrInvalid)
+	}
 
-		subPattern := toSlash(rest)
-		if subPattern == "" {
-			subPattern = "/"
-		} else if subPattern[0] != '/' {
-			subPattern = "/" + subPattern
-		}
+	volSlash := toSlash(vol)
+	volFSys, err := w.fsysFor(volSlash)
+	if err != nil {
+		return nil, err
+	}
 
-		matches, err = fs.Glob(noGlobFS{w: volWdFS}, subPattern)
-		if err != nil {
-			return nil, err
-		}
+	volWdFS := &wdFS{
+		vol:  volSlash,
+		fsys: volFSys,
+	}
 
-		// Reattach volume and device prefix without path.Clean/path.Join collapsing
-		// the leading network UNC '//' or '\\' prefix.
+	subPattern := toSlash(rest)
+	if subPattern == "" {
+		subPattern = "/"
+	} else if subPattern[0] != '/' {
+		subPattern = "/" + subPattern
+	}
+
+	matches, err := fs.Glob(noGlobFS{w: volWdFS, isVolumeRoot: true}, subPattern)
+	if err != nil {
+		return nil, err
+	}
+
+	// Reattach volume and device prefix without path.Clean/path.Join collapsing
+	// the leading network UNC '//' or '\\' prefix.
+	hasBackslash := strings.Contains(originalPattern, `\`)
+	for i, match := range matches {
+		matches[i] = formatVolumeMatch(match, vol, devPrefix, rest, hasBackslash)
+	}
+
+	return matches, nil
+}
+
+func formatVolumeMatch(match, vol, devPrefix, rest string, hasBackslash bool) string {
+	var formattedMatch string
+	switch {
+	case rest == "" && (match == "/" || match == "."):
+		if hasBackslash {
+			formattedMatch = fromSlash(vol)
+		} else {
+			formattedMatch = toSlash(vol)
+		}
+	case hasBackslash:
+		formattedVol := fromSlash(vol)
+		cleanMatch := fromSlash(match)
+		if len(cleanMatch) > 0 && cleanMatch[0] != '\\' {
+			formattedMatch = formattedVol + `\` + cleanMatch
+		} else {
+			formattedMatch = formattedVol + cleanMatch
+		}
+	default:
+		formattedVol := toSlash(vol)
+		cleanMatch := toSlash(match)
+		if len(cleanMatch) > 0 && cleanMatch[0] != '/' {
+			formattedMatch = formattedVol + "/" + cleanMatch
+		} else {
+			formattedMatch = formattedVol + cleanMatch
+		}
+	}
+
+	if devPrefix != "" {
+		formattedMatch = devPrefix + formattedMatch
+	}
+
+	return formattedMatch
+}
+
+func (w *wdFS) globNoVolume(originalPattern, devPrefix, patternNoDev string) ([]string, error) {
+	// Path without volume (relative or root-relative).
+	// On Unix/POSIX, backslashes are glob escapes (or literal characters), not path separators.
+	// We must preserve them for fs.Glob and not convert matched paths to backslashes.
+	slashPattern := patternNoDev
+	if runtime.GOOS == osWindows {
+		slashPattern = toSlash(patternNoDev)
+	}
+
+	matches, err := fs.Glob(noGlobFS{w: w}, slashPattern)
+	if err != nil {
+		return nil, err
+	}
+
+	hasBackslash := strings.Contains(originalPattern, `\`)
+	if runtime.GOOS == osWindows && (hasBackslash || devPrefix != "") {
 		for i, match := range matches {
-			var formattedMatch string
-			if rest == "" && (match == "/" || match == ".") {
-				if hasBackslash {
-					formattedMatch = fromSlash(vol)
-				} else {
-					formattedMatch = toSlash(vol)
-				}
-			} else {
-				if hasBackslash {
-					formattedVol := fromSlash(vol)
-					cleanMatch := fromSlash(match)
-					if len(cleanMatch) > 0 && cleanMatch[0] != '\\' {
-						formattedMatch = formattedVol + `\` + cleanMatch
-					} else {
-						formattedMatch = formattedVol + cleanMatch
-					}
-				} else {
-					formattedVol := toSlash(vol)
-					cleanMatch := toSlash(match)
-					if len(cleanMatch) > 0 && cleanMatch[0] != '/' {
-						formattedMatch = formattedVol + "/" + cleanMatch
-					} else {
-						formattedMatch = formattedVol + cleanMatch
-					}
-				}
+			formattedMatch := match
+			if hasBackslash {
+				formattedMatch = fromSlash(match)
 			}
-
 			if devPrefix != "" {
 				formattedMatch = devPrefix + formattedMatch
 			}
-
 			matches[i] = formattedMatch
-		}
-	} else {
-		// Path without volume (relative or root-relative)
-		slashPattern := toSlash(patternNoDev)
-
-		matches, err = fs.Glob(noGlobFS{w: w}, slashPattern)
-		if err != nil {
-			return nil, err
-		}
-
-		if hasBackslash || devPrefix != "" {
-			for i, match := range matches {
-				formattedMatch := match
-				if hasBackslash {
-					formattedMatch = fromSlash(match)
-				}
-				if devPrefix != "" {
-					formattedMatch = devPrefix + formattedMatch
-				}
-				matches[i] = formattedMatch
-			}
 		}
 	}
 

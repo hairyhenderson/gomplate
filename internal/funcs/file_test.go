@@ -6,6 +6,7 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strconv"
 	"testing"
 	"testing/fstest"
@@ -78,6 +79,9 @@ func TestFileGlob_WorkingDir(t *testing.T) {
 
 	require.NoError(t, os.WriteFile(filepath.Join(dir, "file1.txt"), []byte("test"), 0o600))
 	require.NoError(t, os.WriteFile(filepath.Join(dir, "file2.log"), []byte("test"), 0o600))
+	subDir := filepath.Join(dir, "sub")
+	require.NoError(t, os.MkdirAll(subDir, 0o700))
+	require.NoError(t, os.WriteFile(filepath.Join(subDir, "file3.txt"), []byte("test"), 0o600))
 
 	require.NoError(t, os.Chdir(dir))
 
@@ -86,6 +90,33 @@ func TestFileGlob_WorkingDir(t *testing.T) {
 	matches, err := ff.Glob("*.txt")
 	require.NoError(t, err)
 	assert.Equal(t, []string{"file1.txt"}, matches)
+
+	matches, err = ff.Glob("sub/*.txt")
+	require.NoError(t, err)
+	assert.Equal(t, []string{"sub/file3.txt"}, matches)
+}
+
+func TestFileGlob_POSIXEscape(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("skipping POSIX escape test on Windows")
+	}
+
+	fsys := fstest.MapFS{
+		"tmp/report?.txt": &fstest.MapFile{Data: []byte("foo")},
+		"tmp/report1.txt": &fstest.MapFile{Data: []byte("bar")},
+	}
+
+	// Generic fs.FS fallback (not implementing fs.GlobFS)
+	ffGeneric := &FileFuncs{fs: fsys}
+	matches, err := ffGeneric.Glob(`tmp/report\?.txt`)
+	require.NoError(t, err)
+	assert.Equal(t, []string{"tmp/report?.txt"}, matches)
+
+	// WrapWdFS
+	ffWd := &FileFuncs{fs: datafs.WrapWdFS(fsys)}
+	matches, err = ffWd.Glob(`/tmp/report\?.txt`)
+	require.NoError(t, err)
+	assert.Equal(t, []string{"/tmp/report?.txt"}, matches)
 }
 
 func TestFileGlob_WindowsDeviceAndUNC(t *testing.T) {

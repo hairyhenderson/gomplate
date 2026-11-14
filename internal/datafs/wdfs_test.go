@@ -98,6 +98,9 @@ func TestWDFS_Glob(t *testing.T) {
 	require.NoError(t, os.WriteFile(filepath.Join(dirPath, "a.txt"), []byte("a"), 0o600))
 	require.NoError(t, os.WriteFile(filepath.Join(dirPath, "b.txt"), []byte("b"), 0o600))
 	require.NoError(t, os.WriteFile(filepath.Join(dirPath, "c.log"), []byte("c"), 0o600))
+	subDirPath := filepath.Join(dirPath, "sub")
+	require.NoError(t, os.MkdirAll(subDirPath, 0o700))
+	require.NoError(t, os.WriteFile(filepath.Join(subDirPath, "sub.txt"), []byte("s"), 0o600))
 
 	// Absolute path pattern
 	absPattern := filepath.ToSlash(filepath.Join(dirPath, "*.txt"))
@@ -122,6 +125,11 @@ func TestWDFS_Glob(t *testing.T) {
 	matches, err = fsys.Glob("*.txt")
 	require.NoError(t, err)
 	assert.Equal(t, []string{"a.txt", "b.txt"}, matches)
+
+	// Working-directory-relative subdirectory pattern
+	matches, err = fsys.Glob("sub/*.txt")
+	require.NoError(t, err)
+	assert.Equal(t, []string{"sub/sub.txt"}, matches)
 
 	// Single file without wildcards
 	matches, err = fsys.Glob("a.txt")
@@ -244,7 +252,7 @@ func TestWDFS_Glob_WindowsUNCShare(t *testing.T) {
 	mockFS := fstest.MapFS{
 		"dir/file1.txt":   &fstest.MapFile{Data: []byte("foo")},
 		"dir/file2.txt":   &fstest.MapFile{Data: []byte("bar")},
-		"other/file3.txt": &fstest.MapFile{Data: []byte("baz")},
+		"extra/file3.txt": &fstest.MapFile{Data: []byte("baz")},
 	}
 	fsys := WrapWdFS(mockFS)
 
@@ -267,7 +275,7 @@ func TestWDFS_Glob_WindowsUNCShare(t *testing.T) {
 	assert.Equal(t, []string{
 		`\\server\share\dir\file1.txt`,
 		`\\server\share\dir\file2.txt`,
-		`\\server\share\other\file3.txt`,
+		`\\server\share\extra\file3.txt`,
 	}, matches)
 }
 
@@ -581,4 +589,67 @@ func BenchmarkResolveLocalPath(b *testing.B) {
 	for b.Loop() {
 		resolveSinkRoot, resolveSinkPath, _ = ResolveLocalPath(nil, name)
 	}
+}
+
+func TestResolveLocalPath_RootRelativeClean(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		vol     string
+		input   string
+		expRoot string
+		expPath string
+	}{
+		{"C:", "/tmp/../file.txt", "C:", "file.txt"},
+		{"C:", "/a/b/../c/file.txt", "C:", "a/c/file.txt"},
+		{"C:", "/tmp/..", "C:", "."},
+		{"//server/share", "/tmp/../file.txt", "//server/share", "file.txt"},
+		{"//server/share", "/a/b/../c/file.txt", "//server/share", "a/c/file.txt"},
+		{"//server/share", "/tmp/..", "//server/share", "."},
+		{"/", "/tmp/../file.txt", "/", "file.txt"},
+	}
+
+	for _, tt := range tests {
+		root, resolved, err := resolveLocalPath(tt.vol, tt.input)
+		require.NoError(t, err)
+		assert.Equal(t, tt.expRoot, root)
+		assert.Equal(t, tt.expPath, resolved)
+	}
+}
+
+func TestNoGlobFS_RelativeNamesUnchanged(t *testing.T) {
+	t.Parallel()
+
+	assert.Equal(t, ".", adaptVolumeRoot("."))
+	assert.Equal(t, "sub", adaptVolumeRoot("sub"))
+	assert.Equal(t, "sub/dir", adaptVolumeRoot("sub/dir"))
+	assert.Equal(t, "C:/", adaptVolumeRoot("C:"))
+	assert.Equal(t, "D:/", adaptVolumeRoot("D:"))
+}
+
+func TestWDFS_Glob_POSIXEscape(t *testing.T) {
+	if runtime.GOOS == osWindows {
+		t.Skip("skipping POSIX escape test on Windows")
+	}
+
+	mockFS := fstest.MapFS{
+		"tmp/report?.txt": &fstest.MapFile{Data: []byte("foo")},
+		"tmp/report1.txt": &fstest.MapFile{Data: []byte("bar")},
+		"tmp/file*.txt":   &fstest.MapFile{Data: []byte("baz")},
+		"tmp/file1.txt":   &fstest.MapFile{Data: []byte("qux")},
+	}
+	fsys := WrapWdFS(mockFS)
+
+	globFS, ok := fsys.(fs.GlobFS)
+	require.True(t, ok)
+
+	// Preserves \? escape and matches literal ?
+	matches, err := globFS.Glob(`/tmp/report\?.txt`)
+	require.NoError(t, err)
+	assert.Equal(t, []string{"/tmp/report?.txt"}, matches)
+
+	// Preserves \* escape and matches literal *
+	matches, err = globFS.Glob(`/tmp/file\*.txt`)
+	require.NoError(t, err)
+	assert.Equal(t, []string{"/tmp/file*.txt"}, matches)
 }
