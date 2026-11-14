@@ -39,7 +39,7 @@ require (
 	github.com/ugorji/go/codec v1.3.2
 	go4.org/netipx v0.0.0-20260823151212-3075585bcbeb
 	golang.org/x/crypto v0.58.0
-	golang.org/x/sys v0.49.0
+	golang.org/x/sys v0.50.0
 	golang.org/x/term v0.47.0
 	golang.org/x/text v0.43.0
 	gotest.tools/v3 v3.5.2
