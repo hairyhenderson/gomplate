@@ -132,8 +132,8 @@ func (CollFuncs) Sort(args ...any) ([]any, error) {
 }
 
 // JSONPath -
-func (CollFuncs) JSONPath(p string, in any) (any, error) {
-	return coll.JSONPath(p, in)
+func (f *CollFuncs) JSONPath(p string, in any) (any, error) {
+	return coll.JSONPathWithContext(f.ctx, p, in)
 }
 
 // JQ -
