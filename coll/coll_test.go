@@ -237,6 +237,13 @@ func TestReverse(t *testing.T) {
 	out, err = Reverse([]int{1, 2, 3, 4})
 	require.NoError(t, err)
 	assert.Equal(t, []any{4, 3, 2, 1}, out)
+
+	// the input isn't modified
+	in := []any{1, 2, 3}
+	out, err = Reverse(in)
+	require.NoError(t, err)
+	assert.Equal(t, []any{3, 2, 1}, out)
+	assert.Equal(t, []any{1, 2, 3}, in)
 }
 
 func TestMerge(t *testing.T) {
@@ -247,6 +254,10 @@ func TestMerge(t *testing.T) {
 	out, err := Merge(dst, src)
 	require.NoError(t, err)
 	assert.Equal(t, expected, out)
+
+	out, err = Merge(map[string]any{"a": 1}, nil)
+	require.NoError(t, err)
+	assert.Equal(t, map[string]any{"a": 1}, out)
 
 	dst = map[string]any{"a": 4, "c": 5}
 	src = map[string]any{"a": 1, "b": 2, "c": 3}
@@ -338,6 +349,8 @@ func TestSameTypes(t *testing.T) {
 		{[]any{true, false}, true},
 		{[]any{1, 3.0}, false},
 		{[]any{"a", nil}, false},
+		{[]any{nil, "a"}, false},
+		{[]any{nil, nil}, true},
 		{[]any{"a", true}, false},
 		{[]any{coords{2, 3}, coords{3, 4}}, true},
 		{[]any{coords{2, 3}, &coords{3, 4}}, false},
@@ -380,6 +393,44 @@ func TestLessThan(t *testing.T) {
 		{key: "Y", left: &coords{1, 1}, right: &coords{-1, 2}, out: true},
 		{left: &coords{1, 1}, right: &coords{-1, 2}},
 		{key: "foo", left: &coords{1, 1}, right: &coords{-1, 2}},
+		{left: 1, right: 1.5, out: true},
+		{left: 1.5, right: 1},
+		{left: uint(1), right: -1},
+		{left: int64(1<<53 + 1), right: float64(1 << 53)},
+		{left: float64(1 << 53), right: int64(1<<53 + 1), out: true},
+		{left: int64(math.MaxInt64), right: uint64(1 << 63), out: true},
+		{left: uint64(1 << 63), right: int64(math.MaxInt64)},
+		{left: 1, right: math.Inf(1), out: true},
+		{left: 1, right: math.NaN()},
+		{left: 1, right: uintptr(0)},
+		{left: uintptr(0), right: -1.0},
+		{left: -1.0, right: 1, out: true},
+		{key: "a", left: map[any]any{"a": 1}, right: map[any]any{"a": 2}, out: true},
+		{key: "a", left: map[any]any{"a": 2}, right: map[any]any{"a": 1}},
+		{key: "a", left: map[int]any{1: 1}, right: map[int]any{1: 2}},
+		{key: "a", left: map[string]any{"a": 1}, right: map[int]any{1: 2}, out: true},
+		{key: "a", left: map[int]any{1: 2}, right: map[string]any{"a": 1}},
+		{left: math.NaN(), right: 1},
+		{left: 1, right: "a", out: true},
+		{left: "a", right: 1},
+		{
+			key:   "foo",
+			left:  map[string]any{"foo": 1},
+			right: map[string]any{"foo": 1.5},
+			out:   true,
+		},
+		{
+			key:   "foo",
+			left:  map[string]any{"foo": 1},
+			right: map[string]any{"bar": 2},
+			out:   true,
+		},
+		{
+			key:   "foo",
+			left:  map[string]any{"bar": 1},
+			right: map[string]any{"foo": 2},
+		},
+		{key: "foo", left: map[int]any{1: 1}, right: map[int]any{2: 2}},
 	}
 
 	for _, d := range data {
@@ -497,6 +548,31 @@ func TestSort(t *testing.T) {
 				&coords{2, 4},
 				&coords{3, 3},
 			},
+		},
+		{
+			key: "",
+			in:  []any{nil, 1},
+			out: []any{nil, 1},
+		},
+		{
+			key: "a",
+			in:  []any{map[string]any{"a": 2}, map[string]any{"b": 0}, map[string]any{"a": 1.5}},
+			out: []any{map[string]any{"a": 1.5}, map[string]any{"a": 2}, map[string]any{"b": 0}},
+		},
+		{
+			key: "a",
+			in:  []any{map[string]any{"a": int64(1<<53 + 1)}, map[string]any{"a": float64(1 << 53)}},
+			out: []any{map[string]any{"a": float64(1 << 53)}, map[string]any{"a": int64(1<<53 + 1)}},
+		},
+		{
+			key: "name",
+			in:  []map[any]any{{"name": "b"}, {"name": "a"}},
+			out: []any{map[any]any{"name": "a"}, map[any]any{"name": "b"}},
+		},
+		{
+			key: "a",
+			in:  []any{map[string]any{"a": 2}, map[int]any{0: 0}, map[string]any{"a": 1}},
+			out: []any{map[string]any{"a": 1}, map[string]any{"a": 2}, map[int]any{0: 0}},
 		},
 	}
 

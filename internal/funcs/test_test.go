@@ -31,7 +31,10 @@ func TestAssert(t *testing.T) {
 	t.Parallel()
 
 	f := TestFuncs{ctx: context.Background()}
-	_, err := f.Assert(false)
+	_, err := f.Assert()
+	require.Error(t, err)
+
+	_, err = f.Assert(false)
 	require.Error(t, err)
 
 	_, err = f.Assert(true)

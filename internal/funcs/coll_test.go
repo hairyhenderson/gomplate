@@ -55,6 +55,9 @@ func TestPick(t *testing.T) {
 	_, err := c.Pick()
 	require.Error(t, err)
 
+	_, err = c.Pick(nil, map[string]any{"a": 1})
+	require.Error(t, err)
+
 	_, err = c.Pick("")
 	require.Error(t, err)
 
@@ -115,6 +118,9 @@ func TestOmit(t *testing.T) {
 	c := &CollFuncs{}
 
 	_, err := c.Omit()
+	require.Error(t, err)
+
+	_, err = c.Omit(nil, map[string]any{"a": 1})
 	require.Error(t, err)
 
 	_, err = c.Omit("")

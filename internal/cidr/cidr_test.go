@@ -2,6 +2,7 @@ package cidr
 
 import (
 	"fmt"
+	"math"
 	"math/big"
 	"net/netip"
 	"testing"
@@ -78,13 +79,40 @@ func TestSubnetBig(t *testing.T) {
 			num:  big.NewInt(int64(16)),
 			err:  true, // can't fit 16 into 4 bits
 		},
+		{
+			base: "::/0",
+			bits: 64,
+			num:  new(big.Int).Lsh(big.NewInt(1), 64),
+			err:  true, // can't fit 2^64 into 64 bits
+		},
+		{
+			base: "192.168.2.0/24",
+			bits: 4,
+			num:  big.NewInt(int64(-1)),
+			err:  true,
+		},
+		{
+			base: "192.168.2.0/24",
+			bits: -4,
+			num:  big.NewInt(int64(0)),
+			err:  true,
+		},
+		{
+			base: "192.168.2.0/24",
+			bits: math.MaxInt,
+			num:  big.NewInt(int64(0)),
+			err:  true,
+		},
 	}
 
 	for _, testCase := range cases {
 		t.Run(fmt.Sprintf("SubnetBig(%#v,%#v,%#v)", testCase.base, testCase.bits, testCase.num), func(t *testing.T) {
 			base := netip.MustParsePrefix(testCase.base)
 
+			num := new(big.Int).Set(testCase.num)
+
 			subnet, err := SubnetBig(base, testCase.bits, testCase.num)
+			assert.Zero(t, num.Cmp(testCase.num), "num was modified")
 			if testCase.err {
 				require.Error(t, err)
 			} else {
@@ -147,13 +175,26 @@ func TestHostBig(t *testing.T) {
 			num:    big.NewInt(int64(-2)),
 			out:    "fd9d:bc11:4020:0:ffff:ffff:ffff:fffe",
 		},
+		{
+			prefix: "10.0.0.0/8",
+			num:    new(big.Int).Lsh(big.NewInt(1), 64),
+			err:    true, // too big to fit, and too big for an int64
+		},
+		{
+			prefix: "10.0.0.0/8",
+			num:    new(big.Int).Neg(new(big.Int).Lsh(big.NewInt(1), 64)),
+			err:    true,
+		},
 	}
 
 	for _, testCase := range cases {
 		t.Run(fmt.Sprintf("HostBig(%v,%v)", testCase.prefix, testCase.num), func(t *testing.T) {
 			network := netip.MustParsePrefix(testCase.prefix)
 
+			num := new(big.Int).Set(testCase.num)
+
 			gotIP, err := HostBig(network, testCase.num)
+			assert.Zero(t, num.Cmp(testCase.num), "num was modified")
 			if testCase.err {
 				require.Error(t, err)
 			} else {

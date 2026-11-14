@@ -182,6 +182,15 @@ func (f *NetFuncs) CIDRSubnets(newbits any, prefix any) ([]netip.Prefix, error) 
 		return nil, fmt.Errorf("must extend prefix by at least one bit")
 	}
 
+	// check the size before allocating space for every subnet
+	if nBits > network.Addr().BitLen()-network.Bits() {
+		return nil, fmt.Errorf("insufficient address space to extend prefix of %d by %d", network.Bits(), nBits)
+	}
+
+	if nBits > 62 {
+		return nil, fmt.Errorf("can't extend prefix by %d bits: too many subnets", nBits)
+	}
+
 	maxNetNum := int64(1 << uint64(nBits))
 	retValues := make([]netip.Prefix, maxNetNum)
 	for i := int64(0); i < maxNetNum; i++ {

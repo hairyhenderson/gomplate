@@ -22,18 +22,20 @@ func SubnetBig(base netip.Prefix, newBits int, num *big.Int) (netip.Prefix, erro
 	parentLen := base.Bits()
 	addrLen := base.Addr().BitLen()
 
-	newPrefixLen := parentLen + newBits
+	if newBits < 0 {
+		return netip.Prefix{}, fmt.Errorf("can't extend prefix of %d by %d", parentLen, newBits)
+	}
 
-	if newPrefixLen > addrLen {
+	if newBits > addrLen-parentLen {
 		return netip.Prefix{}, fmt.Errorf("insufficient address space to extend prefix of %d by %d", parentLen, newBits)
 	}
 
-	//nolint:gosec // G115 doesn't apply here
-	maxNetNum := uint64(1<<uint64(newBits)) - 1
-	if num.Uint64() > maxNetNum {
+	// the subnet number must fit in newBits bits
+	if num.Sign() < 0 || num.BitLen() > newBits {
 		return netip.Prefix{}, fmt.Errorf("prefix extension of %d does not accommodate a subnet numbered %d", newBits, num)
 	}
 
+	newPrefixLen := parentLen + newBits
 	prefix := netip.PrefixFrom(insertNumIntoIP(base.Masked().Addr(), num, newPrefixLen), newPrefixLen)
 
 	return prefix, nil
@@ -50,23 +52,20 @@ func HostBig(base netip.Prefix, num *big.Int) (netip.Addr, error) {
 
 	hostLen := addrLen - parentLen
 
-	maxHostNum := big.NewInt(int64(1))
+	// the number of hosts in the network
+	size := new(big.Int).Lsh(big.NewInt(1), uint(hostLen))
 
-	maxHostNum.Lsh(maxHostNum, uint(hostLen))
-	maxHostNum.Sub(maxHostNum, big.NewInt(1))
-
-	num2 := big.NewInt(num.Int64())
-	if num.Cmp(big.NewInt(0)) == -1 {
-		num2.Neg(num)
-		num2.Sub(num2, big.NewInt(int64(1)))
-		num.Sub(maxHostNum, num2)
+	// negative numbers count back from the end of the network
+	hostNum := new(big.Int).Set(num)
+	if hostNum.Sign() < 0 {
+		hostNum.Add(hostNum, size)
 	}
 
-	if num2.Cmp(maxHostNum) == 1 {
+	if hostNum.Sign() < 0 || hostNum.Cmp(size) >= 0 {
 		return netip.Addr{}, fmt.Errorf("prefix of %d does not accommodate a host numbered %d", parentLen, num)
 	}
 
-	return insertNumIntoIP(base.Masked().Addr(), num, addrLen), nil
+	return insertNumIntoIP(base.Masked().Addr(), hostNum, addrLen), nil
 }
 
 func ipToInt(ip netip.Addr) (*big.Int, int) {
@@ -96,8 +95,9 @@ func intToIP(ipInt *big.Int, bits int) netip.Addr {
 func insertNumIntoIP(ip netip.Addr, bigNum *big.Int, prefixLen int) netip.Addr {
 	ipInt, totalBits := ipToInt(ip)
 
-	bigNum.Lsh(bigNum, uint(totalBits-prefixLen))
-	ipInt.Or(ipInt, bigNum)
+	// shift a copy, so the caller's number isn't modified
+	shifted := new(big.Int).Lsh(bigNum, uint(totalBits-prefixLen))
+	ipInt.Or(ipInt, shifted)
 	return intToIP(ipInt, totalBits)
 }
 

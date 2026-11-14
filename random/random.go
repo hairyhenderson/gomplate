@@ -77,6 +77,10 @@ func StringBounds(count int, lower, upper rune) (r string, err error) {
 
 // produce a string containing a random selection of given characters
 func rndString(count int, chars []rune) (string, error) {
+	if count < 0 {
+		return "", fmt.Errorf("count must not be negative (was %d)", count)
+	}
+
 	s := make([]rune, count)
 	for i := range s {
 		//nolint:gosec
@@ -86,6 +90,11 @@ func rndString(count int, chars []rune) (string, error) {
 }
 
 func filterRange(lower, upper rune) []rune {
+	// there are no characters outside this range, and stopping at
+	// unicode.MaxRune keeps r from overflowing when upper is math.MaxInt32
+	lower = max(lower, 0)
+	upper = min(upper, unicode.MaxRune)
+
 	out := []rune{}
 	for r := lower; r <= upper; r++ {
 		if unicode.IsGraphic(r) {

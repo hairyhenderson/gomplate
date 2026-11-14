@@ -4,6 +4,7 @@ import (
 	"strings"
 	"testing"
 	"unicode"
+	"unicode/utf8"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -64,6 +65,7 @@ that has been set.`
 	f.Add(out, "", uint32(0))
 	f.Add(out, "\n", uint32(80))
 	f.Add(out, "\v", uint32(10))
+	f.Add("\f ", "\f ", uint32(1))
 
 	f.Fuzz(func(t *testing.T, in, lbSeq string, width uint32) {
 		for _, r := range lbSeq {
@@ -77,13 +79,34 @@ that has been set.`
 			Width: width,
 		})
 
-		if lbSeq == "" {
-			lbSeq = "\n"
-		}
-		// compare by stripping both the line-break sequence and spaces
 		assert.Equal(t,
-			strings.ReplaceAll(strings.ReplaceAll(in, lbSeq, ""), " ", ""),
-			strings.ReplaceAll(strings.ReplaceAll(out, lbSeq, ""), " ", ""),
+			strings.Join(strings.Fields(in), ""),
+			strings.Join(strings.Fields(out), ""),
 		)
+	})
+}
+
+func FuzzCaseFuncs(f *testing.F) {
+	f.Add("")
+	f.Add("   ")
+	f.Add("Hello world")
+	f.Add("hello-world_foo bar")
+	f.Add("Ünïcödé  wörds")
+	f.Add("\xc3")
+
+	f.Fuzz(func(t *testing.T, in string) {
+		snake := SnakeCase(in)
+		kebab := KebabCase(in)
+		camel := CamelCase(in)
+
+		if utf8.ValidString(in) {
+			assert.True(t, utf8.ValidString(snake), "SnakeCase(%q) = %q", in, snake)
+			assert.True(t, utf8.ValidString(kebab), "KebabCase(%q) = %q", in, kebab)
+			assert.True(t, utf8.ValidString(camel), "CamelCase(%q) = %q", in, camel)
+		}
+
+		assert.NotContains(t, snake, " ")
+		assert.NotContains(t, kebab, " ")
+		assert.NotContains(t, camel, " ")
 	})
 }

@@ -61,7 +61,7 @@ func (RandomFuncs) String(count any, args ...any) (string, error) {
 		return "", fmt.Errorf("count must be an integer: %w", err)
 	}
 
-	if c == 0 {
+	if c <= 0 {
 		return "", fmt.Errorf("count must be greater than 0")
 	}
 

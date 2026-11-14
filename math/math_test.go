@@ -1,6 +1,7 @@
 package math
 
 import (
+	"math"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -26,4 +27,14 @@ func TestSeq(t *testing.T) {
 	assert.Equal(t, []int64{}, Seq(1, -1, 0))
 	assert.Equal(t, []int64{1}, Seq(1, 10000, 10000))
 	assert.Equal(t, []int64{1, 0, -1}, Seq(1, -1, -1))
+
+	// these used to overflow
+	assert.Equal(t, []int64{-1, math.MaxInt64 - 1}, Seq(-1, math.MaxInt64, math.MaxInt64))
+	assert.Equal(t, []int64{math.MinInt64, -1, math.MaxInt64 - 1}, Seq(math.MinInt64, math.MaxInt64, math.MaxInt64))
+	assert.Equal(t, []int64{math.MaxInt64, 0, math.MinInt64 + 1}, Seq(math.MaxInt64, math.MinInt64, math.MaxInt64))
+	assert.Equal(t, []int64{0, math.MinInt64}, Seq(0, math.MinInt64, math.MinInt64))
+	assert.Equal(t, []int64{math.MinInt64, 0}, Seq(math.MinInt64, math.MaxInt64, math.MinInt64))
+	assert.Equal(t, []int64{math.MaxInt64}, Seq(math.MaxInt64, math.MaxInt64, 1))
+
+	assert.Panics(t, func() { Seq(math.MinInt64, math.MaxInt64, 1) })
 }

@@ -2,7 +2,7 @@
 <script>
 (function () {
   var webSdkScript = document.createElement("script");
-  webSdkScript.src = "https://unpkg.com/@grafana/faro-web-sdk@^1.4.0/dist/bundle/faro-web-sdk.iife.js";
+  webSdkScript.src = "https://unpkg.com/@grafana/faro-web-sdk@^2.13.0/dist/bundle/faro-web-sdk.iife.js";
 
   webSdkScript.onload = () => {
     window.GrafanaFaroWebSdk.initializeFaro({
@@ -18,7 +18,7 @@
     // This is important because we need to ensure that the Web-SDK has been loaded and initialized before we add further instruments!
     var webTracingScript = document.createElement("script");
 
-    webTracingScript.src = "https://unpkg.com/@grafana/faro-web-tracing@^1.4.0/dist/bundle/faro-web-tracing.iife.js";
+    webTracingScript.src = "https://unpkg.com/@grafana/faro-web-tracing@^2.13.0/dist/bundle/faro-web-tracing.iife.js";
 
     // Initialize, configure (if necessary) and add the the new instrumentation to the already loaded and configured Web-SDK.
     webTracingScript.onload = () => {
@@ -29,6 +29,18 @@
 
     // Append the Web Tracing script script tag to the HTML page
     document.head.appendChild(webTracingScript);
+
+    var replayScript = document.createElement("script");
+    replayScript.src = "https://unpkg.com/@grafana/faro-instrumentation-replay@^2.13.0/dist/bundle/faro-instrumentation-replay.iife.js";
+    replayScript.onload = () => {
+      window.GrafanaFaroWebSdk.faro.instrumentations.add(
+        new window.GrafanaFaroInstrumentationReplay.ReplayInstrumentation({
+          // docs text is public; inputs stay masked
+          maskTextSelector: null,
+        })
+      );
+    };
+    document.head.appendChild(replayScript);
   };
 
   // Append the Web-SDK script script tag to the HTML page

@@ -176,7 +176,7 @@ func pickOmitArgs(args ...any) (map[string]any, []string, error) {
 
 	// special-case - if there's only one key and it's a slice, expand it
 	if len(args) == 2 {
-		if reflect.TypeOf(args[0]).Kind() == reflect.Slice {
+		if t := reflect.TypeOf(args[0]); t != nil && t.Kind() == reflect.Slice {
 			sl := reflect.ValueOf(args[0])
 			expandedArgs := make([]any, sl.Len()+1)
 			for i := range sl.Len() {

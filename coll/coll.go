@@ -8,6 +8,8 @@ package coll
 import (
 	"fmt"
 	"maps"
+	"math"
+	"math/big"
 	"reflect"
 	"slices"
 	"sort"
@@ -174,6 +176,10 @@ func Reverse(list any) ([]any, error) {
 		return nil, err
 	}
 
+	// InterfaceSlice returns the input as-is when it's already a []any, so
+	// copy it to avoid reversing the caller's slice
+	l = slices.Clone(l)
+
 	// nifty trick from https://github.com/golang/go/wiki/SliceTricks#reversing
 	for left, right := 0, len(l)-1; left < right; left, right = left+1, right-1 {
 		l[left], l[right] = l[right], l[left]
@@ -236,6 +242,9 @@ func Pick(in map[string]any, keys ...string) map[string]any {
 // Merges a default and override map
 func mergeValues(d map[string]any, o map[string]any) map[string]any {
 	def := maps.Clone(d)
+	if def == nil {
+		def = map[string]any{}
+	}
 	over := maps.Clone(o)
 	for k, v := range over {
 		// If the key doesn't exist already, then just set the key to that value
@@ -289,38 +298,35 @@ func Sort(key string, list any) (out []any, err error) {
 	return ia, nil
 }
 
-// lessThan - compare two values of the same type
+// lessThan - compare two values. Values of different kinds are compared as
+// numbers if they're both numbers, and otherwise by kind, so that the order
+// is at least consistent.
 func lessThan(key string) func(left, right any) bool {
 	return func(left, right any) bool {
 		val := reflect.Indirect(reflect.ValueOf(left))
 		rval := reflect.Indirect(reflect.ValueOf(right))
+		if val.Kind() != rval.Kind() {
+			lf, lok := toBigFloat(val)
+			rf, rok := toBigFloat(rval)
+			if lok && rok {
+				// NaN isn't less or greater than anything
+				return lf != nil && rf != nil && lf.Cmp(rf) < 0
+			}
+			return val.Kind() < rval.Kind()
+		}
 		switch val.Kind() {
 		case reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64, reflect.Int:
 			return val.Int() < rval.Int()
-		case reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint, reflect.Uint64:
+		case reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint, reflect.Uint64, reflect.Uintptr:
 			return val.Uint() < rval.Uint()
 		case reflect.Float32, reflect.Float64:
 			return val.Float() < rval.Float()
 		case reflect.String:
 			return val.String() < rval.String()
-		case reflect.MapOf(
-			reflect.TypeOf(reflect.String),
-			reflect.TypeOf(reflect.Interface),
-		).Kind():
-			kval := reflect.ValueOf(key)
-			if !val.MapIndex(kval).IsValid() {
-				return false
-			}
-			newleft := val.MapIndex(kval).Interface()
-			newright := rval.MapIndex(kval).Interface()
-			return lessThan("")(newleft, newright)
+		case reflect.Map:
+			return keyedLess(mapIndex(val, key), mapIndex(rval, key))
 		case reflect.Struct:
-			if !val.FieldByName(key).IsValid() {
-				return false
-			}
-			newleft := val.FieldByName(key).Interface()
-			newright := rval.FieldByName(key).Interface()
-			return lessThan("")(newleft, newright)
+			return keyedLess(val.FieldByName(key), rval.FieldByName(key))
 		default:
 			// it's not really comparable, so...
 			return false
@@ -328,13 +334,66 @@ func lessThan(key string) func(left, right any) bool {
 	}
 }
 
-func sameTypes(a []any) bool {
-	var t reflect.Type
-	for _, v := range a {
-		if t == nil {
-			t = reflect.TypeOf(v)
+// mapIndex returns the value of key in m, or an invalid value if it's missing
+// or m's keys can't be strings.
+func mapIndex(m reflect.Value, key string) reflect.Value {
+	kt := m.Type().Key()
+	kval := reflect.ValueOf(key)
+	switch {
+	case kt.Kind() == reflect.String:
+		return m.MapIndex(kval.Convert(kt))
+	case kval.Type().AssignableTo(kt):
+		return m.MapIndex(kval)
+	default:
+		return reflect.Value{}
+	}
+}
+
+// keyedLess compares two values found by a map key or field name. Missing
+// values sort after everything else.
+func keyedLess(left, right reflect.Value) bool {
+	if !left.IsValid() || !left.CanInterface() {
+		return false
+	}
+	if !right.IsValid() || !right.CanInterface() {
+		return true
+	}
+	return lessThan("")(left.Interface(), right.Interface())
+}
+
+// toBigFloat returns v as an exact *big.Float, if it's a number. NaN can't be
+// represented, so it's returned as nil.
+func toBigFloat(v reflect.Value) (*big.Float, bool) {
+	switch v.Kind() {
+	case reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64, reflect.Int:
+		return new(big.Float).SetInt64(v.Int()), true
+	case reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint, reflect.Uint64, reflect.Uintptr:
+		return new(big.Float).SetUint64(v.Uint()), true
+	case reflect.Float32, reflect.Float64:
+		if math.IsNaN(v.Float()) {
+			return nil, true
 		}
-		if reflect.ValueOf(v).Kind() != t.Kind() {
+		return new(big.Float).SetFloat64(v.Float()), true
+	default:
+		return nil, false
+	}
+}
+
+func sameTypes(a []any) bool {
+	if len(a) == 0 {
+		return true
+	}
+	t := reflect.TypeOf(a[0])
+	for _, v := range a[1:] {
+		vt := reflect.TypeOf(v)
+		// a nil value has no type, so only matches another nil
+		if t == nil || vt == nil {
+			if t != vt {
+				return false
+			}
+			continue
+		}
+		if vt.Kind() != t.Kind() {
 			return false
 		}
 	}

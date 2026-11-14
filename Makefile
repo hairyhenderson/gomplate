@@ -168,6 +168,25 @@ test:
 	$(GO) test -race $(COVER_FLAGS) ./...
 endif
 
+FUZZTIME ?= 1m
+FUZZ_PKGS ?= $(sort $(dir $(shell grep -rl --include='*_test.go' '^func Fuzz' .)))
+
+# fuzz runs each fuzz target in FUZZ_PKGS for FUZZTIME. Go fuzzes one target at
+# a time, using all CPUs. The generated corpus is kept in the Go build cache, so
+# later runs pick up where earlier ones left off. Failing inputs are written to
+# testdata/fuzz in the package directory, which is git-ignored so that they
+# aren't published by accident. Once the bug is fixed, add the input as a seed
+# with f.Add instead.
+fuzz:
+	@fail=0; \
+	for pkg in $(FUZZ_PKGS); do \
+		for t in $$(grep -ho '^func Fuzz[A-Za-z0-9_]*' $${pkg%/}/*_test.go | cut -c6-); do \
+			echo "==> $$pkg $$t"; \
+			$(GO) test -run '^$$' -fuzz "^$$t$$" -fuzztime $(FUZZTIME) $$pkg || fail=1; \
+		done; \
+	done; \
+	exit $$fail
+
 bench.txt: go.mod go.sum $(GO_FILES)
 	$(GO) test -benchmem -run=xxx -bench . ./... | tee $@
 
@@ -251,6 +270,6 @@ lint:
 ci-lint:
 	@golangci-lint run --verbose --max-same-issues=0 --max-issues-per-linter=0 --out-format=github-actions
 
-.PHONY: gen-changelog clean test build-x build-release build test-integration-docker gen-docs lint clean-images clean-containers docker-images integration gen-func-docs
+.PHONY: gen-changelog clean test fuzz build-x build-release build test-integration-docker gen-docs lint clean-images clean-containers docker-images integration gen-func-docs
 .DELETE_ON_ERROR:
 .SECONDARY:

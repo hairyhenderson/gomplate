@@ -71,6 +71,9 @@ func TestStringRE(t *testing.T) {
 	_, err = StringRE(1, "[bogus")
 	require.Error(t, err)
 
+	_, err = StringRE(-1, "")
+	require.Error(t, err)
+
 	// control characters aren't printable, so nothing matches
 	_, err = StringRE(1, `[\x00-\x1f]`)
 	require.ErrorContains(t, err, "no printable characters match")
@@ -82,11 +85,22 @@ func TestStringBounds(t *testing.T) {
 	_, err := StringBounds(15, 0, 19)
 	require.Error(t, err)
 
+	_, err = StringBounds(-1, 'a', 'z')
+	require.Error(t, err)
+
+	r, err := StringBounds(1, 0, math.MaxInt32)
+	require.NoError(t, err)
+	assert.Equal(t, 1, utf8.RuneCountInString(r))
+
+	r, err = StringBounds(1, math.MinInt32, 'a')
+	require.NoError(t, err)
+	assert.Equal(t, 1, utf8.RuneCountInString(r))
+
 	// surrogate range isn't valid, should error
 	_, err = StringBounds(15, 0xd800, 0xdfff)
 	require.Error(t, err)
 
-	r, err := StringBounds(1, 'a', 'a')
+	r, err = StringBounds(1, 'a', 'a')
 	require.NoError(t, err)
 	assert.Equal(t, "a", r)
 

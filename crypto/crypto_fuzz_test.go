@@ -54,3 +54,27 @@ func FuzzCryptAESCBC(f *testing.F) {
 		}
 	})
 }
+
+func FuzzDecryptAESCBC(f *testing.F) {
+	f.Add(bytes.Repeat([]byte{'a'}, 16), []byte{})
+	f.Add(bytes.Repeat([]byte{'a'}, 16), bytes.Repeat([]byte{0}, 16))
+	f.Add(bytes.Repeat([]byte{'a'}, 24), bytes.Repeat([]byte{1}, 32))
+	f.Add(bytes.Repeat([]byte{'a'}, 32), bytes.Repeat([]byte{16}, 48))
+
+	f.Fuzz(func(_ *testing.T, key, in []byte) {
+		// make sure we have a key of the right length
+		var k []byte
+		switch {
+		case len(key) <= 16:
+			k = make([]byte, 16)
+		case len(key) <= 24:
+			k = make([]byte, 24)
+		default:
+			k = make([]byte, 32)
+		}
+		copy(k, key)
+
+		// arbitrary input should give an error, not a panic
+		_, _ = DecryptAESCBC(k, in)
+	})
+}

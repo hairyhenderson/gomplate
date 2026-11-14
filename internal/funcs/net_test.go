@@ -175,6 +175,15 @@ func TestCIDRSubnets(t *testing.T) {
 	require.Error(t, err)
 	assert.Nil(t, subnets)
 
+	// these must fail before allocating 2^newbits subnets
+	subnets, err = n.CIDRSubnets(40, network)
+	require.Error(t, err)
+	assert.Nil(t, subnets)
+
+	subnets, err = n.CIDRSubnets(64, netip.MustParsePrefix("::/0"))
+	require.Error(t, err)
+	assert.Nil(t, subnets)
+
 	subnets, err = n.CIDRSubnets(2, network)
 	require.NoError(t, err)
 	assert.Len(t, subnets, 4)

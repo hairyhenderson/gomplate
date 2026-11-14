@@ -482,6 +482,13 @@ func ToYAML(in any) (string, error) {
 	// I'd use yaml.Marshal, but between v2 and v3 the indent has changed from
 	// 2 to 4. This explicitly sets it back to 2.
 	marshal := func(in any) (out []byte, err error) {
+		// the encoder panics on types it can't marshal, like complex numbers
+		defer func() {
+			if r := recover(); r != nil {
+				err = fmt.Errorf("unable to marshal to YAML: %v", r)
+			}
+		}()
+
 		buf := &bytes.Buffer{}
 		e := yaml.NewEncoder(buf)
 		e.SetIndent(2)
@@ -495,6 +502,12 @@ func ToYAML(in any) (string, error) {
 
 // ToTOML - Stringify a struct as TOML
 func ToTOML(in any) (string, error) {
+	// BurntSushi/toml panics on an untyped nil, and encodes a typed nil (like
+	// a nil map) as an empty string, so do the same here.
+	if in == nil {
+		return "", nil
+	}
+
 	// BurntSushi/toml can't encode maps with non-string key types (e.g. the
 	// map[any]any values produced by YAML unmarshaling), so coerce those to
 	// map[string]any first.

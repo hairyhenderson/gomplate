@@ -126,6 +126,9 @@ func TestString(t *testing.T) {
 	_, err = f.String(0)
 	require.Error(t, err)
 
+	_, err = f.String(-1)
+	require.Error(t, err)
+
 	out, err = f.String(8, "[a-z]")
 	require.NoError(t, err)
 	assert.Regexp(t, "^[a-z]{8}$", out)

@@ -55,6 +55,11 @@ func parsePath(p string) (*jsonpath.JSONPath, error) {
 }
 
 func extractResult(v reflect.Value) (any, error) {
+	// a nil input gives an invalid (zero) value
+	if !v.IsValid() {
+		return nil, nil
+	}
+
 	if v.CanInterface() {
 		return v.Interface(), nil
 	}
