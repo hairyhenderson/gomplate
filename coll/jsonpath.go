@@ -102,7 +102,7 @@ func evalMultiBranchBounds(ctx context.Context, p string, in any) (any, bool, er
 	if len(matches) == 0 {
 		return nil, true, nil
 	}
-	if len(matches) == 1 {
+	if len(raw) == 1 {
 		return matches[0], true, nil
 	}
 	return matches, true, nil
@@ -408,10 +408,24 @@ func formatArrayNode(n *jsonpath.ArrayNode) string {
 }
 
 func formatUnionElement(nodes []jsonpath.Node) (string, error) {
+	allFields := len(nodes) > 0
+	for _, n := range nodes {
+		if _, ok := n.(*jsonpath.FieldNode); !ok {
+			allFields = false
+			break
+		}
+	}
+	if allFields {
+		var parts []string
+		for _, n := range nodes {
+			fn := n.(*jsonpath.FieldNode)
+			parts = append(parts, escapeFieldName(fn.Value))
+		}
+		return "'" + strings.Join(parts, ".") + "'", nil
+	}
+
 	if len(nodes) == 1 {
 		switch n := nodes[0].(type) {
-		case *jsonpath.FieldNode:
-			return "'" + escapeFieldName(n.Value) + "'", nil
 		case *jsonpath.ArrayNode:
 			arrStr := formatArrayNode(n)
 			return strings.TrimSuffix(strings.TrimPrefix(arrStr, "["), "]"), nil
