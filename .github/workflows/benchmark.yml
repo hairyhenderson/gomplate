@@ -60,7 +60,7 @@ jobs:
           path: ./cache
           # a cache entry is never updated once saved, so save a new one on every
           # run and restore the newest one for this CPU model
-          key: ${{ runner.os }}-benchmark-${{ steps.cpu.outputs.model }}-${{ github.run_id }}
+          key: ${{ runner.os }}-benchmark-${{ steps.cpu.outputs.model }}-${{ github.run_id }}-${{ github.run_attempt }}
           restore-keys: ${{ runner.os }}-benchmark-${{ steps.cpu.outputs.model }}-
       - name: Store benchmark result
         uses: benchmark-action/github-action-benchmark@v1
