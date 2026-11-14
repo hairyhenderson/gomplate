@@ -46,11 +46,22 @@ jobs:
           go-version-file: 'go.mod'
       - name: Run benchmark
         run: make bench.txt
+      # hosted runners have different CPUs (e.g. AMD EPYC 7763, 9V45, 9V74) and the
+      # timings differ by more than the alert threshold between them, so keep one
+      # baseline per CPU model
+      - name: Get CPU model
+        id: cpu
+        run: |
+          model=$(grep -m1 '^model name' /proc/cpuinfo | cut -d: -f2 | xargs)
+          echo "model=${model// /-}" >> "$GITHUB_OUTPUT"
       - name: Download previous benchmark data
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6
         with:
           path: ./cache
-          key: ${{ runner.os }}-benchmark
+          # a cache entry is never updated once saved, so save a new one on every
+          # run and restore the newest one for this CPU model
+          key: ${{ runner.os }}-benchmark-${{ steps.cpu.outputs.model }}-${{ github.run_id }}-${{ github.run_attempt }}
+          restore-keys: ${{ runner.os }}-benchmark-${{ steps.cpu.outputs.model }}-
       - name: Store benchmark result
         uses: benchmark-action/github-action-benchmark@v1
         with:
