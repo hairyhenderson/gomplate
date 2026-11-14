@@ -58,8 +58,11 @@ jobs:
           output-file-path: bench.txt
           external-data-json-path: ./cache/benchmark-data.json
           fail-on-alert: true
-          comment-on-alert: true
+          # PRs from forks get a read-only token, so commenting fails with
+          # "Resource not accessible by integration" - only comment when the PR
+          # comes from this repo. Alerts still fail the job either way.
+          comment-on-alert: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository }}
           # only comment on every PR run, not on pushes or the nightly run
-          comment-always: ${{ github.event_name == 'pull_request' }}
+          comment-always: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
           alert-threshold: "200%"
