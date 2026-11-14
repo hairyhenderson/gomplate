@@ -25,6 +25,26 @@ funcs:
         $ gomplate -f input.tmpl
         yes
         ```
+  - name: file.Glob
+    description: |
+      Returns the names of all files matching the shell file name `pattern`, or an empty list if there are no matching files.
+
+      The pattern syntax is the same as in Go's [`path.Match`](https://pkg.go.dev/path#Match) and [`io/fs.Glob`](https://pkg.go.dev/io/fs#Glob). The pattern may describe hierarchical names such as `/tmp/*.txt` or `sub/*/*.yaml`.
+    pipeline: true
+    arguments:
+      - name: pattern
+        required: true
+        description: The glob pattern
+    examples:
+      - |
+        $ touch /tmp/file1.txt /tmp/file2.txt /tmp/file3.log
+        $ gomplate -i '{{ range file.Glob "/tmp/*.txt" }}{{.}}{{"\n"}}{{end}}'
+        /tmp/file1.txt
+        /tmp/file2.txt
+      - |
+        $ gomplate -i '{{ range "*.txt" | file.Glob }}{{.}}{{"\n"}}{{end}}'
+        file1.txt
+        file2.txt
   - name: file.IsDir
     released: v2.4.0
     description: |

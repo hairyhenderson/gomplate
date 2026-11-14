@@ -6,6 +6,7 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strconv"
 	"testing"
 	"testing/fstest"
@@ -46,6 +47,97 @@ func TestFileExists(t *testing.T) {
 
 	assert.True(t, ff.Exists("/tmp/foo"))
 	assert.False(t, ff.Exists("/tmp/bar"))
+}
+
+func TestFileGlob(t *testing.T) {
+	t.Parallel()
+
+	fsys := fstest.MapFS{
+		"tmp":           &fstest.MapFile{Mode: fs.ModeDir | 0o777},
+		"tmp/file1.txt": &fstest.MapFile{Data: []byte("foo")},
+		"tmp/file2.log": &fstest.MapFile{Data: []byte("bar")},
+	}
+	ff := &FileFuncs{fs: datafs.WrapWdFS(fsys)}
+
+	matches, err := ff.Glob("/tmp/*.txt")
+	require.NoError(t, err)
+	assert.Equal(t, []string{"/tmp/file1.txt"}, matches)
+
+	// Malformed pattern test
+	_, err = ff.Glob("[]")
+	assert.Error(t, err)
+}
+
+func TestFileGlob_WorkingDir(t *testing.T) {
+	origWd, err := os.Getwd()
+	require.NoError(t, err)
+
+	dir := t.TempDir()
+	t.Cleanup(func() {
+		_ = os.Chdir(origWd)
+	})
+
+	require.NoError(t, os.WriteFile(filepath.Join(dir, "file1.txt"), []byte("test"), 0o600))
+	require.NoError(t, os.WriteFile(filepath.Join(dir, "file2.log"), []byte("test"), 0o600))
+	subDir := filepath.Join(dir, "sub")
+	require.NoError(t, os.MkdirAll(subDir, 0o700))
+	require.NoError(t, os.WriteFile(filepath.Join(subDir, "file3.txt"), []byte("test"), 0o600))
+
+	require.NoError(t, os.Chdir(dir))
+
+	ff := &FileFuncs{fs: datafs.WrapWdFS(osfs.NewFS())}
+
+	matches, err := ff.Glob("*.txt")
+	require.NoError(t, err)
+	assert.Equal(t, []string{"file1.txt"}, matches)
+
+	matches, err = ff.Glob("sub/*.txt")
+	require.NoError(t, err)
+	assert.Equal(t, []string{"sub/file3.txt"}, matches)
+}
+
+func TestFileGlob_POSIXEscape(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("skipping POSIX escape test on Windows")
+	}
+
+	fsys := fstest.MapFS{
+		"tmp/report?.txt": &fstest.MapFile{Data: []byte("foo")},
+		"tmp/report1.txt": &fstest.MapFile{Data: []byte("bar")},
+	}
+
+	// Generic fs.FS fallback (not implementing fs.GlobFS)
+	ffGeneric := &FileFuncs{fs: fsys}
+	matches, err := ffGeneric.Glob(`tmp/report\?.txt`)
+	require.NoError(t, err)
+	assert.Equal(t, []string{"tmp/report?.txt"}, matches)
+
+	// WrapWdFS
+	ffWd := &FileFuncs{fs: datafs.WrapWdFS(fsys)}
+	matches, err = ffWd.Glob(`/tmp/report\?.txt`)
+	require.NoError(t, err)
+	assert.Equal(t, []string{"/tmp/report?.txt"}, matches)
+}
+
+func TestFileGlob_WindowsDeviceAndUNC(t *testing.T) {
+	t.Parallel()
+
+	fsys := fstest.MapFS{
+		"tmp":           &fstest.MapFile{Mode: fs.ModeDir | 0o777},
+		"tmp/file1.txt": &fstest.MapFile{Data: []byte("foo")},
+		"tmp/file2.txt": &fstest.MapFile{Data: []byte("bar")},
+	}
+	ff := &FileFuncs{fs: datafs.WrapWdFS(fsys)}
+
+	// UNC share prefix preservation
+	matches, err := ff.Glob(`\\server\share\tmp\*.txt`)
+	require.NoError(t, err)
+	assert.Equal(t, []string{`\\server\share\tmp\file1.txt`, `\\server\share\tmp\file2.txt`}, matches)
+
+	// Device prefix preservation
+	matches, err = ff.Glob(`\\?\C:\tmp\*.txt`)
+	require.NoError(t, err)
+	assert.Equal(t, []string{`\\?\C:\tmp\file1.txt`, `\\?\C:\tmp\file2.txt`}, matches)
 }
 
 func TestFileIsDir(t *testing.T) {
