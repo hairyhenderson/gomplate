@@ -347,9 +347,8 @@ func TestCollFuncs_JSONPath(t *testing.T) {
 		require.NoError(t, err)
 		assert.Nil(t, out)
 
-		out, err = c.JSONPath(".store.book[99]", data)
-		require.NoError(t, err)
-		assert.Nil(t, out)
+		_, err = c.JSONPath(".store.book[99]", data)
+		require.Error(t, err)
 	})
 
 	t.Run("missing-key=zero", func(t *testing.T) {

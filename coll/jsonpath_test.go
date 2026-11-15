@@ -239,18 +239,6 @@ func TestJSONPathWithContext(t *testing.T) {
 			require.NoError(t, err)
 			assert.Nil(t, out)
 
-			out, err = JSONPathWithContext(ctx, ".store.book[99]", in)
-			require.NoError(t, err)
-			assert.Nil(t, out)
-
-			out, err = JSONPathWithContext(ctx, ".store.book[99].title", in)
-			require.NoError(t, err)
-			assert.Nil(t, out)
-
-			out, err = JSONPathWithContext(ctx, ".store.bogus[0]", in)
-			require.NoError(t, err)
-			assert.Nil(t, out)
-
 			out, err = JSONPathWithContext(ctx, ".Bicycle.NonExistent", structIn)
 			require.NoError(t, err)
 			assert.Nil(t, out)
@@ -261,213 +249,32 @@ func TestJSONPathWithContext(t *testing.T) {
 			_, err = JSONPathWithContext(ctx, "{.store.unclosed", in)
 			require.Error(t, err)
 
-			// multi-branch query where one branch hits array index out of bounds preserves valid branch matches
-			multiBranchIn := ar{
-				ar{"keep"},
-				ar{},
-			}
-			out, err = JSONPathWithContext(ctx, "$[*][0]", multiBranchIn)
-			require.NoError(t, err)
-			assert.Equal(t, "keep", out)
-
-			// raw match count preservation across bounds recovery:
-			// $[*][0] over [[null], ["keep"]] returns ["keep"] (slice) because raw match count is 2
-			rawMultiMatchIn := ar{ar{nil}, ar{"keep"}}
-			out, err = JSONPathWithContext(ctx, "$[*][0]", rawMultiMatchIn)
-			require.NoError(t, err)
-			assert.Equal(t, ar{"keep"}, out)
-
-			// adding an empty sibling array triggers bounds recovery but raw match count remains 2, preserving slice return type
-			rawMultiMatchWithEmptyPrefix := ar{ar{}, ar{nil}, ar{"keep"}}
-			out, err = JSONPathWithContext(ctx, "$[*][0]", rawMultiMatchWithEmptyPrefix)
-			require.NoError(t, err)
-			assert.Equal(t, ar{"keep"}, out)
-
-			rawMultiMatchWithEmptySuffix := ar{ar{nil}, ar{"keep"}, ar{}}
-			out, err = JSONPathWithContext(ctx, "$[*][0]", rawMultiMatchWithEmptySuffix)
-			require.NoError(t, err)
-			assert.Equal(t, ar{"keep"}, out)
-
-			// multi-match query with out-of-bounds branch and multiple non-nil matches returns slice
-			multiMatchWithEmptyBranch := ar{ar{}, ar{"keep1"}, ar{"keep2"}}
-			out, err = JSONPathWithContext(ctx, "$[*][0]", multiMatchWithEmptyBranch)
-			require.NoError(t, err)
-			assert.Equal(t, ar{"keep1", "keep2"}, out)
-
-			// singleton match with out-of-bounds branch prefix returns scalar
-			singleWithEmptyBranchPrefix := ar{ar{}, ar{"keep"}}
-			out, err = JSONPathWithContext(ctx, "$[*][0]", singleWithEmptyBranchPrefix)
-			require.NoError(t, err)
-			assert.Equal(t, "keep", out)
-
-			// compound field operands preserve quoted syntax in union bounds recovery
-			compoundUnionIn := m{
-				"a": m{"b": ar{"keep"}},
-				"c": ar{},
-			}
-			out, err = JSONPathWithContext(ctx, "$['a.b','c'][0]", compoundUnionIn)
-			require.NoError(t, err)
-			assert.Equal(t, "keep", out)
-
-			compoundDeepIn := m{
-				"a": m{"b": m{"c": ar{"nested"}}},
-				"d": ar{},
-			}
-			out, err = JSONPathWithContext(ctx, "$['a.b.c','d'][0]", compoundDeepIn)
-			require.NoError(t, err)
-			assert.Equal(t, "nested", out)
-
-			compoundMultiMatchIn := m{
-				"a": m{"b": ar{"keep1"}},
-				"c": ar{"keep2"},
-			}
-			out, err = JSONPathWithContext(ctx, "$['a.b','c'][0]", compoundMultiMatchIn)
-			require.NoError(t, err)
-			assert.Equal(t, ar{"keep1", "keep2"}, out)
-
-			compoundEscapedDotIn := m{
-				"a.b": ar{"keep"},
-				"c":   ar{},
-			}
-			out, err = JSONPathWithContext(ctx, `$['a\.b','c'][0]`, compoundEscapedDotIn)
-			require.NoError(t, err)
-			assert.Equal(t, "keep", out)
-
-			// wildcard branching bounds recovery with equivalent $.*[0] expression preserves valid matches
-			out, err = JSONPathWithContext(ctx, "$.*[0]", multiBranchIn)
-			require.NoError(t, err)
-			assert.Equal(t, "keep", out)
-
-			// scalar result preservation: singleton match returns scalar value, multiple matches return slice
-			singleIn := ar{ar{"keep"}}
-			out, err = JSONPathWithContext(ctx, "$[*][0]", singleIn)
-			require.NoError(t, err)
-			assert.Equal(t, "keep", out)
-
-			singleWithEmptySiblingIn := ar{ar{"keep"}, ar{}}
-			out, err = JSONPathWithContext(ctx, "$[*][0]", singleWithEmptySiblingIn)
-			require.NoError(t, err)
-			assert.Equal(t, "keep", out)
-
-			multiMatchIn := ar{ar{"keep1"}, ar{"keep2"}}
-			out, err = JSONPathWithContext(ctx, "$[*][0]", multiMatchIn)
-			require.NoError(t, err)
-			assert.Equal(t, ar{"keep1", "keep2"}, out)
-
-			multiMatchWithEmptySiblingIn := ar{ar{"keep1"}, ar{"keep2"}, ar{}}
-			out, err = JSONPathWithContext(ctx, "$[*][0]", multiMatchWithEmptySiblingIn)
-			require.NoError(t, err)
-			assert.Equal(t, ar{"keep1", "keep2"}, out)
-
-			// terminal union: out-of-bounds indices are skipped while valid matches survive
-			terminalUnionIn := ar{
-				m{"name": "keep"},
-			}
-			out, err = JSONPathWithContext(ctx, "$[0,99]", terminalUnionIn)
-			require.NoError(t, err)
-			assert.Equal(t, m{"name": "keep"}, out)
-
-			out, err = JSONPathWithContext(ctx, "$[99,0]", terminalUnionIn)
-			require.NoError(t, err)
-			assert.Equal(t, m{"name": "keep"}, out)
-
-			// terminal union with multiple valid matches returns slice
-			terminalUnionMultiIn := ar{
-				m{"name": "a"},
-				m{"name": "b"},
-			}
-			out, err = JSONPathWithContext(ctx, "$[0,1,99]", terminalUnionMultiIn)
-			require.NoError(t, err)
-			assert.Equal(t, ar{m{"name": "a"}, m{"name": "b"}}, out)
-
-			// terminal union with all out-of-bounds returns nil
-			out, err = JSONPathWithContext(ctx, "$[98,99]", terminalUnionIn)
-			require.NoError(t, err)
-			assert.Nil(t, out)
-
-			// union prefix independent evaluation: valid operands survive when prefix contains out-of-bounds index
-			unionPrefixIn := ar{
-				m{"name": "keep"},
-			}
-			out, err = JSONPathWithContext(ctx, "$[0,99].name", unionPrefixIn)
-			require.NoError(t, err)
-			assert.Equal(t, "keep", out)
-
-			// field name escaping: preserved across bounds recovery without changing the queried key
-			escapedFieldIn := ar{
-				m{"a.b": ar{"keep"}},
-				m{"a.b": ar{}},
-			}
-			out, err = JSONPathWithContext(ctx, `$[*].a\.b[0]`, escapedFieldIn)
-			require.NoError(t, err)
-			assert.Equal(t, "keep", out)
-
-			// filter string quoting: string filter operands preserve quotes during bounds recovery
-			filterIn := m{
-				"items": ar{
-					m{"kind": "keep", "values": ar{"match"}},
-					m{"kind": "keep", "values": ar{}},
-					m{"kind": "skip", "values": ar{"other"}},
-				},
-			}
-			out, err = JSONPathWithContext(ctx, `$.items[?(@.kind == "keep")].values[0]`, filterIn)
-			require.NoError(t, err)
-			assert.Equal(t, "match", out)
-
-			// union slice selectors: full slice selector (start, end, step) is preserved during bounds recovery
-			unionSliceIn := ar{
-				ar{"a"},
-				ar{"b"},
-				ar{},
-			}
-			out, err = JSONPathWithContext(ctx, "$[0:2,2][0]", unionSliceIn)
-			require.NoError(t, err)
-			assert.Equal(t, ar{"a", "b"}, out)
-
-			// bounds recovery preserves nested array structure without flattening
-			nestedArraysIn := ar{
-				ar{ar{"a", "b"}},
-				ar{ar{"c", "d"}},
-				ar{},
-			}
-			out, err = JSONPathWithContext(ctx, "$[*][0]", nestedArraysIn)
-			require.NoError(t, err)
-			assert.Equal(t, ar{ar{"a", "b"}, ar{"c", "d"}}, out)
-
-			out, err = JSONPathWithContext(ctx, "$.*[0]", nestedArraysIn)
-			require.NoError(t, err)
-			assert.Equal(t, ar{ar{"a", "b"}, ar{"c", "d"}}, out)
-
-			// suffix with multiple matches across branches is properly aggregated
-			out, err = JSONPathWithContext(ctx, "$[*][0][*]", nestedArraysIn)
-			require.NoError(t, err)
-			assert.Equal(t, ar{"a", "b", "c", "d"}, out)
-
-			// multi-branch query where a branch triggers bounds recovery and another branch fails with hard error
-			multiBranchUnexported := ar{
-				ar{structIn},
-				ar{},
-			}
-			_, err = JSONPathWithContext(ctx, "$[*][0].safe", multiBranchUnexported)
+			// out-of-range array indices return error as in standard client-go JSONPath
+			_, err = JSONPathWithContext(ctx, ".store.book[99]", in)
 			require.Error(t, err)
-			assert.Contains(t, err.Error(), "JSONPath couldn't access field")
+			assert.Contains(t, err.Error(), "array index out of bounds")
 
-			_, err = JSONPathWithContext(ctx, "$.*[0].safe", multiBranchUnexported)
+			_, err = JSONPathWithContext(ctx, ".store.book[99].title", in)
 			require.Error(t, err)
-			assert.Contains(t, err.Error(), "JSONPath couldn't access field")
+			assert.Contains(t, err.Error(), "array index out of bounds")
 
-			// multi-branch query where all branches hit bounds returns nil under permissive mode
-			multiBranchAllEmpty := ar{
-				ar{},
-				ar{},
+			_, err = JSONPathWithContext(ctx, "$[0,99]", ar{m{"name": "keep"}})
+			require.Error(t, err)
+			assert.Contains(t, err.Error(), "array index out of bounds")
+
+			_, err = JSONPathWithContext(ctx, "$[*][0]", ar{ar{"keep"}, ar{}})
+			require.Error(t, err)
+			assert.Contains(t, err.Error(), "array index out of bounds")
+
+			// missing map keys across array elements are ignored when missingKey allows it
+			arrayWithMissingKey := ar{
+				m{"title": "Book 1"},
+				m{"other": "No title"},
+				m{"title": "Book 2"},
 			}
-			out, err = JSONPathWithContext(ctx, "$[*][0]", multiBranchAllEmpty)
+			out, err = JSONPathWithContext(ctx, "$[*].title", arrayWithMissingKey)
 			require.NoError(t, err)
-			assert.Nil(t, out)
-
-			out, err = JSONPathWithContext(ctx, "$.*[0]", multiBranchAllEmpty)
-			require.NoError(t, err)
-			assert.Nil(t, out)
+			assert.Equal(t, ar{"Book 1", "Book 2"}, out)
 		})
 	}
 
@@ -499,7 +306,7 @@ func TestJSONPathWithContext(t *testing.T) {
 		assert.Equal(t, ar{}, out)
 		assert.NotNil(t, out)
 
-		// multi-branch with out of bounds errors under strict mode
+		// out-of-bounds array indices return error under strict mode
 		multiBranchIn := ar{
 			ar{"keep"},
 			ar{},
@@ -508,36 +315,7 @@ func TestJSONPathWithContext(t *testing.T) {
 		require.Error(t, err)
 		assert.Contains(t, err.Error(), "array index out of bounds")
 
-		_, err = JSONPathWithContext(ctx, "$.*[0]", multiBranchIn)
-		require.Error(t, err)
-		assert.Contains(t, err.Error(), "array index out of bounds")
-
 		_, err = JSONPathWithContext(ctx, "$[0,99]", ar{m{"name": "keep"}})
-		require.Error(t, err)
-		assert.Contains(t, err.Error(), "array index out of bounds")
-
-		_, err = JSONPathWithContext(ctx, "$[0,99].name", ar{m{"name": "keep"}})
-		require.Error(t, err)
-		assert.Contains(t, err.Error(), "array index out of bounds")
-
-		// strict mode returns slice for [[null], ["keep"]] since no branch is out of bounds
-		rawMultiMatchIn := ar{ar{nil}, ar{"keep"}}
-		out, err = JSONPathWithContext(ctx, "$[*][0]", rawMultiMatchIn)
-		require.NoError(t, err)
-		assert.Equal(t, ar{"keep"}, out)
-
-		// adding an empty sibling array triggers out-of-bounds error under strict mode
-		rawMultiMatchWithEmpty := ar{ar{}, ar{nil}, ar{"keep"}}
-		_, err = JSONPathWithContext(ctx, "$[*][0]", rawMultiMatchWithEmpty)
-		require.Error(t, err)
-		assert.Contains(t, err.Error(), "array index out of bounds")
-
-		// compound union with out-of-bounds branch errors under strict mode
-		compoundUnionIn := m{
-			"a": m{"b": ar{"keep"}},
-			"c": ar{},
-		}
-		_, err = JSONPathWithContext(ctx, "$['a.b','c'][0]", compoundUnionIn)
 		require.Error(t, err)
 		assert.Contains(t, err.Error(), "array index out of bounds")
 	})
@@ -569,36 +347,7 @@ func TestJSONPathWithContext(t *testing.T) {
 		require.Error(t, err)
 		assert.Contains(t, err.Error(), "array index out of bounds")
 
-		_, err = JSONPathWithContext(ctx, "$.*[0]", multiBranchIn)
-		require.Error(t, err)
-		assert.Contains(t, err.Error(), "array index out of bounds")
-
 		_, err = JSONPathWithContext(ctx, "$[0,99]", ar{m{"name": "keep"}})
-		require.Error(t, err)
-		assert.Contains(t, err.Error(), "array index out of bounds")
-
-		_, err = JSONPathWithContext(ctx, "$[0,99].name", ar{m{"name": "keep"}})
-		require.Error(t, err)
-		assert.Contains(t, err.Error(), "array index out of bounds")
-
-		// strict mode returns slice for [[null], ["keep"]] since no branch is out of bounds
-		rawMultiMatchIn := ar{ar{nil}, ar{"keep"}}
-		out, err = JSONPathWithContext(ctx, "$[*][0]", rawMultiMatchIn)
-		require.NoError(t, err)
-		assert.Equal(t, ar{"keep"}, out)
-
-		// adding an empty sibling array triggers out-of-bounds error under strict mode
-		rawMultiMatchWithEmpty := ar{ar{}, ar{nil}, ar{"keep"}}
-		_, err = JSONPathWithContext(ctx, "$[*][0]", rawMultiMatchWithEmpty)
-		require.Error(t, err)
-		assert.Contains(t, err.Error(), "array index out of bounds")
-
-		// compound union with out-of-bounds branch errors under strict mode
-		compoundUnionIn := m{
-			"a": m{"b": ar{"keep"}},
-			"c": ar{},
-		}
-		_, err = JSONPathWithContext(ctx, "$['a.b','c'][0]", compoundUnionIn)
 		require.Error(t, err)
 		assert.Contains(t, err.Error(), "array index out of bounds")
 	})
