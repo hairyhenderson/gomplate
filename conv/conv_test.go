@@ -167,6 +167,49 @@ func TestToInt64(t *testing.T) {
 		_, err = ToInt64(uint64(math.MaxUint64))
 		require.Error(t, err)
 	})
+
+	t.Run("floats outside the int64 range", func(t *testing.T) {
+		for _, in := range []any{
+			math.NaN(),
+			math.Inf(1),
+			math.Inf(-1),
+			float32(1e30),
+			1e30,
+			-1e30,
+			// 2^63 is the first float64 above MaxInt64
+			float64(1 << 63),
+			// the first float64 below -2^63
+			math.Nextafter(-float64(1<<63), math.Inf(-1)),
+			"1e30",
+			"-1e30",
+			"9223372036854775808",
+			"NaN",
+			"Inf",
+			"-Inf",
+		} {
+			_, err := ToInt64(in)
+			require.Errorf(t, err, "ToInt64(%#v)", in)
+		}
+	})
+
+	t.Run("floats at the edge of the int64 range", func(t *testing.T) {
+		// the largest float64 below 2^63
+		actual, err := ToInt64(math.Nextafter(float64(1<<63), 0))
+		require.NoError(t, err)
+		assert.Equal(t, int64(math.MaxInt64-1023), actual)
+
+		actual, err = ToInt64(-float64(1 << 63))
+		require.NoError(t, err)
+		assert.Equal(t, int64(math.MinInt64), actual)
+
+		actual, err = ToInt64("9223372036854775807")
+		require.NoError(t, err)
+		assert.Equal(t, int64(math.MaxInt64), actual)
+
+		actual, err = ToInt64("-9.223372036854775808e18")
+		require.NoError(t, err)
+		assert.Equal(t, int64(math.MinInt64), actual)
+	})
 }
 
 func TestToInt(t *testing.T) {
