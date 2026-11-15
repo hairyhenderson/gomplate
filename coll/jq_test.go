@@ -3,6 +3,7 @@ package coll
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -215,6 +216,49 @@ func TestJQ_typeConversions(t *testing.T) {
 	out, err = JQ(ctx, ".[1][0]", [][]string{{"name"}, {"Alice"}})
 	require.NoError(t, err)
 	assert.Equal(t, "Alice", out)
+}
+
+func TestJQ_largeIntegers(t *testing.T) {
+	ctx := context.Background()
+
+	// 2^53 + 1 can't be represented exactly as a float64, so it must not be
+	// round-tripped through one
+	const big = int64(9007199254740993)
+
+	out, err := JQ(ctx, ".id", map[string]int64{"id": big})
+	require.NoError(t, err)
+	assert.Equal(t, "9007199254740993", fmt.Sprint(out))
+
+	out, err = JQ(ctx, ".[0]", []int64{big})
+	require.NoError(t, err)
+	assert.Equal(t, "9007199254740993", fmt.Sprint(out))
+
+	out, err = JQ(ctx, ".ID", struct{ ID int64 }{ID: big})
+	require.NoError(t, err)
+	assert.Equal(t, "9007199254740993", fmt.Sprint(out))
+
+	// arithmetic must use the exact value too
+	out, err = JQ(ctx, ".id + 1", map[string]int64{"id": big})
+	require.NoError(t, err)
+	assert.Equal(t, "9007199254740994", fmt.Sprint(out))
+
+	// integers that don't fit in an int64 are preserved too
+	out, err = JQ(ctx, ".id", map[string]uint64{"id": 18446744073709551615})
+	require.NoError(t, err)
+	assert.Equal(t, "18446744073709551615", fmt.Sprint(out))
+
+	// large integers that a float64 holds exactly stay float64s, as before,
+	// so they still work with conv and math functions
+	out, err = JQ(ctx, ".F", struct{ F float64 }{F: 1e20})
+	require.NoError(t, err)
+	assert.IsType(t, float64(0), out)
+	assert.InDelta(t, 1e20, out, 0)
+
+	// non-integers are still floats
+	out, err = JQ(ctx, ".x", map[string]float64{"x": 1.5})
+	require.NoError(t, err)
+	assert.IsType(t, float64(0), out)
+	assert.InDelta(t, 1.5, out, 0)
 }
 
 func TestJQConvertType_passthroughTypes(t *testing.T) {

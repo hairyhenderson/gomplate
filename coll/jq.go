@@ -1,10 +1,13 @@
 package coll
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
+	"math/big"
 	"reflect"
+	"strconv"
 
 	"github.com/itchyny/gojq"
 )
@@ -79,16 +82,7 @@ func jqConvertType(in any) (any, error) {
 	// if it's a struct, the simplest (though not necessarily most efficient)
 	// is to JSON marshal/unmarshal it
 	if inType.Kind() == reflect.Struct {
-		b, err := json.Marshal(in)
-		if err != nil {
-			return nil, fmt.Errorf("json marshal struct: %w", err)
-		}
-		var m map[string]any
-		err = json.Unmarshal(b, &m)
-		if err != nil {
-			return nil, fmt.Errorf("json unmarshal struct: %w", err)
-		}
-		return m, nil
+		return jsonRoundTrip(in)
 	}
 
 	// other maps and slices, like map[string]string (.Env) or [][]string (CSV
@@ -100,18 +94,65 @@ func jqConvertType(in any) (any, error) {
 			return in, nil
 		}
 
-		b, err := json.Marshal(in)
-		if err != nil {
-			return nil, fmt.Errorf("json marshal %T: %w", in, err)
-		}
-		var v any
-		err = json.Unmarshal(b, &v)
-		if err != nil {
-			return nil, fmt.Errorf("json unmarshal %T: %w", in, err)
-		}
-		return v, nil
+		return jsonRoundTrip(in)
 	}
 
 	// we maybe don't need to convert the value, so return it as-is
 	return in, nil
+}
+
+// jsonRoundTrip converts in to the generic types gojq supports by marshalling
+// it to JSON and back. Numbers are decoded exactly: integers become an int,
+// or a float64 if they don't fit in an int but a float64 holds them exactly,
+// or otherwise a *big.Int, so large integers aren't rounded.
+func jsonRoundTrip(in any) (any, error) {
+	b, err := json.Marshal(in)
+	if err != nil {
+		return nil, fmt.Errorf("json marshal %T: %w", in, err)
+	}
+
+	dec := json.NewDecoder(bytes.NewReader(b))
+	dec.UseNumber()
+
+	var v any
+	err = dec.Decode(&v)
+	if err != nil {
+		return nil, fmt.Errorf("json unmarshal %T: %w", in, err)
+	}
+
+	return normalizeJSONNumbers(v), nil
+}
+
+// normalizeJSONNumbers replaces each json.Number in v with an int, float64,
+// or *big.Int.
+func normalizeJSONNumbers(v any) any {
+	switch v := v.(type) {
+	case map[string]any:
+		for k, e := range v {
+			v[k] = normalizeJSONNumbers(e)
+		}
+		return v
+	case []any:
+		for i, e := range v {
+			v[i] = normalizeJSONNumbers(e)
+		}
+		return v
+	case json.Number:
+		if i, err := strconv.Atoi(v.String()); err == nil {
+			return i
+		}
+		if i, ok := new(big.Int).SetString(v.String(), 10); ok {
+			// prefer a float64 when it holds the value exactly (e.g. 1e20, or
+			// anything over 2^31 on 32-bit platforms), so that only integers a
+			// float64 would round become a *big.Int
+			if f, acc := new(big.Float).SetInt(i).Float64(); acc == big.Exact {
+				return f
+			}
+			return i
+		}
+		f, _ := v.Float64()
+		return f
+	default:
+		return v
+	}
 }
