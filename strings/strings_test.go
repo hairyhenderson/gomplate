@@ -77,6 +77,40 @@ func TestTrunc(t *testing.T) {
 	assert.Equal(t, "🙂", Trunc(7, "🙂🙂"))
 }
 
+func TestAbbrev(t *testing.T) {
+	testdata := []struct {
+		in       string
+		expected string
+		offset   int
+		width    int
+	}{
+		{"", "", 0, 4},
+		{"foo", "foo", 0, 3},
+		{"foobarbazquxquux", "foobar...", 0, 9},
+		{"foobarbazquxquux", "...baz...", 6, 9},
+		{"foobarbazquxquux", "...xquux", 100, 8},
+		// multi-byte characters are counted as one and never cut in half
+		{"héllo wörld", "hé...", 0, 5},
+		{"héllo", "héllo", 0, 5},
+		{"日本語テキスト", "日...", 0, 4},
+		{"日本語テキストです文字列", "...ストで...", 5, 9},
+		{"abcdefghijkl", "...fgh...", 5, 9},
+		{"🙂🙂🙂🙂🙂", "🙂...", 0, 4},
+	}
+
+	for _, d := range testdata {
+		out, err := Abbrev(d.offset, d.width, d.in)
+		require.NoError(t, err)
+		assert.Equal(t, d.expected, out, "Abbrev(%d, %d, %q)", d.offset, d.width, d.in)
+	}
+
+	_, err := Abbrev(0, 3, "foobar")
+	require.Error(t, err)
+
+	_, err = Abbrev(6, 6, "foobarbazquxquux")
+	require.Error(t, err)
+}
+
 func TestShellQuote(t *testing.T) {
 	assert.Equal(t, `''`, ShellQuote(``))
 	assert.Equal(t, `'foo'`, ShellQuote(`foo`))

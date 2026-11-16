@@ -121,6 +121,14 @@ func TestAbbrev(t *testing.T) {
 	s, err = sf.Abbrev(6, 9, "foobarbazquxquux")
 	require.NoError(t, err)
 	assert.Equal(t, "...baz...", s)
+
+	s, err = sf.Abbrev(5, "héllo wörld")
+	require.NoError(t, err)
+	assert.Equal(t, "hé...", s)
+
+	s, err = sf.Abbrev(5, "héllo")
+	require.NoError(t, err)
+	assert.Equal(t, "héllo", s)
 }
 
 func TestSlug(t *testing.T) {
