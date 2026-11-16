@@ -87,10 +87,11 @@ func jqConvertType(in any) (any, error) {
 
 	// other maps and slices, like map[string]string (.Env) or [][]string (CSV
 	// datasources), also need to become map[string]any or []any. Byte slices
-	// are passed through as strings.
+	// are passed through unchanged, but maps of bytes and byte arrays are
+	// converted like any other map or array.
 	switch inType.Kind() {
 	case reflect.Map, reflect.Slice, reflect.Array:
-		if inType.Elem().Kind() == reflect.Uint8 {
+		if inType.Kind() == reflect.Slice && inType.Elem().Kind() == reflect.Uint8 {
 			return in, nil
 		}
 

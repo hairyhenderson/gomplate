@@ -216,6 +216,15 @@ func TestJQ_typeConversions(t *testing.T) {
 	out, err = JQ(ctx, ".[1][0]", [][]string{{"name"}, {"Alice"}})
 	require.NoError(t, err)
 	assert.Equal(t, "Alice", out)
+
+	// maps of bytes and byte arrays aren't byte slices
+	out, err = JQ(ctx, ".x", map[string]uint8{"x": 1})
+	require.NoError(t, err)
+	assert.Equal(t, 1, out)
+
+	out, err = JQ(ctx, ".[1]", [2]uint8{1, 2})
+	require.NoError(t, err)
+	assert.Equal(t, 2, out)
 }
 
 func TestJQ_largeIntegers(t *testing.T) {
