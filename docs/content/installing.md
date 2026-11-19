@@ -142,14 +142,14 @@ $ npm install -g gomplate
 ...
 ```
 
-## install with `tea.xyz`
+## install with `pkgx`
 
-For some users (including for DEVOPS on [GitHub Actions](https://github.com/marketplace/actions/tea-setup)),
-[`tea.xyz`](https://tea.xyz/) maybe be very comfortable, therefore, to install, just:
+[`pkgx`](https://pkgx.sh/) (formerly `tea`) can run gomplate without a separate
+install step, locally or on [GitHub Actions](https://github.com/pkgxdev/setup):
 
 ```console
-$ sh <(curl https://tea.xyz) +gomplate.ca sh
-$ gomplate --version
+$ brew install pkgx || curl https://pkgx.sh | sh
+$ pkgx gomplate --version
 ...
 ```
 
