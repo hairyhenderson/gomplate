@@ -69,7 +69,7 @@ func TestFakeFuncs(t *testing.T) {
 		"Hobby":      {f.Hobby, nil},
 
 		"Email":          {f.Email, isEmail},
-		"Phone":          {f.Phone, matches(`^[0-9]{10}$`)},
+		"Phone":          {f.Phone, matches(`^[2-9][0-9]{2}[2-9][0-9]{6}$`)},
 		"PhoneFormatted": {f.PhoneFormatted, matches(`^[0-9().-]{12,}$`)},
 
 		"SSN":              {f.SSN, isSSN},

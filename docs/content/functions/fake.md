@@ -208,7 +208,12 @@ Nichole Gottlieb <nichole.gottlieb@example.com>
 
 ## `fake.Phone`
 
-Generates a 10-digit phone number with no formatting.
+Generates a 10-digit North American phone number with no formatting.
+
+The number follows the North American Numbering Plan: neither the area
+code nor the exchange (the first three digits and the next three) starts
+with `0` or `1`, or ends in `11`. It isn't checked against assigned
+numbers, so it can be a real person's number.
 
 See [`fake.PhoneFormatted`](#fakephoneformatted) for a formatted number.
 
@@ -229,9 +234,9 @@ $ gomplate -i '{{ fake.Phone }}'
 
 ## `fake.PhoneFormatted`
 
-Generates a North American-style phone number in one of several common
-formats, such as `555-555-5555`, `(555)555-5555`, `1-555-555-5555`, or
-`555.555.5555`.
+Generates a North American phone number, following the same rules as
+[`fake.Phone`](#fakephone), in one of several common formats, such as
+`555-555-5555`, `(555)555-5555`, `1-555-555-5555`, or `555.555.5555`.
 
 _<span class="release-check" data-tag="v5.4.0">Added in gomplate v5.4.0</span>_
 ### Usage
@@ -245,7 +250,7 @@ fake.PhoneFormatted
 
 ```console
 $ gomplate -i '{{ fake.PhoneFormatted }}'
-(056)965-7276
+(397)258-3997
 ```
 
 ## `fake.SSN`

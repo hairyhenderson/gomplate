@@ -40,9 +40,8 @@ func (f *FakeFuncs) Seeded(seed any) *FakeFuncs {
 }
 
 // seededFaker derives the source's state from a hash of seed, as
-// net.GenerateMAC does. It avoids gofakeit.New, which treats a zero seed as a
-// request for a random one, and Faker.Seed, which reseeds
-// gofakeit.GlobalFaker rather than its receiver.
+// net.GenerateMAC does. It avoids gofakeit.New and Faker.Seed, which both
+// treat a zero seed as a request for a random one.
 func seededFaker(seed string) *gofakeit.Faker {
 	sum := sha256.Sum256([]byte(seed))
 	src := rand.NewPCG(binary.LittleEndian.Uint64(sum[:8]), binary.LittleEndian.Uint64(sum[8:16]))
@@ -67,15 +66,11 @@ func (f *FakeFuncs) PhoneFormatted() string { return f.faker.PhoneFormatted() }
 
 // Identity and payment
 
-// SSN returns a US Social Security number formatted as AAA-GG-SSSS. It
-// doesn't use gofakeit's SSN, which in about one value in eight uses an area
-// number the SSA never issues (666 or 900-999), so it fails validation.
+// SSN returns a US Social Security number formatted as AAA-GG-SSSS. gofakeit
+// returns the nine digits unformatted.
 func (f *FakeFuncs) SSN() string {
-	area := f.faker.IntRange(1, 898) // 001-899 without 666
-	if area >= 666 {
-		area++
-	}
-	return fmt.Sprintf("%03d-%02d-%04d", area, f.faker.IntRange(1, 99), f.faker.IntRange(1, 9999))
+	s := f.faker.SSN()
+	return s[:3] + "-" + s[3:5] + "-" + s[5:]
 }
 
 func (f *FakeFuncs) CreditCardNumber() string { return f.faker.CreditCardNumber(nil) }
