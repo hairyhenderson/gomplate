@@ -41,16 +41,27 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
-      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7
+      - uses: actions/setup-go@d8cbb8045d7f43706b9177cceb36c1f91a6644d5 # v7
         with:
           go-version-file: 'go.mod'
       - name: Run benchmark
         run: make bench.txt
+      # hosted runners have different CPUs (e.g. AMD EPYC 7763, 9V45, 9V74) and the
+      # timings differ by more than the alert threshold between them, so keep one
+      # baseline per CPU model
+      - name: Get CPU model
+        id: cpu
+        run: |
+          model=$(grep -m1 '^model name' /proc/cpuinfo | cut -d: -f2 | xargs)
+          echo "model=${model// /-}" >> "$GITHUB_OUTPUT"
       - name: Download previous benchmark data
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6
         with:
           path: ./cache
-          key: ${{ runner.os }}-benchmark
+          # a cache entry is never updated once saved, so save a new one on every
+          # run and restore the newest one for this CPU model
+          key: ${{ runner.os }}-benchmark-${{ steps.cpu.outputs.model }}-${{ github.run_id }}-${{ github.run_attempt }}
+          restore-keys: ${{ runner.os }}-benchmark-${{ steps.cpu.outputs.model }}-
       - name: Store benchmark result
         uses: benchmark-action/github-action-benchmark@v1
         with:
@@ -58,8 +69,11 @@ jobs:
           output-file-path: bench.txt
           external-data-json-path: ./cache/benchmark-data.json
           fail-on-alert: true
-          comment-on-alert: true
+          # PRs from forks get a read-only token, so commenting fails with
+          # "Resource not accessible by integration" - only comment when the PR
+          # comes from this repo. Alerts still fail the job either way.
+          comment-on-alert: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository }}
           # only comment on every PR run, not on pushes or the nightly run
-          comment-always: ${{ github.event_name == 'pull_request' }}
+          comment-always: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
           alert-threshold: "200%"

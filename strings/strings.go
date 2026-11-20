@@ -6,6 +6,7 @@ import (
 	"math"
 	"regexp"
 	"strings"
+	"unicode/utf8"
 
 	"github.com/Masterminds/goutils"
 	"github.com/hairyhenderson/gomplate/v5/conv"
@@ -49,7 +50,8 @@ func ShellQuote(s string) string {
 	return "'" + strings.ReplaceAll(s, "'", "'\"'\"'") + "'"
 }
 
-// Trunc - truncate a string to the given length
+// Trunc - truncate a string to the given length (in bytes). A multi-byte
+// character that doesn't fit is dropped instead of being cut in half.
 func Trunc(length int, s string) string {
 	if length < 0 {
 		return s
@@ -57,7 +59,17 @@ func Trunc(length int, s string) string {
 	if len(s) <= length {
 		return s
 	}
-	return s[0:length]
+
+	// cut at the start of the last character that begins at or before length
+	end := 0
+	for i := range s {
+		if i > length {
+			break
+		}
+		end = i
+	}
+
+	return s[:end]
 }
 
 var (
@@ -77,15 +89,28 @@ func KebabCase(in string) string {
 	return spaces.ReplaceAllString(s, "-")
 }
 
+// keepFirstRune makes sure the first letter of s remains lower- or upper-cased
+// like the first letter of orig. conv is the conversion that produced s from
+// orig. It may expand the first letter into several runes, so the whole
+// expansion is replaced, not just one rune. Both must be non-empty.
+func keepFirstRune(s, orig string, conv func(string) string) string {
+	r, _ := utf8.DecodeRuneInString(orig)
+	first := string(r)
+	if prefix := conv(first); strings.HasPrefix(s, prefix) {
+		return first + s[len(prefix):]
+	}
+
+	_, size := utf8.DecodeRuneInString(s)
+	return first + s[size:]
+}
+
 func casePrepare(in string) string {
 	in = strings.TrimSpace(in)
 	if in == "" {
 		return ""
 	}
 
-	s := strings.ToLower(in)
-	// make sure the first letter remains lower- or upper-cased
-	s = strings.Replace(s, string(s[0]), string(in[0]), 1)
+	s := keepFirstRune(strings.ToLower(in), in, strings.ToLower)
 	s = nonAlphaNum.ReplaceAllString(s, " ")
 	return strings.TrimSpace(s)
 }
@@ -97,10 +122,8 @@ func CamelCase(in string) string {
 		return ""
 	}
 
-	tag := language.Und
-	s := cases.Title(tag).String(conv.ToString(in))
-	// make sure the first letter remains lower- or upper-cased
-	s = strings.Replace(s, string(s[0]), string(in[0]), 1)
+	title := cases.Title(language.Und).String
+	s := keepFirstRune(title(conv.ToString(in)), in, title)
 	return nonAlphaNum.ReplaceAllString(s, "")
 }
 

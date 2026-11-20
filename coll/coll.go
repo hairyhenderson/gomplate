@@ -285,8 +285,8 @@ func Sort(key string, list any) (out []any, err error) {
 	if err != nil {
 		return nil, err
 	}
-	// if the types are all the same, we can sort the slice
-	if sameTypes(ia) {
+	// if the types are all the same, or all numbers, we can sort the slice
+	if sameTypes(ia) || allNumbers(ia) {
 		s := make([]any, len(ia))
 		// make a copy so the original is unmodified
 		copy(s, ia)
@@ -377,6 +377,17 @@ func toBigFloat(v reflect.Value) (*big.Float, bool) {
 	default:
 		return nil, false
 	}
+}
+
+// allNumbers - true if every value is a number, e.g. a JSON or YAML list
+// mixing integers and decimals
+func allNumbers(a []any) bool {
+	for _, v := range a {
+		if _, ok := toBigFloat(reflect.Indirect(reflect.ValueOf(v))); !ok {
+			return false
+		}
+	}
+	return true
 }
 
 func sameTypes(a []any) bool {

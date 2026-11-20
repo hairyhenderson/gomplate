@@ -531,9 +531,10 @@ $ gomplate -i '{{ coll.Slice 4 3 2 1 | reverse }}'
 
 **Alias:** `sort`
 
-Sort a given list. Uses the natural sort order if possible. For inputs
-that are not sortable (either because the elements are of different types,
-or of an un-sortable type), the input will simply be returned, unmodified.
+Sort a given list. Uses the natural sort order if possible. Integers and
+decimals are sorted together as numbers. For inputs that are not sortable
+(either because the elements are of different types, or of an un-sortable
+type), the input will simply be returned, unmodified.
 
 Maps and structs can be sorted by a named key.
 

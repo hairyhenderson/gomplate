@@ -467,6 +467,11 @@ func TestSort(t *testing.T) {
 		},
 		{
 			key: "",
+			in:  []any{1.5, 10, 2, 0.5},
+			out: []any{0.5, 1.5, 2, 10},
+		},
+		{
+			key: "",
 			in:  nil,
 			out: nil,
 		},

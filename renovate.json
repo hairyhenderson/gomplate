@@ -42,6 +42,13 @@
       "description": "Own modules: no release-age wait, we publish these ourselves",
       "matchSourceUrls": ["https://github.com/hairyhenderson/**"],
       "minimumReleaseAge": "0 days"
+    },
+    {
+      "description": "Indirect Go deps take their major version from the module that imports them, so a major bump in our go.mod can't work",
+      "matchManagers": ["gomod"],
+      "matchDepTypes": ["indirect"],
+      "matchUpdateTypes": ["major"],
+      "enabled": false
     }
   ]
 }

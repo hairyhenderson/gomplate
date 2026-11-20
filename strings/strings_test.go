@@ -66,6 +66,15 @@ func TestTrunc(t *testing.T) {
 	assert.Equal(t, "hello, world", Trunc(12, "hello, world"))
 	assert.Equal(t, "hello, world", Trunc(42, "hello, world"))
 	assert.Equal(t, "hello, world", Trunc(-1, "hello, world"))
+
+	// multi-byte characters are never cut in half
+	assert.Equal(t, "gr", Trunc(3, "grüne"))
+	assert.Equal(t, "grü", Trunc(4, "grüne"))
+	assert.Empty(t, Trunc(2, "日本語"))
+	assert.Equal(t, "日", Trunc(3, "日本語"))
+	assert.Equal(t, "日", Trunc(5, "日本語"))
+	assert.Equal(t, "日本", Trunc(6, "日本語"))
+	assert.Equal(t, "🙂", Trunc(7, "🙂🙂"))
 }
 
 func TestShellQuote(t *testing.T) {
@@ -82,6 +91,11 @@ func TestCaseFuncs(t *testing.T) {
 		{" baz\tqux  ", "baz_qux", "baz-qux", "bazQux"},
 		{"Hello, World!", "Hello_world", "Hello-world", "HelloWorld"},
 		{"grüne | Straße", "grüne_straße", "grüne-straße", "grüneStraße"},
+		{"élan vital", "élan_vital", "élan-vital", "élanVital"},
+		{"Éclair au chocolat", "Éclair_au_chocolat", "Éclair-au-chocolat", "ÉclairAuChocolat"},
+		{"ßeta test", "ßeta_test", "ßeta-test", "ßetaTest"},
+		{"İstanbul city", "İstanbul_city", "İstanbul-city", "İstanbulCity"},
+		{"ﬀoo bar", "ﬀoo_bar", "ﬀoo-bar", "ﬀooBar"},
 		{"", "", "", ""},
 		{" \t\n ", "", "", ""},
 		{"!?", "", "", ""},
