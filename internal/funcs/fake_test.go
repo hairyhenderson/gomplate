@@ -197,8 +197,10 @@ func TestFakeFuncs_Concurrent(t *testing.T) {
 
 	f := testFakeNS(t)
 
-	// Run with -race: gomplate's Renderer can be used from several
-	// goroutines, and they share one namespace.
+	// Run with -race. This covers the namespace only: a FuncMap from
+	// gomplate.CreateFuncs can be shared by templates executing on several
+	// goroutines, which all call the same FakeFuncs. It doesn't make a
+	// Renderer safe for concurrent use.
 	var wg sync.WaitGroup
 	for range 8 {
 		wg.Go(func() {
