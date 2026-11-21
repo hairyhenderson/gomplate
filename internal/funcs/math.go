@@ -71,17 +71,30 @@ func (f MathFuncs) IsNum(n any) bool {
 
 // Abs -
 func (f MathFuncs) Abs(n any) (any, error) {
+	// work on integers directly, since a float64 can't hold every int64
+	if f.IsInt(n) {
+		i, err := conv.ToInt64(n)
+		if err != nil {
+			return nil, fmt.Errorf("expected a number: %w", err)
+		}
+
+		if i == gmath.MinInt64 {
+			return nil, fmt.Errorf("absolute value of %d does not fit in an int64", i)
+		}
+
+		if i < 0 {
+			i = -i
+		}
+
+		return i, nil
+	}
+
 	fn, err := conv.ToFloat64(n)
 	if err != nil {
 		return nil, fmt.Errorf("expected a number: %w", err)
 	}
 
-	m := gmath.Abs(fn)
-	if f.IsInt(n) {
-		return conv.ToInt64(m)
-	}
-
-	return m, nil
+	return gmath.Abs(fn), nil
 }
 
 // Add -
