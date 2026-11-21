@@ -359,10 +359,33 @@ func (w *wdFS) Sub(name string) (fs.FS, error) {
 	return fs.Sub(w.fsys, name)
 }
 
-func (w *wdFS) Glob(_ string) ([]string, error) {
-	// I'm not sure how to handle this, so I'm just going to error for now -
-	// I have no need of Glob anyway.
-	return nil, fmt.Errorf("glob not supported by wdFS: %w", fs.ErrInvalid)
+// fsOnly wraps *wdFS to expose only Open, Stat, and ReadDir, suppressing
+// fs.GlobFS to prevent infinite recursion when delegating to fs.Glob,
+// while ensuring directory lookups go through the existing wdFS resolution.
+type fsOnly struct {
+	w *wdFS
+}
+
+var (
+	_ fs.FS        = fsOnly{}
+	_ fs.StatFS    = fsOnly{}
+	_ fs.ReadDirFS = fsOnly{}
+)
+
+func (f fsOnly) Open(name string) (fs.File, error) {
+	return f.w.Open(name)
+}
+
+func (f fsOnly) Stat(name string) (fs.FileInfo, error) {
+	return f.w.Stat(name)
+}
+
+func (f fsOnly) ReadDir(name string) ([]fs.DirEntry, error) {
+	return f.w.ReadDir(name)
+}
+
+func (w *wdFS) Glob(pattern string) ([]string, error) {
+	return fs.Glob(fsOnly{w: w}, pattern)
 }
 
 func (w *wdFS) Create(name string) (fs.File, error) {
