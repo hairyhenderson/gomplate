@@ -903,3 +903,5 @@ k8s.io/client-go v0.37.1 h1:QTv/5ha4jAHtW9qxxVBkQVFBRDb4jHfFopQqqMdc+wM=
 k8s.io/client-go v0.37.1/go.mod h1:dnAPtTnCNY38Ho04D2KdY1F4IKausa9UbqaAZKl60SY=
 k8s.io/client-go v0.37.2 h1:sgFtyRZukGkOrsu+QgS7LYnbFFJ5ut3MchdBNduD//E=
 k8s.io/client-go v0.37.2/go.mod h1:bo3LFC8YbCtKFPX21Yj8puMsoJLAv/+SvuOODma0s54=
+k8s.io/client-go v11.0.0+incompatible h1:LBbX2+lOwY9flffWlJM7f1Ct8V2SRNiMRDFeiwnJo9o=
+k8s.io/client-go v11.0.0+incompatible/go.mod h1:7vJpHMYJwNQCWgzmNV+VYUl1zCObLyodBc8nIyt8L5s=

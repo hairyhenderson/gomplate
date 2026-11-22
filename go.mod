@@ -43,7 +43,7 @@ require (
 	golang.org/x/term v0.48.0
 	golang.org/x/text v0.44.0
 	gotest.tools/v3 v3.5.2
-	k8s.io/client-go v0.37.2
+	k8s.io/client-go v11.0.0+incompatible
 )
 
 // TODO: replace with gopkg.in/yaml.v3 after https://github.com/go-yaml/yaml/pull/862
