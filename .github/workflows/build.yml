@@ -14,7 +14,7 @@ jobs:
   linux-build:
     runs-on: ${{ matrix.runner }}
     container:
-      image: ghcr.io/hairyhenderson/gomplate-ci-build@sha256:5da12860fcbaa91863d9d05fb69d20a1da8b5e941b355a062bcf8cf77327d924
+      image: ghcr.io/hairyhenderson/gomplate-ci-build@sha256:eb9b66c83aee7df744c44a6262c399a4b1e6292ff089343cdc45cfe93dc03f78
       # On ubuntu-26.04 runners, Docker's default seccomp profile blocks the
       # socketcall(2) syscall that linux/386 Go binaries use for networking, so
       # every test that opens a socket fails with ENOSYS.
