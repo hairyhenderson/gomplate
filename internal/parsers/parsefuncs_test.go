@@ -278,6 +278,7 @@ func TestCSV(t *testing.T) {
 	}{
 		{[]string{"first,second,third\n1,2,3\n4,5,6"}, expected},
 		{[]string{";", "first;second;third\r\n1;2;3\r\n4;5;6\r\n"}, expected},
+		{[]string{"\uFEFFfirst,second,third\r\n1,2,3\r\n4,5,6\r\n"}, expected},
 
 		{[]string{""}, [][]string{nil}},
 		{[]string{"\n"}, [][]string{nil}},

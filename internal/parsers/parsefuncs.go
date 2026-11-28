@@ -230,7 +230,8 @@ func parseCSV(args ...string) ([][]string, []string, error) {
 	if err != nil {
 		return nil, nil, err
 	}
-	c := csv.NewReader(strings.NewReader(in))
+	// spreadsheet exports often start with a UTF-8 byte order mark
+	c := csv.NewReader(strings.NewReader(strings.TrimPrefix(in, "\uFEFF")))
 	c.Comma = comma
 	records, err := c.ReadAll()
 	if err != nil {
