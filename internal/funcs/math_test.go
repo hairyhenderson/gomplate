@@ -504,6 +504,13 @@ func TestAbs(t *testing.T) {
 		{-1.9, 1.9},
 		{2, int64(2)},
 		{-2, int64(2)},
+		// integers beyond 2^53 must not be rounded through a float64
+		{int64(9007199254740993), int64(9007199254740993)},
+		{int64(-9007199254740993), int64(9007199254740993)},
+		{"-9007199254740993", int64(9007199254740993)},
+		{int64(gmath.MaxInt64), int64(gmath.MaxInt64)},
+		{int64(-gmath.MaxInt64), int64(gmath.MaxInt64)},
+		{"-9223372036854775807", int64(gmath.MaxInt64)},
 	}
 	for _, d := range data {
 		t.Run(fmt.Sprintf("%#v==%v", d.n, d.a), func(t *testing.T) {
@@ -525,6 +532,13 @@ func TestAbs(t *testing.T) {
 		require.Error(t, err)
 
 		_, err = m.Abs("")
+		require.Error(t, err)
+
+		// the absolute value of the minimum int64 doesn't fit in an int64
+		_, err = m.Abs(int64(gmath.MinInt64))
+		require.Error(t, err)
+
+		_, err = m.Abs("-9223372036854775808")
 		require.Error(t, err)
 	})
 }
