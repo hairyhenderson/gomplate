@@ -13,7 +13,6 @@ import (
 	"strings"
 	"unicode/utf8"
 
-	"github.com/Masterminds/goutils"
 	"github.com/hairyhenderson/gomplate/v5/conv"
 	gompstrings "github.com/hairyhenderson/gomplate/v5/strings"
 
@@ -85,11 +84,7 @@ func (StringFuncs) Abbrev(args ...any) (string, error) {
 		return "", fmt.Errorf("abbrev requires a 'width' and 'input' argument")
 	}
 
-	if len(str) <= width {
-		return str, nil
-	}
-
-	return goutils.AbbreviateFull(str, offset, width)
+	return gompstrings.Abbrev(offset, width, str)
 }
 
 // ReplaceAll -

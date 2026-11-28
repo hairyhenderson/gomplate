@@ -72,6 +72,48 @@ func Trunc(length int, s string) string {
 	return s[:end]
 }
 
+// Abbrev abbreviates s with "..." (ellipses) so that the result is at most
+// width characters long. If offset is greater than 4, the result starts with
+// "..." and shows the text from around offset. Widths and offsets count
+// characters (runes), so multi-byte characters are never cut in half. For
+// ASCII input this matches goutils.AbbreviateFull.
+func Abbrev(offset, width int, s string) (string, error) {
+	r := []rune(s)
+	if len(r) <= width {
+		return s, nil
+	}
+
+	if width < 4 {
+		return "", fmt.Errorf("stringutils illegal argument: Minimum abbreviation width is 4")
+	}
+
+	const marker = "..."
+
+	offset = min(offset, len(r))
+	if len(r)-offset < width-3 {
+		offset = len(r) - (width - 3)
+	}
+
+	if offset <= 4 {
+		return string(r[:width-3]) + marker, nil
+	}
+
+	if width < 7 {
+		return "", fmt.Errorf("stringutils illegal argument: Minimum abbreviation width with offset is 7")
+	}
+
+	if offset+width-3 < len(r) {
+		rest, err := Abbrev(0, width-3, string(r[offset:]))
+		if err != nil {
+			return "", err
+		}
+
+		return marker + rest, nil
+	}
+
+	return marker + string(r[len(r)-(width-3):]), nil
+}
+
 var (
 	spaces      = regexp.MustCompile(`\s+`)
 	nonAlphaNum = regexp.MustCompile(`[^\pL\pN]+`)
